@@ -582,6 +582,25 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	userData.queryApId = q["accessPointId"]
 	userData.queryAddress = q["address"]
 
+	validQueryParams := []string{"zoneId", "accessPointId", "address"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	// Get user list from DB
 	var response InlineUserList
 	var userList UserList
@@ -683,6 +702,25 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	q := u.Query()
 	userData.queryInterestRealm = q.Get("interestRealm")
 
+	validQueryParams := []string{"interestRealm"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	// Get user list from DB
 	var response InlineAccessPointList
 	var apList AccessPointList
@@ -690,6 +728,13 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	apList.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + vars["zoneId"] + "/accessPoints"
 	response.AccessPointList = &apList
 	userData.apList = &apList
+
+	//make sure the zone exists first
+	jsonZoneInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+vars["zoneId"], ".")
+	if jsonZoneInfo == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	keyName := baseKey + typeZone + ":" + vars["zoneId"] + ":*"
 	err := rc.ForEachJSONEntry(keyName, populateApList, &userData)
@@ -846,6 +891,12 @@ func populateApList(key string, jsonInfo string, userData interface{}) error {
 func userTrackingSubDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	err := rc.JSONDelEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
@@ -1067,6 +1118,12 @@ func populateUserTrackingList(key string, jsonInfo string, userData interface{})
 func zonalTrafficSubDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	err := rc.JSONDelEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
@@ -1299,6 +1356,12 @@ func populateZonalTrafficList(key string, jsonInfo string, userData interface{})
 func zoneStatusSubDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	err := rc.JSONDelEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {

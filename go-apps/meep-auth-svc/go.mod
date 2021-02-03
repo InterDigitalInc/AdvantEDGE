@@ -3,14 +3,12 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-auth-svc
 go 1.12
 
 require (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-platform-ctrl-client v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users v0.0.0

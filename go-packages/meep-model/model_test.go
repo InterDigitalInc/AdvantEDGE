@@ -1160,20 +1160,20 @@ func TestValidateScenario(t *testing.T) {
 
 	// Incompatible scenarios
 	fmt.Println("Validate empty scenario")
-	validJsonScenario, status, err := ValidateScenario([]byte(""))
+	validJsonScenario, status, err := ValidateScenario([]byte(""), "")
 	if validJsonScenario != nil || status != ValidatorStatusError || err == nil {
 		t.Fatalf("Empty scenario should not be valid")
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.0.0] == too old")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_0_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_0_0), "")
 	if validJsonScenario != nil || status != ValidatorStatusError || err == nil {
 		t.Fatalf("validJsonScenario should not be compatible")
 	}
 
 	// Compatible Scenarios
 	fmt.Println("Validate scenario: scenarioVer[none] == validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1183,7 +1183,7 @@ func TestValidateScenario(t *testing.T) {
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.5.3] == validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_3))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_3), "")
 	if validJsonScenario == nil || status != ValidatorStatusValid || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1192,7 +1192,7 @@ func TestValidateScenario(t *testing.T) {
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.5.0] < validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_0), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1201,7 +1201,7 @@ func TestValidateScenario(t *testing.T) {
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.4.0] < validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_4_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_4_0), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1210,7 +1210,7 @@ func TestValidateScenario(t *testing.T) {
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.3.0] < validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_3_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_3_0), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}

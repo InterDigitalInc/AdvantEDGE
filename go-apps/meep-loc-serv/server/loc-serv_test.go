@@ -483,7 +483,7 @@ func TestZonalSuccessSubscription(t *testing.T) {
 	testZonalSubscriptionGet(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1), expectedGetResp)
 
 	//delete
-	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1))
+	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -513,7 +513,7 @@ func TestFailZonalSubscription(t *testing.T) {
 	_ = testZonalSubscriptionPut(t, strconv.Itoa(nextZonalSubscriptionIdAvailable), false)
 
 	//delete
-	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable))
+	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable), false)
 
 	terminateScenario()
 }
@@ -543,7 +543,7 @@ func TestZonalSubscriptionsListGet(t *testing.T) {
 	testZonalSubscriptionList(t)
 
 	//delete
-	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1))
+	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -759,7 +759,7 @@ func testZonalSubscriptionGet(t *testing.T, subscriptionId string, expectedRespo
 	}
 }
 
-func testZonalSubscriptionDelete(t *testing.T, subscriptionId string) {
+func testZonalSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
 
 	/******************************
 	 * expected response section
@@ -782,8 +782,12 @@ func testZonalSubscriptionDelete(t *testing.T, subscriptionId string) {
 	/******************************
 	 * request execution section
 	 ******************************/
+       returnCode := http.StatusNoContent
+        if !expectSuccess {
+                returnCode = http.StatusNotFound
+        }
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNoContent, ZonalTrafficSubDELETE)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, returnCode, ZonalTrafficSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -820,7 +824,7 @@ func TestUserSuccessSubscription(t *testing.T) {
 	testUserSubscriptionGet(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1), expectedGetResp)
 
 	//delete
-	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1))
+	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -850,7 +854,7 @@ func TestFailUserSubscription(t *testing.T) {
 	_ = testUserSubscriptionPut(t, strconv.Itoa(nextUserSubscriptionIdAvailable), false)
 
 	//delete
-	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable))
+	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable), false)
 
 	terminateScenario()
 }
@@ -880,7 +884,7 @@ func TestUserSubscriptionsListGet(t *testing.T) {
 	testUserSubscriptionList(t)
 
 	//delete
-	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1))
+	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -1094,7 +1098,7 @@ func testUserSubscriptionGet(t *testing.T, subscriptionId string, expectedRespon
 	}
 }
 
-func testUserSubscriptionDelete(t *testing.T, subscriptionId string) {
+func testUserSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
 
 	/******************************
 	 * expected response section
@@ -1117,8 +1121,12 @@ func testUserSubscriptionDelete(t *testing.T, subscriptionId string) {
 	/******************************
 	 * request execution section
 	 ******************************/
+	returnCode := http.StatusNoContent
+	if !expectSuccess {
+		returnCode = http.StatusNotFound
+	}
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/userTracking", nil, vars, nil, http.StatusNoContent, UserTrackingSubDELETE)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/userTracking", nil, vars, nil, returnCode, UserTrackingSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1155,7 +1163,7 @@ func TestZoneStatusSuccessSubscription(t *testing.T) {
 	testZoneStatusSubscriptionGet(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable-1), expectedGetResp)
 
 	//delete
-	testZoneStatusSubscriptionDelete(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable-1))
+	testZoneStatusSubscriptionDelete(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -1185,7 +1193,7 @@ func TestFailZoneStatusSubscription(t *testing.T) {
 	_ = testZoneStatusSubscriptionPut(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable), false)
 
 	//delete
-	testZoneStatusSubscriptionDelete(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable))
+	testZoneStatusSubscriptionDelete(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable), false)
 
 	terminateScenario()
 }
@@ -1215,7 +1223,7 @@ func TestZoneStatusSubscriptionsListGet(t *testing.T) {
 	testZoneStatusSubscriptionList(t)
 
 	//delete
-	testZoneStatusSubscriptionDelete(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable-1))
+	testZoneStatusSubscriptionDelete(t, strconv.Itoa(nextZoneStatusSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -1432,7 +1440,7 @@ func testZoneStatusSubscriptionGet(t *testing.T, subscriptionId string, expected
 	}
 }
 
-func testZoneStatusSubscriptionDelete(t *testing.T, subscriptionId string) {
+func testZoneStatusSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
 
 	/******************************
 	 * expected response section
@@ -1455,8 +1463,12 @@ func testZoneStatusSubscriptionDelete(t *testing.T, subscriptionId string) {
 	/******************************
 	 * request execution section
 	 ******************************/
+       returnCode := http.StatusNoContent
+        if !expectSuccess {
+                returnCode = http.StatusNotFound
+        }
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNoContent, ZoneStatusSubDELETE)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, returnCode, ZoneStatusSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1839,7 +1851,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
-	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1))
+	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1), true)
 
 	/******************************
 	 * back to initial state section
@@ -1994,7 +2006,8 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
-	testUserSubscriptionDelete(t, strconv.Itoa(nextUserSubscriptionIdAvailable-1))
+	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-2), true)
+        testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1), true)
 
 	/******************************
 	 * back to initial state section

@@ -2173,24 +2173,22 @@ func TestSbi(t *testing.T) {
 	ueName := "ue1"
 	appName := "zone1-edge1-iperf"
 	poaName := "zone1-poa-cell1"
+	poaNameAfter := "zone2-poa1"
 
 	/******************************
 	 * expected values section
 	 ******************************/
 	var expectedUeDataStr [2]string
 	var expectedUeData [2]UeData
-	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, "", nil, nil}
-	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, "", nil, nil}
+	expectedAppNames := []string{"ue1-iperf"}
+	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaName, nil, expectedAppNames}
+	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaNameAfter, nil, expectedAppNames}
 
-	var expectedAppEcgiStr [2]string
-	var expectedAppEcgi [2]Ecgi
-	expectedAppEcgi[INITIAL] = Ecgi{"", &Plmn{"123", "456"}}
-	expectedAppEcgi[UPDATED] = Ecgi{"", &Plmn{"123", "456"}}
+	var expectedAppInfoStr string
+	expectedAppInfo := AppInfo{"EDGE", "zone1-edge1"}
 
-	var expectedPoaInfoStr [2]string
-	var expectedPoaInfo [2]PoaInfo
-	expectedPoaInfo[INITIAL] = PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}}
-	expectedPoaInfo[UPDATED] = PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}}
+	var expectedPoaInfoStr string
+	expectedPoaInfo := PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}}
 
 	j, err := json.Marshal(expectedUeData[INITIAL])
 	if err != nil {
@@ -2204,29 +2202,17 @@ func TestSbi(t *testing.T) {
 	}
 	expectedUeDataStr[UPDATED] = string(j)
 
-	j, err = json.Marshal(expectedAppEcgi[INITIAL])
+	j, err = json.Marshal(expectedAppInfo)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedAppEcgiStr[INITIAL] = string(j)
+	expectedAppInfoStr = string(j)
 
-	j, err = json.Marshal(expectedAppEcgi[UPDATED])
+	j, err = json.Marshal(expectedPoaInfo)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedAppEcgiStr[UPDATED] = string(j)
-
-	j, err = json.Marshal(expectedPoaInfo[INITIAL])
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	expectedPoaInfoStr[INITIAL] = string(j)
-
-	j, err = json.Marshal(expectedPoaInfo[UPDATED])
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	expectedPoaInfoStr[UPDATED] = string(j)
+	expectedPoaInfoStr = string(j)
 
 	/******************************
 	 * execution section
@@ -2235,36 +2221,28 @@ func TestSbi(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 
-	jsonEcgiInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeDataStr[INITIAL] {
+	time.Sleep(1000 * time.Millisecond)
+
+	jsonInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	if string(jsonInfo) != expectedUeDataStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
-	if string(jsonEcgiInfo) != expectedAppEcgiStr[INITIAL] {
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
+	if string(jsonInfo) != expectedAppInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonPoaInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poaName, ".")
-	if string(jsonPoaInfo) != expectedPoaInfoStr[INITIAL] {
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"POA:"+poaName, ".")
+	if string(jsonInfo) != expectedPoaInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
 
 	updateScenario("mobility1")
+	time.Sleep(1000 * time.Millisecond)
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeDataStr[UPDATED] {
-		fmt.Println("TEST FAILED but commented out, TODO")
-		//t.Fatalf("Failed to get expected response")
-	}
-
-	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
-	if string(jsonEcgiInfo) != expectedAppEcgiStr[UPDATED] {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	jsonPoaInfo, _ = rc.JSONGetEntry(baseKey+"POA:"+poaName, ".")
-	if string(jsonPoaInfo) != expectedPoaInfoStr[UPDATED] {
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	if string(jsonInfo) != expectedUeDataStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
