@@ -782,10 +782,10 @@ func testZonalSubscriptionDelete(t *testing.T, subscriptionId string, expectSucc
 	/******************************
 	 * request execution section
 	 ******************************/
-       returnCode := http.StatusNoContent
-        if !expectSuccess {
-                returnCode = http.StatusNotFound
-        }
+	returnCode := http.StatusNoContent
+	if !expectSuccess {
+		returnCode = http.StatusNotFound
+	}
 
 	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, returnCode, ZonalTrafficSubDELETE)
 	if err != nil {
@@ -1463,10 +1463,10 @@ func testZoneStatusSubscriptionDelete(t *testing.T, subscriptionId string, expec
 	/******************************
 	 * request execution section
 	 ******************************/
-       returnCode := http.StatusNoContent
-        if !expectSuccess {
-                returnCode = http.StatusNotFound
-        }
+	returnCode := http.StatusNoContent
+	if !expectSuccess {
+		returnCode = http.StatusNotFound
+	}
 
 	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, returnCode, ZoneStatusSubDELETE)
 	if err != nil {
@@ -2007,7 +2007,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 
 	//cleanup allocated subscription
 	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-2), true)
-        testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1), true)
+	testZonalSubscriptionDelete(t, strconv.Itoa(nextZonalSubscriptionIdAvailable-1), true)
 
 	/******************************
 	 * back to initial state section
