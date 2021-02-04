@@ -144,6 +144,7 @@ type DomainData struct {
 }
 
 type PlmnInfoResp struct {
+	AppInsId     string
 	PlmnInfoList []PlmnInfo
 }
 
@@ -2397,7 +2398,32 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 	//appInsId := q.Get("app_ins_id")
 	//appInsIdArray := strings.Split(appInsId, ",")
 
+	u, _ := url.Parse(r.URL.String())
+	q := u.Query()
+	appInsId := q.Get("app_ins_id")
+
+	validQueryParams := []string{"app_ins_id"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	var response PlmnInfoResp
+	response.AppInsId = appInsId
+
 	atLeastOne := false
 
 	//same for all plmnInfo
@@ -2474,6 +2500,7 @@ func populatePlmnInfo(key string, jsonInfo string, response interface{}) error {
 		return err
 	}
 	var plmnInfo PlmnInfo
+	plmnInfo.AppInstanceId = resp.AppInsId
 	var plmn Plmn
 	plmn.Mnc = domainData.Mnc
 	plmn.Mcc = domainData.Mcc
@@ -2495,6 +2522,25 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 
 	l2MeasData.queryCellIds = q["cell_id"]
 	l2MeasData.queryIpv4Addresses = q["ue_ipv4_address"]
+
+	validQueryParams := []string{"app_ins_id", "cell_id", "ue_ipv4_address", "ue_ipv6_address", "nated_ip_address", "gtp_teid", "dl_gbr_prb_usage_cell", "ul_gbr_prb_usage_cell", "dl_nongbr_prb_usage_cell", "ul_nongbr_prb_usage_cell", "dl_total_prb_usage_cell", "ul_total_prb_usage_cell", "received_dedicated_preambles_cell", "received_randomly_selected_preambles_low_range_cell", "received_randomly_selected_preambles_high_range_cell", "number_of_active_ue_dl_gbr_cell", "number_of_active_ue_ul_gbr_cell", "number_of_active_ue_dl_nongbr_cell", "number_of_active_ue_ul_nongbr_cell", "dl_gbr_pdr_cell", "ul_gbr_pdr_cell", "dl_nongbr_pdr_cell", "ul_nongbr_pdr_cell", "dl_gbr_delay_ue", "ul_gbr_delay_ue", "dl_nongbr_delay_ue", "ul_nongbr_delay_ue", "dl_gbr_pdr_ue", "ul_gbr_pdr_ue", "dl_nongbr_pdr_ue", "ul_nongbr_pdr_ue", "dl_gbr_throughput_ue", "ul_gbr_throughput_ue", "dl_nongbr_throughput_ue", "ul_nongbr_throughput_ue", "dl_gbr_data_volume_ue", "ul_gbr_data_volume_ue", "dl_nongbr_data_volume_ue", "ul_nongbr_data_volume_ue"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
 
 	seconds := time.Now().Unix()
 	var timeStamp TimeStamp
@@ -2745,6 +2791,25 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 	rabInfoData.queryCellIds = q["cell_id"]
 	rabInfoData.queryIpv4Addresses = q["ue_ipv4_address"]
 
+	validQueryParams := []string{"app_ins_id", "cell_id", "ue_ipv4_address", "ue_ipv6_address", "nated_ip_address", "gtp_teid", "erab_id", "qci", "erab_mbr_dl", "erab_mbr_ul", "erab_gbr_dl", "erab_gbr_ul"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	//same for all plmnInfo
 	seconds := time.Now().Unix()
 	var timeStamp TimeStamp
@@ -2977,6 +3042,44 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 	log.Info("url: ", u.RequestURI())
 	q := u.Query()
 	subType := q.Get("subscription_type")
+
+	validQueryParams := []string{"subscription_type"}
+	validQueryParamValues := []string{"cell_change", "rab_est", "rab_mod", "rab_rel", "meas_rep_ue", "nr_meas_rep_ue", "timing_advance_ue", "ca_reconf", "s1_bearer"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam, values := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		for _, validQueryParamValue := range validQueryParamValues {
+			found = false
+			for _, value := range values {
+				if value == validQueryParamValue {
+					found = true
+					break
+				}
+			}
+			if !found {
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+	}
 
 	response := createSubscriptionLinkList(subType)
 
