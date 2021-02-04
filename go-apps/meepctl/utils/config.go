@@ -31,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.6.3"
+const configVersion = "1.6.4"
 
 const defaultNotSet = "not set"
 
@@ -311,30 +311,28 @@ func ConfigIsIpv4(host string) bool {
 	return true
 }
 
+// GetResourcePrerequisites retreives the keys based on group and operation type
+func GetResourcePrerequisites(group string) ([]string, []string) {
+	names := []string{}
+	paths := []string{}
+	for name, path := range RepoCfg.GetStringMapString(group) {
+		names = append(names, name)
+		paths = append(paths, path)
+	}
+	return names, paths
+}
+
 // GetTargets retreives the keys based on group and operation type
 //  operation == "" returns the whole group
 func GetTargets(group string, operation string) []string {
-	nonPriorityTargets := []string{}
 	targets := []string{}
 	if RepoCfg != nil {
 		for target := range RepoCfg.GetStringMapString(group) {
 			if RepoCfg.GetBool(group+"."+target+"."+operation) || operation == "" {
-				if RepoCfg.GetInt(group+"."+target+".priority") != 0 {
-					targets = append(targets, target)
-				} else {
-					nonPriorityTargets = append(nonPriorityTargets, target)
-				}
+				targets = append(targets, target)
 			}
 		}
-		if len(targets) > 1 && group == "repo.dep" && operation != "" {
-			depCfg := RepoCfg.GetStringMap(group)
-			sort.Slice(targets, func(i, j int) bool {
-				return depCfg[targets[i]].(map[string]interface{})["priority"].(int) <
-					depCfg[targets[j]].(map[string]interface{})["priority"].(int)
-			})
-		}
-		sort.Strings(nonPriorityTargets)
-		targets = append(targets, nonPriorityTargets...)
+		sort.Strings(targets)
 	}
 	return targets
 }

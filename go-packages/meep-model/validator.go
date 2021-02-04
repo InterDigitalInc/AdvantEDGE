@@ -34,7 +34,7 @@ const (
 )
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 3}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 4}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
@@ -73,8 +73,8 @@ func ValidateScenario(jsonScenario []byte, name string) (validJsonScenario []byt
 
 	if name != "" {
 		if scenario.Name != name {
-                        err = errors.New("Scenario creation name " + name + " incompatible with scenario body content name " + scenario.Name + ". They must be the same.")
-                        return nil, ValidatorStatusError, err
+			err = errors.New("Scenario creation name " + name + " incompatible with scenario body content name " + scenario.Name + ". They must be the same.")
+			return nil, ValidatorStatusError, err
 		}
 	}
 

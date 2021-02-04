@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.6.3
+version: 1.6.4
 repo:
   name: AdvantEDGE
 
@@ -81,6 +81,14 @@ repo:
         # api-url: https://gitlab.com
         # OAuth k8s secret (data: client-id, secret)
         secret: meep-oauth-gitlab
+
+  #------------------------------
+  #  Resource Prerequisites
+  #------------------------------
+  resource-prerequisites:
+    # k8s Custom Resource Definitions
+    crds:
+      servicemonitors.monitoring.coreos.com: charts/kube-prometheus-stack/crds/crd-servicemonitors.yaml
 
   #------------------------------
   #  Core Subsystem
@@ -658,8 +666,6 @@ repo:
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-postgis.yaml
     meep-prometheus:
-      # Priority 1 is highest to make sure Prometheus is deployed first
-      priority: 1
       # enable meepctl build -> deps are never built
       build: false
       # enable meepctl dockerize -> deps are never dockerized
