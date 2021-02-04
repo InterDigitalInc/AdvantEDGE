@@ -4,10 +4,7 @@ apiVersion: storage.k8s.io/v1
 metadata:
   name: {{ template "influxdb.fullname" . }}
   labels:
-    app: {{ template "influxdb.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "influxdb.labels" . | nindent 4 }}
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 {{- end }}

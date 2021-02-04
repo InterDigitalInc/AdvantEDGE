@@ -8,10 +8,7 @@ metadata:
 {{ toYaml .Values.persistence.annotations | indent 4 }}
 {{- end }}
   labels:
-    app: {{ template "influxdb.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "influxdb.labels" . | nindent 4 }}
   name: {{ template "influxdb.fullname" . }}
 spec:
   accessModes:
