@@ -1,44 +1,66 @@
 # kube-state-metrics Helm Chart
 
-* Installs the [kube-state-metrics agent](https://github.com/kubernetes/kube-state-metrics).
+Installs the [kube-state-metrics agent](https://github.com/kubernetes/kube-state-metrics).
 
-## Installing the Chart
+## Get Repo Info
 
-To install the chart with the release name `my-release`:
-
-```bash
-$ helm install stable/kube-state-metrics
+```console
+helm repo add kube-state-metrics https://kubernetes.github.io/kube-state-metrics
+helm repo update
 ```
+
+_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
+
+## Install Chart
+
+```console
+# Helm 3
+$ helm install [RELEASE_NAME] kube-state-metrics/kube-state-metrics [flags]
+
+# Helm 2
+$ helm install --name [RELEASE_NAME] kube-state-metrics/kube-state-metrics [flags]
+```
+
+_See [configuration](#configuration) below._
+
+_See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
+
+## Uninstall Chart
+
+```console
+# Helm 3
+$ helm uninstall [RELEASE_NAME]
+
+# Helm 2
+# helm delete --purge [RELEASE_NAME]
+```
+
+This removes all the Kubernetes components associated with the chart and deletes the release.
+
+_See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) for command documentation._
+
+## Upgrading Chart
+
+```console
+# Helm 3 or 2
+$ helm upgrade [RELEASE_NAME] kube-state-metrics/kube-state-metrics [flags]
+```
+
+_See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documentation._
+
+### From stable/kube-state-metrics
+
+You can upgrade in-place:
+
+1. [get repo info](#get-repo-info)
+1. [upgrade](#upgrading-chart) your existing release name using the new chart repo
 
 ## Configuration
 
-| Parameter                             | Description                                             | Default                                     |
-|---------------------------------------|---------------------------------------------------------|---------------------------------------------|
-| `image.repository`                    | The image repository to pull from                       | quay.io/coreos/kube-state-metrics           |
-| `image.tag`                           | The image tag to pull from                              | `v1.4.0`                          |
-| `image.pullPolicy`                    | Image pull policy                                       | IfNotPresent                                |
-| `service.port`                        | The port of the container                               | 8080                                        |
-| `prometheusScrape`                    | Whether or not enable prom scrape                       | True                                        |
-| `rbac.create`                         | If true, create & use RBAC resources                    | False                                       |
-| `rbac.serviceAccountName`             | ServiceAccount to be used (ignored if rbac.create=true) | default                                     |
-| `nodeSelector`                        | Node labels for pod assignment                          | {}                                          |
-| `tolerations`                         | Tolerations for pod assignment	                      | []                                          |
-| `podAnnotations`                      | Annotations to be added to the pod                      | {}                                          |
-| `resources`                           | kube-state-metrics resource requests and limits         | {}                                          |
-| `collectors.cronjobs`                 | Enable the cronjobs collector.                          | true                                        |
-| `collectors.daemonsets`               | Enable the daemonsets collector.                        | true                                        |
-| `collectors.deployments`              | Enable the deployments collector.                       | true                                        |
-| `collectors.endpoints`                | Enable the endpoints collector.                         | true                                        |
-| `collectors.horizontalpodautoscalers` | Enable the horizontalpodautoscalers collector.          | true                                        |
-| `collectors.jobs`                     | Enable the jobs collector.                              | true                                        |
-| `collectors.limitranges`              | Enable the limitranges collector.                       | true                                        |
-| `collectors.namespaces`               | Enable the namespaces collector.                        | true                                        |
-| `collectors.nodes`                    | Enable the nodes collector.                             | true                                        |
-| `collectors.persistentvolumeclaims`   | Enable the persistentvolumeclaims collector.            | true                                        |
-| `collectors.persistentvolumes`        | Enable the persistentvolumes collector.                 | true                                        |
-| `collectors.pods`                     | Enable the pods collector.                              | true                                        |
-| `collectors.replicasets`              | Enable the replicasets collector.                       | true                                        |
-| `collectors.replicationcontrollers`   | Enable the replicationcontrollers collector.            | true                                        |
-| `collectors.resourcequotas`           | Enable the resourcequotas collector.                    | true                                        |
-| `collectors.services`                 | Enable the services collector.                          | true                                        |
-| `collectors.statefulsets`             | Enable the statefulsets collector.                      | true                                        |
+See [Customizing the Chart Before Installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing). To see all configurable options with detailed comments:
+
+```console
+helm show values kube-state-metrics/kube-state-metrics
+```
+
+You may also `helm show values` on this chart's [dependencies](#dependencies) for additional options.
