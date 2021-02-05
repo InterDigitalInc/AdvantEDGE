@@ -88,6 +88,7 @@ repo:
       network-metrics-aggregation: dashboards/network-metrics-aggregation.json
       http-single-log: dashboards/http-log-byId.json
       http-logs-aggregation: dashboards/http-loggers.json
+      meep-node-exporter: dashboards/meep-node-exporter.json
 
   #------------------------------
   #  Resource Prerequisites
