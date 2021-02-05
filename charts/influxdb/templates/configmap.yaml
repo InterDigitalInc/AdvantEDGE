@@ -67,6 +67,16 @@ data:
       {{- end  }}
       {{- end }}
 
+    [admin]
+      {{- range $key, $value := index .Values.config.admin }}
+      {{- $tp := typeOf $value }}
+      {{- if eq $tp "string" }}
+      {{ $key }} = {{ $value | quote }}
+      {{- else }}
+      {{ $key }} = {{ $value }}
+      {{- end  }}
+      {{- end }}
+
     [monitor]
       {{- range $key, $value := index .Values.config.monitor }}
       {{- $tp := typeOf $value }}
