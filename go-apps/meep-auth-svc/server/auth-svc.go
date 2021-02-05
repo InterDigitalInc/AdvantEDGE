@@ -789,7 +789,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	metric.User = userId
 
 	// Start user session
-	sandboxName, isNew, err, errCode := startSession(provider, userId, w, r)
+	sandboxName, isNew, userRole, err, errCode := startSession(provider, userId, w, r)
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
@@ -803,7 +803,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
 
 	// Redirect user to sandbox
-	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId, http.StatusFound)
+	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
 	metricSessionSuccess.Inc()
 	if isNew {
 		metricSessionActive.Inc()
@@ -887,7 +887,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start user session
-	sandboxName, isNew, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
+	sandboxName, isNew, _, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
@@ -921,7 +921,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Retrieve existing user session or create a new one
-func startSession(provider string, username string, w http.ResponseWriter, r *http.Request) (sandboxName string, isNew bool, err error, code int) {
+func startSession(provider string, username string, w http.ResponseWriter, r *http.Request) (sandboxName string, isNew bool, userRole string, err error, code int) {
 
 	// Get existing session by user name, if any
 	sessionStore := authSvc.sessionMgr.GetSessionStore()
@@ -931,7 +931,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		count := sessionStore.GetCount()
 		if count >= authSvc.maxSessions {
 			err = errors.New("Maximum session count exceeded")
-			return "", isNew, err, http.StatusServiceUnavailable
+			return "", false, "", err, http.StatusServiceUnavailable
 		}
 
 		// Get requested sandbox name & role from user profile, if any
@@ -947,13 +947,13 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		if sandboxName == "" {
 			sandbox, _, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandbox(context.TODO(), sandboxConfig)
 			if err != nil {
-				return "", isNew, err, http.StatusInternalServerError
+				return "", false, "", err, http.StatusInternalServerError
 			}
 			sandboxName = sandbox.Name
 		} else {
 			_, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandboxWithName(context.TODO(), sandboxName, sandboxConfig)
 			if err != nil {
-				return "", isNew, err, http.StatusInternalServerError
+				return "", false, "", err, http.StatusInternalServerError
 			}
 		}
 
@@ -968,6 +968,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 	} else {
 		sandboxName = session.Sandbox
 	}
+	userRole = session.Role
 
 	// Set session
 	err, code = sessionStore.Set(session, w, r)
@@ -977,9 +978,9 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		if session.ID == "" {
 			_, _ = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), sandboxName)
 		}
-		return "", isNew, err, code
+		return "", false, "", err, code
 	}
-	return sandboxName, isNew, nil, http.StatusOK
+	return sandboxName, isNew, userRole, nil, http.StatusOK
 }
 
 func asLogout(w http.ResponseWriter, r *http.Request) {
