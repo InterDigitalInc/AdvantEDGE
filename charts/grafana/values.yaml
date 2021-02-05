@@ -471,14 +471,6 @@ dashboardProviders:
 ##
 dashboards:
   default:
-    network-metrics-point-to-point:
-      file: dashboards/network-metrics-point-to-point.json
-    network-metrics-aggregation:
-      file: dashboards/network-metrics-aggregation.json
-    http-single-log:
-      file: dashboards/http-log-byId.json
-    http-logs-aggregation:
-      file: dashboards/http-loggers.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON

@@ -332,18 +332,18 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   },
   {
     label: 'Network Metrics Point-to-Point',
-    value: HOST_PATH + '/grafana/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: HOST_PATH + '/grafana/d/meep-network-point-to-point/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   },
   {
     label: 'Network Metrics Aggregation',
-    value: HOST_PATH + '/grafana/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: HOST_PATH + '/grafana/d/meep-network-aggregation/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   },
   {
     label: 'Http REST API Logs Aggregation',
-    value: HOST_PATH + '/grafana/d/3/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light'
+    value: HOST_PATH + '/grafana/d/meep-http-logs-aggregation/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light'
   },
   {
     label: 'Http REST API Single Detailed Log',
-    value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light'
+    value: HOST_PATH + '/grafana/d/meep-http-log-details/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light'
   }
 ];

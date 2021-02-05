@@ -175,7 +175,7 @@ var (
 	metricSessionDuration = promauto.NewHistogram(prometheus.HistogramOpts{
 		Name:    "auth_svc_session_duration",
 		Help:    "A histogram of session durations",
-		Buckets: prometheus.LinearBuckets(0, 20, 6),
+		Buckets: prometheus.LinearBuckets(20, 20, 6),
 	})
 )
 

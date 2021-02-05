@@ -1,24 +1,43 @@
 {
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1588086315506,
+  "id": 9,
+  "iteration": 1612541702849,
   "links": [],
   "panels": [
     {
       "cacheTimeout": null,
       "columns": [],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fontSize": "100%",
       "gridPos": {
         "h": 2,
         "w": 24,
         "x": 0,
-        "y": 1
+        "y": 0
       },
       "id": 5,
       "links": [],
-      "options": {},
       "pageSize": null,
       "pluginVersion": "6.4.2",
       "showHeader": true,
@@ -29,12 +48,14 @@
       "styles": [
         {
           "alias": "Time",
+          "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "pattern": "Time",
           "type": "date"
         },
         {
           "alias": "Type",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "#C4162A",
@@ -61,6 +82,7 @@
         },
         {
           "alias": "Id",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -77,6 +99,7 @@
         },
         {
           "alias": "Service",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -93,6 +116,7 @@
         },
         {
           "alias": "Method",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -109,6 +133,7 @@
         },
         {
           "alias": "Endpoint with query parameterers",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -125,6 +150,7 @@
         },
         {
           "alias": "Response code",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -141,6 +167,7 @@
         },
         {
           "alias": "Processing Time (us)",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -174,20 +201,28 @@
       "timeShift": null,
       "title": "",
       "transform": "timeseries_to_columns",
-      "type": "table"
+      "type": "table-old"
     },
     {
-      "content": "",
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 2
       },
       "id": 30,
-      "mode": "markdown",
-      "options": {},
+      "options": {
+        "content": "",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.3.5",
       "timeFrom": null,
       "timeShift": null,
       "title": "Request Body",
@@ -197,17 +232,25 @@
       "cacheTimeout": null,
       "datasource": "$datasource",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 3
       },
       "id": 31,
       "links": [],
       "options": {
+        "showLabels": false,
         "showTime": false,
-        "sortOrder": "Descending"
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "pluginVersion": "6.5.2",
       "targets": [
@@ -242,17 +285,25 @@
       "type": "logs"
     },
     {
-      "content": "",
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 8
       },
       "id": 32,
-      "mode": "markdown",
-      "options": {},
+      "options": {
+        "content": "",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.3.5",
       "timeFrom": null,
       "timeShift": null,
       "title": "Response Body",
@@ -262,17 +313,25 @@
       "cacheTimeout": null,
       "datasource": "$datasource",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 9
       },
       "id": 33,
       "links": [],
       "options": {
+        "showLabels": false,
         "showTime": false,
-        "sortOrder": "Descending"
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "pluginVersion": "6.5.2",
       "targets": [
@@ -308,16 +367,18 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 21,
+  "schemaVersion": 26,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
+          "selected": false,
           "text": "meep-influxdb",
           "value": "meep-influxdb"
         },
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",
@@ -333,11 +394,13 @@
       {
         "allValue": null,
         "current": {
-          "text": "demo1",
-          "value": "demo1"
+          "selected": false,
+          "text": "_internal",
+          "value": "_internal"
         },
         "datasource": "$datasource",
         "definition": "show databases",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -358,11 +421,14 @@
       {
         "allValue": "ALL",
         "current": {
-          "text": "ALL",
-          "value": "*"
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
         },
         "datasource": "$datasource",
         "definition": "show tag values on $database from http with key = \"logger_name\"",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "service",
@@ -388,6 +454,18 @@
         },
         "datasource": "$datasource",
         "definition": "show http log id selected",
+        "error": {
+          "data": {
+            "executedQueryString": "SELECT id FROM _internal.autogen.http WHERE (\"logger_name\" =~ /^$/) ORDER BY time desc LIMIT 100",
+            "results": [
+              {
+                "error": "retention policy not found: autogen",
+                "statement_id": 0
+              }
+            ]
+          },
+          "message": "InfluxDB Error: retention policy not found: autogen"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "http log Id",
@@ -407,8 +485,13 @@
       }
     ]
   },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
   "timezone": "",
   "title": "Http REST API single log details",
-  "uid": "4",
+  "uid": "meep-http-log-details",
   "version": 1
 }

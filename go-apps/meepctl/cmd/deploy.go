@@ -266,6 +266,10 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		if authEnabled {
 			flags = utils.HelmFlags(flags, "--set", authUrlAnnotation+"="+authUrl+"?svc=grafana")
 		}
+		dashboards := utils.RepoCfg.GetStringMapString("repo.deployment.dashboards")
+		for name, path := range dashboards {
+			flags = utils.HelmFlags(flags, "--set", "dashboards.default."+name+".file="+path)
+		}
 	case "meep-influxdb":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
 	case "meep-ingress":

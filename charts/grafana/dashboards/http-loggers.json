@@ -1,24 +1,43 @@
 {
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1588000376431,
+  "id": 8,
+  "iteration": 1612541639484,
   "links": [],
   "panels": [
     {
       "cacheTimeout": null,
       "columns": [],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fontSize": "100%",
       "gridPos": {
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 0
       },
       "id": 4,
       "links": [],
-      "options": {},
       "pageSize": null,
       "pluginVersion": "6.4.2",
       "showHeader": true,
@@ -29,12 +48,14 @@
       "styles": [
         {
           "alias": "Time",
+          "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "pattern": "Time",
           "type": "date"
         },
         {
           "alias": "Type",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "#C4162A",
@@ -61,6 +82,7 @@
         },
         {
           "alias": "Id",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -69,9 +91,9 @@
           ],
           "decimals": 2,
           "link": true,
-          "linkTargetBlank":true, 
+          "linkTargetBlank": true,
           "linkTooltip": "get details",
-          "linkUrl":"grafana/d/4/http-rest-api-single-log-details?orgId=1&var-database=$database&var-logger_name=$logger_name&theme=light&refresh=1d&var-http_log_id=${__cell}",
+          "linkUrl": "grafana/d/4/http-rest-api-single-log-details?orgId=1&var-database=$database&var-logger_name=$logger_name&theme=light&refresh=1d&var-http_log_id=${__cell}",
           "mappingType": 1,
           "pattern": "http.id",
           "thresholds": [],
@@ -81,6 +103,7 @@
         },
         {
           "alias": "Service",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -97,6 +120,7 @@
         },
         {
           "alias": "Endpoint",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -113,6 +137,7 @@
         },
         {
           "alias": "Response code",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -129,6 +154,7 @@
         },
         {
           "alias": "Processing Time (us)",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -162,20 +188,22 @@
       "timeShift": null,
       "title": "Http logs",
       "transform": "timeseries_to_columns",
-      "type": "table"
+      "type": "table-old"
     }
   ],
-  "refresh": "1s",
-  "schemaVersion": 21,
+  "refresh": "5s",
+  "schemaVersion": 26,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
+          "selected": false,
           "text": "meep-influxdb",
           "value": "meep-influxdb"
         },
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",
@@ -191,11 +219,13 @@
       {
         "allValue": null,
         "current": {
-          "text": "demo1",
-          "value": "demo1"
+          "selected": false,
+          "text": "_internal",
+          "value": "_internal"
         },
         "datasource": "$datasource",
         "definition": "show databases",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -216,11 +246,14 @@
       {
         "allValue": "ALL",
         "current": {
-          "text": "ALL",
-          "value": "*"
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
         },
         "datasource": "$datasource",
         "definition": "show tag values on $database from http with key = \"logger_name\"",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "service",
@@ -262,6 +295,6 @@
   },
   "timezone": "",
   "title": "Http REST API logs aggregation",
-  "uid": "3",
+  "uid": "meep-http-logs-aggregation",
   "version": 1
 }
