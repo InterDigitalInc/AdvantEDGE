@@ -30,18 +30,13 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 7,
-  "iteration": 1612541817817,
+  "id": 1,
+  "iteration": 1581094956679,
   "links": [],
   "panels": [
     {
+      "content": "\n\n",
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 8,
@@ -49,24 +44,16 @@
         "y": 0
       },
       "id": 14,
-      "options": {
-        "content": "\n\n",
-        "mode": "markdown"
-      },
-      "pluginVersion": "7.3.5",
+      "mode": "markdown",
+      "options": {},
       "timeFrom": null,
       "timeShift": null,
       "title": "Latency",
       "type": "text"
     },
     {
+      "content": "",
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 16,
@@ -74,11 +61,8 @@
         "y": 0
       },
       "id": 12,
-      "options": {
-        "content": "",
-        "mode": "markdown"
-      },
-      "pluginVersion": "7.3.5",
+      "mode": "markdown",
+      "options": {},
       "timeFrom": null,
       "timeShift": null,
       "title": "Throughput",
@@ -96,12 +80,6 @@
       "datasource": "$datasource",
       "decimals": null,
       "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -133,6 +111,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "pluginVersion": "6.5.2",
       "postfix": " ms",
       "postfixFontSize": "50%",
@@ -229,12 +208,6 @@
       "datasource": "$datasource",
       "decimals": 2,
       "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -266,6 +239,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "pluginVersion": "6.5.2",
       "postfix": " Mbps",
       "postfixFontSize": "50%",
@@ -362,12 +336,6 @@
       "datasource": "$datasource",
       "decimals": 2,
       "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -399,6 +367,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "pluginVersion": "6.5.2",
       "postfix": " Mbps",
       "postfixFontSize": "50%",
@@ -491,13 +460,6 @@
       "dashes": false,
       "datasource": "$datasource",
       "description": "Shows latency & Throughput between source & destination applications",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "links": []
-        },
-        "overrides": []
-      },
       "fill": 2,
       "fillGradient": 4,
       "gridPos": {
@@ -523,10 +485,10 @@
       "links": [],
       "nullPointMode": "connected",
       "options": {
-        "alertThreshold": true
+        "dataLinks": []
       },
       "percentage": false,
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "6.4.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -734,12 +696,6 @@
       "cacheTimeout": null,
       "columns": [],
       "datasource": "$datasource",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fontSize": "100%",
       "gridPos": {
         "h": 6,
@@ -749,6 +705,7 @@
       },
       "id": 4,
       "links": [],
+      "options": {},
       "pageSize": null,
       "pluginVersion": "6.4.2",
       "showHeader": true,
@@ -759,14 +716,12 @@
       "styles": [
         {
           "alias": "Time",
-          "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "pattern": "Time",
           "type": "date"
         },
         {
           "alias": "Type",
-          "align": "auto",
           "colorMode": null,
           "colors": [
             "#C4162A",
@@ -793,7 +748,6 @@
         },
         {
           "alias": "Description",
-          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -837,22 +791,20 @@
       "timeShift": null,
       "title": "Events",
       "transform": "timeseries_to_columns",
-      "type": "table-old"
+      "type": "table"
     }
   ],
-  "refresh": "5s",
-  "schemaVersion": 26,
+  "refresh": "1s",
+  "schemaVersion": 21,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
           "text": "meep-influxdb",
           "value": "meep-influxdb"
         },
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",
@@ -868,13 +820,11 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "_internal",
-          "value": "_internal"
+          "text": "demo1",
+          "value": "demo1"
         },
         "datasource": "$datasource",
         "definition": "show databases",
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -895,14 +845,11 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "ue1-iperf",
+          "value": "ue1-iperf"
         },
         "datasource": "$datasource",
         "definition": "show tag values on $database from network with key = \"src\"",
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",
@@ -923,14 +870,11 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "zone1-fog1-iperf",
+          "value": "zone1-fog1-iperf"
         },
         "datasource": "$datasource",
         "definition": "show tag values on $database from network with key = \"dest\"",
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",
@@ -973,5 +917,5 @@
   "timezone": "",
   "title": "Network Metrics Point-to-Point",
   "uid": "1",
-  "version": 1
+  "version": 5
 }
