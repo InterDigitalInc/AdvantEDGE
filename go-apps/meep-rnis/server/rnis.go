@@ -75,8 +75,11 @@ const MEAS_REP_UE_NOTIFICATION = "MeasRepUeNotification"
 const NR_MEAS_REP_UE_NOTIFICATION = "NrMeasRepUeNotification"
 
 var RNIS_DB = 5
+var DATA_DB = 0
+var RNIS_DB_CONNECTOR_INDEX = 0
+var DATA_DB_CONNECTOR_INDEX = 1
 
-var rc *redis.Connector
+var rc [2]*redis.Connector
 var hostUrl *url.URL
 var sandboxName string
 var basePath string
@@ -118,6 +121,10 @@ type UeData struct {
 	ParentPoaName string       `json:"parentPoaName"`
 	InRangePoas   []InRangePoa `json:"inRangePoas"`
 	AppNames      []string     `json:"appNames"`
+        Latency       int32       `json:"latency"`
+        ThroughputUL  int32       `json:"throughputUL"`
+        ThroughputDL  int32       `json:"throughputDL"`
+        PacketLoss    float64       `json:"packetLoss"`
 }
 
 type InRangePoa struct {
@@ -130,11 +137,19 @@ type PoaInfo struct {
 	Type  string `json:"type"`
 	Ecgi  Ecgi   `json:"ecgi"`
 	Nrcgi NRcgi  `json:"nrcgi"`
+        Latency       int32       `json:"latency"`
+        ThroughputUL  int32       `json:"throughputUL"`
+        ThroughputDL  int32       `json:"throughputDL"`
+        PacketLoss    float64       `json:"packetLoss"`
 }
 
 type AppInfo struct {
 	ParentType string `json:"parentType"`
 	ParentName string `json:"parentName"`
+        Latency       int32       `json:"latency"`
+        ThroughputUL  int32       `json:"throughputUL"`
+        ThroughputDL  int32       `json:"throughputDL"`
+        PacketLoss    float64       `json:"packetLoss"`
 }
 
 type DomainData struct {
@@ -185,14 +200,22 @@ func Init() (err error) {
 	// Get base store key
 	baseKey = dkm.GetKeyRoot(sandboxName) + rnisKey
 
-	// Connect to Redis DB
-	rc, err = redis.NewConnector(redisAddr, RNIS_DB)
+	// Connect to Redis DB (RNIS_DB)
+	rc[RNIS_DB_CONNECTOR_INDEX], err = redis.NewConnector(redisAddr, RNIS_DB)
 	if err != nil {
-		log.Error("Failed connection to Redis DB. Error: ", err)
+		log.Error("Failed connection to Redis DB (RNIS_DB). Error: ", err)
 		return err
 	}
-	_ = rc.DBFlush(baseKey)
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].DBFlush(baseKey)
 	log.Info("Connected to Redis DB, RNI service table")
+
+        // Connect to Redis DB (DATA_DB)
+        rc[DATA_DB_CONNECTOR_INDEX], err = redis.NewConnector(redisAddr, DATA_DB)
+        if err != nil {
+                log.Error("Failed connection to Redis DB (DATA_DB). Error: ", err)
+                return err
+        }
+        log.Info("Connected to Redis DB, data table")
 
 	reInit()
 
@@ -246,11 +269,11 @@ func reInit() {
 	nextAvailableErabId = 1
 
 	keyName := baseKey + "subscriptions:" + "*"
-	_ = rc.ForEachJSONEntry(keyName, repopulateCcSubscriptionMap, nil)
-	_ = rc.ForEachJSONEntry(keyName, repopulateReSubscriptionMap, nil)
-	_ = rc.ForEachJSONEntry(keyName, repopulateRrSubscriptionMap, nil)
-	_ = rc.ForEachJSONEntry(keyName, repopulateMrSubscriptionMap, nil)
-	_ = rc.ForEachJSONEntry(keyName, repopulateNrMrSubscriptionMap, nil)
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, repopulateCcSubscriptionMap, nil)
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, repopulateReSubscriptionMap, nil)
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, repopulateRrSubscriptionMap, nil)
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, repopulateMrSubscriptionMap, nil)
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, repopulateNrMrSubscriptionMap, nil)
 
 }
 
@@ -264,7 +287,7 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId string, erabIdValid bool, appNames []string) {
+func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId string, erabIdValid bool, appNames []string, latency int32, throughputUL int32, throughputDL int32, packetLoss float64) {
 
 	var plmn Plmn
 	var newEcgi Ecgi
@@ -283,6 +306,10 @@ func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId s
 	ueData.Name = name
 	ueData.Qci = defaultSupportedQci //only supporting one value
 	ueData.AppNames = appNames
+	ueData.Latency = latency
+	ueData.ThroughputUL = throughputUL
+        ueData.ThroughputDL = throughputDL
+	ueData.PacketLoss = packetLoss
 
 	oldPlmn := new(Plmn)
 	oldPlmnMnc := ""
@@ -294,7 +321,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId s
 	oldNrCellId := ""
 
 	//get from DB
-	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
+	jsonUeData, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+name, ".")
 
 	if jsonUeData != "" {
 		ueDataObj := convertJsonToUeData(jsonUeData)
@@ -335,7 +362,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId s
 			}
 		}
 
-		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
 		assocId := new(AssociateId)
 		assocId.Type_ = 1 //UE_IPV4_ADDRESS
 		assocId.Value = name
@@ -353,14 +380,14 @@ func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId s
 		//5G section
 		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
 			//update because nrcgi changed
-			_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
+			_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
 		}
 	}
 }
 
 func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string, inRangeRsrps []int32, inRangeRsrqs []int32) {
 
-	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
+	jsonUeData, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+name, ".")
 
 	if jsonUeData != "" {
 		ueDataObj := convertJsonToUeData(jsonUeData)
@@ -377,11 +404,11 @@ func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string,
 			ueDataObj.InRangePoas = inRangePoas
 		}
 
-		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
 	}
 }
 
-func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId string) {
+func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId string, latency int32, throughputUL int32, throughputDL int32, packetLoss float64) {
 
 	var plmn Plmn
 	plmn.Mnc = mnc
@@ -389,6 +416,10 @@ func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId s
 
 	var poaInfo PoaInfo
 	poaInfo.Type = poaType
+        poaInfo.Latency = latency
+        poaInfo.ThroughputUL = throughputUL
+        poaInfo.ThroughputDL = throughputDL
+        poaInfo.PacketLoss = packetLoss
 
 	switch poaType {
 	case poaType4G:
@@ -406,20 +437,20 @@ func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId s
 	}
 
 	//updateDB
-	_ = rc.JSONSetEntry(baseKey+"POA:"+name, ".", convertPoaInfoToJson(&poaInfo))
+	_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"POA:"+name, ".", convertPoaInfoToJson(&poaInfo))
 }
 
-func updateAppInfo(name string, parentType string, parentName string) {
+func updateAppInfo(name string, parentType string, parentName string, latency int32, throughputUL int32, throughputDL int32, packetLoss float64) {
 
 	//get from DB
-	jsonAppInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+name+"*", ".")
+	jsonAppInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"APP:"+name+"*", ".")
 
 	if jsonAppInfo != "" {
 		//delete entry if parent name is different; means it moved
 		currentAppInfo := convertJsonToAppInfo(jsonAppInfo)
 		if currentAppInfo.ParentName != parentName {
 			if currentAppInfo.ParentType == plTypeUE {
-				_ = rc.JSONDelEntry(baseKey+"APP:"+name+":"+currentAppInfo.ParentName, ".")
+				_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONDelEntry(baseKey+"APP:"+name+":"+currentAppInfo.ParentName, ".")
 			}
 		} else {
 			//no changes.. just get out
@@ -431,10 +462,15 @@ func updateAppInfo(name string, parentType string, parentName string) {
 	var appInfo AppInfo
 	appInfo.ParentType = parentType
 	appInfo.ParentName = parentName
+        appInfo.Latency = latency
+        appInfo.ThroughputUL = throughputUL
+        appInfo.ThroughputDL = throughputDL
+        appInfo.PacketLoss = packetLoss
+
 	if parentType == plTypeUE {
-		_ = rc.JSONSetEntry(baseKey+"APP:"+name+":"+parentName, ".", convertAppInfoToJson(&appInfo))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"APP:"+name+":"+parentName, ".", convertAppInfoToJson(&appInfo))
 	} else {
-		_ = rc.JSONSetEntry(baseKey+"APP:"+name, ".", convertAppInfoToJson(&appInfo))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"APP:"+name, ".", convertAppInfoToJson(&appInfo))
 	}
 }
 
@@ -445,7 +481,7 @@ func updateDomainData(name string, mnc string, mcc string, cellId string) {
 	oldCellId := ""
 
 	//get from DB
-	jsonDomainData, _ := rc.JSONGetEntry(baseKey+"DOM:"+name, ".")
+	jsonDomainData, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"DOM:"+name, ".")
 
 	if jsonDomainData != "" {
 		domainDataObj := convertJsonToDomainData(jsonDomainData)
@@ -463,7 +499,7 @@ func updateDomainData(name string, mnc string, mcc string, cellId string) {
 		domainData.Mnc = mnc
 		domainData.Mcc = mcc
 		domainData.CellId = cellId
-		_ = rc.JSONSetEntry(baseKey+"DOM:"+name, ".", convertDomainDataToJson(&domainData))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"DOM:"+name, ".", convertDomainDataToJson(&domainData))
 	}
 }
 
@@ -1104,7 +1140,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -1188,7 +1224,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -1264,7 +1300,7 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -1310,7 +1346,7 @@ func checkMrPeriodicTrigger(trigger int32) {
 	//only check if there is at least one subscription
 	if len(mrSubscriptionMap) >= 1 {
 		keyName := baseKey + "UE:*"
-		err := rc.ForEachJSONEntry(keyName, checkMrNotificationRegisteredSubscriptions, int32(trigger))
+		err := rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, checkMrNotificationRegisteredSubscriptions, int32(trigger))
 		if err != nil {
 			log.Error(err.Error())
 			return
@@ -1362,7 +1398,7 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return nil
 				}
@@ -1390,7 +1426,7 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 						notif.Rsrp = poa.Rsrp
 						notif.Rsrq = poa.Rsrq
 					} else {
-						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
+						jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
 							log.Info("POA cannot be found in: ", baseKey+"POA:"+poa.Name)
 							continue
@@ -1434,7 +1470,7 @@ func checkNrMrPeriodicTrigger(trigger int32) {
 	//only check if there is at least one subscription
 	if len(nrMrSubscriptionMap) >= 1 {
 		keyName := baseKey + "UE:*"
-		err := rc.ForEachJSONEntry(keyName, checkNrMrNotificationRegisteredSubscriptions, int32(trigger))
+		err := rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, checkNrMrNotificationRegisteredSubscriptions, int32(trigger))
 		if err != nil {
 			log.Error(err.Error())
 			return
@@ -1489,7 +1525,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			if match {
 
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return nil
 				}
@@ -1526,7 +1562,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						nrMeasRepUeNotificationSCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
 						notif.ServCellMeasInfo[0].SCell = &nrMeasRepUeNotificationSCell
 					} else {
-						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
+						jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
 							log.Info("POA cannot be found in: ", baseKey+"POA:"+poa.Name)
 							continue
@@ -1684,7 +1720,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
+	jsonRespDB, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
 
 	if jsonRespDB == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -1837,7 +1873,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		//registration
 		registerCc(&subscription, subsIdStr)
-		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertCellChangeSubscriptionToJson(&subscription))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertCellChangeSubscriptionToJson(&subscription))
 
 		jsonResponse, err = json.Marshal(subscription)
 
@@ -1868,7 +1904,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		//registration
 		registerRe(&subscription, subsIdStr)
-		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabEstSubscriptionToJson(&subscription))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabEstSubscriptionToJson(&subscription))
 
 		jsonResponse, err = json.Marshal(subscription)
 
@@ -1899,7 +1935,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		//registration
 		registerRr(&subscription, subsIdStr)
-		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabRelSubscriptionToJson(&subscription))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabRelSubscriptionToJson(&subscription))
 
 		jsonResponse, err = json.Marshal(subscription)
 
@@ -1930,7 +1966,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		//registration
 		registerMr(&subscription, subsIdStr)
-		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
 
 		jsonResponse, err = json.Marshal(subscription)
 
@@ -1961,7 +1997,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		//registration
 		registerNrMr(&subscription, subsIdStr)
-		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertNrMeasRepUeSubscriptionToJson(&subscription))
+		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertNrMeasRepUeSubscriptionToJson(&subscription))
 
 		jsonResponse, err = json.Marshal(subscription)
 
@@ -2048,7 +2084,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		//registration
 		if isSubscriptionIdRegisteredCc(subsIdStr) {
 			registerCc(&subscription, subsIdStr)
-			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertCellChangeSubscriptionToJson(&subscription))
+			_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertCellChangeSubscriptionToJson(&subscription))
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
@@ -2070,7 +2106,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		//registration
 		if isSubscriptionIdRegisteredRe(subsIdStr) {
 			registerRe(&subscription, subsIdStr)
-			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabEstSubscriptionToJson(&subscription))
+			_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabEstSubscriptionToJson(&subscription))
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
@@ -2092,7 +2128,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		//registration
 		if isSubscriptionIdRegisteredRr(subsIdStr) {
 			registerRr(&subscription, subsIdStr)
-			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabRelSubscriptionToJson(&subscription))
+			_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabRelSubscriptionToJson(&subscription))
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
@@ -2114,7 +2150,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		//registration
 		if isSubscriptionIdRegisteredMr(subsIdStr) {
 			registerMr(&subscription, subsIdStr)
-			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
+			_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
@@ -2136,7 +2172,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		//registration
 		if isSubscriptionIdRegisteredNrMr(subsIdStr) {
 			registerNrMr(&subscription, subsIdStr)
-			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertNrMeasRepUeSubscriptionToJson(&subscription))
+			_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertNrMeasRepUeSubscriptionToJson(&subscription))
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
@@ -2163,7 +2199,7 @@ func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	subIdParamStr := vars["subscriptionId"]
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
+	jsonRespDB, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
 	if jsonRespDB == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -2379,7 +2415,7 @@ func deregisterNrMr(subsIdStr string, mutexTaken bool) {
 
 func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
-	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
+	err := rc[RNIS_DB_CONNECTOR_INDEX].JSONDelEntry(keyPrefix+":"+subsId, ".")
 	deregisterCc(subsId, mutexTaken)
 	deregisterRe(subsId, mutexTaken)
 	deregisterRr(subsId, mutexTaken)
@@ -2441,7 +2477,7 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 			meAppName = strings.TrimSpace(meAppName)
 
 			//get from DB
-			jsonAppEcgiInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+meAppName, ".")
+			jsonAppEcgiInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"APP:"+meAppName, ".")
 
 			if jsonAppEcgiInfo != "" {
 
@@ -2461,7 +2497,7 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 	} else {
 	*/
 	keyName := baseKey + "DOM:*"
-	err := rc.ForEachJSONEntry(keyName, populatePlmnInfo, &response)
+	err := rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, populatePlmnInfo, &response)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2554,7 +2590,7 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 	//get from DB
 	//loop through each UE
 	keyName := baseKey + "UE:*"
-	err := rc.ForEachJSONEntry(keyName, populateL2Meas, &l2MeasData)
+	err := rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, populateL2Meas, &l2MeasData)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2563,7 +2599,7 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 
 	//loop through each POA
 	keyName = baseKey + "POA:*"
-	err = rc.ForEachJSONEntry(keyName, populateL2MeasPOA, &l2MeasData)
+	err = rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, populateL2MeasPOA, &l2MeasData)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2746,9 +2782,16 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 		cellIndex = len(data.l2Meas.CellInfo) - 1
 	}
 
+	//update cellInfo counters
 	//need to do a qci mapping... since qci can only be 80 for now, using the one that correlates to that
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeDlNongbrCell++
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeUlNongbrCell++
+
+	//update cellInfo pdr
+
+	//update ueInfo delay
+	//delay is the latency between air interface (POA<->UE)
+	//parentPoaName = ueData.ParentPoaName
 
 	return nil
 }
@@ -2824,7 +2867,7 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 	//get from DB
 	//loop through each UE
 	keyName := baseKey + "UE:*"
-	err := rc.ForEachJSONEntry(keyName, populateRabInfo, &rabInfoData)
+	err := rc[RNIS_DB_CONNECTOR_INDEX].ForEachJSONEntry(keyName, populateRabInfo, &rabInfoData)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -3095,7 +3138,8 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 
 func cleanUp() {
 	log.Info("Terminate all")
-	rc.DBFlush(baseKey)
+	rc[RNIS_DB_CONNECTOR_INDEX].DBFlush(baseKey)
+        rc[DATA_DB_CONNECTOR_INDEX].DBFlush(baseKey)
 	nextSubscriptionIdAvailable = 1
 	nextAvailableErabId = 1
 

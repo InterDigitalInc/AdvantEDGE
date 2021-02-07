@@ -31,10 +31,10 @@ const moduleName string = "meep-rnis-sbi"
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	UeDataCb       func(string, string, string, string, string, bool, []string)
+	UeDataCb       func(string, string, string, string, string, bool, []string, int32, int32, int32, float64)
 	MeasInfoCb     func(string, string, []string, []int32, []int32)
-	PoaInfoCb      func(string, string, string, string, string)
-	AppInfoCb      func(string, string, string)
+	PoaInfoCb      func(string, string, string, string, string, int32, int32, int32, float64)
+	AppInfoCb      func(string, string, string, int32, int32, int32, float64)
 	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -47,10 +47,10 @@ type RnisSbi struct {
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
-	updateUeDataCB       func(string, string, string, string, string, bool, []string)
+	updateUeDataCB       func(string, string, string, string, string, bool, []string, int32, int32, int32, float64)
 	updateMeasInfoCB     func(string, string, []string, []int32, []int32)
-	updatePoaInfoCB      func(string, string, string, string, string)
-	updateAppInfoCB      func(string, string, string)
+	updatePoaInfoCB      func(string, string, string, string, string, int32, int32, int32, float64)
+	updateAppInfoCB      func(string, string, string, int32, int32, int32, float64)
 	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
@@ -269,14 +269,28 @@ func processActiveScenarioUpdate() {
 						cellId = ""
 					}
 
-					node := sbi.activeModel.GetNodeChild(name)
+					node := sbi.activeModel.GetNode(name)
+					ue := node.(*dataModel.PhysicalLocation)
+
+					node = sbi.activeModel.GetNodeChild(name)
 					apps := node.(*[]dataModel.Process)
 
 					var appNames []string
 					for _, process := range *apps {
 						appNames = append(appNames, process.Name)
 					}
-					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames)
+					latency := int32(0)
+					ploss := float64(0.0)
+					throughputDL := int32(0)
+					throughputUL := int32(0)
+					if ue.NetChar != nil {
+						latency = ue.NetChar.Latency
+						ploss = ue.NetChar.PacketLoss
+						throughputDL = ue.NetChar.ThroughputDl
+                                                throughputUL = ue.NetChar.ThroughputUl
+					}
+
+					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames, latency, throughputUL, throughputDL, ploss)
 				}
 			}
 		}
@@ -292,7 +306,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(prevUeName, "", "", "", "", false, nil)
+			sbi.updateUeDataCB(prevUeName, "", "", "", "", false, nil, 0, 0, 0, 0.0)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -313,7 +327,18 @@ func processActiveScenarioUpdate() {
 				continue
 			}
 			appNames = append(appNames, appName)
-			sbi.updateAppInfoCB(appName, pl.Type_, pl.Name)
+                        latency := int32(0)
+                        ploss := float64(0.0)
+                        throughputDL := int32(0)
+                        throughputUL := int32(0)
+                        if pl.NetChar != nil {
+	                        latency = pl.NetChar.Latency
+                                ploss = pl.NetChar.PacketLoss
+                                throughputDL = pl.NetChar.ThroughputDl
+                                throughputUL = pl.NetChar.ThroughputUl
+                        }
+
+			sbi.updateAppInfoCB(appName, pl.Type_, pl.Name, latency, throughputUL, throughputDL, ploss)
 		}
 	}
 
@@ -327,7 +352,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateAppInfoCB(prevApp, "", "")
+			sbi.updateAppInfoCB(prevApp, "", "", 0, 0, 0, 0.0)
 			log.Info("App removed : ", prevApp)
 		}
 	}
@@ -362,7 +387,18 @@ func processActiveScenarioUpdate() {
 					cellId = nl.Poa5GConfig.CellId
 				}
 
-				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId)
+                                latency := int32(0)
+                                ploss := float64(0.0)
+                                throughputDL := int32(0)
+                                throughputUL := int32(0)
+                                if nl.NetChar != nil {
+                                       latency = nl.NetChar.Latency
+                                       ploss = nl.NetChar.PacketLoss
+                                       throughputDL = nl.NetChar.ThroughputDl
+                                       throughputUL = nl.NetChar.ThroughputUl
+                                }
+
+				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId, latency, throughputUL, throughputDL, ploss)
 			}
 		}
 	}
