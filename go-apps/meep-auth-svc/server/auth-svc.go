@@ -50,6 +50,8 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
 	"github.com/lkysow/go-gitlab"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/roymx/viper"
 	"golang.org/x/oauth2"
 )
@@ -139,6 +141,43 @@ var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 // Auth Service
 var authSvc *AuthSvc
+
+// Metrics
+var (
+	metricAuthRequests = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "auth_svc_http_request_total",
+		Help: "The total number of http requests authenticated",
+	}, []string{"svc", "method", "path", "resp"})
+	metricSessionLogin = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "auth_svc_session_login_total",
+		Help: "The total number of session login attempts",
+	}, []string{"type"})
+	metricSessionLogout = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "auth_svc_session_logout_total",
+		Help: "The total number of session logout attempts",
+	})
+	metricSessionSuccess = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "auth_svc_session_success_total",
+		Help: "The total number of successful sessions",
+	})
+	metricSessionFail = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "auth_svc_session_fail_total",
+		Help: "The total number of failed session login attempts",
+	}, []string{"type"})
+	metricSessionTimeout = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "auth_svc_session_timeout_total",
+		Help: "The total number of timed out sessions",
+	})
+	metricSessionActive = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "auth_svc_session_active",
+		Help: "The number of active sessions",
+	})
+	metricSessionDuration = promauto.NewHistogram(prometheus.HistogramOpts{
+		Name:    "auth_svc_session_duration",
+		Help:    "A histogram of session durations",
+		Buckets: prometheus.LinearBuckets(20, 20, 6),
+	})
+)
 
 func Init() (err error) {
 
@@ -443,8 +482,14 @@ func sessionTimeoutCb(session *sm.Session) {
 	metric.Sandbox = session.Sandbox
 	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeTimeout, metric)
 
+	metricSessionTimeout.Inc()
+
 	// Destroy session sandbox
-	_, _ = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+	_, err := authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+	if err == nil {
+		metricSessionActive.Dec()
+		metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())
+	}
 }
 
 // Generate a random state string
@@ -515,12 +560,14 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	svcName := query.Get("svc")
 	// sboxName := query.Get("sbox")
 	var sboxName string
+	var path string
 
 	// Get original request URL & method
 	originalUrl := r.Header.Get("X-Original-URL")
 	originalMethod := r.Header.Get("X-Original-Method")
 	if originalUrl == "" || originalMethod == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -530,6 +577,7 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	r.URL, err = url.ParseRequestURI(originalUrl)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -540,6 +588,9 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		routeName := match.Route.GetName()
 		sboxName = match.Vars["sbox"]
 		log.Debug("routeName: ", routeName, " sboxName: ", sboxName)
+
+		// Get path template
+		path, _ = match.Route.GetPathTemplate()
 
 		// Check service-specific routes
 		if svcName != "" {
@@ -560,6 +611,7 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	// Verify permission
 	if permission == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -569,12 +621,14 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		// break
 	case sm.ModeBlock:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	case sm.ModeVerify:
 		// Retrieve user session, if any
 		session, err := authSvc.sessionMgr.GetSessionStore().Get(r)
 		if err != nil || session == nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
@@ -582,28 +636,33 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		role := session.Role
 		if role == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 		access := permission.Roles[role]
 		if access != sm.AccessGranted {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
 		// For non-admin users, verify session sandbox matches service sandbox, if any
 		if session.Role != sm.RoleAdmin && sboxName != "" && sboxName != session.Sandbox {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
 	default:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
 	// Allow request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusOK)).Inc()
 }
 
 func asAuthorize(w http.ResponseWriter, r *http.Request) {
@@ -622,6 +681,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		metricSessionFail.WithLabelValues("OAuth").Inc()
 		return
 	}
 
@@ -634,6 +694,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
 	}
 	metric.Provider = provider
@@ -648,6 +709,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
 	}
 
@@ -658,6 +720,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		metricSessionFail.WithLabelValues("OAuth").Inc()
 		return
 	}
 
@@ -672,6 +735,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			metric.Description = err.Error()
 			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
 		}
 		user, _, err := client.Users.Get(context.Background(), "")
@@ -680,6 +744,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			metric.Description = err.Error()
 			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitHub user ID"), http.StatusFound)
+			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
 		}
 		userId = *user.Login
@@ -692,6 +757,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			metric.Description = err.Error()
 			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
 		}
 
@@ -703,6 +769,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 				metric.Description = err.Error()
 				_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 				http.Redirect(w, r, getErrUrl("Failed to set GitLab API base url"), http.StatusFound)
+				metricSessionFail.WithLabelValues("OAuth").Inc()
 				return
 			}
 		}
@@ -713,6 +780,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			metric.Description = err.Error()
 			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitLab user ID"), http.StatusFound)
+			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
 		}
 		userId = user.Username
@@ -721,12 +789,13 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	metric.User = userId
 
 	// Start user session
-	sandboxName, err, errCode := startSession(provider, userId, w, r)
+	sandboxName, isNew, userRole, err, errCode := startSession(provider, userId, w, r)
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), errCode)
+		metricSessionFail.WithLabelValues("Session").Inc()
 		return
 	}
 
@@ -734,12 +803,17 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
 
 	// Redirect user to sandbox
-	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId, http.StatusFound)
+	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
+	metricSessionSuccess.Inc()
+	if isNew {
+		metricSessionActive.Inc()
+	}
 }
 
 func asLogin(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- OAUTH LOGIN -----")
 	var metric ms.SessionMetric
+	metricSessionLogin.WithLabelValues("OAuth").Inc()
 
 	// Retrieve query parameters
 	query := r.URL.Query()
@@ -754,6 +828,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
 	}
 
@@ -764,6 +839,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 		metric.Description = err.Error()
 		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
 	}
 
@@ -788,6 +864,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 func asLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
 	var metric ms.SessionMetric
+	metricSessionLogin.WithLabelValues("Basic").Inc()
 
 	// Get form data
 	username := r.FormValue("username")
@@ -810,7 +887,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start user session
-	sandboxName, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
+	sandboxName, isNew, _, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
@@ -821,6 +898,9 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 
 	metric.Sandbox = sandboxName
 	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
+	if isNew {
+		metricSessionActive.Inc()
+	}
 
 	// Prepare response
 	var sandbox dataModel.Sandbox
@@ -841,7 +921,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Retrieve existing user session or create a new one
-func startSession(provider string, username string, w http.ResponseWriter, r *http.Request) (sandboxName string, err error, code int) {
+func startSession(provider string, username string, w http.ResponseWriter, r *http.Request) (sandboxName string, isNew bool, userRole string, err error, code int) {
 
 	// Get existing session by user name, if any
 	sessionStore := authSvc.sessionMgr.GetSessionStore()
@@ -851,7 +931,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		count := sessionStore.GetCount()
 		if count >= authSvc.maxSessions {
 			err = errors.New("Maximum session count exceeded")
-			return "", err, http.StatusServiceUnavailable
+			return "", false, "", err, http.StatusServiceUnavailable
 		}
 
 		// Get requested sandbox name & role from user profile, if any
@@ -867,13 +947,13 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		if sandboxName == "" {
 			sandbox, _, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandbox(context.TODO(), sandboxConfig)
 			if err != nil {
-				return "", err, http.StatusInternalServerError
+				return "", false, "", err, http.StatusInternalServerError
 			}
 			sandboxName = sandbox.Name
 		} else {
 			_, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandboxWithName(context.TODO(), sandboxName, sandboxConfig)
 			if err != nil {
-				return "", err, http.StatusInternalServerError
+				return "", false, "", err, http.StatusInternalServerError
 			}
 		}
 
@@ -884,9 +964,11 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		session.Provider = provider
 		session.Sandbox = sandboxName
 		session.Role = role
+		isNew = true
 	} else {
 		sandboxName = session.Sandbox
 	}
+	userRole = session.Role
 
 	// Set session
 	err, code = sessionStore.Set(session, w, r)
@@ -896,14 +978,16 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		if session.ID == "" {
 			_, _ = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), sandboxName)
 		}
-		return "", err, code
+		return "", false, "", err, code
 	}
-	return sandboxName, nil, http.StatusOK
+	return sandboxName, isNew, userRole, nil, http.StatusOK
 }
 
 func asLogout(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
 	var metric ms.SessionMetric
+	sandboxDeleted := false
+	metricSessionLogout.Inc()
 
 	// Get existing session
 	sessionStore := authSvc.sessionMgr.GetSessionStore()
@@ -913,7 +997,10 @@ func asLogout(w http.ResponseWriter, r *http.Request) {
 		metric.User = session.Username
 		metric.Sandbox = session.Sandbox
 		// Delete sandbox
-		_, _ = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+		_, err = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+		if err == nil {
+			sandboxDeleted = true
+		}
 	}
 
 	// Delete session
@@ -925,6 +1012,10 @@ func asLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogout, metric)
+	if sandboxDeleted {
+		metricSessionActive.Dec()
+		metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())
+	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

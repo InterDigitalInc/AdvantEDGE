@@ -34,6 +34,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/gorilla/handlers"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func init() {
@@ -79,6 +80,13 @@ func main() {
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))
+		run = false
+	}()
+
+	go func() {
+		// Initialize Metrics Endpoint
+		http.Handle("/metrics", promhttp.Handler())
+		log.Fatal(http.ListenAndServe(":9000", nil))
 		run = false
 	}()
 
