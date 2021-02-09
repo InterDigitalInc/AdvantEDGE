@@ -2236,8 +2236,6 @@ func TestSbi(t *testing.T) {
 
 	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poaName, ".")
 	if string(jsonInfo) != expectedPoaInfoStr {
-		log.Info("SIMON  ", string(jsonInfo))
-		log.Info("SIMON2 ", expectedPoaInfoStr)
 		t.Fatalf("Failed to get expected response")
 	}
 
