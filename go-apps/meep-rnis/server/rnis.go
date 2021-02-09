@@ -40,6 +40,7 @@ import (
 
 const rnisBasePath = "/rni/v2/"
 const rnisKey string = "rnis:"
+const msKey string = "metric-store:network:"
 const logModuleRNIS string = "meep-rnis"
 
 //const module string = "rnis"
@@ -84,6 +85,7 @@ var hostUrl *url.URL
 var sandboxName string
 var basePath string
 var baseKey string
+var msBaseKey string
 var mutex sync.Mutex
 
 var expiryTicker *time.Ticker
@@ -107,6 +109,7 @@ type RabInfoData struct {
 }
 
 type L2MeasData struct {
+	queryAppInsId      string
 	queryCellIds       []string
 	queryIpv4Addresses []string
 	l2Meas             *L2Meas
@@ -121,10 +124,10 @@ type UeData struct {
 	ParentPoaName string       `json:"parentPoaName"`
 	InRangePoas   []InRangePoa `json:"inRangePoas"`
 	AppNames      []string     `json:"appNames"`
-        Latency       int32       `json:"latency"`
-        ThroughputUL  int32       `json:"throughputUL"`
-        ThroughputDL  int32       `json:"throughputDL"`
-        PacketLoss    float64       `json:"packetLoss"`
+	Latency       int32        `json:"latency"`
+	ThroughputUL  int32        `json:"throughputUL"`
+	ThroughputDL  int32        `json:"throughputDL"`
+	PacketLoss    float64      `json:"packetLoss"`
 }
 
 type InRangePoa struct {
@@ -133,23 +136,31 @@ type InRangePoa struct {
 	Rsrq int32  `json:"rsrq"`
 }
 
+type SumAppInfo struct {
+	AppName       string `json:"name"`
+	UlTraffic     int32  `json:"ul"`
+	DlTraffic     int32  `json:"dl"`
+	UlTrafficLoss int32  `json:"ulos"`
+	DlTrafficLoss int32  `json:"dlos"`
+}
+
 type PoaInfo struct {
-	Type  string `json:"type"`
-	Ecgi  Ecgi   `json:"ecgi"`
-	Nrcgi NRcgi  `json:"nrcgi"`
-        Latency       int32       `json:"latency"`
-        ThroughputUL  int32       `json:"throughputUL"`
-        ThroughputDL  int32       `json:"throughputDL"`
-        PacketLoss    float64       `json:"packetLoss"`
+	Type         string  `json:"type"`
+	Ecgi         Ecgi    `json:"ecgi"`
+	Nrcgi        NRcgi   `json:"nrcgi"`
+	Latency      int32   `json:"latency"`
+	ThroughputUL int32   `json:"throughputUL"`
+	ThroughputDL int32   `json:"throughputDL"`
+	PacketLoss   float64 `json:"packetLoss"`
 }
 
 type AppInfo struct {
-	ParentType string `json:"parentType"`
-	ParentName string `json:"parentName"`
-        Latency       int32       `json:"latency"`
-        ThroughputUL  int32       `json:"throughputUL"`
-        ThroughputDL  int32       `json:"throughputDL"`
-        PacketLoss    float64       `json:"packetLoss"`
+	ParentType   string  `json:"parentType"`
+	ParentName   string  `json:"parentName"`
+	Latency      int32   `json:"latency"`
+	ThroughputUL int32   `json:"throughputUL"`
+	ThroughputDL int32   `json:"throughputDL"`
+	PacketLoss   float64 `json:"packetLoss"`
 }
 
 type DomainData struct {
@@ -198,7 +209,9 @@ func Init() (err error) {
 	basePath = "/" + sandboxName + rnisBasePath
 
 	// Get base store key
-	baseKey = dkm.GetKeyRoot(sandboxName) + rnisKey
+	sandboxNameRoot := dkm.GetKeyRoot(sandboxName)
+	baseKey = sandboxNameRoot + rnisKey
+	msBaseKey = sandboxNameRoot + msKey
 
 	// Connect to Redis DB (RNIS_DB)
 	rc[RNIS_DB_CONNECTOR_INDEX], err = redis.NewConnector(redisAddr, RNIS_DB)
@@ -209,13 +222,13 @@ func Init() (err error) {
 	_ = rc[RNIS_DB_CONNECTOR_INDEX].DBFlush(baseKey)
 	log.Info("Connected to Redis DB, RNI service table")
 
-        // Connect to Redis DB (DATA_DB)
-        rc[DATA_DB_CONNECTOR_INDEX], err = redis.NewConnector(redisAddr, DATA_DB)
-        if err != nil {
-                log.Error("Failed connection to Redis DB (DATA_DB). Error: ", err)
-                return err
-        }
-        log.Info("Connected to Redis DB, data table")
+	// Connect to Redis DB (DATA_DB)
+	rc[DATA_DB_CONNECTOR_INDEX], err = redis.NewConnector(redisAddr, DATA_DB)
+	if err != nil {
+		log.Error("Failed connection to Redis DB (DATA_DB). Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB, data table")
 
 	reInit()
 
@@ -308,7 +321,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId s
 	ueData.AppNames = appNames
 	ueData.Latency = latency
 	ueData.ThroughputUL = throughputUL
-        ueData.ThroughputDL = throughputDL
+	ueData.ThroughputDL = throughputDL
 	ueData.PacketLoss = packetLoss
 
 	oldPlmn := new(Plmn)
@@ -416,10 +429,10 @@ func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId s
 
 	var poaInfo PoaInfo
 	poaInfo.Type = poaType
-        poaInfo.Latency = latency
-        poaInfo.ThroughputUL = throughputUL
-        poaInfo.ThroughputDL = throughputDL
-        poaInfo.PacketLoss = packetLoss
+	poaInfo.Latency = latency
+	poaInfo.ThroughputUL = throughputUL
+	poaInfo.ThroughputDL = throughputDL
+	poaInfo.PacketLoss = packetLoss
 
 	switch poaType {
 	case poaType4G:
@@ -462,10 +475,10 @@ func updateAppInfo(name string, parentType string, parentName string, latency in
 	var appInfo AppInfo
 	appInfo.ParentType = parentType
 	appInfo.ParentName = parentName
-        appInfo.Latency = latency
-        appInfo.ThroughputUL = throughputUL
-        appInfo.ThroughputDL = throughputDL
-        appInfo.PacketLoss = packetLoss
+	appInfo.Latency = latency
+	appInfo.ThroughputUL = throughputUL
+	appInfo.ThroughputDL = throughputDL
+	appInfo.PacketLoss = packetLoss
 
 	if parentType == plTypeUE {
 		_ = rc[RNIS_DB_CONNECTOR_INDEX].JSONSetEntry(baseKey+"APP:"+name+":"+parentName, ".", convertAppInfoToJson(&appInfo))
@@ -2556,6 +2569,7 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 	q := u.Query()
 	//meAppName := q.Get("app_ins_id")
 
+	l2MeasData.queryAppInsId = q.Get("app_ins_id")
 	l2MeasData.queryCellIds = q["cell_id"]
 	l2MeasData.queryIpv4Addresses = q["ue_ipv4_address"]
 
@@ -2620,7 +2634,7 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func populateL2MeasPOA(key string, jsonInfo string, l2MeasData interface{}) error {
-	// Get query params & userlist from user data
+	// et query params & userlist from user data
 	data := l2MeasData.(*L2MeasData)
 	if data == nil || data.l2Meas == nil {
 		return errors.New("l2Meas not found in l2MeasData")
@@ -2730,15 +2744,16 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 	found := false
 
 	//find if cellUeInfo already exists
-
+	var cellUeIndex int
 	assocId := new(AssociateId)
 	assocId.Type_ = 1 //UE_IPV4_ADDRESS
 	subKeys := strings.Split(key, ":")
 	assocId.Value = subKeys[len(subKeys)-1]
 
-	for _, currentCellUeInfo := range data.l2Meas.CellUEInfo {
+	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
 		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
 			found = true
+			cellUeIndex = index
 		}
 	}
 	if !found {
@@ -2754,6 +2769,7 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 		newCellUeInfo.AssociateId = assocId
 
 		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
+		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
 	}
 
 	//find if cellInfo already exists
@@ -2782,16 +2798,128 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 		cellIndex = len(data.l2Meas.CellInfo) - 1
 	}
 
+	jsonPoaData, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+ueData.ParentPoaName, ".")
+
+	latency := int32(0)
+	poaPacketLoss := int32(0)
+	if jsonPoaData != "" {
+		poaDataObj := convertJsonToPoaInfo(jsonPoaData)
+		if poaDataObj != nil {
+			latency = poaDataObj.Latency
+			ploss := poaDataObj.PacketLoss
+			//return between 10^-4 t 10^-6
+			ploss = ploss * 1000000 //10^-6
+			if ploss > 100 {
+				poaPacketLoss = 100
+			} else {
+				poaPacketLoss = int32(ploss)
+			}
+		}
+	}
+
+	ueStats := SumAppInfo{data.queryAppInsId, 0, 0, 0, 0}
+
+	//loop through each APP to get throuput
+	for _, appName := range ueData.AppNames {
+
+		//we calculate stats for the queried app only or for all if none provided
+		if appName != data.queryAppInsId && data.queryAppInsId != "" {
+			continue
+		}
+		keyName := msBaseKey + "*" + appName
+		appStats := SumAppInfo{appName, 0, 0, 0, 0}
+
+		err = rc[DATA_DB_CONNECTOR_INDEX].ForEachEntry(keyName, calculateSum, &appStats)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+		ueStats.DlTraffic += appStats.DlTraffic
+		ueStats.DlTrafficLoss += appStats.DlTrafficLoss
+
+		ueStats.UlTraffic += appStats.UlTraffic
+		ueStats.UlTrafficLoss += appStats.UlTrafficLoss
+	}
+
 	//update cellInfo counters
 	//need to do a qci mapping... since qci can only be 80 for now, using the one that correlates to that
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeDlNongbrCell++
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeUlNongbrCell++
-
-	//update cellInfo pdr
+	data.l2Meas.CellInfo[cellIndex].DlNongbrPdrCell = poaPacketLoss
+	data.l2Meas.CellInfo[cellIndex].UlNongbrPdrCell = poaPacketLoss
 
 	//update ueInfo delay
 	//delay is the latency between air interface (POA<->UE)
-	//parentPoaName = ueData.ParentPoaName
+	data.l2Meas.CellUEInfo[cellUeIndex].DlNongbrDelayUe = latency //latency from the air interface only (POA)
+	data.l2Meas.CellUEInfo[cellUeIndex].UlNongbrDelayUe = latency
+	data.l2Meas.CellUEInfo[cellUeIndex].DlNongbrDataVolumeUe = ueStats.DlTraffic / 1000 //kbits
+	data.l2Meas.CellUEInfo[cellUeIndex].UlNongbrDataVolumeUe = ueStats.UlTraffic / 1000 //kbits
+	data.l2Meas.CellUEInfo[cellUeIndex].DlNongbrThroughputUe = ueStats.DlTraffic / 1000 //kbits/s
+	data.l2Meas.CellUEInfo[cellUeIndex].UlNongbrThroughputUe = ueStats.UlTraffic / 1000 //kbits/s
+
+	plossFloat := float32(0.0)
+	ploss := int32(0)
+	if ueStats.DlTraffic != 0 {
+		plossFloat = float32((float32(ueStats.DlTrafficLoss) / float32(ueStats.DlTrafficLoss+ueStats.DlTraffic)))
+		ploss = int32(1000000 * plossFloat)
+
+		if ploss > 100 {
+			ploss = 100
+		}
+	}
+	data.l2Meas.CellUEInfo[cellUeIndex].DlNongbrPdrUe = ploss
+
+	ploss = int32(0)
+	if ueStats.UlTraffic != 0 {
+		plossFloat = float32((float32(ueStats.UlTrafficLoss) / float32(ueStats.UlTrafficLoss+ueStats.UlTraffic)))
+		ploss = int32(1000000 * plossFloat)
+
+		if ploss > 100 {
+			ploss = 100
+		}
+	}
+
+	data.l2Meas.CellUEInfo[cellUeIndex].UlNongbrPdrUe = ploss
+
+	return nil
+}
+
+func calculateSum(key string, fields map[string]string, appStats interface{}) error {
+	// Get query params & userlist from user data
+	data := appStats.(*SumAppInfo)
+	if data == nil {
+		return errors.New("Uninitialised object")
+	}
+
+	//downlink direction
+	tput, _ := strconv.ParseFloat(fields["dl"], 32)
+	data.DlTraffic += int32(1000000 * tput)
+
+	ploss, _ := strconv.ParseFloat(fields["dlos"], 32)
+	//traffic lost because of packet drop
+	//details
+	//a = float32(ploss/100)
+	//b = float32(1.0 - a)
+	//c = float32(1000000 * tput)
+	//d = float32(a*c/b)
+	//e = int32(d)
+
+	data.DlTrafficLoss += int32(float32(float32(ploss/100) * float32(1000000*tput) / float32(1.0-float32(ploss/100))))
+
+	//uplink direction
+	tput, _ = strconv.ParseFloat(fields["ul"], 32)
+	data.UlTraffic += int32(1000000 * tput)
+
+	ploss, _ = strconv.ParseFloat(fields["ulos"], 32)
+	//traffic lost because of packet drop
+	//details
+	//a = float32(ploss/100)
+	//b = float32(1.0 - a)
+	//c = float32(1000000 * tput)
+	//d = float32(a*c/b)
+	//e = int32(d)
+
+	data.UlTrafficLoss += int32(float32(float32(ploss/100) * float32(1000000*tput) / float32(1.0-float32(ploss/100))))
 
 	return nil
 }
@@ -3139,7 +3267,7 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 func cleanUp() {
 	log.Info("Terminate all")
 	rc[RNIS_DB_CONNECTOR_INDEX].DBFlush(baseKey)
-        rc[DATA_DB_CONNECTOR_INDEX].DBFlush(baseKey)
+	rc[DATA_DB_CONNECTOR_INDEX].DBFlush(baseKey)
 	nextSubscriptionIdAvailable = 1
 	nextAvailableErabId = 1
 

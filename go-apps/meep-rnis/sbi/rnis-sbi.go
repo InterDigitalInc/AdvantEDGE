@@ -287,7 +287,7 @@ func processActiveScenarioUpdate() {
 						latency = ue.NetChar.Latency
 						ploss = ue.NetChar.PacketLoss
 						throughputDL = ue.NetChar.ThroughputDl
-                                                throughputUL = ue.NetChar.ThroughputUl
+						throughputUL = ue.NetChar.ThroughputUl
 					}
 
 					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames, latency, throughputUL, throughputDL, ploss)
@@ -327,16 +327,16 @@ func processActiveScenarioUpdate() {
 				continue
 			}
 			appNames = append(appNames, appName)
-                        latency := int32(0)
-                        ploss := float64(0.0)
-                        throughputDL := int32(0)
-                        throughputUL := int32(0)
-                        if pl.NetChar != nil {
-	                        latency = pl.NetChar.Latency
-                                ploss = pl.NetChar.PacketLoss
-                                throughputDL = pl.NetChar.ThroughputDl
-                                throughputUL = pl.NetChar.ThroughputUl
-                        }
+			latency := int32(0)
+			ploss := float64(0.0)
+			throughputDL := int32(0)
+			throughputUL := int32(0)
+			if pl.NetChar != nil {
+				latency = pl.NetChar.Latency
+				ploss = pl.NetChar.PacketLoss
+				throughputDL = pl.NetChar.ThroughputDl
+				throughputUL = pl.NetChar.ThroughputUl
+			}
 
 			sbi.updateAppInfoCB(appName, pl.Type_, pl.Name, latency, throughputUL, throughputDL, ploss)
 		}
@@ -387,16 +387,16 @@ func processActiveScenarioUpdate() {
 					cellId = nl.Poa5GConfig.CellId
 				}
 
-                                latency := int32(0)
-                                ploss := float64(0.0)
-                                throughputDL := int32(0)
-                                throughputUL := int32(0)
-                                if nl.NetChar != nil {
-                                       latency = nl.NetChar.Latency
-                                       ploss = nl.NetChar.PacketLoss
-                                       throughputDL = nl.NetChar.ThroughputDl
-                                       throughputUL = nl.NetChar.ThroughputUl
-                                }
+				latency := int32(0)
+				ploss := float64(0.0)
+				throughputDL := int32(0)
+				throughputUL := int32(0)
+				if nl.NetChar != nil {
+					latency = nl.NetChar.Latency
+					ploss = nl.NetChar.PacketLoss
+					throughputDL = nl.NetChar.ThroughputDl
+					throughputUL = nl.NetChar.ThroughputUl
+				}
 
 				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId, latency, throughputUL, throughputDL, ploss)
 			}

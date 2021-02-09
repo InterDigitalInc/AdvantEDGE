@@ -2181,18 +2181,15 @@ func TestSbi(t *testing.T) {
 	var expectedUeDataStr [2]string
 	var expectedUeData [2]UeData
 
-	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, "", nil, nil, 0, 1000, 1000, 0}
-	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, "", nil, nil, 0, 1000, 1000, 0}
+	expectedAppNames := []string{"ue1-iperf"}
+	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaName, nil, expectedAppNames, 0, 1000, 1000, 0.0}
+	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaNameAfter, nil, expectedAppNames, 0, 1000, 1000, 0.0}
 
-	var expectedAppEcgiStr [2]string
-	var expectedAppEcgi [2]Ecgi
-	expectedAppEcgi[INITIAL] = Ecgi{"", &Plmn{"123", "456"}, 0, 1000, 1000, 0}
-	expectedAppEcgi[UPDATED] = Ecgi{"", &Plmn{"123", "456"}, 0, 1000, 1000, 0}
+	var expectedAppInfoStr string
+	expectedAppInfo := AppInfo{"EDGE", "zone1-edge1", 0, 1000, 1000, 0}
 
-	var expectedPoaInfoStr [2]string
-	var expectedPoaInfo [2]PoaInfo
-	expectedPoaInfo[INITIAL] = PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}, 0, 1000, 1000, 0}
-	expectedPoaInfo[UPDATED] = PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}, 0, 1000, 1000, 0}
+	var expectedPoaInfoStr string
+	expectedPoaInfo := PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}, 1, 1000, 1000, 0}
 
 	j, err := json.Marshal(expectedUeData[INITIAL])
 	if err != nil {
@@ -2227,37 +2224,28 @@ func TestSbi(t *testing.T) {
 
 	time.Sleep(1000 * time.Millisecond)
 
-	jsonEcgiInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeDataStr[INITIAL] {
+	jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	if string(jsonInfo) != expectedUeDataStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonEcgiInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"APP:"+appName, ".")
-	if string(jsonEcgiInfo) != expectedAppEcgiStr[INITIAL] {
+	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"APP:"+appName, ".")
+	if string(jsonInfo) != expectedAppInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonPoaInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poaName, ".")
-	if string(jsonPoaInfo) != expectedPoaInfoStr[INITIAL] {
+	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poaName, ".")
+	if string(jsonInfo) != expectedPoaInfoStr {
+		log.Info("SIMON  ", string(jsonInfo))
+		log.Info("SIMON2 ", expectedPoaInfoStr)
 		t.Fatalf("Failed to get expected response")
 	}
 
 	updateScenario("mobility1")
 	time.Sleep(1000 * time.Millisecond)
 
-	jsonEcgiInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeDataStr[UPDATED] {
-		fmt.Println("TEST FAILED but commented out, TODO")
-		//t.Fatalf("Failed to get expected response")
-	}
-
-	jsonEcgiInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"APP:"+appName, ".")
-	if string(jsonEcgiInfo) != expectedAppEcgiStr[UPDATED] {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	jsonPoaInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poaName, ".")
-	if string(jsonPoaInfo) != expectedPoaInfoStr[UPDATED] {
+	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	if string(jsonInfo) != expectedUeDataStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
