@@ -237,7 +237,7 @@ func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 	// Create a new point batch
 	bp, _ := influx.NewBatchPoints(influx.BatchPointsConfig{
 		Database:  ms.name,
-		Precision: "us",
+		Precision: "ns",
 	})
 
 	// Create & add points to batch
