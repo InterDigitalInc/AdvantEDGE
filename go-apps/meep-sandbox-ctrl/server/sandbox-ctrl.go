@@ -33,7 +33,7 @@ import (
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
@@ -52,7 +52,7 @@ type SandboxCtrl struct {
 	replayStore   *couch.Connector
 	modelCfg      mod.ModelCfg
 	activeModel   *mod.Model
-	metricStore   *ms.MetricStore
+	metricStore   *met.MetricStore
 	replayMgr     *replay.ReplayMgr
 	sandboxStore  *ss.SandboxStore
 }
@@ -144,7 +144,7 @@ func Init() (err error) {
 	log.Info("Connected to Replay DB")
 
 	// Connect to Metric Store
-	sbxCtrl.metricStore, err = ms.NewMetricStore("", sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
+	sbxCtrl.metricStore, err = met.NewMetricStore("", sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -603,7 +603,7 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	// Log successful event in metric store
 	eventJSONStr, err := json.Marshal(event)
 	if err == nil {
-		var metric ms.EventMetric
+		var metric met.EventMetric
 		metric.Event = string(eventJSONStr)
 		metric.Description = description
 		err = sbxCtrl.metricStore.SetEventMetric(eventType, metric)
@@ -889,8 +889,8 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var tmpMetricStore *ms.MetricStore
-	tmpMetricStore, err = ms.NewMetricStore(replayInfo.ScenarioName, sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
+	var tmpMetricStore *met.MetricStore
+	tmpMetricStore, err = met.NewMetricStore(replayInfo.ScenarioName, sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed creating tmp metricStore: ", err)
 		return

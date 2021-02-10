@@ -1,4 +1,4 @@
-module github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store
+module github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics
 
 go 1.12
 

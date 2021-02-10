@@ -27,13 +27,13 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 )
 
 var nextUniqueId int32 = 1
 var redisDBAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
-var metricStore *ms.MetricStore
+var metricStore *met.MetricStore
 var logComponent = ""
 
 const DirectionRX = "RX"
@@ -52,7 +52,7 @@ func ReInit(loggerName string, namespace string, currentStoreName string, redisA
 	if currentStoreName != "" {
 		//currentStoreName located in NBI of RNIS populated by SBI upon new activation
 		var err error
-		metricStore, err = ms.NewMetricStore(currentStoreName, namespace, influxAddr, redisAddr)
+		metricStore, err = met.NewMetricStore(currentStoreName, namespace, influxAddr, redisAddr)
 		if err != nil {
 			log.Error("Failed connection to Redis: ", err)
 			return err
@@ -88,7 +88,7 @@ func LogTx(url string, method string, body string, resp *http.Response, startTim
 		responseCode = strconv.Itoa(http.StatusInternalServerError)
 	}
 
-	var metric ms.HttpMetric
+	var metric met.HttpMetric
 	metric.LoggerName = logComponent
 	metric.Direction = DirectionTX
 	metric.Id = uniqueId
@@ -145,7 +145,7 @@ func LogRx(inner http.Handler, dummy string) http.Handler {
 				" direction: ", DirectionRX,
 			)
 
-			var metric ms.HttpMetric
+			var metric met.HttpMetric
 			metric.LoggerName = logComponent
 			metric.Direction = DirectionRX
 			metric.Id = uniqueId

@@ -32,7 +32,7 @@ import (
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	clientv2 "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -68,7 +68,7 @@ var mqLocal *mq.MsgQueue
 var handlerId int
 var activeModel *mod.Model
 var activeScenarioName string
-var metricStore *ms.MetricStore
+var metricStore *met.MetricStore
 var hostUrl *url.URL
 var basePath string
 var baseKey string
@@ -135,7 +135,7 @@ func Init() (err error) {
 	}
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore("", sandboxName, influxDBAddr, redisAddr)
+	metricStore, err = met.NewMetricStore("", sandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -221,7 +221,7 @@ func activateScenarioMetrics() {
 	ev.Type_ = "OTHER"
 	j, _ := json.Marshal(ev)
 
-	var em ms.EventMetric
+	var em met.EventMetric
 	em.Event = string(j)
 	em.Description = "scenario deployed"
 	err = metricStore.SetEventMetric(ev.Type_, em)
@@ -301,7 +301,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(ms.EvMetName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.EvMetName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -322,8 +322,8 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	for index, values := range valuesArray {
 		metric := &response.Values[index]
 		metric.Time = values["time"].(string)
-		if values[ms.EvMetEvent] != nil {
-			if val, ok := values[ms.EvMetEvent].(string); ok {
+		if values[met.EvMetEvent] != nil {
+			if val, ok := values[met.EvMetEvent].(string); ok {
 				metric.Event = val
 			}
 		}
@@ -381,7 +381,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		limit = int(params.Scope.Limit)
 	}
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(ms.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -402,52 +402,52 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 	for index, values := range valuesArray {
 		metric := &response.Values[index]
 		metric.Time = values["time"].(string)
-		if values[ms.HttpLoggerName] != nil {
-			if val, ok := values[ms.HttpLoggerName].(string); ok {
+		if values[met.HttpLoggerName] != nil {
+			if val, ok := values[met.HttpLoggerName].(string); ok {
 				metric.LoggerName = val
 			}
 		}
-		if values[ms.HttpLoggerDirection] != nil {
-			if val, ok := values[ms.HttpLoggerDirection].(string); ok {
+		if values[met.HttpLoggerDirection] != nil {
+			if val, ok := values[met.HttpLoggerDirection].(string); ok {
 				metric.Direction = val
 			}
 		}
 
-		if values[ms.HttpLogId] != nil {
-			metric.Id = ms.JsonNumToInt32(values[ms.HttpLogId].(json.Number))
+		if values[met.HttpLogId] != nil {
+			metric.Id = met.JsonNumToInt32(values[met.HttpLogId].(json.Number))
 		}
-		if values[ms.HttpLogEndpoint] != nil {
-			if val, ok := values[ms.HttpLogEndpoint].(string); ok {
+		if values[met.HttpLogEndpoint] != nil {
+			if val, ok := values[met.HttpLogEndpoint].(string); ok {
 				metric.Endpoint = val
 			}
 		}
-		if values[ms.HttpUrl] != nil {
-			if val, ok := values[ms.HttpUrl].(string); ok {
+		if values[met.HttpUrl] != nil {
+			if val, ok := values[met.HttpUrl].(string); ok {
 				metric.Url = val
 			}
 		}
-		if values[ms.HttpMethod] != nil {
-			if val, ok := values[ms.HttpMethod].(string); ok {
+		if values[met.HttpMethod] != nil {
+			if val, ok := values[met.HttpMethod].(string); ok {
 				metric.Method = val
 			}
 		}
-		if values[ms.HttpBody] != nil {
-			if val, ok := values[ms.HttpBody].(string); ok {
+		if values[met.HttpBody] != nil {
+			if val, ok := values[met.HttpBody].(string); ok {
 				metric.Body = val
 			}
 		}
-		if values[ms.HttpRespBody] != nil {
-			if val, ok := values[ms.HttpRespBody].(string); ok {
+		if values[met.HttpRespBody] != nil {
+			if val, ok := values[met.HttpRespBody].(string); ok {
 				metric.RespBody = val
 			}
 		}
-		if values[ms.HttpRespCode] != nil {
-			if val, ok := values[ms.HttpRespCode].(string); ok {
+		if values[met.HttpRespCode] != nil {
+			if val, ok := values[met.HttpRespCode].(string); ok {
 				metric.RespCode = val
 			}
 		}
-		if values[ms.HttpProcTime] != nil {
-			if val, ok := values[ms.HttpProcTime].(string); ok {
+		if values[met.HttpProcTime] != nil {
+			if val, ok := values[met.HttpProcTime].(string); ok {
 				metric.ProcTime = val
 			}
 		}
@@ -506,7 +506,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(ms.NetMetName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.NetMetName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -527,20 +527,20 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	for index, values := range valuesArray {
 		metric := &response.Values[index]
 		metric.Time = values["time"].(string)
-		if values[ms.NetMetLatency] != nil {
-			metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+		if values[met.NetMetLatency] != nil {
+			metric.Lat = met.JsonNumToInt32(values[met.NetMetLatency].(json.Number))
 		}
-		if values[ms.NetMetULThroughput] != nil {
-			metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+		if values[met.NetMetULThroughput] != nil {
+			metric.Ul = met.JsonNumToFloat64(values[met.NetMetULThroughput].(json.Number))
 		}
-		if values[ms.NetMetDLThroughput] != nil {
-			metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+		if values[met.NetMetDLThroughput] != nil {
+			metric.Dl = met.JsonNumToFloat64(values[met.NetMetDLThroughput].(json.Number))
 		}
-		if values[ms.NetMetULPktLoss] != nil {
-			metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+		if values[met.NetMetULPktLoss] != nil {
+			metric.Ulos = met.JsonNumToFloat64(values[met.NetMetULPktLoss].(json.Number))
 		}
-		if values[ms.NetMetDLPktLoss] != nil {
-			metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+		if values[met.NetMetDLPktLoss] != nil {
+			metric.Dlos = met.JsonNumToFloat64(values[met.NetMetDLPktLoss].(json.Number))
 		}
 	}
 
@@ -756,8 +756,8 @@ func processEventNotification(subsId string) {
 			for index, values := range valuesArray {
 				metric := &response.Values[index]
 				metric.Time = values["time"].(string)
-				if values[ms.EvMetEvent] != nil {
-					if val, ok := values[ms.EvMetEvent].(string); ok {
+				if values[met.EvMetEvent] != nil {
+					if val, ok := values[met.EvMetEvent].(string); ok {
 						metric.Event = val
 					}
 				}
@@ -796,20 +796,20 @@ func processNetworkNotification(subsId string) {
 			for index, values := range valuesArray {
 				metric := &response.Values[index]
 				metric.Time = values["time"].(string)
-				if values[ms.NetMetLatency] != nil {
-					metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+				if values[met.NetMetLatency] != nil {
+					metric.Lat = met.JsonNumToInt32(values[met.NetMetLatency].(json.Number))
 				}
-				if values[ms.NetMetULThroughput] != nil {
-					metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+				if values[met.NetMetULThroughput] != nil {
+					metric.Ul = met.JsonNumToFloat64(values[met.NetMetULThroughput].(json.Number))
 				}
-				if values[ms.NetMetDLThroughput] != nil {
-					metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+				if values[met.NetMetDLThroughput] != nil {
+					metric.Dl = met.JsonNumToFloat64(values[met.NetMetDLThroughput].(json.Number))
 				}
-				if values[ms.NetMetULPktLoss] != nil {
-					metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+				if values[met.NetMetULPktLoss] != nil {
+					metric.Ulos = met.JsonNumToFloat64(values[met.NetMetULPktLoss].(json.Number))
 				}
-				if values[ms.NetMetDLPktLoss] != nil {
-					metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+				if values[met.NetMetDLPktLoss] != nil {
+					metric.Dlos = met.JsonNumToFloat64(values[met.NetMetDLPktLoss].(json.Number))
 				}
 			}
 		}
