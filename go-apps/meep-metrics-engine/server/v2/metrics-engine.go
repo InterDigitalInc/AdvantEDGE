@@ -45,7 +45,7 @@ const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const metricEvent = "events"
 const metricNetwork = "network"
 
-const moduleName string = "meep-metrics-engine"
+const ModuleName string = "meep-metrics-engine"
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 const metricsEngineKey string = "metrics-engine:"
 
@@ -63,7 +63,7 @@ var nextEventSubscriptionIdAvailable int
 var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
 
-var sandboxName string
+var SandboxName string
 var mqLocal *mq.MsgQueue
 var handlerId int
 var activeModel *mod.Model
@@ -90,13 +90,13 @@ type NetworkRegistration struct {
 // Init - Metrics engine initialization
 func Init() (err error) {
 	// Retrieve Sandbox name from environment variable
-	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-	if sandboxName == "" {
+	SandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if SandboxName == "" {
 		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
 		log.Error(err.Error())
 		return err
 	}
-	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+	log.Info("MEEP_SANDBOX_NAME: ", SandboxName)
 
 	// hostUrl is the url of the node serving the resourceURL
 	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
@@ -110,10 +110,10 @@ func Init() (err error) {
 	log.Info("resource URL: ", hostUrl)
 
 	// Set base path
-	basePath = "/" + sandboxName + metricsBasePath
+	basePath = "/" + SandboxName + metricsBasePath
 
 	// Create message queue
-	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(SandboxName), ModuleName, SandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -123,8 +123,8 @@ func Init() (err error) {
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
 		Name:      "activeScenario",
-		Namespace: sandboxName,
-		Module:    moduleName,
+		Namespace: SandboxName,
+		Module:    ModuleName,
 		UpdateCb:  nil,
 		DbAddr:    redisAddr,
 	}
@@ -135,14 +135,14 @@ func Init() (err error) {
 	}
 
 	// Connect to Metric Store
-	metricStore, err = met.NewMetricStore("", sandboxName, influxDBAddr, redisAddr)
+	metricStore, err = met.NewMetricStore("", SandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
 
 	// Get base store key
-	baseKey = dkm.GetKeyRoot(sandboxName) + metricsEngineKey
+	baseKey = dkm.GetKeyRoot(SandboxName) + metricsEngineKey
 
 	// Connect to Redis DB to monitor metrics
 	rc, err = redis.NewConnector(redisAddr, METRICS_DB)
@@ -203,7 +203,7 @@ func activateScenarioMetrics() {
 	}
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName, redisAddr, influxDBAddr)
+	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
 	err := metricStore.SetStore(activeScenarioName)
@@ -246,7 +246,7 @@ func terminateScenarioMetrics() {
 	metricStore.StopSnapshotThread()
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName, redisAddr, influxDBAddr)
+	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
 	err := metricStore.SetStore("")

@@ -32,6 +32,7 @@ import (
 	"github.com/gorilla/mux"
 
 	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 )
 
 type Route struct {
@@ -49,6 +50,7 @@ func NewRouter() *mux.Router {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		// handler = httpLog.LogRx(handler, "")
+		handler = met.MetricsHandler(handler, v2.SandboxName, v2.ModuleName)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).

@@ -13,7 +13,8 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
 	github.com/gorilla/handlers v1.4.0
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
+	github.com/prometheus/client_golang v1.9.0
 )
 
 replace (
