@@ -3240,7 +3240,7 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 					break
 				}
 			}
-			if !found {
+			if found {
 				break
 			}
 		}
