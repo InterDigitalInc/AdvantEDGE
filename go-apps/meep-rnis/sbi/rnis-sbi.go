@@ -28,13 +28,49 @@ import (
 
 const moduleName string = "meep-rnis-sbi"
 
+type UeDataSbi struct {
+	Name         string
+	Mnc          string
+	Mcc          string
+	CellId       string
+	NrCellId     string
+	ErabIdValid  bool
+	AppNames     []string
+	Latency      int32
+	ThroughputUL int32
+	ThroughputDL int32
+	PacketLoss   float64
+}
+
+type PoaInfoSbi struct {
+	Name         string
+	PoaType      string
+	Mnc          string
+	Mcc          string
+	CellId       string
+	Latency      int32
+	ThroughputUL int32
+	ThroughputDL int32
+	PacketLoss   float64
+}
+
+type AppInfoSbi struct {
+	Name         string
+	ParentType   string
+	ParentName   string
+	Latency      int32
+	ThroughputUL int32
+	ThroughputDL int32
+	PacketLoss   float64
+}
+
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	UeDataCb       func(string, string, string, string, string, bool, []string, int32, int32, int32, float64)
+	UeDataCb       func(UeDataSbi)
 	MeasInfoCb     func(string, string, []string, []int32, []int32)
-	PoaInfoCb      func(string, string, string, string, string, int32, int32, int32, float64)
-	AppInfoCb      func(string, string, string, int32, int32, int32, float64)
+	PoaInfoCb      func(PoaInfoSbi)
+	AppInfoCb      func(AppInfoSbi)
 	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -47,10 +83,10 @@ type RnisSbi struct {
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
-	updateUeDataCB       func(string, string, string, string, string, bool, []string, int32, int32, int32, float64)
+	updateUeDataCB       func(UeDataSbi)
 	updateMeasInfoCB     func(string, string, []string, []int32, []int32)
-	updatePoaInfoCB      func(string, string, string, string, string, int32, int32, int32, float64)
-	updateAppInfoCB      func(string, string, string, int32, int32, int32, float64)
+	updatePoaInfoCB      func(PoaInfoSbi)
+	updateAppInfoCB      func(AppInfoSbi)
 	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
@@ -290,7 +326,7 @@ func processActiveScenarioUpdate() {
 						throughputUL = ue.NetChar.ThroughputUl
 					}
 
-					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames, latency, throughputUL, throughputDL, ploss)
+					sbi.updateUeDataCB(UeDataSbi{name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames, latency, throughputUL, throughputDL, ploss})
 				}
 			}
 		}
@@ -306,7 +342,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(prevUeName, "", "", "", "", false, nil, 0, 0, 0, 0.0)
+			sbi.updateUeDataCB(UeDataSbi{prevUeName, "", "", "", "", false, nil, 0, 0, 0, 0.0})
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -338,7 +374,7 @@ func processActiveScenarioUpdate() {
 				throughputUL = pl.NetChar.ThroughputUl
 			}
 
-			sbi.updateAppInfoCB(appName, pl.Type_, pl.Name, latency, throughputUL, throughputDL, ploss)
+			sbi.updateAppInfoCB(AppInfoSbi{appName, pl.Type_, pl.Name, latency, throughputUL, throughputDL, ploss})
 		}
 	}
 
@@ -352,7 +388,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateAppInfoCB(prevApp, "", "", 0, 0, 0, 0.0)
+			sbi.updateAppInfoCB(AppInfoSbi{prevApp, "", "", 0, 0, 0, 0.0})
 			log.Info("App removed : ", prevApp)
 		}
 	}
@@ -398,7 +434,7 @@ func processActiveScenarioUpdate() {
 					throughputUL = nl.NetChar.ThroughputUl
 				}
 
-				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId, latency, throughputUL, throughputDL, ploss)
+				sbi.updatePoaInfoCB(PoaInfoSbi{name, nl.Type_, mnc, mcc, cellId, latency, throughputUL, throughputDL, ploss})
 			}
 		}
 	}

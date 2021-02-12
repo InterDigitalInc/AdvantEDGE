@@ -2224,17 +2224,17 @@ func TestSbi(t *testing.T) {
 
 	time.Sleep(1000 * time.Millisecond)
 
-	jsonInfo, _ := rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	jsonInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
 	if string(jsonInfo) != expectedUeDataStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"APP:"+appName, ".")
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
 	if string(jsonInfo) != expectedAppInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"POA:"+poaName, ".")
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"POA:"+poaName, ".")
 	if string(jsonInfo) != expectedPoaInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -2242,7 +2242,7 @@ func TestSbi(t *testing.T) {
 	updateScenario("mobility1")
 	time.Sleep(1000 * time.Millisecond)
 
-	jsonInfo, _ = rc[RNIS_DB_CONNECTOR_INDEX].JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
 	if string(jsonInfo) != expectedUeDataStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}

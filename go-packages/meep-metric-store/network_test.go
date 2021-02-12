@@ -112,6 +112,18 @@ func TestNetworkMetricGetSet(t *testing.T) {
 		t.Fatalf("Invalid network metric")
 	}
 
+	fmt.Println("Get cached network metrics (* -> node1)")
+	nmArray, err := ms.GetCachedNetworkMetrics("*", "node1")
+	if err != nil {
+		t.Fatalf("Failed to get metric")
+	}
+	if len(nmArray) != 1 {
+		t.Fatalf("Did not received the expected number of slices (=1)")
+	}
+	if !validateNetworkMetric(nmArray[0], 2, 3.1, 2.1, 3.2, 2.2) {
+		t.Fatalf("Invalid network metric")
+	}
+
 	// GET/SET METRICS
 
 	fmt.Println("Get empty metric")
