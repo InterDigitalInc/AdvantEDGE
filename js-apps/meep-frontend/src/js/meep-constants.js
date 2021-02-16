@@ -190,6 +190,10 @@ export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
 export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
 
+export const EXEC_EVT_SU_ACTION = 'exec-evt-su-action';
+export const EXEC_EVT_SU_REMOVE_ELEM_TYPE = 'exec-evt-su-remove-elem-type';
+export const EXEC_EVT_SU_REMOVE_ELEM_NAME = 'exec-evt-su-remove-elem-name';
+
 export const MEEP_EVENT_COUNT = 'meep-event-count';
 
 // Trivia
@@ -323,6 +327,12 @@ export const NET_TOPOLOGY_VIEW = 'Network Topology';
 export const DEST_DISCONNECTED = 'DISCONNECTED';
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+export const SCENARIO_UPDATE_EVENT = 'SCENARIO-UPDATE';
+
+export const SCENARIO_UPDATE_ACTION_NONE = 'NONE';
+export const SCENARIO_UPDATE_ACTION_ADD = 'ADD';
+export const SCENARIO_UPDATE_ACTION_REMOVE = 'REMOVE';
+export const SCENARIO_UPDATE_ACTION_MODIFY = 'MODIFY';
 
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [

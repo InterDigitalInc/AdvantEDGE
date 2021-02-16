@@ -22,6 +22,7 @@ import { Typography } from '@rmwc/typography';
 import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
+import ScenarioUpdateEventPane from './scenario-update-event-pane';
 
 import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
 
@@ -29,7 +30,8 @@ import { uiExecChangeCurrentEvent } from '../../state/ui';
 
 import {
   MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  NETWORK_CHARACTERISTICS_EVENT,
+  SCENARIO_UPDATE_EVENT
 } from '../../meep-constants';
 
 import {
@@ -98,6 +100,15 @@ const EventCreationFields = props => {
         currentEvent={props.currentEvent}
         table={props.table}
         networkElements={props.networkElements}
+      />
+    );
+  case SCENARIO_UPDATE_EVENT:
+    return (
+      <ScenarioUpdateEventPane
+        currentEvent={props.currentEvent}
+        onSuccess={props.onSuccess}
+        onClose={props.onClose}
+        api={props.api}
       />
     );
   default:
