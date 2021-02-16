@@ -17,9 +17,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -97,7 +95,9 @@ func deleteRun(cmd *cobra.Command, args []string) {
 		deleteApps(deleteData.coreApps, cmd)
 	} else if group == "dep" {
 		deleteApps(deleteData.depApps, cmd)
-		deleteCRD(deleteData.crds, cmd)
+		// Removing CRDs prevents UT execution without deploy dependency pods.
+		// For now, meepctl will install CRDs first but will no longer remove them.
+		// deleteCRD(deleteData.crds, cmd)
 	}
 
 	elapsed := time.Since(start)
@@ -106,16 +106,16 @@ func deleteRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-func deleteCRD(apps []string, cobraCmd *cobra.Command) {
-	for _, crd := range apps {
-		cmd := exec.Command("kubectl", "delete", "crd", crd)
-		_, err := utils.ExecuteCmd(cmd, cobraCmd)
-		if err != nil {
-			err = errors.New("Error deleting CRD, name: [" + crd + "]")
-			fmt.Println(err)
-		}
-	}
-}
+// func deleteCRD(apps []string, cobraCmd *cobra.Command) {
+// 	for _, crd := range apps {
+// 		cmd := exec.Command("kubectl", "delete", "crd", crd)
+// 		_, err := utils.ExecuteCmd(cmd, cobraCmd)
+// 		if err != nil {
+// 			err = errors.New("Error deleting CRD, name: [" + crd + "]")
+// 			fmt.Println(err)
+// 		}
+// 	}
+// }
 
 func deleteApps(apps []string, cobraCmd *cobra.Command) {
 	for _, app := range apps {
