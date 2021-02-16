@@ -60,6 +60,7 @@ type SandboxCtrl struct {
 const scenarioDBName = "scenarios"
 const replayDBName = "replays"
 const moduleName = "meep-sandbox-ctrl"
+const serviceName = "Sandbox Controller"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"

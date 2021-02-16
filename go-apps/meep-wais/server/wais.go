@@ -35,14 +35,21 @@ import (
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
 
 const waisBasePath = "/wai/v2/"
-const waisKey string = "wais:"
-const logModuleWAIS string = "meep-wais"
+const waisKey = "wais:"
+const logModuleWAIS = "meep-wais"
+const serviceName = "WAI Service"
+
+const (
+	notifAssocSta = "AssocStaNotification"
+	notifExpiry   = "ExpiryNotification"
+)
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
@@ -434,38 +441,40 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 }
 
 func sendAssocStaNotification(notifyUrl string, notification AssocStaNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifAssocSta, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifAssocSta, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 

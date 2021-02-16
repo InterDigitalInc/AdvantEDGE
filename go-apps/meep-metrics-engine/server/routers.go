@@ -50,7 +50,7 @@ func NewRouter() *mux.Router {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		// handler = httpLog.LogRx(handler, "")
-		handler = met.MetricsHandler(handler, v2.SandboxName, v2.ModuleName)
+		handler = met.MetricsHandler(handler, v2.SandboxName, v2.ServiceName)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).

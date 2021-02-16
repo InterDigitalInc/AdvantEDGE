@@ -45,13 +45,19 @@ const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const metricEvent = "events"
 const metricNetwork = "network"
 
-const ModuleName string = "meep-metrics-engine"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
-const metricsEngineKey string = "metrics-engine:"
+const ServiceName = "Metrics Engine"
+const ModuleName = "meep-metrics-engine"
+const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const metricsEngineKey = "metrics-engine:"
 
 const metricsBasePath = "/metrics/v2/"
 const typeNetworkSubscription = "netsubs"
 const typeEventSubscription = "eventsubs"
+
+const (
+	notifEventMetrics   = "EventMetricsNotification"
+	notifNetworkMetrics = "NetworkMetricsNotification"
+)
 
 var defaultDuration string = "1s"
 var defaultLimit int32 = 1
@@ -710,11 +716,15 @@ func sendEventNotification(notifyUrl string, ctx context.Context, subscriptionId
 		return
 	}
 
-	_, err = client.NotificationsApi.PostEventNotification(ctx, subscriptionId, notification)
+	startTime := time.Now()
+	resp, err := client.NotificationsApi.PostEventNotification(ctx, subscriptionId, notification)
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(SandboxName, ServiceName, notifEventMetrics, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(SandboxName, ServiceName, notifEventMetrics, notifyUrl, resp, duration)
 }
 
 func sendNetworkNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientv2.NetworkNotification) {
@@ -724,11 +734,15 @@ func sendNetworkNotification(notifyUrl string, ctx context.Context, subscription
 		return
 	}
 
-	_, err = client.NotificationsApi.PostNetworkNotification(ctx, subscriptionId, notification)
+	startTime := time.Now()
+	resp, err := client.NotificationsApi.PostNetworkNotification(ctx, subscriptionId, notification)
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(SandboxName, ServiceName, notifNetworkMetrics, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(SandboxName, ServiceName, notifNetworkMetrics, notifyUrl, resp, duration)
 }
 
 func processEventNotification(subsId string) {

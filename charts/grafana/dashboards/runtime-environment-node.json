@@ -15,8 +15,8 @@
     "editable": true,
     "gnetId": 1860,
     "graphTooltip": 0,
-    "id": 18,
-    "iteration": 1612541487682,
+    "id": 10,
+    "iteration": 1613430348938,
     "links": [],
     "panels": [
       {
@@ -13483,9 +13483,7 @@
     "refresh": "30s",
     "schemaVersion": 26,
     "style": "dark",
-    "tags": [
-      "linux"
-    ],
+    "tags": [],
     "templating": {
       "list": [
         {
@@ -13617,7 +13615,7 @@
       ]
     },
     "timezone": "browser",
-    "title": "Node Exporter Full",
-    "uid": "meep-node-exporter",
-    "version": 3
+    "title": "Runtime Environment (Node)",
+    "uid": "runtime-environment-node",
+    "version": 6
   }

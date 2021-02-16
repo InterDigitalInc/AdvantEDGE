@@ -48,7 +48,7 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-		handler = met.MetricsHandler(handler, ge.sandboxName, moduleName)
+		handler = met.MetricsHandler(handler, ge.sandboxName, serviceName)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).

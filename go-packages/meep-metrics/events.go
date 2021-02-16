@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package metricstore
+package metrics
 
 import (
 	"errors"

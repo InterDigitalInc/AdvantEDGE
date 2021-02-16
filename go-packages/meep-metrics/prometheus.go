@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package metricstore
+package metrics
 
 import (
 	"net/http"
@@ -34,6 +34,12 @@ var (
 		Help:    "A histogram of http request durations",
 		Buckets: prometheus.LinearBuckets(10, 10, 5),
 	}, []string{"sbox", "svc", "path", "method", "status"})
+
+	metricHttpNotificationDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "metrics_http_notification_duration",
+		Help:    "A histogram of http notification durations",
+		Buckets: prometheus.LinearBuckets(10, 10, 5),
+	}, []string{"sbox", "svc", "notif", "url", "method", "status"})
 )
 
 // ResponseWriter wrapper to capture status code
@@ -81,4 +87,16 @@ func MetricsHandler(inner http.Handler, sbox string, svc string) http.Handler {
 		// Store HTTP Request metrics
 		metricHttpRequestDuration.WithLabelValues(sbox, svc, path, method, status).Observe(procTime)
 	})
+}
+
+func ObserveNotification(sbox string, svc string, notif string, url string, resp *http.Response, duration float64) {
+	var status string
+	if resp != nil {
+		status = strconv.Itoa(resp.StatusCode)
+	} else {
+		status = strconv.Itoa(http.StatusInternalServerError)
+	}
+
+	// Store HTTP Notification metrics
+	metricHttpNotificationDuration.WithLabelValues(sbox, svc, notif, url, "POST", status).Observe(duration)
 }

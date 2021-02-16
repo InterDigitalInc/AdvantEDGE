@@ -50,6 +50,7 @@ type PlatformCtrl struct {
 
 const scenarioDBName = "scenarios"
 const redisTable = 0
+const serviceName = "Platform Controller"
 const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 

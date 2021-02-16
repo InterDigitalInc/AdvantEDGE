@@ -60,6 +60,7 @@ const OAUTH_PROVIDER_GITHUB = "github"
 const OAUTH_PROVIDER_GITLAB = "gitlab"
 const OAUTH_PROVIDER_LOCAL = "local"
 
+const serviceName = "Auth Service"
 const moduleName = "meep-auth-svc"
 const moduleNamespace = "default"
 const postgisUser = "postgres"
@@ -144,10 +145,6 @@ var authSvc *AuthSvc
 
 // Metrics
 var (
-	metricAuthRequests = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "auth_svc_http_request_total",
-		Help: "The total number of http requests authenticated",
-	}, []string{"svc", "method", "path", "resp"})
 	metricSessionLogin = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "auth_svc_session_login_total",
 		Help: "The total number of session login attempts",
@@ -560,14 +557,12 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	svcName := query.Get("svc")
 	// sboxName := query.Get("sbox")
 	var sboxName string
-	var path string
 
 	// Get original request URL & method
 	originalUrl := r.Header.Get("X-Original-URL")
 	originalMethod := r.Header.Get("X-Original-Method")
 	if originalUrl == "" || originalMethod == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -577,7 +572,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	r.URL, err = url.ParseRequestURI(originalUrl)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -588,9 +582,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		routeName := match.Route.GetName()
 		sboxName = match.Vars["sbox"]
 		log.Debug("routeName: ", routeName, " sboxName: ", sboxName)
-
-		// Get path template
-		path, _ = match.Route.GetPathTemplate()
 
 		// Check service-specific routes
 		if svcName != "" {
@@ -611,7 +602,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	// Verify permission
 	if permission == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -621,14 +611,12 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		// break
 	case sm.ModeBlock:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	case sm.ModeVerify:
 		// Retrieve user session, if any
 		session, err := authSvc.sessionMgr.GetSessionStore().Get(r)
 		if err != nil || session == nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
@@ -636,33 +624,28 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		role := session.Role
 		if role == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 		access := permission.Roles[role]
 		if access != sm.AccessGranted {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
 		// For non-admin users, verify session sandbox matches service sandbox, if any
 		if session.Role != sm.RoleAdmin && sboxName != "" && sboxName != session.Sandbox {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
 	default:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
 	// Allow request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusOK)).Inc()
 }
 
 func asAuthorize(w http.ResponseWriter, r *http.Request) {

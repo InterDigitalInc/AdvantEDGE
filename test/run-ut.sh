@@ -12,7 +12,7 @@ GOAPPS=(
 
 GOPKGS=(
     meep-couch
-    meep-metric-store
+    meep-metrics
     meep-model
     meep-mq
     meep-net-char-mgr

@@ -24,11 +24,13 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -39,12 +41,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const serviceName string = "MG Manager"
 const moduleName string = "meep-mg-manager"
 const moduleTcEngine string = "meep-tc-engine"
 const mgmKey string = "mg-manager:"
 const typeLb string = "lb"
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 const influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+
+const (
+	notifStateUpdate           = "StateUpdateNotification"
+	notifStateTransferStart    = "StateTransferStartNotification"
+	notifStateTransferComplete = "StateTransferCompleteNotification"
+	notifStateTransferCancel   = "StateTransferCancelNotification"
+)
 
 const DEFAULT_LB_RULES_DB = 0
 
@@ -607,11 +617,16 @@ func startStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app string
 		event.Name = eventTypeStateTransferStart
 		event.Type_ = eventTypeStateTransferStart
 		event.UeId = ue.ue.Id
+		startTime := time.Now()
 		//lint:ignore SA1012 context.TODO not supported here
-		_, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
+			met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferStart, "", nil, duration)
+			return
 		}
+		met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferStart, "", resp, duration)
 	}()
 
 	// Set flag indicating transfer has been started
@@ -626,11 +641,16 @@ func completeStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app str
 		event.Name = eventTypeStateTransferComplete
 		event.Type_ = eventTypeStateTransferComplete
 		event.UeId = ue.ue.Id
+		startTime := time.Now()
 		//lint:ignore SA1012 context.TODO not supported here
-		_, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
+			met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferComplete, "", nil, duration)
+			return
 		}
+		met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferComplete, "", resp, duration)
 	}()
 
 	// Set flag indicating transfer has been started
@@ -645,11 +665,16 @@ func cancelStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app strin
 		event.Name = eventTypeStateTransferCancel
 		event.Type_ = eventTypeStateTransferCancel
 		event.UeId = ue.ue.Id
+		startTime := time.Now()
 		//lint:ignore SA1012 context.TODO not supported here
-		_, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
+			met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferCancel, "", nil, duration)
+			return
 		}
+		met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferCancel, "", resp, duration)
 	}()
 
 	// Set flag indicating transfer has been cancelled
@@ -939,11 +964,16 @@ func processAppState(mgName string, appID string, mgAppState *mgModel.MobilityGr
 				event.Type_ = eventTypeStateUpdate
 				event.UeId = ueInfo.ue.Id
 				event.AppState = appState
+				startTime := time.Now()
 				//lint:ignore SA1012 context.TODO not supported here
-				_, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
+				resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
+				duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 				if err != nil {
 					log.Error(err.Error())
+					met.ObserveNotification(mgm.sandboxName, serviceName, notifStateUpdate, "", nil, duration)
+					return
 				}
+				met.ObserveNotification(mgm.sandboxName, serviceName, notifStateUpdate, "", resp, duration)
 			}()
 		}
 	}
