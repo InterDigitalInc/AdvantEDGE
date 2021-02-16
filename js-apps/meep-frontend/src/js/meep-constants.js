@@ -348,10 +348,10 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   },
   {
     label: 'Platform Metrics',
-    value: HOST_PATH + '/grafana/d/platform-advantedge/platform-advantedge?orgId=1&refresh=15s&theme=light'
+    value: HOST_PATH + '/grafana/d/platform-advantedge/platform-advantedge?orgId=1&refresh=15s&kiosk=tv&theme=light'
   },
   {
     label: 'Runtime Environment Metrics (Node)',
-    value: HOST_PATH + '/grafana/d/runtime-environment-node/runtime-environment-node?orgId=1&refresh=15s&theme=light'
+    value: HOST_PATH + '/grafana/d/runtime-environment-node/runtime-environment-node?orgId=1&refresh=15s&kiosk=tv&theme=light'
   }
 ];
