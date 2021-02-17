@@ -326,7 +326,20 @@ func processActiveScenarioUpdate() {
 						throughputUL = ue.NetChar.ThroughputUl
 					}
 
-					sbi.updateUeDataCB(UeDataSbi{name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames, latency, throughputUL, throughputDL, ploss})
+					var ueDataSbi = UeDataSbi{
+						Name:         name,
+						Mnc:          mnc,
+						Mcc:          mcc,
+						CellId:       cellId,
+						NrCellId:     nrcellId,
+						ErabIdValid:  erabIdValid,
+						AppNames:     appNames,
+						Latency:      latency,
+						ThroughputUL: throughputUL,
+						ThroughputDL: throughputDL,
+						PacketLoss:   ploss,
+					}
+					sbi.updateUeDataCB(ueDataSbi)
 				}
 			}
 		}
@@ -342,7 +355,12 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(UeDataSbi{prevUeName, "", "", "", "", false, nil, 0, 0, 0, 0.0})
+			var ueDataSbi = UeDataSbi{
+				Name:        prevUeName,
+				ErabIdValid: false,
+			}
+
+			sbi.updateUeDataCB(ueDataSbi)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -374,7 +392,16 @@ func processActiveScenarioUpdate() {
 				throughputUL = pl.NetChar.ThroughputUl
 			}
 
-			sbi.updateAppInfoCB(AppInfoSbi{appName, pl.Type_, pl.Name, latency, throughputUL, throughputDL, ploss})
+			var appInfoSbi = AppInfoSbi{
+				Name:         appName,
+				ParentType:   pl.Type_,
+				ParentName:   pl.Name,
+				Latency:      latency,
+				ThroughputUL: throughputUL,
+				ThroughputDL: throughputDL,
+				PacketLoss:   ploss,
+			}
+			sbi.updateAppInfoCB(appInfoSbi)
 		}
 	}
 
@@ -388,7 +415,11 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateAppInfoCB(AppInfoSbi{prevApp, "", "", 0, 0, 0, 0.0})
+			var appInfoSbi = AppInfoSbi{
+				Name: prevApp,
+			}
+
+			sbi.updateAppInfoCB(appInfoSbi)
 			log.Info("App removed : ", prevApp)
 		}
 	}
@@ -434,7 +465,18 @@ func processActiveScenarioUpdate() {
 					throughputUL = nl.NetChar.ThroughputUl
 				}
 
-				sbi.updatePoaInfoCB(PoaInfoSbi{name, nl.Type_, mnc, mcc, cellId, latency, throughputUL, throughputDL, ploss})
+				var poaInfoSbi = PoaInfoSbi{
+					Name:         name,
+					PoaType:      nl.Type_,
+					Mnc:          mnc,
+					Mcc:          mcc,
+					CellId:       cellId,
+					Latency:      latency,
+					ThroughputUL: throughputUL,
+					ThroughputDL: throughputDL,
+					PacketLoss:   ploss,
+				}
+				sbi.updatePoaInfoCB(poaInfoSbi)
 			}
 		}
 	}
