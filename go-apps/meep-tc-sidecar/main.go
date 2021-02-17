@@ -30,7 +30,7 @@ import (
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
@@ -130,7 +130,7 @@ const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 var mqLocal *mq.MsgQueue
 var handlerId int
 var rc *redis.Connector
-var metricStore *ms.MetricStore
+var metricStore *met.MetricStore
 var baseKey string
 var metricsBaseKey string
 
@@ -247,7 +247,7 @@ func initMeepSidecar() (err error) {
 	log.Info("Connected to redis DB")
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore(scenarioName, sandboxName, influxDBAddr, redisAddr)
+	metricStore, err = met.NewMetricStore(scenarioName, sandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err

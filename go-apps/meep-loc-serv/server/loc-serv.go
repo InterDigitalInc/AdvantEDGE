@@ -33,14 +33,16 @@ import (
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
 
 const LocServBasePath = "/location/v2/"
-const locServKey string = "loc-serv:"
-const logModuleLocServ string = "meep-loc-serv"
+const locServKey = "loc-serv:"
+const logModuleLocServ = "meep-loc-serv"
+const serviceName = "Location Service"
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -48,6 +50,11 @@ const typeUser = "user"
 const typeZonalSubscription = "zonalsubs"
 const typeUserSubscription = "usersubs"
 const typeZoneStatusSubscription = "zonestatus"
+
+const (
+	notifZonalPresence = "ZonalPresenceNotification"
+	notifZoneStatus    = "ZoneStatusNotification"
+)
 
 type UeUserData struct {
 	queryZoneId  []string
@@ -438,35 +445,41 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 
 func sendZonalPresenceNotification(notifyUrl string, notification InlineZonalPresenceNotification) {
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifZonalPresence, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifZonalPresence, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendStatusNotification(notifyUrl string, notification InlineZoneStatusNotification) {
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 

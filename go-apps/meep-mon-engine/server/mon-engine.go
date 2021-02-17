@@ -63,6 +63,7 @@ type MonEngineInfo struct {
 	StartTime            string
 }
 
+const serviceName = "Monitoring Engine"
 const moduleName = "meep-mon-engine"
 const moduleNamespace = "default"
 const notFoundStr = "na"

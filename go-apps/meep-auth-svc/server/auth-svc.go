@@ -42,7 +42,7 @@ import (
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	pcc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-platform-ctrl-client"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
@@ -60,6 +60,7 @@ const OAUTH_PROVIDER_GITHUB = "github"
 const OAUTH_PROVIDER_GITLAB = "gitlab"
 const OAUTH_PROVIDER_LOCAL = "local"
 
+const serviceName = "Auth Service"
 const moduleName = "meep-auth-svc"
 const moduleNamespace = "default"
 const postgisUser = "postgres"
@@ -121,7 +122,7 @@ type PermissionsCache struct {
 type AuthSvc struct {
 	sessionMgr    *sm.SessionMgr
 	userStore     *users.Connector
-	metricStore   *ms.MetricStore
+	metricStore   *met.MetricStore
 	mqGlobal      *mq.MsgQueue
 	pfmCtrlClient *pcc.APIClient
 	maxSessions   int
@@ -144,10 +145,6 @@ var authSvc *AuthSvc
 
 // Metrics
 var (
-	metricAuthRequests = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "auth_svc_http_request_total",
-		Help: "The total number of http requests authenticated",
-	}, []string{"svc", "method", "path", "resp"})
 	metricSessionLogin = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "auth_svc_session_login_total",
 		Help: "The total number of session login attempts",
@@ -223,7 +220,7 @@ func Init() (err error) {
 	cachePermissions()
 
 	// Connect to Metric Store
-	authSvc.metricStore, err = ms.NewMetricStore("session-metrics", "global", influxDBAddr, ms.MetricsDbDisabled)
+	authSvc.metricStore, err = met.NewMetricStore("session-metrics", "global", influxDBAddr, met.MetricsDbDisabled)
 	if err != nil {
 		log.Error("Failed connection to Metric Store: ", err)
 		return err
@@ -476,11 +473,11 @@ func addRoutes(routes []*AuthRoute) {
 
 func sessionTimeoutCb(session *sm.Session) {
 	log.Info("Session timed out. ID[", session.ID, "] Username[", session.Username, "]")
-	var metric ms.SessionMetric
+	var metric met.SessionMetric
 	metric.Provider = session.Provider
 	metric.User = session.Username
 	metric.Sandbox = session.Sandbox
-	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeTimeout, metric)
+	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeTimeout, metric)
 
 	metricSessionTimeout.Inc()
 
@@ -560,14 +557,12 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	svcName := query.Get("svc")
 	// sboxName := query.Get("sbox")
 	var sboxName string
-	var path string
 
 	// Get original request URL & method
 	originalUrl := r.Header.Get("X-Original-URL")
 	originalMethod := r.Header.Get("X-Original-Method")
 	if originalUrl == "" || originalMethod == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -577,7 +572,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	r.URL, err = url.ParseRequestURI(originalUrl)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -588,9 +582,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		routeName := match.Route.GetName()
 		sboxName = match.Vars["sbox"]
 		log.Debug("routeName: ", routeName, " sboxName: ", sboxName)
-
-		// Get path template
-		path, _ = match.Route.GetPathTemplate()
 
 		// Check service-specific routes
 		if svcName != "" {
@@ -611,7 +602,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	// Verify permission
 	if permission == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
@@ -621,14 +611,12 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		// break
 	case sm.ModeBlock:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	case sm.ModeVerify:
 		// Retrieve user session, if any
 		session, err := authSvc.sessionMgr.GetSessionStore().Get(r)
 		if err != nil || session == nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
@@ -636,37 +624,32 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		role := session.Role
 		if role == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 		access := permission.Roles[role]
 		if access != sm.AccessGranted {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
 		// For non-admin users, verify session sandbox matches service sandbox, if any
 		if session.Role != sm.RoleAdmin && sboxName != "" && sboxName != session.Sandbox {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 			return
 		}
 
 	default:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusUnauthorized)).Inc()
 		return
 	}
 
 	// Allow request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	metricAuthRequests.WithLabelValues(svcName, originalMethod, path, strconv.Itoa(http.StatusOK)).Inc()
 }
 
 func asAuthorize(w http.ResponseWriter, r *http.Request) {
-	var metric ms.SessionMetric
+	var metric met.SessionMetric
 
 	// Retrieve query parameters
 	query := r.URL.Query()
@@ -679,7 +662,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		err := errors.New("Invalid OAuth state")
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		metricSessionFail.WithLabelValues("OAuth").Inc()
 		return
@@ -692,7 +675,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		err := errors.New("Provider config not found for: " + provider)
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
@@ -707,7 +690,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
@@ -718,7 +701,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		err = errors.New("Failed to create new oauth client")
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		metricSessionFail.WithLabelValues("OAuth").Inc()
 		return
@@ -733,7 +716,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			err = errors.New("Failed to create new GitHub client")
 			log.Error(err.Error())
 			metric.Description = err.Error()
-			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+			_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
@@ -742,7 +725,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Error(err.Error())
 			metric.Description = err.Error()
-			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+			_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitHub user ID"), http.StatusFound)
 			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
@@ -755,7 +738,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())
 			metric.Description = err.Error()
-			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+			_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
@@ -767,7 +750,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Error(err.Error())
 				metric.Description = err.Error()
-				_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+				_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 				http.Redirect(w, r, getErrUrl("Failed to set GitLab API base url"), http.StatusFound)
 				metricSessionFail.WithLabelValues("OAuth").Inc()
 				return
@@ -778,7 +761,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Error(err.Error())
 			metric.Description = err.Error()
-			_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+			_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitLab user ID"), http.StatusFound)
 			metricSessionFail.WithLabelValues("OAuth").Inc()
 			return
@@ -793,14 +776,14 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), errCode)
 		metricSessionFail.WithLabelValues("Session").Inc()
 		return
 	}
 
 	metric.Sandbox = sandboxName
-	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
+	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 
 	// Redirect user to sandbox
 	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
@@ -812,7 +795,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 
 func asLogin(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- OAUTH LOGIN -----")
-	var metric ms.SessionMetric
+	var metric met.SessionMetric
 	metricSessionLogin.WithLabelValues("OAuth").Inc()
 
 	// Retrieve query parameters
@@ -826,7 +809,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 		err := errors.New("Provider config not found for: " + provider)
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
@@ -837,7 +820,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		metricSessionFail.WithLabelValues("Internal").Inc()
 		return
@@ -863,7 +846,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 
 func asLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
-	var metric ms.SessionMetric
+	var metric met.SessionMetric
 	metricSessionLogin.WithLabelValues("Basic").Inc()
 
 	// Get form data
@@ -881,7 +864,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			metric.Description = "Unauthorized"
 		}
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -891,13 +874,13 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
-		_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeError, metric)
 		http.Error(w, err.Error(), errCode)
 		return
 	}
 
 	metric.Sandbox = sandboxName
-	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
+	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 	if isNew {
 		metricSessionActive.Inc()
 	}
@@ -985,7 +968,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 
 func asLogout(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
-	var metric ms.SessionMetric
+	var metric met.SessionMetric
 	sandboxDeleted := false
 	metricSessionLogout.Inc()
 
@@ -1011,7 +994,7 @@ func asLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = authSvc.metricStore.SetSessionMetric(ms.SesMetTypeLogout, metric)
+	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogout, metric)
 	if sandboxDeleted {
 		metricSessionActive.Dec()
 		metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())

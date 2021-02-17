@@ -29,7 +29,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 
@@ -1677,7 +1677,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -1821,7 +1821,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	updateScenario("mobility2")
 
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -1957,7 +1957,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 
 	updateScenario("mobility1")
 
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -2094,7 +2094,7 @@ func TestSubscriptionMeasRepUeNotification(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	//	updateScenario("mobility2")
 
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}

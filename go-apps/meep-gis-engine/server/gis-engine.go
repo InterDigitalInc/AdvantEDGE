@@ -36,6 +36,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const serviceName = "GIS Engine"
 const moduleName = "meep-gis-engine"
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"

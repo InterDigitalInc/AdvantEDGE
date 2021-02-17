@@ -40,6 +40,15 @@ ingress:
   labels: {}
   tls:
 
+prometheus:
+  monitor:
+    enabled: true
+    port: 9000
+    interval: 10s
+    additionalLabels: {}
+    relabelings: []
+    scrapeTimeout: 5s
+
 codecov:
   enabled: false
 

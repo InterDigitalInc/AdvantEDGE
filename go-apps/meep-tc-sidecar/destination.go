@@ -25,7 +25,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 )
 
 type history struct {
@@ -227,7 +227,7 @@ func (u *destination) logRxTx(ifbStatsStr string) {
 
 	// Store network metric
 	srcDest := u.hostName + ":" + u.remoteName
-	var metric ms.NetworkMetric
+	var metric met.NetworkMetric
 	metric.Src = u.remoteName
 	metric.Dst = u.hostName
 	semLatencyMap.Lock()

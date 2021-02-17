@@ -14,8 +14,15 @@ spec:
     app: {{ template "meep-mg-manager.name" . }}
     release: {{ .Release.Name }}
   ports:
-    - port: {{ .Values.service.port }}
+    - name: mg-manager
+      port: {{ .Values.service.port }}
       targetPort: {{ .Values.deployment.port }}
       {{- if .Values.service.nodePort }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
+    {{- if .Values.prometheus.monitor.enabled}}
+    - name: metrics
+      port: {{ .Values.prometheus.monitor.port }}
+      targetPort: {{ .Values.prometheus.monitor.port }}
+      protocol: TCP
+    {{- end}}

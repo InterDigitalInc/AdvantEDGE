@@ -34,17 +34,31 @@ import (
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
 
 const rnisBasePath = "/rni/v2/"
-const rnisKey string = "rnis:"
-const logModuleRNIS string = "meep-rnis"
+const rnisKey = "rnis:"
+const logModuleRNIS = "meep-rnis"
+const serviceName = "RNI Service"
 
-var metricStore *ms.MetricStore
+const (
+	notifCellChange = "CellChangeNotification"
+	notifRabEst     = "RabEstNotification"
+	// notifRabMod      = "RabModNotification"
+	notifRabRel    = "RabRelNotification"
+	notifMeasRepUe = "MeasRepUeNotification"
+	// notifMeasTa      = "MeasTaNotification"
+	// notifCaReConf    = "CaReConfNotification"
+	notifExpiry = "ExpiryNotification"
+	// notifS1Bearer    = "S1BearerNotification"
+	notifNrMeasRepUe = "NrMeasRepUeNotification"
+)
+
+var metricStore *met.MetricStore
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
@@ -1610,110 +1624,116 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 }
 
 func sendCcNotification(notifyUrl string, notification CellChangeNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifCellChange, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifCellChange, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendReNotification(notifyUrl string, notification RabEstNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifRabEst, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifRabEst, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendRrNotification(notifyUrl string, notification RabRelNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifRabRel, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifRabRel, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendMrNotification(notifyUrl string, notification MeasRepUeNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifMeasRepUe, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifMeasRepUe, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendNrMrNotification(notifyUrl string, notification NrMeasRepUeNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifNrMeasRepUe, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifNrMeasRepUe, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
-
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
@@ -2883,7 +2903,7 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 	return nil
 }
 
-func calculateMetrics(metrics ms.NetworkMetric) (appStats AppStats) {
+func calculateMetrics(metrics met.NetworkMetric) (appStats AppStats) {
 
 	//downlink direction
 	tput := metrics.DlTput
@@ -3288,7 +3308,7 @@ func updateStoreName(storeName string) {
 		}
 
 		// Connect to Metric Store
-		metricStore, err = ms.NewMetricStore(storeName, sandboxName, influxAddr, redisAddr)
+		metricStore, err = met.NewMetricStore(storeName, sandboxName, influxAddr, redisAddr)
 		if err != nil {
 			log.Error("Failed connection to metric-store: ", err)
 			return

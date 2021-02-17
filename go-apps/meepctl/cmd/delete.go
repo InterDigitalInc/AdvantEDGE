@@ -17,9 +17,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -30,7 +28,6 @@ import (
 type DeleteData struct {
 	coreApps []string
 	depApps  []string
-	crds     []string
 }
 
 const deleteDesc = `Delete containers from the K8s cluster
@@ -59,7 +56,6 @@ var deleteData DeleteData
 
 func init() {
 	// Get targets from repo config file
-	deleteData.crds, _ = utils.GetResourcePrerequisites("repo.resource-prerequisites.crds")
 	deleteData.coreApps = utils.GetTargets("repo.core.go-apps", "deploy")
 	deleteData.depApps = utils.GetTargets("repo.dep", "deploy")
 
@@ -97,23 +93,11 @@ func deleteRun(cmd *cobra.Command, args []string) {
 		deleteApps(deleteData.coreApps, cmd)
 	} else if group == "dep" {
 		deleteApps(deleteData.depApps, cmd)
-		deleteCRD(deleteData.crds, cmd)
 	}
 
 	elapsed := time.Since(start)
 	if t {
 		fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
-	}
-}
-
-func deleteCRD(apps []string, cobraCmd *cobra.Command) {
-	for _, crd := range apps {
-		cmd := exec.Command("kubectl", "delete", "crd", crd)
-		_, err := utils.ExecuteCmd(cmd, cobraCmd)
-		if err != nil {
-			err = errors.New("Error deleting CRD, name: [" + crd + "]")
-			fmt.Println(err)
-		}
 	}
 }
 

@@ -79,7 +79,6 @@ prometheus:
     port: 9000
     interval: 10s
     additionalLabels: {}
-    namespace: ""
     relabelings: []
     scrapeTimeout: 5s
 
