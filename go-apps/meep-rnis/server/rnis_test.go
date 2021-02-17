@@ -2180,15 +2180,16 @@ func TestSbi(t *testing.T) {
 	 ******************************/
 	var expectedUeDataStr [2]string
 	var expectedUeData [2]UeData
+
 	expectedAppNames := []string{"ue1-iperf"}
-	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaName, nil, expectedAppNames}
-	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaNameAfter, nil, expectedAppNames}
+	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaName, nil, expectedAppNames, 0, 1000, 1000, 0.0}
+	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaNameAfter, nil, expectedAppNames, 0, 1000, 1000, 0.0}
 
 	var expectedAppInfoStr string
-	expectedAppInfo := AppInfo{"EDGE", "zone1-edge1"}
+	expectedAppInfo := AppInfo{"EDGE", "zone1-edge1", 0, 1000, 1000, 0}
 
 	var expectedPoaInfoStr string
-	expectedPoaInfo := PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}}
+	expectedPoaInfo := PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}, 1, 1000, 1000, 0}
 
 	j, err := json.Marshal(expectedUeData[INITIAL])
 	if err != nil {

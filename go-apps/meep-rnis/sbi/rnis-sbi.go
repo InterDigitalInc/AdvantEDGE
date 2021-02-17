@@ -28,13 +28,49 @@ import (
 
 const moduleName string = "meep-rnis-sbi"
 
+type UeDataSbi struct {
+	Name         string
+	Mnc          string
+	Mcc          string
+	CellId       string
+	NrCellId     string
+	ErabIdValid  bool
+	AppNames     []string
+	Latency      int32
+	ThroughputUL int32
+	ThroughputDL int32
+	PacketLoss   float64
+}
+
+type PoaInfoSbi struct {
+	Name         string
+	PoaType      string
+	Mnc          string
+	Mcc          string
+	CellId       string
+	Latency      int32
+	ThroughputUL int32
+	ThroughputDL int32
+	PacketLoss   float64
+}
+
+type AppInfoSbi struct {
+	Name         string
+	ParentType   string
+	ParentName   string
+	Latency      int32
+	ThroughputUL int32
+	ThroughputDL int32
+	PacketLoss   float64
+}
+
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	UeDataCb       func(string, string, string, string, string, bool, []string)
+	UeDataCb       func(UeDataSbi)
 	MeasInfoCb     func(string, string, []string, []int32, []int32)
-	PoaInfoCb      func(string, string, string, string, string)
-	AppInfoCb      func(string, string, string)
+	PoaInfoCb      func(PoaInfoSbi)
+	AppInfoCb      func(AppInfoSbi)
 	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -47,10 +83,10 @@ type RnisSbi struct {
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
-	updateUeDataCB       func(string, string, string, string, string, bool, []string)
+	updateUeDataCB       func(UeDataSbi)
 	updateMeasInfoCB     func(string, string, []string, []int32, []int32)
-	updatePoaInfoCB      func(string, string, string, string, string)
-	updateAppInfoCB      func(string, string, string)
+	updatePoaInfoCB      func(PoaInfoSbi)
+	updateAppInfoCB      func(AppInfoSbi)
 	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
@@ -269,14 +305,41 @@ func processActiveScenarioUpdate() {
 						cellId = ""
 					}
 
-					node := sbi.activeModel.GetNodeChild(name)
+					node := sbi.activeModel.GetNode(name)
+					ue := node.(*dataModel.PhysicalLocation)
+
+					node = sbi.activeModel.GetNodeChild(name)
 					apps := node.(*[]dataModel.Process)
 
 					var appNames []string
 					for _, process := range *apps {
 						appNames = append(appNames, process.Name)
 					}
-					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames)
+					latency := int32(0)
+					ploss := float64(0.0)
+					throughputDL := int32(0)
+					throughputUL := int32(0)
+					if ue.NetChar != nil {
+						latency = ue.NetChar.Latency
+						ploss = ue.NetChar.PacketLoss
+						throughputDL = ue.NetChar.ThroughputDl
+						throughputUL = ue.NetChar.ThroughputUl
+					}
+
+					var ueDataSbi = UeDataSbi{
+						Name:         name,
+						Mnc:          mnc,
+						Mcc:          mcc,
+						CellId:       cellId,
+						NrCellId:     nrcellId,
+						ErabIdValid:  erabIdValid,
+						AppNames:     appNames,
+						Latency:      latency,
+						ThroughputUL: throughputUL,
+						ThroughputDL: throughputDL,
+						PacketLoss:   ploss,
+					}
+					sbi.updateUeDataCB(ueDataSbi)
 				}
 			}
 		}
@@ -292,7 +355,12 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(prevUeName, "", "", "", "", false, nil)
+			var ueDataSbi = UeDataSbi{
+				Name:        prevUeName,
+				ErabIdValid: false,
+			}
+
+			sbi.updateUeDataCB(ueDataSbi)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -313,7 +381,27 @@ func processActiveScenarioUpdate() {
 				continue
 			}
 			appNames = append(appNames, appName)
-			sbi.updateAppInfoCB(appName, pl.Type_, pl.Name)
+			latency := int32(0)
+			ploss := float64(0.0)
+			throughputDL := int32(0)
+			throughputUL := int32(0)
+			if pl.NetChar != nil {
+				latency = pl.NetChar.Latency
+				ploss = pl.NetChar.PacketLoss
+				throughputDL = pl.NetChar.ThroughputDl
+				throughputUL = pl.NetChar.ThroughputUl
+			}
+
+			var appInfoSbi = AppInfoSbi{
+				Name:         appName,
+				ParentType:   pl.Type_,
+				ParentName:   pl.Name,
+				Latency:      latency,
+				ThroughputUL: throughputUL,
+				ThroughputDL: throughputDL,
+				PacketLoss:   ploss,
+			}
+			sbi.updateAppInfoCB(appInfoSbi)
 		}
 	}
 
@@ -327,7 +415,11 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateAppInfoCB(prevApp, "", "")
+			var appInfoSbi = AppInfoSbi{
+				Name: prevApp,
+			}
+
+			sbi.updateAppInfoCB(appInfoSbi)
 			log.Info("App removed : ", prevApp)
 		}
 	}
@@ -362,7 +454,29 @@ func processActiveScenarioUpdate() {
 					cellId = nl.Poa5GConfig.CellId
 				}
 
-				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId)
+				latency := int32(0)
+				ploss := float64(0.0)
+				throughputDL := int32(0)
+				throughputUL := int32(0)
+				if nl.NetChar != nil {
+					latency = nl.NetChar.Latency
+					ploss = nl.NetChar.PacketLoss
+					throughputDL = nl.NetChar.ThroughputDl
+					throughputUL = nl.NetChar.ThroughputUl
+				}
+
+				var poaInfoSbi = PoaInfoSbi{
+					Name:         name,
+					PoaType:      nl.Type_,
+					Mnc:          mnc,
+					Mcc:          mcc,
+					CellId:       cellId,
+					Latency:      latency,
+					ThroughputUL: throughputUL,
+					ThroughputDL: throughputDL,
+					PacketLoss:   ploss,
+				}
+				sbi.updatePoaInfoCB(poaInfoSbi)
 			}
 		}
 	}
