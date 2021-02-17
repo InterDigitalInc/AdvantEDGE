@@ -58,7 +58,7 @@ const (
 	notifNrMeasRepUe = "NrMeasRepUeNotification"
 )
 
-var metricStore *ms.MetricStore
+var metricStore *met.MetricStore
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
@@ -2903,7 +2903,7 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 	return nil
 }
 
-func calculateMetrics(metrics ms.NetworkMetric) (appStats AppStats) {
+func calculateMetrics(metrics met.NetworkMetric) (appStats AppStats) {
 
 	//downlink direction
 	tput := metrics.DlTput
@@ -3308,7 +3308,7 @@ func updateStoreName(storeName string) {
 		}
 
 		// Connect to Metric Store
-		metricStore, err = ms.NewMetricStore(storeName, sandboxName, influxAddr, redisAddr)
+		metricStore, err = met.NewMetricStore(storeName, sandboxName, influxAddr, redisAddr)
 		if err != nil {
 			log.Error("Failed connection to metric-store: ", err)
 			return
