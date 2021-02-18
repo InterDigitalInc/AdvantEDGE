@@ -81,34 +81,34 @@ func (ms *MetricStore) SetCachedNetworkMetric(metric NetworkMetric) (err error) 
 
 // GetCachedNetworkMetrics
 func (ms *MetricStore) GetCachedNetworkMetrics(src string, dst string) (metric []NetworkMetric, err error) {
-        // Make sure we have set a store
-        if ms.name == "" {
-                err = errors.New("Store name not specified")
-                return
-        }
+	// Make sure we have set a store
+	if ms.name == "" {
+		err = errors.New("Store name not specified")
+		return
+	}
 
-        // Get current Network metric
-        tagStr := src + ":" + dst
-        var valuesArray []map[string]interface{}
-        valuesArray, err = ms.GetRedisMetric(NetMetName, tagStr)
-        if err != nil {
-                log.Error("Failed to retrieve metrics with error: ", err.Error())
-                return
-        }
+	// Get current Network metric
+	tagStr := src + ":" + dst
+	var valuesArray []map[string]interface{}
+	valuesArray, err = ms.GetRedisMetric(NetMetName, tagStr)
+	if err != nil {
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
+		return
+	}
 
-        metricList := make([]NetworkMetric, len(valuesArray))
-        for index, values := range valuesArray {
-                // Format network metric
-                nm, err := ms.formatCachedNetworkMetric(values)
-                if err != nil {
-                        continue
-                }
-                // Add metric to list
-                metricList[index] = nm
-        }
+	metricList := make([]NetworkMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		// Format network metric
+		nm, err := ms.formatCachedNetworkMetric(values)
+		if err != nil {
+			continue
+		}
+		// Add metric to list
+		metricList[index] = nm
+	}
 
-        // Return formatted metric
-        return metricList, nil
+	// Return formatted metric
+	return metricList, nil
 }
 
 // GetCachedNetworkMetric

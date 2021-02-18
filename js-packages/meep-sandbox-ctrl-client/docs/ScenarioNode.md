@@ -15,6 +15,16 @@ Name | Type | Description | Notes
 
 * `UE` (value: `"UE"`)
 
+* `FOG` (value: `"FOG"`)
+
+* `EDGE` (value: `"EDGE"`)
+
+* `UE_APP` (value: `"UE-APP"`)
+
+* `EDGE_APP` (value: `"EDGE-APP"`)
+
+* `CLOUD_APP` (value: `"CLOUD-APP"`)
+
 
 
 

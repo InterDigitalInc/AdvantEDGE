@@ -737,9 +737,9 @@ repo:
         src: go-packages/meep-logger
         # supports linting
         lint: true
-      meep-metric-store:
+      meep-metrics:
         # location of source code
-        src: go-packages/meep-metric-store
+        src: go-packages/meep-metrics
         # supports linting
         lint: true
       meep-metrics-engine-notification-client:

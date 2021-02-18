@@ -361,35 +361,35 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == NodeTypeOperator || ncType == NodeTypeOperatorCell {
+		if isDomain(ncType) {
 			domain := n.object.(*dataModel.Domain)
 			if domain.NetChar == nil {
 				domain.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			domain.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NodeTypeZone {
+		} else if isZone(ncType) {
 			zone := n.object.(*dataModel.Zone)
 			if zone.NetChar == nil {
 				zone.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			zone.NetChar = nc.NetChar
 			updated = true
-		} else if m.isValidPoaNodeType(ncType) {
+		} else if isNetLoc(ncType) {
 			nl := n.object.(*dataModel.NetworkLocation)
 			if nl.NetChar == nil {
 				nl.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			nl.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NodeTypeCloud || ncType == NodeTypeEdge || ncType == NodeTypeFog || ncType == NodeTypeUE {
+		} else if isPhyLoc(ncType) {
 			pl := n.object.(*dataModel.PhysicalLocation)
 			if pl.NetChar == nil {
 				pl.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			pl.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NodeTypeCloudApp || ncType == NodeTypeEdgeApp || ncType == NodeTypeUEApp {
+		} else if isProc(ncType) {
 			proc := n.object.(*dataModel.Process)
 			if proc.NetChar == nil {
 				proc.NetChar = new(dataModel.NetworkCharacteristics)
@@ -421,15 +421,6 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 	return err
 }
 
-func (m *Model) isValidPoaNodeType(nodeType string) bool {
-
-	switch nodeType {
-	case NodeTypePoa, NodeTypePoa4G, NodeTypePoa5G, NodeTypePoaWifi:
-		return true
-	}
-	return false
-}
-
 // AddScenarioNode - Add scenario node
 func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	m.lock.Lock()
@@ -440,21 +431,21 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 		return
 	}
 
-	// Find parent
+	// Find & validate parent
 	parentNode := m.nodeMap.FindByName(node.Parent)
 	if parentNode == nil {
 		err = errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
 		return
 	}
+	if !validateParentType(node.Type_, parentNode.nodeType) {
+		err = errors.New("Invalid parent type: " + parentNode.nodeType + " for node type: " + node.Type_)
+		return
+	}
 
 	// Add element based on type
-	if node.Type_ == NodeTypeUE {
+	if isPhyLoc(node.Type_) {
 
 		// Get parent Network Location node & context information
-		if !m.isValidPoaNodeType(parentNode.nodeType) {
-			err = errors.New("Invalid parent type: " + parentNode.nodeType)
-			return
-		}
 		nl := parentNode.object.(*dataModel.NetworkLocation)
 
 		// Validate Physical Location
@@ -463,7 +454,7 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 			return
 		}
 		pl := node.NodeDataUnion.PhysicalLocation
-		err = validatePL(pl)
+		err = validatePhyLoc(pl)
 		if err != nil {
 			return
 		}
@@ -475,20 +466,158 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 			return
 		}
 
-		// Remove any configured processes
+		// Ignore any configured processes
 		pl.Processes = make([]dataModel.Process, 0)
 
-		// Add PL to parent NL
+		// Add PhyLoc to parent NetLoc
 		nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
 
-		// Refresh node map
-		err = m.parseNodes()
-		if err != nil {
-			log.Error(err.Error())
+	} else if isProc(node.Type_) {
+
+		// Get parent Physical Location node & context information
+		pl := parentNode.object.(*dataModel.PhysicalLocation)
+
+		// Validate Process
+		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
+			err = errors.New("Missing Process")
+			return
 		}
+		proc := node.NodeDataUnion.Process
+		err = validateProc(proc)
+		if err != nil {
+			return
+		}
+
+		// Make sure node Name is unique
+		n := m.nodeMap.FindByName(proc.Name)
+		if n != nil {
+			err = errors.New("Element " + proc.Name + " already exists in scenario " + m.name)
+			return
+		}
+
+		// Add Proc to parent PhyLoc
+		pl.Processes = append(pl.Processes, *proc)
+
 	} else {
 		err = errors.New("Node type " + node.Type_ + " not supported")
 		return
+	}
+
+	// Refresh node map
+	err = m.parseNodes()
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	// Update scenario
+	err = m.refresh()
+	return
+}
+
+// ModifyScenarioNode - Modify scenario node
+func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if node == nil {
+		return errors.New("node == nil")
+	}
+
+	// Add element based on type
+	if isPhyLoc(node.Type_) {
+
+		// Validate Physical Location
+		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+			return errors.New("Missing Physical Location")
+		}
+		pl := node.NodeDataUnion.PhysicalLocation
+		err = validatePhyLoc(pl)
+		if err != nil {
+			return err
+		}
+
+		// Make sure element exists in scenario
+		n := m.nodeMap.FindByName(pl.Name)
+		if n == nil {
+			return errors.New("Element " + pl.Name + " not found in scenario " + m.name)
+		}
+
+		// Get parent
+		nl := n.parent.(*dataModel.NetworkLocation)
+		if nl == nil {
+			return errors.New("Parent node not found in scenario " + m.name)
+		}
+
+		// Update PhyLoc
+		for i, prevPl := range nl.PhysicalLocations {
+			if prevPl.Name == pl.Name {
+				// Keep existing child processes
+				pl.Processes = nl.PhysicalLocations[i].Processes
+
+				// Overwrite PhyLoc
+				var data []byte
+				data, err = json.Marshal(pl)
+				if err != nil {
+					return err
+				}
+				err = json.Unmarshal(data, &nl.PhysicalLocations[i])
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+
+	} else if isProc(node.Type_) {
+
+		// Validate Process
+		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
+			return errors.New("Missing Process")
+		}
+		proc := node.NodeDataUnion.Process
+		err = validateProc(proc)
+		if err != nil {
+			return err
+		}
+
+		// Make sure element exists in scenario
+		n := m.nodeMap.FindByName(proc.Name)
+		if n == nil {
+			return errors.New("Element " + proc.Name + " not found in scenario " + m.name)
+		}
+
+		// Get parent
+		pl := n.parent.(*dataModel.PhysicalLocation)
+		if pl == nil {
+			return errors.New("Parent node not found in scenario " + m.name)
+		}
+
+		// Update Process
+		for i, prevProc := range pl.Processes {
+			if prevProc.Name == proc.Name {
+				// Overwrite Process
+				var data []byte
+				data, err = json.Marshal(proc)
+				if err != nil {
+					return err
+				}
+				err = json.Unmarshal(data, &pl.Processes[i])
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+
+	} else {
+		err = errors.New("Node type " + node.Type_ + " not supported")
+		return
+	}
+
+	// Refresh node map
+	err = m.parseNodes()
+	if err != nil {
+		log.Error(err.Error())
 	}
 
 	// Update scenario
@@ -506,16 +635,15 @@ func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
 		return
 	}
 
-	// Remove element based on type
-	if node.Type_ == NodeTypeUE {
+	// Add element based on type
+	if isPhyLoc(node.Type_) {
 
-		// Get node name from request physical location
+		// Get node name from request
 		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
 			err = errors.New("Missing Physical Location")
 			return
 		}
-		reqPL := node.NodeDataUnion.PhysicalLocation
-		nodeName := reqPL.Name
+		nodeName := node.NodeDataUnion.PhysicalLocation.Name
 
 		// Find node in scenario
 		n := m.nodeMap.FindByName(nodeName)
@@ -524,41 +652,71 @@ func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
 			return
 		}
 
-		// Currently support only PL with no processes
-		pl := n.object.(*dataModel.PhysicalLocation)
-		if pl == nil || len(pl.Processes) != 0 {
-			err = errors.New("Cannot remove PL with child processes")
-			return
-		}
-
-		// Get parent NL
+		// Get parent
 		nl := n.parent.(*dataModel.NetworkLocation)
 		if nl == nil {
 			err = errors.New("Parent node not found in scenario " + m.name)
 			return
 		}
 
-		// Get index of PL to remove
+		// Get index of PhyLoc to remove
 		var index int
 		for i, pl := range nl.PhysicalLocations {
-			if pl.Name == n.name {
+			if pl.Name == nodeName {
 				index = i
 				break
 			}
 		}
 
-		// Overwrite & truncate to remove PL from list
+		// Overwrite & truncate to remove PhyLoc from list
 		nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
 		nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
 
-		// Refresh node map
-		err = m.parseNodes()
-		if err != nil {
-			log.Error(err.Error())
+	} else if isProc(node.Type_) {
+
+		// Get node name from request
+		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
+			err = errors.New("Missing Process")
+			return
 		}
+		nodeName := node.NodeDataUnion.Process.Name
+
+		// Find node in scenario
+		n := m.nodeMap.FindByName(nodeName)
+		if n == nil {
+			err = errors.New("Element " + nodeName + " not found in scenario " + m.name)
+			return
+		}
+
+		// Get parent
+		pl := n.parent.(*dataModel.PhysicalLocation)
+		if pl == nil {
+			err = errors.New("Parent node not found in scenario " + m.name)
+			return
+		}
+
+		// Get index of Process to remove
+		var index int
+		for i, proc := range pl.Processes {
+			if proc.Name == nodeName {
+				index = i
+				break
+			}
+		}
+
+		// Overwrite & truncate to remove Process from list
+		pl.Processes[index] = pl.Processes[len(pl.Processes)-1]
+		pl.Processes = pl.Processes[:len(pl.Processes)-1]
+
 	} else {
 		err = errors.New("Node type " + node.Type_ + " not supported")
 		return
+	}
+
+	// Refresh node map
+	err = m.parseNodes()
+	if err != nil {
+		log.Error(err.Error())
 	}
 
 	// Update scenario
@@ -661,15 +819,15 @@ func (m *Model) GetNodeParent(name string) (parent interface{}) {
 
 // GetNodeChild - Get a child node by its child name
 func (m *Model) GetNodeChild(name string) (child interface{}) {
-        m.lock.RLock()
-        defer m.lock.RUnlock()
+	m.lock.RLock()
+	defer m.lock.RUnlock()
 
-        child = nil
-        n := m.nodeMap.nameMap[name]
-        if n != nil {
-                child = n.child
-        }
-        return child
+	child = nil
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		child = n.child
+	}
+	return child
 }
 
 // GetNodeContext - Get a node context
@@ -916,10 +1074,65 @@ func (m *Model) UpdateScenario() {
 	}
 }
 
+// Node Type validation functions
+
+func isScenario(typ string) bool {
+	return typ == NodeTypeScenario
+}
+
+func isDomain(typ string) bool {
+	return typ == NodeTypeOperator || typ == NodeTypeOperatorCell
+}
+
 func isDefaultZone(typ string) bool {
 	return typ == "COMMON"
 }
 
+func isZone(typ string) bool {
+	return typ == NodeTypeZone
+}
+
 func isDefaultNetLoc(typ string) bool {
 	return typ == "DEFAULT"
+}
+
+func isNetLoc(typ string) bool {
+	return typ == NodeTypePoa || typ == NodeTypePoa4G || typ == NodeTypePoa5G || typ == NodeTypePoaWifi
+}
+
+func isPhyLoc(typ string) bool {
+	return typ == NodeTypeCloud || typ == NodeTypeEdge || typ == NodeTypeFog || typ == NodeTypeUE
+}
+
+func isProc(typ string) bool {
+	return typ == NodeTypeCloudApp || typ == NodeTypeEdgeApp || typ == NodeTypeUEApp
+}
+
+func validateParentType(nodeType string, parentType string) bool {
+	if isScenario(nodeType) {
+		return parentType == ""
+	} else if isDomain(nodeType) {
+		return isScenario(parentType)
+	} else if isZone(nodeType) {
+		return isDomain(parentType)
+	} else if isNetLoc(nodeType) {
+		return isZone(parentType)
+	} else if isPhyLoc(nodeType) {
+		if nodeType == NodeTypeUE || nodeType == NodeTypeFog {
+			return isNetLoc(parentType)
+		} else if nodeType == NodeTypeEdge {
+			return isZone(parentType)
+		} else if nodeType == NodeTypeCloud {
+			return isDomain(parentType)
+		}
+	} else if isProc(nodeType) {
+		if nodeType == NodeTypeUEApp {
+			return parentType == NodeTypeUE
+		} else if nodeType == NodeTypeEdgeApp {
+			return parentType == NodeTypeFog || parentType == NodeTypeEdge
+		} else if nodeType == NodeTypeCloudApp {
+			return parentType == NodeTypeCloud
+		}
+	}
+	return false
 }

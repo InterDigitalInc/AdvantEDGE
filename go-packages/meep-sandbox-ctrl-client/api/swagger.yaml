@@ -1188,8 +1188,8 @@ definitions:
       \ to scenario. Only the provided node is added; child nodes in node data are\
       \ ignored. <li>REMOVE - Remove node from scenario. Only node name is required\
       \ in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario\
-      \ node.\n<p>NOTE: Current backend implementation supports only a limited subset\
-      \ of scenario update event functionality (add/remove UE only)."
+      \ node.\n<p>NOTE: Current backend implementation supports only PhysicalLocation\
+      \ & Process network elements."
     example: {}
   ScenarioNode:
     type: "object"
@@ -1199,6 +1199,11 @@ definitions:
         description: "Node type"
         enum:
         - "UE"
+        - "FOG"
+        - "EDGE"
+        - "UE-APP"
+        - "EDGE-APP"
+        - "CLOUD-APP"
       nodeDataUnion:
         $ref: "#/definitions/NodeDataUnion"
       parent:
@@ -1216,6 +1221,8 @@ definitions:
     properties:
       physicalLocation:
         $ref: "#/definitions/PhysicalLocation"
+      process:
+        $ref: "#/definitions/Process"
     description: "Union of node data objects\nNOTE: Only one of the following objects\
       \ must be filled"
     example: {}

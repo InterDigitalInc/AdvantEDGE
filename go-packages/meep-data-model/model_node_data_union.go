@@ -26,4 +26,5 @@ package model
 // Union of node data objects NOTE: Only one of the following objects must be filled
 type NodeDataUnion struct {
 	PhysicalLocation *PhysicalLocation `json:"physicalLocation,omitempty"`
+	Process          *Process          `json:"process,omitempty"`
 }

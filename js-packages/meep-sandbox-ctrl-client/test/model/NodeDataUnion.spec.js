@@ -61,6 +61,12 @@
         // expect(instance.physicalLocation).to.be(expectedValueLiteral);
       });
 
+      it('should have the property process (base name: "process")', function() {
+        // TODO: update the code to test the property process
+        expect(instance).to.have.property('process');
+        // expect(instance.process).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

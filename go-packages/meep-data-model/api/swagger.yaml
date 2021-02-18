@@ -343,7 +343,7 @@ definitions:
       <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.
       <li>MODIFY - Modifies scenario node.
 
-      <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
+      <p>NOTE: Current backend implementation supports only PhysicalLocation & Process network elements.
     properties:
       action:
         type: string
@@ -503,8 +503,8 @@ definitions:
       #   $ref: '#/definitions/NetworkLocation'
       physicalLocation:
         $ref: '#/definitions/PhysicalLocation'
-      # process:
-      #   $ref: '#/definitions/Process'
+      process:
+        $ref: '#/definitions/Process'
     example: {}
   PhysicalLocation:
     type: object
@@ -859,6 +859,11 @@ definitions:
         description: Node type
         enum:
           - UE
+          - FOG
+          - EDGE
+          - UE-APP
+          - EDGE-APP
+          - CLOUD-APP
       nodeDataUnion:
         $ref: '#/definitions/NodeDataUnion'
       parent:
