@@ -41,6 +41,7 @@ const initialState = {
   mobilityEventDestination: '',
   scenarioUpdateAction: SCENARIO_UPDATE_ACTION_NONE,
   scenarioUpdateRemoveEleName: '',
+  scenarioUpdateRemoveEleType: '',
   devMode: false,
   currentDialog: '',
   automaticRefresh: false,
@@ -155,6 +156,14 @@ const UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME = 'UI_EXEC_SCENARIO_UPDATE_REMOVE_
 export function uiExecScenarioUpdateRemoveEleName(event) {
   return {
     type: UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME,
+    payload: event
+  };
+}
+
+const UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE = 'UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE';
+export function uiExecScenarioUpdateRemoveEleType(event) {
+  return {
+    type: UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE,
     payload: event
   };
 }
@@ -361,6 +370,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { scenarioUpdateAction: action.payload });
   case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME:
     return updateObject(state, { scenarioUpdateRemoveEleName: action.payload });
+  case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE:
+    return updateObject(state, { scenarioUpdateRemoveEleType: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:

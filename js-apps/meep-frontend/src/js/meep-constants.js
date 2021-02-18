@@ -191,6 +191,7 @@ export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
 
 export const EXEC_EVT_SU_ACTION = 'exec-evt-su-action';
+export const EXEC_EVT_SU_REMOVE_ELEM_TYPE = 'exec-evt-su-remove-elem-type';
 export const EXEC_EVT_SU_REMOVE_ELEM_NAME = 'exec-evt-su-remove-elem-name';
 
 export const MEEP_EVENT_COUNT = 'meep-event-count';

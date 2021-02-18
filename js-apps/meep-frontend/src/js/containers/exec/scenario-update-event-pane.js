@@ -19,6 +19,7 @@ import { connect } from 'react-redux';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+// import { TextField } from '@rmwc/textfield';
 
 import CfgNetworkElementContainer from '@/js/containers/cfg/cfg-network-element-container';
 import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
@@ -28,15 +29,24 @@ import { validateNetworkElement } from '@/js/containers/cfg/cfg-page-container';
 import {
   TYPE_EXEC,
   UE_TYPE_STR,
+  FOG_TYPE_STR,
+  DC_TYPE_STR,
   UE_APP_TYPE_STR,
   EDGE_APP_TYPE_STR,
   CLOUD_APP_TYPE_STR,
+  MAP_VIEW,
+  NET_TOPOLOGY_VIEW,
   EXEC_EVT_SU_ACTION,
+  EXEC_EVT_SU_REMOVE_ELEM_TYPE,
   EXEC_EVT_SU_REMOVE_ELEM_NAME,
   SCENARIO_UPDATE_ACTION_NONE,
   SCENARIO_UPDATE_ACTION_ADD,
   SCENARIO_UPDATE_ACTION_MODIFY,
   SCENARIO_UPDATE_ACTION_REMOVE,
+  ELEMENT_TYPE_DC,
+  ELEMENT_TYPE_EDGE,
+  ELEMENT_TYPE_FOG,
+  ELEMENT_TYPE_UE,
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP
@@ -44,7 +54,9 @@ import {
 
 import {
   uiExecChangeScenarioUpdateAction,
-  uiExecScenarioUpdateRemoveEleName
+  uiExecScenarioUpdateRemoveEleName,
+  uiExecScenarioUpdateRemoveEleType,
+  uiExecChangeSandboxCfg
 } from '@/js/state/ui';
 
 import {
@@ -63,6 +75,16 @@ import {
 import { updateObject } from '@/js/util/object-util';
 
 import { addElementToScenario, updateElementInScenario } from '@/js/util/scenario-utils';
+
+const elementTypes = [
+  ELEMENT_TYPE_UE,
+  ELEMENT_TYPE_FOG,
+  ELEMENT_TYPE_EDGE,
+  ELEMENT_TYPE_DC,
+  ELEMENT_TYPE_UE_APP,
+  ELEMENT_TYPE_EDGE_APP,
+  ELEMENT_TYPE_CLOUD_APP
+];
 
 var elementNames = [];
 
@@ -107,6 +129,18 @@ class ScenarioUpdateEventPane extends Component {
     elementNames.length = 0;
     var neType = '';
     switch(elementName) {
+    case ELEMENT_TYPE_UE:
+      neType = UE_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_FOG:
+      neType = FOG_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_EDGE:
+      neType = EDGE_APP_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_DC:
+      neType = DC_TYPE_STR;
+      break;
     case ELEMENT_TYPE_UE_APP:
       neType = UE_APP_TYPE_STR;
       break;
@@ -127,6 +161,9 @@ class ScenarioUpdateEventPane extends Component {
           var nl = zone.networkLocations[nInd];
           for (var plInd in nl.physicalLocations) {
             var pl = nl.physicalLocations[plInd];
+            if (pl.type === neType) {
+              elementNames.push(pl.name);
+            }
             for (var prInd in pl.processes) {
               var pr = pl.processes[prInd];
               if (pr.type === neType) {
@@ -177,6 +214,21 @@ class ScenarioUpdateEventPane extends Component {
     this.props.onClose(e);
   }
 
+  onEditLocation() {
+    this.toggleExecView();
+  }
+
+  onEditPath() {
+    this.toggleExecView();
+  }
+
+  toggleExecView() {
+    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+    var sandbox = sandboxCfg[this.props.sandbox];
+    sandbox.dashboardView1 = sandbox.dashboardView1 === NET_TOPOLOGY_VIEW ? MAP_VIEW : NET_TOPOLOGY_VIEW;
+    this.props.changeSandboxCfg(sandboxCfg);
+  }
+
   getPLFromScenario (elementName, scenario) {
     if (elementName === null) {
       return null;
@@ -217,7 +269,7 @@ class ScenarioUpdateEventPane extends Component {
       eventScenarioUpdate: {
         action: action,
         node: {
-          type: UE_TYPE_STR, // Change it to actual Procress Type
+          type: UE_TYPE_STR,
           parent: parentVal,
           nodeDataUnion: {
             physicalLocation: pl
@@ -262,8 +314,8 @@ class ScenarioUpdateEventPane extends Component {
                   onDeleteElement={() => {}}
                   onApplyCloneElement={() => {}}
                   onCancelElement={e => this.onCancelElement(e)}
-                  onEditLocation={() => {}}
-                  onEditPath={() => {}}
+                  onEditLocation={elem => this.onEditLocation(elem)}
+                  onEditPath={elem => this.onEditPath(elem)}
                   type={TYPE_EXEC}
                 />
               </Elevation>
@@ -272,6 +324,20 @@ class ScenarioUpdateEventPane extends Component {
         }
         { this.props.scenarioUpdateAction === 'REMOVE' ?          
           <div>
+            <Grid style={styles.block}>
+              <GridCell span="8">
+                <Select
+                  style={styles.select}
+                  label="Element Type"
+                  outlined
+                  options={elementTypes}
+                  onChange={e => { this.changeElementType(e.target.value); }}
+                  data-cy={EXEC_EVT_SU_REMOVE_ELEM_TYPE}
+                  value={this.props.scenarioUpdateRemoveEleType}
+                />
+              </GridCell>
+              <GridCell span="4"></GridCell>
+            </Grid>
             <Grid style={styles.block}>
               <GridCell span="8">
                 <Select
@@ -333,7 +399,10 @@ const mapStateToProps = state => {
   return {
     scenarioUpdateAction: state.ui.scenarioUpdateAction,
     scenarioUpdateRemoveEleName: state.ui.scenarioUpdateRemoveEleName,
+    scenarioUpdateRemoveEleType: state.ui.scenarioUpdateRemoveEleType,
     execConfigMode: state.exec.elementConfiguration.configurationMode,
+    sandboxCfg: state.ui.sandboxCfg,
+    sandbox: state.ui.sandbox,
     table: state.exec.table,
     scenario: state.exec.scenario
   };
@@ -342,9 +411,11 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeActionType: event => dispatch(uiExecChangeScenarioUpdateAction(event)),
+    changeRemoveActionEleType: event => dispatch(uiExecScenarioUpdateRemoveEleType(event)),
     changeRemoveActionEleName: event => dispatch(uiExecScenarioUpdateRemoveEleName(event)),
     execElemNew: elem => dispatch(execElemNew(elem)),
     execElemClear: elem => dispatch(execElemClear(elem)),
+    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg)),
     execElemSetErrMsg: msg => dispatch(execElemSetErrMsg(msg))
   };
 };
