@@ -1537,7 +1537,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
   }
 };
 
-const elementTypes = [
+const cfgPaneElementTypes = [
   {
     label: 'Logical Domain',
     options: [ELEMENT_TYPE_OPERATOR_GENERIC, ELEMENT_TYPE_OPERATOR_CELL]
@@ -1565,6 +1565,17 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_UE_APP,
       // ELEMENT_TYPE_MECSVC,
+      ELEMENT_TYPE_EDGE_APP,
+      ELEMENT_TYPE_CLOUD_APP
+    ]
+  }
+];
+
+const execPaneElementTypes = [
+  {
+    label: 'Process',
+    options: [
+      ELEMENT_TYPE_UE_APP,
       ELEMENT_TYPE_EDGE_APP,
       ELEMENT_TYPE_CLOUD_APP
     ]
@@ -1723,7 +1734,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisa
 
   var typeOverride = getElementTypeOverride(type);
 
-  elementTypes.length === 5 && pageType === TYPE_EXEC ? elementTypes.splice(0, 3) : '';
+  var elementTypes = pageType === TYPE_CFG ? cfgPaneElementTypes : execPaneElementTypes;
 
   return (
     <>
