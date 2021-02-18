@@ -1500,7 +1500,8 @@ func TestUserInfo(t *testing.T) {
 	expectedResourceURL := expectedListResourceURL + "?address=ue1"
 	//expectedListResourceURL := ""
 	//expectedResourceURL := ""
-	expectedUserInfo := UserInfo{"zone1-poa-cell1", "ue1", "", "", nil, expectedResourceURL, nil, "zone1"}
+	var timestamp TimeStamp
+	expectedUserInfo := UserInfo{"zone1-poa-cell1", "ue1", "", "", nil, expectedResourceURL, &timestamp, "zone1"}
 	expectedUserList := UserList{expectedListResourceURL, nil}
 	expectedUserList.User = append(expectedUserList.User, expectedUserInfo)
 
@@ -1559,7 +1560,12 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	//need to remove the resourec url since it was not given in the expected response
+	//need to remove the timestamp since it was not given in the expected response
+	if len(respBody.UserList.User) != 0 {
+		var timestamp TimeStamp
+		respBody.UserList.User[0].Timestamp = &timestamp
+	}
+
 	receivedResponseStr, err := json.Marshal(respBody.UserList)
 	if err != nil {
 		t.Fatalf(err.Error())

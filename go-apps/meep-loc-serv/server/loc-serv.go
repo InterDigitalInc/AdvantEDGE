@@ -1648,6 +1648,12 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 	userInfo.ZoneId = zoneId
 	userInfo.AccessPointId = accessPointId
 
+	seconds := time.Now().Unix()
+	var timeStamp TimeStamp
+	timeStamp.Seconds = int32(seconds)
+
+	userInfo.Timestamp = &timeStamp
+
 	// Update position
 	if longitude == nil || latitude == nil {
 		userInfo.LocationInfo = nil
@@ -1661,10 +1667,6 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 		userInfo.LocationInfo.Longitude = append(userInfo.LocationInfo.Longitude, *longitude)
 		userInfo.LocationInfo.Latitude = nil
 		userInfo.LocationInfo.Latitude = append(userInfo.LocationInfo.Latitude, *latitude)
-
-		seconds := time.Now().Unix()
-		var timeStamp TimeStamp
-		timeStamp.Seconds = int32(seconds)
 
 		userInfo.LocationInfo.Timestamp = &timeStamp
 	}
