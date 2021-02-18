@@ -19,23 +19,16 @@ import { connect } from 'react-redux';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-// import { TextField } from '@rmwc/textfield';
 
 import CfgNetworkElementContainer from '@/js/containers/cfg/cfg-network-element-container';
 import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
-
 import { validateNetworkElement } from '@/js/containers/cfg/cfg-page-container';
 
 import {
   TYPE_EXEC,
-  UE_TYPE_STR,
-  FOG_TYPE_STR,
-  DC_TYPE_STR,
   UE_APP_TYPE_STR,
   EDGE_APP_TYPE_STR,
   CLOUD_APP_TYPE_STR,
-  MAP_VIEW,
-  NET_TOPOLOGY_VIEW,
   EXEC_EVT_SU_ACTION,
   EXEC_EVT_SU_REMOVE_ELEM_TYPE,
   EXEC_EVT_SU_REMOVE_ELEM_NAME,
@@ -43,10 +36,6 @@ import {
   SCENARIO_UPDATE_ACTION_ADD,
   SCENARIO_UPDATE_ACTION_MODIFY,
   SCENARIO_UPDATE_ACTION_REMOVE,
-  ELEMENT_TYPE_DC,
-  ELEMENT_TYPE_EDGE,
-  ELEMENT_TYPE_FOG,
-  ELEMENT_TYPE_UE,
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP
@@ -55,8 +44,7 @@ import {
 import {
   uiExecChangeScenarioUpdateAction,
   uiExecScenarioUpdateRemoveEleName,
-  uiExecScenarioUpdateRemoveEleType,
-  uiExecChangeSandboxCfg
+  uiExecScenarioUpdateRemoveEleType
 } from '@/js/state/ui';
 
 import {
@@ -69,18 +57,19 @@ import {
 import {
   getElemFieldVal,
   FIELD_NAME,
-  FIELD_PARENT
+  FIELD_PARENT,
+  FIELD_TYPE
 } from '@/js/util/elem-utils';
 
 import { updateObject } from '@/js/util/object-util';
 
-import { addElementToScenario, updateElementInScenario } from '@/js/util/scenario-utils';
+import {
+  getUniqueId,
+  getElementNames,
+  createProcess
+} from '@/js/util/scenario-utils';
 
 const elementTypes = [
-  ELEMENT_TYPE_UE,
-  ELEMENT_TYPE_FOG,
-  ELEMENT_TYPE_EDGE,
-  ELEMENT_TYPE_DC,
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP
@@ -102,11 +91,14 @@ class ScenarioUpdateEventPane extends Component {
     };
   }
 
-  componentDidMount() {
-    this.props.changeActionType(SCENARIO_UPDATE_ACTION_NONE);
-    this.props.execElemNew();
-    this.props.changeRemoveActionEleType('');
-    this.props.changeRemoveActionEleName('');
+  shouldComponentUpdate (nextProps) {
+    return (
+      this.props.api !== nextProps.api ||
+      this.props.currentEvent !== nextProps.currentEvent ||
+      this.props.scenarioUpdateRemoveEleName !== nextProps.scenarioUpdateRemoveEleName ||
+      this.props.scenarioUpdateRemoveEleType !== nextProps.scenarioUpdateRemoveEleType ||
+      this.props.scenarioUpdateAction !== nextProps.scenarioUpdateAction
+    );
   }
 
   changeAction(action) {
@@ -119,28 +111,9 @@ class ScenarioUpdateEventPane extends Component {
     }
   }
 
-  changeElementType(elementType) {
-    this.props.changeRemoveActionEleType(elementType);
-    this.getElementNames(elementType, this.props.scenario);
-    this.props.changeRemoveActionEleName('');
-  }
-
-  getElementNames(elementName, scenario) {
-    elementNames.length = 0;
+  getElementTypeString (elementType) {
     var neType = '';
-    switch(elementName) {
-    case ELEMENT_TYPE_UE:
-      neType = UE_TYPE_STR;
-      break;
-    case ELEMENT_TYPE_FOG:
-      neType = FOG_TYPE_STR;
-      break;
-    case ELEMENT_TYPE_EDGE:
-      neType = EDGE_APP_TYPE_STR;
-      break;
-    case ELEMENT_TYPE_DC:
-      neType = DC_TYPE_STR;
-      break;
+    switch(elementType) {
     case ELEMENT_TYPE_UE_APP:
       neType = UE_APP_TYPE_STR;
       break;
@@ -150,58 +123,46 @@ class ScenarioUpdateEventPane extends Component {
     case ELEMENT_TYPE_CLOUD_APP:
       neType = CLOUD_APP_TYPE_STR;
       break;
-    default:
-      return;
     }
-    for (var dInd in scenario.deployment.domains) {
-      var domain = scenario.deployment.domains[dInd];
-      for (var zInd in domain.zones) {
-        var zone = domain.zones[zInd];
-        for (var nInd in zone.networkLocations) {
-          var nl = zone.networkLocations[nInd];
-          for (var plInd in nl.physicalLocations) {
-            var pl = nl.physicalLocations[plInd];
-            if (pl.type === neType) {
-              elementNames.push(pl.name);
-            }
-            for (var prInd in pl.processes) {
-              var pr = pl.processes[prInd];
-              if (pr.type === neType) {
-                elementNames.push(pr.name);
-              }
-            }
-          }
-        }
-      }
-    }
+    return neType;
+  }
+
+  changeElementType(elementType) {
+    this.props.changeRemoveActionEleType(elementType);
+
+    elementNames.length = 0;
+    var updatedScenario = updateObject({}, this.props.scenario);
+    var neType = this.getElementTypeString(elementType);
+    elementNames = getElementNames(neType, updatedScenario);
+
+    this.props.changeRemoveActionEleName('');
   }
 
   onSaveElement(element) {
-    if (!validateNetworkElement(element, this.props.table.entries, this.props.execElemSetErrMsg)) {
+    if (!validateNetworkElement(element, this.props.table.entries, this.props.execElemSetErrMsg) || 
+    this.props.execConfigMode !== EXEC_ELEM_MODE_NEW) {
       return;
     }
 
-    var action = '';
     var updatedScenario = updateObject({}, this.props.scenario);
-    if (this.props.execConfigMode === EXEC_ELEM_MODE_NEW) {
-      addElementToScenario(updatedScenario, element);
-      action = SCENARIO_UPDATE_ACTION_ADD;
-    } else {
-      updateElementInScenario(updatedScenario, element);
-      action = SCENARIO_UPDATE_ACTION_MODIFY;
-    }
+    var type = getElemFieldVal(element, FIELD_TYPE);
+    var neType = this.getElementTypeString(type);
+    var name = getElemFieldVal(element, FIELD_NAME);
+    var parent = getElemFieldVal(element, FIELD_PARENT);
+    var uniqueId = getUniqueId(updatedScenario);
+    var processObj = createProcess(uniqueId, name, neType, element);
+    this.sendEvent(parent, neType, processObj, SCENARIO_UPDATE_ACTION_ADD);
 
-    var pl = this.getPLFromScenario(getElemFieldVal(element, FIELD_NAME), updatedScenario);
-    this.sendEvent(getElemFieldVal(element, FIELD_PARENT), pl, action);
     this.props.execElemClear();
     this.props.execElemNew();
   }
 
   onDeleteElement(e) {
     e.preventDefault();
-    var pl = { name: this.props.scenarioUpdateRemoveEleName };
-    this.sendEvent('', pl, SCENARIO_UPDATE_ACTION_REMOVE);
-    this.props.execElemClear();
+    var neType = this.getElementTypeString(this.props.scenarioUpdateRemoveEleType);
+    var processObj = { name: this.props.scenarioUpdateRemoveEleName };
+    this.sendEvent('', neType, processObj, SCENARIO_UPDATE_ACTION_REMOVE);
+
     this.props.changeRemoveActionEleName('');
     this.props.changeRemoveActionEleType('');
   }
@@ -211,55 +172,12 @@ class ScenarioUpdateEventPane extends Component {
     this.props.changeActionType(SCENARIO_UPDATE_ACTION_NONE);
     this.props.execElemClear();
     this.props.changeRemoveActionEleName('');
+    this.props.changeRemoveActionEleType('');
     this.props.onClose(e);
   }
 
-  onEditLocation() {
-    this.toggleExecView();
-  }
-
-  onEditPath() {
-    this.toggleExecView();
-  }
-
-  toggleExecView() {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    var sandbox = sandboxCfg[this.props.sandbox];
-    sandbox.dashboardView1 = sandbox.dashboardView1 === NET_TOPOLOGY_VIEW ? MAP_VIEW : NET_TOPOLOGY_VIEW;
-    this.props.changeSandboxCfg(sandboxCfg);
-  }
-
-  getPLFromScenario (elementName, scenario) {
-    if (elementName === null) {
-      return null;
-    }
-
-    for (var dInd in scenario.deployment.domains) {
-      var domain = scenario.deployment.domains[dInd];
-      for (var zInd in domain.zones) {
-        var zone = domain.zones[zInd];
-        for (var nInd in zone.networkLocations) {
-          var nl = zone.networkLocations[nInd];
-          for (var plInd in nl.physicalLocations) {
-            var pl = nl.physicalLocations[plInd];
-            if (pl.name === elementName) {
-              return pl;
-            }
-            for (var prInd in pl.processes) {
-              var pr = pl.processes[prInd];
-              if (pr.name === elementName) {
-                return pl;
-              }
-            }
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  sendEvent(parentVal, pl, action) {
-    if (pl === null || parentVal === null) {
+  sendEvent(parentVal, elementTypeString, processObj, action) {
+    if (processObj === null || elementTypeString === '' || action === '') {
       return;
     }
 
@@ -269,10 +187,10 @@ class ScenarioUpdateEventPane extends Component {
       eventScenarioUpdate: {
         action: action,
         node: {
-          type: UE_TYPE_STR,
+          type: elementTypeString,
           parent: parentVal,
           nodeDataUnion: {
-            physicalLocation: pl
+            process: processObj
           }
         }
       }
@@ -314,8 +232,8 @@ class ScenarioUpdateEventPane extends Component {
                   onDeleteElement={() => {}}
                   onApplyCloneElement={() => {}}
                   onCancelElement={e => this.onCancelElement(e)}
-                  onEditLocation={elem => this.onEditLocation(elem)}
-                  onEditPath={elem => this.onEditPath(elem)}
+                  onEditLocation={() => {}}
+                  onEditPath={() => {}}
                   type={TYPE_EXEC}
                 />
               </Elevation>
@@ -328,7 +246,7 @@ class ScenarioUpdateEventPane extends Component {
               <GridCell span="8">
                 <Select
                   style={styles.select}
-                  label="Element Type"
+                  label="Process Type"
                   outlined
                   options={elementTypes}
                   onChange={e => { this.changeElementType(e.target.value); }}
@@ -342,7 +260,7 @@ class ScenarioUpdateEventPane extends Component {
               <GridCell span="8">
                 <Select
                   style={styles.select}
-                  label="Element Name"
+                  label="Process Name"
                   outlined
                   options={elementNames}
                   onChange={e => { this.props.changeRemoveActionEleName(e.target.value); }}
@@ -401,8 +319,6 @@ const mapStateToProps = state => {
     scenarioUpdateRemoveEleName: state.ui.scenarioUpdateRemoveEleName,
     scenarioUpdateRemoveEleType: state.ui.scenarioUpdateRemoveEleType,
     execConfigMode: state.exec.elementConfiguration.configurationMode,
-    sandboxCfg: state.ui.sandboxCfg,
-    sandbox: state.ui.sandbox,
     table: state.exec.table,
     scenario: state.exec.scenario
   };
@@ -415,7 +331,6 @@ const mapDispatchToProps = dispatch => {
     changeRemoveActionEleName: event => dispatch(uiExecScenarioUpdateRemoveEleName(event)),
     execElemNew: elem => dispatch(execElemNew(elem)),
     execElemClear: elem => dispatch(execElemClear(elem)),
-    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg)),
     execElemSetErrMsg: msg => dispatch(execElemSetErrMsg(msg))
   };
 };
