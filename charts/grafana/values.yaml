@@ -469,82 +469,16 @@ dashboardProviders:
 ##
 ## dashboards per provider, use provider name as key.
 ##
-# apiserver: dashboards/apiserver.json
-# cluster-total: dashboards/cluster-total.json
-# controller-manager: dashboards/controller-manager.json
-# etcd: dashboards/etcd.json
-# k8s-coredns: dashboards/k8s-coredns.json
-# k8s-resources-cluster: dashboards/k8s-resources-cluster.json
-# k8s-resources-namespace: dashboards/k8s-resources-namespace.json
-# k8s-resources-node: dashboards/k8s-resources-node.json
-# k8s-resources-pod: dashboards/k8s-resources-pod.json
-# k8s-resources-workload: dashboards/k8s-resources-workload.json
-# k8s-resources-workloads-namespace: dashboards/k8s-resources-workloads-namespace.json
-# kubelet: dashboards/kubelet.json
-# namespace-by-pod: dashboards/namespace-by-pod.json
-# namespace-by-workload: dashboards/namespace-by-workload.json
-# node-cluster-rsrc-use: dashboards/node-cluster-rsrc-use.json
-# node-rsrc-use: dashboards/node-rsrc-use.json
-# nodes: dashboards/nodes.json
-# persistentvolumesusage: dashboards/persistentvolumesusage.json
-# pod-total: dashboards/pod-total.json
-# prometheus: dashboards/prometheus.json
-# proxy: dashboards/proxy.json
-# scheduler: dashboards/scheduler.json
-# statefulset: dashboards/statefulset.json
-# workload-total: dashboards/workload-total.json
-# 1048576
-
 dashboards:
   default:
-    apiserver:
-      file: dashboards/apiserver.json
-    cluster-total:
-      file: dashboards/cluster-total.json
-    # controller-manager:
-    #   file: dashboards/controller-manager.json
-    # etcd:
-    #   file: dashboards/etcd.json
-    k8s-coredns:
-      file: dashboards/k8s-coredns.json
-    k8s-res-cluster:
+    k8s-resources-cluster:
       file: dashboards/k8s-resources-cluster.json
-    k8s-res-ns:
+    k8s-resources-namespace:
       file: dashboards/k8s-resources-namespace.json
-    k8s-res-node:
-      file: dashboards/k8s-resources-node.json
-    k8s-res-pod:
-      file: dashboards/k8s-resources-pod.json
-    #k8s-res-wl:
-      #file: dashboards/k8s-resources-workload.json
-    #k8s-res-wl-ns:
-      #file: dashboards/k8s-resources-workloads-namespace.json
     kubelet:
       file: dashboards/kubelet.json
-    ns-by-pod:
-      file: dashboards/namespace-by-pod.json
-    #ns-by-workload:
-      #file: dashboards/namespace-by-workload.json
-    # node-cluster-rsrc-use:
-    #   file: dashboards/node-cluster-rsrc-use.json
-    # node-rsrc-use:
-    #   file: dashboards/node-rsrc-use.json
-    # nodes:
-    #   file: dashboards/nodes.json
-    pvusage:
-      file: dashboards/persistentvolumesusage.json
-    pod-total:
-      file: dashboards/pod-total.json
     prometheus:
       file: dashboards/prometheus.json
-    # proxy:
-    #   file: dashboards/proxy.json
-    # scheduler:
-    #   file: dashboards/scheduler.json
-    statefulset:
-      file: dashboards/statefulset.json
-    wl-total:
-      file: dashboards/workload-total.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON
