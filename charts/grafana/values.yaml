@@ -471,14 +471,6 @@ dashboardProviders:
 ##
 dashboards:
   default:
-    k8s-resources-cluster:
-      file: dashboards/k8s-resources-cluster.json
-    k8s-resources-namespace:
-      file: dashboards/k8s-resources-namespace.json
-    kubelet:
-      file: dashboards/kubelet.json
-    prometheus:
-      file: dashboards/prometheus.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON
