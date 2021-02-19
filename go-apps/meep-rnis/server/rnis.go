@@ -111,6 +111,8 @@ var nextSubscriptionIdAvailable int
 var nextAvailableErabId int
 
 const defaultSupportedQci = 80
+const defaultMeasRepUePeriodicTriggerInterval = 1
+const defaultNrMeasRepUePeriodicTriggerInterval = 1
 
 type RabInfoData struct {
 	queryErabId        int32
@@ -242,19 +244,35 @@ func Init() (err error) {
 		}
 	}()
 
-	periodicTriggerTicker = time.NewTicker(time.Duration(periodicTriggerIntervals) * time.Second)
-	go func() {
-		for range periodicTriggerTicker.C {
-			checkMrPeriodicTrigger(int32(TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS))
-		}
-	}()
+        // Retrieve Meas rep Ue periodic trigger interval from environment variable
+        periodicTriggerInterval := defaultMeasRepUePeriodicTriggerInterval
+        periodicTriggerIntervalEnv := strings.TrimSpace(os.Getenv("MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL"))
+        if periodicTriggerIntervalEnv != "" {
+                periodicTriggerInterval, _ = strconv.Atoi(periodicTriggerIntervalEnv)
+        }
+        log.Info("MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: ", periodicTriggerInterval, "---", periodicTriggerIntervalEnv)
 
-	periodicNrTriggerTicker = time.NewTicker(time.Duration(periodicNrTriggerIntervals) * time.Second)
-	go func() {
-		for range periodicNrTriggerTicker.C {
-			checkNrMrPeriodicTrigger(int32(TRIGGER_NR_NR_PERIODICAL))
-		}
-	}()
+        periodicTriggerTicker = time.NewTicker(time.Duration(periodicTriggerInterval) * time.Second)
+        go func() {
+                for range periodicTriggerTicker.C {
+                        checkMrPeriodicTrigger(int32(TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS))
+                }
+        }()
+
+        // Retrieve Nr Meas rep Ue periodic trigger interval from environment variable
+        periodicTriggerInterval = defaultNrMeasRepUePeriodicTriggerInterval
+        periodicTriggerIntervalEnv = strings.TrimSpace(os.Getenv("NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL"))
+        if periodicTriggerIntervalEnv != "" {
+                periodicTriggerInterval, _ = strconv.Atoi(periodicTriggerIntervalEnv)
+        }
+        log.Info("NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: ", periodicTriggerInterval)
+
+        periodicNrTriggerTicker = time.NewTicker(time.Duration(periodicTriggerInterval) * time.Second)
+        go func() {
+                for range periodicNrTriggerTicker.C {
+                        checkNrMrPeriodicTrigger(int32(TRIGGER_NR_NR_PERIODICAL))
+                }
+        }()
 
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{

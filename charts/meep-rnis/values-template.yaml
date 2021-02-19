@@ -17,6 +17,8 @@ image:
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
     MEEP_HOST_URL: {{ .HostUrl }}
+    MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: 2
+    NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: 4
 
 service:
   name: meep-rnis
