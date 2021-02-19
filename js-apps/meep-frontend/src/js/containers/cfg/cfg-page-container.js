@@ -115,6 +115,121 @@ const hasExtPortsInCommon = elem1 => elem2 => {
 
 const hasDifferentName = elem1 => elem2 => elem1.name.val !== elem2.name.val;
 
+// Validate new network element form field entries
+export const validateNetworkElement = (element, entries, elemSetErrMsg) => {
+  var data = entries;
+
+  // Clear previous error message
+  elemSetErrMsg('');
+
+  // Verify that no field is in error
+  var fieldsInError = 0;
+  _.forOwn(element, val => (fieldsInError = val.err ? fieldsInError + 1 : fieldsInError));
+  if (fieldsInError) {
+    elemSetErrMsg(`${fieldsInError} fields in error`);
+    return false;
+  }
+
+  // Verify element type
+  var type = getElemFieldVal(element, FIELD_TYPE);
+  if (type === null) {
+    elemSetErrMsg('Missing element type');
+    return false;
+  }
+
+  // Check for valid & unique network element name (except if editing)
+  var name = getElemFieldVal(element, FIELD_NAME);
+  if (name === null || name === '') {
+    elemSetErrMsg('Missing element name');
+    return false;
+  }
+
+  if (data[name] && data[name].id !== element.id) {
+    elemSetErrMsg('Element name already exists');
+    return false;
+  }
+
+  // Nothing else to validate for Scenario element
+  if (type === ELEMENT_TYPE_SCENARIO) {
+    return true;
+  }
+
+  // Make sure parent exists
+  if (!data[getElemFieldVal(element, FIELD_PARENT)]) {
+    elemSetErrMsg('Parent does not exist');
+    return false;
+  }
+
+  // If GPU requested, make sure type is set
+  var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
+  if (gpuCount) {
+    var gpuType = getElemFieldVal(element, FIELD_GPU_TYPE);
+    if (gpuType === null || gpuType === '') {
+      elemSetErrMsg('GPU type not selected');
+      return false;
+    }
+  }
+
+  // If CPU limitations is requested, making sure Min CPU <= Max CPU
+  var cpuMin = getElemFieldVal(element, FIELD_CPU_MIN);
+  var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
+  if (cpuMin !== null && cpuMax !== null) {
+    if (parseFloat(cpuMin) > parseFloat(cpuMax)) {
+      elemSetErrMsg('Min CPU > Max CPU');
+      return false;
+    }
+  }
+
+  // If Memory limitations is requested, making sure Min Memory <= Max Memory
+  var memoryMin = getElemFieldVal(element, FIELD_MEMORY_MIN);
+  var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
+  if (memoryMin !== null && memoryMax !== null) {
+    if (parseInt(memoryMin) > parseInt(memoryMax)) {
+      elemSetErrMsg('Min Memory > Max Memory');
+      return false;
+    }
+  }
+
+  // Verify cellid/mac address if required
+  if (type === ELEMENT_TYPE_POA_4G) {
+    var cellId = getElemFieldVal(element, FIELD_CELL_ID);
+    if (!cellId) {
+      elemSetErrMsg('Missing Cell ID');
+      return false;
+    }
+  } else if (type === ELEMENT_TYPE_POA_5G) {
+    var nrCellId = getElemFieldVal(element, FIELD_NR_CELL_ID);
+    if (!nrCellId) {
+      elemSetErrMsg('Missing NR Cell ID');
+      return false;
+    }
+  } else if (type === ELEMENT_TYPE_POA_WIFI) {
+    var macId = getElemFieldVal(element, FIELD_MAC_ID);
+    if (!macId) {
+      elemSetErrMsg('Missing MAC Address');
+      return false;
+    }
+  }
+
+  // TODO -- verify node port not already used
+  const extPorts = externalPorts(element);
+
+  if (extPorts.length) {
+    const elemsWithSameExtPort = pipe(
+      filter(hasDifferentName(element)),
+      filter(hasExtPortsInCommon(element))
+    )(Object.values(data));
+
+    if (elemsWithSameExtPort.length) {
+      const elemNames = elemsWithSameExtPort.map((e) =>getElemFieldVal(e, FIELD_NAME));
+      elemSetErrMsg(`External port already used in ${elemNames}`);
+      return false;
+    }
+  }
+
+  return true;
+};
+
 class CfgPageContainer extends Component {
   constructor(props) {
     super(props);
@@ -144,7 +259,7 @@ class CfgPageContainer extends Component {
   // SAVE
   onSaveElement(element) {
     // Validate network element
-    if (this.validateNetworkElement(element) === false) {
+    if (!validateNetworkElement(element, this.props.cfg.table.entries, this.props.cfgElemSetErrMsg)) {
       return;
     }
 
@@ -167,7 +282,7 @@ class CfgPageContainer extends Component {
   // CLONE
   onApplyCloneElement(element) {
     // Validate network element
-    if (this.validateNetworkElement(element) === false) {
+    if (!validateNetworkElement(element, this.props.cfg.table.entries, this.props.cfgElemSetErrMsg)) {
       return;
     }
 
@@ -186,7 +301,8 @@ class CfgPageContainer extends Component {
   }
 
   // CANCEL
-  onCancelElement() {
+  onCancelElement(e) {
+    e.preventDefault();
     this.props.cfgElemClear();
   }
 
@@ -217,126 +333,6 @@ class CfgPageContainer extends Component {
       }
     }
     return -1;
-  }
-
-  // Validate new network element form field entries
-  validateNetworkElement(element) {
-    var data = this.props.cfg.table.entries;
-
-    // Clear previous error message
-    this.props.cfgElemSetErrMsg('');
-
-    // Verify that no field is in error
-    var fieldsInError = 0;
-    _.forOwn(
-      element,
-      val => (fieldsInError = val.err ? fieldsInError + 1 : fieldsInError)
-    );
-    if (fieldsInError) {
-      this.props.cfgElemSetErrMsg(`${fieldsInError} fields in error`);
-      return false;
-    }
-
-    // Verify element type
-    var type = getElemFieldVal(element, FIELD_TYPE);
-    if (type === null) {
-      this.props.cfgElemSetErrMsg('Missing element type');
-      return false;
-    }
-
-    // Check for valid & unique network element name (except if editing)
-    var name = getElemFieldVal(element, FIELD_NAME);
-    if (name === null || name === '') {
-      this.props.cfgElemSetErrMsg('Missing element name');
-      return false;
-    }
-
-    if (data[name] && (data[name].id !== element.id)) {
-      this.props.cfgElemSetErrMsg('Element name already exists');
-      return false;
-    }
-
-    // Nothing else to validate for Scenario element
-    if (type === ELEMENT_TYPE_SCENARIO) {
-      return true;
-    }
-
-    // Make sure parent exists
-    if (!data[getElemFieldVal(element, FIELD_PARENT)]) {
-      this.props.cfgElemSetErrMsg('Parent does not exist');
-      return false;
-    }
-
-    // If GPU requested, make sure type is set
-    var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
-    if (gpuCount) {
-      var gpuType = getElemFieldVal(element, FIELD_GPU_TYPE);
-      if (gpuType === null || gpuType === '') {
-        this.props.cfgElemSetErrMsg('GPU type not selected');
-        return false;
-      }
-    }
-
-    // If CPU limitations is requested, making sure Min CPU <= Max CPU
-    var cpuMin = getElemFieldVal(element, FIELD_CPU_MIN);
-    var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
-    if (cpuMin !== null && cpuMax !== null) {
-      if (parseFloat(cpuMin) > parseFloat(cpuMax)) {
-        this.props.cfgElemSetErrMsg('Min CPU > Max CPU');
-        return false;
-      }
-    }
-
-    // If Memory limitations is requested, making sure Min Memory <= Max Memory
-    var memoryMin = getElemFieldVal(element, FIELD_MEMORY_MIN);
-    var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
-    if (memoryMin !== null && memoryMax !== null) {
-      if (parseInt(memoryMin) > parseInt(memoryMax)) {
-        this.props.cfgElemSetErrMsg('Min Memory > Max Memory');
-        return false;
-      }
-    }
-
-    // Verify cellid/mac address if required
-    if (type === ELEMENT_TYPE_POA_4G) {
-      var cellId = getElemFieldVal(element, FIELD_CELL_ID);
-      if (!cellId) {
-        this.props.cfgElemSetErrMsg('Missing Cell ID');
-        return false;
-      }
-    } else if (type === ELEMENT_TYPE_POA_5G) {
-      var nrCellId = getElemFieldVal(element, FIELD_NR_CELL_ID);
-      if (!nrCellId) {
-        this.props.cfgElemSetErrMsg('Missing NR Cell ID');
-        return false;
-      }
-    } else if (type === ELEMENT_TYPE_POA_WIFI) {
-      var macId = getElemFieldVal(element, FIELD_MAC_ID);
-      if (!macId) {
-        this.props.cfgElemSetErrMsg('Missing MAC Address');
-        return false;
-      }
-    }
-
-    // TODO -- verify node port not already used
-    const extPorts = externalPorts(element);
-
-    if (extPorts.length) {
-      const elemsWithSameExtPort = pipe(
-        filter(hasDifferentName(element)),
-        filter(hasExtPortsInCommon(element))
-      )(Object.values(data));
-
-      if (elemsWithSameExtPort.length) {
-        const elemNames = elemsWithSameExtPort.map(e => getElemFieldVal(e, FIELD_NAME));
-        this.props.cfgElemSetErrMsg(
-          `External port already used in ${elemNames}`
-        );
-        return false;
-      }
-    }
-
-    return true;
   }
 
   // ----------------------------------------
@@ -728,9 +724,10 @@ class CfgPageContainer extends Component {
                       onSaveElement={elem => this.onSaveElement(elem)}
                       onDeleteElement={elem => this.onDeleteElement(elem)}
                       onApplyCloneElement={elem => this.onApplyCloneElement(elem)}
-                      onCancelElement={() => this.onCancelElement()}
+                      onCancelElement={e => this.onCancelElement(e)}
                       onEditLocation={elem => this.onEditLocation(elem)}
                       onEditPath={elem => this.onEditPath(elem)}
+                      type={TYPE_CFG}
                     />
                   </Elevation>
                 </GridCell>

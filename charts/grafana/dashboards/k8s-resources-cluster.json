@@ -2250,6 +2250,6 @@
   },
   "timezone": "UTC",
   "title": "Kubernetes / Compute Resources / Cluster",
-  "uid": "efa86fd1d0c121a26444b636a3f509a8",
+  "uid": "k8s-resources-cluster",
   "version": 0
 }

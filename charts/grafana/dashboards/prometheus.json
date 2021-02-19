@@ -1049,6 +1049,6 @@
   },
   "timezone": "utc",
   "title": "Prometheus Overview",
-  "uid": "",
+  "uid": "k8s-prometheus",
   "version": 0
 }

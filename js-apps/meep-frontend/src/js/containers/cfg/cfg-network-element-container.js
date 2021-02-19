@@ -90,7 +90,13 @@ import {
 } from '../../state/cfg';
 
 import {
+  execElemUpdate,
+  execElemClone
+} from '@/js/state/exec';
+
+import {
   TYPE_CFG,
+  TYPE_EXEC,
 
   // Network element types
   ELEMENT_TYPE_SCENARIO,
@@ -765,7 +771,6 @@ const NCGroups = ({ prefixes, onUpdate, element }) => {
     return (
       <NCGroup
         onUpdate={onUpdate}
-        type={TYPE_CFG}
         element={element}
         prefix={p}
         key={p}
@@ -1532,7 +1537,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
   }
 };
 
-const elementTypes = [
+const cfgElementTypes = [
   {
     label: 'Logical Domain',
     options: [ELEMENT_TYPE_OPERATOR_GENERIC, ELEMENT_TYPE_OPERATOR_CELL]
@@ -1560,6 +1565,17 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_UE_APP,
       // ELEMENT_TYPE_MECSVC,
+      ELEMENT_TYPE_EDGE_APP,
+      ELEMENT_TYPE_CLOUD_APP
+    ]
+  }
+];
+
+const execElementTypes = [
+  {
+    label: 'Process',
+    options: [
+      ELEMENT_TYPE_UE_APP,
       ELEMENT_TYPE_EDGE_APP,
       ELEMENT_TYPE_CLOUD_APP
     ]
@@ -1711,12 +1727,14 @@ const getElementTypeOverrideBack = (typeOverride) => {
   return type;
 };
 
-const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
+const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisabled, nameDisabled, pageType }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
 
   var typeOverride = getElementTypeOverride(type);
+
+  var elementTypes = pageType === TYPE_CFG ? cfgElementTypes : execElementTypes;
 
   return (
     <>
@@ -1765,29 +1783,90 @@ export class CfgNetworkElementContainer extends Component {
     super(props);
   }
 
+  updateElement(elem) {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      this.props.cfgElemUpdate(elem);
+      break;
+    case TYPE_EXEC:
+      this.props.execElemUpdate(elem);
+      break;
+    default:
+      break;
+    }
+  }
+
+  cloneElement(elem) {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      this.props.cfgElemClone(elem);
+      break;
+    case TYPE_EXEC:
+      this.props.execElemClone(elem);
+      break;
+    default:
+      break;
+    }
+  }
+
+  getTableEntries() {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      return this.props.cfgTableData;
+    case TYPE_EXEC:
+      return this.props.execTableData;
+    default:
+      return null;
+    }
+  }
+
+  getConfiguredElement() {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      return this.props.cfgConfiguredElement;
+    case TYPE_EXEC:
+      return this.props.execConfiguredElement;
+    default:
+      return null;
+    }
+  }
+
+  getConfigMode() {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      return this.props.cfgConfigMode;
+    case TYPE_EXEC:
+      return this.props.execConfigMode;
+    default:
+      return null;
+    }
+  }
+
   // Element update handler
   onUpdateElement(name, val, err) {
-    var updatedElem = updateObject({}, this.props.configuredElement);
+    var updatedElem = updateObject({}, this.getConfiguredElement());
     setElemFieldVal(updatedElem, name, val);
     setElemFieldErr(updatedElem, name, err);
 
-    this.props.cfgElemUpdate(updatedElem);
+    // this.props.cfgElemUpdate(updatedElem);
+    this.updateElement(updatedElem);
   }
 
   // Element clone handler
   onCloneElement(newName) {
-    var clonedElem = updateObject({}, this.props.configuredElement);
+    var clonedElem = updateObject({}, this.getConfiguredElement());
     setElemFieldVal(clonedElem, FIELD_NAME, newName);
     setElemFieldVal(clonedElem, FIELD_PARENT, null);
     var elementType = getElemFieldVal(clonedElem, FIELD_TYPE);
     clonedElem.parentElements = this.elementsOfType(getParentTypes(elementType));
 
-    this.props.cfgElemClone(clonedElem);
+    // this.props.cfgElemClone(clonedElem);
+    this.cloneElement(clonedElem);
   }
 
   // Retrieve names of elements with matching type
   elementsOfType(types) {
-    return _.chain(this.props.tableData)
+    return _.chain(this.getTableEntries())
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
         return _.includes(types, elemType);
@@ -1800,7 +1879,7 @@ export class CfgNetworkElementContainer extends Component {
 
   // Element configuration type change handler
   onElementTypeChange(elementType) {
-    var elem = updateObject({}, this.props.configuredElement);
+    var elem = updateObject({}, this.getConfiguredElement());
 
     //override the frontend terminology
     var elementTypeOverride = getElementTypeOverrideBack(elementType);
@@ -1813,24 +1892,25 @@ export class CfgNetworkElementContainer extends Component {
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementTypeOverride));
 
-    if (this.props.configMode !== CFG_ELEM_MODE_CLONE) {
-      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementTypeOverride, this.props.tableData));
+    if (this.getConfigMode() !== CFG_ELEM_MODE_CLONE) {
+      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementTypeOverride, this.getTableEntries()));
     }
-    this.props.cfgElemUpdate(elem);
+    // this.props.cfgElemUpdate(elem);
+    this.updateElement(elem);
   }
 
   onEditLocation() {
-    var elem = updateObject({}, this.props.configuredElement);
+    var elem = updateObject({}, this.getConfiguredElement());
     this.props.onEditLocation(elem);
   }
 
   onEditPath() {
-    var elem = updateObject({}, this.props.configuredElement);
+    var elem = updateObject({}, this.getConfiguredElement());
     this.props.onEditPath(elem);
   }
 
   render() {
-    const element = this.props.configuredElement;
+    const element = this.getConfiguredElement();
     return (
       <div className="cfg-network-element-div" style={styles.outer}>
         <Grid>
@@ -1839,18 +1919,18 @@ export class CfgNetworkElementContainer extends Component {
               <Typography use="headline6">Element Configuration</Typography>
             </div>
           </GridCell>
-          <GridCell span={12}>
+          <GridCell span={12} hidden={this.props.type === TYPE_EXEC}>
             <GridInner align={'left'}>
               <GridCell span={12}>
                 <ElementCfgButtons
                   configuredElement={element}
-                  configMode={this.props.configMode}
+                  configMode={this.getConfigMode()}
                   onNewElement={this.props.onNewElement}
                   onDeleteElement={() => {
                     this.props.onDeleteElement(element);
                   }}
                   onCloneElement={() => {
-                    this.onCloneElement(createUniqueName(this.props.tableData, getElemFieldVal(element, FIELD_NAME) + '-copy'));
+                    this.onCloneElement(createUniqueName(this.getTableEntries(), getElemFieldVal(element, FIELD_NAME) + '-copy'));
                   }}
                 />
               </GridCell>
@@ -1868,9 +1948,10 @@ export class CfgNetworkElementContainer extends Component {
               onUpdate={(name, val, err) => {
                 this.onUpdateElement(name, val, err);
               }}
-              typeDisabled={this.props.configMode === CFG_ELEM_MODE_CLONE || this.props.configMode === CFG_ELEM_MODE_EDIT}
-              parentDisabled={this.props.configMode === CFG_ELEM_MODE_EDIT}
-              nameDisabled={getElemFieldVal(element, FIELD_TYPE) === ELEMENT_TYPE_SCENARIO && this.props.configMode !== CFG_ELEM_MODE_NEW}
+              typeDisabled={this.getConfigMode() === CFG_ELEM_MODE_CLONE || this.getConfigMode() === CFG_ELEM_MODE_EDIT}
+              parentDisabled={this.getConfigMode() === CFG_ELEM_MODE_EDIT}
+              nameDisabled={getElemFieldVal(element, FIELD_TYPE) === ELEMENT_TYPE_SCENARIO && this.getConfigMode() !== CFG_ELEM_MODE_NEW}
+              pageType={this.props.type}
             />
 
             <TypeRelatedFormFields
@@ -1884,14 +1965,14 @@ export class CfgNetworkElementContainer extends Component {
               id="new-element-error-message"
               className="idcc-margin-top mdc-typography--body1"
             >
-              {this.props.errorMessage}
+              {this.props.type === TYPE_CFG ? this.props.cfgErrorMessage : this.props.execErrorMessage }
             </div>
 
             <CancelApplyPair
-              saveDisabled={(this.props.isModified === false) ? true : false}
-              onCancel={this.props.onCancelElement}
+              saveDisabled={!(this.props.type === TYPE_CFG ? this.props.cfgIsModified : this.props.execIsModified)}
+              onCancel={e => this.props.onCancelElement(e)}
               onApply={() => {
-                (this.props.configMode === CFG_ELEM_MODE_CLONE) ? this.props.onApplyCloneElement(element) : this.props.onSaveElement(element);
+                (this.getConfigMode() === CFG_ELEM_MODE_CLONE) ? this.props.onApplyCloneElement(element) : this.props.onSaveElement(element);
               }}
 
             />
@@ -1928,18 +2009,25 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-    tableData: state.cfg.table.entries,
-    configuredElement: state.cfg.elementConfiguration.configuredElement,
-    configMode: state.cfg.elementConfiguration.configurationMode,
-    isModified: state.cfg.elementConfiguration.isModified,
-    errorMessage: state.cfg.elementConfiguration.errorMessage
+    cfgTableData: state.cfg.table.entries,
+    cfgConfiguredElement: state.cfg.elementConfiguration.configuredElement,
+    cfgConfigMode: state.cfg.elementConfiguration.configurationMode,
+    cfgIsModified: state.cfg.elementConfiguration.isModified,
+    cfgErrorMessage: state.cfg.elementConfiguration.errorMessage,
+    execTableData: state.exec.table.entries,
+    execConfiguredElement: state.exec.elementConfiguration.configuredElement,
+    execConfigMode: state.exec.elementConfiguration.configurationMode,
+    execIsModified: state.exec.elementConfiguration.isModified,
+    execErrorMessage: state.exec.elementConfiguration.errorMessage
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     cfgElemUpdate: element => dispatch(cfgElemUpdate(element)),
-    cfgElemClone: element => dispatch(cfgElemClone(element))
+    cfgElemClone: element => dispatch(cfgElemClone(element)),
+    execElemUpdate: element => dispatch(execElemUpdate(element)),
+    execElemClone: element => dispatch(execElemClone(element))
   };
 };
 

@@ -72,6 +72,7 @@ import {
   IDC_DIALOG_SAVE_REPLAY,
   MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
+  SCENARIO_UPDATE_EVENT,
   EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
@@ -365,8 +366,8 @@ class ExecPageContainer extends Component {
       this.props.cfgScenarioName;
 
     const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode;
-    const spanLeft = eventPaneOpen ? 9 : 12;
-    const spanRight = eventPaneOpen ? 3 : 0;
+    const spanLeft = eventPaneOpen ? 8 : 12;
+    const spanRight = eventPaneOpen ? 4 : 0;
     return (
       <div style={{ width: '100%' }}>
         {this.renderDialogs()}
@@ -464,7 +465,7 @@ class ExecPageContainer extends Component {
                 </Elevation>
                 <Elevation className="component-style" z={2}>
                   <EventCreationPane
-                    eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
+                    eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT, SCENARIO_UPDATE_EVENT]}
                     api={this.props.eventsApi}
                     hide={!this.props.eventCreationMode}
                     onSuccess={this.props.refreshScenario}

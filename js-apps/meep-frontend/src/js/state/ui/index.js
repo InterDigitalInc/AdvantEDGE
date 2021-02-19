@@ -20,7 +20,8 @@ import {
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
   MOBILITY_EVENT,
-  CFG_VIEW_NETWORK
+  CFG_VIEW_NETWORK,
+  SCENARIO_UPDATE_ACTION_NONE
 } from '../../meep-constants';
 
 const initialState = {
@@ -38,6 +39,9 @@ const initialState = {
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   mobilityEventTarget: '',
   mobilityEventDestination: '',
+  scenarioUpdateAction: SCENARIO_UPDATE_ACTION_NONE,
+  scenarioUpdateRemoveEleName: '',
+  scenarioUpdateRemoveEleType: '',
   devMode: false,
   currentDialog: '',
   automaticRefresh: false,
@@ -136,6 +140,30 @@ const UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION = 'UI_EXEC_CHANGE_MOBILITY_EVENT
 export function uiExecChangeMobilityEventDestination(event) {
   return {
     type: UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION = 'UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION';
+export function uiExecChangeScenarioUpdateAction(event) {
+  return {
+    type: UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION,
+    payload: event
+  };
+}
+
+const UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME = 'UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME';
+export function uiExecScenarioUpdateRemoveEleName(event) {
+  return {
+    type: UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME,
+    payload: event
+  };
+}
+
+const UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE = 'UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE';
+export function uiExecScenarioUpdateRemoveEleType(event) {
+  return {
+    type: UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE,
     payload: event
   };
 }
@@ -338,6 +366,12 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { mobilityEventTarget: action.payload });
   case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
     return updateObject(state, { mobilityEventDestination: action.payload });
+  case UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION:
+    return updateObject(state, { scenarioUpdateAction: action.payload });
+  case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME:
+    return updateObject(state, { scenarioUpdateRemoveEleName: action.payload });
+  case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE:
+    return updateObject(state, { scenarioUpdateRemoveEleType: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:

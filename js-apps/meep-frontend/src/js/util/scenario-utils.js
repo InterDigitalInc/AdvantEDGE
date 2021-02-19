@@ -354,7 +354,7 @@ function findIdInScenario(scenario, uniqueId) {
   return false;
 }
 
-function getUniqueId(scenario) {
+export const getUniqueId = (scenario) => {
   var uniqueId = uuid();
   var isUniqueId = false;
   while(!isUniqueId) {
@@ -365,7 +365,7 @@ function getUniqueId(scenario) {
     }
   }
   return uniqueId;
-}
+};
 
 // Add network element to scenario
 export function addElementToScenario(scenario, element) {
@@ -1972,4 +1972,28 @@ export const isApp = node => {
       node.data.type === 'UE-APP' ||
       node.data.type === 'CLOUD-APP')
   );
+};
+
+export const getElementNames = (neType, scenario) => {
+  var elementNames = [];
+  for (var dInd in scenario.deployment.domains) {
+    var domain = scenario.deployment.domains[dInd];
+    for (var zInd in domain.zones) {
+      var zone = domain.zones[zInd];
+      for (var nInd in zone.networkLocations) {
+        var nl = zone.networkLocations[nInd];
+        for (var plInd in nl.physicalLocations) {
+          var pl = nl.physicalLocations[plInd];
+          for (var prInd in pl.processes) {
+            var pr = pl.processes[prInd];
+            if (pr.type === neType) {
+              elementNames.push(pr.name);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return elementNames;
 };
