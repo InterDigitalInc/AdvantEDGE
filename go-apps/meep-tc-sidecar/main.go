@@ -882,23 +882,7 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 	delayVariation := shape["delayVariation"]
 	delayCorrelation := shape["delayCorrelation"]
 	distribution := shape["distribution"]
-
 	loss := shape["packetLoss"]
-	var lossInteger string
-	var lossFraction string
-
-	if len(loss) > 2 {
-		lossInteger = loss[0 : len(loss)-2]
-		lossFraction = loss[len(loss)-2:]
-	} else if len(loss) > 0 {
-		// length is 1 or 2
-		lossInteger = "0"
-		lossFraction = loss
-	} else {
-		lossInteger = "0"
-		lossFraction = "00"
-	}
-
 	dataRate := shape["dataRate"]
 
 	//tc qdisc change dev $ifb$ifbnumber handle 1:0 root netem delay $delay$ms loss $loss$prcent
@@ -922,7 +906,7 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 	}
 	//only apply if an update is needed
 	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate || (delayVariation != "0" && nc.Distribution != distribution) {
-		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + distributionStr + " loss " + lossInteger + "." + lossFraction + "%"
+		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + distributionStr + " loss " + loss + "%"
 		if dataRate != "" && dataRate != "0" {
 			str = str + " rate " + dataRate + "bit"
 		}
