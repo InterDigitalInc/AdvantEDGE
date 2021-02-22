@@ -18,6 +18,7 @@ package couchdb
 
 import (
 	"context"
+	"strings"
 
 	"github.com/flimzy/kivik"
 	_ "github.com/go-kivik/couchdb"
@@ -54,7 +55,10 @@ func NewConnector(addr string, dbName string) (rc *Connector, err error) {
 		} else {
 			c.addr = addr
 		}
-		c.dbClient, err = kivik.New(context.TODO(), "couch", addr)
+
+		var address []string = strings.SplitAfter(addr, "http://")
+		var newAddr = address[0] + "admin:admin@" + address[1]
+		c.dbClient, err = kivik.New(context.TODO(), "couch", newAddr)
 		if err != nil {
 			return nil, err
 		}
