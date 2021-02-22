@@ -101,7 +101,7 @@ type FilterInfo struct {
 	LatencyVariation   int
 	LatencyCorrelation int
 	Distribution       string
-	PacketLoss         int
+	PacketLoss         float64
 	DataRate           int
 }
 
@@ -610,7 +610,7 @@ func netCharUpdate(dstName string, srcName string, rate float64, latency float64
 	// Update filter info
 	filterInfo.Latency = int(latency)
 	filterInfo.LatencyVariation = int(latencyVariation)
-	filterInfo.PacketLoss = int(100 * packetLoss)
+	filterInfo.PacketLoss = packetLoss
 	filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
 	filterInfo.Distribution = strings.ToLower(distribution)
 	_ = setShapingRule(filterInfo)
@@ -662,7 +662,7 @@ func setFilterInfoRules() {
 				filterInfo.LatencyVariation = 0
 				filterInfo.LatencyCorrelation = COMMON_CORRELATION
 				filterInfo.Distribution = DEFAULT_DISTRIBUTION
-				filterInfo.PacketLoss = 0
+				filterInfo.PacketLoss = 0.0
 				filterInfo.DataRate = 0
 
 				dstElem.FilterInfoMap[srcElem.Name] = filterInfo
@@ -705,7 +705,7 @@ func setShapingRule(filterInfo *FilterInfo) error {
 	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
 	m_shape["distribution"] = filterInfo.Distribution
-	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
+	m_shape["packetLoss"] = fmt.Sprintf("%f", filterInfo.PacketLoss)
 	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
 	m_shape["ifb_uniqueId"] = uniqueId
 
