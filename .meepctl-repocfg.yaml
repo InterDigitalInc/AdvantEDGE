@@ -89,7 +89,11 @@ repo:
       http-single-log: dashboards/http-log-byId.json
       http-logs-aggregation: dashboards/http-loggers.json
       platform-advantedge: dashboards/platform-advantedge.json
+      platform-k8s: dashboards/platform-k8s.json
       runtime-environment-node: dashboards/runtime-environment-node.json
+      runtime-environment-k8s-cluster: dashboards/runtime-environment-k8s-cluster.json
+      kubelet: dashboards/kubelet.json
+      prometheus: dashboards/prometheus.json
 
   #------------------------------
   #  Resource Prerequisites
