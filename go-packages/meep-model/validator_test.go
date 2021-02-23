@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"testing"
 
-	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
@@ -106,17 +105,213 @@ func TestValidateComponents(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
+	// Int32 Range
+	err = validateInt32Range(0, 1, 10)
+	if err == nil {
+		t.Fatalf("Int32 should be out of range")
+	}
+	err = validateInt32Range(100, 1, 10)
+	if err == nil {
+		t.Fatalf("Int32 should be out of range")
+	}
+	err = validateInt32Range(1, 1, 10)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateInt32Range(10, 1, 10)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateInt32Range(5, 1, 10)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// Float32 Range
+	err = validateFloat32Range(0.1, 1.0, 10.0)
+	if err == nil {
+		t.Fatalf("Int32 should be out of range")
+	}
+	err = validateFloat32Range(100.0, 1.0, 10.0)
+	if err == nil {
+		t.Fatalf("Int32 should be out of range")
+	}
+	err = validateFloat32Range(1.0, 1.0, 10.0)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateFloat32Range(10.0, 1.0, 10.0)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateFloat32Range(5.0, 1.0, 10.0)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// Float64 Range
+	err = validateFloat64Range(0.1, 1.0, 10.0)
+	if err == nil {
+		t.Fatalf("Int32 should be out of range")
+	}
+	err = validateFloat64Range(100.0, 1.0, 10.0)
+	if err == nil {
+		t.Fatalf("Int32 should be out of range")
+	}
+	err = validateFloat64Range(1.0, 1.0, 10.0)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateFloat64Range(10.0, 1.0, 10.0)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateFloat64Range(5.0, 1.0, 10.0)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// Enum
+	enumVals := []string{"val1", "val2", "val3"}
+	err = validateStringEnum("", enumVals)
+	if err == nil {
+		t.Fatalf("String should not be in enum")
+	}
+	err = validateStringEnum("dummy", enumVals)
+	if err == nil {
+		t.Fatalf("String should not be in enum")
+	}
+	err = validateStringEnum("val1", enumVals)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateStringEnum("val2", enumVals)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateStringEnum("val3", enumVals)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// MAC Address
+	err = validateMacAddress("badmac")
+	if err == nil {
+		t.Fatalf("MAC Address should be invalid")
+	}
+	err = validateMacAddress("11:22:33")
+	if err == nil {
+		t.Fatalf("MAC Address should be invalid")
+	}
+	err = validateMacAddress("11:22:33:44:55:66")
+	if err == nil {
+		t.Fatalf("MAC Address should be invalid")
+	}
+	err = validateMacAddress("")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateMacAddress("0123456789ab")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateMacAddress("CDEF01234567")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// Wireless Type List
+	err = validateWirelessTypeList("badtype")
+	if err == nil {
+		t.Fatalf("Wireless Type should be invalid")
+	}
+	err = validateWirelessTypeList("3g")
+	if err == nil {
+		t.Fatalf("Wireless Type should be invalid")
+	}
+	err = validateWirelessTypeList("4g,none")
+	if err == nil {
+		t.Fatalf("Wireless Type should be invalid")
+	}
+	err = validateWirelessTypeList("wifi")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateWirelessTypeList("5g")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateWirelessTypeList("4g")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateWirelessTypeList("other")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateWirelessTypeList("wifi,5g,4g,other")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateWirelessTypeList("wifi, 4g,   5g")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// Path
+	err = validatePath("", true)
+	if err == nil {
+		t.Fatalf("Path should be present")
+	}
+	err = validatePath("invalid path", true)
+	if err == nil {
+		t.Fatalf("Path should be invalid")
+	}
+	err = validatePath("", false)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validatePath("/valid/path", true)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validatePath("another/valid/path", true)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validatePath("registry:repo/name", true)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	// Environment Variables
+	err = validateEnvVar("INVALID VAR=value")
+	if err == nil {
+		t.Fatalf("Env var format should be invalid")
+	}
+	err = validateEnvVar("VAR=value,INVALID_VAR")
+	if err == nil {
+		t.Fatalf("Env var format should be invalid")
+	}
+	err = validateEnvVar("")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateEnvVar("VAR=!@#$%^&*(),VAR2='val with spaces,VAR_NO_VAL=")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 }
 
 func TestValidatePhyLoc(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	pl := dataModel.PhysicalLocation{Id: "", Name: "my-pl"}
-	err := validatePhyLoc(&pl)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	// pl := dataModel.PhysicalLocation{Id: "", Name: "my-pl"}
+	// err := validatePhyLoc(&pl)
+	// if err != nil {
+	// 	t.Fatalf(err.Error())
+	// }
 
 	// Type_ string `json:"type,omitempty"`
 	// // true: Physical location is external to MEEP false: Physical location is internal to MEEP
@@ -152,11 +347,11 @@ func TestValidateProc(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	pl := dataModel.Process{Id: "", Name: "my-proc"}
-	err := validateProc(&pl)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	// pl := dataModel.Process{Id: "", Name: "my-proc"}
+	// err := validateProc(&pl)
+	// if err != nil {
+	// 	t.Fatalf(err.Error())
+	// }
 
 	// // true: process is external to MEEP false: process is internal to MEEP
 	// IsExternal bool `json:"isExternal,omitempty"`

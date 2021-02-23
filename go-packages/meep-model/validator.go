@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -43,7 +44,7 @@ const (
 	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$`
 	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$`
 	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
-	REGEX_PATH               = `^[\^#%&$\*<>\?\{\|\} ]*$`
+	REGEX_PATH               = `[\^#%&$\*<>\?\{\|\} ]+`
 )
 
 const (
@@ -84,7 +85,7 @@ var GPU_TYPE_ENUM = []string{"NVIDIA"}
 var PROTOCOL_ENUM = []string{"UDP", "TCP"}
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 4}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 6}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
@@ -595,13 +596,23 @@ func validateProc(proc *dataModel.Process) (err error) {
 		// TODO - Validate placement identifier
 
 	} else if proc.UserChartLocation != "" {
-		// USER-DEFINE CHART APP
+		// USER-DEFINED CHART APP
 
 		// User Chart Location
-
+		err = validatePath(proc.UserChartLocation, true)
+		if err != nil {
+			return err
+		}
 		// User Chart Group
-
+		err = validateChartGroup(proc.UserChartGroup)
+		if err != nil {
+			return err
+		}
 		// User Chart Alternate values
+		err = validatePath(proc.UserChartAlternateValues, false)
+		if err != nil {
+			return err
+		}
 
 	} else {
 		// INTERNAL APP
@@ -800,9 +811,19 @@ func validateMemoryConfig(cfg *dataModel.MemoryConfig) (err error) {
 
 func validateExternalConfig(cfg *dataModel.ExternalConfig) (err error) {
 	// Ingress Service Mapping
-
+	for _, svc := range cfg.IngressServiceMap {
+		err = validateIngressSvc(&svc)
+		if err != nil {
+			return err
+		}
+	}
 	// EgressServiceMapping
-
+	for _, svc := range cfg.EgressServiceMap {
+		err = validateEgressSvc(&svc)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -843,6 +864,91 @@ func validateServiceConfig(cfg *dataModel.ServiceConfig) (err error) {
 			}
 		}
 	}
+	return nil
+}
+
+func validateChartGroup(group string) (err error) {
+	if group != "" {
+		fields := strings.Split(group, ":")
+		if len(fields) != 4 {
+			return errors.New("Group format must be 'svc instance:svc group name:port:protocol'")
+		}
+		// Svc name
+		err = validateFullName(fields[0])
+		if err != nil {
+			return err
+		}
+		// Svc group name
+		err = validateName(fields[1])
+		if err != nil {
+			return err
+		}
+		// Port
+		port, err := strconv.Atoi(fields[2])
+		if err != nil {
+			return err
+		}
+		err = validateInt32Range(int32(port), SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+		if err != nil {
+			return err
+		}
+		// Protocol
+		err = validateStringEnum(fields[3], PROTOCOL_ENUM)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateIngressSvc(svc *dataModel.IngressService) (err error) {
+	// External Port
+	err = validateInt32Range(svc.ExternalPort, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
+	if err != nil {
+		return err
+	}
+	// Svc name
+	err = validateFullName(svc.Name)
+	if err != nil {
+		return err
+	}
+	// Port
+	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+	if err != nil {
+		return err
+	}
+	// Protocol
+	err = validateStringEnum(svc.Protocol, PROTOCOL_ENUM)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateEgressSvc(svc *dataModel.EgressService) (err error) {
+	// Svc name
+	err = validateFullName(svc.Name)
+	if err != nil {
+		return err
+	}
+	// Group Svc name
+	err = validateFullName(svc.MeSvcName)
+	if err != nil {
+		return err
+	}
+	// Port
+	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+	if err != nil {
+		return err
+	}
+	// Protocol
+	err = validateStringEnum(svc.Protocol, PROTOCOL_ENUM)
+	if err != nil {
+		return err
+	}
+
+	// TODO -- Validate IP
+
 	return nil
 }
 
