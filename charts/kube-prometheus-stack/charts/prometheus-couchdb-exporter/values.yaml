@@ -62,11 +62,11 @@ affinity: {}
 ## CouchDB exporter configurations
 couchdb:
   ## URI of the couchdb instance
-  uri: http://meep-couchdb-svc-couchdb.default.svc.cluster.local:5984/
+  uri: http://meep-couchdb-svc-couchdb:5984/
   ## Specify the list of databases to get the disk usage stats as comma separates like "db-1,db-2"
   ## or to get stats for every database, please use "_all_dbs"
   databases: _all_dbs
-  ## CouchDB username
-  # username:
-  ## CouchDB Password
-  # password:
+  # CouchDB username
+  username: admin
+  # CouchDB Password
+  password: admin

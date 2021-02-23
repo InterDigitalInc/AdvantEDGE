@@ -9,10 +9,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/coreos/go-iptables v0.4.0
-	github.com/gogo/protobuf v1.2.1 // indirect
-	github.com/google/gofuzz v1.0.0 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -21,7 +17,6 @@ require (
 	k8s.io/klog v0.0.0-20181108234604-8139d8cb77af // indirect
 	k8s.io/kubernetes v1.13.4
 	k8s.io/utils v0.0.0-20190221042446-c2654d5206da
-	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
 replace (

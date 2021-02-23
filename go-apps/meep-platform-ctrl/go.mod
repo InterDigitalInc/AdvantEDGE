@@ -12,7 +12,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
-	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
@@ -21,7 +20,6 @@ require (
 	github.com/prometheus/client_golang v1.9.0
 	github.com/roymx/viper v1.3.3-0.20190416163942-b9a223fc58a3 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
 )
 
 replace (
