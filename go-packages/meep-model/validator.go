@@ -43,7 +43,7 @@ const (
 	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$`
 	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$`
 	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
-	REGEX_PATH               = `^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$`
+	REGEX_PATH               = `^[\^#%&$\*<>\?\{\|\} ]*$`
 )
 
 const (
@@ -535,7 +535,7 @@ func validatePhyLoc(pl *dataModel.PhysicalLocation) (err error) {
 		return err
 	}
 	// Type
-	if isPhyLoc(pl.Type_) {
+	if !isPhyLoc(pl.Type_) {
 		return errors.New("Unsupported PhysicalLocation Type: " + pl.Type_)
 	}
 	// MAC Address
@@ -573,7 +573,7 @@ func validateProc(proc *dataModel.Process) (err error) {
 		return err
 	}
 	// Type
-	if isProc(proc.Type_) {
+	if !isProc(proc.Type_) {
 		return errors.New("Unsupported Process Type: " + proc.Type_)
 	}
 	// Network Characteristics
@@ -943,9 +943,8 @@ func validateWirelessTypeList(list string) (err error) {
 
 func validatePath(path string, isRequired bool) (err error) {
 	if path != "" {
-		//lint:ignore SA1000 (staticcheck)
 		matched, err := regexp.MatchString(REGEX_PATH, path)
-		if err != nil || !matched {
+		if err != nil || matched {
 			return fmt.Errorf("Invalid path format: %s", path)
 		}
 	} else if isRequired {

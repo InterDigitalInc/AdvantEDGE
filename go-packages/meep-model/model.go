@@ -30,33 +30,33 @@ import (
 	"github.com/RyanCarrier/dijkstra"
 )
 
-const activeKey = "active"
+const activeKey string = "active"
 
-var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
-var redisTable = 0
+var DbAddress string = "meep-redis-master.default.svc.cluster.local:6379"
+var redisTable int = 0
 
 const (
-	NodeTypeScenario     = "SCENARIO"
-	NodeTypeOperator     = "OPERATOR"
-	NodeTypeOperatorCell = "OPERATOR-CELLULAR"
-	NodeTypeZone         = "ZONE"
-	NodeTypePoa          = "POA"
-	NodeTypePoa4G        = "POA-4G"
-	NodeTypePoa5G        = "POA-5G"
-	NodeTypePoaWifi      = "POA-WIFI"
-	NodeTypeUE           = "UE"
-	NodeTypeFog          = "FOG"
-	NodeTypeEdge         = "EDGE"
-	NodeTypeCloud        = "DC"
-	NodeTypeUEApp        = "UE-APP"
-	NodeTypeEdgeApp      = "EDGE-APP"
-	NodeTypeCloudApp     = "CLOUD-APP"
+	NodeTypeScenario     string = "SCENARIO"
+	NodeTypeOperator     string = "OPERATOR"
+	NodeTypeOperatorCell string = "OPERATOR-CELLULAR"
+	NodeTypeZone         string = "ZONE"
+	NodeTypePoa          string = "POA"
+	NodeTypePoa4G        string = "POA-4G"
+	NodeTypePoa5G        string = "POA-5G"
+	NodeTypePoaWifi      string = "POA-WIFI"
+	NodeTypeUE           string = "UE"
+	NodeTypeFog          string = "FOG"
+	NodeTypeEdge         string = "EDGE"
+	NodeTypeCloud        string = "DC"
+	NodeTypeUEApp        string = "UE-APP"
+	NodeTypeEdgeApp      string = "EDGE-APP"
+	NodeTypeCloudApp     string = "CLOUD-APP"
 )
 
 const (
-	ScenarioAdd    = "ADD"
-	ScenarioRemove = "REMOVE"
-	ScenarioModify = "MODIFY"
+	ScenarioAdd    string = "ADD"
+	ScenarioRemove string = "REMOVE"
+	ScenarioModify string = "MODIFY"
 )
 
 const Disconnected = "DISCONNECTED"
@@ -427,19 +427,16 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	defer m.lock.Unlock()
 
 	if node == nil {
-		err = errors.New("node == nil")
-		return
+		return errors.New("node == nil")
 	}
 
 	// Find & validate parent
 	parentNode := m.nodeMap.FindByName(node.Parent)
 	if parentNode == nil {
-		err = errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
-		return
+		return errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
 	}
 	if !validateParentType(node.Type_, parentNode.nodeType) {
-		err = errors.New("Invalid parent type: " + parentNode.nodeType + " for node type: " + node.Type_)
-		return
+		return errors.New("Invalid parent type: " + parentNode.nodeType + " for node type: " + node.Type_)
 	}
 
 	// Add element based on type
@@ -450,20 +447,18 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 
 		// Validate Physical Location
 		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
-			err = errors.New("Missing Physical Location")
-			return
+			return errors.New("Missing Physical Location")
 		}
 		pl := node.NodeDataUnion.PhysicalLocation
 		err = validatePhyLoc(pl)
 		if err != nil {
-			return
+			return err
 		}
 
 		// Make sure node Name is unique
 		n := m.nodeMap.FindByName(pl.Name)
 		if n != nil {
-			err = errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
-			return
+			return errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
 		}
 
 		// Ignore any configured processes
@@ -479,28 +474,25 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 
 		// Validate Process
 		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
-			err = errors.New("Missing Process")
-			return
+			return errors.New("Missing Process")
 		}
 		proc := node.NodeDataUnion.Process
 		err = validateProc(proc)
 		if err != nil {
-			return
+			return err
 		}
 
 		// Make sure node Name is unique
 		n := m.nodeMap.FindByName(proc.Name)
 		if n != nil {
-			err = errors.New("Element " + proc.Name + " already exists in scenario " + m.name)
-			return
+			return errors.New("Element " + proc.Name + " already exists in scenario " + m.name)
 		}
 
 		// Add Proc to parent PhyLoc
 		pl.Processes = append(pl.Processes, *proc)
 
 	} else {
-		err = errors.New("Node type " + node.Type_ + " not supported")
-		return
+		return errors.New("Node type " + node.Type_ + " not supported")
 	}
 
 	// Refresh node map
@@ -511,7 +503,7 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 
 	// Update scenario
 	err = m.refresh()
-	return
+	return nil
 }
 
 // ModifyScenarioNode - Modify scenario node
@@ -551,15 +543,17 @@ func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
 		// Update PhyLoc
 		for i, prevPl := range nl.PhysicalLocations {
 			if prevPl.Name == pl.Name {
-				// Keep existing child processes
+				// Keep existing ID & child processes
+				pl.Id = nl.PhysicalLocations[i].Id
 				pl.Processes = nl.PhysicalLocations[i].Processes
 
-				// Overwrite PhyLoc
+				// Reset & Overwrite PhyLoc
 				var data []byte
 				data, err = json.Marshal(pl)
 				if err != nil {
 					return err
 				}
+				nl.PhysicalLocations[i] = *new(dataModel.PhysicalLocation)
 				err = json.Unmarshal(data, &nl.PhysicalLocations[i])
 				if err != nil {
 					return err
@@ -595,12 +589,16 @@ func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
 		// Update Process
 		for i, prevProc := range pl.Processes {
 			if prevProc.Name == proc.Name {
-				// Overwrite Process
+				// Keep existing ID
+				proc.Id = pl.Processes[i].Id
+
+				// Reset & Overwrite Process
 				var data []byte
 				data, err = json.Marshal(proc)
 				if err != nil {
 					return err
 				}
+				pl.Processes[i] = *new(dataModel.Process)
 				err = json.Unmarshal(data, &pl.Processes[i])
 				if err != nil {
 					return err
