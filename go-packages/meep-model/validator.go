@@ -858,7 +858,7 @@ func validateServiceConfig(cfg *dataModel.ServiceConfig) (err error) {
 		}
 		// External Port
 		if port.ExternalPort != 0 {
-			err = validateInt32Range(port.Port, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
+			err = validateInt32Range(port.ExternalPort, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
 			if err != nil {
 				return err
 			}

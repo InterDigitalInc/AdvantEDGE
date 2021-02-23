@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"testing"
 
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func TestValidateComponents(t *testing.T) {
+func TestValidateName(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
@@ -52,9 +53,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateFullName(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Full Name
-	err = validateFullName("")
+	err := validateFullName("")
 	if err == nil {
 		t.Fatalf("Full name with empty string should fail")
 	}
@@ -78,9 +84,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateVariableName(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Variable Name
-	err = validateVariableName("")
+	err := validateVariableName("")
 	if err == nil {
 		t.Fatalf("Variable name with empty string should fail")
 	}
@@ -104,9 +115,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateInt32Range(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Int32 Range
-	err = validateInt32Range(0, 1, 10)
+	err := validateInt32Range(0, 1, 10)
 	if err == nil {
 		t.Fatalf("Int32 should be out of range")
 	}
@@ -126,9 +142,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateFloat32Range(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Float32 Range
-	err = validateFloat32Range(0.1, 1.0, 10.0)
+	err := validateFloat32Range(0.1, 1.0, 10.0)
 	if err == nil {
 		t.Fatalf("Int32 should be out of range")
 	}
@@ -148,9 +169,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateFloat64Range(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Float64 Range
-	err = validateFloat64Range(0.1, 1.0, 10.0)
+	err := validateFloat64Range(0.1, 1.0, 10.0)
 	if err == nil {
 		t.Fatalf("Int32 should be out of range")
 	}
@@ -170,10 +196,15 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateStringEnum(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Enum
 	enumVals := []string{"val1", "val2", "val3"}
-	err = validateStringEnum("", enumVals)
+	err := validateStringEnum("", enumVals)
 	if err == nil {
 		t.Fatalf("String should not be in enum")
 	}
@@ -193,9 +224,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateMacAddress(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// MAC Address
-	err = validateMacAddress("badmac")
+	err := validateMacAddress("badmac")
 	if err == nil {
 		t.Fatalf("MAC Address should be invalid")
 	}
@@ -219,9 +255,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateWirelessTypeList(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Wireless Type List
-	err = validateWirelessTypeList("badtype")
+	err := validateWirelessTypeList("badtype")
 	if err == nil {
 		t.Fatalf("Wireless Type should be invalid")
 	}
@@ -257,9 +298,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidatePath(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Path
-	err = validatePath("", true)
+	err := validatePath("", true)
 	if err == nil {
 		t.Fatalf("Path should be present")
 	}
@@ -283,9 +329,14 @@ func TestValidateComponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+func TestValidateEnvVar(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
 	// Environment Variables
-	err = validateEnvVar("INVALID VAR=value")
+	err := validateEnvVar("INVALID VAR=value")
 	if err == nil {
 		t.Fatalf("Env var format should be invalid")
 	}
@@ -298,6 +349,278 @@ func TestValidateComponents(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	err = validateEnvVar("VAR=!@#$%^&*(),VAR2='val with spaces,VAR_NO_VAL=")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateIngressSvc(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Ingress Service
+	svc := dataModel.IngressService{Name: "", Port: 1, ExternalPort: 30000, Protocol: "TCP"}
+	err := validateIngressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Ingress should be invalid")
+	}
+	svc = dataModel.IngressService{Name: "svc", Port: 0, ExternalPort: 30000, Protocol: "UDP"}
+	err = validateIngressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Ingress should be invalid")
+	}
+	svc = dataModel.IngressService{Name: "svc", Port: 32767, ExternalPort: 1000, Protocol: "TCP"}
+	err = validateIngressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Ingress should be invalid")
+	}
+	svc = dataModel.IngressService{Name: "svc", Port: 1234, ExternalPort: 30000, Protocol: "invalid"}
+	err = validateIngressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Ingress should be invalid")
+	}
+	svc = dataModel.IngressService{Name: "svc", Port: 1000, ExternalPort: 31000, Protocol: "TCP"}
+	err = validateIngressSvc(&svc)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateEgressSvc(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Egress Service
+	svc := dataModel.EgressService{Name: "", MeSvcName: "me-svc", Port: 1, Protocol: "TCP"}
+	err := validateEgressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Egress should be invalid")
+	}
+	svc = dataModel.EgressService{Name: "svc", MeSvcName: "", Port: 32767, Protocol: "UDP"}
+	err = validateEgressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Egress should be invalid")
+	}
+	svc = dataModel.EgressService{Name: "svc", MeSvcName: "me-svc", Port: 0, Protocol: "TCP"}
+	err = validateEgressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Egress should be invalid")
+	}
+	svc = dataModel.EgressService{Name: "svc", MeSvcName: "me-svc", Port: 1234, Protocol: "invalid"}
+	err = validateEgressSvc(&svc)
+	if err == nil {
+		t.Fatalf("Egress should be invalid")
+	}
+	svc = dataModel.EgressService{Name: "svc", MeSvcName: "me-svc", Port: 1000, Protocol: "TCP"}
+	err = validateEgressSvc(&svc)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateChartGroup(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Chart Group
+	err := validateChartGroup("invalid field count:2nd arg")
+	if err == nil {
+		t.Fatalf("Chart group should be invalid")
+	}
+	err = validateChartGroup(":me-svc:1000:TCP")
+	if err == nil {
+		t.Fatalf("Chart group should be invalid")
+	}
+	err = validateChartGroup("svc::1000:TCP")
+	if err == nil {
+		t.Fatalf("Chart group should be invalid")
+	}
+	err = validateChartGroup("svc:me-svc::TCP")
+	if err == nil {
+		t.Fatalf("Chart group should be invalid")
+	}
+	err = validateChartGroup("svc:me-svc:1000:")
+	if err == nil {
+		t.Fatalf("Chart group should be invalid")
+	}
+	err = validateChartGroup("")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateChartGroup("svc:me-svc:1000:UDP")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateServiceConfig(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Service Config
+	// port1 := ServicePort
+	ports := []dataModel.ServicePort{}
+	cfg := dataModel.ServiceConfig{Name: "", MeSvcName: "me-svc", Ports: ports}
+	err := validateServiceConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Service Config should be invalid")
+	}
+	ports = []dataModel.ServicePort{dataModel.ServicePort{Protocol: "invalid", Port: 0, ExternalPort: 0}}
+	cfg = dataModel.ServiceConfig{Name: "svc", MeSvcName: "me-svc", Ports: ports}
+	err = validateServiceConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Service Config should be invalid")
+	}
+	ports = []dataModel.ServicePort{dataModel.ServicePort{Protocol: "UDP", Port: 1111, ExternalPort: 1000}}
+	cfg = dataModel.ServiceConfig{Name: "svc", MeSvcName: "me-svc", Ports: ports}
+	err = validateServiceConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Service Config should be invalid")
+	}
+	ports = []dataModel.ServicePort{
+		dataModel.ServicePort{Protocol: "UDP", Port: 1111, ExternalPort: 0},
+		dataModel.ServicePort{Protocol: "TCP", Port: 0, ExternalPort: 0},
+	}
+	cfg = dataModel.ServiceConfig{Name: "svc", MeSvcName: "me-svc", Ports: ports}
+	err = validateServiceConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Service Config should be invalid")
+	}
+	err = validateServiceConfig(nil)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	ports = []dataModel.ServicePort{}
+	cfg = dataModel.ServiceConfig{Name: "svc", MeSvcName: "", Ports: ports}
+	err = validateServiceConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	ports = []dataModel.ServicePort{{Protocol: "UDP", Port: 1111, ExternalPort: 31000}}
+	cfg = dataModel.ServiceConfig{Name: "svc", MeSvcName: "", Ports: ports}
+	err = validateServiceConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	ports = []dataModel.ServicePort{
+		dataModel.ServicePort{Protocol: "UDP", Port: 1111, ExternalPort: 0},
+		dataModel.ServicePort{Protocol: "TCP", Port: 2222, ExternalPort: 31000},
+	}
+	cfg = dataModel.ServiceConfig{Name: "svc", MeSvcName: "", Ports: ports}
+	err = validateServiceConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateGpuConfig(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// GPU Config
+	cfg := dataModel.GpuConfig{Count: 0, Type_: "NVIDIA"}
+	err := validateGpuConfig(&cfg)
+	if err == nil {
+		t.Fatalf("GPU Config should be invalid")
+	}
+	cfg = dataModel.GpuConfig{Count: 5, Type_: "NVIDIA"}
+	err = validateGpuConfig(&cfg)
+	if err == nil {
+		t.Fatalf("GPU Config should be invalid")
+	}
+	cfg = dataModel.GpuConfig{Count: 1, Type_: "invalid"}
+	err = validateGpuConfig(&cfg)
+	if err == nil {
+		t.Fatalf("GPU Config should be invalid")
+	}
+	err = validateGpuConfig(nil)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.GpuConfig{Count: 2, Type_: "NVIDIA"}
+	err = validateGpuConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateCpuConfig(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// GPU Config
+	cfg := dataModel.CpuConfig{Min: 1001, Max: 10}
+	err := validateCpuConfig(&cfg)
+	if err == nil {
+		t.Fatalf("CPU Config should be invalid")
+	}
+	cfg = dataModel.CpuConfig{Min: 0, Max: -1}
+	err = validateCpuConfig(&cfg)
+	if err == nil {
+		t.Fatalf("CPU Config should be invalid")
+	}
+	cfg = dataModel.CpuConfig{Min: 2, Max: 1}
+	err = validateCpuConfig(&cfg)
+	if err == nil {
+		t.Fatalf("CPU Config should be invalid")
+	}
+	err = validateCpuConfig(nil)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.CpuConfig{Min: 0, Max: 1000}
+	err = validateCpuConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.CpuConfig{Min: 1, Max: 0}
+	err = validateCpuConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.CpuConfig{Min: 1, Max: 2}
+	err = validateCpuConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func TestValidateMemoryConfig(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// GPU Config
+	cfg := dataModel.MemoryConfig{Min: 1000001, Max: 10}
+	err := validateMemoryConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Memory Config should be invalid")
+	}
+	cfg = dataModel.MemoryConfig{Min: 0, Max: -1}
+	err = validateMemoryConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Memory Config should be invalid")
+	}
+	cfg = dataModel.MemoryConfig{Min: 1000, Max: 500}
+	err = validateMemoryConfig(&cfg)
+	if err == nil {
+		t.Fatalf("Memory Config should be invalid")
+	}
+	err = validateMemoryConfig(nil)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.MemoryConfig{Min: 0, Max: 1000000}
+	err = validateMemoryConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.MemoryConfig{Min: 1, Max: 0}
+	err = validateMemoryConfig(&cfg)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cfg = dataModel.MemoryConfig{Min: 250, Max: 1000}
+	err = validateMemoryConfig(&cfg)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
