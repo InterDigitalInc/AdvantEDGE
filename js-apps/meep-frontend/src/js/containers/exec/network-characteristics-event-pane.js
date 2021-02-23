@@ -69,6 +69,7 @@ import {
   POA_5G_TYPE_STR,
   POA_WIFI_TYPE_STR,
   DC_TYPE_STR,
+  UE_TYPE_STR,
   UE_APP_TYPE_STR,
   EDGE_APP_TYPE_STR,
   CLOUD_APP_TYPE_STR
@@ -200,6 +201,9 @@ class NetworkCharacteristicsEventPane extends Component {
       break;
     case ELEMENT_TYPE_DC:
       neType = DC_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_UE:
+      neType = UE_TYPE_STR;
       break;
     case ELEMENT_TYPE_UE_APP:
       neType = UE_APP_TYPE_STR;
