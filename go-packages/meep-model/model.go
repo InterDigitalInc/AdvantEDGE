@@ -441,56 +441,17 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 
 	// Add element based on type
 	if isPhyLoc(node.Type_) {
-
-		// Get parent Network Location node & context information
-		nl := parentNode.object.(*dataModel.NetworkLocation)
-
-		// Validate Physical Location
-		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
-			return errors.New("Missing Physical Location")
-		}
-		pl := node.NodeDataUnion.PhysicalLocation
-		err = validatePhyLoc(pl)
+		// Physical Location
+		err = m.AddPhyLoc(node, parentNode)
 		if err != nil {
 			return err
 		}
-
-		// Make sure node Name is unique
-		n := m.nodeMap.FindByName(pl.Name)
-		if n != nil {
-			return errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
-		}
-
-		// Ignore any configured processes
-		pl.Processes = make([]dataModel.Process, 0)
-
-		// Add PhyLoc to parent NetLoc
-		nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
-
 	} else if isProc(node.Type_) {
-
-		// Get parent Physical Location node & context information
-		pl := parentNode.object.(*dataModel.PhysicalLocation)
-
-		// Validate Process
-		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
-			return errors.New("Missing Process")
-		}
-		proc := node.NodeDataUnion.Process
-		err = validateProc(proc)
+		// Process
+		err = m.AddProcess(node, parentNode)
 		if err != nil {
 			return err
 		}
-
-		// Make sure node Name is unique
-		n := m.nodeMap.FindByName(proc.Name)
-		if n != nil {
-			return errors.New("Element " + proc.Name + " already exists in scenario " + m.name)
-		}
-
-		// Add Proc to parent PhyLoc
-		pl.Processes = append(pl.Processes, *proc)
-
 	} else {
 		return errors.New("Node type " + node.Type_ + " not supported")
 	}
@@ -498,11 +459,70 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	// Refresh node map
 	err = m.parseNodes()
 	if err != nil {
-		log.Error(err.Error())
+		return err
 	}
 
 	// Update scenario
 	err = m.refresh()
+	return err
+}
+
+// AddPhyLoc - Add physical location
+func (m *Model) AddPhyLoc(node *dataModel.ScenarioNode, parentNode *Node) (err error) {
+
+	// Get parent Network Location node & context information
+	nl := parentNode.object.(*dataModel.NetworkLocation)
+
+	// Validate Physical Location
+	if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+		return errors.New("Missing Physical Location")
+	}
+	pl := node.NodeDataUnion.PhysicalLocation
+	err = validatePhyLoc(pl)
+	if err != nil {
+		return err
+	}
+
+	// Make sure node Name is unique
+	n := m.nodeMap.FindByName(pl.Name)
+	if n != nil {
+		return errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
+	}
+
+	// Ignore any configured processes
+	pl.Processes = make([]dataModel.Process, 0)
+
+	// Add PhyLoc to parent NetLoc
+	nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
+
+	return nil
+}
+
+// AddProcess - Add process
+func (m *Model) AddProcess(node *dataModel.ScenarioNode, parentNode *Node) (err error) {
+
+	// Get parent Physical Location node & context information
+	pl := parentNode.object.(*dataModel.PhysicalLocation)
+
+	// Validate Process
+	if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
+		return errors.New("Missing Process")
+	}
+	proc := node.NodeDataUnion.Process
+	err = validateProc(proc)
+	if err != nil {
+		return err
+	}
+
+	// Make sure node Name is unique
+	n := m.nodeMap.FindByName(proc.Name)
+	if n != nil {
+		return errors.New("Element " + proc.Name + " already exists in scenario " + m.name)
+	}
+
+	// Add Proc to parent PhyLoc
+	pl.Processes = append(pl.Processes, *proc)
+
 	return nil
 }
 
@@ -517,110 +537,127 @@ func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
 
 	// Add element based on type
 	if isPhyLoc(node.Type_) {
-
-		// Validate Physical Location
-		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
-			return errors.New("Missing Physical Location")
-		}
-		pl := node.NodeDataUnion.PhysicalLocation
-		err = validatePhyLoc(pl)
+		// Physical Location
+		err = m.ModifyPhyLoc(node)
 		if err != nil {
 			return err
 		}
-
-		// Make sure element exists in scenario
-		n := m.nodeMap.FindByName(pl.Name)
-		if n == nil {
-			return errors.New("Element " + pl.Name + " not found in scenario " + m.name)
-		}
-
-		// Get parent
-		nl := n.parent.(*dataModel.NetworkLocation)
-		if nl == nil {
-			return errors.New("Parent node not found in scenario " + m.name)
-		}
-
-		// Update PhyLoc
-		for i, prevPl := range nl.PhysicalLocations {
-			if prevPl.Name == pl.Name {
-				// Keep existing ID & child processes
-				pl.Id = nl.PhysicalLocations[i].Id
-				pl.Processes = nl.PhysicalLocations[i].Processes
-
-				// Reset & Overwrite PhyLoc
-				var data []byte
-				data, err = json.Marshal(pl)
-				if err != nil {
-					return err
-				}
-				nl.PhysicalLocations[i] = *new(dataModel.PhysicalLocation)
-				err = json.Unmarshal(data, &nl.PhysicalLocations[i])
-				if err != nil {
-					return err
-				}
-				break
-			}
-		}
-
 	} else if isProc(node.Type_) {
-
-		// Validate Process
-		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
-			return errors.New("Missing Process")
-		}
-		proc := node.NodeDataUnion.Process
-		err = validateProc(proc)
+		// Process
+		err = m.ModifyProcess(node)
 		if err != nil {
 			return err
 		}
-
-		// Make sure element exists in scenario
-		n := m.nodeMap.FindByName(proc.Name)
-		if n == nil {
-			return errors.New("Element " + proc.Name + " not found in scenario " + m.name)
-		}
-
-		// Get parent
-		pl := n.parent.(*dataModel.PhysicalLocation)
-		if pl == nil {
-			return errors.New("Parent node not found in scenario " + m.name)
-		}
-
-		// Update Process
-		for i, prevProc := range pl.Processes {
-			if prevProc.Name == proc.Name {
-				// Keep existing ID
-				proc.Id = pl.Processes[i].Id
-
-				// Reset & Overwrite Process
-				var data []byte
-				data, err = json.Marshal(proc)
-				if err != nil {
-					return err
-				}
-				pl.Processes[i] = *new(dataModel.Process)
-				err = json.Unmarshal(data, &pl.Processes[i])
-				if err != nil {
-					return err
-				}
-				break
-			}
-		}
-
 	} else {
-		err = errors.New("Node type " + node.Type_ + " not supported")
-		return
+		return errors.New("Node type " + node.Type_ + " not supported")
 	}
 
 	// Refresh node map
 	err = m.parseNodes()
 	if err != nil {
-		log.Error(err.Error())
+		return err
 	}
 
 	// Update scenario
 	err = m.refresh()
-	return
+	return err
+}
+
+// ModifyPhyLoc - Modify physical location
+func (m *Model) ModifyPhyLoc(node *dataModel.ScenarioNode) (err error) {
+
+	// Validate Physical Location
+	if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+		return errors.New("Missing Physical Location")
+	}
+	pl := node.NodeDataUnion.PhysicalLocation
+	err = validatePhyLoc(pl)
+	if err != nil {
+		return err
+	}
+
+	// Make sure element exists in scenario
+	n := m.nodeMap.FindByName(pl.Name)
+	if n == nil {
+		return errors.New("Element " + pl.Name + " not found in scenario " + m.name)
+	}
+
+	// Get parent
+	nl := n.parent.(*dataModel.NetworkLocation)
+	if nl == nil {
+		return errors.New("Parent node not found in scenario " + m.name)
+	}
+
+	// Update PhyLoc
+	for i, prevPl := range nl.PhysicalLocations {
+		if prevPl.Name == pl.Name {
+			// Keep existing ID & child processes
+			pl.Id = nl.PhysicalLocations[i].Id
+			pl.Processes = nl.PhysicalLocations[i].Processes
+
+			// Reset & Overwrite PhyLoc
+			var data []byte
+			data, err = json.Marshal(pl)
+			if err != nil {
+				return err
+			}
+			nl.PhysicalLocations[i] = *new(dataModel.PhysicalLocation)
+			err = json.Unmarshal(data, &nl.PhysicalLocations[i])
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+	return nil
+}
+
+// ModifyProcess - Modify process
+func (m *Model) ModifyProcess(node *dataModel.ScenarioNode) (err error) {
+
+	// Validate Process
+	if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
+		return errors.New("Missing Process")
+	}
+	proc := node.NodeDataUnion.Process
+	err = validateProc(proc)
+	if err != nil {
+		return err
+	}
+
+	// Make sure element exists in scenario
+	n := m.nodeMap.FindByName(proc.Name)
+	if n == nil {
+		return errors.New("Element " + proc.Name + " not found in scenario " + m.name)
+	}
+
+	// Get parent
+	pl := n.parent.(*dataModel.PhysicalLocation)
+	if pl == nil {
+		return errors.New("Parent node not found in scenario " + m.name)
+	}
+
+	// Update Process
+	for i, prevProc := range pl.Processes {
+		if prevProc.Name == proc.Name {
+			// Keep existing ID
+			proc.Id = pl.Processes[i].Id
+
+			// Reset & Overwrite Process
+			var data []byte
+			data, err = json.Marshal(proc)
+			if err != nil {
+				return err
+			}
+			pl.Processes[i] = *new(dataModel.Process)
+			err = json.Unmarshal(data, &pl.Processes[i])
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+	return nil
 }
 
 // RemoveScenarioNode - Remove scenario node
@@ -629,97 +666,109 @@ func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	defer m.lock.Unlock()
 
 	if node == nil {
-		err = errors.New("node == nil")
-		return
+		return errors.New("node == nil")
 	}
 
 	// Add element based on type
 	if isPhyLoc(node.Type_) {
-
-		// Get node name from request
-		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
-			err = errors.New("Missing Physical Location")
-			return
+		// Physical Location
+		err = m.RemovePhyLoc(node)
+		if err != nil {
+			return err
 		}
-		nodeName := node.NodeDataUnion.PhysicalLocation.Name
-
-		// Find node in scenario
-		n := m.nodeMap.FindByName(nodeName)
-		if n == nil {
-			err = errors.New("Element " + nodeName + " not found in scenario " + m.name)
-			return
-		}
-
-		// Get parent
-		nl := n.parent.(*dataModel.NetworkLocation)
-		if nl == nil {
-			err = errors.New("Parent node not found in scenario " + m.name)
-			return
-		}
-
-		// Get index of PhyLoc to remove
-		var index int
-		for i, pl := range nl.PhysicalLocations {
-			if pl.Name == nodeName {
-				index = i
-				break
-			}
-		}
-
-		// Overwrite & truncate to remove PhyLoc from list
-		nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
-		nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
-
 	} else if isProc(node.Type_) {
-
-		// Get node name from request
-		if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
-			err = errors.New("Missing Process")
-			return
+		// Process
+		err = m.RemoveProcess(node)
+		if err != nil {
+			return err
 		}
-		nodeName := node.NodeDataUnion.Process.Name
-
-		// Find node in scenario
-		n := m.nodeMap.FindByName(nodeName)
-		if n == nil {
-			err = errors.New("Element " + nodeName + " not found in scenario " + m.name)
-			return
-		}
-
-		// Get parent
-		pl := n.parent.(*dataModel.PhysicalLocation)
-		if pl == nil {
-			err = errors.New("Parent node not found in scenario " + m.name)
-			return
-		}
-
-		// Get index of Process to remove
-		var index int
-		for i, proc := range pl.Processes {
-			if proc.Name == nodeName {
-				index = i
-				break
-			}
-		}
-
-		// Overwrite & truncate to remove Process from list
-		pl.Processes[index] = pl.Processes[len(pl.Processes)-1]
-		pl.Processes = pl.Processes[:len(pl.Processes)-1]
-
 	} else {
-		err = errors.New("Node type " + node.Type_ + " not supported")
-		return
+		return errors.New("Node type " + node.Type_ + " not supported")
 	}
 
 	// Refresh node map
 	err = m.parseNodes()
 	if err != nil {
-		log.Error(err.Error())
+		return err
 	}
 
 	// Update scenario
 	err = m.refresh()
-	return
+	return err
+}
+
+// RemovePhyLoc - Remove physical location
+func (m *Model) RemovePhyLoc(node *dataModel.ScenarioNode) (err error) {
+
+	// Get node name from request
+	if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+		return errors.New("Missing Physical Location")
+	}
+	nodeName := node.NodeDataUnion.PhysicalLocation.Name
+
+	// Find node in scenario
+	n := m.nodeMap.FindByName(nodeName)
+	if n == nil {
+		return errors.New("Element " + nodeName + " not found in scenario " + m.name)
+	}
+
+	// Get parent
+	nl := n.parent.(*dataModel.NetworkLocation)
+	if nl == nil {
+		return errors.New("Parent node not found in scenario " + m.name)
+	}
+
+	// Get index of PhyLoc to remove
+	var index int
+	for i, pl := range nl.PhysicalLocations {
+		if pl.Name == nodeName {
+			index = i
+			break
+		}
+	}
+
+	// Overwrite & truncate to remove PhyLoc from list
+	nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
+	nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
+
+	return nil
+}
+
+// RemoveProcess - Remove process
+func (m *Model) RemoveProcess(node *dataModel.ScenarioNode) (err error) {
+
+	// Get node name from request
+	if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
+		return errors.New("Missing Process")
+	}
+	nodeName := node.NodeDataUnion.Process.Name
+
+	// Find node in scenario
+	n := m.nodeMap.FindByName(nodeName)
+	if n == nil {
+		return errors.New("Element " + nodeName + " not found in scenario " + m.name)
+	}
+
+	// Get parent
+	pl := n.parent.(*dataModel.PhysicalLocation)
+	if pl == nil {
+		return errors.New("Parent node not found in scenario " + m.name)
+	}
+
+	// Get index of Process to remove
+	var index int
+	for i, proc := range pl.Processes {
+		if proc.Name == nodeName {
+			index = i
+			break
+		}
+	}
+
+	// Overwrite & truncate to remove Process from list
+	pl.Processes[index] = pl.Processes[len(pl.Processes)-1]
+	pl.Processes = pl.Processes[:len(pl.Processes)-1]
+
+	return nil
 }
 
 //GetScenarioName - Get the scenario name

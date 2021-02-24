@@ -40,7 +40,6 @@ const (
 
 const (
 	REGEX_NAME               = `^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$`
-	REGEX_FULL_NAME          = `^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$`
 	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$`
 	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$`
 	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
@@ -978,7 +977,7 @@ func validateFullName(name string) (err error) {
 	if len(name) > 60 {
 		return errors.New("Full name length exceeds maximum of 60 characters")
 	}
-	matched, err := regexp.MatchString(REGEX_FULL_NAME, name)
+	matched, err := regexp.MatchString(REGEX_NAME, name)
 	if err != nil || !matched {
 		return errors.New("Full name must be lowercase alphanumeric or '-' or '.'")
 	}
