@@ -19,11 +19,16 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/blang/semver"
+	"github.com/google/uuid"
 )
 
 // Validator status types
@@ -33,8 +38,53 @@ const (
 	ValidatorStatusError   = "SCENARIO-ERROR"
 )
 
+const (
+	REGEX_NAME               = `^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$`
+	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$`
+	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$`
+	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
+	REGEX_PATH               = `[\^#%&$\*<>\?\{\|\} ]+`
+)
+
+const (
+	LATENCY_MIN                  = 0
+	LATENCY_MAX                  = 250000
+	LATENCY_DISTRIBUTION_DEFAULT = "Normal"
+	JITTER_MIN                   = 0
+	JITTER_MAX                   = 250000
+	PACKET_LOSS_MIN              = float64(0.0)
+	PACKET_LOSS_MAX              = float64(100.0)
+	THROUGHPUT_MIN               = 1
+	THROUGHPUT_MAX               = 1000000
+	THROUGHPUT_DEFAULT           = 1000
+	VELOCITY_MIN                 = 0
+	VELOCITY_MAX                 = 1000000
+	RADIUS_MIN                   = 1
+	RADIUS_MAX                   = 1000000
+	SERVICE_PORT_MIN             = 1
+	SERVICE_PORT_MAX             = 65535
+	SERVICE_NODE_PORT_MIN        = 30000
+	SERVICE_NODE_PORT_MAX        = 32767
+	GPU_COUNT_MIN                = 1
+	GPU_COUNT_MAX                = 4
+	MIN_CPU_COUNT_MIN            = 0.1
+	MIN_CPU_COUNT_MAX            = 100.0
+	MAX_CPU_COUNT_MIN            = 0.1
+	MAX_CPU_COUNT_MAX            = 100.0
+	MIN_MEMORY_MIN               = 1
+	MIN_MEMORY_MAX               = 1000000
+	MAX_MEMORY_MIN               = 1
+	MAX_MEMORY_MAX               = 1000000
+)
+
+// Enums
+var LATENCY_DIST_ENUM = []string{"Normal", "Pareto", "Paretonormal", "Uniform"}
+var EOP_MODE_ENUM = []string{"LOOP", "REVERSE"}
+var GPU_TYPE_ENUM = []string{"NVIDIA"}
+var PROTOCOL_ENUM = []string{"UDP", "TCP"}
+
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 4}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 6}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
@@ -42,9 +92,6 @@ var Version140 = semver.Version{Major: 1, Minor: 4, Patch: 0}
 var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
 var Version151 = semver.Version{Major: 1, Minor: 5, Patch: 1}
 var Version153 = semver.Version{Major: 1, Minor: 5, Patch: 3}
-
-// Default latency distribution
-const DEFAULT_LATENCY_DISTRIBUTION = "Normal"
 
 // setNetChar - Creates a new netchar object if non-existent and migrate values from deprecated fields
 func createNetChar(lat int32, latVar int32, dist string, tputDl int32, tputUl int32, loss float64) *dataModel.NetworkCharacteristics {
@@ -136,6 +183,7 @@ func ValidateScenario(jsonScenario []byte, name string) (validJsonScenario []byt
 	// Validate scenario format & content
 	err = validateScenario(scenario)
 	if err != nil {
+		log.Error("Scenario validation failed for: " + scenario.Name)
 		log.Error(err.Error())
 		return nil, ValidatorStatusError, err
 	}
@@ -202,7 +250,7 @@ func upgradeScenarioTo150(scenario *dataModel.Scenario) {
 			deploy.NetChar = createNetChar(
 				deploy.InterDomainLatency,
 				deploy.InterDomainLatencyVariation,
-				DEFAULT_LATENCY_DISTRIBUTION,
+				LATENCY_DISTRIBUTION_DEFAULT,
 				deploy.InterDomainThroughput,
 				deploy.InterDomainThroughput,
 				deploy.InterDomainPacketLoss)
@@ -374,9 +422,6 @@ func upgradeScenarioTo153(scenario *dataModel.Scenario) {
 
 // Validate scenario
 func validateScenario(scenario *dataModel.Scenario) error {
-
-	// TODO -- Augment this for full scenario validation
-
 	idMap := make(map[string]bool)
 	nameMap := make(map[string]bool)
 
@@ -398,7 +443,9 @@ func validateScenario(scenario *dataModel.Scenario) error {
 	}
 
 	// Validate domains
-	for _, domain := range scenario.Deployment.Domains {
+	for domainIndex := range deployment.Domains {
+		domain := &deployment.Domains[domainIndex]
+		// TODO -- Add Domain validation
 		if err := validateUniqueId(domain.Id, idMap); err != nil {
 			return err
 		}
@@ -407,7 +454,9 @@ func validateScenario(scenario *dataModel.Scenario) error {
 		}
 
 		// Validate zones
-		for _, zone := range domain.Zones {
+		for zoneIndex := range domain.Zones {
+			zone := &domain.Zones[zoneIndex]
+			// TODO -- Add Zone validation
 			if err := validateUniqueId(zone.Id, idMap); err != nil {
 				return err
 			}
@@ -416,7 +465,9 @@ func validateScenario(scenario *dataModel.Scenario) error {
 			}
 
 			// Validate Network Locations
-			for _, nl := range zone.NetworkLocations {
+			for nlIndex := range zone.NetworkLocations {
+				nl := &zone.NetworkLocations[nlIndex]
+				// TODO -- Add NetworkLocation validation
 				if err := validateUniqueId(nl.Id, idMap); err != nil {
 					return err
 				}
@@ -425,7 +476,11 @@ func validateScenario(scenario *dataModel.Scenario) error {
 				}
 
 				// Validate Physical Locations
-				for _, pl := range nl.PhysicalLocations {
+				for plIndex := range nl.PhysicalLocations {
+					pl := &nl.PhysicalLocations[plIndex]
+					if err := validatePhyLoc(pl); err != nil {
+						return err
+					}
 					if err := validateUniqueId(pl.Id, idMap); err != nil {
 						return err
 					}
@@ -434,7 +489,11 @@ func validateScenario(scenario *dataModel.Scenario) error {
 					}
 
 					// Validate Processes
-					for _, proc := range pl.Processes {
+					for procIndex := range pl.Processes {
+						proc := &pl.Processes[procIndex]
+						if err := validateProc(proc); err != nil {
+							return err
+						}
 						if err := validateUniqueId(proc.Id, idMap); err != nil {
 							return err
 						}
@@ -450,47 +509,572 @@ func validateScenario(scenario *dataModel.Scenario) error {
 }
 
 func validateUniqueId(id string, idMap map[string]bool) error {
-	// TODO -- Validate ID format
-
-	// Verify unique ID
 	if _, found := idMap[id]; found {
 		return errors.New("Id not unique: " + id)
 	}
 	idMap[id] = true
-
 	return nil
 }
 
 func validateUniqueName(name string, nameMap map[string]bool) error {
-	// TODO -- Validate name format
-
-	// Verify unique name
 	if _, found := nameMap[name]; found {
 		return errors.New("Name not unique: " + name)
 	}
 	nameMap[name] = true
+	return nil
+}
+
+// Validate the provided Physical Location
+func validatePhyLoc(pl *dataModel.PhysicalLocation) (err error) {
+	// ID: Create new UUID if none provided
+	if pl.Id == "" {
+		pl.Id = uuid.New().String()
+	}
+	// Name
+	err = validateName(pl.Name)
+	if err != nil {
+		return err
+	}
+	// Type
+	if !isPhyLoc(pl.Type_) {
+		return errors.New("Unsupported PhysicalLocation Type: " + pl.Type_)
+	}
+	// MAC Address
+	err = validateMacAddress(pl.MacId)
+	if err != nil {
+		return err
+	}
+	// Wireless Types
+	err = validateWirelessTypeList(pl.WirelessType)
+	if err != nil {
+		return err
+	}
+	// Network Characteristics
+	err = validateNetChar(pl.NetChar)
+	if err != nil {
+		return err
+	}
+	// GeoData
+	err = validateGeoData(pl.GeoData, pl.Type_)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Validate the provided Process
+func validateProc(proc *dataModel.Process) (err error) {
+	// ID: Create new UUID if none provided
+	if proc.Id == "" {
+		proc.Id = uuid.New().String()
+	}
+	// Name
+	err = validateName(proc.Name)
+	if err != nil {
+		return err
+	}
+	// Type
+	if !isProc(proc.Type_) {
+		return errors.New("Unsupported Process Type: " + proc.Type_)
+	}
+	// Network Characteristics
+	err = validateNetChar(proc.NetChar)
+	if err != nil {
+		return err
+	}
+
+	// App deployment type-specific validation
+	if proc.IsExternal {
+		// EXTERNAL APP
+
+		// Service Config
+		err = validateExternalConfig(proc.ExternalConfig)
+		if err != nil {
+			return err
+		}
+
+		// TODO - Validate placement identifier
+
+	} else if proc.UserChartLocation != "" {
+		// USER-DEFINED CHART APP
+
+		// User Chart Location
+		err = validatePath(proc.UserChartLocation, true)
+		if err != nil {
+			return err
+		}
+		// User Chart Group
+		err = validateChartGroup(proc.UserChartGroup)
+		if err != nil {
+			return err
+		}
+		// User Chart Alternate values
+		err = validatePath(proc.UserChartAlternateValues, false)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		// INTERNAL APP
+
+		// Container Image Name
+		err = validatePath(proc.Image, true)
+		if err != nil {
+			return err
+		}
+		// GPU Config
+		err = validateGpuConfig(proc.GpuConfig)
+		if err != nil {
+			return err
+		}
+		// CPU Config
+		err = validateCpuConfig(proc.CpuConfig)
+		if err != nil {
+			return err
+		}
+		// Memory Config
+		err = validateMemoryConfig(proc.MemoryConfig)
+		if err != nil {
+			return err
+		}
+		// Environment variables
+		err = validateEnvVar(proc.Environment)
+		if err != nil {
+			return err
+		}
+		// Command
+		err = validatePath(proc.CommandExe, false)
+		if err != nil {
+			return err
+		}
+		// TODO - Validate command arguments
+		// TODO - Validate placement identifier
+
+		if proc.Type_ == NodeTypeEdgeApp || proc.Type_ == NodeTypeCloudApp {
+			// Service Config
+			err = validateServiceConfig(proc.ServiceConfig)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
 
-// Validate the provided PL
-func validatePL(pl *dataModel.PhysicalLocation) error {
+func validateNetChar(nc *dataModel.NetworkCharacteristics) (err error) {
+	// Mandatory field
+	if nc == nil {
+		return errors.New("Missing network characteristics")
+	}
 
-	if pl.Id == "" {
-		pl.Id = pl.Name
+	// Set default values
+	if nc.ThroughputUl == 0 {
+		nc.ThroughputUl = THROUGHPUT_DEFAULT
 	}
-	if pl.Name == "" {
-		return errors.New("Invalid Name")
+	if nc.ThroughputDl == 0 {
+		nc.ThroughputDl = THROUGHPUT_DEFAULT
 	}
-	if pl.Type_ != NodeTypeUE {
-		return errors.New("Unsupported PL Type: " + pl.Type_)
+	if nc.LatencyDistribution == "" {
+		nc.LatencyDistribution = LATENCY_DISTRIBUTION_DEFAULT
 	}
-	if pl.NetChar != nil {
-		if pl.NetChar.ThroughputDl == 0 {
-			pl.NetChar.ThroughputDl = 1000
+
+	// Validate fields
+	err = validateInt32Range(nc.Latency, LATENCY_MIN, LATENCY_MAX)
+	if err != nil {
+		return err
+	}
+	err = validateInt32Range(nc.LatencyVariation, JITTER_MIN, JITTER_MAX)
+	if err != nil {
+		return err
+	}
+	err = validateStringEnum(nc.LatencyDistribution, LATENCY_DIST_ENUM)
+	if err != nil {
+		return err
+	}
+	err = validateFloat64Range(nc.PacketLoss, PACKET_LOSS_MIN, PACKET_LOSS_MAX)
+	if err != nil {
+		return err
+	}
+	err = validateInt32Range(nc.ThroughputUl, THROUGHPUT_MIN, THROUGHPUT_MAX)
+	if err != nil {
+		return err
+	}
+	err = validateInt32Range(nc.ThroughputDl, THROUGHPUT_MIN, THROUGHPUT_MAX)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateGeoData(gd *dataModel.GeoData, typ string) (err error) {
+	// Optional field
+	if gd == nil {
+		return nil
+	}
+	// Radius
+	if isNetLoc(typ) {
+		err = validateFloat32Range(gd.Radius, RADIUS_MIN, RADIUS_MAX)
+		if err != nil {
+			return err
 		}
-		if pl.NetChar.ThroughputUl == 0 {
-			pl.NetChar.ThroughputUl = 1000
+	}
+	// Path (optional)
+	if gd.Path != nil {
+		// End-of-path mode
+		err = validateStringEnum(gd.EopMode, EOP_MODE_ENUM)
+		if err != nil {
+			return err
+		}
+		// Velocity
+		err = validateFloat32Range(gd.Velocity, VELOCITY_MIN, VELOCITY_MAX)
+		if err != nil {
+			return err
+		}
+		// TODO - Validate Path
+	}
+
+	// TODO - Validate Location
+
+	return nil
+}
+
+func validateGpuConfig(cfg *dataModel.GpuConfig) (err error) {
+	// Optional field
+	if cfg == nil {
+		return nil
+	}
+	// GPU Count
+	err = validateInt32Range(cfg.Count, GPU_COUNT_MIN, GPU_COUNT_MAX)
+	if err != nil {
+		return err
+	}
+	// GPU Type
+	err = validateStringEnum(cfg.Type_, GPU_TYPE_ENUM)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateCpuConfig(cfg *dataModel.CpuConfig) (err error) {
+	// Optional field
+	if cfg == nil {
+		return nil
+	}
+	// Min CPU Count (optional)
+	if cfg.Min != 0 {
+		err = validateFloat32Range(cfg.Min, MIN_CPU_COUNT_MIN, MIN_CPU_COUNT_MAX)
+		if err != nil {
+			return err
+		}
+	}
+	// Max CPU Count (optional)
+	if cfg.Max != 0 {
+		err = validateFloat32Range(cfg.Max, MAX_CPU_COUNT_MIN, MAX_CPU_COUNT_MAX)
+		if err != nil {
+			return err
+		}
+	}
+	// Max CPU must be greater than Min CPU
+	if cfg.Max != 0 && cfg.Max < cfg.Min {
+		return fmt.Errorf("Max CPU [%f] less than Min CPU [%f]", cfg.Max, cfg.Min)
+	}
+	return nil
+}
+
+func validateMemoryConfig(cfg *dataModel.MemoryConfig) (err error) {
+	// Optional field
+	if cfg == nil {
+		return nil
+	}
+	// Min Memory (optional)
+	if cfg.Min != 0 {
+		err = validateInt32Range(cfg.Min, MIN_MEMORY_MIN, MIN_MEMORY_MAX)
+		if err != nil {
+			return err
+		}
+	}
+	// Max Memory (optional)
+	if cfg.Max != 0 {
+		err = validateInt32Range(cfg.Max, MAX_MEMORY_MIN, MAX_MEMORY_MAX)
+		if err != nil {
+			return err
+		}
+	}
+	// Max Memory must be greater than Min Memory
+	if cfg.Max != 0 && cfg.Max < cfg.Min {
+		return fmt.Errorf("Max Memory [%d] less than Min Memory [%d]", cfg.Max, cfg.Min)
+	}
+	return nil
+}
+
+func validateExternalConfig(cfg *dataModel.ExternalConfig) (err error) {
+	// Ingress Service Mapping
+	for _, svc := range cfg.IngressServiceMap {
+		err = validateIngressSvc(&svc)
+		if err != nil {
+			return err
+		}
+	}
+	// EgressServiceMapping
+	for _, svc := range cfg.EgressServiceMap {
+		err = validateEgressSvc(&svc)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateServiceConfig(cfg *dataModel.ServiceConfig) (err error) {
+	// Optional field
+	if cfg == nil {
+		return nil
+	}
+	// Service Name -- TBD if it needs to be same as unique element name
+	err = validateName(cfg.Name)
+	if err != nil {
+		return err
+	}
+	// Multi-Edge (Group) Service Name (optional)
+	if cfg.MeSvcName != "" {
+		err = validateName(cfg.MeSvcName)
+		if err != nil {
+			return err
+		}
+	}
+	// Service Ports
+	for _, port := range cfg.Ports {
+		// Protocol
+		err = validateStringEnum(port.Protocol, PROTOCOL_ENUM)
+		if err != nil {
+			return err
+		}
+		// Port
+		err = validateInt32Range(port.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+		if err != nil {
+			return err
+		}
+		// External Port
+		if port.ExternalPort != 0 {
+			err = validateInt32Range(port.ExternalPort, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func validateChartGroup(group string) (err error) {
+	if group != "" {
+		fields := strings.Split(group, ":")
+		if len(fields) != 4 {
+			return errors.New("Group format must be 'svc instance:svc group name:port:protocol'")
+		}
+		// Svc name
+		err = validateFullName(fields[0])
+		if err != nil {
+			return err
+		}
+		// Svc group name (optional)
+		if fields[1] != "" {
+			err = validateName(fields[1])
+			if err != nil {
+				return err
+			}
+		}
+		// Port
+		port, err := strconv.Atoi(fields[2])
+		if err != nil {
+			return err
+		}
+		err = validateInt32Range(int32(port), SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+		if err != nil {
+			return err
+		}
+		// Protocol
+		err = validateStringEnum(fields[3], PROTOCOL_ENUM)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateIngressSvc(svc *dataModel.IngressService) (err error) {
+	// External Port
+	err = validateInt32Range(svc.ExternalPort, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
+	if err != nil {
+		return err
+	}
+	// Svc name
+	err = validateFullName(svc.Name)
+	if err != nil {
+		return err
+	}
+	// Port
+	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+	if err != nil {
+		return err
+	}
+	// Protocol
+	err = validateStringEnum(svc.Protocol, PROTOCOL_ENUM)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateEgressSvc(svc *dataModel.EgressService) (err error) {
+	// Svc name
+	err = validateFullName(svc.Name)
+	if err != nil {
+		return err
+	}
+	// Group Svc name (optional)
+	if svc.MeSvcName != "" {
+		err = validateFullName(svc.MeSvcName)
+		if err != nil {
+			return err
+		}
+	}
+	// Port
+	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
+	if err != nil {
+		return err
+	}
+	// Protocol
+	err = validateStringEnum(svc.Protocol, PROTOCOL_ENUM)
+	if err != nil {
+		return err
+	}
+
+	// TODO -- Validate IP
+
+	return nil
+}
+
+func validateName(name string) (err error) {
+	if name == "" {
+		return errors.New("Name not provided")
+	}
+	if len(name) > 30 {
+		return errors.New("Name length exceeds maximum of 30 characters")
+	}
+	matched, err := regexp.MatchString(REGEX_NAME, name)
+	if err != nil || !matched {
+		return errors.New("Name must be lowercase alphanumeric or '-' or '.'")
+	}
+	return nil
+}
+
+func validateFullName(name string) (err error) {
+	if name == "" {
+		return errors.New("Full name not provided")
+	}
+	if len(name) > 60 {
+		return errors.New("Full name length exceeds maximum of 60 characters")
+	}
+	matched, err := regexp.MatchString(REGEX_NAME, name)
+	if err != nil || !matched {
+		return errors.New("Full name must be lowercase alphanumeric or '-' or '.'")
+	}
+	return nil
+}
+
+func validateVariableName(name string) (err error) {
+	if name == "" {
+		return errors.New("Variable name not provided")
+	}
+	if len(name) > 30 {
+		return errors.New("Variable name length exceeds maximum of 30 characters")
+	}
+	matched, err := regexp.MatchString(REGEX_VARIABLE_NAME, name)
+	if err != nil || !matched {
+		return errors.New("Variable name must be alphanumeric or '-' or '.'")
+	}
+	return nil
+}
+
+func validateInt32Range(val int32, min int32, max int32) (err error) {
+	if val < min || val > max {
+		return fmt.Errorf("Int32 val: %d not in valid range: [%d - %d]", val, min, max)
+	}
+	return nil
+}
+
+func validateFloat32Range(val float32, min float32, max float32) (err error) {
+	if val < min || val > max {
+		return fmt.Errorf("Float32 val: %f not in valid range: [%f - %f]", val, min, max)
+	}
+	return nil
+}
+
+func validateFloat64Range(val float64, min float64, max float64) (err error) {
+	if val < min || val > max {
+		return fmt.Errorf("Float64 val: %f not in valid range: [%f - %f]", val, min, max)
+	}
+	return nil
+}
+
+func validateStringEnum(val string, enum []string) (err error) {
+	for _, str := range enum {
+		if val == str {
+			return nil
+		}
+	}
+	return fmt.Errorf("String val: %s not in enum: %v", val, enum)
+}
+
+func validateMacAddress(mac string) (err error) {
+	if mac != "" {
+		if len(mac) > 12 {
+			return errors.New("MAC address > 12 chars")
+		}
+		matched, err := regexp.MatchString(REGEX_MAC_ADDRESS, mac)
+		if err != nil || !matched {
+			return errors.New("MAC address must be alphanumeric hex")
+		}
+	}
+	return nil
+}
+
+func validateWirelessTypeList(list string) (err error) {
+	if list != "" {
+		matched, err := regexp.MatchString(REGEX_WIRELESS_TYPE_LIST, list)
+		if err != nil || !matched {
+			return errors.New("Wireless type list must be comma-separated list: wifi|5g|4g|other")
+		}
+	}
+	return nil
+}
+
+func validatePath(path string, isRequired bool) (err error) {
+	if path != "" {
+		matched, err := regexp.MatchString(REGEX_PATH, path)
+		if err != nil || matched {
+			return fmt.Errorf("Invalid path format: %s", path)
+		}
+	} else if isRequired {
+		return errors.New("Missing path")
+	}
+	return nil
+}
+
+func validateEnvVar(env string) (err error) {
+	if env != "" {
+		variables := strings.Split(env, ",")
+		for _, variable := range variables {
+			fields := strings.Split(variable, "=")
+			if len(fields) != 2 {
+				return fmt.Errorf("Invalid env var format: %s", variable)
+			}
+			err = validateVariableName(strings.TrimSpace(fields[0]))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

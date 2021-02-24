@@ -742,16 +742,18 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 	case mod.ScenarioAdd:
 		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node)
 		if err == nil {
-
 			description = "Added node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
 		}
-
+	case mod.ScenarioModify:
+		err = sbxCtrl.activeModel.ModifyScenarioNode(event.EventScenarioUpdate.Node)
+		if err == nil {
+			description = "Modified node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+		}
 	case mod.ScenarioRemove:
 		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node)
 		if err == nil {
 			description = "Removed node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
 		}
-
 	default:
 		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
 	}

@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/PhysicalLocation'], factory);
+    define(['ApiClient', 'model/PhysicalLocation', 'model/Process'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./PhysicalLocation'));
+    module.exports = factory(require('../ApiClient'), require('./PhysicalLocation'), require('./Process'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.NodeDataUnion = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+    root.AdvantEdgeSandboxControllerRestApi.NodeDataUnion = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.PhysicalLocation, root.AdvantEdgeSandboxControllerRestApi.Process);
   }
-}(this, function(ApiClient, PhysicalLocation) {
+}(this, function(ApiClient, PhysicalLocation, Process) {
   'use strict';
 
   /**
@@ -72,6 +72,8 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('physicalLocation'))
         obj.physicalLocation = PhysicalLocation.constructFromObject(data['physicalLocation']);
+      if (data.hasOwnProperty('process'))
+        obj.process = Process.constructFromObject(data['process']);
     }
     return obj;
   }
@@ -80,6 +82,11 @@
    * @member {module:model/PhysicalLocation} physicalLocation
    */
   exports.prototype.physicalLocation = undefined;
+
+  /**
+   * @member {module:model/Process} process
+   */
+  exports.prototype.process = undefined;
 
   return exports;
 

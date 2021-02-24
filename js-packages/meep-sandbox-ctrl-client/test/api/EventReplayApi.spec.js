@@ -174,6 +174,62 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput = 0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process = new AdvantEdgeSandboxControllerRestApi.Process();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.id = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.type = "UE-APP";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.isExternal = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.image = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.environment = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.commandArguments = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.commandExe = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig = new AdvantEdgeSandboxControllerRestApi.ServiceConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.meSvcName = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.ports = [new AdvantEdgeSandboxControllerRestApi.ServicePort()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.ports[0].protocol = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.ports[0].port = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.ports[0].externalPort = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig = new AdvantEdgeSandboxControllerRestApi.GpuConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig.type = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig.count = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig = new AdvantEdgeSandboxControllerRestApi.MemoryConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig.min = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig.max = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig = new AdvantEdgeSandboxControllerRestApi.CpuConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig.min = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig.max = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig = new AdvantEdgeSandboxControllerRestApi.ExternalConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.ingressServiceMap = [new AdvantEdgeSandboxControllerRestApi.IngressService()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.ingressServiceMap[0].name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.ingressServiceMap[0].port = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.ingressServiceMap[0].externalPort = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.ingressServiceMap[0].protocol = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap = [new AdvantEdgeSandboxControllerRestApi.EgressService()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap[0].name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap[0].meSvcName = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap[0].ip = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap[0].port = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap[0].protocol = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.status = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.userChartLocation = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.userChartAlternateValues = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.userChartGroup = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.meta = {key: ""};
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.userMeta = {key: ""};
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar = new AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latency = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latencyVariation = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latencyDistribution = "Normal";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughput = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughputDl = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughputUl = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.packetLoss = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.appLatency = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.appLatencyVariation = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.appThroughput = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.appPacketLoss = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.placementId = "";
           replayFile.events[0].event.eventScenarioUpdate.node.parent = "";
           replayFile.events[0].event.eventScenarioUpdate.node.children = [""];
 
@@ -578,6 +634,148 @@
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be(0.0);
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId).to.be.a('string');
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId).to.be("");
+                        expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                              expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.id).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.id).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.name).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.name).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.type).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.type).to.be("UE-APP");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.isExternal).to.be.a('boolean');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.isExternal).to.be(false);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.image).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.image).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.environment).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.environment).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.commandArguments).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.commandArguments).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.commandExe).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.commandExe).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.name).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.name).to.be("");
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.meSvcName).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.meSvcName).to.be("");
+                            {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.process.serviceConfig.ports;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                                expect(data.protocol).to.be.a('string');
+                                expect(data.protocol).to.be("");
+                                expect(data.port).to.be.a('number');
+                                expect(data.port).to.be(0);
+                                expect(data.externalPort).to.be.a('number');
+                                expect(data.externalPort).to.be(0);
+                              }
+                            }
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig.type).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig.type).to.be("");
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig.count).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.gpuConfig.count).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig.min).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig.min).to.be(0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig.max).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.memoryConfig.max).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig.min).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig.min).to.be(0.0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig.max).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.cpuConfig.max).to.be(0.0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                                {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.ingressServiceMap;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                                expect(data.name).to.be.a('string');
+                                expect(data.name).to.be("");
+                                expect(data.port).to.be.a('number');
+                                expect(data.port).to.be(0);
+                                expect(data.externalPort).to.be.a('number');
+                                expect(data.externalPort).to.be(0);
+                                expect(data.protocol).to.be.a('string');
+                                expect(data.protocol).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.process.externalConfig.egressServiceMap;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                                expect(data.name).to.be.a('string');
+                                expect(data.name).to.be("");
+                                expect(data.meSvcName).to.be.a('string');
+                                expect(data.meSvcName).to.be("");
+                                expect(data.ip).to.be.a('string');
+                                expect(data.ip).to.be("");
+                                expect(data.port).to.be.a('number');
+                                expect(data.port).to.be(0);
+                                expect(data.protocol).to.be.a('string');
+                                expect(data.protocol).to.be("");
+                              }
+                            }
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.status).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.status).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.userChartLocation).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.userChartLocation).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.userChartAlternateValues).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.userChartAlternateValues).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.userChartGroup).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.userChartGroup).to.be("");
+                          {
+                            let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.process.meta;
+                            expect(dataCtr).to.be.an(Object);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.process.userMeta;
+                            expect(dataCtr).to.be.an(Object);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latency).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latency).to.be(0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latencyVariation).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latencyVariation).to.be(0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latencyDistribution).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.latencyDistribution).to.be("Normal");
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughput).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughput).to.be(0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughputDl).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughputDl).to.be(0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughputUl).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.throughputUl).to.be(0);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.packetLoss).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.netChar.packetLoss).to.be(0.0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appLatency).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appLatency).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appLatencyVariation).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appLatencyVariation).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appThroughput).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appThroughput).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appPacketLoss).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.appPacketLoss).to.be(0.0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.placementId).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.process.placementId).to.be("");
                       expect(data.event.eventScenarioUpdate.node.parent).to.be.a('string');
                       expect(data.event.eventScenarioUpdate.node.parent).to.be("");
                       {
