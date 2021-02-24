@@ -396,11 +396,6 @@ func TestValidateEgressSvc(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Egress should be invalid")
 	}
-	svc = dataModel.EgressService{Name: "svc", MeSvcName: "", Port: 32767, Protocol: "UDP"}
-	err = validateEgressSvc(&svc)
-	if err == nil {
-		t.Fatalf("Egress should be invalid")
-	}
 	svc = dataModel.EgressService{Name: "svc", MeSvcName: "me-svc", Port: 0, Protocol: "TCP"}
 	err = validateEgressSvc(&svc)
 	if err == nil {
@@ -410,6 +405,11 @@ func TestValidateEgressSvc(t *testing.T) {
 	err = validateEgressSvc(&svc)
 	if err == nil {
 		t.Fatalf("Egress should be invalid")
+	}
+	svc = dataModel.EgressService{Name: "svc", MeSvcName: "", Port: 32767, Protocol: "UDP"}
+	err = validateEgressSvc(&svc)
+	if err != nil {
+		t.Fatalf(err.Error())
 	}
 	svc = dataModel.EgressService{Name: "svc", MeSvcName: "me-svc", Port: 1000, Protocol: "TCP"}
 	err = validateEgressSvc(&svc)
@@ -431,10 +431,6 @@ func TestValidateChartGroup(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Chart group should be invalid")
 	}
-	err = validateChartGroup("svc::1000:TCP")
-	if err == nil {
-		t.Fatalf("Chart group should be invalid")
-	}
 	err = validateChartGroup("svc:me-svc::TCP")
 	if err == nil {
 		t.Fatalf("Chart group should be invalid")
@@ -444,6 +440,10 @@ func TestValidateChartGroup(t *testing.T) {
 		t.Fatalf("Chart group should be invalid")
 	}
 	err = validateChartGroup("")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = validateChartGroup("svc::1000:TCP")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -568,12 +568,12 @@ func TestValidateCpuConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	cfg = dataModel.CpuConfig{Min: 0, Max: 1000}
+	cfg = dataModel.CpuConfig{Min: 0, Max: 100}
 	err = validateCpuConfig(&cfg)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	cfg = dataModel.CpuConfig{Min: 1, Max: 0}
+	cfg = dataModel.CpuConfig{Min: 0.1, Max: 0}
 	err = validateCpuConfig(&cfg)
 	if err != nil {
 		t.Fatalf(err.Error())

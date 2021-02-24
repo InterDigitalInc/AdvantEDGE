@@ -1,4 +1,4 @@
-version: 1.6.0
+version: 1.6.6
 name: demo2
 deployment:
     netChar:
@@ -71,11 +71,11 @@ deployment:
                                                         externalPort: null
                                                 meSvcName: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -110,11 +110,11 @@ deployment:
                                                         externalPort: null
                                                 meSvcName: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -136,11 +136,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -291,11 +291,11 @@ deployment:
                                             userChartAlternateValues: demo2/values/z1-e1-iperf-values.yaml
                                             userChartGroup: 'zone1-edge1-iperf:iperf:80:UDP'
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -324,11 +324,11 @@ deployment:
                                             userChartAlternateValues: demo2/values/z1-e1-svc-values.yaml
                                             userChartGroup: 'zone1-edge1-svc:svc:80:TCP'
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -350,11 +350,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -407,11 +407,11 @@ deployment:
                                             userChartAlternateValues: demo2/values/z1-f1-iperf-values.yaml
                                             userChartGroup: 'zone1-fog1-iperf:iperf:80:UDP'
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -440,11 +440,11 @@ deployment:
                                             userChartAlternateValues: demo2/values/z1-f1-svc-values.yaml
                                             userChartGroup: 'zone1-fog1-svc:svc:80:TCP'
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -466,11 +466,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -500,11 +500,11 @@ deployment:
                                             commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -526,11 +526,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -580,11 +580,11 @@ deployment:
                                                         protocol: UDP
                                                 egressServiceMap: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             image: null
@@ -607,11 +607,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -714,11 +714,11 @@ deployment:
                                             userChartAlternateValues: demo2/values/z2-e1-iperf-values.yaml
                                             userChartGroup: 'zone2-edge1-iperf:iperf:80:UDP'
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -747,11 +747,11 @@ deployment:
                                             userChartAlternateValues: demo2/values/z2-e1-svc-values.yaml
                                             userChartGroup: 'zone2-edge1-svc:svc:80:TCP'
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -773,11 +773,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null

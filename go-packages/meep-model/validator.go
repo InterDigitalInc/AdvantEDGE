@@ -68,10 +68,10 @@ const (
 	SERVICE_NODE_PORT_MAX        = 32767
 	GPU_COUNT_MIN                = 1
 	GPU_COUNT_MAX                = 4
-	MIN_CPU_COUNT_MIN            = 1
-	MIN_CPU_COUNT_MAX            = 1000
-	MAX_CPU_COUNT_MIN            = 1
-	MAX_CPU_COUNT_MAX            = 1000
+	MIN_CPU_COUNT_MIN            = 0.1
+	MIN_CPU_COUNT_MAX            = 100.0
+	MAX_CPU_COUNT_MIN            = 0.1
+	MAX_CPU_COUNT_MAX            = 100.0
 	MIN_MEMORY_MIN               = 1
 	MIN_MEMORY_MAX               = 1000000
 	MAX_MEMORY_MIN               = 1
@@ -184,6 +184,7 @@ func ValidateScenario(jsonScenario []byte, name string) (validJsonScenario []byt
 	// Validate scenario format & content
 	err = validateScenario(scenario)
 	if err != nil {
+		log.Error("Scenario validation failed for: " + scenario.Name)
 		log.Error(err.Error())
 		return nil, ValidatorStatusError, err
 	}
@@ -712,14 +713,15 @@ func validateGeoData(gd *dataModel.GeoData, typ string) (err error) {
 	if gd == nil {
 		return nil
 	}
-
-	// Validate fields
+	// Radius
 	if isNetLoc(typ) {
 		err = validateFloat32Range(gd.Radius, RADIUS_MIN, RADIUS_MAX)
 		if err != nil {
 			return err
 		}
-	} else if typ == NodeTypeUE {
+	}
+	// Path (optional)
+	if gd.Path != nil {
 		// End-of-path mode
 		err = validateStringEnum(gd.EopMode, EOP_MODE_ENUM)
 		if err != nil {
@@ -730,7 +732,6 @@ func validateGeoData(gd *dataModel.GeoData, typ string) (err error) {
 		if err != nil {
 			return err
 		}
-
 		// TODO - Validate Path
 	}
 
@@ -878,10 +879,12 @@ func validateChartGroup(group string) (err error) {
 		if err != nil {
 			return err
 		}
-		// Svc group name
-		err = validateName(fields[1])
-		if err != nil {
-			return err
+		// Svc group name (optional)
+		if fields[1] != "" {
+			err = validateName(fields[1])
+			if err != nil {
+				return err
+			}
 		}
 		// Port
 		port, err := strconv.Atoi(fields[2])
@@ -931,10 +934,12 @@ func validateEgressSvc(svc *dataModel.EgressService) (err error) {
 	if err != nil {
 		return err
 	}
-	// Group Svc name
-	err = validateFullName(svc.MeSvcName)
-	if err != nil {
-		return err
+	// Group Svc name (optional)
+	if svc.MeSvcName != "" {
+		err = validateFullName(svc.MeSvcName)
+		if err != nil {
+			return err
+		}
 	}
 	// Port
 	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
@@ -996,21 +1001,21 @@ func validateVariableName(name string) (err error) {
 
 func validateInt32Range(val int32, min int32, max int32) (err error) {
 	if val < min || val > max {
-		return fmt.Errorf("Integer val: %d not in valid range: [%d - %d]", val, min, max)
+		return fmt.Errorf("Int32 val: %d not in valid range: [%d - %d]", val, min, max)
 	}
 	return nil
 }
 
 func validateFloat32Range(val float32, min float32, max float32) (err error) {
 	if val < min || val > max {
-		return fmt.Errorf("Integer val: %f not in valid range: [%f - %f]", val, min, max)
+		return fmt.Errorf("Float32 val: %f not in valid range: [%f - %f]", val, min, max)
 	}
 	return nil
 }
 
 func validateFloat64Range(val float64, min float64, max float64) (err error) {
 	if val < min || val > max {
-		return fmt.Errorf("Integer val: %f not in valid range: [%f - %f]", val, min, max)
+		return fmt.Errorf("Float64 val: %f not in valid range: [%f - %f]", val, min, max)
 	}
 	return nil
 }
