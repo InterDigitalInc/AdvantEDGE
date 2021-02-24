@@ -247,8 +247,12 @@ func Init() (err error) {
 	periodicTriggerIntervalEnv := strings.TrimSpace(os.Getenv("MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL"))
 	if periodicTriggerIntervalEnv != "" {
 		//ignoring last parameter which is the unit, only supporting seconds for now
-		periodicTriggerIntervalVal := periodicTriggerIntervalEnv[:len(periodicTriggerIntervalEnv)-1]
-		periodicTriggerInterval, _ = strconv.Atoi(periodicTriggerIntervalVal)
+		periodicTriggerIntervalVal, err := time.ParseDuration(periodicTriggerIntervalEnv)
+		if err == nil {
+			periodicTriggerInterval = int(periodicTriggerIntervalVal.Seconds())
+		} else {
+			log.Error("Cannot parse MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL, using default value")
+		}
 	}
 	log.Info("MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: ", periodicTriggerInterval)
 
@@ -263,8 +267,12 @@ func Init() (err error) {
 	periodicTriggerInterval = defaultNrMeasRepUePeriodicTriggerInterval
 	periodicTriggerIntervalEnv = strings.TrimSpace(os.Getenv("NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL"))
 	if periodicTriggerIntervalEnv != "" {
-		periodicTriggerIntervalVal := periodicTriggerIntervalEnv[:len(periodicTriggerIntervalEnv)-1]
-		periodicTriggerInterval, _ = strconv.Atoi(periodicTriggerIntervalVal)
+		periodicTriggerIntervalVal, err := time.ParseDuration(periodicTriggerIntervalEnv)
+		if err == nil {
+			periodicTriggerInterval = int(periodicTriggerIntervalVal.Seconds())
+		} else {
+			log.Error("Cannot parse NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL, using default value")
+		}
 	}
 	log.Info("NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: ", periodicTriggerInterval)
 
