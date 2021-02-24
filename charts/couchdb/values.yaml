@@ -191,6 +191,9 @@ couchdbConfig:
     # chttpd.require_valid_user disables all the anonymous requests to the port
     # 5984 when is set to true.
     require_valid_user: false
+  couch_httpd_auth:
+    timeout: 604800
+    require_valid_user: false
 
 # Kubernetes local cluster domain.
 # This is used to generate FQDNs for peers when joining the CouchDB cluster.
