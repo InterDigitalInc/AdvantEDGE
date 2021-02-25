@@ -536,7 +536,7 @@ func validatePhyLoc(pl *dataModel.PhysicalLocation) (err error) {
 		return err
 	}
 	// Type
-	if !isPhyLoc(pl.Type_) {
+	if !IsPhyLoc(pl.Type_) {
 		return errors.New("Unsupported PhysicalLocation Type: " + pl.Type_)
 	}
 	// MAC Address
@@ -574,7 +574,7 @@ func validateProc(proc *dataModel.Process) (err error) {
 		return err
 	}
 	// Type
-	if !isProc(proc.Type_) {
+	if !IsProc(proc.Type_) {
 		return errors.New("Unsupported Process Type: " + proc.Type_)
 	}
 	// Network Characteristics
@@ -713,7 +713,7 @@ func validateGeoData(gd *dataModel.GeoData, typ string) (err error) {
 		return nil
 	}
 	// Radius
-	if isNetLoc(typ) {
+	if IsNetLoc(typ) {
 		err = validateFloat32Range(gd.Radius, RADIUS_MIN, RADIUS_MAX)
 		if err != nil {
 			return err

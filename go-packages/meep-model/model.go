@@ -59,6 +59,16 @@ const (
 	ScenarioModify string = "MODIFY"
 )
 
+const (
+	EventMobility       string = "EVENT-MOBILITY"
+	EventNetChar        string = "EVENT-NET-CHAR"
+	EventPoaInRange     string = "EVENT-POA-IN-RANGE"
+	EventScenarioUpdate string = "EVENT-SCENARIO-UPDATE"
+	EventAddNode        string = "EVENT-ADD-NODE"
+	EventModifyNode     string = "EVENT-MODIFY-NODE"
+	EventRemoveNode     string = "EVENT-REMOVE-NODE"
+)
+
 const Disconnected = "DISCONNECTED"
 
 // ModelCfg - Model Configuration
@@ -67,7 +77,7 @@ type ModelCfg struct {
 	Namespace string
 	Module    string
 	DbAddr    string
-	UpdateCb  func()
+	UpdateCb  func(eventType string, userData interface{})
 }
 
 // Model - Implements a Meep Model
@@ -78,7 +88,7 @@ type Model struct {
 	Active       bool
 	subscribed   bool
 	activeKey    string
-	updateCb     func()
+	updateCb     func(eventType string, userData interface{})
 	rc           *redis.Connector
 	scenario     *dataModel.Scenario
 	svcMap       []dataModel.NodeServiceMaps
@@ -214,7 +224,7 @@ func (m *Model) SetScenario(j []byte) (err error) {
 	}
 
 	if m.Active {
-		err = m.refresh()
+		err = m.refresh(EventScenarioUpdate, nil)
 		if err != nil {
 			return err
 		}
@@ -291,7 +301,7 @@ func (m *Model) Deactivate() (err error) {
 }
 
 // MoveNode - Move a specific UE in the scenario
-func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, newLocName string, err error) {
+func (m *Model) MoveNode(nodeName string, destName string, userData interface{}) (oldLocName string, newLocName string, err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -322,7 +332,7 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 		return "", "", errors.New("Unsupported nodeType " + moveNode.nodeType)
 	}
 
-	err = m.refresh()
+	err = m.refresh(EventMobility, userData)
 	if err != nil {
 		return "", "", err
 	}
@@ -338,7 +348,7 @@ func (m *Model) GetServiceMaps() *[]dataModel.NodeServiceMaps {
 }
 
 //UpdateNetChar - Update network characteristics for a node
-func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (err error) {
+func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate, userData interface{}) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -361,35 +371,35 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if isDomain(ncType) {
+		if IsDomain(ncType) {
 			domain := n.object.(*dataModel.Domain)
 			if domain.NetChar == nil {
 				domain.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			domain.NetChar = nc.NetChar
 			updated = true
-		} else if isZone(ncType) {
+		} else if IsZone(ncType) {
 			zone := n.object.(*dataModel.Zone)
 			if zone.NetChar == nil {
 				zone.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			zone.NetChar = nc.NetChar
 			updated = true
-		} else if isNetLoc(ncType) {
+		} else if IsNetLoc(ncType) {
 			nl := n.object.(*dataModel.NetworkLocation)
 			if nl.NetChar == nil {
 				nl.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			nl.NetChar = nc.NetChar
 			updated = true
-		} else if isPhyLoc(ncType) {
+		} else if IsPhyLoc(ncType) {
 			pl := n.object.(*dataModel.PhysicalLocation)
 			if pl.NetChar == nil {
 				pl.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			pl.NetChar = nc.NetChar
 			updated = true
-		} else if isProc(ncType) {
+		} else if IsProc(ncType) {
 			proc := n.object.(*dataModel.Process)
 			if proc.NetChar == nil {
 				proc.NetChar = new(dataModel.NetworkCharacteristics)
@@ -416,13 +426,13 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		}
 	}
 	if updated {
-		err = m.refresh()
+		err = m.refresh(EventNetChar, userData)
 	}
 	return err
 }
 
 // AddScenarioNode - Add scenario node
-func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
+func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode, userData interface{}) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -440,15 +450,15 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	}
 
 	// Add element based on type
-	if isPhyLoc(node.Type_) {
+	if IsPhyLoc(node.Type_) {
 		// Physical Location
-		err = m.AddPhyLoc(node, parentNode)
+		err = m.addPhyLoc(node, parentNode)
 		if err != nil {
 			return err
 		}
-	} else if isProc(node.Type_) {
+	} else if IsProc(node.Type_) {
 		// Process
-		err = m.AddProcess(node, parentNode)
+		err = m.addProcess(node, parentNode)
 		if err != nil {
 			return err
 		}
@@ -463,12 +473,12 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	}
 
 	// Update scenario
-	err = m.refresh()
+	err = m.refresh(EventAddNode, userData)
 	return err
 }
 
-// AddPhyLoc - Add physical location
-func (m *Model) AddPhyLoc(node *dataModel.ScenarioNode, parentNode *Node) (err error) {
+// addPhyLoc - Add physical location
+func (m *Model) addPhyLoc(node *dataModel.ScenarioNode, parentNode *Node) (err error) {
 
 	// Get parent Network Location node & context information
 	nl := parentNode.object.(*dataModel.NetworkLocation)
@@ -498,8 +508,8 @@ func (m *Model) AddPhyLoc(node *dataModel.ScenarioNode, parentNode *Node) (err e
 	return nil
 }
 
-// AddProcess - Add process
-func (m *Model) AddProcess(node *dataModel.ScenarioNode, parentNode *Node) (err error) {
+// addProcess - Add process
+func (m *Model) addProcess(node *dataModel.ScenarioNode, parentNode *Node) (err error) {
 
 	// Get parent Physical Location node & context information
 	pl := parentNode.object.(*dataModel.PhysicalLocation)
@@ -527,7 +537,7 @@ func (m *Model) AddProcess(node *dataModel.ScenarioNode, parentNode *Node) (err 
 }
 
 // ModifyScenarioNode - Modify scenario node
-func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
+func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode, userData interface{}) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -536,15 +546,15 @@ func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	}
 
 	// Add element based on type
-	if isPhyLoc(node.Type_) {
+	if IsPhyLoc(node.Type_) {
 		// Physical Location
-		err = m.ModifyPhyLoc(node)
+		err = m.modifyPhyLoc(node)
 		if err != nil {
 			return err
 		}
-	} else if isProc(node.Type_) {
+	} else if IsProc(node.Type_) {
 		// Process
-		err = m.ModifyProcess(node)
+		err = m.modifyProcess(node)
 		if err != nil {
 			return err
 		}
@@ -559,12 +569,12 @@ func (m *Model) ModifyScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	}
 
 	// Update scenario
-	err = m.refresh()
+	err = m.refresh(EventModifyNode, userData)
 	return err
 }
 
-// ModifyPhyLoc - Modify physical location
-func (m *Model) ModifyPhyLoc(node *dataModel.ScenarioNode) (err error) {
+// modifyPhyLoc - Modify physical location
+func (m *Model) modifyPhyLoc(node *dataModel.ScenarioNode) (err error) {
 
 	// Validate Physical Location
 	if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
@@ -612,8 +622,8 @@ func (m *Model) ModifyPhyLoc(node *dataModel.ScenarioNode) (err error) {
 	return nil
 }
 
-// ModifyProcess - Modify process
-func (m *Model) ModifyProcess(node *dataModel.ScenarioNode) (err error) {
+// modifyProcess - Modify process
+func (m *Model) modifyProcess(node *dataModel.ScenarioNode) (err error) {
 
 	// Validate Process
 	if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
@@ -661,7 +671,7 @@ func (m *Model) ModifyProcess(node *dataModel.ScenarioNode) (err error) {
 }
 
 // RemoveScenarioNode - Remove scenario node
-func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
+func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode, userData interface{}) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -670,15 +680,15 @@ func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	}
 
 	// Add element based on type
-	if isPhyLoc(node.Type_) {
+	if IsPhyLoc(node.Type_) {
 		// Physical Location
-		err = m.RemovePhyLoc(node)
+		err = m.removePhyLoc(node)
 		if err != nil {
 			return err
 		}
-	} else if isProc(node.Type_) {
+	} else if IsProc(node.Type_) {
 		// Process
-		err = m.RemoveProcess(node)
+		err = m.removeProcess(node)
 		if err != nil {
 			return err
 		}
@@ -693,12 +703,12 @@ func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	}
 
 	// Update scenario
-	err = m.refresh()
+	err = m.refresh(EventRemoveNode, userData)
 	return err
 }
 
-// RemovePhyLoc - Remove physical location
-func (m *Model) RemovePhyLoc(node *dataModel.ScenarioNode) (err error) {
+// removePhyLoc - Remove physical location
+func (m *Model) removePhyLoc(node *dataModel.ScenarioNode) (err error) {
 
 	// Get node name from request
 	if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
@@ -734,8 +744,8 @@ func (m *Model) RemovePhyLoc(node *dataModel.ScenarioNode) (err error) {
 	return nil
 }
 
-// RemoveProcess - Remove process
-func (m *Model) RemoveProcess(node *dataModel.ScenarioNode) (err error) {
+// removeProcess - Remove process
+func (m *Model) removeProcess(node *dataModel.ScenarioNode) (err error) {
 
 	// Get node name from request
 	if node.NodeDataUnion == nil || node.NodeDataUnion.Process == nil {
@@ -927,14 +937,14 @@ func (m *Model) parseNodes() (err error) {
 					zone := &domain.Zones[iZone]
 					ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, "", "")
 					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
-					m.networkGraph.AddNode(zone.Name, domain.Name, isDefaultZone(zone.Type_))
+					m.networkGraph.AddNode(zone.Name, domain.Name, IsDefaultZone(zone.Type_))
 
 					// Network Locations
 					for iNL := range zone.NetworkLocations {
 						nl := &zone.NetworkLocations[iNL]
 						ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, "")
 						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, ctx))
-						m.networkGraph.AddNode(nl.Name, zone.Name, isDefaultNetLoc(nl.Type_))
+						m.networkGraph.AddNode(nl.Name, zone.Name, IsDefaultNetLoc(nl.Type_))
 
 						// Physical Locations
 						for iPL := range nl.PhysicalLocations {
@@ -968,7 +978,7 @@ func (m *Model) parseNodes() (err error) {
 	return nil
 }
 
-func (m *Model) refresh() (err error) {
+func (m *Model) refresh(eventType string, userData interface{}) (err error) {
 	if m.Active {
 		jsonScenario, err := json.Marshal(m.scenario)
 		if err != nil {
@@ -983,7 +993,7 @@ func (m *Model) refresh() (err error) {
 
 		// Invoke Active Scenario Update callback
 		if m.updateCb != nil {
-			m.updateCb()
+			m.updateCb(eventType, userData)
 		}
 	}
 	return nil
@@ -1123,56 +1133,56 @@ func (m *Model) UpdateScenario() {
 
 // Node Type validation functions
 
-func isScenario(typ string) bool {
+func IsScenario(typ string) bool {
 	return typ == NodeTypeScenario
 }
 
-func isDomain(typ string) bool {
+func IsDomain(typ string) bool {
 	return typ == NodeTypeOperator || typ == NodeTypeOperatorCell
 }
 
-func isDefaultZone(typ string) bool {
+func IsDefaultZone(typ string) bool {
 	return typ == "COMMON"
 }
 
-func isZone(typ string) bool {
+func IsZone(typ string) bool {
 	return typ == NodeTypeZone
 }
 
-func isDefaultNetLoc(typ string) bool {
+func IsDefaultNetLoc(typ string) bool {
 	return typ == "DEFAULT"
 }
 
-func isNetLoc(typ string) bool {
+func IsNetLoc(typ string) bool {
 	return typ == NodeTypePoa || typ == NodeTypePoa4G || typ == NodeTypePoa5G || typ == NodeTypePoaWifi
 }
 
-func isPhyLoc(typ string) bool {
+func IsPhyLoc(typ string) bool {
 	return typ == NodeTypeCloud || typ == NodeTypeEdge || typ == NodeTypeFog || typ == NodeTypeUE
 }
 
-func isProc(typ string) bool {
+func IsProc(typ string) bool {
 	return typ == NodeTypeCloudApp || typ == NodeTypeEdgeApp || typ == NodeTypeUEApp
 }
 
 func validateParentType(nodeType string, parentType string) bool {
-	if isScenario(nodeType) {
+	if IsScenario(nodeType) {
 		return parentType == ""
-	} else if isDomain(nodeType) {
-		return isScenario(parentType)
-	} else if isZone(nodeType) {
-		return isDomain(parentType)
-	} else if isNetLoc(nodeType) {
-		return isZone(parentType)
-	} else if isPhyLoc(nodeType) {
+	} else if IsDomain(nodeType) {
+		return IsScenario(parentType)
+	} else if IsZone(nodeType) {
+		return IsDomain(parentType)
+	} else if IsNetLoc(nodeType) {
+		return IsZone(parentType)
+	} else if IsPhyLoc(nodeType) {
 		if nodeType == NodeTypeUE || nodeType == NodeTypeFog {
-			return isNetLoc(parentType)
+			return IsNetLoc(parentType)
 		} else if nodeType == NodeTypeEdge {
-			return isZone(parentType)
+			return IsZone(parentType)
 		} else if nodeType == NodeTypeCloud {
-			return isDomain(parentType)
+			return IsDomain(parentType)
 		}
-	} else if isProc(nodeType) {
+	} else if IsProc(nodeType) {
 		if nodeType == NodeTypeUEApp {
 			return parentType == NodeTypeUE
 		} else if nodeType == NodeTypeEdgeApp {

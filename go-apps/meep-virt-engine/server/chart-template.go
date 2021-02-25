@@ -200,31 +200,20 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 				userChartGroup := strings.Split(proc.UserChartGroup, ":")
 				meSvcName := userChartGroup[1]
 				if meSvcName != "" {
-					if _, found := serviceMap[meSvcName]; !found {
-						serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-						serviceTemplate.MeServiceEnabled = trueStr
-						serviceTemplate.MeServiceName = meSvcName
-						addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+					// NOTE: Every service within a group must expose the same port & protocol
+					var portTemplate ServicePortTemplate
+					portTemplate.Port = userChartGroup[2]
+					portTemplate.Protocol = userChartGroup[3]
+					serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
 
-						serviceTemplate.Namespace = scenarioName
-						addServiceLabel(serviceTemplate, "meepScenario: "+scenarioName)
-
-						// NOTE: Every service within a group must expose the same port & protocol
-						var portTemplate ServicePortTemplate
-						portTemplate.Port = userChartGroup[2]
-						portTemplate.Protocol = userChartGroup[3]
-						serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
-
-						// Create virt-engine chart for new group service
-						chartName := proc.Name + "-svc"
-						chartLocation, err := createChart(chartName, sandboxName, scenarioName, scenarioTemplate)
-						if err != nil {
-							log.Debug("yaml creation file process: ", err)
-							return nil, err
-						}
-						c := newChart(chartName, sandboxName, scenarioName, chartLocation, "")
-						charts = append(charts, c)
-						log.Debug("chart added for user chart group service ", len(charts))
+					c, err := createMeSvcChart(sandboxName, scenarioName, meSvcName, serviceTemplate.Ports)
+					if err != nil {
+						log.Debug("Failed to create ME Svc chart: ", err)
+						return nil, err
+					}
+					if c != nil {
+						charts = append(charts, *c)
+						log.Debug("chart added for group service: ", meSvcName, " len:", len(charts))
 					}
 				}
 			}
@@ -254,19 +243,7 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 				addServiceLabel(serviceTemplate, "meepScenario: "+scenarioName)
 				addTemplateLabel(deploymentTemplate, "meepSvc: "+svcName)
 
-				// Create and store ME Service template only with first occurrence.
-				// If it already exists then add the matching pod label but don't create the service again.
-				meSvcName := proc.ServiceConfig.MeSvcName
-				if meSvcName != "" {
-					if _, found := serviceMap[meSvcName]; !found {
-						serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-						serviceTemplate.MeServiceEnabled = trueStr
-						serviceTemplate.MeServiceName = meSvcName
-					}
-					addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
-					addTemplateLabel(deploymentTemplate, "meepMeSvc: "+meSvcName)
-				}
-
+				// Add ports
 				for _, ports := range proc.ServiceConfig.Ports {
 					var portTemplate ServicePortTemplate
 					portTemplate.Port = strconv.Itoa(int(ports.Port))
@@ -282,6 +259,24 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 					}
 
 					serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
+				}
+
+				// Create ME Service chart on first occurrence
+				meSvcName := proc.ServiceConfig.MeSvcName
+				if meSvcName != "" {
+					c, err := createMeSvcChart(sandboxName, scenarioName, meSvcName, serviceTemplate.Ports)
+					if err != nil {
+						log.Debug("Failed to create ME Svc chart: ", err)
+						return nil, err
+					}
+					if c != nil {
+						charts = append(charts, *c)
+						log.Debug("chart added for group service: ", meSvcName, " len:", len(charts))
+					}
+
+					// Add ME Svc service & pod labels
+					addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+					addTemplateLabel(deploymentTemplate, "meepMeSvc: "+meSvcName)
 				}
 			}
 
@@ -366,6 +361,44 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 	}
 
 	return charts, nil
+}
+
+// Create ME Svc chart
+func createMeSvcChart(sandboxName string, scenarioName string, meSvcName string, ports []ServicePortTemplate) (*helm.Chart, error) {
+
+	// Ignore if chart already exists
+	if _, found := serviceMap[meSvcName]; found {
+		return nil, nil
+	}
+
+	// Add ME Svc to map
+	serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
+
+	// Create default scenario template
+	var scenarioTemplate ScenarioTemplate
+	serviceTemplate := &scenarioTemplate.Service
+	setScenarioDefaults(&scenarioTemplate)
+
+	// Fill general scenario template information
+	scenarioTemplate.Namespace = scenarioName
+
+	// Fill ME Svc template information
+	serviceTemplate.MeServiceEnabled = trueStr
+	serviceTemplate.MeServiceName = meSvcName
+	serviceTemplate.Namespace = scenarioName
+	serviceTemplate.Ports = ports
+	addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+	addServiceLabel(serviceTemplate, "meepScenario: "+scenarioName)
+
+	// Create virt-engine chart for new group service
+	chartName := "me-svc-" + meSvcName
+	chartLocation, err := createChart(chartName, sandboxName, scenarioName, scenarioTemplate)
+	if err != nil {
+		log.Debug("yaml creation file process: ", err)
+		return nil, err
+	}
+	c := newChart(chartName, sandboxName, scenarioName, chartLocation, "")
+	return &c, nil
 }
 
 func deployCharts(charts []helm.Chart, sandboxName string) error {
