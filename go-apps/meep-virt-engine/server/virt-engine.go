@@ -214,7 +214,7 @@ func activateScenario(sandboxName string) {
 	ve.activeScenarioNames[sandboxName] = activeModel.GetScenarioName()
 
 	// Deploy scenario
-	err := Deploy(sandboxName, activeModel)
+	err := Deploy(sandboxName, "", activeModel)
 	if err != nil {
 		log.Error("Error creating charts: ", err)
 		return
@@ -234,9 +234,18 @@ func addScenarioNode(sandboxName string, nodeName string) {
 	// Sync with active scenario store
 	activeModel.UpdateScenario()
 
-	// Find process in active scenario
-
-	// Create chart template
+	// Deploy single process
+	nodeType := activeModel.GetNodeType(nodeName)
+	if mod.IsProc(nodeType) {
+		err := Deploy(sandboxName, nodeName, activeModel)
+		if err != nil {
+			log.Error("Error creating charts: ", err)
+			return
+		}
+	} else {
+		log.Error("Unsupported node type: ", nodeType)
+		return
+	}
 }
 
 func modifyScenarioNode(sandboxName string, nodeName string) {
@@ -249,8 +258,30 @@ func modifyScenarioNode(sandboxName string, nodeName string) {
 		return
 	}
 
+	// Get cached scenario name
+	scenarioName := ve.activeScenarioNames[sandboxName]
+
 	// Sync with active scenario store
 	activeModel.UpdateScenario()
+
+	// Handle process updates only
+	nodeType := activeModel.GetNodeType(nodeName)
+	if mod.IsProc(nodeType) {
+
+		// Remove existing process
+		_, chartsToDelete := deleteReleases(sandboxName, scenarioName, nodeName)
+		log.Info("Number of charts to be deleted: ", chartsToDelete)
+
+		// Add updated process
+		err := Deploy(sandboxName, nodeName, activeModel)
+		if err != nil {
+			log.Error("Error creating charts: ", err)
+			return
+		}
+	} else {
+		log.Error("Unsupported node type: ", nodeType)
+		return
+	}
 }
 
 func removeScenarioNode(sandboxName string, nodeName string) {
