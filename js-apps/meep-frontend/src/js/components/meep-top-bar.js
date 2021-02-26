@@ -15,16 +15,36 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
+import React, { Component }  from 'react';
 import ReactTooltip from 'react-tooltip';
+import { connect } from 'react-redux';
+import '@/css/meep-controller.scss';
+
 import {
   Toolbar,
   ToolbarRow,
-  ToolbarSection,
-  ToolbarTitle
+  ToolbarSection
+  // ToolbarTitle
 } from '@rmwc/toolbar';
 
 import { Elevation } from '@rmwc/elevation';
+
+import { Grid, GridCell } from '@rmwc/grid';
+
+import { TabBar, Tab } from '@rmwc/tabs';
+
+import { uiChangeCurrentPage } from '@/js/state/ui';
+
+import {
+  MEEP_TAB_EXEC,
+  MEEP_TAB_MON,
+  MEEP_TAB_SET,
+  MEEP_TAB_CFG,
+  PAGE_EXECUTE,
+  PAGE_MONITOR,
+  PAGE_SETTINGS,
+  PAGE_CONFIGURE
+} from '@/js/meep-constants';
 
 const CorePodsLed = props => {
   /*eslint-disable */
@@ -68,46 +88,118 @@ const CorePodsLed = props => {
   );
 };
 
-const MeepTopBar = props => {
-  /*eslint-disable */
-  const logo = require('../../img/ID-Icon-01-idcc.svg');
-  const advantEdge = require('../../img/AdvantEDGE-logo-NoTagline_White_RGB.png');
-  /* eslint-enable */
-  return (
-    <Toolbar>
-      <Elevation z={4}>
-        <ToolbarRow>
-          <ToolbarSection alignStart>
-            <img
-              id='idcc-logo'
-              className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
-              src={logo}
-              alt=''
-              onClick={props.toggleMainDrawer}
-            />
-            <img id='AdvantEdgeLogo' height={50} src={advantEdge} alt='' />
-            <ToolbarTitle>
-              <span style={styles.title}>{props.title}</span>
-            </ToolbarTitle>
-          </ToolbarSection>
-          <ToolbarSection alignEnd>
-            <CorePodsLed
-              corePodsRunning={props.corePodsRunning}
-              corePodsErrors={props.corePodsErrors}
-            />
-          </ToolbarSection>
-        </ToolbarRow>
-      </Elevation>
-    </Toolbar>
-  );
-};
+class MeepTopBar extends Component {
+  constructor(props) {
+    super(props);
+    /*eslint-disable */
+    this.logo = require('../../img/ID-Icon-01-idcc.svg');
+    this.advantEdge = require('../../img/AdvantEDGE-logo-NoTagline_White_RGB.png');
+    /* eslint-enable */
+  }
+
+  handleItemClick(page) {
+    this.props.currentPage !== page ? this.props.changeCurrentPage(page) : '';
+  }
+
+  render() {
+    return (
+      <div>
+        <Toolbar>
+          <Elevation z={4}>
+            <ToolbarRow>
+              <ToolbarSection alignStart>
+                <img
+                  id='idcc-logo'
+                  className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
+                  src={this.logo}
+                  alt=''
+                  onClick={this.props.toggleMainDrawer}
+                />
+                <img id='AdvantEdgeLogo' height={50} src={this.advantEdge} alt='' />
+                {/* <ToolbarTitle>
+                  <span style={styles.title}>{this.props.title}</span>
+                </ToolbarTitle> */}
+                <Grid>
+                  <GridCell span="12">
+                    <TabBar>
+                      <GridCell span="2">
+                        <Tab
+                          data-cy={MEEP_TAB_CFG}
+                          style={styles.mdcTab}
+                          label="Configure"
+                          onClick={() => { this.handleItemClick(PAGE_CONFIGURE); }}
+                        />
+                      </GridCell>
+                      <GridCell span="2">
+                        <Tab
+                          data-cy={MEEP_TAB_EXEC}
+                          style={styles.mdcTab}
+                          label="Execute"
+                          onClick={() => { this.handleItemClick(PAGE_EXECUTE); }}
+                        />
+                      </GridCell>
+                      <GridCell span="2">
+                        <Tab
+                          data-cy={MEEP_TAB_MON}
+                          style={styles.mdcTab}
+                          label="Monitor"
+                          onClick={() => { this.handleItemClick(PAGE_MONITOR); }}
+                        />
+                      </GridCell>
+                      <GridCell span="2">
+                        <Tab
+                          data-cy={MEEP_TAB_SET}
+                          style={styles.mdcTab}
+                          label="Settings"
+                          onClick={() => { this.handleItemClick(PAGE_SETTINGS); }}
+                        />
+                      </GridCell>
+                    </TabBar>
+                  </GridCell>
+                </Grid>
+              </ToolbarSection>
+
+              <ToolbarSection alignEnd>
+                <CorePodsLed
+                  corePodsRunning={this.props.corePodsRunning}
+                  corePodsErrors={this.props.corePodsErrors}
+                />
+              </ToolbarSection>
+            </ToolbarRow>
+          </Elevation>
+        </Toolbar>
+      </div>
+    );
+  }
+}
 
 const styles = {
   title: {
     color: 'white',
     fontFamily: 'Gill Sans, Gill Sans MT, Calibri, Trebuchet MS, sans-serif',
     fontSize: 22
+  },
+  mdcTab: {
+    fontSize: 17,
+    fontFamily: 'Roboto'
   }
 };
 
-export default MeepTopBar;
+const mapDispatchToProps = dispatch => {
+  return {
+    changeCurrentPage: page => dispatch(uiChangeCurrentPage(page))
+  };
+};
+
+const mapStateToProps = state => {
+  return {
+    currentPage: state.ui.page
+  };
+};
+
+const ConnectedMeepTopBar = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MeepTopBar);
+
+export default ConnectedMeepTopBar;

@@ -27,7 +27,7 @@ import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-s
 import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
 import * as meepGisEngineRestApiClient from '../../../../../js-packages/meep-gis-engine-client/src/index.js';
 
-import MeepDrawer from './meep-drawer';
+// import MeepDrawer from './meep-drawer';
 import MeepTopBar from '../components/meep-top-bar';
 import CfgPageContainer from './cfg/cfg-page-container';
 import ExecPageContainer from './exec/exec-page-container';
@@ -645,7 +645,7 @@ class MeepContainer extends Component {
   }
 
   render() {
-    const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
+    // const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
 
     return (
       <div style={{ display: 'table', width: '100%', height: '100%' }}>
@@ -659,13 +659,13 @@ class MeepContainer extends Component {
         </div>
         <div style={{ display: 'table-row', height: '100%' }}>
           <div style={{ display: 'flex', height: '100%' }}>
-            <div
+            {/* <div
               className="component-style"
               style={{ flex: flexString, borderRight: '1px solid #e4e4e4', overflow: 'hidden' }}
             >
               <MeepDrawer open={this.props.mainDrawerOpen} />
-            </div>
-            <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
+            </div> */}
+            <div style={{ flex: '1', padding: 10, paddingLeft: 20 }}>{this.renderPage()}</div>
           </div>
         </div>
       </div>
