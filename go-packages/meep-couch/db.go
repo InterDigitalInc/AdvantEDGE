@@ -18,10 +18,11 @@ package couchdb
 
 import (
 	"context"
-	"strings"
+	"time"
 
 	"github.com/flimzy/kivik"
 	_ "github.com/go-kivik/couchdb"
+	"github.com/go-kivik/couchdb/chttp"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
@@ -42,6 +43,16 @@ type Connector struct {
 	dbHandle *kivik.DB
 }
 
+func authenticateConnection(dbClient *kivik.Client) {
+	for {
+		time.Sleep(9 * time.Minute)
+		err := dbClient.Authenticate(context.TODO(), &chttp.CookieAuth{Username: "admin", Password: "admin"})
+		if err != nil {
+			log.Debug("Re-Authentication failed", err)
+		}
+	}
+}
+
 // NewConnector - Creates and initialize a CouchDB connector to a database
 func NewConnector(addr string, dbName string) (rc *Connector, err error) {
 	rc = new(Connector)
@@ -56,12 +67,18 @@ func NewConnector(addr string, dbName string) (rc *Connector, err error) {
 			c.addr = addr
 		}
 
-		var address []string = strings.SplitAfter(addr, "http://")
-		var newAddr = address[0] + "admin:admin@" + address[1]
-		c.dbClient, err = kivik.New(context.TODO(), "couch", newAddr)
+		c.dbClient, err = kivik.New(context.TODO(), "couch", addr)
 		if err != nil {
 			return nil, err
 		}
+
+		err = c.dbClient.Authenticate(context.TODO(), &chttp.CookieAuth{Username: "admin", Password: "admin"})
+		if err != nil {
+			return nil, err
+		}
+
+		go authenticateConnection(c.dbClient)
+
 		client = c
 	}
 
