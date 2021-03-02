@@ -17,27 +17,20 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	ncm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 const moduleName string = "meep-tc-engine"
@@ -45,12 +38,7 @@ const moduleTcSidecar string = "meep-tc-sidecar"
 
 const tcEngineKey string = "tc-engine:"
 const mgManagerKey string = "mg-manager:"
-
 const typeNet string = "net"
-const typeLb string = "lb"
-const typeMeSvc string = "ME-SVC"
-const typeIngressSvc string = "INGRESS-SVC"
-const typeEgressSvc string = "EGRESS-SVC"
 
 const fieldSvcType string = "svc-type"
 const fieldSvcName string = "svc-name"
@@ -61,25 +49,21 @@ const fieldLbSvcName string = "lb-svc-name"
 const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
 
+// MQ payload fields
+const fieldEventType = "event-type"
+
 const COMMON_CORRELATION = 50
 const DEFAULT_DISTRIBUTION = "normal"
 
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 
-const (
-	stateIdle         = 0
-	stateInitializing = 1
-	stateReady        = 2
-)
-
 const DEFAULT_NET_CHAR_DB = 0
-const DEFAULT_LB_RULES_DB = 0
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 // NetElem -
 // NextUniqueNumber is reserving 2 spaces for each unique number to apply
 // changes starting with odd number and using even number to apply the 1st
-// change and come bask on the odd number for the next update to apply
+// change and come back on the odd number for the next update to apply
 type NetElem struct {
 	Name             string
 	FilterInfoMap    map[string]*FilterInfo
@@ -156,28 +140,16 @@ type NetCharStore struct {
 	rc      *redis.Connector
 }
 
-// LbRulesStore -
-type LbRulesStore struct {
-	baseKey string
-	rc      *redis.Connector
-}
-
 // TcEngine -
 type TcEngine struct {
-	sandboxName  string
-	mqLocal      *mq.MsgQueue
-	activeModel  *mod.Model
-	netCharStore *NetCharStore
-	lbRulesStore *LbRulesStore
-	netCharMgr   ncm.NetCharMgr
-	handlerId    int
-
-	// Flag & Counters used to indicate when TC Engine is ready to
-	tcEngineState     int
-	podCountReq       int
-	podCount          int
-	svcCountReq       int
-	svcCount          int
+	sandboxName       string
+	mqLocal           *mq.MsgQueue
+	activeModel       *mod.Model
+	netCharStore      *NetCharStore
+	netCharMgr        ncm.NetCharMgr
+	ipManager         *IpManager
+	routingEngine     *RoutingEngine
+	handlerId         int
 	nextTransactionId int
 }
 
@@ -187,13 +159,6 @@ var mgSvcInfoMap = map[string]*MgServiceInfo{}
 
 // Pod Info mapping
 var podInfoMap = map[string]*PodInfo{}
-
-// Scenario Name
-var scenarioName string
-
-// Service IP map
-var podIPMap = map[string]string{}
-var svcIPMap = map[string]string{}
 
 var mutex sync.Mutex
 
@@ -207,11 +172,6 @@ var tce *TcEngine
 func Init() (err error) {
 	// Create new TC Engine
 	tce = new(TcEngine)
-	tce.tcEngineState = stateIdle
-	tce.podCountReq = 0
-	tce.podCount = 0
-	tce.svcCountReq = 0
-	tce.svcCount = 0
 	tce.nextTransactionId = 1
 
 	// Retrieve Sandbox name from environment variable
@@ -258,16 +218,6 @@ func Init() (err error) {
 	// Flush any remaining TC Engine rules
 	tce.netCharStore.rc.DBFlush(tce.netCharStore.baseKey)
 
-	// Open Load Balancing Rules Store
-	tce.lbRulesStore = new(LbRulesStore)
-	tce.lbRulesStore.baseKey = dkm.GetKeyRoot(tce.sandboxName) + mgManagerKey
-	tce.lbRulesStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_LB_RULES_DB)
-	if err != nil {
-		log.Error("Failed connection to LB Rules Store Redis DB.  Error: ", err)
-		return err
-	}
-	log.Info("Connected to LB Rules Store redis DB")
-
 	// Create new Network Characteristics Manager instance
 	tce.netCharMgr, err = ncm.NewNetChar(moduleName, tce.sandboxName, redisAddr)
 	if err != nil {
@@ -277,8 +227,23 @@ func Init() (err error) {
 
 	// Configure & Start Net Char Manager
 	tce.netCharMgr.Register(netCharUpdate, updateComplete)
-	processActiveScenarioUpdate()
-	processMgSvcMapUpdate()
+
+	// Create new IP Manager instance
+	tce.ipManager, err = NewIpManager(moduleName, tce.sandboxName, ipAddrUpdated)
+	if err != nil {
+		log.Error("Failed to create IP Manager. Error: ", err)
+		return err
+	}
+
+	// Create new Routing Engine instance
+	tce.routingEngine, err = NewRoutingEngine(moduleName, tce.sandboxName)
+	if err != nil {
+		log.Error("Failed to create Routing Engine. Error: ", err)
+		return err
+	}
+
+	// Process scenario in case it is already active
+	processScenarioActivate()
 
 	return nil
 }
@@ -294,6 +259,13 @@ func Run() (err error) {
 		return err
 	}
 
+	// Start IP Manager periodic refresh
+	err = tce.ipManager.Start(0)
+	if err != nil {
+		log.Error("Failed to start IP Manager: ", err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -305,124 +277,100 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
 	case mq.MsgScenarioActivate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processActiveScenarioUpdate()
+		processScenarioActivate()
 	case mq.MsgScenarioUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processActiveScenarioUpdate()
+		eventType := msg.Payload[fieldEventType]
+		processScenarioUpdate(eventType)
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processActiveScenarioUpdate()
+		processScenarioTerminate()
 	case mq.MsgMgLbRulesUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processMgSvcMapUpdate()
+		tce.routingEngine.refreshMgLbRules()
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
-func processActiveScenarioUpdate() {
+// ipAddrUpdated - Callback function invoked when IP Manager has updated an IP address
+func ipAddrUpdated() {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Process scenario to update rules where IP address has changed
+	err := processScenario(tce.activeModel)
+	if err != nil {
+		log.Error("Failed to process scenario with err: ", err.Error())
+		return
+	}
+
+	// Create & Apply network characteristic rules
+	setFilterInfoRules()
+
+	// Refresh & apply LB rules
+	tce.routingEngine.refreshMgLbRules()
+
+}
+
+func processScenarioActivate() {
 	// Sync with active scenario store
 	tce.activeModel.UpdateScenario()
 
-	// Stop scenario if not active
-	scenarioName = tce.activeModel.GetScenarioName()
-	if scenarioName == "" {
-		stopScenario()
+	// Process new scenario
+	err := processScenario(tce.activeModel)
+	if err != nil {
+		log.Error("Failed to process scenario with err: ", err.Error())
 		return
 	}
+
+	// Trigger IP address refresh
+	tce.ipManager.Refresh()
+
+	// Start Net Char Manager
+	err = tce.netCharMgr.Start()
+	if err != nil {
+		log.Error("Failed to start Net Char Manager. Error: ", err)
+		return
+	}
+}
+
+func processScenarioUpdate(eventType string) {
+	// Sync with active scenario store
+	tce.activeModel.UpdateScenario()
 
 	// Process updated scenario
 	err := processScenario(tce.activeModel)
 	if err != nil {
-		log.Error("Failed to process active scenario: ", scenarioName)
+		log.Error("Failed to process scenario with err: ", err.Error())
 		return
 	}
 
-	// Retrieve platform information: Pod ID & Service IP
-	if tce.tcEngineState == stateIdle {
-		getPlatformInfo()
+	// Trigger IP address refresh if necessary
+	if eventType == mod.EventAddNode || eventType == mod.EventModifyNode || eventType == mod.EventRemoveNode {
+		tce.ipManager.Refresh()
 	}
 }
 
-func processMgSvcMapUpdate() {
-	// Ignore update if TC Engine is not ready
-	if tce.tcEngineState != stateReady {
-		log.Warn("Ignoring MG Svc Map update while TC Engine not in ready state")
-		return
-	}
+func processScenarioTerminate() {
+	// Sync with active scenario store
+	tce.activeModel.UpdateScenario()
 
-	// Retrieve LB rules from DB
-	jsonNetElemList, err := tce.lbRulesStore.rc.JSONGetEntry(tce.lbRulesStore.baseKey+typeLb, ".")
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
-	// Unmarshal MG Service Maps
-	var netElemList mgModel.NetworkElementList
-	err = json.Unmarshal([]byte(jsonNetElemList), &netElemList)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
-	// Update pod MG service mappings
-	for _, netElem := range netElemList.NetworkElements {
-		podInfo := podInfoMap[netElem.Name]
-		if podInfo == nil {
-			log.Error("Failed to find network element")
-			continue
-		}
-
-		// Set load balanced MG Service instance
-		for _, svcMap := range netElem.ServiceMaps {
-			podInfo.MgSvcMap[svcMap.MgSvcName] = svcInfoMap[svcMap.LbSvcName]
-		}
-	}
-
-	// Apply new MG Service mapping rules
-	applyMgSvcMapping()
-
-	// Send TC LB Rules update message to TC Sidecars for enforcement
-	msg := tce.mqLocal.CreateMsg(mq.MsgTcLbRulesUpdate, moduleTcSidecar, tce.sandboxName)
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = tce.mqLocal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
-	}
+	// Stop scenario
+	stopScenario()
 }
 
-func addPod(name string) {
-	if _, found := podIPMap[name]; !found && tce.tcEngineState != stateReady {
-		podIPMap[name] = ""
-		tce.podCountReq++
-	}
-}
-
-func addSvc(name string) {
-	if _, found := svcIPMap[name]; !found && tce.tcEngineState != stateReady {
-		svcIPMap[name] = ""
-		tce.svcCountReq++
-	}
-}
-
+// stopScenario - Clear all scenario data from TC Engine. Inform TC Sidecars.
 func stopScenario() {
 	log.Debug("stopScenario() -- Resetting all variables")
 
+	tce.ipManager.SetPodList([]string{})
+	tce.ipManager.SetSvcList([]string{})
+
 	netElemMap = make(map[string]*NetElem)
-	podIPMap = make(map[string]string)
-	svcIPMap = make(map[string]string)
 	svcInfoMap = make(map[string]*ServiceInfo)
 	mgSvcInfoMap = make(map[string]*MgServiceInfo)
 	podInfoMap = make(map[string]*PodInfo)
-
-	tce.tcEngineState = stateIdle
-	tce.podCountReq = 0
-	tce.podCount = 0
-	tce.svcCountReq = 0
-	tce.svcCount = 0
-
-	scenarioName = ""
 
 	tce.netCharStore.rc.DBFlush(tce.netCharStore.baseKey)
 
@@ -443,9 +391,19 @@ func stopScenario() {
 	tce.netCharMgr.Stop()
 }
 
+// processScenario - Parse & process active scenario
 func processScenario(model *mod.Model) error {
 	log.Debug("processScenario")
+
+	// Validate model
+	if model == nil {
+		err := errors.New("model == nil")
+		return err
+	}
+
 	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
+	podNames := make(map[string]bool)
+	svcNames := make(map[string]bool)
 
 	// Create NetElem for each scenario process
 	for _, name := range procNames {
@@ -461,8 +419,8 @@ func processScenario(model *mod.Model) error {
 			return err
 		}
 
-		// Add pod to list for retrieving IP addresses
-		addPod(proc.Name)
+		// Add to pod list
+		podNames[proc.Name] = true
 
 		// Retrieve existing element or create new net element if none found
 		element := netElemMap[proc.Name]
@@ -470,7 +428,7 @@ func processScenario(model *mod.Model) error {
 			element = new(NetElem)
 			element.Name = proc.Name
 			element.NextUniqueNumber = 1
-			element.Ip = podIPMap[proc.Name]
+			element.Ip = tce.ipManager.GetPodIp(proc.Name)
 			element.FilterInfoMap = make(map[string]*FilterInfo)
 			netElemMap[proc.Name] = element
 		}
@@ -485,7 +443,7 @@ func processScenario(model *mod.Model) error {
 
 		// Store service information from service config
 		if proc.ServiceConfig != nil {
-			addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name)
+			addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name, svcNames)
 		}
 
 		// Store service information from user chart
@@ -503,7 +461,7 @@ func processScenario(model *mod.Model) error {
 				servicePorts = append(servicePorts, servicePort)
 			}
 
-			addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name)
+			addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name, svcNames)
 		}
 
 		// Add pod-specific external service mapping, if any
@@ -532,18 +490,46 @@ func processScenario(model *mod.Model) error {
 				servicePort.Port = service.Port
 				servicePort.Protocol = service.Protocol
 				servicePorts = append(servicePorts, servicePort)
-				addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name)
+				addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name, svcNames)
 			}
 		}
 	}
 
+	// Remove pods that are no longer in scenario
+	for procName := range podInfoMap {
+		if _, found := podNames[procName]; !found {
+			delete(podInfoMap, procName)
+		}
+	}
+
+	// Remove network elements that are no longer in scenario
+	for procName := range netElemMap {
+		if _, found := podNames[procName]; !found {
+			delete(netElemMap, procName)
+		}
+	}
+
+	// Update Pod & Svc lists in IP Manager
+	tce.ipManager.SetPodList(getKeys(podNames))
+	tce.ipManager.SetSvcList(getKeys(svcNames))
+
 	return nil
 }
 
+func getKeys(m map[string]bool) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
 // Create & store new service & MG service information
-func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName string, nodeName string) {
-	// Add service instance service map
-	addSvc(svcName)
+func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName string, nodeName string, svcNames map[string]bool) {
+	// Add to service list
+	svcNames[svcName] = true
 
 	// Create new service info
 	svcInfo := new(ServiceInfo)
@@ -562,7 +548,8 @@ func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName 
 
 	// Store MG Service info, if any
 	if mgSvcName != "" {
-		addSvc(mgSvcName)
+		// Add to service list
+		svcNames[svcName] = true
 
 		// Add MG service to MG service info map if it does not exist yet
 		mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
@@ -652,7 +639,7 @@ func setFilterInfoRules() {
 				filterInfo = new(FilterInfo)
 				filterInfo.PodName = dstElem.Name
 				filterInfo.SrcIp = srcElem.Ip
-				filterInfo.SrcSvcIp = svcIPMap[srcElem.Name]
+				filterInfo.SrcSvcIp = tce.ipManager.GetSvcIp(srcElem.Name)
 				filterInfo.SrcName = srcElem.Name
 				filterInfo.SrcNetmask = "0"
 				filterInfo.SrcPort = 0
@@ -715,248 +702,6 @@ func setShapingRule(filterInfo *FilterInfo) error {
 		return err
 	}
 	return nil
-}
-
-// Generate & store rules based on mapping
-func applyMgSvcMapping() {
-	log.Debug("applyMgSvcMapping")
-
-	keys := map[string]bool{}
-
-	// For each pod, add MG, ingress & egress Service LB rules
-	for _, podInfo := range podInfoMap {
-		// MG Service LB rules
-		for _, svcInfo := range podInfo.MgSvcMap {
-			// Add one rule per port
-			for _, portInfo := range svcInfo.Ports {
-				// Populate rule fields
-				fields := make(map[string]interface{})
-				fields[fieldSvcType] = typeMeSvc
-				fields[fieldSvcName] = svcInfo.MgSvc.Name
-				fields[fieldSvcIp] = svcIPMap[svcInfo.MgSvc.Name]
-				fields[fieldSvcProtocol] = portInfo.Protocol
-				fields[fieldSvcPort] = portInfo.Port
-				fields[fieldLbSvcName] = svcInfo.Name
-				fields[fieldLbSvcIp] = svcIPMap[svcInfo.Name]
-				fields[fieldLbSvcPort] = portInfo.Port
-
-				// Make unique key
-				key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
-					svcInfo.MgSvc.Name + ":" + strconv.Itoa(int(portInfo.Port))
-				keys[key] = true
-
-				// Set rule information in DB
-				_ = tce.netCharStore.rc.SetEntry(key, fields)
-			}
-		}
-
-		// Ingress Service rules
-		for _, svcMap := range podInfo.IngressSvcMapList {
-			// Get Service info from exposed service name
-			// Check if MG Service first
-			var svcInfo *ServiceInfo
-			var found bool
-			if svcInfo, found = podInfo.MgSvcMap[svcMap.SvcName]; !found {
-				// If not found, must be unique service
-				if svcInfo, found = svcInfoMap[svcMap.SvcName]; !found {
-					log.Warn("Failed to find service instance: ", svcMap.SvcName)
-					continue
-				}
-			}
-
-			// Populate rule fields
-			fields := make(map[string]interface{})
-			fields[fieldSvcType] = typeIngressSvc
-			fields[fieldSvcName] = svcMap.SvcName
-			fields[fieldSvcIp] = "0.0.0.0/0"
-			fields[fieldSvcProtocol] = svcMap.Protocol
-			fields[fieldSvcPort] = svcMap.NodePort
-			fields[fieldLbSvcName] = svcInfo.Name
-			fields[fieldLbSvcIp] = svcIPMap[svcInfo.Name]
-			fields[fieldLbSvcPort] = svcMap.SvcPort
-
-			// Make unique key
-			key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
-				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.NodePort))
-			keys[key] = true
-
-			// Set rule information in DB
-			_ = tce.netCharStore.rc.SetEntry(key, fields)
-		}
-
-		// Egress Service rules
-		for _, svcMap := range podInfo.EgressSvcMapList {
-			// Populate rule fields
-			fields := make(map[string]interface{})
-			fields[fieldSvcType] = typeEgressSvc
-			fields[fieldSvcName] = svcMap.SvcName
-			fields[fieldSvcIp] = "0.0.0.0/0"
-			fields[fieldSvcProtocol] = svcMap.Protocol
-			fields[fieldSvcPort] = svcMap.SvcPort
-			fields[fieldLbSvcName] = svcMap.SvcName
-			fields[fieldLbSvcIp] = svcMap.SvcIp
-			fields[fieldLbSvcPort] = svcMap.SvcPort
-
-			// Make unique key
-			key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
-				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.SvcPort))
-			keys[key] = true
-
-			// Set rule information in DB
-			_ = tce.netCharStore.rc.SetEntry(key, fields)
-		}
-	}
-
-	// Remove old DB entries
-	keyName := tce.netCharStore.baseKey + typeLb + ":*"
-	err := tce.netCharStore.rc.ForEachEntry(keyName, removeEntryHandler, &keys)
-	if err != nil {
-		log.Error("Failed to remove old entries with err: ", err)
-		return
-	}
-}
-
-func removeEntryHandler(key string, fields map[string]string, userData interface{}) error {
-	keys := userData.(*map[string]bool)
-
-	if _, found := (*keys)[key]; !found {
-		_ = tce.netCharStore.rc.DelEntry(key)
-	}
-	return nil
-}
-
-func getPlatformInfo() {
-	log.Debug("getPlatformInfo")
-
-	// Set TC Engine state to Initializing
-	log.Info("TC Engine scenario received. Moving to Initializing state.")
-	tce.tcEngineState = stateInitializing
-
-	// Start polling thread to retrieve platform information
-	// When all information retrieved, stop thread and move to ready state
-	ticker := time.NewTicker(1000 * time.Millisecond)
-	go func() {
-		for range ticker.C {
-
-			// Stop ticker if TC engine state is no longer initializing
-			if tce.tcEngineState != stateInitializing {
-				log.Warn("Ticker stopped due to TC Engine state no longer initializing")
-				ticker.Stop()
-				return
-			}
-
-			// Connect to K8s API Server
-			clientset, err := connectToAPISvr()
-			if err != nil {
-				log.Error("Failed to connect with k8s API Server. Error: ", err)
-				return
-			}
-
-			// Retrieve Pod Information if required
-			if tce.podCount < tce.podCountReq {
-				log.Debug("Checking for Pod IPs. podCountReq: ", tce.podCountReq, " podCount:", tce.podCount)
-				log.Info("update on the mappings(pod): ", podIPMap)
-				// Retrieve all pods from k8s api with scenario label
-				pods, err := clientset.CoreV1().Pods(tce.sandboxName).List(
-					metav1.ListOptions{LabelSelector: fmt.Sprintf("meepScenario=%s", scenarioName)})
-				if err != nil {
-					log.Error("Failed to retrieve pods from k8s API Server. Error: ", err)
-					return
-				}
-
-				// Store pod IPs
-				for _, pod := range pods.Items {
-					podName := pod.ObjectMeta.Labels["meepApp"]
-					podIP := pod.Status.PodIP
-
-					if ip, found := podIPMap[podName]; found && ip == "" && podIP != "" {
-						log.Debug("Setting podName: ", podName, " to IP: ", podIP)
-						podIPMap[podName] = podIP
-						//set the element if it has already been created by the scenario parsing
-						element := netElemMap[podName]
-						if element != nil {
-							element.Ip = podIP
-							element.NextUniqueNumber = 1
-						}
-						tce.podCount++
-					}
-				}
-			}
-
-			// Retrieve Service Information if required
-			if tce.svcCount < tce.svcCountReq {
-				log.Debug("Checking for Service IPs. svcCountReq: ", tce.svcCountReq, " svcCount:", tce.svcCount)
-				log.Info("update on the mappings(svc): ", svcIPMap)
-
-				// Retrieve all services from k8s api with scenario label
-				services, err := clientset.CoreV1().Services(tce.sandboxName).List(
-					metav1.ListOptions{})
-				if err != nil {
-					log.Error("Failed to retrieve services from k8s API Server. Error: ", err)
-					return
-				}
-
-				// Store service IPs
-				for _, svc := range services.Items {
-					svcName := svc.ObjectMeta.Name
-					svcIP := svc.Spec.ClusterIP
-
-					if ip, found := svcIPMap[svcName]; found && ip == "" && svcIP != "" {
-						log.Debug("Setting svcName: ", svcName, " to IP: ", svcIP)
-						svcIPMap[svcName] = svcIP
-						tce.svcCount++
-					}
-				}
-			}
-
-			// Stop thread if all platform information has been retrieved
-			if tce.podCount == tce.podCountReq && tce.svcCount == tce.svcCountReq {
-				if tce.tcEngineState == stateInitializing {
-					mutex.Lock()
-					log.Info("TC Engine scenario data retrieved. Moving to Ready state.")
-					tce.tcEngineState = stateReady
-
-					// Create & Apply network characteristic rules
-					setFilterInfoRules()
-
-					// Refresh & apply LB rules
-					processMgSvcMapUpdate()
-
-					// Start Net Char Manager
-					err := tce.netCharMgr.Start()
-					if err != nil {
-						log.Error("Failed to start Net Char Manager. Error: ", err)
-						mutex.Unlock()
-						return
-					}
-					mutex.Unlock()
-
-				} else {
-					log.Warn("TC Engine thread completed while not in Initializing state")
-				}
-
-				// stop timer/thread
-				ticker.Stop()
-			}
-		}
-	}()
-}
-
-func connectToAPISvr() (*kubernetes.Clientset, error) {
-
-	// Create the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-	// Create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-	return clientset, nil
 }
 
 // Used to print all the element information belonging to an NetElem object -- uncomment to use -- for debug purpose
