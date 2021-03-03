@@ -29,7 +29,7 @@ import (
 )
 
 const IP_ADDR_NONE = "n/a"
-const DEFAULT_TICKER_INTERVAL_MS = 10000
+const DEFAULT_TICKER_INTERVAL_MS = 1000
 
 type IpAddrUpdateCb func()
 
@@ -93,7 +93,7 @@ func (im *IpManager) GetSvcIp(svcName string) string {
 }
 
 // Start - Start monitoring IP addresses
-func (im *IpManager) Start(interval int) error {
+func (im *IpManager) Start() error {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()
 
@@ -104,13 +104,8 @@ func (im *IpManager) Start(interval int) error {
 		return errors.New("Ticker already running")
 	}
 
-	// Set default ticker interval if none provided
-	if interval == 0 {
-		interval = DEFAULT_TICKER_INTERVAL_MS
-	}
-
 	// Start ticker to periodically retrieve platform information
-	im.ticker = time.NewTicker(time.Duration(interval) * time.Millisecond)
+	im.ticker = time.NewTicker(DEFAULT_TICKER_INTERVAL_MS * time.Millisecond)
 	go func() {
 		for range im.ticker.C {
 			im.mutex.Lock()
@@ -136,7 +131,7 @@ func (im *IpManager) Stop() {
 	}
 }
 
-// Stop - Stop monitoring IP addresses
+// Refresh - Request a IP addresses
 func (im *IpManager) Refresh() {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()

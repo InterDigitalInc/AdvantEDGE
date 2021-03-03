@@ -66,8 +66,8 @@ func NewRoutingEngine(name string, sandboxName string) (re *RoutingEngine, err e
 	return re, nil
 }
 
-// refreshMgLbRules - Fetch & apply latest MG Manager LB rules
-func (re *RoutingEngine) refreshMgLbRules() {
+// RefreshLbRules - Fetch & apply latest MG Manager LB rules
+func (re *RoutingEngine) RefreshLbRules() {
 
 	// Retrieve LB rules from DB
 	jsonNetElemList, err := re.lbRulesStore.rc.JSONGetEntry(re.lbRulesStore.baseKey+typeLb, ".")
@@ -101,10 +101,17 @@ func (re *RoutingEngine) refreshMgLbRules() {
 	// Apply new MG Service mapping rules
 	re.applyMgSvcMapping()
 
+	// Inform sidecars of LB rule updates
+	re.publishLbRulesUpdate()
+}
+
+// publishLbRulesUpdate - Inform sidecars of LB rules update
+func (re *RoutingEngine) publishLbRulesUpdate() {
+
 	// Send TC LB Rules update message to TC Sidecars for enforcement
 	msg := tce.mqLocal.CreateMsg(mq.MsgTcLbRulesUpdate, moduleTcSidecar, tce.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = tce.mqLocal.SendMsg(msg)
+	err := tce.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -200,16 +207,16 @@ func (re *RoutingEngine) applyMgSvcMapping() {
 		}
 	}
 
-	// Remove old DB entries
+	// Remove stale DB entries
 	keyName := tce.netCharStore.baseKey + typeLb + ":*"
-	err := tce.netCharStore.rc.ForEachEntry(keyName, removeEntryHandler, &keys)
+	err := tce.netCharStore.rc.ForEachEntry(keyName, removeLbEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove old entries with err: ", err)
 		return
 	}
 }
 
-func removeEntryHandler(key string, fields map[string]string, userData interface{}) error {
+func removeLbEntryHandler(key string, fields map[string]string, userData interface{}) error {
 	keys := userData.(*map[string]bool)
 
 	if _, found := (*keys)[key]; !found {
