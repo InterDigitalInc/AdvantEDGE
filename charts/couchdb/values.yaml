@@ -192,8 +192,8 @@ couchdbConfig:
     # 5984 when is set to true.
     require_valid_user: false
   couch_httpd_auth:
-    # Setting default timeout to 365 days (365*24*60*60)
-    timeout: 31536000
+    # Setting default timeout to 20 min (20*60)
+    timeout: 1200
     require_valid_user: true
     allow_persistent_cookies: true
 
