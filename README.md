@@ -36,7 +36,7 @@ As of June 2020, we can accept contributions to the project.
 
 If you like this project and would like to participate in its evolution, you can find information on contributing [here](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md)
 
-We still welcome feedback and improvement suggestions via Git issue in the repo for bugs or request enhancements.
+We welcome questions, feedback and improvement suggestions via [Git Discussions](https://github.com/InterDigitalInc/AdvantEDGE/discussions) and bugs reporting via [Git Issues](https://github.com/InterDigitalInc/AdvantEDGE/issues)
 
 Hope to hear from you...
 
