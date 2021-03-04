@@ -88,7 +88,7 @@ func (re *RoutingEngine) RefreshLbRules() {
 	for _, netElem := range netElemList.NetworkElements {
 		podInfo := podInfoMap[netElem.Name]
 		if podInfo == nil {
-			log.Error("Failed to find network element")
+			log.Error("Failed to find network element: ", netElem.Name)
 			continue
 		}
 
@@ -99,7 +99,7 @@ func (re *RoutingEngine) RefreshLbRules() {
 	}
 
 	// Apply new MG Service mapping rules
-	re.applyMgSvcMapping()
+	re.applyLbRules()
 
 	// Inform sidecars of LB rule updates
 	re.publishLbRulesUpdate()
@@ -118,8 +118,8 @@ func (re *RoutingEngine) publishLbRulesUpdate() {
 }
 
 // Generate & store rules based on mapping
-func (re *RoutingEngine) applyMgSvcMapping() {
-	log.Debug("applyMgSvcMapping")
+func (re *RoutingEngine) applyLbRules() {
+	log.Debug("applyLbRules")
 
 	keys := map[string]bool{}
 

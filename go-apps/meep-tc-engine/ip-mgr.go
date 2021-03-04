@@ -43,7 +43,7 @@ type IpManager struct {
 	clientset   *kubernetes.Clientset
 	updateCb    IpAddrUpdateCb
 	isConnected bool
-	mutex       *sync.Mutex
+	mutex       sync.Mutex
 }
 
 // NewIpManager - Creates and initialize an IP Manager instance
@@ -62,16 +62,43 @@ func NewIpManager(name string, sandboxName string, updateCb IpAddrUpdateCb) (im 
 }
 
 // SetPodList - Set list of pods to monitor IP addresses for
-func (im *IpManager) SetPodList(podList []string) {
+func (im *IpManager) SetPodList(podList map[string]bool) {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()
 
+	// Remove stale entries
+	for podName := range im.podIpMap {
+		if _, found := podList[podName]; !found {
+			delete(im.podIpMap, podName)
+		}
+	}
+
+	// Add missing entries
+	for podName := range podList {
+		if _, found := im.podIpMap[podName]; !found {
+			im.podIpMap[podName] = IP_ADDR_NONE
+		}
+	}
 }
 
 // SetSvcList - Set list of services to monitor IP addresses for
-func (im *IpManager) SetSvcList(svcList []string) {
+func (im *IpManager) SetSvcList(svcList map[string]bool) {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()
+
+	// Remove stale entries
+	for svcName := range im.svcIpMap {
+		if _, found := svcList[svcName]; !found {
+			delete(im.svcIpMap, svcName)
+		}
+	}
+
+	// Add missing entries
+	for svcName := range svcList {
+		if _, found := im.svcIpMap[svcName]; !found {
+			im.svcIpMap[svcName] = IP_ADDR_NONE
+		}
+	}
 }
 
 // GetPodIp - Get Pod IP address
@@ -85,7 +112,7 @@ func (im *IpManager) GetPodIp(podName string) string {
 
 // GetPodIp - Get Svc IP address
 func (im *IpManager) GetSvcIp(svcName string) string {
-	svcIp, found := im.podIpMap[svcName]
+	svcIp, found := im.svcIpMap[svcName]
 	if !found {
 		svcIp = IP_ADDR_NONE
 	}
@@ -171,13 +198,6 @@ func (im *IpManager) refreshIpAddresses() {
 			log.Debug("Setting podName: ", podName, " ip: ", podIp)
 			im.podIpMap[podName] = podIp
 			updated = true
-
-			// //set the element if it has already been created by the scenario parsing
-			// element := netElemMap[podName]
-			// if element != nil {
-			// 	element.Ip = podIp
-			// 	element.NextUniqueNumber = 1
-			// }
 		}
 	}
 

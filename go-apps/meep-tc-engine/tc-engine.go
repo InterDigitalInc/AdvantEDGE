@@ -60,15 +60,11 @@ const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 const DEFAULT_NET_CHAR_DB = 0
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
-// NetElem -
-// NextUniqueNumber is reserving 2 spaces for each unique number to apply
-// changes starting with odd number and using even number to apply the 1st
-// change and come back on the odd number for the next update to apply
+// Network Element
 type NetElem struct {
-	Name             string
-	FilterInfoMap    map[string]*FilterInfo
-	Ip               string
-	NextUniqueNumber int
+	Name          string
+	FilterInfoMap map[string]*FilterInfo
+	Ip            string
 }
 
 // FilterInfo -
@@ -204,6 +200,7 @@ func Init() (err error) {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
+	log.Info("Active scenario model created")
 
 	// Open Network Characteristics Store
 	tce.netCharStore = new(NetCharStore)
@@ -224,9 +221,8 @@ func Init() (err error) {
 		log.Error("Failed to create a netChar object. Error: ", err)
 		return err
 	}
-
-	// Configure & Start Net Char Manager
 	tce.netCharMgr.Register(netCharUpdate, updateComplete)
+	log.Info("Network Characteristics Manager instance created")
 
 	// Create new IP Manager instance
 	tce.ipManager, err = NewIpManager(moduleName, tce.sandboxName, ipAddrUpdated)
@@ -234,6 +230,7 @@ func Init() (err error) {
 		log.Error("Failed to create IP Manager. Error: ", err)
 		return err
 	}
+	log.Info("IP Manager instance created")
 
 	// Create new Routing Engine instance
 	tce.routingEngine, err = NewRoutingEngine(moduleName, tce.sandboxName)
@@ -241,6 +238,7 @@ func Init() (err error) {
 		log.Error("Failed to create Routing Engine. Error: ", err)
 		return err
 	}
+	log.Info("Routing Engine instance created")
 
 	// Process scenario in case it is already active
 	processScenarioActivate()
@@ -290,6 +288,13 @@ func processScenarioActivate() {
 	// Sync with active scenario store
 	tce.activeModel.UpdateScenario()
 
+	// Make sure scenario is active
+	scenarioName := tce.activeModel.GetScenarioName()
+	if scenarioName == "" {
+		log.Warn("Scenario not active")
+		return
+	}
+
 	// Process new scenario
 	err := processScenario(tce.activeModel)
 	if err != nil {
@@ -319,6 +324,13 @@ func processScenarioActivate() {
 func processScenarioUpdate(eventType string) {
 	// Sync with active scenario store
 	tce.activeModel.UpdateScenario()
+
+	// Make sure scenario is active
+	scenarioName := tce.activeModel.GetScenarioName()
+	if scenarioName == "" {
+		log.Warn("Scenario not active")
+		return
+	}
 
 	// Process updated scenario
 	err := processScenario(tce.activeModel)
@@ -362,8 +374,8 @@ func stopScenario() {
 	mgSvcInfoMap = make(map[string]*MgServiceInfo)
 	podInfoMap = make(map[string]*PodInfo)
 
-	tce.ipManager.SetPodList([]string{})
-	tce.ipManager.SetSvcList([]string{})
+	tce.ipManager.SetPodList(map[string]bool{})
+	tce.ipManager.SetSvcList(map[string]bool{})
 
 	tce.netCharStore.rc.DBFlush(tce.netCharStore.baseKey)
 
@@ -424,7 +436,6 @@ func processScenario(model *mod.Model) error {
 		if element == nil {
 			element = new(NetElem)
 			element.Name = proc.Name
-			element.NextUniqueNumber = 1
 			element.Ip = tce.ipManager.GetPodIp(proc.Name)
 			element.FilterInfoMap = make(map[string]*FilterInfo)
 			netElemMap[proc.Name] = element
@@ -493,8 +504,8 @@ func processScenario(model *mod.Model) error {
 	}
 
 	// Update Pod & Svc lists in IP Manager
-	tce.ipManager.SetPodList(getKeys(podNames))
-	tce.ipManager.SetSvcList(getKeys(svcNames))
+	tce.ipManager.SetPodList(podNames)
+	tce.ipManager.SetSvcList(svcNames)
 
 	// Remove network elements that are no longer in scenario
 	for procName := range netElemMap {
@@ -521,16 +532,6 @@ func ipAddrUpdated() {
 	tce.routingEngine.RefreshLbRules()
 }
 
-func getKeys(m map[string]bool) []string {
-	keys := make([]string, len(m))
-	i := 0
-	for k := range m {
-		keys[i] = k
-		i++
-	}
-	return keys
-}
-
 // Create & store new service & MG service information
 func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName string, nodeName string, svcNames map[string]bool) {
 	// Add to service list
@@ -554,7 +555,7 @@ func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName 
 	// Store MG Service info, if any
 	if mgSvcName != "" {
 		// Add to service list
-		svcNames[svcName] = true
+		svcNames[mgSvcName] = true
 
 		// Add MG service to MG service info map if it does not exist yet
 		mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
@@ -673,16 +674,14 @@ func refreshNcRules() {
 				filterInfo.SrcNetmask = "0"
 				filterInfo.SrcPort = 0
 				filterInfo.DstPort = 0
-				filterInfo.UniqueNumber = dstElem.NextUniqueNumber
+				filterInfo.UniqueNumber = getUniqueFilterNumber(dstElem)
 				filterInfo.Latency = 0
 				filterInfo.LatencyVariation = 0
 				filterInfo.LatencyCorrelation = COMMON_CORRELATION
 				filterInfo.Distribution = DEFAULT_DISTRIBUTION
 				filterInfo.PacketLoss = 0.0
 				filterInfo.DataRate = 0
-
 				dstElem.FilterInfoMap[srcElem.Name] = filterInfo
-				dstElem.NextUniqueNumber++
 			}
 		}
 
@@ -729,7 +728,7 @@ func applyNcRules() {
 	}
 
 	// Remove stale DB entries
-	keyName := tce.netCharStore.baseKey + typeLb + ":*"
+	keyName := tce.netCharStore.baseKey + typeNet + ":*"
 	err := tce.netCharStore.rc.ForEachEntry(keyName, removeNcEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove stale entries with err: ", err)
@@ -786,6 +785,23 @@ func setFilterRule(filterInfo *FilterInfo) (keyName string, err error) {
 		return keyName, err
 	}
 	return keyName, nil
+}
+
+func getUniqueFilterNumber(elem *NetElem) int {
+	maxNum := 1000
+	for num := 1; num < maxNum; num++ {
+		isUnique := true
+		for _, filter := range elem.FilterInfoMap {
+			if num == filter.UniqueNumber {
+				isUnique = false
+				break
+			}
+		}
+		if isUnique {
+			return num
+		}
+	}
+	return maxNum
 }
 
 // Used to print all the element information belonging to an NetElem object -- uncomment to use -- for debug purpose
