@@ -45,7 +45,7 @@ type Connector struct {
 
 func authenticateConnection(dbClient *kivik.Client) {
 	for {
-		time.Sleep(9 * time.Minute)
+		time.Sleep(10 * time.Minute)
 		err := dbClient.Authenticate(context.TODO(), &chttp.CookieAuth{Username: "admin", Password: "admin"})
 		if err != nil {
 			log.Debug("Re-Authentication failed", err)
