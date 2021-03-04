@@ -113,7 +113,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 	var netChar dataModel.NetworkCharacteristics
 	netChar.ThroughputUl = 100
 	netCharUpdateEvent.NetChar = &netChar
-	err = activeModel.UpdateNetChar(&netCharUpdateEvent)
+	err = activeModel.UpdateNetChar(&netCharUpdateEvent, nil)
 	if err != nil {
 		t.Fatalf("Error updating net char")
 	}
@@ -134,7 +134,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 
 	// Verify algo after UE Mobility event update
 	fmt.Println("Move ue1")
-	_, _, err = activeModel.MoveNode("ue1", "zone2-poa1")
+	_, _, err = activeModel.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -167,7 +167,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 
 	// Verify algo after model update
 	fmt.Println("Move ue1")
-	_, _, err = activeModel.MoveNode("ue1", "zone1-poa1")
+	_, _, err = activeModel.MoveNode("ue1", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -297,7 +297,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 	netChar.PacketLoss = 0       // no change
 	netChar.ThroughputDl = 100
 	netCharUpdateEvent.NetChar = &netChar
-	err = activeModel.UpdateNetChar(&netCharUpdateEvent)
+	err = activeModel.UpdateNetChar(&netCharUpdateEvent, nil)
 	if err != nil {
 		t.Fatalf("Error updating net char")
 	}
@@ -330,7 +330,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 
 	// Verify algo calculations after UE Mobility event update
 	fmt.Println("Move ue1 to zone2-poa1")
-	_, _, err = activeModel.MoveNode("ue1", "zone2-poa1")
+	_, _, err = activeModel.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -392,7 +392,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 
 	// Verify algo calculations after UE Mobility event update
 	fmt.Println("Move ue1 to zone1-poa1")
-	_, _, err = activeModel.MoveNode("ue1", "zone1-poa1")
+	_, _, err = activeModel.MoveNode("ue1", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}

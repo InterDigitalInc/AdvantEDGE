@@ -181,7 +181,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("SetScenario failed")
 	}
 	fmt.Println("Move ue1")
-	old, new, err := m.MoveNode("ue1", "zone2-poa1")
+	old, new, err := m.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -192,7 +192,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue2-ext")
-	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1")
+	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -203,7 +203,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue1 back")
-	old, new, err = m.MoveNode("ue1", "zone1-poa1")
+	old, new, err = m.MoveNode("ue1", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -214,7 +214,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue2-ext back")
-	old, new, err = m.MoveNode("ue2-ext", "zone1-poa1")
+	old, new, err = m.MoveNode("ue2-ext", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -225,7 +225,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue2-ext again")
-	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1")
+	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -236,7 +236,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue1")
-	old, new, err = m.MoveNode("ue1", "zone2-poa1")
+	old, new, err = m.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -247,7 +247,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue1 back again")
-	old, new, err = m.MoveNode("ue1", "zone1-poa1")
+	old, new, err = m.MoveNode("ue1", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -258,7 +258,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move edge node zone1-edge1 to a new zone")
-	old, new, err = m.MoveNode("zone1-edge1", "zone2")
+	old, new, err = m.MoveNode("zone1-edge1", "zone2", nil)
 	if err != nil {
 		t.Fatalf("Error moving EDGE node")
 	}
@@ -269,7 +269,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move zone1-edge1-iperf")
-	_, _, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge2")
+	_, _, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge2", nil)
 	if err == nil {
 		t.Fatalf("Moving Edge-App part of mobility group should not be allowed")
 	}
@@ -282,7 +282,7 @@ func TestMoveNode(t *testing.T) {
 	}
 	proc := node.object.(*dataModel.Process)
 	proc.ServiceConfig.MeSvcName = ""
-	old, new, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge1")
+	old, new, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge1", nil)
 	if err != nil {
 		t.Fatalf("Error moving Edge-App")
 	}
@@ -294,12 +294,12 @@ func TestMoveNode(t *testing.T) {
 	}
 
 	fmt.Println("Move Node - not a UE")
-	_, _, err = m.MoveNode("Not-a-UE", "zone1-poa1")
+	_, _, err = m.MoveNode("Not-a-UE", "zone1-poa1", nil)
 	if err == nil {
 		t.Fatalf("Error moving UE - inexisting UE")
 	}
 	fmt.Println("Move Node - not a PoA")
-	_, _, err = m.MoveNode("ue1", "Not-a-poa")
+	_, _, err = m.MoveNode("ue1", "Not-a-poa", nil)
 	if err == nil {
 		t.Fatalf("Error moving UE - inexisting PoA")
 	}
@@ -338,7 +338,7 @@ func TestUpdateNetChar(t *testing.T) {
 	netChar.ThroughputUl = 5
 	netChar.PacketLoss = 4
 	nc.NetChar = &netChar
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -363,7 +363,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "operator1"
 	nc.ElementType = NodeTypeOperator
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -387,7 +387,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1"
 	nc.ElementType = NodeTypeZone
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -411,7 +411,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-poa1"
 	nc.ElementType = NodeTypePoa
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -435,7 +435,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-fog1"
 	nc.ElementType = NodeTypeFog
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -459,7 +459,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-edge1"
 	nc.ElementType = NodeTypeEdge
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -483,7 +483,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "ue1"
 	nc.ElementType = NodeTypeUE
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -507,7 +507,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "cloud1"
 	nc.ElementType = NodeTypeCloud
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -531,7 +531,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-edge1-iperf"
 	nc.ElementType = NodeTypeEdgeApp
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -555,7 +555,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "ue1-iperf"
 	nc.ElementType = NodeTypeUEApp
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -579,7 +579,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "cloud1-iperf"
 	nc.ElementType = NodeTypeCloudApp
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -603,14 +603,14 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "Not-a-Name"
 	nc.ElementType = NodeTypePoa
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err == nil {
 		t.Fatalf("Update " + nc.ElementType + " should fail")
 	}
 
 	nc.ElementName = "ue1"
 	nc.ElementType = "Not-a-Type"
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err == nil {
 		t.Fatalf("Unsupported type should fail")
 	}
@@ -675,7 +675,7 @@ func TestListenModel(t *testing.T) {
 
 	// MoveNode
 	fmt.Println("Move ue1")
-	old, new, err := mPub.MoveNode("ue1", "zone2-poa1")
+	old, new, err := mPub.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -705,7 +705,7 @@ func TestListenModel(t *testing.T) {
 	netChar.ThroughputUl = 5
 	netChar.PacketLoss = 4
 	nc.NetChar = &netChar
-	err = mPub.UpdateNetChar(&nc)
+	err = mPub.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -999,46 +999,46 @@ func TestScenarioUpdate(t *testing.T) {
 	fmt.Println("Invalid Add Requests")
 	ue_data := dataModel.NodeDataUnion{}
 	ue_node := dataModel.ScenarioNode{NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl := dataModel.PhysicalLocation{Id: "ue-id", Type_: NodeTypeUE}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Name: "ue"}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue1_pl := dataModel.PhysicalLocation{Id: "ue1-id", Name: "ue1", Type_: NodeTypeUE}
 	ue1_data := dataModel.NodeDataUnion{PhysicalLocation: &ue1_pl}
 	ue1_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue1_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue1_node)
+	err = m.AddScenarioNode(&ue1_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
@@ -1046,33 +1046,33 @@ func TestScenarioUpdate(t *testing.T) {
 	fmt.Println("Invalid Remove Requests")
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Type_: NodeTypeUE}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Name: "ue"}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
@@ -1082,7 +1082,7 @@ func TestScenarioUpdate(t *testing.T) {
 	ue3_pl := dataModel.PhysicalLocation{Id: "ue3-id", Name: "ue3", Type_: NodeTypeUE, NetChar: &ue3_nc}
 	ue3_data := dataModel.NodeDataUnion{PhysicalLocation: &ue3_pl}
 	ue3_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue3_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue3_node)
+	err = m.AddScenarioNode(&ue3_node, nil)
 	if err != nil {
 		t.Fatalf("Error adding nodes: " + err.Error())
 	}
@@ -1104,7 +1104,7 @@ func TestScenarioUpdate(t *testing.T) {
 	ue4_pl := dataModel.PhysicalLocation{Id: "ue4-id", Name: "ue4", Type_: NodeTypeUE, NetChar: &ue4_nc}
 	ue4_data := dataModel.NodeDataUnion{PhysicalLocation: &ue4_pl}
 	ue4_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue4_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue4_node)
+	err = m.AddScenarioNode(&ue4_node, nil)
 	if err != nil {
 		t.Fatalf("Error adding nodes: " + err.Error())
 	}
@@ -1123,7 +1123,7 @@ func TestScenarioUpdate(t *testing.T) {
 
 	fmt.Println("Remove ue4")
 	ue4_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue4_data}
-	err = m.RemoveScenarioNode(&ue4_node)
+	err = m.RemoveScenarioNode(&ue4_node, nil)
 	if err != nil {
 		t.Fatalf("Error removing nodes")
 	}
@@ -1134,7 +1134,7 @@ func TestScenarioUpdate(t *testing.T) {
 
 	fmt.Println("Remove ue3 & ue5")
 	ue3_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue3_data}
-	err = m.RemoveScenarioNode(&ue3_node)
+	err = m.RemoveScenarioNode(&ue3_node, nil)
 	if err != nil {
 		t.Fatalf("Error removing nodes")
 	}

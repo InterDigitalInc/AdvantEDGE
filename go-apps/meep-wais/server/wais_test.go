@@ -6671,7 +6671,7 @@ func updateScenario(testUpdate string) {
 		elemName := "10.10.0.2"
 		destName := "w10"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}
@@ -6686,7 +6686,7 @@ func updateScenario(testUpdate string) {
 		elemName := "10.10.0.2"
 		destName := "w11"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}
@@ -6701,7 +6701,7 @@ func updateScenario(testUpdate string) {
 		elemName := "10.10.0.2"
 		destName := "4g-macro-cell-10"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}

@@ -65,6 +65,8 @@ const serviceName = "Sandbox Controller"
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
 const fieldScenarioName = "scenario-name"
+const fieldEventType = "event-type"
+const fieldNodeName = "node-name"
 
 // Event types
 const (
@@ -516,7 +518,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	// Send Terminate message to Virt Engine on Global Message Queue
 	msg = sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
-	msg.Payload[fieldScenarioName] = ""
+	msg.Payload[fieldScenarioName] = sbxCtrl.activeModel.GetScenarioName()
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = sbxCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
@@ -634,7 +636,7 @@ func sendEventNetworkCharacteristics(event dataModel.Event) (error, int, string)
 		"throughputUl=" + strconv.Itoa(int(netCharEvent.NetChar.ThroughputUl)) + "Mbps " +
 		"packet-loss=" + strconv.FormatFloat(netCharEvent.NetChar.PacketLoss, 'f', -1, 64) + "% "
 
-	err := sbxCtrl.activeModel.UpdateNetChar(netCharEvent)
+	err := sbxCtrl.activeModel.UpdateNetChar(netCharEvent, nil)
 	if err != nil {
 		return err, http.StatusInternalServerError, ""
 	}
@@ -651,7 +653,7 @@ func sendEventMobility(event dataModel.Event) (error, int, string) {
 	destName := event.EventMobility.Dest
 	description := "[" + elemName + "] move to " + destName
 
-	oldNL, newNL, err := sbxCtrl.activeModel.MoveNode(elemName, destName)
+	oldNL, newNL, err := sbxCtrl.activeModel.MoveNode(elemName, destName, nil)
 	if err != nil {
 		return err, http.StatusInternalServerError, ""
 	}
@@ -737,22 +739,25 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 		return err, http.StatusBadRequest, ""
 	}
 
+	// Get node name
+	nodeName := getScenarioNodeName(event.EventScenarioUpdate.Node)
+
 	// Perform necessary action on scenario
 	switch event.EventScenarioUpdate.Action {
 	case mod.ScenarioAdd:
-		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node)
+		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
-			description = "Added node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+			description = "Added node [" + nodeName + "]"
 		}
 	case mod.ScenarioModify:
-		err = sbxCtrl.activeModel.ModifyScenarioNode(event.EventScenarioUpdate.Node)
+		err = sbxCtrl.activeModel.ModifyScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
-			description = "Modified node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+			description = "Modified node [" + nodeName + "]"
 		}
 	case mod.ScenarioRemove:
-		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node)
+		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
-			description = "Removed node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+			description = "Removed node [" + nodeName + "]"
 		}
 	default:
 		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
@@ -767,10 +772,15 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 // Retrieve element name from type-specific structure
 func getScenarioNodeName(node *dataModel.ScenarioNode) string {
 	name := ""
-	if node.Type_ == mod.NodeTypeUE {
+	if mod.IsPhyLoc(node.Type_) {
 		if node.NodeDataUnion != nil && node.NodeDataUnion.PhysicalLocation != nil {
 			pl := node.NodeDataUnion.PhysicalLocation
 			name = pl.Name
+		}
+	} else if mod.IsProc(node.Type_) {
+		if node.NodeDataUnion != nil && node.NodeDataUnion.Process != nil {
+			proc := node.NodeDataUnion.Process
+			name = proc.Name
 		}
 	}
 	return name
@@ -1119,10 +1129,28 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 }
 
-func activeScenarioUpdateCb() {
+func activeScenarioUpdateCb(eventType string, userData interface{}) {
+
+	// Check if update requires Virt Engine intervention
+	if eventType == mod.EventAddNode || eventType == mod.EventRemoveNode || eventType == mod.EventModifyNode {
+		// Send Update message to Virt Engine on Global Message Queue
+		msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, mq.TargetAll)
+		msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
+		msg.Payload[fieldEventType] = eventType
+		msg.Payload[fieldNodeName] = userData.(string)
+		log.Debug("TX MSG: ", mq.PrintMsg(msg))
+		err := sbxCtrl.mqGlobal.SendMsg(msg)
+		if err != nil {
+			log.Error("Failed to send message. Error: ", err.Error())
+		}
+	}
 
 	// Send Update message on local Message Queue
 	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, sbxCtrl.sandboxName)
+	msg.Payload[fieldEventType] = eventType
+	if eventType == mod.EventAddNode || eventType == mod.EventRemoveNode || eventType == mod.EventModifyNode {
+		msg.Payload[fieldNodeName] = userData.(string)
+	}
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err := sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {
