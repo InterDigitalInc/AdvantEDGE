@@ -11,7 +11,7 @@
       "datasource": "$datasource",
       "fontSize": "100%",
       "gridPos": {
-        "h": 6,
+        "h": 20,
         "w": 24,
         "x": 0,
         "y": 3
@@ -71,7 +71,7 @@
           "link": true,
           "linkTargetBlank":true, 
           "linkTooltip": "get details",
-          "linkUrl":"grafana/d/4/http-rest-api-single-log-details?orgId=1&var-database=$database&var-logger_name=$logger_name&theme=light&refresh=1d&var-http_log_id=${__cell}",
+          "linkUrl":"d/4/http-rest-api-single-log-details?orgId=1&var-database=$database&var-logger_name=${__cell_3}&theme=light&refresh=1d&var-http_log_id=${__cell}",
           "mappingType": 1,
           "pattern": "http.id",
           "thresholds": [],
@@ -224,7 +224,7 @@
         "hide": 0,
         "includeAll": false,
         "label": "service",
-        "multi": false,
+        "multi": true,
         "name": "logger_name",
         "options": [],
         "query": "show tag values on $database from http with key = \"logger_name\"",
