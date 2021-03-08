@@ -135,6 +135,7 @@ type lbRulesStore struct {
 
 type MgManager struct {
 	sandboxName  string
+	scenarioName string
 	baseKey      string
 	mqLocal      *mq.MsgQueue
 	handlerId    int
@@ -258,13 +259,18 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 }
 
 func processActiveScenarioUpdate() {
+
 	// Sync with active scenario store
 	mgm.activeModel.UpdateScenario()
 
-	_ = httpLog.ReInit(moduleName, mgm.sandboxName, mgm.activeModel.GetScenarioName(), redisAddr, influxAddr)
+	scenarioName := mgm.activeModel.GetScenarioName()
+	if mgm.scenarioName != scenarioName {
+		mgm.scenarioName = scenarioName
+		_ = httpLog.ReInit(moduleName, mgm.sandboxName, scenarioName, redisAddr, influxAddr)
+	}
 
 	// Handle empty/missing scenario
-	if mgm.activeModel.GetScenarioName() == "" {
+	if scenarioName == "" {
 		clearScenario()
 		return
 	}

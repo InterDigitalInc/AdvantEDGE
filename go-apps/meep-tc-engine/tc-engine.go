@@ -339,16 +339,18 @@ func processScenarioUpdate(eventType string) {
 		return
 	}
 
-	// Trigger IP address refresh if necessary
-	if eventType == mod.EventAddNode || eventType == mod.EventModifyNode || eventType == mod.EventRemoveNode {
-		tce.ipManager.Refresh()
-	}
-
 	// Refresh NC rules
 	refreshNcRules()
 
-	// Refresh routing rules
-	tce.routingEngine.RefreshLbRules()
+	// Trigger IP address refresh if necessary
+	if eventType == mod.EventAddNode || eventType == mod.EventModifyNode || eventType == mod.EventRemoveNode {
+		tce.ipManager.Refresh()
+
+		// Refresh routing rules
+		// NOTE: This operation is long in sidecars and should be avoided unless necessary.
+		//       E.g. when ingress/egress rules or a group servicerules may have changed.
+		tce.routingEngine.RefreshLbRules()
+	}
 }
 
 func processScenarioTerminate() {
@@ -521,6 +523,7 @@ func processScenario(model *mod.Model) error {
 func ipAddrUpdated() {
 	mutex.Lock()
 	defer mutex.Unlock()
+	log.Debug("ipAddrUpdated")
 
 	// Update cached IP addresses
 	updateIpAddresses()
@@ -629,6 +632,7 @@ func netCharUpdate(dstName string, srcName string, rate float64, latency float64
 func updateComplete() {
 	mutex.Lock()
 	defer mutex.Unlock()
+	log.Debug("updateComplete")
 
 	// Inform sidecars of NC rule updates
 	publishNcRulesUpdate()

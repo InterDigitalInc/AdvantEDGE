@@ -133,7 +133,7 @@ var metricsBaseKey string
 var nbAppliedOperations = 0
 
 var opts Opts = Opts{
-	timeout:         100000 * time.Millisecond,
+	timeout:         2000 * time.Millisecond,
 	interval:        1000 * time.Millisecond,
 	trafficInterval: 100 * time.Millisecond,
 	bind4:           "0.0.0.0",
@@ -333,13 +333,15 @@ func refreshNcRules() {
 	deleteUnusedIfbs()
 
 	elapsed := time.Since(currentTime)
-	log.Debug("RefreshNetCharRules execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
+	log.Debug("refreshNcRules: execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
 
 	// Refresh ping destinations
 	refreshPingDests()
 }
 
 func refreshLbRules() {
+	currentTime := time.Now()
+
 	// Get currently installed chains in NAT table
 	log.Debug("Fetching nat table chains")
 	chains, err := ipTbl.ListChains("nat")
@@ -463,6 +465,9 @@ func refreshLbRules() {
 	if flushRequired {
 		flushTrackedConnections()
 	}
+
+	elapsed := time.Since(currentTime)
+	log.Debug("refreshLbRules: execution time: ", elapsed)
 }
 
 func flushTrackedConnections() {
@@ -800,7 +805,7 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 		}
 	} else {
 		// Updated - only handle cases where IPs have changed
-		if srcIp != prevIps.PodIp && srcSvcIp == prevIps.SvcIp {
+		if srcIp != prevIps.PodIp || srcSvcIp != prevIps.SvcIp {
 			if srcIp == ipAddrNone {
 				// Filters can only exist if pod IP is valid
 				_ = cmdDeleteFilter(filterNumber)
