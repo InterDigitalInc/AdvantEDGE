@@ -94,7 +94,9 @@ func (re *RoutingEngine) RefreshLbRules() {
 
 		// Set load balanced MG Service instance
 		for _, svcMap := range netElem.ServiceMaps {
-			podInfo.MgSvcMap[svcMap.MgSvcName] = svcInfoMap[svcMap.LbSvcName]
+			if svcInfo, found := svcInfoMap[svcMap.LbSvcName]; found {
+				podInfo.MgSvcMap[svcMap.MgSvcName] = svcInfo
+			}
 		}
 	}
 

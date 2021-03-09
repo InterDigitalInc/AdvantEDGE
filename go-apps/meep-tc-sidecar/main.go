@@ -278,8 +278,8 @@ func initMeepSidecar() (err error) {
 	// Initialize latency results
 	latestLatencyResultsMap = make(map[string]int32)
 
-	// Refresh Ping destinations
-	refreshPingDests()
+	// Refresh destinations
+	refreshDests()
 
 	return nil
 }
@@ -335,8 +335,8 @@ func refreshNcRules() {
 	elapsed := time.Since(currentTime)
 	log.Debug("refreshNcRules: execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
 
-	// Refresh ping destinations
-	refreshPingDests()
+	// Refresh destinations
+	refreshDests()
 }
 
 func refreshLbRules() {
@@ -569,60 +569,75 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 	return nil
 }
 
-// refreshPingDests - Refresh ping destinations to match valid DB entries
-func refreshPingDests() {
+// refreshDests - Refresh destinations to match valid DB entries
+func refreshDests() {
 	// Get list of destinations with valid IP addresses
-	var pingDests []DestElement
+	var destElems []DestElement
 	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
-	err := rc.ForEachEntry(keyName, refreshPingDestsHandler, &pingDests)
+	err := rc.ForEachEntry(keyName, refreshDestsHandler, &destElems)
 	if err != nil {
 		log.Error("Failed to update dest pod list. Error: ", err)
 	}
 
-	// Create new dest list
-	dests := []*destination{}
-	for _, pingDest := range pingDests {
-		remotes, err := resolve(pingDest.ipAddr, opts.resolverTimeout)
-		if err != nil {
-			log.Debug("error resolving host ", pingDest.name, "(", pingDest.ipAddr, ") err: ", err)
-			continue
+	semOptsDests.Lock()
+	defer semOptsDests.Unlock()
+
+	// Find existing elements or add new elements
+	var dests []*destination
+	for _, destElem := range destElems {
+
+		// Find existing destination
+		found := false
+		for _, d := range opts.dests {
+			if destElem.name == d.remoteName && destElem.ipAddr == d.host && destElem.IfbNumber == d.ifbNumber {
+				dests = append(dests, d)
+				found = true
+				break
+			}
 		}
 
-		for _, remote := range remotes {
-			if v4 := remote.IP.To4() != nil; v4 && opts.bind4 == "" || !v4 && opts.bind6 == "" {
+		// Create a new destination if not found
+		if !found {
+			remotes, err := resolve(destElem.ipAddr, opts.resolverTimeout)
+			if err != nil {
+				log.Debug("error resolving host ", destElem.name, "(", destElem.ipAddr, ") err: ", err)
 				continue
 			}
 
-			ipaddr := remote // need to create a copy
-			name := pingDest.name
-			dest := destination{
-				host:       pingDest.ipAddr,
-				hostName:   PodName,
-				remote:     &ipaddr,
-				remoteName: name,
-				ifbNumber:  pingDest.IfbNumber,
-				history: &history{
-					results: make([]time.Duration, opts.statBufferSize),
-				},
-				prevRx: &historyRx{
-					rxBytes: 0,
-				},
-				prevRxLog: &historyRx{
-					rxBytes: 0,
-				},
+			for _, remote := range remotes {
+				if v4 := remote.IP.To4() != nil; v4 && opts.bind4 == "" || !v4 && opts.bind6 == "" {
+					continue
+				}
+
+				ipaddr := remote // need to create a copy
+				name := destElem.name
+				dest := destination{
+					host:       destElem.ipAddr,
+					hostName:   PodName,
+					remote:     &ipaddr,
+					remoteName: name,
+					ifbNumber:  destElem.IfbNumber,
+					history: &history{
+						results: make([]time.Duration, opts.statBufferSize),
+					},
+					prevRx: &historyRx{
+						rxBytes: 0,
+					},
+					prevRxLog: &historyRx{
+						rxBytes: 0,
+					},
+				}
+				dests = append(dests, &dest)
 			}
-			dests = append(dests, &dest)
 		}
 	}
 
-	// Update ping dest list
-	semOptsDests.Lock()
+	// Update dests
 	opts.dests = dests
-	semOptsDests.Unlock()
 }
 
-func refreshPingDestsHandler(key string, fields map[string]string, userData interface{}) error {
-	pingDests := userData.(*[]DestElement)
+func refreshDestsHandler(key string, fields map[string]string, userData interface{}) error {
+	dests := userData.(*[]DestElement)
 	var dest DestElement
 	dest.name = fields["srcName"]
 	dest.ipAddr = fields["srcIp"]
@@ -630,7 +645,7 @@ func refreshPingDestsHandler(key string, fields map[string]string, userData inte
 
 	// Append valid pods only
 	if dest.ipAddr != ipAddrNone {
-		*pingDests = append(*pingDests, dest)
+		*dests = append(*dests, dest)
 	}
 	return nil
 }
