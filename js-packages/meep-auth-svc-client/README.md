@@ -122,6 +122,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgeAuthServiceRestApi.AuthApi* | [**authenticate**](docs/AuthApi.md#authenticate) | **GET** /authenticate | Authenticate service request
 *AdvantEdgeAuthServiceRestApi.AuthApi* | [**authorize**](docs/AuthApi.md#authorize) | **GET** /authorize | OAuth authorization response endpoint
 *AdvantEdgeAuthServiceRestApi.AuthApi* | [**login**](docs/AuthApi.md#login) | **GET** /login | Initiate OAuth login procedure
+*AdvantEdgeAuthServiceRestApi.AuthApi* | [**loginSupported**](docs/AuthApi.md#loginSupported) | **GET** /loginSupported | Check if login is supported
 *AdvantEdgeAuthServiceRestApi.AuthApi* | [**loginUser**](docs/AuthApi.md#loginUser) | **POST** /login | Start a session
 *AdvantEdgeAuthServiceRestApi.AuthApi* | [**logout**](docs/AuthApi.md#logout) | **GET** /logout | Terminate a session
 *AdvantEdgeAuthServiceRestApi.AuthApi* | [**triggerWatchdog**](docs/AuthApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog

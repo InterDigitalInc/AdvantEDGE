@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**authenticate**](AuthApi.md#authenticate) | **GET** /authenticate | Authenticate service request
 [**authorize**](AuthApi.md#authorize) | **GET** /authorize | OAuth authorization response endpoint
 [**login**](AuthApi.md#login) | **GET** /login | Initiate OAuth login procedure
+[**loginSupported**](AuthApi.md#loginSupported) | **GET** /loginSupported | Check if login is supported
 [**loginUser**](AuthApi.md#loginUser) | **POST** /login | Start a session
 [**logout**](AuthApi.md#logout) | **GET** /logout | Terminate a session
 [**triggerWatchdog**](AuthApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog
@@ -143,6 +144,46 @@ apiInstance.login(opts, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **provider** | **String**| Oauth provider | [optional] 
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="loginSupported"></a>
+# **loginSupported**
+> loginSupported()
+
+Check if login is supported
+
+Check if login is supported and whether session exists
+
+### Example
+```javascript
+var AdvantEdgeAuthServiceRestApi = require('advant_edge_auth_service_rest_api');
+
+var apiInstance = new AdvantEdgeAuthServiceRestApi.AuthApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.loginSupported(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
 
 ### Return type
 
