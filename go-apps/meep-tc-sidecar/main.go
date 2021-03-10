@@ -264,9 +264,7 @@ func initMeepSidecar() (err error) {
 		log.Error("Failed to create Pinger. Error: ", err)
 		return err
 	}
-	if pinger.PayloadSize() != uint16(opts.payloadSize) {
-		pinger.SetPayloadSize(uint16(opts.payloadSize))
-	}
+	pinger.SetPayloadSize(uint16(opts.payloadSize))
 
 	// Initialize filters
 	err = initializeFilters()

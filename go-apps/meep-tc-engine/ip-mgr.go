@@ -61,8 +61,8 @@ func NewIpManager(name string, sandboxName string, updateCb IpAddrUpdateCb) (im 
 	return im, nil
 }
 
-// SetPodList - Set list of pods to monitor IP addresses for
-func (im *IpManager) SetPodList(podList map[string]bool) {
+// RefreshPodList - Set list of pods to monitor IP addresses for
+func (im *IpManager) RefreshPodList(podList map[string]bool) {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()
 
@@ -70,6 +70,8 @@ func (im *IpManager) SetPodList(podList map[string]bool) {
 	for podName := range im.podIpMap {
 		if _, found := podList[podName]; !found {
 			delete(im.podIpMap, podName)
+		} else {
+			delete(podList, podName)
 		}
 	}
 
@@ -81,8 +83,8 @@ func (im *IpManager) SetPodList(podList map[string]bool) {
 	}
 }
 
-// SetSvcList - Set list of services to monitor IP addresses for
-func (im *IpManager) SetSvcList(svcList map[string]bool) {
+// RefreshSvcList - Set list of services to monitor IP addresses for
+func (im *IpManager) RefreshSvcList(svcList map[string]bool) {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()
 
@@ -90,6 +92,8 @@ func (im *IpManager) SetSvcList(svcList map[string]bool) {
 	for svcName := range im.svcIpMap {
 		if _, found := svcList[svcName]; !found {
 			delete(im.svcIpMap, svcName)
+		} else {
+			delete(svcList, svcName)
 		}
 	}
 
@@ -135,12 +139,8 @@ func (im *IpManager) Start() error {
 	im.ticker = time.NewTicker(DEFAULT_TICKER_INTERVAL_MS * time.Millisecond)
 	go func() {
 		for range im.ticker.C {
-			im.mutex.Lock()
-
 			// Refresh IP addresses
-			im.refreshIpAddresses()
-
-			im.mutex.Unlock()
+			im.Refresh()
 		}
 	}()
 
@@ -182,7 +182,7 @@ func (im *IpManager) refreshIpAddresses() {
 	}
 
 	// Retrieve all sandbox pods from k8s api
-	podList, err := im.clientset.CoreV1().Pods(im.sandboxName).List(metav1.ListOptions{})
+	podList, err := im.clientset.CoreV1().Pods(im.sandboxName).List(metav1.ListOptions{LabelSelector: "meepOrigin=scenario"})
 	if err != nil {
 		log.Error("Failed to retrieve pods from k8s API Server. Error: ", err)
 		im.isConnected = false

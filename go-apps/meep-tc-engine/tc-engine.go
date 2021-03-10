@@ -376,8 +376,8 @@ func stopScenario() {
 	mgSvcInfoMap = make(map[string]*MgServiceInfo)
 	podInfoMap = make(map[string]*PodInfo)
 
-	tce.ipManager.SetPodList(map[string]bool{})
-	tce.ipManager.SetSvcList(map[string]bool{})
+	tce.ipManager.RefreshPodList(map[string]bool{})
+	tce.ipManager.RefreshSvcList(map[string]bool{})
 
 	tce.netCharStore.rc.DBFlush(tce.netCharStore.baseKey)
 
@@ -506,8 +506,8 @@ func processScenario(model *mod.Model) error {
 	}
 
 	// Update Pod & Svc lists in IP Manager
-	tce.ipManager.SetPodList(podNames)
-	tce.ipManager.SetSvcList(svcNames)
+	tce.ipManager.RefreshPodList(podNames)
+	tce.ipManager.RefreshSvcList(svcNames)
 
 	// Remove network elements that are no longer in scenario
 	for procName := range netElemMap {
