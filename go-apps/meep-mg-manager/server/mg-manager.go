@@ -147,12 +147,11 @@ type MgManager struct {
 	activeModel  *mod.Model
 	lbRulesStore *lbRulesStore
 
-	// Scenario network location list
-	netLocList []string
-
-	// Scenario service mappings
+	// Scenario data
+	netLocList   []string
 	svcInfoMap   map[string]*serviceInfo
 	mgSvcInfoMap map[string]*mgServiceInfo
+	mgList       map[string]bool
 
 	// Network Element Info mapping
 	netElemInfoMap map[string]*netElemInfo
@@ -169,6 +168,7 @@ func Init() (err error) {
 	mgm.netLocList = make([]string, 0)
 	mgm.svcInfoMap = make(map[string]*serviceInfo)
 	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
+	mgm.mgList = make(map[string]bool)
 	mgm.netElemInfoMap = make(map[string]*netElemInfo)
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
@@ -278,8 +278,8 @@ func processScenarioActivate() {
 		return
 	}
 
-	// Set Default Edge-LB mapping
-	refreshDefaultNetLocAppMaps()
+	// Re-evaluate Network location Edge-LB mappings
+	refreshNetLocAppMaps()
 
 	// Re-evaluate MG Service mapping
 	refreshMgSvcMapping()
@@ -311,8 +311,8 @@ func processScenarioUpdate(eventType string) {
 		return
 	}
 
-	// Set Default Edge-LB mapping
-	setDefaultNetLocAppMaps()
+	// Re-evaluate Network location Edge-LB mappings
+	refreshNetLocAppMaps()
 
 	// Re-evaluate MG Service mapping
 	refreshMgSvcMapping()
@@ -344,6 +344,7 @@ func clearScenario() {
 	mgm.netLocList = make([]string, 0)
 	mgm.svcInfoMap = make(map[string]*serviceInfo)
 	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
+	mgm.mgList = make(map[string]bool)
 	mgm.netElemInfoMap = make(map[string]*netElemInfo)
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
@@ -366,6 +367,11 @@ func publishLbRulesUpdate() {
 func processScenario(model *mod.Model) error {
 	log.Debug("processScenario")
 
+	// Reset service info maps
+	mgm.svcInfoMap = make(map[string]*serviceInfo)
+	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
+	mgm.mgList = make(map[string]bool)
+
 	// Populate net location list
 	mgm.netLocList = model.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
 	mgm.netLocList = append(mgm.netLocList, model.GetNodeNames("DEFAULT")...)
@@ -375,15 +381,6 @@ func processScenario(model *mod.Model) error {
 	procNamesMap := make(map[string]bool)
 	for _, procName := range procNames {
 		procNamesMap[procName] = true
-	}
-
-	// Clear existing network element svc mappings & remove elements no longer in scenario
-	for procName, netElem := range mgm.netElemInfoMap {
-		if _, found := procNamesMap[procName]; found {
-			netElem.mgSvcMap = map[string]*svcMapInfo{}
-		} else {
-			delete(mgm.netElemInfoMap, procName)
-		}
 	}
 
 	// Get network graph from model
@@ -454,6 +451,20 @@ func processScenario(model *mod.Model) error {
 		}
 	}
 
+	// Remove elements no longer in active scenario
+	for procName := range mgm.netElemInfoMap {
+		if _, found := procNamesMap[procName]; !found {
+			delete(mgm.netElemInfoMap, procName)
+		}
+	}
+
+	// Remove Mobility Groups that no longer exist
+	for mgName := range mgm.mgInfoMap {
+		if _, found := mgm.mgList[mgName]; !found {
+			delete(mgm.mgInfoMap, mgName)
+		}
+	}
+
 	return nil
 }
 
@@ -489,6 +500,9 @@ func addServiceInfo(svcName string, mgSvcName string, nodeName string) {
 		mg.SessionTransferMode = sessionTransModeForced
 		mg.LoadBalancingAlgorithm = lbAlgoHopCount
 		_ = mgCreate(&mg)
+
+		// Add MG to list
+		mgm.mgList[mg.Name] = true
 	}
 
 	// Add service instance to service info map
@@ -510,32 +524,36 @@ func getNetElem(name string) *netElemInfo {
 	return netElem
 }
 
-func refreshDefaultNetLocAppMaps() {
-	log.Debug("refreshDefaultNetLocAppMaps")
-
-	// For each MG Service & net location in scenario, use Group App instances from scenario and
-	// default LB algorithm to determine which App instance is best for net location
-	for _, mgInfo := range mgm.mgInfoMap {
-		mgInfo.defaultNetLocAppMap = make(map[string]string)
-		for _, netLoc := range mgm.netLocList {
-			mgInfo.defaultNetLocAppMap[netLoc] = runLbAlgoHopCount(mgm.mgSvcInfoMap[mgInfo.mg.Name].services, netLoc)
-		}
-	}
-}
-
+// refreshNetLocAppMaps - Update all default & current network location application maps
 func refreshNetLocAppMaps() {
 	log.Debug("refreshNetLocAppMaps")
 
+	// For each mobility group, update the application maps
 	for _, mgInfo := range mgm.mgInfoMap {
+		// Refresh default Network Location App map
+		refreshDefaultNetLocAppMap(mgInfo)
+
+		// Refresh current Network Location App map
 		refreshNetLocAppMap(mgInfo)
 	}
 }
 
-func refreshNetLocAppMap(mgInfo *mgInfo) {
-	log.Debug("refreshNetLocAppMap")
+// refreshDefaultNetLocAppMap - Update default network location application map for a single application
+func refreshDefaultNetLocAppMap(mgInfo *mgInfo) {
+	log.Debug("refreshDefaultNetLocAppMap: ", mgInfo.mg.Name)
 
-	// Reset Net Loc App map
-	mgInfo.netLocAppMap = make(map[string]string)
+	// Use default LB algorithm to determine which App instance is best for each net location
+	defaultNetLocAppMap := make(map[string]string)
+	for _, netLoc := range mgm.netLocList {
+		curLbSvc := mgInfo.defaultNetLocAppMap[netLoc]
+		defaultNetLocAppMap[netLoc] = runLbAlgoHopCount(mgm.mgSvcInfoMap[mgInfo.mg.Name].services, netLoc, curLbSvc)
+	}
+	mgInfo.defaultNetLocAppMap = defaultNetLocAppMap
+}
+
+// refreshNetLocAppMap - Update current network location application map for a single application
+func refreshNetLocAppMap(mgInfo *mgInfo) {
+	log.Debug("refreshNetLocAppMap: ", mgInfo.mg.Name)
 
 	// Retrieve list of registered app services
 	var mgApps = map[string]*serviceInfo{}
@@ -543,16 +561,20 @@ func refreshNetLocAppMap(mgInfo *mgInfo) {
 		mgApps[appInfo.app.Id] = mgm.svcInfoMap[appInfo.app.Id]
 	}
 
+	// Refresh current Network Location App map
 	// For each net location in scenario, use Group LB algorithm to determine which
 	// registered Group App is best for net location
+	netLocAppMap := make(map[string]string)
 	for _, netLoc := range mgm.netLocList {
 		if mgInfo.mg.LoadBalancingAlgorithm == lbAlgoHopCount {
-			mgInfo.netLocAppMap[netLoc] = runLbAlgoHopCount(mgApps, netLoc)
+			curLbSvc := mgInfo.netLocAppMap[netLoc]
+			netLocAppMap[netLoc] = runLbAlgoHopCount(mgApps, netLoc, curLbSvc)
 		} else {
 			log.Error("LB algorithm not yet supported: ", mgInfo.mg.LoadBalancingAlgorithm)
 			break
 		}
 	}
+	mgInfo.netLocAppMap = netLocAppMap
 }
 
 func refreshMgSvcMapping() {
@@ -656,7 +678,8 @@ func setSvcMap(netElemInfo *netElemInfo, mgSvcName string, lbSvcName string) {
 // LB Algorithm:
 //   - Compare hop count from current pod to each instance
 //   - Choose closest instance
-func runLbAlgoHopCount(services map[string]*serviceInfo, elem string) string {
+//   - Prefer current instance when hop counts equal
+func runLbAlgoHopCount(services map[string]*serviceInfo, elem string, curLbSvc string) string {
 	var minDist int64 = -1
 	var lbSvc = ""
 
@@ -667,7 +690,7 @@ func runLbAlgoHopCount(services map[string]*serviceInfo, elem string) string {
 		path, _ := mgm.networkGraph.Shortest(src, dst)
 
 		// Store as LB service if closest service instance
-		if lbSvc == "" || path.Distance < minDist {
+		if lbSvc == "" || path.Distance < minDist || (path.Distance == minDist && svc.name == curLbSvc) {
 			minDist = path.Distance
 			lbSvc = svc.name
 		}
@@ -957,6 +980,13 @@ func mgUeCreate(mgName string, appID string, mgUe *mgModel.MobilityGroupUe) erro
 	// Make sure App exists
 	if mgInfo.appInfoMap[appID] == nil {
 		err := errors.New("Mobility group App does not exist: " + appID)
+		log.Error(err.Error())
+		return err
+	}
+	// Make sure UE is in active scenario
+	ueNodeType := mgm.activeModel.GetNodeType(mgUe.Id)
+	if ueNodeType != mod.NodeTypeUE {
+		err := errors.New("MG UE ID not found in active scenario: " + mgUe.Id)
 		log.Error(err.Error())
 		return err
 	}
