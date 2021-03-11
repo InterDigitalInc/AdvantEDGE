@@ -41,6 +41,9 @@ import (
 
 const moduleName string = "meep-tc-sidecar"
 
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+const influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+
 const tcEngineKey string = "tc-engine:"
 const metricsKey string = "metrics:"
 
@@ -59,7 +62,8 @@ const meSvcChain string = mePrefix + "SERVICES"
 const ingressSvcChain string = ingressPrefix + "SERVICES"
 const egressSvcChain string = egressPrefix + "SERVICES"
 const maxChainLen int = 25
-const capLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const capLetters string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const ipAddrNone string = "n/a"
 
 const fieldSvcType string = "svc-type"
 const fieldSvcName string = "svc-name"
@@ -69,16 +73,28 @@ const fieldSvcPort string = "svc-port"
 const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
 
-type podShortElement struct {
+const DEFAULT_SIDECAR_DB = 0
+
+type DestElement struct {
 	name      string
 	ipAddr    string
 	IfbNumber string
 }
 
-var semOptsDests sync.Mutex
-var semLatencyMap sync.Mutex
+type SrcIps struct {
+	PodIp string
+	SvcIp string
+}
 
-var opts = struct {
+type NetChar struct {
+	Latency      string
+	Jitter       string
+	PacketLoss   string
+	Throughput   string
+	Distribution string
+}
+
+type Opts struct {
 	timeout         time.Duration
 	interval        time.Duration
 	trafficInterval time.Duration
@@ -88,25 +104,11 @@ var opts = struct {
 	bind6           string
 	dests           []*destination
 	resolverTimeout time.Duration
-}{
-	timeout:         100000 * time.Millisecond,
-	interval:        1000 * time.Millisecond,
-	trafficInterval: 100 * time.Millisecond,
-	bind4:           "0.0.0.0",
-	bind6:           "::",
-	payloadSize:     56,
-	statBufferSize:  50,
-	resolverTimeout: 15000 * time.Millisecond,
 }
 
-// NetChar
-type NetChar struct {
-	Latency      string
-	Jitter       string
-	PacketLoss   string
-	Throughput   string
-	Distribution string
-}
+// Variables
+var semOptsDests sync.Mutex
+var semLatencyMap sync.Mutex
 
 var pinger *Pinger
 var PodName string
@@ -116,16 +118,11 @@ var ipTbl *ipt.IPTables
 var letters = []rune(capLetters)
 var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
-var filters = map[string]string{}
+var filters = map[string]*SrcIps{}
 var netcharMap = map[string]*NetChar{}
 var latestLatencyResultsMap map[string]int32
 
-var measurementsRunning = false
 var flushRequired = false
-var firstTimePass = true
-
-const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
-const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 var mqLocal *mq.MsgQueue
 var handlerId int
@@ -133,10 +130,18 @@ var rc *redis.Connector
 var metricStore *met.MetricStore
 var baseKey string
 var metricsBaseKey string
-
-const DEFAULT_SIDECAR_DB = 0
-
 var nbAppliedOperations = 0
+
+var opts Opts = Opts{
+	timeout:         2000 * time.Millisecond,
+	interval:        1000 * time.Millisecond,
+	trafficInterval: 100 * time.Millisecond,
+	bind4:           "0.0.0.0",
+	bind6:           "::",
+	payloadSize:     56,
+	statBufferSize:  50,
+	resolverTimeout: 15000 * time.Millisecond,
+}
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -249,21 +254,38 @@ func initMeepSidecar() (err error) {
 	// Connect to Metric Store
 	metricStore, err = met.NewMetricStore(scenarioName, sandboxName, influxDBAddr, redisAddr)
 	if err != nil {
-		log.Error("Failed connection to Redis: ", err)
+		log.Error("Failed connection to Redis. Error: ", err)
 		return err
 	}
 
-	semLatencyMap.Lock()
+	// Create & initialize pinger instance
+	pinger, err = New(opts.bind4, opts.bind6)
+	if err != nil {
+		log.Error("Failed to create Pinger. Error: ", err)
+		return err
+	}
+	pinger.SetPayloadSize(uint16(opts.payloadSize))
+
+	// Initialize filters
+	err = initializeFilters()
+	if err != nil {
+		log.Error("Failed to initialize filters. Error: ", err)
+		return err
+	}
+
+	// Initialize latency results
 	latestLatencyResultsMap = make(map[string]int32)
-	semLatencyMap.Unlock()
+
+	// Refresh destinations
+	refreshDests()
 
 	return nil
 }
 
 // runMeepSidecar - Start TC Sidecar
 func runMeepSidecar() (err error) {
-	// Refresh TC rules to match DB state
-	refreshNetCharRules()
+	// Refresh NC rules to match DB state
+	refreshNcRules()
 
 	// Refresh LB IPtables rules to match DB state
 	refreshLbRules()
@@ -276,6 +298,11 @@ func runMeepSidecar() (err error) {
 		return err
 	}
 
+	// Start measurements
+	go workLatency()
+	go workRxTxPackets()
+	go workLogRxTxData()
+
 	return nil
 }
 
@@ -287,37 +314,32 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 		refreshLbRules()
 	case mq.MsgTcNetRulesUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		refreshNetCharRules()
+		refreshNcRules()
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
-func refreshNetCharRules() {
-	// Create shape rules
-	_ = initializeOnFirstPass()
-
-	currentTime := time.Now()
+func refreshNcRules() {
 	nbAppliedOperations = 0
+	currentTime := time.Now()
 
+	// Update Shaping & filter rules
 	_ = createIfbs()
-
 	_ = createFilters()
-
-	// Delete unused filters
 	deleteUnusedFilters()
-
-	// Delete unused ifbs
 	deleteUnusedIfbs()
 
 	elapsed := time.Since(currentTime)
-	log.Debug("RefreshNetCharRules execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
+	log.Debug("refreshNcRules: execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
 
-	// Start measurements
-	startMeasurementThreads()
+	// Refresh destinations
+	refreshDests()
 }
 
 func refreshLbRules() {
+	currentTime := time.Now()
+
 	// Get currently installed chains in NAT table
 	log.Debug("Fetching nat table chains")
 	chains, err := ipTbl.ListChains("nat")
@@ -441,6 +463,9 @@ func refreshLbRules() {
 	if flushRequired {
 		flushTrackedConnections()
 	}
+
+	elapsed := time.Since(currentTime)
+	log.Debug("refreshLbRules: execution time: ", elapsed)
 }
 
 func flushTrackedConnections() {
@@ -482,6 +507,12 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 	args = append(args, "-p", fields[fieldSvcProtocol], "-d", fields[fieldSvcIp], "--dport", fields[fieldSvcPort],
 		"-j", "DNAT", "--to-destination", fields[fieldLbSvcIp]+":"+fields[fieldLbSvcPort],
 		"-m", "comment", "--comment", service)
+
+	// Ignore rules with missing IP addresses
+	if fields[fieldSvcIp] == ipAddrNone || fields[fieldLbSvcIp] == ipAddrNone {
+		log.Debug("Missing IP address for service: ", service)
+		return nil
+	}
 
 	// Retrieve service chain name if service exists
 	serviceChain, exists := serviceChains[service]
@@ -536,94 +567,109 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 	return nil
 }
 
-func startMeasurementThreads() {
-	// Only start measurements if not already running
-	if len(ifbs) != 0 && !measurementsRunning {
-		// Populate opts.dests used by all
-		callPing()
-		go workLatency()
-		go workRxTxPackets()
-		go workLogRxTxData()
-		measurementsRunning = true
+// refreshDests - Refresh destinations to match valid DB entries
+func refreshDests() {
+	// Get list of destinations with valid IP addresses
+	var destElems []DestElement
+	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
+	err := rc.ForEachEntry(keyName, refreshDestsHandler, &destElems)
+	if err != nil {
+		log.Error("Failed to update dest pod list. Error: ", err)
 	}
-}
 
-func callPing() {
-	podsToPing, _ := createPing()
+	semOptsDests.Lock()
+	defer semOptsDests.Unlock()
 
-	for _, pod := range podsToPing {
-		remotes, err := resolve(pod.ipAddr, opts.resolverTimeout)
-		if err != nil {
-			log.Debug("error resolving host ", pod.name, "(", pod.ipAddr, ") err: ", err)
-			continue
+	// Find existing elements or add new elements
+	var dests []*destination
+	for _, destElem := range destElems {
+
+		// Find existing destination
+		found := false
+		for _, d := range opts.dests {
+			if destElem.name == d.remoteName && destElem.ipAddr == d.host && destElem.IfbNumber == d.ifbNumber {
+				dests = append(dests, d)
+				found = true
+				break
+			}
 		}
 
-		for _, remote := range remotes {
-			if v4 := remote.IP.To4() != nil; v4 && opts.bind4 == "" || !v4 && opts.bind6 == "" {
+		// Create a new destination if not found
+		if !found {
+			remotes, err := resolve(destElem.ipAddr, opts.resolverTimeout)
+			if err != nil {
+				log.Debug("error resolving host ", destElem.name, "(", destElem.ipAddr, ") err: ", err)
 				continue
 			}
 
-			ipaddr := remote // need to create a copy
-			name := pod.name
-			dst := destination{
-				host:       pod.ipAddr,
-				hostName:   PodName,
-				remote:     &ipaddr,
-				remoteName: name,
-				ifbNumber:  pod.IfbNumber,
-				history: &history{
-					results: make([]time.Duration, opts.statBufferSize),
-				},
-				prevRx: &historyRx{
-					rxBytes: 0,
-				},
-				prevRxLog: &historyRx{
-					rxBytes: 0,
-				},
+			for _, remote := range remotes {
+				if v4 := remote.IP.To4() != nil; v4 && opts.bind4 == "" || !v4 && opts.bind6 == "" {
+					continue
+				}
+
+				ipaddr := remote // need to create a copy
+				name := destElem.name
+				dest := destination{
+					host:       destElem.ipAddr,
+					hostName:   PodName,
+					remote:     &ipaddr,
+					remoteName: name,
+					ifbNumber:  destElem.IfbNumber,
+					history: &history{
+						results: make([]time.Duration, opts.statBufferSize),
+					},
+					prevRx: &historyRx{
+						rxBytes: 0,
+					},
+					prevRxLog: &historyRx{
+						rxBytes: 0,
+					},
+				}
+				dests = append(dests, &dest)
 			}
-
-			semOptsDests.Lock()
-			opts.dests = append(opts.dests, &dst)
-			semOptsDests.Unlock()
 		}
 	}
 
-	//get a pinger instance
-	if instance, err := New(opts.bind4, opts.bind6); err == nil {
-		if instance.PayloadSize() != uint16(opts.payloadSize) {
-			instance.SetPayloadSize(uint16(opts.payloadSize))
-		}
-		pinger = instance
-		//defer pinger.Close()
-	} else {
-		panic(err)
+	// Update dests
+	opts.dests = dests
+}
+
+func refreshDestsHandler(key string, fields map[string]string, userData interface{}) error {
+	dests := userData.(*[]DestElement)
+	var dest DestElement
+	dest.name = fields["srcName"]
+	dest.ipAddr = fields["srcIp"]
+	dest.IfbNumber = fields["ifb_uniqueId"]
+
+	// Append valid pods only
+	if dest.ipAddr != ipAddrNone {
+		*dests = append(*dests, dest)
 	}
+	return nil
 }
 
 func workLatency() {
 	for {
-
 		semOptsDests.Lock()
-		for i, u := range opts.dests {
-			//starting 2 threads, one for the pings, one for the computing part
-			go func(u *destination, i int) {
-				u.ping(pinger)
-			}(u, i)
-			//go func(u *destination, i int) {
-			u.compute()
-			//}(u, i)
+		for i, dest := range opts.dests {
+			// Send ping in a separate thread
+			go func(dest *destination, i int) {
+				dest.ping(pinger)
+			}(dest, i)
 
+			// Compute latest latency results for destination
+			dest.compute()
 		}
 		semOptsDests.Unlock()
 
+		// Wait before sending next set of pings
 		time.Sleep(opts.interval)
 	}
 }
 
 func workRxTxPackets() {
 	for {
-		//only this one affects the destinations based on info in the DB
-
+		// only this one affects the destinations based on info in the DB
 		semOptsDests.Lock()
 
 		str := "tc -s qdisc show"
@@ -631,6 +677,7 @@ func workRxTxPackets() {
 		if err != nil {
 			log.Error("tc -s qdisc show")
 			log.Error(err)
+			semOptsDests.Unlock()
 			return
 		}
 		//split line by line
@@ -657,11 +704,9 @@ func workRxTxPackets() {
 		// Store throughput metric if entry exists
 		var tputStats = make(map[string]interface{})
 
-		for _, u := range opts.dests {
-			//get the data for all, parse the output and transmit to each
-			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
-			/*go*/
-			tputStats[u.remoteName] = u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
+		// Get throughput metrics for each dest
+		for _, dest := range opts.dests {
+			tputStats[dest.remoteName] = dest.processRxTx(qdiscResults["ifb"+dest.ifbNumber])
 		}
 
 		key := metricsBaseKey + PodName + ":throughput"
@@ -670,14 +715,14 @@ func workRxTxPackets() {
 		}
 		semOptsDests.Unlock()
 
+		// Wait before re-evaluating traffic stats
 		time.Sleep(opts.trafficInterval)
 	}
 }
 
 func workLogRxTxData() {
 	for {
-		//only this one affects the destinations based on info in the DB
-
+		// only this one affects the destinations based on info in the DB
 		semOptsDests.Lock()
 
 		str := "tc -s qdisc show"
@@ -685,6 +730,7 @@ func workLogRxTxData() {
 		if err != nil {
 			log.Error("tc -s qdisc show")
 			log.Error(err)
+			semOptsDests.Unlock()
 			return
 		}
 		//split line by line
@@ -708,37 +754,15 @@ func workLogRxTxData() {
 			lineIndex = lineIndex + 3
 		}
 
-		for _, u := range opts.dests {
-			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
-			/*go*/
-			u.logRxTx(qdiscResults["ifb"+u.ifbNumber])
+		// Get NC metrics for each dest
+		for _, dest := range opts.dests {
+			dest.logRxTx(qdiscResults["ifb"+dest.ifbNumber])
 		}
 		semOptsDests.Unlock()
 
+		// Wait before re-evaluating traffic stats
 		time.Sleep(opts.interval)
 	}
-}
-
-func createPing() ([]podShortElement, error) {
-	var podsToPing []podShortElement
-	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
-	err := rc.ForEachEntry(keyName, createPingHandler, &podsToPing)
-	if err != nil {
-		return nil, err
-	}
-	return podsToPing, nil
-}
-
-func createPingHandler(key string, fields map[string]string, userData interface{}) error {
-	podsToPing := userData.(*[]podShortElement)
-	var pod podShortElement
-	pod.name = fields["srcName"]
-	pod.ipAddr = fields["srcIp"]
-	pod.IfbNumber = fields["ifb_uniqueId"]
-
-	*podsToPing = append(*podsToPing, pod)
-
-	return nil
 }
 
 func createIfbs() error {
@@ -775,50 +799,100 @@ func createFilters() error {
 
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
 	filterNumber := fields["filter_uniqueId"]
-	_, exists := filters[filterNumber]
+	ifbNumber := fields["ifb_uniqueId"]
+	srcIp := fields["srcIp"]
+	srcSvcIp := fields["srcSvcIp"]
 
-	if !exists {
+	// Compare with previous filters to determine required action
+	podFilterRequired := false
+	svcFilterRequired := false
 
-		ipSrc := fields["srcIp"]
-		ipSvcSrc := fields["srcSvcIp"]
-		//              srcName := fields["srcName"]
-		ifbNumber := fields["ifb_uniqueId"]
-
-		err := cmdCreateFilter(filterNumber, ifbNumber, ipSrc)
-		if err == nil {
-
-			if ipSvcSrc != "" {
-				err = cmdCreateFilter(filterNumber, ifbNumber, ipSvcSrc)
+	prevIps, found := filters[filterNumber]
+	if !found {
+		// New - only create filters if pod IP is valid
+		if srcIp != ipAddrNone {
+			podFilterRequired = true
+			if srcSvcIp != ipAddrNone {
+				svcFilterRequired = true
 			}
 		}
-		if err == nil {
-			filters[filterNumber] = filterNumber
+	} else {
+		// Updated - only handle cases where IPs have changed
+		if srcIp != prevIps.PodIp || srcSvcIp != prevIps.SvcIp {
+			if srcIp == ipAddrNone {
+				// Filters can only exist if pod IP is valid
+				_ = cmdDeleteFilter(filterNumber)
+				delete(filters, filterNumber)
+				log.Debug("Filter removed: ", filterNumber, " ifb: ", ifbNumber)
+			} else {
+				// Remove old filters if pod or svc IP has changed
+				podIpChanged := prevIps.PodIp != ipAddrNone && srcIp != prevIps.PodIp
+				svcIpChanged := prevIps.SvcIp != ipAddrNone && srcSvcIp != prevIps.SvcIp
+				if podIpChanged || svcIpChanged {
+					_ = cmdDeleteFilter(filterNumber)
+					delete(filters, filterNumber)
+					podFilterRequired = true
+					log.Debug("Filter removed for update: ", filterNumber, " ifb: ", ifbNumber)
+				}
+
+				// Create svc filter if necessary
+				if srcSvcIp != ipAddrNone {
+					svcFilterRequired = true
+				}
+			}
 		}
+	}
+
+	// Create filters && update filter map if necessary
+	if podFilterRequired || svcFilterRequired {
+		if podFilterRequired {
+			err := cmdCreateFilter(filterNumber, ifbNumber, srcIp)
+			if err != nil {
+				log.Error("Failed to create filter with error: ", err.Error())
+				return nil
+			}
+			log.Debug("Filter created: ", filterNumber, " ifb: ", ifbNumber)
+		}
+		if svcFilterRequired {
+			err := cmdCreateFilter(filterNumber, ifbNumber, srcSvcIp)
+			if err != nil {
+				log.Error("Failed to create filter with error: ", err.Error())
+				_ = cmdDeleteFilter(filterNumber)
+				delete(filters, filterNumber)
+				return nil
+			}
+			log.Debug("Filter created: ", filterNumber, " ifb: ", ifbNumber)
+		}
+
+		srcIps := new(SrcIps)
+		srcIps.PodIp = srcIp
+		srcIps.SvcIp = srcSvcIp
+		filters[filterNumber] = srcIps
 	}
 
 	return nil
 }
 
 func deleteUnusedFilters() {
-	for index, filterNumber := range filters {
+	for filterNumber := range filters {
 		keyName := baseKey + typeNet + ":" + PodName + ":filter:" + filterNumber
 		if !rc.EntryExists(keyName) {
 			log.Debug("filter removed: ", filterNumber)
 			// Remove old filter
 			_ = cmdDeleteFilter(filterNumber)
-			delete(filters, index)
+			delete(filters, filterNumber)
 		}
 	}
 }
 
 func deleteUnusedIfbs() {
-	for index, ifbNumber := range ifbs {
+	for ifbNumber := range ifbs {
 		keyName := baseKey + typeNet + ":" + PodName + ":shape:" + ifbNumber
 		if !rc.EntryExists(keyName) {
 			log.Debug("ifb removed: ", ifbNumber)
 			// Remove associated Ifb
 			_ = cmdDeleteIfb(ifbNumber)
-			delete(ifbs, index)
+			delete(ifbs, ifbNumber)
 		}
 	}
 }
@@ -960,33 +1034,27 @@ func cmdDeleteFilter(filterNumber string) error {
 	return nil
 }
 
-func initializeOnFirstPass() error {
-
-	if firstTimePass {
-		nbAppliedOperations++
-		_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
-		if err != nil {
-			log.Info("Error: ", err)
-			return err
-		}
-		nbAppliedOperations++
-		_, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
-		if err != nil {
-			log.Info("Error: ", err)
-			return err
-		}
-		firstTimePass = false
+func initializeFilters() error {
+	_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
+	if err != nil {
+		log.Info("Error: ", err)
+		return err
+	}
+	_, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
+	if err != nil {
+		log.Info("Error: ", err)
+		return err
 	}
 	return nil
 }
 
-func cmdCreateFilter(filterNumber string, ifbNumber string, ipSrc string) error {
+func cmdCreateFilter(filterNumber string, ifbNumber string, srcIp string) error {
 
-	//"tc filter add dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
-	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + filterNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	//"tc filter add dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $srcIp match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
+	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + filterNumber + " u32 match ip src " + srcIp + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
 
 	//fonction must be a replace... a replace Adds if not there or replace if existing
-	//"tc filter replace dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
+	//"tc filter replace dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $srcIp match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + filterNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
 	nbAppliedOperations++
 	_, err := cmdExec(str)

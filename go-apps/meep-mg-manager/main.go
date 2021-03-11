@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	log.MeepJSONLogInit("meep-mg-manager")
+	log.MeepTextLogInit("meep-mg-manager")
 }
 
 func main() {
