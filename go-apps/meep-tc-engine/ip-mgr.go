@@ -70,8 +70,6 @@ func (im *IpManager) RefreshPodList(podList map[string]bool) {
 	for podName := range im.podIpMap {
 		if _, found := podList[podName]; !found {
 			delete(im.podIpMap, podName)
-		} else {
-			delete(podList, podName)
 		}
 	}
 
@@ -92,8 +90,6 @@ func (im *IpManager) RefreshSvcList(svcList map[string]bool) {
 	for svcName := range im.svcIpMap {
 		if _, found := svcList[svcName]; !found {
 			delete(im.svcIpMap, svcName)
-		} else {
-			delete(svcList, svcName)
 		}
 	}
 
