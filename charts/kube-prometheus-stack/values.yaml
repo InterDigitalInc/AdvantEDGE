@@ -87,17 +87,6 @@ defaultRules:
 #      - record: my_record
 #        expr: 100 * my_record
 
-additionalPrometheusRulesMap: {}
-  # - rule-name: CustomAlert
-  #   groups:
-  #   - name: CouchDBInstances
-  #     rules:
-  #     - alert: CouchDBDownAlert
-  #       expr: absent(couchdb_httpd_up) or couchdb_httpd_up < 1
-  #       for: 0m
-  #       annotations:
-  #         summary: CouchDB Node Down
-
 ##
 global:
   rbac:
@@ -154,47 +143,23 @@ alertmanager:
   ## ref: https://prometheus.io/docs/alerting/configuration/#configuration-file
   ##      https://prometheus.io/webtools/alerting/routing-tree-editor/
   ##
-  config:
-    global:
-      resolve_timeout: 5m
-    route:
-      group_by: ['job']
-      group_wait: 30s
-      group_interval: 5m
-      repeat_interval: 12h
-      receiver: 'null'
-      routes:
-      - match:
-          alertname: Watchdog
-        receiver: 'null'
-    receivers:
-    - name: 'null'
-
   # config:
   #   global:
   #     resolve_timeout: 5m
   #   route:
-  #     group_by: [Alertname]
-  #     receiver: couchdb-alert
   #     group_by: ['job']
   #     group_wait: 30s
   #     group_interval: 5m
   #     repeat_interval: 12h
-  #     receiver: 'couchdb-alert'
+  #     receiver: 'null'
   #     routes:
   #     - match:
-  #         alertname: DeadMansSwitch
-  #       receiver: 'couchdb-alert'
+  #         alertname: Watchdog
+  #       receiver: 'null'
   #   receivers:
-  #   - name: couchdb-alert
-  #     email_configs:
-  #     - to:
-  #       from:
-  #       smarthost:
-  #       auth_username:
-  #       auth_identity:
-  #       auth_password:
-
+  #   - name: 'null'
+  #   templates:
+  #   - '/etc/alertmanager/config/*.tmpl'
 
   ## Pass the Alertmanager configuration directives through Helm's templating
   ## engine. If the Alertmanager configuration contains Alertmanager templates,
@@ -1515,7 +1480,7 @@ prometheus:
     #   - thanos-gateway.domain.com
 
   ingress:
-    enabled: true
+    enabled: false
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress

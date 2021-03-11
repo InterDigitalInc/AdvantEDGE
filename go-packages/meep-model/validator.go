@@ -84,7 +84,7 @@ var GPU_TYPE_ENUM = []string{"NVIDIA"}
 var PROTOCOL_ENUM = []string{"UDP", "TCP"}
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 6}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 7}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}

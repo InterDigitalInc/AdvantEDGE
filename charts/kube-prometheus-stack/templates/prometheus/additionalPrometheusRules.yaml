@@ -1,4 +1,4 @@
-{{- if or .Values.additionalPrometheusRules .Values.additionalPrometheusRulesMap}}
+{{- if and (.Values.alertmanager.enabled) (or .Values.additionalPrometheusRules .Values.additionalPrometheusRulesMap) }}
 apiVersion: v1
 kind: List
 items:
