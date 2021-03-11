@@ -110,7 +110,7 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
-      slack_api_url: 'https://hooks.slack.com/services/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'
+      slack_api_url: 'https://hooks.slack.com/services/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'
     route:
       group_by: [Alertname]
       receiver: slack-alerts
