@@ -680,6 +680,10 @@ func workRxTxPackets() {
 			semOptsDests.Unlock()
 			return
 		}
+
+		// Get timestamp for calculations
+		curTime := time.Now()
+
 		//split line by line
 		lineStrings := strings.Split(out, "\n")
 
@@ -706,7 +710,7 @@ func workRxTxPackets() {
 
 		// Get throughput metrics for each dest
 		for _, dest := range opts.dests {
-			tputStats[dest.remoteName] = dest.processRxTx(qdiscResults["ifb"+dest.ifbNumber])
+			tputStats[dest.remoteName] = dest.processRxTx(qdiscResults["ifb"+dest.ifbNumber], curTime)
 		}
 
 		key := metricsBaseKey + PodName + ":throughput"
@@ -733,6 +737,10 @@ func workLogRxTxData() {
 			semOptsDests.Unlock()
 			return
 		}
+
+		// Get timestamp for calculations
+		curTime := time.Now()
+
 		//split line by line
 		lineStrings := strings.Split(out, "\n")
 
@@ -756,7 +764,7 @@ func workLogRxTxData() {
 
 		// Get NC metrics for each dest
 		for _, dest := range opts.dests {
-			dest.logRxTx(qdiscResults["ifb"+dest.ifbNumber])
+			dest.logRxTx(qdiscResults["ifb"+dest.ifbNumber], curTime)
 		}
 		semOptsDests.Unlock()
 

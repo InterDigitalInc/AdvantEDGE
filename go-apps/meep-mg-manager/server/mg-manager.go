@@ -451,17 +451,35 @@ func processScenario(model *mod.Model) error {
 		}
 	}
 
-	// Remove elements no longer in active scenario
+	// Remove stale elements
 	for procName := range mgm.netElemInfoMap {
 		if _, found := procNamesMap[procName]; !found {
+			log.Debug("Removing stale element: ", procName)
 			delete(mgm.netElemInfoMap, procName)
 		}
 	}
 
-	// Remove Mobility Groups that no longer exist
-	for mgName := range mgm.mgInfoMap {
+	// Remove stale Mobility Groups
+	for mgName, mgInfo := range mgm.mgInfoMap {
 		if _, found := mgm.mgList[mgName]; !found {
+			log.Debug("Removing stale MG: ", mgName)
 			delete(mgm.mgInfoMap, mgName)
+		} else {
+			// Remove stale MG Apps
+			for appName := range mgInfo.appInfoMap {
+				if _, found := procNamesMap[appName]; !found {
+					log.Debug("Removing stale MG App: ", appName)
+					delete(mgInfo.appInfoMap, appName)
+				}
+			}
+			// Remove stale UEs
+			for ueName := range mgInfo.ueInfoMap {
+				ueNodeType := model.GetNodeType(ueName)
+				if ueNodeType != mod.NodeTypeUE {
+					log.Debug("Removing stale UE: ", ueName)
+					delete(mgInfo.ueInfoMap, ueName)
+				}
+			}
 		}
 	}
 
@@ -707,8 +725,13 @@ func startStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app string
 		event.Type_ = eventTypeStateTransferStart
 		event.UeId = ue.ue.Id
 		startTime := time.Now()
+		appInfo := group.appInfoMap[app]
+		if appInfo == nil {
+			log.Error("App not found: ", app)
+			return
+		}
 		//lint:ignore SA1012 context.TODO not supported here
-		resp, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
@@ -731,8 +754,13 @@ func completeStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app str
 		event.Type_ = eventTypeStateTransferComplete
 		event.UeId = ue.ue.Id
 		startTime := time.Now()
+		appInfo := group.appInfoMap[app]
+		if appInfo == nil {
+			log.Error("App not found: ", app)
+			return
+		}
 		//lint:ignore SA1012 context.TODO not supported here
-		resp, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
@@ -742,7 +770,7 @@ func completeStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app str
 		met.ObserveNotification(mgm.sandboxName, serviceName, notifStateTransferComplete, "", resp, duration)
 	}()
 
-	// Set flag indicating transfer has been started
+	// Set flag indicating transfer has been completed
 	elem.transferInProgress = false
 }
 
@@ -755,8 +783,13 @@ func cancelStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app strin
 		event.Type_ = eventTypeStateTransferCancel
 		event.UeId = ue.ue.Id
 		startTime := time.Now()
+		appInfo := group.appInfoMap[app]
+		if appInfo == nil {
+			log.Error("App not found: ", app)
+			return
+		}
 		//lint:ignore SA1012 context.TODO not supported here
-		resp, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())

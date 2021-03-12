@@ -96,6 +96,8 @@ func (re *RoutingEngine) RefreshLbRules() {
 		for _, svcMap := range netElem.ServiceMaps {
 			if svcInfo, found := svcInfoMap[svcMap.LbSvcName]; found {
 				podInfo.MgSvcMap[svcMap.MgSvcName] = svcInfo
+			} else {
+				log.Error("failed to find service instance: ", svcMap.LbSvcName)
 			}
 		}
 	}

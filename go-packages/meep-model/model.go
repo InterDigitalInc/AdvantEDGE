@@ -431,6 +431,40 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate, u
 	return err
 }
 
+// UpdatePoasInRange - Update UE POA list
+func (m *Model) UpdatePoasInRange(ueName string, poasInRange []string, userData interface{}) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	err = nil
+	updated := false
+
+	// Get UE node
+	n := m.nodeMap.FindByName(ueName)
+	if n == nil {
+		return errors.New("Did not find " + ueName + " in scenario " + m.name)
+	}
+	if n.nodeType != NodeTypeUE {
+		return errors.New("Invalid node type " + n.nodeType)
+	}
+
+	ue := n.object.(*dataModel.PhysicalLocation)
+	if ue == nil {
+		return errors.New("Did not find " + ueName + " in scenario " + m.name)
+	}
+
+	// Compare new list of poas with current UE POA list and update if necessary
+	if !equal(poasInRange, ue.NetworkLocationsInRange) {
+		ue.NetworkLocationsInRange = poasInRange
+		updated = true
+	}
+
+	if updated {
+		err = m.refresh(EventPoaInRange, userData)
+	}
+	return err
+}
+
 // AddScenarioNode - Add scenario node
 func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode, userData interface{}) (err error) {
 	m.lock.Lock()
@@ -1192,4 +1226,18 @@ func validateParentType(nodeType string, parentType string) bool {
 		}
 	}
 	return false
+}
+
+// Equal tells whether a and b contain the same elements.
+// A nil argument is equivalent to an empty slice.
+func equal(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }

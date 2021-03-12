@@ -674,7 +674,6 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 		err := errors.New("Malformed request: missing EventPoasInRange")
 		return err, http.StatusBadRequest, ""
 	}
-	var ue *dataModel.PhysicalLocation
 
 	// Retrieve UE name
 	ueName := event.EventPoasInRange.Ue
@@ -685,41 +684,9 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 
 	description := "[" + ueName + "] poas in range: " + strings.Join(poasInRange, ", ")
 
-	// Find UE
-	log.Debug("Searching for UE in active scenario")
-	n := sbxCtrl.activeModel.GetNode(ueName)
-	if n == nil {
-		err := errors.New("Node not found " + ueName)
-		return err, http.StatusNotFound, ""
-	}
-	ue, ok := n.(*dataModel.PhysicalLocation)
-	if !ok {
-		ue = nil
-	} else if ue.Type_ != "UE" {
-		ue = nil
-	}
-
-	// Update POAS in range if necessary
-	if ue != nil {
-		log.Debug("UE Found. Checking for update to visible POAs")
-
-		// Compare new list of poas with current UE list and update if necessary
-		if !equal(poasInRange, ue.NetworkLocationsInRange) {
-			log.Debug("Updating POAs in range for UE: " + ue.Name)
-			ue.NetworkLocationsInRange = poasInRange
-
-			//Publish updated scenario
-			err := sbxCtrl.activeModel.Activate()
-			if err != nil {
-				return err, http.StatusInternalServerError, ""
-			}
-
-			log.Debug("Active scenario updated")
-		} else {
-			log.Debug("POA list unchanged. Ignoring.")
-		}
-	} else {
-		err := errors.New("Failed to find UE")
+	// Update active model
+	err := sbxCtrl.activeModel.UpdatePoasInRange(ueName, poasInRange, nil)
+	if err != nil {
 		return err, http.StatusNotFound, ""
 	}
 	return nil, -1, description
@@ -784,20 +751,6 @@ func getScenarioNodeName(node *dataModel.ScenarioNode) string {
 		}
 	}
 	return name
-}
-
-// Equal tells whether a and b contain the same elements.
-// A nil argument is equivalent to an empty slice.
-func equal(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
 }
 
 func ceCreateReplayFile(w http.ResponseWriter, r *http.Request) {
