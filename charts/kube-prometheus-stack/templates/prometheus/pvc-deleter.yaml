@@ -2,7 +2,8 @@
 {{- $alertmanager := .Values.alertmanager.enabled -}}
 {{- $promStorageSpec := .Values.prometheus.prometheusSpec.storageSpec }}
 {{- $alertStorageSpec := .Values.alertmanager.alertmanagerSpec.storage }}
-{{- if or (and prometheus promStorageSpec) (and alertmanager alertStorageSpec) }}
+
+{{- if or (and $prometheus $promStorageSpec) (and $alertmanager $alertStorageSpec) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -54,11 +55,11 @@ spec:
         args:
         - "delete"
         - "pvc"
-        {{- if and prometheus promStorageSpec }}
-        - "{{ .Values.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-prometheus-0"
+        {{- if and $prometheus $promStorageSpec }}
+        - "{{ $promStorageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-prometheus-0"
         {{- end }}
-        {{- if and alertmanager alertStorageSpec }}
-        - "{{ .Values.alertmanager.alertmanagerSpec.storage.volumeClaimTemplate.metadata.name }}-alertmanager-{{ template "kube-prometheus-stack.fullname" . }}-alertmanager-0"
+        {{- if and $alertmanager $alertStorageSpec }}
+        - "{{ $alertStorageSpec.volumeClaimTemplate.metadata.name }}-alertmanager-{{ template "kube-prometheus-stack.fullname" . }}-alertmanager-0"
         {{- end }}
       serviceAccountName: pvc-deleter-sa
       securityContext:
