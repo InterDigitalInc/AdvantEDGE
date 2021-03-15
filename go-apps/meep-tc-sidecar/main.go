@@ -70,8 +70,11 @@ const fieldSvcName string = "svc-name"
 const fieldSvcIp string = "svc-ip"
 const fieldSvcProtocol string = "svc-protocol"
 const fieldSvcPort string = "svc-port"
+const fieldLbSvcName string = "lb-svc-name"
 const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
+const fieldLbPodName string = "lb-pod-name"
+const fieldLbPodIp string = "lb-pod-ip"
 
 const DEFAULT_SIDECAR_DB = 0
 
@@ -509,8 +512,17 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 		"-m", "comment", "--comment", service)
 
 	// Ignore rules with missing IP addresses
-	if fields[fieldSvcIp] == ipAddrNone || fields[fieldLbSvcIp] == ipAddrNone {
-		log.Debug("Missing IP address for service: ", service)
+	if fields[fieldSvcIp] == ipAddrNone {
+		log.Debug("Missing MG Svc IP address for service: ", service)
+		return nil
+	}
+	if fields[fieldLbSvcIp] == ipAddrNone {
+		log.Debug("Missing LB Svc IP address for service: ", fields[fieldLbSvcName])
+		return nil
+	}
+	// For ME Svc & Ingress rules, verify LB pod IP as well
+	if (fields[fieldSvcType] == typeMeSvc || fields[fieldSvcType] == typeIngressSvc) && fields[fieldLbPodIp] == ipAddrNone {
+		log.Debug("Missing LB Pod IP address for pod: ", fields[fieldLbPodName])
 		return nil
 	}
 

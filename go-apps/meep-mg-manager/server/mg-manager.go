@@ -941,6 +941,9 @@ func mgAppCreate(mgName string, mgApp *mgModel.MobilityGroupApp) error {
 	// Store & Apply latest MG Service mappings
 	applyMgSvcMapping()
 
+	// Inform TC Engine of LB rules updatge
+	publishLbRulesUpdate()
+
 	return nil
 }
 
@@ -1038,6 +1041,9 @@ func mgUeCreate(mgName string, appID string, mgUe *mgModel.MobilityGroupUe) erro
 
 		// Store & Apply latest MG Service mappings
 		applyMgSvcMapping()
+
+		// Inform TC Engine of LB rules updatge
+		publishLbRulesUpdate()
 	}
 	return nil
 }
