@@ -23,5 +23,5 @@ spec:
     targetPort: {{ .Values.prometheus.thanosService.targetPort }}
   selector:
     app: prometheus
-    prometheus: {{ template "kube-prometheus-stack.fullname" . }}-prometheus
+    prometheus: {{ template "kube-prometheus-stack.fullname" . }}-server
 {{- end }}

@@ -52,7 +52,7 @@ spec:
 {{- end }}
   selector:
     app: prometheus
-    prometheus: {{ template "kube-prometheus-stack.fullname" . }}-prometheus
+    prometheus: {{ template "kube-prometheus-stack.fullname" . }}-server
 {{- if .Values.prometheus.service.sessionAffinity }}
   sessionAffinity: {{ .Values.prometheus.service.sessionAffinity }}
 {{- end }}

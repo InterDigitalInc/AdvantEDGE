@@ -79,7 +79,7 @@ defaultRules:
 
 ## Provide custom recording or alerting rules to be deployed into the cluster.
 ##
-# additionalPrometheusRulesMap: {}
+additionalPrometheusRulesMap: {}
 #  rule-name:
 #    groups:
 #    - name: my_group
@@ -115,7 +115,7 @@ alertmanager:
 
   ## Deploy alertmanager
   ##
-  enabled: false
+  enabled: true
 
   ## Api that prometheus will use to communicate with alertmanager. Possible values are v1, v2
   ##
@@ -143,23 +143,23 @@ alertmanager:
   ## ref: https://prometheus.io/docs/alerting/configuration/#configuration-file
   ##      https://prometheus.io/webtools/alerting/routing-tree-editor/
   ##
-  # config:
-  #   global:
-  #     resolve_timeout: 5m
-  #   route:
-  #     group_by: ['job']
-  #     group_wait: 30s
-  #     group_interval: 5m
-  #     repeat_interval: 12h
-  #     receiver: 'null'
-  #     routes:
-  #     - match:
-  #         alertname: Watchdog
-  #       receiver: 'null'
-  #   receivers:
-  #   - name: 'null'
-  #   templates:
-  #   - '/etc/alertmanager/config/*.tmpl'
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'null'
+      routes:
+      - match:
+          alertname: Watchdog
+        receiver: 'null'
+    receivers:
+    - name: 'null'
+    templates:
+    - '/etc/alertmanager/config/*.tmpl'
 
   ## Pass the Alertmanager configuration directives through Helm's templating
   ## engine. If the Alertmanager configuration contains Alertmanager templates,
