@@ -16,5 +16,5 @@ rules:
   resources: ['podsecuritypolicies']
   verbs:     ['use']
   resourceNames:
-  - {{ template "kube-prometheus-stack.fullname" . }}-prometheus
+  - {{ template "kube-prometheus-stack.fullname" . }}-server
 {{- end }}
