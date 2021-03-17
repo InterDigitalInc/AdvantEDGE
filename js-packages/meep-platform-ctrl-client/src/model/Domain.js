@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularDomainConfig', 'model/NetworkCharacteristics', 'model/Zone'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/ConnectivityConfig', 'model/NetworkCharacteristics', 'model/Zone'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./CellularDomainConfig'), require('./NetworkCharacteristics'), require('./Zone'));
+    module.exports = factory(require('../ApiClient'), require('./CellularDomainConfig'), require('./ConnectivityConfig'), require('./NetworkCharacteristics'), require('./Zone'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.Domain = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularDomainConfig, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.Zone);
+    root.AdvantEdgePlatformControllerRestApi.Domain = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularDomainConfig, root.AdvantEdgePlatformControllerRestApi.ConnectivityConfig, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.Zone);
   }
-}(this, function(ApiClient, CellularDomainConfig, NetworkCharacteristics, Zone) {
+}(this, function(ApiClient, CellularDomainConfig, ConnectivityConfig, NetworkCharacteristics, Zone) {
   'use strict';
 
   /**
@@ -78,6 +78,8 @@
         obj.type = ApiClient.convertToType(data['type'], 'String');
       if (data.hasOwnProperty('netChar'))
         obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
+      if (data.hasOwnProperty('connectivity'))
+        obj.connectivity = ConnectivityConfig.constructFromObject(data['connectivity']);
       if (data.hasOwnProperty('interZoneLatency'))
         obj.interZoneLatency = ApiClient.convertToType(data['interZoneLatency'], 'Number');
       if (data.hasOwnProperty('interZoneLatencyVariation'))
@@ -120,6 +122,11 @@
    * @member {module:model/NetworkCharacteristics} netChar
    */
   exports.prototype.netChar = undefined;
+
+  /**
+   * @member {module:model/ConnectivityConfig} connectivity
+   */
+  exports.prototype.connectivity = undefined;
 
   /**
    * **DEPRECATED** As of release 1.5.0, replaced by netChar latency

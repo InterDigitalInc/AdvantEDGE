@@ -135,6 +135,7 @@ Class | Method | HTTP request | Description
 
  - [AdvantEdgePlatformControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.ConnectivityConfig](docs/ConnectivityConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CpuConfig](docs/CpuConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgePlatformControllerRestApi.Domain](docs/Domain.md)

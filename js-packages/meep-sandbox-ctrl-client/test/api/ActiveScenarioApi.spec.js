@@ -239,6 +239,9 @@
                     expect(data.netChar.throughputUl).to.be(0);
                     expect(data.netChar.packetLoss).to.be.a('number');
                     expect(data.netChar.packetLoss).to.be(0.0);
+                  expect(data.connectivity).to.be.a(AdvantEdgeSandboxControllerRestApi.ConnectivityConfig);
+                        expect(data.connectivity.model).to.be.a('string');
+                    expect(data.connectivity.model).to.be("OPEN");
                   expect(data.interZoneLatency).to.be.a('number');
                   expect(data.interZoneLatency).to.be(0);
                   expect(data.interZoneLatencyVariation).to.be.a('number');
@@ -511,6 +514,8 @@
                               expect(data.wireless).to.be(false);
                               expect(data.wirelessType).to.be.a('string');
                               expect(data.wirelessType).to.be("");
+                              expect(data.dataNetwork).to.be.a(Object);
+                              expect(data.dataNetwork).to.be();
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);

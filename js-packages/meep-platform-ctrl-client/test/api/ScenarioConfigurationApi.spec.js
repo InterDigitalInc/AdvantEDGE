@@ -90,6 +90,8 @@
           scenario.deployment.domains[0].netChar.throughputDl = 0;
           scenario.deployment.domains[0].netChar.throughputUl = 0;
           scenario.deployment.domains[0].netChar.packetLoss = 0.0;
+          scenario.deployment.domains[0].connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
+          scenario.deployment.domains[0].connectivity.model = "OPEN";
           scenario.deployment.domains[0].interZoneLatency = 0;
           scenario.deployment.domains[0].interZoneLatencyVariation = 0;
           scenario.deployment.domains[0].interZoneThroughput = 0;
@@ -181,6 +183,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];
@@ -401,6 +404,9 @@
                     expect(data.netChar.throughputUl).to.be(0);
                     expect(data.netChar.packetLoss).to.be.a('number');
                     expect(data.netChar.packetLoss).to.be(0.0);
+                  expect(data.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
+                        expect(data.connectivity.model).to.be.a('string');
+                    expect(data.connectivity.model).to.be("OPEN");
                   expect(data.interZoneLatency).to.be.a('number');
                   expect(data.interZoneLatency).to.be(0);
                   expect(data.interZoneLatencyVariation).to.be.a('number');
@@ -673,6 +679,8 @@
                               expect(data.wireless).to.be(false);
                               expect(data.wirelessType).to.be.a('string');
                               expect(data.wirelessType).to.be("");
+                              expect(data.dataNetwork).to.be.a(Object);
+                              expect(data.dataNetwork).to.be();
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);
@@ -988,6 +996,9 @@
                         expect(data.netChar.throughputUl).to.be(0);
                         expect(data.netChar.packetLoss).to.be.a('number');
                         expect(data.netChar.packetLoss).to.be(0.0);
+                      expect(data.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
+                            expect(data.connectivity.model).to.be.a('string');
+                        expect(data.connectivity.model).to.be("OPEN");
                       expect(data.interZoneLatency).to.be.a('number');
                       expect(data.interZoneLatency).to.be(0);
                       expect(data.interZoneLatencyVariation).to.be.a('number');
@@ -1260,6 +1271,8 @@
                                   expect(data.wireless).to.be(false);
                                   expect(data.wirelessType).to.be.a('string');
                                   expect(data.wirelessType).to.be("");
+                                  expect(data.dataNetwork).to.be.a(Object);
+                                  expect(data.dataNetwork).to.be();
                                   {
                                     let dataCtr = data.meta;
                                     expect(dataCtr).to.be.an(Object);
@@ -1513,6 +1526,8 @@
           scenario.deployment.domains[0].netChar.throughputDl = 0;
           scenario.deployment.domains[0].netChar.throughputUl = 0;
           scenario.deployment.domains[0].netChar.packetLoss = 0.0;
+          scenario.deployment.domains[0].connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
+          scenario.deployment.domains[0].connectivity.model = "OPEN";
           scenario.deployment.domains[0].interZoneLatency = 0;
           scenario.deployment.domains[0].interZoneLatencyVariation = 0;
           scenario.deployment.domains[0].interZoneThroughput = 0;
@@ -1604,6 +1619,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];

@@ -424,6 +424,8 @@ definitions:
         - "PUBLIC"
       netChar:
         $ref: "#/definitions/NetworkCharacteristics"
+      connectivity:
+        $ref: "#/definitions/ConnectivityConfig"
       interZoneLatency:
         type: "integer"
         description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
@@ -455,6 +457,18 @@ definitions:
         items:
           $ref: "#/definitions/Zone"
     description: "Operator domain object"
+    example: {}
+  ConnectivityConfig:
+    type: "object"
+    properties:
+      model:
+        type: "string"
+        description: "Connectivity Model: <li>OPEN: Any node in the scenario can communicate\
+          \ with any node <li>PDU: Terminal nodes (UE) require a PDU session to the\
+          \ target DN"
+        enum:
+        - "OPEN"
+        - "PDU"
     example: {}
   CellularDomainConfig:
     type: "object"
@@ -743,6 +757,7 @@ definitions:
         description: "Prioritized, comma-separated list of supported wireless connection\
           \ types.\nDefault priority if not specififed is 'wifi,5g,4g,other'.\nWireless\
           \ connection types:\n- 4g\n- 5g\n- wifi\n- other"
+      dataNetwork: {}
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"

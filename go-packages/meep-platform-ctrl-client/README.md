@@ -39,6 +39,7 @@ Class | Method | HTTP request | Description
 
  - [CellularDomainConfig](docs/CellularDomainConfig.md)
  - [CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [ConnectivityConfig](docs/ConnectivityConfig.md)
  - [CpuConfig](docs/CpuConfig.md)
  - [Deployment](docs/Deployment.md)
  - [Domain](docs/Domain.md)

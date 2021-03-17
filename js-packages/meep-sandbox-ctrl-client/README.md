@@ -124,6 +124,8 @@ Class | Method | HTTP request | Description
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveNodeServiceMaps**](docs/ActiveScenarioApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Get deployed scenario's port mapping
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveScenario**](docs/ActiveScenarioApi.md#getActiveScenario) | **GET** /active | Get the deployed scenario
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**terminateScenario**](docs/ActiveScenarioApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
+*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**createPduSession**](docs/ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{pduSessionId} | Create a PDU Session
+*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**terminatePduSession**](docs/ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{pduSessionId} | Terminate a PDU Session
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**createReplayFile**](docs/EventReplayApi.md#createReplayFile) | **POST** /replay/{name} | Add a replay file
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**createReplayFileFromScenarioExec**](docs/EventReplayApi.md#createReplayFileFromScenarioExec) | **POST** /replay/{name}/generate | Generate a replay file from Active Scenario events
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**deleteReplayFile**](docs/EventReplayApi.md#deleteReplayFile) | **DELETE** /replay/{name} | Delete a replay file
@@ -142,6 +144,7 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeSandboxControllerRestApi.ActivationInfo](docs/ActivationInfo.md)
  - [AdvantEdgeSandboxControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [AdvantEdgeSandboxControllerRestApi.ConnectivityConfig](docs/ConnectivityConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.CpuConfig](docs/CpuConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgeSandboxControllerRestApi.Domain](docs/Domain.md)
@@ -161,6 +164,7 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeSandboxControllerRestApi.NetworkLocation](docs/NetworkLocation.md)
  - [AdvantEdgeSandboxControllerRestApi.NodeDataUnion](docs/NodeDataUnion.md)
  - [AdvantEdgeSandboxControllerRestApi.NodeServiceMaps](docs/NodeServiceMaps.md)
+ - [AdvantEdgeSandboxControllerRestApi.PDUSessionInfo](docs/PDUSessionInfo.md)
  - [AdvantEdgeSandboxControllerRestApi.PhysicalLocation](docs/PhysicalLocation.md)
  - [AdvantEdgeSandboxControllerRestApi.Poa4GConfig](docs/Poa4GConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.Poa5GConfig](docs/Poa5GConfig.md)

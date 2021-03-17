@@ -19,6 +19,7 @@ tags:
 - name: "Active Scenario"
 - name: "Events"
 - name: "Event Replay"
+- name: "Connectivity"
 consumes:
 - "application/json"
 produces:
@@ -380,6 +381,56 @@ paths:
           description: "OK"
         404:
           description: "Not found"
+  /connectivity/pdu-session/{pduSessionId}:
+    post:
+      tags:
+      - "Connectivity"
+      summary: "Create a PDU Session"
+      description: "Establish a PDU Session to a Data Network defined in the scenario"
+      operationId: "createPduSession"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "pduSessionId"
+        in: "path"
+        description: "a UE provided identifier for the PDU Session"
+        required: true
+        type: "string"
+        x-exportParamName: "PduSessionId"
+      - in: "body"
+        name: "pduSessionInfo"
+        description: "PDU session information"
+        required: true
+        schema:
+          $ref: "#/definitions/PDUSessionInfo"
+        x-exportParamName: "PduSessionInfo"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+    delete:
+      tags:
+      - "Connectivity"
+      summary: "Terminate a PDU Session"
+      description: "Terminate a PDU session to a Data Network defined in the scenario"
+      operationId: "terminatePduSession"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "pduSessionId"
+        in: "path"
+        description: "a UE provided identifier for the PDU Session"
+        required: true
+        type: "string"
+        x-exportParamName: "PduSessionId"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
 definitions:
   Scenario:
     type: "object"
@@ -504,6 +555,8 @@ definitions:
         - "PUBLIC"
       netChar:
         $ref: "#/definitions/NetworkCharacteristics"
+      connectivity:
+        $ref: "#/definitions/ConnectivityConfig"
       interZoneLatency:
         type: "integer"
         description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
@@ -535,6 +588,18 @@ definitions:
         items:
           $ref: "#/definitions/Zone"
     description: "Operator domain object"
+    example: {}
+  ConnectivityConfig:
+    type: "object"
+    properties:
+      model:
+        type: "string"
+        description: "Connectivity Model: <li>OPEN: Any node in the scenario can communicate\
+          \ with any node <li>PDU: Terminal nodes (UE) require a PDU session to the\
+          \ target DN"
+        enum:
+        - "OPEN"
+        - "PDU"
     example: {}
   CellularDomainConfig:
     type: "object"
@@ -823,6 +888,7 @@ definitions:
         description: "Prioritized, comma-separated list of supported wireless connection\
           \ types.\nDefault priority if not specififed is 'wifi,5g,4g,other'.\nWireless\
           \ connection types:\n- 4g\n- 5g\n- wifi\n- other"
+      dataNetwork: {}
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
@@ -1301,6 +1367,15 @@ definitions:
         description: "User description of the replay file"
     description: "Scenario information"
     example: {}
+  PDUSessionInfo:
+    type: "object"
+    properties:
+      ue-name:
+        type: "string"
+        description: "UE name as defined in the scenario"
+      dnn:
+        type: "string"
+        description: "Data Network Name as defined in the scenario"
 responses:
   Std200:
     description: "OK"

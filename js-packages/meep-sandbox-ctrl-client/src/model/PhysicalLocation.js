@@ -88,6 +88,8 @@
         obj.wireless = ApiClient.convertToType(data['wireless'], 'Boolean');
       if (data.hasOwnProperty('wirelessType'))
         obj.wirelessType = ApiClient.convertToType(data['wirelessType'], 'String');
+      if (data.hasOwnProperty('dataNetwork'))
+        obj.dataNetwork = ApiClient.convertToType(data['dataNetwork'], Object);
       if (data.hasOwnProperty('meta'))
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
@@ -161,6 +163,11 @@
    * @member {String} wirelessType
    */
   exports.prototype.wirelessType = undefined;
+
+  /**
+   * @member {Object} dataNetwork
+   */
+  exports.prototype.dataNetwork = undefined;
 
   /**
    * Key/Value Pair Map (string, string)
