@@ -196,7 +196,7 @@ alertmanager:
   #       {{ end }}
 
   ingress:
-    enabled: true
+    enabled: false
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
@@ -1800,7 +1800,7 @@ prometheus:
 
     ## How long to retain metrics
     ##
-    retention: 30d
+    retention: 100d
 
     ## Maximum size of metrics
     ##
@@ -1912,7 +1912,7 @@ prometheus:
           storageClassName: meep-prometheus-server
           resources:
             requests:
-              storage: 10Gi
+              storage: 17Gi
           selector:
             matchLabels:
               app: prometheus-server
@@ -1921,7 +1921,7 @@ prometheus:
       enabled: true
       accessModes:
         - ReadWriteOnce
-      size: 10Gi
+      size: 17Gi
       reclaimPolicy: Retain
       location: "<WORKDIR>/prometheus/server"
 
