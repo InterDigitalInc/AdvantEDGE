@@ -56,7 +56,7 @@ spec:
         - "delete"
         - "pvc"
         {{- if and $prometheus $promStorageSpec }}
-        - "{{ $promStorageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-prometheus-0"
+        - "{{ $promStorageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-server-0"
         {{- end }}
         {{- if and $alertmanager $alertStorageSpec }}
         - "{{ $alertStorageSpec.volumeClaimTemplate.metadata.name }}-alertmanager-{{ template "kube-prometheus-stack.fullname" . }}-alertmanager-0"

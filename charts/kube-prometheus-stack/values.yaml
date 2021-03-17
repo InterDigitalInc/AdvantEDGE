@@ -115,7 +115,7 @@ alertmanager:
 
   ## Deploy alertmanager
   ##
-  enabled: true
+  enabled: false
 
   ## Api that prometheus will use to communicate with alertmanager. Possible values are v1, v2
   ##
