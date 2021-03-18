@@ -21,6 +21,7 @@ const keyRootGlobal = keyRoot + "global:"
 const keyRootSandbox = keyRoot + "sbox:"
 
 func GetKeyRoot(namespace string) string {
+	// TODO: Should validate that a namespace exists or return an error
 	return keyRootSandbox + namespace + ":"
 }
 
