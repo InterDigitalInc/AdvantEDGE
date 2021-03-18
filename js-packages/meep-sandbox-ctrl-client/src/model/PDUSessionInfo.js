@@ -69,19 +69,11 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
-      if (data.hasOwnProperty('ue-name'))
-        obj.ueName = ApiClient.convertToType(data['ue-name'], 'String');
       if (data.hasOwnProperty('dnn'))
         obj.dnn = ApiClient.convertToType(data['dnn'], 'String');
     }
     return obj;
   }
-
-  /**
-   * UE name as defined in the scenario
-   * @member {String} ueName
-   */
-  exports.prototype.ueName = undefined;
 
   /**
    * Data Network Name as defined in the scenario

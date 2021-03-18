@@ -25,8 +25,8 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**GetActiveNodeServiceMaps**](docs/ActiveScenarioApi.md#getactivenodeservicemaps) | **Get** /active/serviceMaps | Get deployed scenario&#39;s port mapping
 *ActiveScenarioApi* | [**GetActiveScenario**](docs/ActiveScenarioApi.md#getactivescenario) | **Get** /active | Get the deployed scenario
 *ActiveScenarioApi* | [**TerminateScenario**](docs/ActiveScenarioApi.md#terminatescenario) | **Delete** /active | Terminate the deployed scenario
-*ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{pduSessionId} | Create a PDU Session
-*ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{pduSessionId} | Terminate a PDU Session
+*ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+*ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 *EventReplayApi* | [**CreateReplayFile**](docs/EventReplayApi.md#createreplayfile) | **Post** /replay/{name} | Add a replay file
 *EventReplayApi* | [**CreateReplayFileFromScenarioExec**](docs/EventReplayApi.md#createreplayfilefromscenarioexec) | **Post** /replay/{name}/generate | Generate a replay file from Active Scenario events
 *EventReplayApi* | [**DeleteReplayFile**](docs/EventReplayApi.md#deletereplayfile) | **Delete** /replay/{name} | Delete a replay file

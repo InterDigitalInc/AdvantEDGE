@@ -124,8 +124,8 @@ Class | Method | HTTP request | Description
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveNodeServiceMaps**](docs/ActiveScenarioApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Get deployed scenario's port mapping
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveScenario**](docs/ActiveScenarioApi.md#getActiveScenario) | **GET** /active | Get the deployed scenario
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**terminateScenario**](docs/ActiveScenarioApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
-*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**createPduSession**](docs/ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{pduSessionId} | Create a PDU Session
-*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**terminatePduSession**](docs/ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{pduSessionId} | Terminate a PDU Session
+*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**createPduSession**](docs/ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**terminatePduSession**](docs/ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**createReplayFile**](docs/EventReplayApi.md#createReplayFile) | **POST** /replay/{name} | Add a replay file
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**createReplayFileFromScenarioExec**](docs/EventReplayApi.md#createReplayFileFromScenarioExec) | **POST** /replay/{name}/generate | Generate a replay file from Active Scenario events
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**deleteReplayFile**](docs/EventReplayApi.md#deleteReplayFile) | **DELETE** /replay/{name} | Delete a replay file

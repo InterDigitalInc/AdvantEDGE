@@ -44,12 +44,13 @@ type ConnectivityApiService service
 ConnectivityApiService Create a PDU Session
 Establish a PDU Session to a Data Network defined in the scenario
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param ueName UE unique identifier from the scenario
  * @param pduSessionId a UE provided identifier for the PDU Session
  * @param pduSessionInfo PDU session information
 
 
 */
-func (a *ConnectivityApiService) CreatePduSession(ctx context.Context, pduSessionId string, pduSessionInfo PduSessionInfo) (*http.Response, error) {
+func (a *ConnectivityApiService) CreatePduSession(ctx context.Context, ueName string, pduSessionId string, pduSessionInfo PduSessionInfo) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -58,7 +59,8 @@ func (a *ConnectivityApiService) CreatePduSession(ctx context.Context, pduSessio
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/connectivity/pdu-session/{pduSessionId}"
+	localVarPath := a.client.cfg.BasePath + "/connectivity/pdu-session/{ueName}/{pduSessionId}"
+	localVarPath = strings.Replace(localVarPath, "{"+"ueName"+"}", fmt.Sprintf("%v", ueName), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"pduSessionId"+"}", fmt.Sprintf("%v", pduSessionId), -1)
 
 	localVarHeaderParams := make(map[string]string)
@@ -116,11 +118,12 @@ func (a *ConnectivityApiService) CreatePduSession(ctx context.Context, pduSessio
 ConnectivityApiService Terminate a PDU Session
 Terminate a PDU session to a Data Network defined in the scenario
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param ueName UE unique identifier from the scenario
  * @param pduSessionId a UE provided identifier for the PDU Session
 
 
 */
-func (a *ConnectivityApiService) TerminatePduSession(ctx context.Context, pduSessionId string) (*http.Response, error) {
+func (a *ConnectivityApiService) TerminatePduSession(ctx context.Context, ueName string, pduSessionId string) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
 		localVarPostBody   interface{}
@@ -129,7 +132,8 @@ func (a *ConnectivityApiService) TerminatePduSession(ctx context.Context, pduSes
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/connectivity/pdu-session/{pduSessionId}"
+	localVarPath := a.client.cfg.BasePath + "/connectivity/pdu-session/{ueName}/{pduSessionId}"
+	localVarPath = strings.Replace(localVarPath, "{"+"ueName"+"}", fmt.Sprintf("%v", ueName), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"pduSessionId"+"}", fmt.Sprintf("%v", pduSessionId), -1)
 
 	localVarHeaderParams := make(map[string]string)

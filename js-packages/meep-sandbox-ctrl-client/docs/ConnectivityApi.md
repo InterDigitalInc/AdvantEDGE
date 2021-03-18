@@ -4,13 +4,13 @@ All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createPduSession**](ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{pduSessionId} | Create a PDU Session
-[**terminatePduSession**](ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{pduSessionId} | Terminate a PDU Session
+[**createPduSession**](ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+[**terminatePduSession**](ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 
 
 <a name="createPduSession"></a>
 # **createPduSession**
-> createPduSession(pduSessionId, pduSessionInfo)
+> createPduSession(ueName, pduSessionId, pduSessionInfo)
 
 Create a PDU Session
 
@@ -21,6 +21,8 @@ Establish a PDU Session to a Data Network defined in the scenario
 var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.ConnectivityApi();
+
+var ueName = "ueName_example"; // String | UE unique identifier from the scenario
 
 var pduSessionId = "pduSessionId_example"; // String | a UE provided identifier for the PDU Session
 
@@ -34,13 +36,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.createPduSession(pduSessionId, pduSessionInfo, callback);
+apiInstance.createPduSession(ueName, pduSessionId, pduSessionInfo, callback);
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **ueName** | **String**| UE unique identifier from the scenario | 
  **pduSessionId** | **String**| a UE provided identifier for the PDU Session | 
  **pduSessionInfo** | [**PDUSessionInfo**](PDUSessionInfo.md)| PDU session information | 
 
@@ -59,7 +62,7 @@ No authorization required
 
 <a name="terminatePduSession"></a>
 # **terminatePduSession**
-> terminatePduSession(pduSessionId)
+> terminatePduSession(ueName, pduSessionId)
 
 Terminate a PDU Session
 
@@ -71,6 +74,8 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.ConnectivityApi();
 
+var ueName = "ueName_example"; // String | UE unique identifier from the scenario
+
 var pduSessionId = "pduSessionId_example"; // String | a UE provided identifier for the PDU Session
 
 
@@ -81,13 +86,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.terminatePduSession(pduSessionId, callback);
+apiInstance.terminatePduSession(ueName, pduSessionId, callback);
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **ueName** | **String**| UE unique identifier from the scenario | 
  **pduSessionId** | **String**| a UE provided identifier for the PDU Session | 
 
 ### Return type

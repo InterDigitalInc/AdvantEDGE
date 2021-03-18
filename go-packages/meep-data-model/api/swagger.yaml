@@ -1038,9 +1038,6 @@ definitions:
   PDUSessionInfo:
     type: object
     properties:
-      ue-name:
-        type: string
-        description: UE name as defined in the scenario
       dnn:
         type: string
         description: Data Network Name as defined in the scenario

@@ -73,12 +73,18 @@
     /**
      * Create a PDU Session
      * Establish a PDU Session to a Data Network defined in the scenario
+     * @param {String} ueName UE unique identifier from the scenario
      * @param {String} pduSessionId a UE provided identifier for the PDU Session
      * @param {module:model/PDUSessionInfo} pduSessionInfo PDU session information
      * @param {module:api/ConnectivityApi~createPduSessionCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.createPduSession = function(pduSessionId, pduSessionInfo, callback) {
+    this.createPduSession = function(ueName, pduSessionId, pduSessionInfo, callback) {
       var postBody = pduSessionInfo;
+
+      // verify the required parameter 'ueName' is set
+      if (ueName === undefined || ueName === null) {
+        throw new Error("Missing the required parameter 'ueName' when calling createPduSession");
+      }
 
       // verify the required parameter 'pduSessionId' is set
       if (pduSessionId === undefined || pduSessionId === null) {
@@ -92,6 +98,7 @@
 
 
       var pathParams = {
+        'ueName': ueName,
         'pduSessionId': pduSessionId
       };
       var queryParams = {
@@ -109,7 +116,7 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/connectivity/pdu-session/{pduSessionId}', 'POST',
+        '/connectivity/pdu-session/{ueName}/{pduSessionId}', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
@@ -126,11 +133,17 @@
     /**
      * Terminate a PDU Session
      * Terminate a PDU session to a Data Network defined in the scenario
+     * @param {String} ueName UE unique identifier from the scenario
      * @param {String} pduSessionId a UE provided identifier for the PDU Session
      * @param {module:api/ConnectivityApi~terminatePduSessionCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.terminatePduSession = function(pduSessionId, callback) {
+    this.terminatePduSession = function(ueName, pduSessionId, callback) {
       var postBody = null;
+
+      // verify the required parameter 'ueName' is set
+      if (ueName === undefined || ueName === null) {
+        throw new Error("Missing the required parameter 'ueName' when calling terminatePduSession");
+      }
 
       // verify the required parameter 'pduSessionId' is set
       if (pduSessionId === undefined || pduSessionId === null) {
@@ -139,6 +152,7 @@
 
 
       var pathParams = {
+        'ueName': ueName,
         'pduSessionId': pduSessionId
       };
       var queryParams = {
@@ -156,7 +170,7 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/connectivity/pdu-session/{pduSessionId}', 'DELETE',
+        '/connectivity/pdu-session/{ueName}/{pduSessionId}', 'DELETE',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

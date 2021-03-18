@@ -4,12 +4,12 @@ All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**CreatePduSession**](ConnectivityApi.md#CreatePduSession) | **Post** /connectivity/pdu-session/{pduSessionId} | Create a PDU Session
-[**TerminatePduSession**](ConnectivityApi.md#TerminatePduSession) | **Delete** /connectivity/pdu-session/{pduSessionId} | Terminate a PDU Session
+[**CreatePduSession**](ConnectivityApi.md#CreatePduSession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+[**TerminatePduSession**](ConnectivityApi.md#TerminatePduSession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 
 
 # **CreatePduSession**
-> CreatePduSession(ctx, pduSessionId, pduSessionInfo)
+> CreatePduSession(ctx, ueName, pduSessionId, pduSessionInfo)
 Create a PDU Session
 
 Establish a PDU Session to a Data Network defined in the scenario
@@ -19,6 +19,7 @@ Establish a PDU Session to a Data Network defined in the scenario
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **ueName** | **string**| UE unique identifier from the scenario | 
   **pduSessionId** | **string**| a UE provided identifier for the PDU Session | 
   **pduSessionInfo** | [**PduSessionInfo**](PduSessionInfo.md)| PDU session information | 
 
@@ -38,7 +39,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **TerminatePduSession**
-> TerminatePduSession(ctx, pduSessionId)
+> TerminatePduSession(ctx, ueName, pduSessionId)
 Terminate a PDU Session
 
 Terminate a PDU session to a Data Network defined in the scenario
@@ -48,6 +49,7 @@ Terminate a PDU session to a Data Network defined in the scenario
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **ueName** | **string**| UE unique identifier from the scenario | 
   **pduSessionId** | **string**| a UE provided identifier for the PDU Session | 
 
 ### Return type

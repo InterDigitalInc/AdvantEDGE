@@ -24,8 +24,6 @@
 package model
 
 type PduSessionInfo struct {
-	// UE name as defined in the scenario
-	UeName string `json:"ue-name,omitempty"`
 	// Data Network Name as defined in the scenario
 	Dnn string `json:"dnn,omitempty"`
 }

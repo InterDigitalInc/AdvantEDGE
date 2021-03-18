@@ -55,12 +55,6 @@
         expect(instance).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
       });
 
-      it('should have the property ueName (base name: "ue-name")', function() {
-        // TODO: update the code to test the property ueName
-        expect(instance).to.have.property('ueName');
-        // expect(instance.ueName).to.be(expectedValueLiteral);
-      });
-
       it('should have the property dnn (base name: "dnn")', function() {
         // TODO: update the code to test the property dnn
         expect(instance).to.have.property('dnn');

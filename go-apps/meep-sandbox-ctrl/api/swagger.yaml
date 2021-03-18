@@ -381,7 +381,7 @@ paths:
           description: "OK"
         404:
           description: "Not found"
-  /connectivity/pdu-session/{pduSessionId}:
+  /connectivity/pdu-session/{ueName}/{pduSessionId}:
     post:
       tags:
       - "Connectivity"
@@ -391,6 +391,12 @@ paths:
       produces:
       - "application/json"
       parameters:
+      - name: "ueName"
+        in: "path"
+        description: "UE unique identifier from the scenario"
+        required: true
+        type: "string"
+        x-exportParamName: "UeName"
       - name: "pduSessionId"
         in: "path"
         description: "a UE provided identifier for the PDU Session"
@@ -420,6 +426,12 @@ paths:
       produces:
       - "application/json"
       parameters:
+      - name: "ueName"
+        in: "path"
+        description: "UE unique identifier from the scenario"
+        required: true
+        type: "string"
+        x-exportParamName: "UeName"
       - name: "pduSessionId"
         in: "path"
         description: "a UE provided identifier for the PDU Session"
@@ -1370,9 +1382,6 @@ definitions:
   PDUSessionInfo:
     type: "object"
     properties:
-      ue-name:
-        type: "string"
-        description: "UE name as defined in the scenario"
       dnn:
         type: "string"
         description: "Data Network Name as defined in the scenario"

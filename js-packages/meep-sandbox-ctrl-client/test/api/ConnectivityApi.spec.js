@@ -54,12 +54,12 @@
         it('should call createPduSession successfully', function(done) {
           // TODO: uncomment, update parameter values for createPduSession call
           /*
+          var ueName = "ueName_example";
           var pduSessionId = "pduSessionId_example";
           var pduSessionInfo = new AdvantEdgeSandboxControllerRestApi.PDUSessionInfo();
-          pduSessionInfo.ueName = "";
           pduSessionInfo.dnn = "";
 
-          instance.createPduSession(pduSessionId, pduSessionInfo, function(error, data, response) {
+          instance.createPduSession(ueName, pduSessionId, pduSessionInfo, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -76,9 +76,10 @@
         it('should call terminatePduSession successfully', function(done) {
           // TODO: uncomment, update parameter values for terminatePduSession call
           /*
+          var ueName = "ueName_example";
           var pduSessionId = "pduSessionId_example";
 
-          instance.terminatePduSession(pduSessionId, function(error, data, response) {
+          instance.terminatePduSession(ueName, pduSessionId, function(error, data, response) {
             if (error) {
               done(error);
               return;
