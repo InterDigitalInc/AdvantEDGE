@@ -48,6 +48,7 @@ Class | Method | HTTP request | Description
  - [ConnectivityConfig](docs/ConnectivityConfig.md)
  - [CpuConfig](docs/CpuConfig.md)
  - [Deployment](docs/Deployment.md)
+ - [DnConfig](docs/DnConfig.md)
  - [Domain](docs/Domain.md)
  - [EgressService](docs/EgressService.md)
  - [Event](docs/Event.md)

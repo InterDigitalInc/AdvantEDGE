@@ -99,7 +99,9 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
-          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork = ;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork = new AdvantEdgeSandboxControllerRestApi.DNConfig();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp = "";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];

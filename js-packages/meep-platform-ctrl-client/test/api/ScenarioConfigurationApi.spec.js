@@ -183,7 +183,9 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
-          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = new AdvantEdgePlatformControllerRestApi.DNConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.dnn = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.ecsp = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];
@@ -679,8 +681,11 @@
                               expect(data.wireless).to.be(false);
                               expect(data.wirelessType).to.be.a('string');
                               expect(data.wirelessType).to.be("");
-                              expect(data.dataNetwork).to.be.a(Object);
-                              expect(data.dataNetwork).to.be();
+                              expect(data.dataNetwork).to.be.a(AdvantEdgePlatformControllerRestApi.DNConfig);
+                                    expect(data.dataNetwork.dnn).to.be.a('string');
+                                expect(data.dataNetwork.dnn).to.be("");
+                                expect(data.dataNetwork.ecsp).to.be.a('string');
+                                expect(data.dataNetwork.ecsp).to.be("");
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);
@@ -1271,8 +1276,11 @@
                                   expect(data.wireless).to.be(false);
                                   expect(data.wirelessType).to.be.a('string');
                                   expect(data.wirelessType).to.be("");
-                                  expect(data.dataNetwork).to.be.a(Object);
-                                  expect(data.dataNetwork).to.be();
+                                  expect(data.dataNetwork).to.be.a(AdvantEdgePlatformControllerRestApi.DNConfig);
+                                        expect(data.dataNetwork.dnn).to.be.a('string');
+                                    expect(data.dataNetwork.dnn).to.be("");
+                                    expect(data.dataNetwork.ecsp).to.be.a('string');
+                                    expect(data.dataNetwork.ecsp).to.be("");
                                   {
                                     let dataCtr = data.meta;
                                     expect(dataCtr).to.be.an(Object);
@@ -1619,7 +1627,9 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
-          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = new AdvantEdgePlatformControllerRestApi.DNConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.dnn = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.ecsp = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];

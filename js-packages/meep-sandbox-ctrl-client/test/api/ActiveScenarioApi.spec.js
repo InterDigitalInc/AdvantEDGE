@@ -514,8 +514,11 @@
                               expect(data.wireless).to.be(false);
                               expect(data.wirelessType).to.be.a('string');
                               expect(data.wirelessType).to.be("");
-                              expect(data.dataNetwork).to.be.a(Object);
-                              expect(data.dataNetwork).to.be();
+                              expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
+                                    expect(data.dataNetwork.dnn).to.be.a('string');
+                                expect(data.dataNetwork.dnn).to.be("");
+                                expect(data.dataNetwork.ecsp).to.be.a('string');
+                                expect(data.dataNetwork.ecsp).to.be("");
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);

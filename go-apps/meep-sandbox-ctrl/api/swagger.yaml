@@ -900,7 +900,8 @@ definitions:
         description: "Prioritized, comma-separated list of supported wireless connection\
           \ types.\nDefault priority if not specififed is 'wifi,5g,4g,other'.\nWireless\
           \ connection types:\n- 4g\n- 5g\n- wifi\n- other"
-      dataNetwork: {}
+      dataNetwork:
+        $ref: "#/definitions/DNConfig"
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
@@ -935,6 +936,17 @@ definitions:
         type: "string"
         description: "Physical location MAC Address"
     description: "Physical location object"
+    example: {}
+  DNConfig:
+    type: "object"
+    properties:
+      dnn:
+        type: "string"
+        description: "Data Network Name"
+      ecsp:
+        type: "string"
+        description: "Edge Compute Service Provider"
+    description: "Data Network Configuration"
     example: {}
   Process:
     type: "object"

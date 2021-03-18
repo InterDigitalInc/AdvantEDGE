@@ -592,7 +592,7 @@ definitions:
           - other
         required: false
       dataNetwork:
-        ref: '#/definitions/DNConfig'
+        $ref: '#/definitions/DNConfig'
         required: false
       meta:
         type: object

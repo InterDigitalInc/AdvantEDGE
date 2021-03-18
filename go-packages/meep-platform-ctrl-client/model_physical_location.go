@@ -41,8 +41,8 @@ type PhysicalLocation struct {
 	// true: Physical location uses a wireless connection false: Physical location uses a wired connection
 	Wireless bool `json:"wireless,omitempty"`
 	// Prioritized, comma-separated list of supported wireless connection types. Default priority if not specififed is 'wifi,5g,4g,other'. Wireless connection types: - 4g - 5g - wifi - other
-	WirelessType string       `json:"wirelessType,omitempty"`
-	DataNetwork  *interface{} `json:"dataNetwork,omitempty"`
+	WirelessType string    `json:"wirelessType,omitempty"`
+	DataNetwork  *DnConfig `json:"dataNetwork,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
 	// Key/Value Pair Map (string, string)
