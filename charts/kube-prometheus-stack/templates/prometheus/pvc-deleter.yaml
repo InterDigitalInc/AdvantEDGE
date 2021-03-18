@@ -51,16 +51,16 @@ spec:
       containers:
       - name: post-delete-job
         image: "bitnami/kubectl"
-        command: ["kubectl"]
+        command: ["/bin/sh", "-c"]
         args:
-        - "delete"
-        - "pvc"
+        - kubectl delete pvc
         {{- if and $prometheus $promStorageSpec }}
-        - "{{ $promStorageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-server-0"
+          {{ $promStorageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-server-0
         {{- end }}
         {{- if and $alertmanager $alertStorageSpec }}
-        - "{{ $alertStorageSpec.volumeClaimTemplate.metadata.name }}-alertmanager-{{ template "kube-prometheus-stack.fullname" . }}-alertmanager-0"
+          {{ $alertStorageSpec.volumeClaimTemplate.metadata.name }}-alertmanager-{{ template "kube-prometheus-stack.fullname" . }}-alertmanager-0
         {{- end }}
+          ; echo done;
       serviceAccountName: pvc-deleter-sa
       securityContext:
         runAsUser: 0
