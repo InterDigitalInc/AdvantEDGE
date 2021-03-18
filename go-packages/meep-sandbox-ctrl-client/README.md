@@ -25,6 +25,8 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**GetActiveNodeServiceMaps**](docs/ActiveScenarioApi.md#getactivenodeservicemaps) | **Get** /active/serviceMaps | Get deployed scenario&#39;s port mapping
 *ActiveScenarioApi* | [**GetActiveScenario**](docs/ActiveScenarioApi.md#getactivescenario) | **Get** /active | Get the deployed scenario
 *ActiveScenarioApi* | [**TerminateScenario**](docs/ActiveScenarioApi.md#terminatescenario) | **Delete** /active | Terminate the deployed scenario
+*ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+*ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 *EventReplayApi* | [**CreateReplayFile**](docs/EventReplayApi.md#createreplayfile) | **Post** /replay/{name} | Add a replay file
 *EventReplayApi* | [**CreateReplayFileFromScenarioExec**](docs/EventReplayApi.md#createreplayfilefromscenarioexec) | **Post** /replay/{name}/generate | Generate a replay file from Active Scenario events
 *EventReplayApi* | [**DeleteReplayFile**](docs/EventReplayApi.md#deletereplayfile) | **Delete** /replay/{name} | Delete a replay file
@@ -43,8 +45,10 @@ Class | Method | HTTP request | Description
  - [ActivationInfo](docs/ActivationInfo.md)
  - [CellularDomainConfig](docs/CellularDomainConfig.md)
  - [CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [ConnectivityConfig](docs/ConnectivityConfig.md)
  - [CpuConfig](docs/CpuConfig.md)
  - [Deployment](docs/Deployment.md)
+ - [DnConfig](docs/DnConfig.md)
  - [Domain](docs/Domain.md)
  - [EgressService](docs/EgressService.md)
  - [Event](docs/Event.md)
@@ -62,6 +66,7 @@ Class | Method | HTTP request | Description
  - [NetworkLocation](docs/NetworkLocation.md)
  - [NodeDataUnion](docs/NodeDataUnion.md)
  - [NodeServiceMaps](docs/NodeServiceMaps.md)
+ - [PduSessionInfo](docs/PduSessionInfo.md)
  - [PhysicalLocation](docs/PhysicalLocation.md)
  - [Poa4GConfig](docs/Poa4GConfig.md)
  - [Poa5GConfig](docs/Poa5GConfig.md)

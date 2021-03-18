@@ -109,6 +109,12 @@
         // expect(instance.wirelessType).to.be(expectedValueLiteral);
       });
 
+      it('should have the property dataNetwork (base name: "dataNetwork")', function() {
+        // TODO: update the code to test the property dataNetwork
+        expect(instance).to.have.property('dataNetwork');
+        // expect(instance.dataNetwork).to.be(expectedValueLiteral);
+      });
+
       it('should have the property meta (base name: "meta")', function() {
         // TODO: update the code to test the property meta
         expect(instance).to.have.property('meta');

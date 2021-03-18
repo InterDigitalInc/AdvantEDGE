@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/GeoData', 'model/NetworkCharacteristics', 'model/Process'], factory);
+    define(['ApiClient', 'model/DNConfig', 'model/GeoData', 'model/NetworkCharacteristics', 'model/Process'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./GeoData'), require('./NetworkCharacteristics'), require('./Process'));
+    module.exports = factory(require('../ApiClient'), require('./DNConfig'), require('./GeoData'), require('./NetworkCharacteristics'), require('./Process'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.PhysicalLocation = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.GeoData, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics, root.AdvantEdgeSandboxControllerRestApi.Process);
+    root.AdvantEdgeSandboxControllerRestApi.PhysicalLocation = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.DNConfig, root.AdvantEdgeSandboxControllerRestApi.GeoData, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics, root.AdvantEdgeSandboxControllerRestApi.Process);
   }
-}(this, function(ApiClient, GeoData, NetworkCharacteristics, Process) {
+}(this, function(ApiClient, DNConfig, GeoData, NetworkCharacteristics, Process) {
   'use strict';
 
   /**
@@ -88,6 +88,8 @@
         obj.wireless = ApiClient.convertToType(data['wireless'], 'Boolean');
       if (data.hasOwnProperty('wirelessType'))
         obj.wirelessType = ApiClient.convertToType(data['wirelessType'], 'String');
+      if (data.hasOwnProperty('dataNetwork'))
+        obj.dataNetwork = DNConfig.constructFromObject(data['dataNetwork']);
       if (data.hasOwnProperty('meta'))
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
@@ -161,6 +163,11 @@
    * @member {String} wirelessType
    */
   exports.prototype.wirelessType = undefined;
+
+  /**
+   * @member {module:model/DNConfig} dataNetwork
+   */
+  exports.prototype.dataNetwork = undefined;
 
   /**
    * Key/Value Pair Map (string, string)

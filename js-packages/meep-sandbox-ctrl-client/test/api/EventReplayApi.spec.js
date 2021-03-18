@@ -103,6 +103,9 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork = new AdvantEdgeSandboxControllerRestApi.DNConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];
@@ -439,6 +442,11 @@
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless).to.be(false);
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType).to.be.a('string');
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn).to.be("");
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp).to.be("");
                           {
                             let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta;
                             expect(dataCtr).to.be.an(Object);

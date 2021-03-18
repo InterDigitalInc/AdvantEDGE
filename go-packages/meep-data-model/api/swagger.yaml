@@ -56,6 +56,30 @@ definitions:
         description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
     description: Cellular domain configuration information
     example: {}
+  DNConfig:
+    type: object
+    properties:
+      dnn:
+        type: string
+        description: Data Network Name
+      ecsp:
+        type: string
+        description: Edge Compute Service Provider
+    description: Data Network Configuration
+    example: {}
+  ConnectivityConfig:
+    type: object
+    properties:
+      model:
+        description: >-
+          Connectivity Model:
+          <li>OPEN: Any node in the scenario can communicate with any node
+          <li>PDU: Terminal nodes (UE) require a PDU session to the target DN
+        type: string
+        enum:
+          - OPEN
+          - PDU
+    example: {}
   GeoData:
     description: Geographic data
     type: object
@@ -185,6 +209,8 @@ definitions:
           - PUBLIC
       netChar:
         $ref: '#/definitions/NetworkCharacteristics'
+      connectivity:
+        $ref: '#/definitions/ConnectivityConfig'
       interZoneLatency:
         type: integer
         description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
@@ -564,6 +590,9 @@ definitions:
           - 5g
           - wifi
           - other
+        required: false
+      dataNetwork:
+        $ref: '#/definitions/DNConfig'
         required: false
       meta:
         type: object
@@ -1006,3 +1035,13 @@ definitions:
         format: float
         description: Maximum requested CPU
     description: CPU configuration object
+  PDUSessionInfo:
+    type: object
+    properties:
+      dnn:
+        type: string
+        description: Data Network Name as defined in the scenario
+      
+        
+      
+      
