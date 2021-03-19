@@ -1768,6 +1768,23 @@ const getSuggestedName = ( type, elements ) => {
   return createUniqueName(elements, suggestedPrefix);
 };
 
+const getSuggestedDnn = ( type ) => {
+  var suggestedDnn = '';
+  switch(type) {
+  case ELEMENT_TYPE_DC:
+    suggestedDnn = 'internet';
+    break;
+  case ELEMENT_TYPE_CN:
+  case ELEMENT_TYPE_EDGE:
+  case ELEMENT_TYPE_FOG:
+    suggestedDnn = 'edn';
+    break;
+  default:
+    break;
+  }
+  return suggestedDnn;
+};
+
 const getElementTypeOverride = (type) => {
   var typeOverride = '';
   switch(type) {
@@ -1965,6 +1982,7 @@ export class CfgNetworkElementContainer extends Component {
 
     if (this.getConfigMode() !== CFG_ELEM_MODE_CLONE) {
       setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementTypeOverride, this.getTableEntries()));
+      setElemFieldVal(elem, FIELD_DN_NAME, getSuggestedDnn(elementTypeOverride));
     }
     // this.props.cfgElemUpdate(elem);
     this.updateElement(elem);

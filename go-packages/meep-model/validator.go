@@ -597,6 +597,11 @@ func validatePhyLoc(pl *dataModel.PhysicalLocation) (err error) {
 	if err != nil {
 		return err
 	}
+	// DataNetwork
+	err = validateDataNetwork(pl.DataNetwork, pl.Type_)
+	if err != nil {
+		return err
+	}
 	// GeoData
 	err = validateGeoData(pl.GeoData, pl.Type_)
 	if err != nil {
@@ -746,6 +751,30 @@ func validateNetChar(nc *dataModel.NetworkCharacteristics) (err error) {
 	err = validateInt32Range(nc.ThroughputDl, THROUGHPUT_MIN, THROUGHPUT_MAX)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func validateDataNetwork(dn *dataModel.DnConfig, typ string) (err error) {
+	// Optional field
+	if dn == nil {
+		return nil
+	}
+	// DNN
+	err = validateDnn(dn.Dnn)
+	if err != nil {
+		return err
+	}
+	if typ == NodeTypeUE && dn.Dnn != "" {
+		return errors.New("UE must not have a configured DNN")
+	}
+	// ECSP
+	err = validateEcsp(dn.Ecsp)
+	if err != nil {
+		return err
+	}
+	if typ == NodeTypeUE && dn.Ecsp != "" {
+		return errors.New("UE must not have a configured ECSP")
 	}
 	return nil
 }
@@ -1089,6 +1118,26 @@ func validateWirelessTypeList(list string) (err error) {
 		matched, err := regexp.MatchString(REGEX_WIRELESS_TYPE_LIST, list)
 		if err != nil || !matched {
 			return errors.New("Wireless type list must be comma-separated list: wifi|5g|4g|other")
+		}
+	}
+	return nil
+}
+
+func validateDnn(dnn string) (err error) {
+	if dnn != "" {
+		matched, err := regexp.MatchString(REGEX_DNN, dnn)
+		if err != nil || !matched {
+			return errors.New("DNN must be alphanumeric or '-' or '.'")
+		}
+	}
+	return nil
+}
+
+func validateEcsp(ecsp string) (err error) {
+	if ecsp != "" {
+		matched, err := regexp.MatchString(REGEX_ECSP, ecsp)
+		if err != nil || !matched {
+			return errors.New("ECSP must be alphanumeric or ' '")
 		}
 	}
 	return nil

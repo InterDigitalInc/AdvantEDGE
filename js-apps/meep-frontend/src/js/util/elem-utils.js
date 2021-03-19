@@ -46,7 +46,8 @@ import {
   DEFAULT_LATENCY_JITTER_APP,
   DEFAULT_THROUGHPUT_DL_APP,
   DEFAULT_THROUGHPUT_UL_APP,
-  DEFAULT_PACKET_LOSS_APP
+  DEFAULT_PACKET_LOSS_APP,
+  DEFAULT_CONNECTIVITY_MODEL
 } from '../meep-constants';
 
 // Network Element Fields
@@ -198,7 +199,7 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CHART_VAL, '');
   setElemFieldVal(elem, FIELD_CHART_GROUP, '');
   setElemFieldVal(elem, FIELD_CONNECTED, true);
-  setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, '');
+  setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, DEFAULT_CONNECTIVITY_MODEL);
   setElemFieldVal(elem, FIELD_DN_NAME, '');
   setElemFieldVal(elem, FIELD_DN_ECSP, '');
   setElemFieldVal(elem, FIELD_WIRELESS, false);
