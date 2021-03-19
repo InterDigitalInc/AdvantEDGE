@@ -91,6 +91,7 @@ export const FIELD_CHART_GROUP = 'userChartGroup';
 export const FIELD_CONNECTED = 'connected';
 export const FIELD_CONNECTIVITY_MODEL = 'model';
 export const FIELD_DN_NAME = 'dnn';
+export const FIELD_DN_LADN = 'ladn';
 export const FIELD_DN_ECSP = 'ecsp';
 export const FIELD_WIRELESS = 'wireless';
 export const FIELD_WIRELESS_TYPE = 'wirelessType';
@@ -201,6 +202,7 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CONNECTED, true);
   setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, DEFAULT_CONNECTIVITY_MODEL);
   setElemFieldVal(elem, FIELD_DN_NAME, '');
+  setElemFieldVal(elem, FIELD_DN_LADN, false);
   setElemFieldVal(elem, FIELD_DN_ECSP, '');
   setElemFieldVal(elem, FIELD_WIRELESS, false);
   setElemFieldVal(elem, FIELD_WIRELESS_TYPE, '');

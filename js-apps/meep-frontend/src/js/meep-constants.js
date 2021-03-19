@@ -142,6 +142,7 @@ export const CFG_ELEM_CHART_ALT_VAL = 'cfg-elem-chart-alt-val';
 export const CFG_ELEM_CONNECTED = 'cfg-elem-connected';
 export const CFG_ELEM_CONNECTIVITY_MODEL = 'cfg-elem-connectivity-model';
 export const CFG_ELEM_DN_NAME = 'cfg-elem-dn-name';
+export const CFG_ELEM_DN_LADN_CHECK = 'cfg-elem-dn-ladn-check';
 export const CFG_ELEM_DN_ECSP = 'cfg-elem-dn-ecsp';
 export const CFG_ELEM_WIRELESS = 'cfg-elem-wireless';
 export const CFG_ELEM_WIRELESS_TYPE = 'cfg-elem-wireless-type';

@@ -800,6 +800,10 @@ definitions:
       dnn:
         type: "string"
         description: "Data Network Name"
+      ladn:
+        type: "boolean"
+        description: "true: Data network serves local area only\nfalse: Data network\
+          \ is not limited to local area"
       ecsp:
         type: "string"
         description: "Edge Compute Service Provider"

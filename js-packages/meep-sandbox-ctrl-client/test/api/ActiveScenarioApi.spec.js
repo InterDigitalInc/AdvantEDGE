@@ -517,6 +517,8 @@
                               expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
                                     expect(data.dataNetwork.dnn).to.be.a('string');
                                 expect(data.dataNetwork.dnn).to.be("");
+                                expect(data.dataNetwork.ladn).to.be.a('boolean');
+                                expect(data.dataNetwork.ladn).to.be(false);
                                 expect(data.dataNetwork.ecsp).to.be.a('string');
                                 expect(data.dataNetwork.ecsp).to.be("");
                               {

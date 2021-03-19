@@ -185,6 +185,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = new AdvantEdgePlatformControllerRestApi.DNConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.dnn = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.ladn = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.ecsp = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
@@ -684,6 +685,8 @@
                               expect(data.dataNetwork).to.be.a(AdvantEdgePlatformControllerRestApi.DNConfig);
                                     expect(data.dataNetwork.dnn).to.be.a('string');
                                 expect(data.dataNetwork.dnn).to.be("");
+                                expect(data.dataNetwork.ladn).to.be.a('boolean');
+                                expect(data.dataNetwork.ladn).to.be(false);
                                 expect(data.dataNetwork.ecsp).to.be.a('string');
                                 expect(data.dataNetwork.ecsp).to.be("");
                               {
@@ -1279,6 +1282,8 @@
                                   expect(data.dataNetwork).to.be.a(AdvantEdgePlatformControllerRestApi.DNConfig);
                                         expect(data.dataNetwork.dnn).to.be.a('string');
                                     expect(data.dataNetwork.dnn).to.be("");
+                                    expect(data.dataNetwork.ladn).to.be.a('boolean');
+                                    expect(data.dataNetwork.ladn).to.be(false);
                                     expect(data.dataNetwork.ecsp).to.be.a('string');
                                     expect(data.dataNetwork.ecsp).to.be("");
                                   {
@@ -1629,6 +1634,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork = new AdvantEdgePlatformControllerRestApi.DNConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.dnn = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.ladn = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].dataNetwork.ecsp = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};

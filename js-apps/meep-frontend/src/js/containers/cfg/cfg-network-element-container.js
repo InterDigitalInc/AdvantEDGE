@@ -69,6 +69,7 @@ import {
   FIELD_CONNECTED,
   FIELD_CONNECTIVITY_MODEL,
   FIELD_DN_NAME,
+  FIELD_DN_LADN,
   FIELD_DN_ECSP,
   FIELD_WIRELESS,
   FIELD_WIRELESS_TYPE,
@@ -182,6 +183,7 @@ import {
   CFG_ELEM_CONNECTED,
   CFG_ELEM_CONNECTIVITY_MODEL,
   CFG_ELEM_DN_NAME,
+  CFG_ELEM_DN_LADN_CHECK,
   CFG_ELEM_DN_ECSP,
   CFG_ELEM_WIRELESS,
   CFG_ELEM_WIRELESS_TYPE,
@@ -245,8 +247,8 @@ const validateDnn = val => {
   if (val) {
     if (val.length > 50) {
       return 'Maximum 50 characters';
-    } else if (!val.match(/^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$/)) {
-      return 'Alphanumeric or \' \'';
+    } else if (!val.match(/^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$/)) {
+      return 'Alphanumeric or \'-\' or \'.\'';
     }
   }
   return null;
@@ -256,8 +258,8 @@ const validateEcsp = val => {
   if (val) {
     if (val.length > 50) {
       return 'Maximum 50 characters';
-    } else if (!val.match(/^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$/)) {
-      return 'Alphanumeric or \'-\' or \'.\'';
+    } else if (!val.match(/^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$/)) {
+      return 'Alphanumeric or \' \'';
     }
   }
   return null;
@@ -893,6 +895,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
   var connectivityModel = getElemFieldVal(element, FIELD_CONNECTIVITY_MODEL) || '';
+  var isLadn = getElemFieldVal(element, FIELD_DN_LADN) || false;
   var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
   var color = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
 
@@ -1323,7 +1326,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
         
         <Grid>
           <CfgTextFieldCell
-            span={12}
+            span={8}
             onUpdate={onUpdate}
             element={element}
             validate={validateDnn}
@@ -1331,6 +1334,15 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             fieldName={FIELD_DN_NAME}
             cydata={CFG_ELEM_DN_NAME}
           />
+          <GridCell align='middle' span={4}>
+            <Checkbox
+              checked={isLadn}
+              onChange={e => onUpdate(FIELD_DN_LADN, e.target.checked, null)}
+              data-cy={CFG_ELEM_DN_LADN_CHECK}
+            >
+              Local (LADN)
+            </Checkbox>
+          </GridCell>
         </Grid> 
 
         <Grid>
@@ -1343,7 +1355,9 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             fieldName={FIELD_DN_ECSP}
             cydata={CFG_ELEM_DN_ECSP}
           />
-        </Grid> 
+        </Grid>
+
+        
 
         <Grid>
           <CfgTextFieldCell

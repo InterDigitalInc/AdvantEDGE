@@ -57,6 +57,7 @@ import {
   FIELD_CONNECTED,
   FIELD_CONNECTIVITY_MODEL,
   FIELD_DN_NAME,
+  FIELD_DN_LADN,
   FIELD_DN_ECSP,
   FIELD_WIRELESS,
   FIELD_WIRELESS_TYPE,
@@ -662,6 +663,7 @@ export function updateElementInScenario(scenario, element) {
               pl.dataNetwork = {};
             }
             pl.dataNetwork.dnn = getElemFieldVal(element, FIELD_DN_NAME);
+            pl.dataNetwork.ladn = getElemFieldVal(element, FIELD_DN_LADN);
             pl.dataNetwork.ecsp = getElemFieldVal(element, FIELD_DN_ECSP);
 
             if (!pl.geoData) {
@@ -1299,6 +1301,7 @@ export function createPL(uniqueId, name, type, element) {
     },
     dataNetwork: {
       dnn: getElemFieldVal(element, FIELD_DN_NAME),
+      ladn: getElemFieldVal(element, FIELD_DN_LADN),
       ecsp: getElemFieldVal(element, FIELD_DN_ECSP)
     },
     geoData: !location ? null : {
@@ -1534,6 +1537,7 @@ export function getElementFromScenario(scenario, elementId) {
 
             if (pl.dataNetwork) {
               setElemFieldVal(elem, FIELD_DN_NAME, pl.dataNetwork.dnn || '');
+              setElemFieldVal(elem, FIELD_DN_LADN, pl.dataNetwork.ladn || false);
               setElemFieldVal(elem, FIELD_DN_ECSP, pl.dataNetwork.ecsp || '');
             }
 

@@ -28,6 +28,8 @@ package client
 type DnConfig struct {
 	// Data Network Name
 	Dnn string `json:"dnn,omitempty"`
+	// true: Data network serves local area only false: Data network is not limited to local area
+	Ladn bool `json:"ladn,omitempty"`
 	// Edge Compute Service Provider
 	Ecsp string `json:"ecsp,omitempty"`
 }

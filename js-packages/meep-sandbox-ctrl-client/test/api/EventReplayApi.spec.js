@@ -105,6 +105,7 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork = new AdvantEdgeSandboxControllerRestApi.DNConfig();
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ladn = false;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
@@ -445,6 +446,8 @@
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
                                 expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn).to.be.a('string');
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn).to.be("");
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ladn).to.be.a('boolean');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ladn).to.be(false);
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp).to.be.a('string');
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp).to.be("");
                           {
