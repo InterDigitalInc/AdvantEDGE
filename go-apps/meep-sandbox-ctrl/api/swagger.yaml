@@ -483,6 +483,8 @@ definitions:
     properties:
       netChar:
         $ref: "#/definitions/NetworkCharacteristics"
+      connectivity:
+        $ref: "#/definitions/ConnectivityConfig"
       interDomainLatency:
         type: "integer"
         description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
@@ -549,6 +551,18 @@ definitions:
         description: "Packet loss percentage"
     description: "Network characteristics object"
     example: {}
+  ConnectivityConfig:
+    type: "object"
+    properties:
+      model:
+        type: "string"
+        description: "Connectivity Model: <li>OPEN: Any node in the scenario can communicate\
+          \ with any node <li>PDU: Terminal nodes (UE) require a PDU session to the\
+          \ target DN"
+        enum:
+        - "OPEN"
+        - "PDU"
+    example: {}
   Domain:
     type: "object"
     properties:
@@ -567,8 +581,6 @@ definitions:
         - "PUBLIC"
       netChar:
         $ref: "#/definitions/NetworkCharacteristics"
-      connectivity:
-        $ref: "#/definitions/ConnectivityConfig"
       interZoneLatency:
         type: "integer"
         description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
@@ -600,18 +612,6 @@ definitions:
         items:
           $ref: "#/definitions/Zone"
     description: "Operator domain object"
-    example: {}
-  ConnectivityConfig:
-    type: "object"
-    properties:
-      model:
-        type: "string"
-        description: "Connectivity Model: <li>OPEN: Any node in the scenario can communicate\
-          \ with any node <li>PDU: Terminal nodes (UE) require a PDU session to the\
-          \ target DN"
-        enum:
-        - "OPEN"
-        - "PDU"
     example: {}
   CellularDomainConfig:
     type: "object"

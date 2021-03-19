@@ -72,6 +72,8 @@
           scenario.deployment.netChar.throughputDl = 0;
           scenario.deployment.netChar.throughputUl = 0;
           scenario.deployment.netChar.packetLoss = 0.0;
+          scenario.deployment.connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
+          scenario.deployment.connectivity.model = "OPEN";
           scenario.deployment.interDomainLatency = 0;
           scenario.deployment.interDomainLatencyVariation = 0;
           scenario.deployment.interDomainThroughput = 0;
@@ -90,8 +92,6 @@
           scenario.deployment.domains[0].netChar.throughputDl = 0;
           scenario.deployment.domains[0].netChar.throughputUl = 0;
           scenario.deployment.domains[0].netChar.packetLoss = 0.0;
-          scenario.deployment.domains[0].connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
-          scenario.deployment.domains[0].connectivity.model = "OPEN";
           scenario.deployment.domains[0].interZoneLatency = 0;
           scenario.deployment.domains[0].interZoneLatencyVariation = 0;
           scenario.deployment.domains[0].interZoneThroughput = 0;
@@ -350,6 +350,9 @@
                 expect(data.deployment.netChar.throughputUl).to.be(0);
                 expect(data.deployment.netChar.packetLoss).to.be.a('number');
                 expect(data.deployment.netChar.packetLoss).to.be(0.0);
+              expect(data.deployment.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
+                    expect(data.deployment.connectivity.model).to.be.a('string');
+                expect(data.deployment.connectivity.model).to.be("OPEN");
               expect(data.deployment.interDomainLatency).to.be.a('number');
               expect(data.deployment.interDomainLatency).to.be(0);
               expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
@@ -406,9 +409,6 @@
                     expect(data.netChar.throughputUl).to.be(0);
                     expect(data.netChar.packetLoss).to.be.a('number');
                     expect(data.netChar.packetLoss).to.be(0.0);
-                  expect(data.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
-                        expect(data.connectivity.model).to.be.a('string');
-                    expect(data.connectivity.model).to.be("OPEN");
                   expect(data.interZoneLatency).to.be.a('number');
                   expect(data.interZoneLatency).to.be(0);
                   expect(data.interZoneLatencyVariation).to.be.a('number');
@@ -945,6 +945,9 @@
                     expect(data.deployment.netChar.throughputUl).to.be(0);
                     expect(data.deployment.netChar.packetLoss).to.be.a('number');
                     expect(data.deployment.netChar.packetLoss).to.be(0.0);
+                  expect(data.deployment.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
+                        expect(data.deployment.connectivity.model).to.be.a('string');
+                    expect(data.deployment.connectivity.model).to.be("OPEN");
                   expect(data.deployment.interDomainLatency).to.be.a('number');
                   expect(data.deployment.interDomainLatency).to.be(0);
                   expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
@@ -1001,9 +1004,6 @@
                         expect(data.netChar.throughputUl).to.be(0);
                         expect(data.netChar.packetLoss).to.be.a('number');
                         expect(data.netChar.packetLoss).to.be(0.0);
-                      expect(data.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
-                            expect(data.connectivity.model).to.be.a('string');
-                        expect(data.connectivity.model).to.be("OPEN");
                       expect(data.interZoneLatency).to.be.a('number');
                       expect(data.interZoneLatency).to.be(0);
                       expect(data.interZoneLatencyVariation).to.be.a('number');
@@ -1516,6 +1516,8 @@
           scenario.deployment.netChar.throughputDl = 0;
           scenario.deployment.netChar.throughputUl = 0;
           scenario.deployment.netChar.packetLoss = 0.0;
+          scenario.deployment.connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
+          scenario.deployment.connectivity.model = "OPEN";
           scenario.deployment.interDomainLatency = 0;
           scenario.deployment.interDomainLatencyVariation = 0;
           scenario.deployment.interDomainThroughput = 0;
@@ -1534,8 +1536,6 @@
           scenario.deployment.domains[0].netChar.throughputDl = 0;
           scenario.deployment.domains[0].netChar.throughputUl = 0;
           scenario.deployment.domains[0].netChar.packetLoss = 0.0;
-          scenario.deployment.domains[0].connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
-          scenario.deployment.domains[0].connectivity.model = "OPEN";
           scenario.deployment.domains[0].interZoneLatency = 0;
           scenario.deployment.domains[0].interZoneLatencyVariation = 0;
           scenario.deployment.domains[0].interZoneThroughput = 0;

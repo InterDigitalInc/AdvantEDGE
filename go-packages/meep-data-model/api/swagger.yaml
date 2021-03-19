@@ -162,6 +162,8 @@ definitions:
     properties:
       netChar:
         $ref: '#/definitions/NetworkCharacteristics'
+      connectivity:
+        $ref: '#/definitions/ConnectivityConfig'
       interDomainLatency:
         type: integer
         description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
@@ -209,8 +211,6 @@ definitions:
           - PUBLIC
       netChar:
         $ref: '#/definitions/NetworkCharacteristics'
-      connectivity:
-        $ref: '#/definitions/ConnectivityConfig'
       interZoneLatency:
         type: integer
         description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'

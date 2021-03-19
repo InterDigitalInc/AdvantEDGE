@@ -79,12 +79,6 @@
         // expect(instance.netChar).to.be(expectedValueLiteral);
       });
 
-      it('should have the property connectivity (base name: "connectivity")', function() {
-        // TODO: update the code to test the property connectivity
-        expect(instance).to.have.property('connectivity');
-        // expect(instance.connectivity).to.be(expectedValueLiteral);
-      });
-
       it('should have the property interZoneLatency (base name: "interZoneLatency")', function() {
         // TODO: update the code to test the property interZoneLatency
         expect(instance).to.have.property('interZoneLatency');

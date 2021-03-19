@@ -31,9 +31,8 @@ type Domain struct {
 	// Domain name
 	Name string `json:"name,omitempty"`
 	// Domain type
-	Type_        string                  `json:"type,omitempty"`
-	NetChar      *NetworkCharacteristics `json:"netChar,omitempty"`
-	Connectivity *ConnectivityConfig     `json:"connectivity,omitempty"`
+	Type_   string                  `json:"type,omitempty"`
+	NetChar *NetworkCharacteristics `json:"netChar,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	InterZoneLatency int32 `json:"interZoneLatency,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation

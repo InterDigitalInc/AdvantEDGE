@@ -7,7 +7,6 @@ Name | Type | Description | Notes
 **Name** | **string** | Domain name | [optional] [default to null]
 **Type_** | **string** | Domain type | [optional] [default to null]
 **NetChar** | [***NetworkCharacteristics**](NetworkCharacteristics.md) |  | [optional] [default to null]
-**Connectivity** | [***ConnectivityConfig**](ConnectivityConfig.md) |  | [optional] [default to null]
 **InterZoneLatency** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar latency | [optional] [default to null]
 **InterZoneLatencyVariation** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation | [optional] [default to null]
 **InterZoneThroughput** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl | [optional] [default to null]

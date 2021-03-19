@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Domain', 'model/NetworkCharacteristics'], factory);
+    define(['ApiClient', 'model/ConnectivityConfig', 'model/Domain', 'model/NetworkCharacteristics'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Domain'), require('./NetworkCharacteristics'));
+    module.exports = factory(require('../ApiClient'), require('./ConnectivityConfig'), require('./Domain'), require('./NetworkCharacteristics'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.Deployment = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Domain, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
+    root.AdvantEdgePlatformControllerRestApi.Deployment = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.ConnectivityConfig, root.AdvantEdgePlatformControllerRestApi.Domain, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
   }
-}(this, function(ApiClient, Domain, NetworkCharacteristics) {
+}(this, function(ApiClient, ConnectivityConfig, Domain, NetworkCharacteristics) {
   'use strict';
 
   /**
@@ -72,6 +72,8 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('netChar'))
         obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
+      if (data.hasOwnProperty('connectivity'))
+        obj.connectivity = ConnectivityConfig.constructFromObject(data['connectivity']);
       if (data.hasOwnProperty('interDomainLatency'))
         obj.interDomainLatency = ApiClient.convertToType(data['interDomainLatency'], 'Number');
       if (data.hasOwnProperty('interDomainLatencyVariation'))
@@ -94,6 +96,11 @@
    * @member {module:model/NetworkCharacteristics} netChar
    */
   exports.prototype.netChar = undefined;
+
+  /**
+   * @member {module:model/ConnectivityConfig} connectivity
+   */
+  exports.prototype.connectivity = undefined;
 
   /**
    * **DEPRECATED** As of release 1.5.0, replaced by netChar latency

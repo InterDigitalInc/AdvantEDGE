@@ -26,7 +26,8 @@ package client
 
 // Network deployment object
 type Deployment struct {
-	NetChar *NetworkCharacteristics `json:"netChar,omitempty"`
+	NetChar      *NetworkCharacteristics `json:"netChar,omitempty"`
+	Connectivity *ConnectivityConfig     `json:"connectivity,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	InterDomainLatency int32 `json:"interDomainLatency,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
