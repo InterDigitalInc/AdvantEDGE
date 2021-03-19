@@ -10,6 +10,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
 	github.com/gorilla/handlers v1.4.0
@@ -26,6 +27,7 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics => ../../go-packages/meep-metrics
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model => ../../go-packages/meep-model
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store => ../../go-packages/meep-pdu-session-store
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager => ../../go-packages/meep-replay-manager
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client => ../../go-packages/meep-sandbox-ctrl-client

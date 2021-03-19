@@ -36,6 +36,7 @@ import (
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	pss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 )
@@ -45,16 +46,17 @@ type Scenario struct {
 }
 
 type SandboxCtrl struct {
-	sandboxName   string
-	mqGlobal      *mq.MsgQueue
-	mqLocal       *mq.MsgQueue
-	scenarioStore *couch.Connector
-	replayStore   *couch.Connector
-	modelCfg      mod.ModelCfg
-	activeModel   *mod.Model
-	metricStore   *met.MetricStore
-	replayMgr     *replay.ReplayMgr
-	sandboxStore  *ss.SandboxStore
+	sandboxName     string
+	mqGlobal        *mq.MsgQueue
+	mqLocal         *mq.MsgQueue
+	scenarioStore   *couch.Connector
+	replayStore     *couch.Connector
+	modelCfg        mod.ModelCfg
+	activeModel     *mod.Model
+	metricStore     *met.MetricStore
+	replayMgr       *replay.ReplayMgr
+	pduSessionStore *pss.PduSessionStore
+	sandboxStore    *ss.SandboxStore
 }
 
 const scenarioDBName = "scenarios"
@@ -159,6 +161,14 @@ func Init() (err error) {
 		log.Error("Failed to initialize replay manager. Error: ", err)
 		return err
 	}
+
+	// Connect to PDU Session Store
+	sbxCtrl.pduSessionStore, err = pss.NewPduSessionStore(sbxCtrl.sandboxName, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to PDU Session Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to PDU Session Store")
 
 	// Connect to Sandbox Store
 	sbxCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
