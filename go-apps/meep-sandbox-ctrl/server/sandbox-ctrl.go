@@ -1093,11 +1093,59 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("UE name: ", pduSessionId)
+
+	// Retrieve PDU Session Info from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var pduSessionInfo dataModel.PduSessionInfo
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create PDU session
+	err = sbxCtrl.pduSessionStore.CreatePduSession(ueName, pduSessionId, &pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
 
 func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("UE name: ", pduSessionId)
+
+	// Delete PDU session
+	err := sbxCtrl.pduSessionStore.DeletePduSession(ueName, pduSessionId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
