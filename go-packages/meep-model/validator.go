@@ -40,10 +40,12 @@ const (
 
 const (
 	REGEX_NAME               = `^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$`
-	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$`
-	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$`
+	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9A-Z.]*)?[_a-z0-9A-Z])+$`
+	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9A-Z]*)?[_a-f0-9A-F])+$`
 	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
 	REGEX_PATH               = `[\^#%&$\*<>\?\{\|\} ]+`
+	REGEX_DNN                = `^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$`
+	REGEX_ECSP               = `^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$`
 )
 
 const (
@@ -82,9 +84,10 @@ var LATENCY_DIST_ENUM = []string{"Normal", "Pareto", "Paretonormal", "Uniform"}
 var EOP_MODE_ENUM = []string{"LOOP", "REVERSE"}
 var GPU_TYPE_ENUM = []string{"NVIDIA"}
 var PROTOCOL_ENUM = []string{"UDP", "TCP"}
+var CONNECTIVITY_MODEL_ENUM = []string{"OPEN", "PDU"}
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 6}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 8}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
@@ -92,6 +95,7 @@ var Version140 = semver.Version{Major: 1, Minor: 4, Patch: 0}
 var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
 var Version151 = semver.Version{Major: 1, Minor: 5, Patch: 1}
 var Version153 = semver.Version{Major: 1, Minor: 5, Patch: 3}
+var Version168 = semver.Version{Major: 1, Minor: 6, Patch: 8}
 
 // setNetChar - Creates a new netchar object if non-existent and migrate values from deprecated fields
 func createNetChar(lat int32, latVar int32, dist string, tputDl int32, tputUl int32, loss float64) *dataModel.NetworkCharacteristics {
@@ -171,6 +175,12 @@ func ValidateScenario(jsonScenario []byte, name string) (validJsonScenario []byt
 	if scenarioVersion.LT(Version153) {
 		upgradeScenarioTo153(scenario)
 		scenarioVersion = Version153
+		scenarioUpdated = true
+	}
+	// UPGRADE TO 1.6.8
+	if scenarioVersion.LT(Version168) {
+		upgradeScenarioTo168(scenario)
+		scenarioVersion = Version168
 		scenarioUpdated = true
 	}
 
@@ -420,6 +430,21 @@ func upgradeScenarioTo153(scenario *dataModel.Scenario) {
 	}
 }
 
+func upgradeScenarioTo168(scenario *dataModel.Scenario) {
+	// Set updated version
+	scenario.Version = Version168.String()
+
+	// Set default Connectivity Model
+	if scenario.Deployment != nil {
+		if scenario.Deployment.Connectivity == nil {
+			scenario.Deployment.Connectivity = new(dataModel.ConnectivityConfig)
+		}
+		if scenario.Deployment.Connectivity.Model == "" {
+			scenario.Deployment.Connectivity.Model = "OPEN"
+		}
+	}
+}
+
 // Validate scenario
 func validateScenario(scenario *dataModel.Scenario) error {
 	idMap := make(map[string]bool)
@@ -438,8 +463,8 @@ func validateScenario(scenario *dataModel.Scenario) error {
 
 	// Validate deployment
 	deployment := scenario.Deployment
-	if deployment == nil {
-		return errors.New("deployment == nil")
+	if err := validateDeployment(deployment); err != nil {
+		return err
 	}
 
 	// Validate domains
@@ -521,6 +546,24 @@ func validateUniqueName(name string, nameMap map[string]bool) error {
 		return errors.New("Name not unique: " + name)
 	}
 	nameMap[name] = true
+	return nil
+}
+
+// Validate the Deployment
+func validateDeployment(deployment *dataModel.Deployment) (err error) {
+	// Deployment
+	if deployment == nil {
+		return errors.New("deployment == nil")
+	}
+	// Connectivity
+	if deployment.Connectivity == nil {
+		return errors.New("connectivity == nil")
+	}
+	// Connectivity Model
+	err = validateStringEnum(deployment.Connectivity.Model, CONNECTIVITY_MODEL_ENUM)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

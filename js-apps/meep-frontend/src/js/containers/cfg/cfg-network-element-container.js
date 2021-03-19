@@ -67,6 +67,9 @@ import {
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
   FIELD_CONNECTED,
+  FIELD_CONNECTIVITY_MODEL,
+  FIELD_DN_NAME,
+  FIELD_DN_ECSP,
   FIELD_WIRELESS,
   FIELD_WIRELESS_TYPE,
   FIELD_META_DISPLAY_MAP_COLOR,
@@ -125,6 +128,10 @@ import {
   OPT_WIRELESS,
   OPT_WIRED,
 
+  // Connectivity model
+  CONNECTIVITY_MODEL_OPEN,
+  CONNECTIVITY_MODEL_PDU,
+
   // GPU types
   GPU_TYPE_NVIDIA,
 
@@ -173,6 +180,9 @@ import {
   CFG_ELEM_CHART_GROUP,
   CFG_ELEM_CHART_ALT_VAL,
   CFG_ELEM_CONNECTED,
+  CFG_ELEM_CONNECTIVITY_MODEL,
+  CFG_ELEM_DN_NAME,
+  CFG_ELEM_DN_ECSP,
   CFG_ELEM_WIRELESS,
   CFG_ELEM_WIRELESS_TYPE,
   CFG_ELEM_INGRESS_SVC_MAP,
@@ -195,6 +205,7 @@ const SERVICE_NODE_PORT_MIN = 30000;
 const SERVICE_NODE_PORT_MAX = 32767;
 const GPU_COUNT_MIN = 1;
 const GPU_COUNT_MAX = 4;
+const CONNECTIVITY_MODELS = [CONNECTIVITY_MODEL_OPEN, CONNECTIVITY_MODEL_PDU];
 const EOP_MODES = [GEO_EOP_MODE_LOOP, GEO_EOP_MODE_REVERSE];
 
 const validateName = val => {
@@ -223,7 +234,29 @@ const validateVariableName = val => {
   if (val) {
     if (val.length > 30) {
       return 'Maximum 30 characters';
-    } else if (!val.match(/^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$/)) {
+    } else if (!val.match(/^(([_a-z0-9A-Z][_-a-z0-9A-Z.]*)?[_a-z0-9A-Z])+$/)) {
+      return 'Alphanumeric or \'_\' or \'.\'';
+    }
+  }
+  return null;
+};
+
+const validateDnn = val => {
+  if (val) {
+    if (val.length > 50) {
+      return 'Maximum 50 characters';
+    } else if (!val.match(/^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$/)) {
+      return 'Alphanumeric or \' \'';
+    }
+  }
+  return null;
+};
+
+const validateEcsp = val => {
+  if (val) {
+    if (val.length > 50) {
+      return 'Maximum 50 characters';
+    } else if (!val.match(/^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$/)) {
       return 'Alphanumeric or \'-\' or \'.\'';
     }
   }
@@ -859,17 +892,31 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
   var isWireless = getElemFieldVal(element, FIELD_WIRELESS) || false;
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
+  var connectivityModel = getElemFieldVal(element, FIELD_CONNECTIVITY_MODEL) || '';
   var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
   var color = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
 
   switch (type) {
   case ELEMENT_TYPE_SCENARIO:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_INT_DOM]}
-      />
+      <> 
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INT_DOM]}
+        />
+        <Grid style={{ marginTop: 10 }}>
+          <IDSelect
+            label='Connectivity Model'
+            span={12}
+            options={CONNECTIVITY_MODELS}
+            onChange={elem => onUpdate(FIELD_CONNECTIVITY_MODEL, elem.target.value, null)}
+            value={connectivityModel}
+            disabled={false}
+            cydata={CFG_ELEM_CONNECTIVITY_MODEL}
+          />
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_OPERATOR:
     return (
@@ -1274,6 +1321,30 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           <></>
         )}
         
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateDnn}
+            label='Data Network Name'
+            fieldName={FIELD_DN_NAME}
+            cydata={CFG_ELEM_DN_NAME}
+          />
+        </Grid> 
+
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateEcsp}
+            label='Edge Compute Service Provider'
+            fieldName={FIELD_DN_ECSP}
+            cydata={CFG_ELEM_DN_ECSP}
+          />
+        </Grid> 
+
         <Grid>
           <CfgTextFieldCell
             span={12}

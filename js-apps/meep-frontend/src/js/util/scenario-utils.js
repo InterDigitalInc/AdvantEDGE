@@ -55,6 +55,9 @@ import {
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
   FIELD_CONNECTED,
+  FIELD_CONNECTIVITY_MODEL,
+  FIELD_DN_NAME,
+  FIELD_DN_ECSP,
   FIELD_WIRELESS,
   FIELD_WIRELESS_TYPE,
   FIELD_INT_DOM_LATENCY,
@@ -169,6 +172,8 @@ import {
   UE_APP_TYPE_STR,
   EDGE_APP_TYPE_STR,
   CLOUD_APP_TYPE_STR,
+
+  DEFAULT_CONNECTIVITY_MODEL,
 
   // Logical Scenario types
   TYPE_SCENARIO,
@@ -494,7 +499,6 @@ export function updateElementInScenario(scenario, element) {
 
   // Find element in scenario
   if (scenario.name === name) {
-
     if (!scenario.deployment.netChar) {
       scenario.deployment.netChar = {};
     }
@@ -505,6 +509,10 @@ export function updateElementInScenario(scenario, element) {
     scenario.deployment.netChar.throughputUl = getElemFieldVal(element, FIELD_INT_DOM_THROUGHPUT_UL);
     scenario.deployment.netChar.packetLoss = getElemFieldVal(element, FIELD_INT_DOM_PKT_LOSS);
 
+    if (!scenario.deployment.connectivity) {
+      scenario.deployment.connectivity = {};
+    }
+    scenario.deployment.connectivity.model = getElemFieldVal(element, FIELD_CONNECTIVITY_MODEL);
     return;
   }
 
@@ -649,6 +657,12 @@ export function updateElementInScenario(scenario, element) {
             var wireless = getElemFieldVal(element, FIELD_WIRELESS);
             pl.wireless = wireless;
             pl.wirelessType = wireless ? getElemFieldVal(element, FIELD_WIRELESS_TYPE) : '';
+
+            if (!pl.dataNetwork) {
+              pl.dataNetwork = {};
+            }
+            pl.dataNetwork.dnn = getElemFieldVal(element, FIELD_DN_NAME);
+            pl.dataNetwork.ecsp = getElemFieldVal(element, FIELD_DN_ECSP);
 
             if (!pl.geoData) {
               pl.geoData = {};
@@ -881,6 +895,9 @@ export function createNewScenario(name) {
         throughputDl: parseInt(DEFAULT_THROUGHPUT_DL_INTER_DOMAIN),
         throughputUl: parseInt(DEFAULT_THROUGHPUT_UL_INTER_DOMAIN),
         interDomainPacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_DOMAIN)
+      },
+      connectivity: {
+        model: DEFAULT_CONNECTIVITY_MODEL
       },
       domains: name === 'None' ? [] : [createDefaultDomain()]
     }
@@ -1280,6 +1297,10 @@ export function createPL(uniqueId, name, type, element) {
       throughputUl: getElemFieldVal(element, FIELD_LINK_THROUGHPUT_UL),
       packetLoss: getElemFieldVal(element, FIELD_LINK_PKT_LOSS)
     },
+    dataNetwork: {
+      dnn: getElemFieldVal(element, FIELD_DN_NAME),
+      ecsp: getElemFieldVal(element, FIELD_DN_ECSP)
+    },
     geoData: !location ? null : {
       location: {
         type: 'Point',
@@ -1356,6 +1377,9 @@ export function getElementFromScenario(scenario, elementId) {
       setElemFieldVal(elem, FIELD_INT_DOM_THROUGHPUT_DL, scenario.deployment.netChar.throughputDl || 0);
       setElemFieldVal(elem, FIELD_INT_DOM_THROUGHPUT_UL, scenario.deployment.netChar.throughputUl || 0);
       setElemFieldVal(elem, FIELD_INT_DOM_PKT_LOSS, scenario.deployment.netChar.packetLoss || 0);
+    }
+    if (scenario.deployment.connectivity) {
+      setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, scenario.deployment.connectivity.model || DEFAULT_CONNECTIVITY_MODEL);
     }
     return elem;
   }
@@ -1506,8 +1530,12 @@ export function getElementFromScenario(scenario, elementId) {
             setElemFieldVal(elem, FIELD_CONNECTED, pl.connected || false);
             setElemFieldVal(elem, FIELD_WIRELESS, pl.wireless || false);
             setElemFieldVal(elem, FIELD_WIRELESS_TYPE, pl.wirelessType || '');
-
             setElemFieldVal(elem, FIELD_UE_MAC_ID, pl.macId || '');
+
+            if (pl.dataNetwork) {
+              setElemFieldVal(elem, FIELD_DN_NAME, pl.dataNetwork.dnn || '');
+              setElemFieldVal(elem, FIELD_DN_ECSP, pl.dataNetwork.ecsp || '');
+            }
 
             if (pl.geoData) {
               if (pl.geoData.location) {
