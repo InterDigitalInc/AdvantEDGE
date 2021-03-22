@@ -69,6 +69,7 @@ const fieldSandboxName = "sandbox-name"
 const fieldScenarioName = "scenario-name"
 const fieldEventType = "event-type"
 const fieldNodeName = "node-name"
+const fieldPduSessionId = "pdu-id"
 
 // Event types
 const (
@@ -534,6 +535,9 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+
+	// Delete all PDU sessions
+	sbxCtrl.pduSessionStore.DeleteAllPduSessions()
 
 	// Use new model instance
 	sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
@@ -1125,6 +1129,18 @@ func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Send message to inform other modules of terminated PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
@@ -1143,6 +1159,18 @@ func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Send message to inform other modules of terminated PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionTerminated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

@@ -63,6 +63,10 @@ const (
 	MsgScenarioUpdate    Message = "SCENARIO-UPDATE"
 	MsgScenarioTerminate Message = "SCENARIO-TERMINATE"
 
+	// PDU Session Management
+	MsgPduSessionCreated    Message = "PDU-SESSION-CREATED"
+	MsgPduSessionTerminated Message = "PDU-SESSION-TERMINATED"
+
 	// Mobility Groups
 	MsgMgLbRulesUpdate Message = "MG-LB-RULES-UPDATE"
 

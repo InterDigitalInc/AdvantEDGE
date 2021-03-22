@@ -69,6 +69,11 @@ const (
 	EventRemoveNode     string = "EVENT-REMOVE-NODE"
 )
 
+const (
+	ConnectivityModelOpen string = "OPEN"
+	ConnectivityModelPdu  string = "PDU"
+)
+
 const Disconnected = "DISCONNECTED"
 
 // ModelCfg - Model Configuration
@@ -82,19 +87,20 @@ type ModelCfg struct {
 
 // Model - Implements a Meep Model
 type Model struct {
-	name         string
-	namespace    string
-	module       string
-	Active       bool
-	subscribed   bool
-	activeKey    string
-	updateCb     func(eventType string, userData interface{})
-	rc           *redis.Connector
-	scenario     *dataModel.Scenario
-	svcMap       []dataModel.NodeServiceMaps
-	nodeMap      *NodeMap
-	networkGraph *NetworkGraph
-	lock         sync.RWMutex
+	name              string
+	namespace         string
+	module            string
+	Active            bool
+	subscribed        bool
+	activeKey         string
+	updateCb          func(eventType string, userData interface{})
+	rc                *redis.Connector
+	scenario          *dataModel.Scenario
+	svcMap            []dataModel.NodeServiceMaps
+	nodeMap           *NodeMap
+	networkGraph      *NetworkGraph
+	connectivityModel string
+	lock              sync.RWMutex
 }
 
 // NewModel - Create a model object
@@ -119,6 +125,7 @@ func NewModel(cfg ModelCfg) (m *Model, err error) {
 	m.subscribed = false
 	m.activeKey = dkm.GetKeyRoot(m.namespace) + activeKey
 	m.scenario = new(dataModel.Scenario)
+	m.connectivityModel = ConnectivityModelOpen
 
 	// Process scenario
 	err = m.parseNodes()
@@ -944,6 +951,14 @@ func (m *Model) GetNetworkGraph() *dijkstra.Graph {
 	return m.networkGraph.graph
 }
 
+// GetConnectivityModel - Get the connectivity model
+func (m *Model) GetConnectivityModel() string {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	return m.connectivityModel
+}
+
 //---Internal Funcs---
 
 func (m *Model) parseNodes() (err error) {
@@ -958,6 +973,9 @@ func (m *Model) parseNodes() (err error) {
 			ctx := NewNodeContext(m.scenario.Name, "", "", "", "")
 			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
 			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
+			if deployment.Connectivity != nil {
+				m.connectivityModel = deployment.Connectivity.Model
+			}
 
 			// Domains
 			for iDomain := range m.scenario.Deployment.Domains {
@@ -1197,6 +1215,10 @@ func IsPhyLoc(typ string) bool {
 
 func IsProc(typ string) bool {
 	return typ == NodeTypeCloudApp || typ == NodeTypeEdgeApp || typ == NodeTypeUEApp
+}
+
+func IsUe(typ string) bool {
+	return typ == NodeTypeUE
 }
 
 func validateParentType(nodeType string, parentType string) bool {

@@ -113,13 +113,14 @@ type SegAlgoNetElem struct {
 
 // SegmentAlgorithm -
 type SegmentAlgorithm struct {
-	Name       string
-	Namespace  string
-	BaseKey    string
-	FlowMap    map[string]*SegAlgoFlow
-	SegmentMap map[string]*SegAlgoSegment
-	Config     SegAlgoConfig
-	rc         *redis.Connector
+	Name              string
+	Namespace         string
+	BaseKey           string
+	FlowMap           map[string]*SegAlgoFlow
+	SegmentMap        map[string]*SegAlgoSegment
+	ConnectivityModel string
+	Config            SegAlgoConfig
+	rc                *redis.Connector
 }
 
 // NewSegmentAlgorithm - Create, Initialize and connect
@@ -132,6 +133,7 @@ func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*Segm
 	algo.BaseKey = dkm.GetKeyRoot(namespace) + metricsKey
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
+	algo.ConnectivityModel = mod.ConnectivityModelOpen
 	algo.Config.MaxBwPerInactiveFlow = 20.0
 	algo.Config.MaxBwPerInactiveFlowFloor = 6.0
 	algo.Config.MinActivityThreshold = 0.3
@@ -154,7 +156,7 @@ func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*Segm
 }
 
 // ProcessScenario -
-func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
+func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) error {
 	var netElemList []SegAlgoNetElem
 
 	// Process empty scenario
@@ -164,6 +166,9 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 		//reset the map
 		algo.FlowMap = make(map[string]*SegAlgoFlow)
 	}
+
+	// Get scenario connectivity model
+	algo.ConnectivityModel = model.GetConnectivityModel()
 
 	// Clear segment & flow maps
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
@@ -235,7 +240,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 		for _, elemDest := range netElemList {
 			if elemSrc.Name != elemDest.Name {
 				// Create flow
-				algo.populateFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0, model)
+				algo.populateFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0, model, pduSessions)
 
 				// Create DB entry to begin collecting metrics for this flow
 				algo.createMetricsEntry(elemSrc.Name, elemDest.Name)
@@ -399,7 +404,8 @@ func (algo *SegmentAlgorithm) deleteMetricsEntries() {
 }
 
 // populateFlow - Create/Update flow
-func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, maxBw float64, model *mod.Model) {
+func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, maxBw float64,
+	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) {
 
 	// Use existing flow if present or Create new flow
 	flow := algo.FlowMap[flowName]
@@ -430,7 +436,7 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 	flow.ConfiguredNetChar.PacketLoss = 0
 	// Create a new path for this flow
 	oldPath := flow.Path
-	flow.Path = algo.createPath(flowName, srcElement, destElement, model)
+	flow.Path = algo.createPath(flowName, srcElement, destElement, model, pduSessions)
 	flow.UpdateRequired = algo.comparePath(oldPath, flow.Path)
 }
 
@@ -453,7 +459,8 @@ func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgo
 }
 
 // createPath -
-func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, model *mod.Model) *SegAlgoPath {
+func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem,
+	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) *SegAlgoPath {
 
 	direction := ""
 	var segment *SegAlgoSegment
@@ -485,16 +492,68 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	// Check if src or dest Physical location is disconnected
 	// NOTE: Does not apply to apps on same physical node
+	var srcPhyLoc *dataModel.PhysicalLocation
 	srcPhyLocNode := model.GetNode(srcElement.PhyLocName)
 	if srcPhyLocNode != nil {
-		if srcPhyLoc, ok := srcPhyLocNode.(*dataModel.PhysicalLocation); ok {
+		var ok bool
+		if srcPhyLoc, ok = srcPhyLocNode.(*dataModel.PhysicalLocation); ok {
 			path.Disconnected = path.Disconnected || !srcPhyLoc.Connected
 		}
 	}
+	var destPhyLoc *dataModel.PhysicalLocation
 	destPhyLocNode := model.GetNode(destElement.PhyLocName)
 	if destPhyLocNode != nil {
-		if destPhyLoc, ok := destPhyLocNode.(*dataModel.PhysicalLocation); ok {
+		var ok bool
+		if destPhyLoc, ok = destPhyLocNode.(*dataModel.PhysicalLocation); ok {
 			path.Disconnected = path.Disconnected || !destPhyLoc.Connected
+		}
+	}
+
+	// If in PDU Connectivity mode, check if src or dest UE has PDU connectivity to DN
+	// NOTE: For LADN, additionally verify that UE and edge app are in the same zone
+	if !path.Disconnected && algo.ConnectivityModel == mod.ConnectivityModelPdu {
+		if mod.IsUe(srcPhyLoc.Type_) {
+			pduMap, ok := pduSessions[srcPhyLoc.Name]
+			if !ok || mod.IsUe(destPhyLoc.Type_) || destPhyLoc.DataNetwork == nil {
+				path.Disconnected = true
+			} else if destPhyLoc.DataNetwork.Ladn && srcElement.ZoneName != destElement.ZoneName {
+				// LADN & not in same zone
+				path.Disconnected = true
+			} else {
+				// Find matching DNN
+				var found bool
+				for _, pdu := range pduMap {
+					if pdu.Dnn == destPhyLoc.DataNetwork.Dnn {
+						found = true
+						break
+					}
+				}
+				if !found {
+					path.Disconnected = true
+				}
+			}
+		}
+
+		if mod.IsUe(destPhyLoc.Type_) {
+			pduMap, ok := pduSessions[destPhyLoc.Name]
+			if !ok || mod.IsUe(srcPhyLoc.Type_) || srcPhyLoc.DataNetwork == nil {
+				path.Disconnected = true
+			} else if srcPhyLoc.DataNetwork.Ladn && srcElement.ZoneName != destElement.ZoneName {
+				// LADN & not in same zone
+				path.Disconnected = true
+			} else {
+				// Find matching DNN
+				var found bool
+				for _, pdu := range pduMap {
+					if pdu.Dnn == srcPhyLoc.DataNetwork.Dnn {
+						found = true
+						break
+					}
+				}
+				if !found {
+					path.Disconnected = true
+				}
+			}
 		}
 	}
 
