@@ -77,10 +77,13 @@ func TestPduSessionStore(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to create store")
 	}
+	pss1.DeleteAllPduSessions()
+
 	pss2, err = NewPduSessionStore(sbox2, redisAddr)
 	if err != nil {
 		t.Fatalf("Unable to create store")
 	}
+	pss2.DeleteAllPduSessions()
 	if pss1 == pss2 {
 		t.Fatalf("Stores should be different")
 	}
@@ -165,18 +168,116 @@ func TestPduSessionStore(t *testing.T) {
 		t.Fatalf("Deleting inexisting PDU Session should fail")
 	}
 
-	// ------------ GetPduSessions  ------------
+	// ------------ GetAllPduSessions ------------
+	fmt.Println("Get All PDU Sessions")
+	pduSessions, err := pss1.GetAllPduSessions()
+	if err != nil {
+		t.Fatalf("Failed to get all PDU Sessions")
+	}
+	if len(pduSessions) != 0 {
+		t.Fatalf("Get all PDU Sessions should return empty map")
+	}
+	pduSessions, err = pss2.GetAllPduSessions()
+	if err != nil {
+		t.Fatalf("Failed to get all PDU Sessions")
+	}
+	if len(pduSessions) != 0 {
+		t.Fatalf("Get all PDU Sessions should return empty map")
+	}
+
+	// Create PDU sessions
+	prepareData()
+
+	// Pss1
+	pduSessions, err = pss1.GetAllPduSessions()
+	if err != nil {
+		t.Fatalf("Failed to get all PDU Sessions")
+	}
+	if len(pduSessions) != 3 {
+		t.Fatalf("Get all PDU Sessions should return 3 UE PDU Session maps")
+	}
+	ps, ok := pduSessions[ue1]
+	if !ok {
+		t.Fatalf("PDU Session map not found for ue1")
+	} else {
+		if len(ps) != 1 {
+			fmt.Println("Got ", len(ps), "PDU Sessions")
+			t.Fatalf("Expected 1 PDU Sessions (sbox1-ue1)")
+		}
+		if ps[pdu1].Dnn != dnn1 {
+			t.Fatalf("Invalid PDU Sessions (sbox1-ue1)")
+		}
+	}
+	ps, ok = pduSessions[ue2]
+	if !ok {
+		t.Fatalf("PDU Session map not found for ue2")
+	} else {
+		if len(ps) != 1 {
+			fmt.Println("Got ", len(ps), "PDU Sessions")
+			t.Fatalf("Expected 1 PDU Sessions (sbox1-ue2)")
+		}
+		if ps[pdu2].Dnn != dnn2 {
+			t.Fatalf("Invalid PDU Sessions (sbox1-ue2)")
+		}
+	}
+	ps, ok = pduSessions[ue3]
+	if !ok {
+		t.Fatalf("PDU Session map not found for ue3")
+	} else {
+		if len(ps) != 1 {
+			fmt.Println("Got ", len(ps), "PDU Sessions")
+			t.Fatalf("Expected 1 PDU Sessions (sbox1-ue3)")
+		}
+		if ps[pdu3].Dnn != dnn3 {
+			t.Fatalf("Invalid PDU Sessions (sbox1-ue3)")
+		}
+	}
+
+	// Pss2
+	pduSessions, err = pss2.GetAllPduSessions()
+	if err != nil {
+		t.Fatalf("Failed to get all PDU Sessions")
+	}
+	if len(pduSessions) != 2 {
+		t.Fatalf("Get all PDU Sessions should return 2 UE PDU Session maps")
+	}
+	ps, ok = pduSessions[ue1]
+	if !ok {
+		t.Fatalf("PDU Session map not found for ue1")
+	} else {
+		if len(ps) != 2 {
+			fmt.Println("Got ", len(ps), "PDU Sessions")
+			t.Fatalf("Expected 2 PDU Sessions (sbox2-ue1)")
+		}
+		if ps[pdu1].Dnn != dnn1 {
+			t.Fatalf("Invalid PDU Sessions (sbox2-ue1-pdu1)")
+		}
+		if ps[pdu2].Dnn != dnn2 {
+			t.Fatalf("Invalid PDU Sessions (sbox2-ue1-pdu2)")
+		}
+	}
+	ps, ok = pduSessions[ue2]
+	if !ok {
+		t.Fatalf("PDU Session map not found for ue2")
+	} else {
+		if len(ps) != 1 {
+			fmt.Println("Got ", len(ps), "PDU Sessions")
+			t.Fatalf("Expected 1 PDU Sessions (sbox2-ue2)")
+		}
+		if ps[pdu3].Dnn != dnn3 {
+			t.Fatalf("Invalid PDU Sessions (sbox2-ue2-pdu3)")
+		}
+	}
+
+	// ------------ GetPduSessions ------------
 	fmt.Println("Get Invalid PDU Sessions")
 	_, err = pss1.GetPduSessions("")
 	if err == nil {
 		t.Fatalf("Getting PDU Sessions should fail (invalid UE)")
 	}
 
-	prepareData()
-	defer clearData()
-
 	fmt.Println("Get PDU Sessions Sbox1")
-	ps, err := pss1.GetPduSessions(ue1)
+	ps, err = pss1.GetPduSessions(ue1)
 	if err != nil {
 		t.Fatalf("Getting PDU Sessions failed (sbox1-ue1)")
 	}
@@ -298,6 +399,10 @@ func TestPduSessionStore(t *testing.T) {
 		t.Fatalf("PDU sesison should be pdu1")
 	}
 
+	// Flush databases
+	pss1.DeleteAllPduSessions()
+	pss2.DeleteAllPduSessions()
+
 	// t.Fatalf("DONE")
 }
 
@@ -326,33 +431,5 @@ func prepareData() {
 	err = pss2.CreatePduSession(ue2, pdu3, pduInfo3)
 	if err != nil {
 		fmt.Println("Error creating sbox2-ue2-pdu3 PDU Session")
-	}
-}
-
-func clearData() {
-	err := pss1.DeletePduSession(ue1, pdu1)
-	if err != nil {
-		fmt.Println("Error deleting sbox1-ue1-pdu1 PDU Session")
-	}
-	err = pss1.DeletePduSession(ue2, pdu2)
-	if err != nil {
-		fmt.Println("Error deleting sbox1-ue2-pdu2 PDU Session")
-	}
-	err = pss1.DeletePduSession(ue3, pdu3)
-	if err != nil {
-		fmt.Println("Error deleting sbox1-ue3-pdu3 PDU Session")
-	}
-
-	err = pss2.DeletePduSession(ue1, pdu1)
-	if err != nil {
-		fmt.Println("Error deleting sbox2-ue1-pdu1 PDU Session")
-	}
-	err = pss2.DeletePduSession(ue1, pdu2)
-	if err != nil {
-		fmt.Println("Error deleting sbox2-ue1-pdu2 PDU Session")
-	}
-	err = pss2.DeletePduSession(ue2, pdu3)
-	if err != nil {
-		fmt.Println("Error deleting sbox2-ue2-pdu3 PDU Session")
 	}
 }
