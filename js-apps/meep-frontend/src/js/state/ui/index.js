@@ -16,17 +16,17 @@
 
 import { updateObject } from '../../util/object-util';
 import {
-  PAGE_CONFIGURE,
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
   MOBILITY_EVENT,
   CFG_VIEW_NETWORK,
-  SCENARIO_UPDATE_ACTION_NONE
+  SCENARIO_UPDATE_ACTION_NONE,
+  PAGE_LOGIN,
+  STATUS_SIGNIN_UNKNOWN
 } from '../../meep-constants';
 
 const initialState = {
-  page: PAGE_CONFIGURE,
-  mainDrawerOpen: true,
+  page: PAGE_LOGIN,
   cfgView: CFG_VIEW_NETWORK,
   mapCfg: {},
   eventCreationMode: false,
@@ -60,7 +60,11 @@ const initialState = {
   replayFileDesc: '',
   sandbox: '',
   sandboxes: [],
-  sandboxCfg: {}
+  sandboxCfg: {},
+  helpMenuDisplay: false,
+  signInStatus: STATUS_SIGNIN_UNKNOWN,
+  signInUsername: '',
+  activeTabIndex: 0
 };
 
 // Change the current page
@@ -72,11 +76,12 @@ export function uiChangeCurrentPage(page) {
   };
 }
 
-const TOGGLE_MAIN_DRAWER = 'TOGGLE_MAIN_DRAWER';
-export function uiToggleMainDrawer() {
+// Change the current tab index
+const CHANGE_CURRENT_TAB = 'CHANGE_CURRENT_TAB';
+export function uiChangeCurrentTab(activeTabIndex) {
   return {
-    type: TOGGLE_MAIN_DRAWER,
-    payload: null
+    type: CHANGE_CURRENT_TAB,
+    payload: activeTabIndex
   };
 }
 
@@ -344,12 +349,37 @@ export const uiExecChangeReplayLoop = val => {
   };
 };
 
+// Change the help menu display
+const CHANGE_HELP_MENU_DISPLAY = 'CHANGE_HELP_MENU_DISPLAY';
+export function uiChangeHelpMenuDisplay(display) {
+  return {
+    type: CHANGE_HELP_MENU_DISPLAY,
+    payload: display
+  };
+}
+
+const UI_CHANGE_SIGN_IN_STATUS = 'UI_CHANGE_SIGN_IN_STATUS';
+export function uiChangeSignInStatus(status) {
+  return {
+    type: UI_CHANGE_SIGN_IN_STATUS,
+    payload: status
+  };
+}
+
+const UI_CHANGE_SIGN_IN_USER_NAME = 'UI_CHANGE_SIGN_IN_USER_NAME';
+export function uiChangeSignInUsername(name) {
+  return {
+    type: UI_CHANGE_SIGN_IN_USER_NAME,
+    payload: name
+  };
+}
+
 export default function uiReducer(state = initialState, action) {
   switch (action.type) {
   case CHANGE_CURRENT_PAGE:
     return updateObject(state, { page: action.payload });
-  case TOGGLE_MAIN_DRAWER:
-    return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
+  case CHANGE_CURRENT_TAB:
+    return updateObject(state, { activeTabIndex: action.payload });
   case UI_CFG_CHANGE_VIEW:
     return updateObject(state, { cfgView: action.payload });
   case UI_CFG_CHANGE_MAP_CFG:
@@ -416,6 +446,12 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { replayFileDesc: action.payload });
   case UI_EXEC_CHANGE_REPLAY_LOOP:
     return updateObject(state, { eventReplayLoop: action.payload });
+  case CHANGE_HELP_MENU_DISPLAY:
+    return updateObject(state, { helpMenuDisplay: action.payload });
+  case UI_CHANGE_SIGN_IN_STATUS:
+    return updateObject(state, { signInStatus: action.payload });
+  case UI_CHANGE_SIGN_IN_USER_NAME:
+    return updateObject(state, { signInUsername: action.payload });
   default:
     return state;
   }

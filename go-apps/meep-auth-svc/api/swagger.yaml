@@ -97,6 +97,16 @@ paths:
         - "gitlab"
         x-exportParamName: "Provider"
         x-optionalDataType: "String"
+      - name: "sbox"
+        in: "query"
+        description: "Create Sandbox by default"
+        required: false
+        type: "string"
+        enum:
+        - "true"
+        - "false"
+        x-exportParamName: "Sbox"
+        x-optionalDataType: "String"
       responses:
         302:
           description: "Found"

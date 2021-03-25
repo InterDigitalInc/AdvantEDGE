@@ -167,6 +167,7 @@
      * Start OAuth login procedure with provider
      * @param {Object} opts Optional parameters
      * @param {module:model/String} opts.provider Oauth provider
+     * @param {module:model/String} opts.sbox Create Sandbox by default
      * @param {module:api/AuthApi~loginCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.login = function(opts, callback) {
@@ -178,6 +179,7 @@
       };
       var queryParams = {
         'provider': opts['provider'],
+        'sbox': opts['sbox'],
       };
       var collectionQueryParams = {
       };

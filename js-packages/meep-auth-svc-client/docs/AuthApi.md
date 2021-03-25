@@ -126,7 +126,8 @@ var AdvantEdgeAuthServiceRestApi = require('advant_edge_auth_service_rest_api');
 var apiInstance = new AdvantEdgeAuthServiceRestApi.AuthApi();
 
 var opts = { 
-  'provider': "provider_example" // String | Oauth provider
+  'provider': "provider_example", // String | Oauth provider
+  'sbox': "sbox_example" // String | Create Sandbox by default
 };
 
 var callback = function(error, data, response) {
@@ -144,6 +145,7 @@ apiInstance.login(opts, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **provider** | **String**| Oauth provider | [optional] 
+ **sbox** | **String**| Create Sandbox by default | [optional] 
 
 ### Return type
 

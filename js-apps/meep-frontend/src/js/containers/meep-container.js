@@ -26,13 +26,14 @@ import * as meepPlatformCtrlRestApiClient from '../../../../../js-packages/meep-
 import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-sandbox-ctrl-client/src/index.js';
 import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
 import * as meepGisEngineRestApiClient from '../../../../../js-packages/meep-gis-engine-client/src/index.js';
+import * as meepAuthSvcRestApiClient from '../../../../../js-packages/meep-auth-svc-client/src/index.js';
 
-// import MeepDrawer from './meep-drawer';
 import MeepTopBar from '../components/meep-top-bar';
 import CfgPageContainer from './cfg/cfg-page-container';
 import ExecPageContainer from './exec/exec-page-container';
 import SettingsPageContainer from './settings/settings-page-container';
 import MonitorPageContainer from './monitor/monitor-page-container';
+import LoginPageContainer from './home/login-page-container';
 
 import {
   HOST_PATH,
@@ -44,7 +45,15 @@ import {
   PAGE_CONFIGURE,
   PAGE_EXECUTE,
   PAGE_MONITOR,
-  PAGE_SETTINGS
+  PAGE_SETTINGS,
+  PAGE_LOGIN,
+  STATUS_SIGNED_IN,
+  STATUS_SIGNING_IN,
+  STATUS_SIGNED_OUT,
+  STATUS_SIGNIN_NOT_SUPPORTED,
+  STATUS_SIGNIN_UNKNOWN,
+  PAGE_LOGIN_INDEX,
+  PAGE_CONFIGURE_INDEX
 } from '../meep-constants';
 
 import {
@@ -63,7 +72,9 @@ import {
   uiExecChangeSandboxCfg,
   uiExecChangeEventCreationMode,
   uiExecChangeEventReplayMode,
-  uiToggleMainDrawer
+  uiChangeSignInStatus,
+  uiChangeSignInUsername,
+  uiChangeCurrentTab
 } from '../state/ui';
 
 import {
@@ -106,7 +117,6 @@ class MeepContainer extends Component {
     super(props);
     autoBind(this);
 
-    this.state = {};
     this.platformRefreshIntervalTimer = null;
     this.execPageRefreshIntervalTimer = null;
     this.replayStatusRefreshIntervalTimer = null;
@@ -117,6 +127,7 @@ class MeepContainer extends Component {
     this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
     this.meepEventAutomationApi = new meepGisEngineRestApiClient.AutomationApi();
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
+    this.meepAuthApi = new meepAuthSvcRestApiClient.AuthApi();
   }
 
   componentDidMount() {
@@ -127,6 +138,40 @@ class MeepContainer extends Component {
     this.monitorTabFocus();
   }
 
+  componentWillMount() {
+    if (this.props.signInStatus === STATUS_SIGNIN_UNKNOWN) {
+      this.meepAuthApi.loginSupported((_, __, response) => {
+        if (response.status === 404) {
+          this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
+          this.props.changeCurrentPage(PAGE_CONFIGURE);
+          this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
+        } else if (response.status === 200) {
+          this.props.changeSignInStatus(STATUS_SIGNED_IN);
+        } else {
+          this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+        }
+      });
+    }
+
+    // Handle OAuth login in progress
+    if (this.props.signInStatus === STATUS_SIGNING_IN) {
+      let params = (new URL(document.location)).searchParams;
+      let userName = params.get('user');
+      if (userName) {
+        this.props.changeSignInUsername(userName);
+        // Remove Query params from URL now that we have stored them
+        window.history.replaceState({}, document.title, '/');
+        this.props.changeSignInStatus(STATUS_SIGNED_IN);
+        this.props.changeCurrentPage(PAGE_CONFIGURE);
+        this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
+      } else {
+        // Sign in failed
+        this.logout();
+        this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+      }
+    }
+  }
+  
   // Timers
   startTimers() {
     this.startPlatformRefresh();
@@ -168,6 +213,7 @@ class MeepContainer extends Component {
       1000
     );
   }
+
   stopExecPageRefresh() {
     clearInterval(this.execPageRefreshIntervalTimer);
   }
@@ -638,34 +684,67 @@ class MeepContainer extends Component {
 
     case PAGE_MONITOR:
       return <MonitorPageContainer style={{ paddingRight: '100%' }} />;
+    
+    case PAGE_LOGIN:
+      return <LoginPageContainer onSignIn={(provider) => this.signInOAuth(provider)}/>;
 
     default:
       return null;
     }
   }
 
-  render() {
-    // const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
+  /**
+   * Callback function to receive the result of the logout operation.
+   * @callback module:api/AuthenticationApi~logout
+   * @param {String} error Error message, if any.
+   * @param none
+   * @param {String} response The complete HTTP response.
+   */
+  logoutCb() {
+    this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+    if (this.props.currentPage !== PAGE_LOGIN) {
+      this.props.changeCurrentPage(PAGE_LOGIN);
+      this.props.changeTabIndex(PAGE_LOGIN_INDEX);
+    }
+  }
 
+  logout() {
+    this.meepAuthApi.logout((error, data, response) => {
+      this.logoutCb(error, data, response);
+    });
+  }
+
+  signInProcedure() {
+    if (this.props.signInStatus === STATUS_SIGNED_IN) {
+      this.logout();
+    } else {
+      this.props.changeCurrentPage(PAGE_LOGIN);
+      this.props.changeTabIndex(PAGE_LOGIN_INDEX);
+    }
+  }
+
+  signInOAuth(provider) {
+    // Set state to signing in
+    this.props.changeSignInStatus(STATUS_SIGNING_IN);
+    window.location.href = HOST_PATH + '/auth/v1/login?provider=' + provider;
+  }
+
+  render() {
     return (
       <div style={{ display: 'table', width: '100%', height: '100%' }}>
         <div style={{ display: 'table-row' }}>
           <MeepTopBar
             title=""
-            toggleMainDrawer={this.props.toggleMainDrawer}
             corePodsRunning={this.props.corePodsRunning}
             corePodsErrors={this.props.corePodsErrors}
+            onClickSignIn={() => this.signInProcedure()}
           />
         </div>
         <div style={{ display: 'table-row', height: '100%' }}>
           <div style={{ display: 'flex', height: '100%' }}>
-            {/* <div
-              className="component-style"
-              style={{ flex: flexString, borderRight: '1px solid #e4e4e4', overflow: 'hidden' }}
-            >
-              <MeepDrawer open={this.props.mainDrawerOpen} />
-            </div> */}
-            <div style={{ flex: '1', padding: 10, paddingLeft: 20 }}>{this.renderPage()}</div>
+            <div style={{ flex: '1', padding: 10 }}>
+              {this.renderPage()}
+            </div>
           </div>
         </div>
       </div>
@@ -687,12 +766,12 @@ const mapStateToProps = state => {
     automaticRefresh: state.ui.automaticRefresh,
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
-    mainDrawerOpen: state.ui.mainDrawerOpen,
     eventReplayMode: state.ui.eventReplayMode,
     eventCfgMode: state.ui.eventCfgMode,
     corePodsRunning: corePodsRunning(state),
     corePodsErrors: corePodsErrors(state),
-    execVisData: execVisFilteredData(state)
+    execVisData: execVisFilteredData(state),
+    signInStatus: state.ui.signInStatus
   };
 };
 
@@ -720,7 +799,9 @@ const mapDispatchToProps = dispatch => {
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
-    toggleMainDrawer: () => dispatch(uiToggleMainDrawer())
+    changeSignInStatus: status => dispatch(uiChangeSignInStatus(status)),
+    changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
+    changeTabIndex: index => dispatch(uiChangeCurrentTab(index))
   };
 };
 

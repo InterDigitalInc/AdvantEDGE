@@ -98,6 +98,7 @@
           /*
           var opts = {};
           opts.provider = "provider_example";
+          opts.sbox = "sbox_example";
 
           instance.login(opts, function(error, data, response) {
             if (error) {
