@@ -1374,7 +1374,7 @@ prometheus:
   # Thanos sidecar on prometheus nodes
   # (Please remember to change ${kube-prometheus-stack.fullname} and ${namespace}. Not just copy and paste!)
   thanosService:
-    enabled: false
+    enabled: true
     annotations: {}
     labels: {}
     portName: grpc
@@ -2095,7 +2095,12 @@ prometheus:
     ## This is experimental and may change significantly without backward compatibility in any release.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#thanosspec
     ##
-    thanos: {}
+    thanos:
+      # image: quay.io/thanos/thanos
+      # version: v0.8.1
+      objectStorageConfig:
+        key: thanos.yaml
+        name: thanos-objstore-config
 
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
     ##  if using proxy extraContainer  update targetPort with proxy container port

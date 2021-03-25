@@ -44,7 +44,15 @@ clusterDomain: cluster.local
 ## Objstore Configuration
 ## Specify content for objstore.yml
 ##
-# objstoreConfig:
+objstoreConfig:
+  type: s3
+  config:
+    bucket: thanos
+    endpoint: 10.190.114.148:9000
+    access_key: admin
+    secret_key: password
+    http_config:
+      insecure_skip_verify: true
 
 ## Index cache Configuration
 ## Specify content for index-cache.yml
@@ -105,7 +113,7 @@ query:
     enabled: true
     ## Sidecars service name to discover them using DNS discovery
     ## Evaluated as a template.
-    # sidecarsService: "{{ .Release.Name }}-prometheus-thanos"
+    sidecarsService: "meep-prometheus-thanos-discovery"
     ##
     ## Sidecars namespace to discover them using DNS discovery
     ## Evaluated as a template.
@@ -207,8 +215,8 @@ query:
   ##
   securityContext:
     enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+    fsGroup: 1000
+    runAsUser: 1000
 
   # Create ClusterRole and ClusterRolebing for the Service account
   rbac:
@@ -302,7 +310,8 @@ query:
   service:
     ## Service type
     ##
-    type: ClusterIP
+    # type: ClusterIP
+    type: NodePort
     ## Thanos Query service clusterIP IP
     ##
     # clusterIP: None
@@ -313,7 +322,7 @@ query:
       ## Specify the nodePort value for the LoadBalancer and NodePort service types.
       ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
       ##
-      # nodePort:
+      nodePort: 30090
     ## GRPC Port
     ##
     grpc:
@@ -606,8 +615,8 @@ queryFrontend:
   ##
   securityContext:
     enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+    fsGroup: 1000
+    runAsUser: 1000
 
   # Create ClusterRole and ClusterRolebing for the Service account
   rbac:
@@ -658,7 +667,8 @@ queryFrontend:
   service:
     ## Service type
     ##
-    type: ClusterIP
+    # type: ClusterIP
+    type: NodePort
     ## Thanos Query Frontend service clusterIP IP
     ##
     # clusterIP: None
@@ -669,7 +679,7 @@ queryFrontend:
       ## Specify the nodePort value for the LoadBalancer and NodePort service types.
       ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
       ##
-      # nodePort:
+      nodePort: 30091
     ##
     ## Set the LoadBalancer service type to internal only.
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
@@ -894,8 +904,8 @@ bucketweb:
   ##
   securityContext:
     enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+    fsGroup: 1000
+    runAsUser: 1000
 
   ## Thanos Bucket Web containers' resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -1169,8 +1179,8 @@ compactor:
   ##
   securityContext:
     enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+    fsGroup: 1000
+    runAsUser: 1000
 
   ## Thanos Compactor containers' resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -1274,7 +1284,7 @@ compactor:
 storegateway:
   ## Set to true to enable Thanos Store Gateway component
   ##
-  enabled: false
+  enabled: true
 
   ## Log level
   ##
@@ -1423,8 +1433,8 @@ storegateway:
   ##
   securityContext:
     enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+    fsGroup: 1000
+    runAsUser: 1000
 
   ## Thanos Store Gateway containers' resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -1514,7 +1524,7 @@ storegateway:
   ## Persistence parameters
   ##
   persistence:
-    enabled: true
+    enabled: false
     ## A manually managed Persistent Volume and Claim
     ## If defined, PVC must be created manually before volume will be bound
     ## The value is evaluated as a template
@@ -1702,8 +1712,8 @@ ruler:
   ##
   securityContext:
     enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+    fsGroup: 1000
+    runAsUser: 1000
 
   ## Thanos Ruler containers' resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
