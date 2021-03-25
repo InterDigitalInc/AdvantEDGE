@@ -1,0 +1,601 @@
+# Copyright (c) 2020  InterDigital Communications, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#------------------------------------------------------------------------------
+#  NOTES:
+#  - Fileserver names must be unique for all fileservers
+#  - Service endpoint names must be unique within a service
+#  - 'mode' is the access authorization mode
+#    -> allow: grant access 
+#    -> block: deny access
+#    -> verify: obtain session role & verify role-specific access permissions
+#  - 'roles' is a map of role permissions
+#    -> allow: grant access 
+#    -> block: deny access 
+#  - Default access mode & role permissions are used when service-specific
+#    values are not provided
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+#  DEFAULT PERMISSIONS:
+#  Default access mode & permissions for File Server & Service API routes.
+#
+#  FORMAT:
+#  mode: 'verify'         # access authorization mode: allow|block|verify
+#  roles:                 # role permissions: allow|block
+#    admin: 'allow'
+#    user: 'block'
+#------------------------------------------------------------------------------
+default:
+  mode: 'block'
+
+# #------------------------------------------------------------------------------
+# #  FILESERVER PERMISSIONS
+# #  File Server access permissions.
+# #
+# #  FORMAT:
+# #  - name: 'fs-name'              # fileserver name
+# #    path: '/path/to/fs'          # fileserver path
+# #    sbox: true|false             # sandbox deployment
+# #    mode: 'allow|block|verify'   # access authorization mode
+# #    roles:                       # role-specific permissions
+# #      admin: 'allow|block'
+# #      user: 'allow|block'
+# #
+# #  !!! IMPORTANT NOTE !!!
+# #  Fileserver route matching is performed in the order defined below.
+# #  You must place more specific routes first.
+# #------------------------------------------------------------------------------
+fileservers:
+  #------------------------------
+  #  Grafana (3rd Party)
+  #------------------------------
+  - name: 'grafana'
+    path: '/grafana'
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'allow'
+  #------------------------------
+  #  Swagger UI
+  #------------------------------
+  - name: 'meep-swagger-ui'
+    path: '/api/'
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'allow'
+#   #------------------------------
+#   #  Alternate Swagger UI
+#   #------------------------------
+#   - name: 'meep-alt-swagger-ui'
+#     path: '/alt/api/'
+#     mode: 'verify'
+#     roles:
+#       admin: 'allow'
+#       user: 'block'
+#   #------------------------------
+#   #  Alternate Frontend
+#   #------------------------------
+#   - name: 'meep-alt-frontend'
+#     path: '/alt/'
+#     mode: 'verify'
+#     roles:
+#       admin: 'allow'
+#       user: 'block'
+  #------------------------------
+  #  Sandbox Swagger UI (Sbox)
+  #------------------------------
+  - name: 'meep-sbox-swagger-ui'
+    path: '/api/'
+    sbox: true
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'allow'
+#   #------------------------------
+#   #  Sandbox Alternate Swagger UI (Sbox)
+#   #------------------------------
+#   - name: 'meep-alt-sbox-swagger-ui'
+#     path: '/alt/api/'
+#     sbox: true
+#     mode: 'verify'
+#     roles:
+#       admin: 'allow'
+#       user: 'block'
+  #------------------------------
+  #  Frontend (Default)
+  #------------------------------
+  - name: 'meep-frontend'
+    path: '/'
+    mode: 'allow'
+
+# #------------------------------------------------------------------------------
+# #  SERVICE ENDPOINT PERMISSIONS
+# #  Service REST API endpoint access permissions.
+# #
+# #  FORMAT:
+# #  - name: 'svc-name'                   # service name
+# #    path: '/svc/base/path'             # service base path
+# #    sbox: true|false                   # sandbox deployment
+# #    default:                           # default service permissions
+# #      mode: 'allow|block|verify'       # access authorization mode
+# #      roles:                           # role-specific permissions
+# #        admin: 'allow|block'
+# #        user: 'allow|block'
+# #    endpoints:                         # Endpoint permissions (overrides default)
+# #      - name 'endpoint-name'           # endpoint name
+# #        path: '/endpoint/path'         # endpoint path
+# #        method: 'GET|POST|PUT|DELETE'  # endpoint method
+# #        mode: 'allow|block|verify'     # access authorization mode
+# #        roles:                         # role-specific permissions
+# #          admin: 'allow|block'
+# #          user: 'allow|block'
+# #------------------------------------------------------------------------------
+services:
+  #------------------------------
+  #  GIS Engine (Sbox)
+  #------------------------------
+  - name: 'meep-gis-engine'
+    path: '/gis/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'GetAutomationState'
+#         path: '/automation'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetAutomationStateByName'
+#         path: '/automation/{type}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'SetAutomationStateByName'
+#         path: '/automation/{type}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'DeleteGeoDataByName'
+#         path: '/geodata/{assetName}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetAssetData'
+#         path: '/geodata'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetGeoDataByName'
+#         path: '/geodata/{assetName}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'UpdateGeoDataByName'
+#         path: '/geodata/{assetName}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+  #------------------------------
+  #  Location Service (Sbox)
+  #------------------------------
+  - name: 'meep-loc-serv'
+    path: '/location/v2'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+  #------------------------------
+  #  Metrics Engine (Sbox)
+  #------------------------------
+  - name: 'meep-metrics-engine'
+    path: '/metrics/v2'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'PostEventQuery'
+#         path: '/metrics/query/event'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'PostHttpQuery'
+#         path: '/metrics/query/http'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'PostNetworkQuery'
+#         path: '/metrics/query/network'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'CreateEventSubscription'
+#         path: '/metrics/subscriptions/event'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'CreateNetworkSubscription'
+#         path: '/metrics/subscriptions/network'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteEventSubscriptionById'
+#         path: '/metrics/subscriptions/event/{subscriptionId}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteNetworkSubscriptionById'
+#         path: '/metrics/subscriptions/network/{subscriptionId}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetEventSubscription'
+#         path: '/metrics/subscriptions/event'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetEventSubscriptionById'
+#         path: '/metrics/subscriptions/event/{subscriptionId}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetNetworkSubscription'
+#         path: '/metrics/subscriptions/network'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetNetworkSubscriptionById'
+#         path: '/metrics/subscriptions/network/{subscriptionId}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+  #------------------------------
+  #  Mobility Group Manager (Sbox)
+  #------------------------------
+  - name: 'meep-mg-manager'
+    path: '/mgm/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+  #------------------------------
+  #  Monitoring Engine
+  #------------------------------
+  - name: 'meep-mon-engine'
+    path: '/mon-engine/v1'
+    sbox: false
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#       - name: 'GetStates'
+#         path: '/states'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+  #------------------------------
+  #  Platform Controller
+  #------------------------------
+  - name: 'meep-platform-ctrl'
+    path: '/platform-ctrl/v1'
+    sbox: false
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#       - name: 'CreateSandbox'
+#         path: '/sandboxes'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'CreateSandboxWithName'
+#         path: '/sandboxes/{name}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteSandbox'
+#         path: '/sandboxes/{name}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteSandboxList'
+#         path: '/sandboxes'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetSandbox'
+#         path: '/sandboxes/{name}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetSandboxList'
+#         path: '/sandboxes'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'CreateScenario'
+#         path: '/scenarios/{name}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteScenario'
+#         path: '/scenarios/{name}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteScenarioList'
+#         path: '/scenarios'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetScenario'
+#         path: '/scenarios/{name}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetScenarioList'
+#         path: '/scenarios'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'SetScenario'
+#         path: '/scenarios/{name}'
+#         method: 'PUT'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+  #------------------------------
+  #  RNI Service (Sbox)
+  #------------------------------
+  - name: 'meep-rnis'
+    path: '/rni/v2'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+  #------------------------------
+  #  Sandbox Controller (Sbox)
+  #------------------------------
+  - name: 'meep-sandbox-ctrl'
+    path: '/sandbox-ctrl/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#       - name: 'ActivateScenario'
+#         path: '/active/{name}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetActiveNodeServiceMaps'
+#         path: '/active/serviceMaps'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetActiveScenario'
+#         path: '/active'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'TerminateScenario'
+#         path: '/active'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'CreateReplayFile'
+#         path: '/replay/{name}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'CreateReplayFileFromScenarioExec'
+#         path: '/replay/{name}/generate'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteReplayFile'
+#         path: '/replay/{name}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'DeleteReplayFileList'
+#         path: '/replay'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetReplayFile'
+#         path: '/replay/{name}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetReplayFileList'
+#         path: '/replay'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetReplayStatus'
+#         path: '/replaystatus'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'LoopReplay'
+#         path: '/replay/{name}/loop'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'PlayReplayFile'
+#         path: '/replay/{name}/play'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'StopReplayFile'
+#         path: '/replay/{name}/stop'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'SendEvent'
+#         path: '/events/{type}'
+#         method: 'POST'
+#         mode: 'allow'
+  #------------------------------
+  #  WAI Service (Sbox)
+  #------------------------------
+  - name: 'meep-wais'
+    path: '/wai/v2'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'

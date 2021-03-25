@@ -67,6 +67,8 @@ repo:
         redirect-uri: https://my-platform-fqdn/auth/v1/authorize
         # OAuth k8s secret (data: client-id, secret)
         secret: meep-oauth-github
+        # Is platform [open|secure] for all github users or only selected ones
+        provider-mode: open
       # GitLab OAuth provider config
       gitlab:
         # enable GitLab OAuth
@@ -134,7 +136,7 @@ repo:
         # AdvantEDGE resources included in Docker container image
         docker-data:
           # location of REST API permissions file
-          'permissions.yaml': config/permissions.yaml
+          'permissions.yaml': config/public-permissions.yaml
       meep-ingress-certs:
         # enable meepctl build
         build: false
