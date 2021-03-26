@@ -110,10 +110,10 @@ query:
   ## Dynamically configure store APIs using DNS discovery
   ##
   dnsDiscovery:
-    enabled: true
+    enabled: false
     ## Sidecars service name to discover them using DNS discovery
     ## Evaluated as a template.
-    sidecarsService: "meep-prometheus-thanos-discovery"
+    # sidecarsService: "{{ .Release.Namespace }}-prometheus-thanos"
     ##
     ## Sidecars namespace to discover them using DNS discovery
     ## Evaluated as a template.
@@ -121,7 +121,8 @@ query:
 
   ## Statically configure store APIs to connect with Thanos Query
   ##
-  stores: []
+  stores:
+    - "dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local"
 
   ## Query Service Discovery Configuration
   ## Specify content for servicediscovery.yml
