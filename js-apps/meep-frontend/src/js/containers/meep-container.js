@@ -111,6 +111,8 @@ var basepathMonEngine = HOST_PATH + '/mon-engine/v1';
 meepMonEngineRestApiClient.ApiClient.instance.basePath = basepathMonEngine.replace(/\/+$/,'');
 var basepathGisEngine = HOST_PATH + '/gis/v1';
 meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
+var basepathAuthSvc = HOST_PATH + '/auth/v1';
+meepAuthSvcRestApiClient.ApiClient.instance.basePath = basepathAuthSvc.replace(/\/+$/,'');
 
 class MeepContainer extends Component {
   constructor(props) {
