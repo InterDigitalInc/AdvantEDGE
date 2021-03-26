@@ -66,6 +66,7 @@ const moduleNamespace = "default"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
 const pfmCtrlBasepath = "http://meep-platform-ctrl/platform-ctrl/v1"
+const providerModeSecure = "secure"
 
 // Permission Configuration types
 type Permission struct {
@@ -109,8 +110,9 @@ type AuthRoute struct {
 }
 
 type LoginRequest struct {
-	provider string
-	timer    *time.Timer
+	provider      string
+	createSandbox string
+	timer         *time.Timer
 }
 
 type PermissionsCache struct {
@@ -771,8 +773,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	}
 	metric.User = userId
 
-	createSandboxStr := request.createSandbox
-	createSandbox, err := strconv.ParseBool(createSandboxStr)
+	createSandbox, err := strconv.ParseBool(request.createSandbox)
 	if err != nil {
 		createSandbox = false
 	}
@@ -792,8 +793,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 
 	// Redirect user to sandbox
-	// http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
-	http.Redirect(w, r, authSvc.uri+"?user="+userId+"&role="+userRole, http.StatusFound)
+	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
 	metricSessionSuccess.Inc()
 	if isNew {
 		metricSessionActive.Inc()
@@ -808,7 +808,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 	// Retrieve query parameters
 	query := r.URL.Query()
 	provider := query.Get("provider")
-	createSandbox := query.Get("createSandbox")
+	createSandbox := query.Get("sbox")
 	metric.Provider = provider
 
 	// Get provider-specific OAuth config
@@ -927,11 +927,15 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		}
 
 		// Get requested sandbox name & role from user profile, if any
+		providerMode := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_PROVIDER_MODE"))
 		role := users.RoleUser
 		user, err := authSvc.userStore.GetUser(provider, username)
 		if err == nil {
 			sandboxName = user.Sboxname
 			role = user.Role
+		}
+		if err != nil && providerMode == providerModeSecure {
+			return "", false, "", err, http.StatusPreconditionFailed
 		}
 
 		// Create sandbox
@@ -969,7 +973,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 	if err != nil {
 		log.Error("Failed to set session with err: ", err.Error())
 		// Remove newly created sandbox on failure
-		if session.ID == "" {
+		if session.ID == "" && createSandbox {
 			_, _ = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), sandboxName)
 		}
 		return "", false, "", err, code
