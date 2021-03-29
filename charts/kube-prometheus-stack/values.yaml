@@ -1660,7 +1660,11 @@ prometheus:
 
     ## External labels to add to any time series or alerts when communicating with external systems
     ##
-    externalLabels: {}
+    externalLabels:
+      region: mtl
+      monitor: platform
+      promenv: dev
+      replica: kev-dev
 
     ## Name of the external label used to denote replica name
     ##

@@ -110,10 +110,10 @@ query:
   ## Dynamically configure store APIs using DNS discovery
   ##
   dnsDiscovery:
-    enabled: false
+    enabled: true
     ## Sidecars service name to discover them using DNS discovery
     ## Evaluated as a template.
-    # sidecarsService: "{{ .Release.Namespace }}-prometheus-thanos"
+    # sidecarsService: "{{ .Release.Name }}-prometheus-thanos"
     ##
     ## Sidecars namespace to discover them using DNS discovery
     ## Evaluated as a template.
@@ -1068,7 +1068,7 @@ bucketweb:
 compactor:
   ## Set to true to enable Thanos Compactor component
   ##
-  enabled: false
+  enabled: true
 
   ## Log level
   ##
@@ -1105,6 +1105,8 @@ compactor:
   ## Extra Flags to passed to Thanos Compactor
   ##
   extraFlags: []
+  # extraFlags:
+  #   - --delete-delay=0
 
   ## StrategyType, can be set to RollingUpdate or Recreate by default.
   ##
@@ -1259,7 +1261,7 @@ compactor:
   ## Persistence parameters
   ##
   persistence:
-    enabled: true
+    enabled: false
     ## A manually managed Persistent Volume and Claim
     ## If defined, PVC must be created manually before volume will be bound
     ## The value is evaluated as a template
