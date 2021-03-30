@@ -135,7 +135,7 @@ class MeepTopBar extends Component {
         <Toolbar>
           <Elevation z={4}>
             <ToolbarRow>
-              <ToolbarSection alignStart>
+              <ToolbarSection alignStart style={{display:'contents'}}>
                 <img
                   id='idcc-logo'
                   className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'

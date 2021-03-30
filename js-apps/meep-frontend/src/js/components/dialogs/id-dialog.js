@@ -94,7 +94,8 @@ const styles = {
   },
   content: {
     paddingLeft: 25,
-    paddingRight: 30
+    paddingRight: 30,
+    overflow: 'hidden'
   },
   actions: {
     marginTop: 20

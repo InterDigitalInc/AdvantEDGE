@@ -45,11 +45,11 @@ class LoginPageContainer extends Component {
   updateLoginBox() {
     let elevation = document.getElementById('elevationTag');
     if (this.props.signInStatus !== STATUS_SIGNED_OUT) {
-      elevation.style.width = '53%';
-      elevation.style.marginLeft = '25%';
+      elevation.style.width = '50%';
+      elevation.style.marginLeft = '23%';
     } else {
-      elevation.style.width = '80%';
-      elevation.style.marginLeft = '10%';
+      elevation.style.width = '75%';
+      elevation.style.marginLeft = '11%';
     }
   }
 
@@ -68,7 +68,7 @@ class LoginPageContainer extends Component {
           />
           <Elevation z={3} style={styles.elevation} id='elevationTag'>
             <Grid style={ signedOut ? styles.gridLine : null}>
-              <GridCell span={signedOut ? 8 : 12}>
+              <GridCell span={signedOut ? 8 : 12} style={{paddingRight:'10px'}}>
                 <span style={styles.text}>
                   <p> AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes.</p>
                   <p>
@@ -126,27 +126,27 @@ class LoginPageContainer extends Component {
                 <GridCell span="10">
                   <GridInner>
                     <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/wiki" style={styles.headerText}>
+                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/wiki" target="_blank" style={styles.headerText}>
                         Wiki
                       </a>
                     </GridCell>
                     <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE" style={styles.headerText}>
+                      <a href="https://github.com/InterDigitalInc/AdvantEDGE" target="_blank" style={styles.headerText}>
                         Github
                       </a>
                     </GridCell>
                     <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/discussions" style={styles.headerText}>
+                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/discussions" target="_blank" style={styles.headerText}>
                         Discussions
                       </a>
                     </GridCell>
                     <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE" style={styles.headerText}>
+                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE" target="_blank" style={styles.headerText}>
                         License
                       </a>
                     </GridCell>
                     <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md" style={styles.headerText}>
+                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md" target="_blank" style={styles.headerText}>
                         Contributing
                       </a>
                     </GridCell>
@@ -178,15 +178,16 @@ const styles = {
   },
   elevation: {
     padding: '30px',
-    width: '80%',
-    marginLeft: '10%',
-    marginTop: '3%',
+    width: '75%',
+    marginLeft: '11%',
+    marginTop: '2%',
     background: 'white'
   },
   logo: {
     height: 120,
-    width: 500,
-    marginLeft: '40%'
+    width: '25%',
+    marginLeft: '37.5%',
+    marginTop: '1%',
   },
   headerText: {
     fontFamily: 'sans-serif',
@@ -195,9 +196,9 @@ const styles = {
     fontSize: '1.3rem'
   },
   footer: {
-    marginTop: '9%',
+    marginTop: '8%',
     marginLeft: '15%',
-    width: '75%'
+    width: '70%'
   },
   gridLine: {
     background: 'linear-gradient(#9d9d9d,#9d9d9d) center/2px 100% no-repeat',

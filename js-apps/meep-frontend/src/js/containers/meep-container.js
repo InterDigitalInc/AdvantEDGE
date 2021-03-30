@@ -114,11 +114,14 @@ meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.repla
 var basepathAuthSvc = HOST_PATH + '/auth/v1';
 meepAuthSvcRestApiClient.ApiClient.instance.basePath = basepathAuthSvc.replace(/\/+$/,'');
 
+const SESSION_KEEPALIVE_INTERVAL = 600000; // 10 min
+
 class MeepContainer extends Component {
   constructor(props) {
     super(props);
     autoBind(this);
 
+    this.sessionKeepaliveTimer = null;
     this.platformRefreshIntervalTimer = null;
     this.execPageRefreshIntervalTimer = null;
     this.replayStatusRefreshIntervalTimer = null;
@@ -151,6 +154,7 @@ class MeepContainer extends Component {
           this.props.changeSignInStatus(STATUS_SIGNED_IN);
         } else {
           this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+          this.logout();
         }
       });
     }
@@ -166,6 +170,7 @@ class MeepContainer extends Component {
         this.props.changeSignInStatus(STATUS_SIGNED_IN);
         this.props.changeCurrentPage(PAGE_CONFIGURE);
         this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
+        this.startSessionKeepaliveTimer();
       } else {
         // Sign in failed
         this.logout();
@@ -184,6 +189,7 @@ class MeepContainer extends Component {
     this.stopReplayStatusRefresh();
     this.stopExecPageRefresh();
     this.stopPlatformRefresh();
+    this.stopSessionKeepaliveTimer()
   }
 
   // Platform refresh
@@ -695,6 +701,27 @@ class MeepContainer extends Component {
     }
   }
 
+  // Session Keep-alive
+  startSessionKeepaliveTimer() {
+    if (!this.sessionKeepaliveTimer) {
+      this.meepAuthApi.triggerWatchdog();
+
+      // Start keepalive timer
+      this.sessionKeepaliveTimer = setInterval(() => {
+          this.meepAuthApi.triggerWatchdog();
+        },
+        SESSION_KEEPALIVE_INTERVAL
+      );
+    }
+  }
+
+  stopSessionKeepaliveTimer() {
+    if (this.sessionKeepaliveTimer) {
+      clearInterval(this.sessionKeepaliveTimer);
+      this.sessionKeepaliveTimer = null;
+    }
+  }
+
   /**
    * Callback function to receive the result of the logout operation.
    * @callback module:api/AuthenticationApi~logout
@@ -711,6 +738,7 @@ class MeepContainer extends Component {
   }
 
   logout() {
+    this.stopSessionKeepaliveTimer();
     this.meepAuthApi.logout((error, data, response) => {
       this.logoutCb(error, data, response);
     });
