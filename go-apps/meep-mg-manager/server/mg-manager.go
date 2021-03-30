@@ -151,7 +151,6 @@ type MgManager struct {
 	netLocList   []string
 	svcInfoMap   map[string]*serviceInfo
 	mgSvcInfoMap map[string]*mgServiceInfo
-	mgList       map[string]bool
 
 	// Network Element Info mapping
 	netElemInfoMap map[string]*netElemInfo
@@ -168,7 +167,6 @@ func Init() (err error) {
 	mgm.netLocList = make([]string, 0)
 	mgm.svcInfoMap = make(map[string]*serviceInfo)
 	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
-	mgm.mgList = make(map[string]bool)
 	mgm.netElemInfoMap = make(map[string]*netElemInfo)
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
@@ -344,7 +342,6 @@ func clearScenario() {
 	mgm.netLocList = make([]string, 0)
 	mgm.svcInfoMap = make(map[string]*serviceInfo)
 	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
-	mgm.mgList = make(map[string]bool)
 	mgm.netElemInfoMap = make(map[string]*netElemInfo)
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
@@ -370,7 +367,6 @@ func processScenario(model *mod.Model) error {
 	// Reset service info maps
 	mgm.svcInfoMap = make(map[string]*serviceInfo)
 	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
-	mgm.mgList = make(map[string]bool)
 
 	// Populate net location list
 	mgm.netLocList = model.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
@@ -461,7 +457,7 @@ func processScenario(model *mod.Model) error {
 
 	// Remove stale Mobility Groups
 	for mgName, mgInfo := range mgm.mgInfoMap {
-		if _, found := mgm.mgList[mgName]; !found {
+		if _, found := mgm.mgSvcInfoMap[mgName]; !found {
 			log.Debug("Removing stale MG: ", mgName)
 			delete(mgm.mgInfoMap, mgName)
 		} else {
@@ -518,9 +514,6 @@ func addServiceInfo(svcName string, mgSvcName string, nodeName string) {
 		mg.SessionTransferMode = sessionTransModeForced
 		mg.LoadBalancingAlgorithm = lbAlgoHopCount
 		_ = mgCreate(&mg)
-
-		// Add MG to list
-		mgm.mgList[mg.Name] = true
 	}
 
 	// Add service instance to service info map
