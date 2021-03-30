@@ -32,6 +32,17 @@ const typeMeSvc string = "ME-SVC"
 const typeIngressSvc string = "INGRESS-SVC"
 const typeEgressSvc string = "EGRESS-SVC"
 
+const fieldSvcType string = "svc-type"
+const fieldSvcName string = "svc-name"
+const fieldSvcIp string = "svc-ip"
+const fieldSvcProtocol string = "svc-protocol"
+const fieldSvcPort string = "svc-port"
+const fieldLbSvcName string = "lb-svc-name"
+const fieldLbSvcIp string = "lb-svc-ip"
+const fieldLbSvcPort string = "lb-svc-port"
+const fieldLbPodName string = "lb-pod-name"
+const fieldLbPodIp string = "lb-pod-ip"
+
 const DEFAULT_LB_RULES_DB = 0
 
 // LbRulesStore -
@@ -96,6 +107,8 @@ func (re *RoutingEngine) RefreshLbRules() {
 		for _, svcMap := range netElem.ServiceMaps {
 			if svcInfo, found := svcInfoMap[svcMap.LbSvcName]; found {
 				podInfo.MgSvcMap[svcMap.MgSvcName] = svcInfo
+			} else {
+				log.Error("failed to find service instance: ", svcMap.LbSvcName)
 			}
 		}
 	}
@@ -141,6 +154,8 @@ func (re *RoutingEngine) applyLbRules() {
 				fields[fieldLbSvcName] = svcInfo.Name
 				fields[fieldLbSvcIp] = tce.ipManager.GetSvcIp(svcInfo.Name)
 				fields[fieldLbSvcPort] = portInfo.Port
+				fields[fieldLbPodName] = svcInfo.Node
+				fields[fieldLbPodIp] = tce.ipManager.GetPodIp(svcInfo.Node)
 
 				// Make unique key
 				key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
@@ -176,6 +191,8 @@ func (re *RoutingEngine) applyLbRules() {
 			fields[fieldLbSvcName] = svcInfo.Name
 			fields[fieldLbSvcIp] = tce.ipManager.GetSvcIp(svcInfo.Name)
 			fields[fieldLbSvcPort] = svcMap.SvcPort
+			fields[fieldLbPodName] = svcInfo.Node
+			fields[fieldLbPodIp] = tce.ipManager.GetPodIp(svcInfo.Node)
 
 			// Make unique key
 			key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
@@ -198,6 +215,8 @@ func (re *RoutingEngine) applyLbRules() {
 			fields[fieldLbSvcName] = svcMap.SvcName
 			fields[fieldLbSvcIp] = svcMap.SvcIp
 			fields[fieldLbSvcPort] = svcMap.SvcPort
+			fields[fieldLbPodName] = "n/a"
+			fields[fieldLbPodIp] = IP_ADDR_NONE
 
 			// Make unique key
 			key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +

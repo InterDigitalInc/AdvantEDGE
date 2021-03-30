@@ -40,15 +40,6 @@ const tcEngineKey string = "tc-engine:"
 const mgManagerKey string = "mg-manager:"
 const typeNet string = "net"
 
-const fieldSvcType string = "svc-type"
-const fieldSvcName string = "svc-name"
-const fieldSvcIp string = "svc-ip"
-const fieldSvcProtocol string = "svc-protocol"
-const fieldSvcPort string = "svc-port"
-const fieldLbSvcName string = "lb-svc-name"
-const fieldLbSvcIp string = "lb-svc-ip"
-const fieldLbSvcPort string = "lb-svc-port"
-
 // MQ payload fields
 const fieldEventType = "event-type"
 
