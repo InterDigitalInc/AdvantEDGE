@@ -46,7 +46,8 @@ import {
   DEFAULT_LATENCY_JITTER_APP,
   DEFAULT_THROUGHPUT_DL_APP,
   DEFAULT_THROUGHPUT_UL_APP,
-  DEFAULT_PACKET_LOSS_APP
+  DEFAULT_PACKET_LOSS_APP,
+  DEFAULT_CONNECTIVITY_MODEL
 } from '../meep-constants';
 
 // Network Element Fields
@@ -88,6 +89,10 @@ export const FIELD_CHART_LOC = 'userChartLocation';
 export const FIELD_CHART_VAL = 'userChartAlternateValues';
 export const FIELD_CHART_GROUP = 'userChartGroup';
 export const FIELD_CONNECTED = 'connected';
+export const FIELD_CONNECTIVITY_MODEL = 'model';
+export const FIELD_DN_NAME = 'dnn';
+export const FIELD_DN_LADN = 'ladn';
+export const FIELD_DN_ECSP = 'ecsp';
 export const FIELD_WIRELESS = 'wireless';
 export const FIELD_WIRELESS_TYPE = 'wirelessType';
 export const FIELD_INT_DOM_LATENCY = 'interDomainLatency';
@@ -195,6 +200,10 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CHART_VAL, '');
   setElemFieldVal(elem, FIELD_CHART_GROUP, '');
   setElemFieldVal(elem, FIELD_CONNECTED, true);
+  setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, DEFAULT_CONNECTIVITY_MODEL);
+  setElemFieldVal(elem, FIELD_DN_NAME, '');
+  setElemFieldVal(elem, FIELD_DN_LADN, false);
+  setElemFieldVal(elem, FIELD_DN_ECSP, '');
   setElemFieldVal(elem, FIELD_WIRELESS, false);
   setElemFieldVal(elem, FIELD_WIRELESS_TYPE, '');
   setElemFieldVal(elem, FIELD_INT_DOM_LATENCY, DEFAULT_LATENCY_INTER_DOMAIN);

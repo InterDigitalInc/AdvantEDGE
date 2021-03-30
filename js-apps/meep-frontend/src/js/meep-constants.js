@@ -140,6 +140,10 @@ export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
 export const CFG_ELEM_CHART_ALT_VAL = 'cfg-elem-chart-alt-val';
 export const CFG_ELEM_CONNECTED = 'cfg-elem-connected';
+export const CFG_ELEM_CONNECTIVITY_MODEL = 'cfg-elem-connectivity-model';
+export const CFG_ELEM_DN_NAME = 'cfg-elem-dn-name';
+export const CFG_ELEM_DN_LADN_CHECK = 'cfg-elem-dn-ladn-check';
+export const CFG_ELEM_DN_ECSP = 'cfg-elem-dn-ecsp';
 export const CFG_ELEM_WIRELESS = 'cfg-elem-wireless';
 export const CFG_ELEM_WIRELESS_TYPE = 'cfg-elem-wireless-type';
 export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
@@ -279,6 +283,11 @@ export const OPT_CONNECTED = {label: 'Connected', value: true};
 export const OPT_DISCONNECTED = {label: 'Disconnected', value: false};
 export const OPT_WIRELESS = {label: 'Wireless', value: true};
 export const OPT_WIRED = {label: 'Wired', value: false};
+
+// Connectivity Models
+export const CONNECTIVITY_MODEL_OPEN = 'OPEN';
+export const CONNECTIVITY_MODEL_PDU = 'PDU';
+export const DEFAULT_CONNECTIVITY_MODEL = CONNECTIVITY_MODEL_OPEN;
 
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';

@@ -72,6 +72,8 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('dnn'))
         obj.dnn = ApiClient.convertToType(data['dnn'], 'String');
+      if (data.hasOwnProperty('ladn'))
+        obj.ladn = ApiClient.convertToType(data['ladn'], 'Boolean');
       if (data.hasOwnProperty('ecsp'))
         obj.ecsp = ApiClient.convertToType(data['ecsp'], 'String');
     }
@@ -83,6 +85,12 @@
    * @member {String} dnn
    */
   exports.prototype.dnn = undefined;
+
+  /**
+   * true: Data network serves local area only false: Data network is not limited to local area
+   * @member {Boolean} ladn
+   */
+  exports.prototype.ladn = undefined;
 
   /**
    * Edge Compute Service Provider

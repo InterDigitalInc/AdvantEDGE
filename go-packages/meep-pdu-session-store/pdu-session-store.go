@@ -135,6 +135,25 @@ func (pss *PduSessionStore) DeletePduSession(ueName string, pduId string) error 
 	return nil
 }
 
+// Flush - Remove all PDU Sessions
+func (pss *PduSessionStore) DeleteAllPduSessions() {
+	pss.rc.DBFlush(pss.keyRoot)
+}
+
+// GetAllPduSessions - Returns all PDU Sessions for all UE
+func (pss *PduSessionStore) GetAllPduSessions() (map[string]map[string]*dataModel.PduSessionInfo, error) {
+	pduMap := make(map[string]map[string]*dataModel.PduSessionInfo)
+	keyMatchStr := pss.keyRoot + "*"
+
+	// Get all PDU Sessions entry details
+	err := pss.rc.ForEachEntry(keyMatchStr, getAllPduSessions, &pduMap)
+	if err != nil {
+		log.Error("Failed to get all entries with error: ", err.Error())
+		return nil, err
+	}
+	return pduMap, nil
+}
+
 // GetPduSessions - Returns all PDU Sessions for a given UE
 func (pss *PduSessionStore) GetPduSessions(ueName string) (map[string]*dataModel.PduSessionInfo, error) {
 	// Validate params
@@ -215,6 +234,30 @@ func (pss *PduSessionStore) HasPduToDnn(ueName string, dnn string) (string, erro
 	return "", nil
 }
 
+func getAllPduSessions(key string, fields map[string]string, userData interface{}) error {
+	allPduMap := *(userData.(*map[string]map[string]*dataModel.PduSessionInfo))
+
+	// Prepare PDU Session
+	pdu := new(dataModel.PduSessionInfo)
+	pdu.Dnn = fields[fieldDnn]
+
+	// Extract PDU id & UE name
+	kk := strings.Split(key, ":")
+	pduId := kk[len(kk)-1]
+	ueName := kk[len(kk)-2]
+
+	// Get UE-specific PDU map
+	pduMap, found := allPduMap[ueName]
+	if !found || pduMap == nil {
+		pduMap = make(map[string]*dataModel.PduSessionInfo)
+		allPduMap[ueName] = pduMap
+	}
+
+	// Add PDU session info to PDU map
+	pduMap[pduId] = pdu
+	return nil
+}
+
 func getPduSessions(key string, fields map[string]string, userData interface{}) error {
 	pduMap := *(userData.(*map[string]*dataModel.PduSessionInfo))
 
@@ -222,11 +265,11 @@ func getPduSessions(key string, fields map[string]string, userData interface{}) 
 	pdu := new(dataModel.PduSessionInfo)
 	pdu.Dnn = fields[fieldDnn]
 
-	// Extract PDI id
+	// Extract PDU id
 	kk := strings.Split(key, ":")
-	k := kk[len(kk)-1]
+	pduId := kk[len(kk)-1]
 
-	// Add sandbox to
-	pduMap[k] = pdu
+	// Add PDU session info to PDU map
+	pduMap[pduId] = pdu
 	return nil
 }

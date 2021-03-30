@@ -116,6 +116,20 @@ var routes = Routes{
 	},
 
 	Route{
+		"CreatePduSession",
+		strings.ToUpper("Post"),
+		"/sandbox-ctrl/v1/connectivity/pdu-session/{ueName}/{pduSessionId}",
+		CreatePduSession,
+	},
+
+	Route{
+		"TerminatePduSession",
+		strings.ToUpper("Delete"),
+		"/sandbox-ctrl/v1/connectivity/pdu-session/{ueName}/{pduSessionId}",
+		TerminatePduSession,
+	},
+
+	Route{
 		"CreateReplayFile",
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/replay/{name}",

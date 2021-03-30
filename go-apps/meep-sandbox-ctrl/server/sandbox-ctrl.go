@@ -36,6 +36,7 @@ import (
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	pss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 )
@@ -45,16 +46,17 @@ type Scenario struct {
 }
 
 type SandboxCtrl struct {
-	sandboxName   string
-	mqGlobal      *mq.MsgQueue
-	mqLocal       *mq.MsgQueue
-	scenarioStore *couch.Connector
-	replayStore   *couch.Connector
-	modelCfg      mod.ModelCfg
-	activeModel   *mod.Model
-	metricStore   *met.MetricStore
-	replayMgr     *replay.ReplayMgr
-	sandboxStore  *ss.SandboxStore
+	sandboxName     string
+	mqGlobal        *mq.MsgQueue
+	mqLocal         *mq.MsgQueue
+	scenarioStore   *couch.Connector
+	replayStore     *couch.Connector
+	modelCfg        mod.ModelCfg
+	activeModel     *mod.Model
+	metricStore     *met.MetricStore
+	replayMgr       *replay.ReplayMgr
+	pduSessionStore *pss.PduSessionStore
+	sandboxStore    *ss.SandboxStore
 }
 
 const scenarioDBName = "scenarios"
@@ -67,6 +69,7 @@ const fieldSandboxName = "sandbox-name"
 const fieldScenarioName = "scenario-name"
 const fieldEventType = "event-type"
 const fieldNodeName = "node-name"
+const fieldPduSessionId = "pdu-id"
 
 // Event types
 const (
@@ -159,6 +162,14 @@ func Init() (err error) {
 		log.Error("Failed to initialize replay manager. Error: ", err)
 		return err
 	}
+
+	// Connect to PDU Session Store
+	sbxCtrl.pduSessionStore, err = pss.NewPduSessionStore(sbxCtrl.sandboxName, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to PDU Session Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to PDU Session Store")
 
 	// Connect to Sandbox Store
 	sbxCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
@@ -524,6 +535,9 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+
+	// Delete all PDU sessions
+	sbxCtrl.pduSessionStore.DeleteAllPduSessions()
 
 	// Use new model instance
 	sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
@@ -1080,6 +1094,88 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+}
+
+func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("UE name: ", pduSessionId)
+
+	// Retrieve PDU Session Info from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var pduSessionInfo dataModel.PduSessionInfo
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create PDU session
+	err = sbxCtrl.pduSessionStore.CreatePduSession(ueName, pduSessionId, &pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Send message to inform other modules of created PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("UE name: ", pduSessionId)
+
+	// Delete PDU session
+	err := sbxCtrl.pduSessionStore.DeletePduSession(ueName, pduSessionId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Send message to inform other modules of terminated PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionTerminated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func activeScenarioUpdateCb(eventType string, userData interface{}) {

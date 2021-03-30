@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **netChar** | [**NetworkCharacteristics**](NetworkCharacteristics.md) |  | [optional] 
+**connectivity** | [**ConnectivityConfig**](ConnectivityConfig.md) |  | [optional] 
 **interDomainLatency** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar latency | [optional] 
 **interDomainLatencyVariation** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation | [optional] 
 **interDomainThroughput** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl | [optional] 

@@ -12,11 +12,12 @@ GOAPPS=(
 
 GOPKGS=(
     meep-couch
+    meep-gis-asset-mgr
     meep-metrics
     meep-model
     meep-mq
     meep-net-char-mgr
-    meep-gis-asset-mgr
+    meep-pdu-session-store
     meep-watchdog
 )
 

@@ -183,6 +183,9 @@
                 expect(data.deployment.netChar.throughputUl).to.be(0);
                 expect(data.deployment.netChar.packetLoss).to.be.a('number');
                 expect(data.deployment.netChar.packetLoss).to.be(0.0);
+              expect(data.deployment.connectivity).to.be.a(AdvantEdgeSandboxControllerRestApi.ConnectivityConfig);
+                    expect(data.deployment.connectivity.model).to.be.a('string');
+                expect(data.deployment.connectivity.model).to.be("OPEN");
               expect(data.deployment.interDomainLatency).to.be.a('number');
               expect(data.deployment.interDomainLatency).to.be(0);
               expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
@@ -239,9 +242,6 @@
                     expect(data.netChar.throughputUl).to.be(0);
                     expect(data.netChar.packetLoss).to.be.a('number');
                     expect(data.netChar.packetLoss).to.be(0.0);
-                  expect(data.connectivity).to.be.a(AdvantEdgeSandboxControllerRestApi.ConnectivityConfig);
-                        expect(data.connectivity.model).to.be.a('string');
-                    expect(data.connectivity.model).to.be("OPEN");
                   expect(data.interZoneLatency).to.be.a('number');
                   expect(data.interZoneLatency).to.be(0);
                   expect(data.interZoneLatencyVariation).to.be.a('number');
@@ -517,6 +517,8 @@
                               expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
                                     expect(data.dataNetwork.dnn).to.be.a('string');
                                 expect(data.dataNetwork.dnn).to.be("");
+                                expect(data.dataNetwork.ladn).to.be.a('boolean');
+                                expect(data.dataNetwork.ladn).to.be(false);
                                 expect(data.dataNetwork.ecsp).to.be.a('string');
                                 expect(data.dataNetwork.ecsp).to.be("");
                               {

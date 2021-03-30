@@ -101,6 +101,7 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork = new AdvantEdgeSandboxControllerRestApi.DNConfig();
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.dnn = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ladn = false;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.dataNetwork.ecsp = "";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};

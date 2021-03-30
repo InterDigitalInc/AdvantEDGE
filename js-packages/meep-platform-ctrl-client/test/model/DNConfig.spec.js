@@ -61,6 +61,12 @@
         // expect(instance.dnn).to.be(expectedValueLiteral);
       });
 
+      it('should have the property ladn (base name: "ladn")', function() {
+        // TODO: update the code to test the property ladn
+        expect(instance).to.have.property('ladn');
+        // expect(instance.ladn).to.be(expectedValueLiteral);
+      });
+
       it('should have the property ecsp (base name: "ecsp")', function() {
         // TODO: update the code to test the property ecsp
         expect(instance).to.have.property('ecsp');

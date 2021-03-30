@@ -1,4 +1,4 @@
-version: 1.6.6
+version: 1.6.8
 name: demo2
 deployment:
     netChar:
@@ -9,6 +9,8 @@ deployment:
         throughputUl: 1000
         throughput: null
         packetLoss: null
+    connectivity:
+        model: OPEN
     domains:
         -
             id: PUBLIC
@@ -148,6 +150,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -362,6 +365,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -478,6 +482,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -537,6 +542,7 @@ deployment:
                                     geoData: null
                                     networkLocationsInRange: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -618,6 +624,7 @@ deployment:
                                     geoData: null
                                     networkLocationsInRange: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -785,6 +792,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
