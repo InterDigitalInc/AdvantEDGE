@@ -187,7 +187,7 @@ const styles = {
     height: 120,
     width: '25%',
     marginLeft: '37.5%',
-    marginTop: '1%',
+    marginTop: '1%'
   },
   headerText: {
     fontFamily: 'sans-serif',

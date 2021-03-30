@@ -189,7 +189,7 @@ class MeepContainer extends Component {
     this.stopReplayStatusRefresh();
     this.stopExecPageRefresh();
     this.stopPlatformRefresh();
-    this.stopSessionKeepaliveTimer()
+    this.stopSessionKeepaliveTimer();
   }
 
   // Platform refresh
@@ -708,9 +708,9 @@ class MeepContainer extends Component {
 
       // Start keepalive timer
       this.sessionKeepaliveTimer = setInterval(() => {
-          this.meepAuthApi.triggerWatchdog();
-        },
-        SESSION_KEEPALIVE_INTERVAL
+        this.meepAuthApi.triggerWatchdog();
+      },
+      SESSION_KEEPALIVE_INTERVAL
       );
     }
   }
