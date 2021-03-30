@@ -1129,7 +1129,7 @@ func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send message to inform other modules of terminated PDU session
+	// Send message to inform other modules of created PDU session
 	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldNodeName] = ueName
 	msg.Payload[fieldPduSessionId] = pduSessionId
