@@ -46,7 +46,7 @@ import {
   PAGE_CONFIGURE,
   PAGE_LOGIN,
   STATUS_SIGNED_IN,
-  STATUS_SIGNED_OUT,
+  STATUS_SIGNIN_NOT_SUPPORTED,
   PAGE_LOGIN_INDEX,
   PAGE_CONFIGURE_INDEX,
   PAGE_EXECUTE_INDEX,
@@ -63,7 +63,7 @@ const CorePodsLed = props => {
   const marginLeft = { marginLeft: -35 };
   return (
     <div>
-      { props.signInStatus !== STATUS_SIGNED_OUT ?
+      { props.signInStatus === STATUS_SIGNED_IN || props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED ?
         <>
           <a data-tip data-for='led'>
             <img
@@ -129,7 +129,8 @@ class MeepTopBar extends Component {
   }
 
   render() {
-    let hideTabs = this.props.signInStatus === STATUS_SIGNED_OUT;
+    let hideTabs = !(this.props.signInStatus === STATUS_SIGNED_IN ||
+      this.props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED);
     return (
       <div>
         <Toolbar>

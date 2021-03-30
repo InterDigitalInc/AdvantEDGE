@@ -56,7 +56,7 @@ class LoginPageContainer extends Component {
   render() {
     let signedOut = this.props.signInStatus === STATUS_SIGNED_OUT;
     return (
-      <div style={{ overflow: 'hidden', position: 'relative' }}>
+      <div style={{position:'fixed'}}>
         <img
           src={BackgroundWP}
           style={styles.background}
@@ -184,7 +184,7 @@ const styles = {
     background: 'white'
   },
   logo: {
-    height: 120,
+    height: 'calc(100vw * 0.07)',
     width: '25%',
     marginLeft: '37.5%',
     marginTop: '1%'
@@ -196,9 +196,10 @@ const styles = {
     fontSize: '1.3rem'
   },
   footer: {
-    marginTop: '8%',
     marginLeft: '15%',
-    width: '70%'
+    width: '70%',
+    bottom: 15,
+    position: 'fixed'
   },
   gridLine: {
     background: 'linear-gradient(#9d9d9d,#9d9d9d) center/2px 100% no-repeat',
