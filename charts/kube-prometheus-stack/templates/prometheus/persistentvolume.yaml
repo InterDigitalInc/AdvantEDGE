@@ -1,4 +1,4 @@
-{{- if .Values.prometheus.prometheusSpec.persistentVolume.enabled }}
+{{- if and .Values.prometheus.enabled .Values.prometheus.prometheusSpec.persistentVolume.enabled }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:

@@ -1,4 +1,4 @@
-{{- if .Values.alertmanager.alertmanagerSpec.persistentVolume.enabled }}
+{{- if and .Values.alertmanager.enabled .Values.alertmanager.alertmanagerSpec.persistentVolume.enabled }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:

@@ -152,6 +152,8 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 
 	// Local storage structure
 	cmd := exec.Command("mkdir", "-p", deployData.workdir)
+	cmd.Args = append(cmd.Args, deployData.workdir+"/user")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/user/values")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/certs")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/couchdb")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/docker-registry")
@@ -166,6 +168,7 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/server")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/server/prometheus-db")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/alertmanager")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/alertmanager/alertmanager-db")
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + deployData.workdir + "]")
