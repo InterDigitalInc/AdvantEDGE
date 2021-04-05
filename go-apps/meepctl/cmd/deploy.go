@@ -279,13 +279,13 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		httpsPort := utils.RepoCfg.GetString("repo.deployment.ingress.https-port")
 		if hostPorts {
 			flags = utils.HelmFlags(flags, "--set", "controller.service.ports.http="+httpPort)
-			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.hostPorts.http="+httpPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.hostPort.ports.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.containerPort.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.ports.https="+httpsPort)
-			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.hostPorts.https="+httpsPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.hostPort.ports.https="+httpsPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.containerPort.https="+httpsPort)
 		} else {
-			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.useHostPort=false")
+			flags = utils.HelmFlags(flags, "--set", "controller.hostPort.enabled=false")
 			flags = utils.HelmFlags(flags, "--set", "controller.hostNetwork=false")
 			flags = utils.HelmFlags(flags, "--set", "controller.dnsPolicy=ClusterFirst")
 			flags = utils.HelmFlags(flags, "--set", "controller.service.type=NodePort")
