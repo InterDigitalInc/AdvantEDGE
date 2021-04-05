@@ -95,6 +95,7 @@ const styles = {
   content: {
     paddingLeft: 25,
     paddingRight: 30,
+    paddingTop: 20,
     overflow: 'hidden'
   },
   actions: {

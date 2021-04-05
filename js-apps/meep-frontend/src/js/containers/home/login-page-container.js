@@ -206,8 +206,8 @@ const styles = {
   background: {
     opacity: '6%',
     position: 'absolute',
-    left: 0,
-    top: 0,
+    left: -10,
+    top: -10,
     width: '100vw',
     height: '100vh'
   }

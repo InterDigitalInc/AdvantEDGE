@@ -431,7 +431,7 @@ class NetworkCharacteristicsEventPane extends Component {
           <GridCell span="4"></GridCell>
         </Grid>
 
-        <Grid>
+        <Grid style={{ paddingBottom: 16 }}>
           <GridCell span="8">
             <IDSelect
               span="8"

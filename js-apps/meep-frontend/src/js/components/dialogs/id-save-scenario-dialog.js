@@ -78,7 +78,7 @@ class IDSaveScenarioDialog extends Component {
 
         <TextField
           outlined
-          style={{ width: '100%' }}
+          style={{ width: '100%', marginTop: 20 }}
           label={'Scenario Name'}
           invalid={
             this.state.err ||
