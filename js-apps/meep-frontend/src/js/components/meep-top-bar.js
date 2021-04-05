@@ -26,7 +26,6 @@ import { TabBar, Tab } from '@rmwc/tabs';
 import { Typography } from '@rmwc/typography';
 import { IconButton } from '@rmwc/icon-button';
 import { Menu, MenuItem, MenuSurfaceAnchor } from '@rmwc/menu';
-import '@/css/meep-controller.scss';
 
 import {
   uiChangeCurrentPage,

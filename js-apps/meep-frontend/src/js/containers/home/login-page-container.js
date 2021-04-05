@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2021  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,38 +121,36 @@ class LoginPageContainer extends Component {
           <div style={styles.footer}>
             <hr/>
             <Grid>
-              <GridInner>
-                <GridCell span="2"></GridCell>
-                <GridCell span="10">
-                  <GridInner>
-                    <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/wiki" target="_blank" style={styles.headerText}>
-                        Wiki
-                      </a>
-                    </GridCell>
-                    <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE" target="_blank" style={styles.headerText}>
-                        Github
-                      </a>
-                    </GridCell>
-                    <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/discussions" target="_blank" style={styles.headerText}>
-                        Discussions
-                      </a>
-                    </GridCell>
-                    <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE" target="_blank" style={styles.headerText}>
-                        License
-                      </a>
-                    </GridCell>
-                    <GridCell span="2">
-                      <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md" target="_blank" style={styles.headerText}>
-                        Contributing
-                      </a>
-                    </GridCell>
-                  </GridInner>
-                </GridCell>
-              </GridInner>
+              <GridCell span="2"></GridCell>
+              <GridCell span="10">
+                <GridInner>
+                  <GridCell span="2">
+                    <a href="https://github.com/InterDigitalInc/AdvantEDGE/wiki" target="_blank" style={styles.headerText}>
+                      Wiki
+                    </a>
+                  </GridCell>
+                  <GridCell span="2">
+                    <a href="https://github.com/InterDigitalInc/AdvantEDGE" target="_blank" style={styles.headerText}>
+                      Github
+                    </a>
+                  </GridCell>
+                  <GridCell span="2">
+                    <a href="https://github.com/InterDigitalInc/AdvantEDGE/discussions" target="_blank" style={styles.headerText}>
+                      Discussions
+                    </a>
+                  </GridCell>
+                  <GridCell span="2">
+                    <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE" target="_blank" style={styles.headerText}>
+                      License
+                    </a>
+                  </GridCell>
+                  <GridCell span="2">
+                    <a href="https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md" target="_blank" style={styles.headerText}>
+                      Contributing
+                    </a>
+                  </GridCell>
+                </GridInner>
+              </GridCell>
             </Grid>
           </div>
         </div>
@@ -210,8 +208,8 @@ const styles = {
     position: 'absolute',
     left: 0,
     top: 0,
-    width: '100%',
-    height: 'auto'
+    width: '100vw',
+    height: '100vh'
   }
 };
 

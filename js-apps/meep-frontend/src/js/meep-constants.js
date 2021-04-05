@@ -17,7 +17,6 @@
 export const HOST_PATH = location.origin;
 
 // Sign In Status
-export const STATUS_SIGNIN_UNKNOWN = 'SIGNIN-UNKNOWN';
 export const STATUS_SIGNIN_NOT_SUPPORTED = 'SIGNED-NOT-SUPPORTED';
 export const STATUS_SIGNED_IN = 'SIGNED-IN';
 export const STATUS_SIGNING_IN = 'SIGNING-IN';

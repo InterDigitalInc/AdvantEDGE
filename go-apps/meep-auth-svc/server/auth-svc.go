@@ -484,10 +484,12 @@ func sessionTimeoutCb(session *sm.Session) {
 	metricSessionTimeout.Inc()
 
 	// Destroy session sandbox
-	_, err := authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
-	if err == nil {
-		metricSessionActive.Dec()
-		metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())
+	if session.Sandbox != "" {
+		_, err := authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+		if err == nil {
+			metricSessionActive.Dec()
+			metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())
+		}
 	}
 }
 
@@ -927,7 +929,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		}
 
 		// Get requested sandbox name & role from user profile, if any
-		providerMode := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_PROVIDER_MODE"))
+		providerMode := strings.TrimSpace(os.Getenv("MEEP_OAUTH_PROVIDER_MODE"))
 		role := users.RoleUser
 		user, err := authSvc.userStore.GetUser(provider, username)
 		if err == nil {
@@ -935,7 +937,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 			role = user.Role
 		}
 		if err != nil && providerMode == providerModeSecure {
-			return "", false, "", err, http.StatusPreconditionFailed
+			return "", false, "", err, http.StatusUnauthorized
 		}
 
 		// Create sandbox
@@ -994,10 +996,13 @@ func asLogout(w http.ResponseWriter, r *http.Request) {
 		metric.Provider = session.Provider
 		metric.User = session.Username
 		metric.Sandbox = session.Sandbox
+
 		// Delete sandbox
-		_, err = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
-		if err == nil {
-			sandboxDeleted = true
+		if session.Sandbox != "" {
+			_, err = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+			if err == nil {
+				sandboxDeleted = true
+			}
 		}
 	}
 

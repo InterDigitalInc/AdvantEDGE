@@ -51,7 +51,6 @@ import {
   STATUS_SIGNING_IN,
   STATUS_SIGNED_OUT,
   STATUS_SIGNIN_NOT_SUPPORTED,
-  STATUS_SIGNIN_UNKNOWN,
   PAGE_LOGIN_INDEX,
   PAGE_CONFIGURE_INDEX
 } from '../meep-constants';
@@ -144,20 +143,17 @@ class MeepContainer extends Component {
   }
 
   componentWillMount() {
-    if (this.props.signInStatus === STATUS_SIGNIN_UNKNOWN) {
-      this.meepAuthApi.loginSupported((_, __, response) => {
-        if (response.status === 404) {
-          this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
-          this.props.changeCurrentPage(PAGE_CONFIGURE);
-          this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
-        } else if (response.status === 200) {
-          this.props.changeSignInStatus(STATUS_SIGNED_IN);
-        } else {
-          this.props.changeSignInStatus(STATUS_SIGNED_OUT);
-          this.logout();
-        }
-      });
-    }
+    this.meepAuthApi.loginSupported((_, __, response) => {
+      if (response.status === 404) {
+        this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
+      } else if (response.status === 200) {
+        this.props.changeSignInStatus(STATUS_SIGNED_IN);
+        this.startSessionKeepaliveTimer();
+      } else {
+        this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+        this.logout();
+      }
+    });
 
     // Handle OAuth login in progress
     if (this.props.signInStatus === STATUS_SIGNING_IN) {
@@ -165,7 +161,6 @@ class MeepContainer extends Component {
       let userName = params.get('user');
       if (userName) {
         this.props.changeSignInUsername(userName);
-        // Remove Query params from URL now that we have stored them
         window.history.replaceState({}, document.title, '/');
         this.props.changeSignInStatus(STATUS_SIGNED_IN);
         this.props.changeCurrentPage(PAGE_CONFIGURE);
@@ -181,9 +176,11 @@ class MeepContainer extends Component {
   
   // Timers
   startTimers() {
-    this.startPlatformRefresh();
-    this.startExecPageRefresh();
-    this.startReplayStatusRefresh();
+    if (this.props.signInStatus === STATUS_SIGNED_IN || this.props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED) {
+      this.startPlatformRefresh();
+      this.startExecPageRefresh();
+      this.startReplayStatusRefresh();
+    }
   }
   stopTimers() {
     this.stopReplayStatusRefresh();
@@ -202,7 +199,10 @@ class MeepContainer extends Component {
     );
   }
   stopPlatformRefresh() {
-    clearInterval(this.platformRefreshIntervalTimer);
+    if (this.platformRefreshIntervalTimer) {
+      clearInterval(this.platformRefreshIntervalTimer);
+      this.platformRefreshIntervalTimer = null;
+    }
   }
 
   // Exec page refresh
@@ -223,7 +223,10 @@ class MeepContainer extends Component {
   }
 
   stopExecPageRefresh() {
-    clearInterval(this.execPageRefreshIntervalTimer);
+    if (this.execPageRefreshIntervalTimer) {
+      clearInterval(this.execPageRefreshIntervalTimer);
+      this.execPageRefreshIntervalTimer = null;
+    }
   }
 
   // Replay status refresh
@@ -234,7 +237,10 @@ class MeepContainer extends Component {
     );
   }
   stopReplayStatusRefresh() {
-    clearInterval(this.replayStatusRefreshIntervalTimer);
+    if (this.replayStatusRefreshIntervalTimer) {
+      clearInterval(this.replayStatusRefreshIntervalTimer);
+      this.replayStatusRefreshIntervalTimer = null;
+    }
   }
 
   monitorTabFocus() {

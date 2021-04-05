@@ -322,7 +322,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_AUTH_URL="+authUrl)
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_TOKEN_URL="+tokenUrl)
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_REDIRECT_URI="+redirectUri)
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_PROVIDER_MODE="+providerMode)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_PROVIDER_MODE="+providerMode)
 			if secret != "" {
 				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_CLIENT_ID.name="+secret)
 				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_SECRET.name="+secret)

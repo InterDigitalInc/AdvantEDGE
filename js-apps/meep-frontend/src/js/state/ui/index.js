@@ -21,8 +21,7 @@ import {
   MOBILITY_EVENT,
   CFG_VIEW_NETWORK,
   SCENARIO_UPDATE_ACTION_NONE,
-  PAGE_LOGIN,
-  STATUS_SIGNIN_UNKNOWN
+  PAGE_LOGIN
 } from '../../meep-constants';
 
 const initialState = {
@@ -62,7 +61,7 @@ const initialState = {
   sandboxes: [],
   sandboxCfg: {},
   helpMenuDisplay: false,
-  signInStatus: STATUS_SIGNIN_UNKNOWN,
+  signInStatus: '',
   signInUsername: '',
   activeTabIndex: 0
 };

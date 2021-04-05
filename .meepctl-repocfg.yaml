@@ -136,7 +136,7 @@ repo:
         # AdvantEDGE resources included in Docker container image
         docker-data:
           # location of REST API permissions file
-          'permissions.yaml': config/public-permissions.yaml
+          'permissions.yaml': config/permissions-open.yaml
       meep-ingress-certs:
         # enable meepctl build
         build: false

@@ -10,7 +10,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
