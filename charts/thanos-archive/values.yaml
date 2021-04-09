@@ -47,7 +47,7 @@ clusterDomain: cluster.local
 objstoreConfig:
   type: s3
   config:
-    bucket: thanos
+    bucket: thanos-archive
     endpoint: 10.190.114.148:9000
     access_key: admin
     secret_key: password
@@ -121,10 +121,8 @@ query:
 
   ## Statically configure store APIs to connect with Thanos Query
   ##
-  stores:
-    - "dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local"
+  stores: []
     # - "dnssrv+_grpc._tcp.meep-thanos-archive-storegateway.default.svc.cluster.local"
-    - "dnssrv+_grpc._tcp.meep-thanos-archive-query.default.svc.cluster.local"
 
   ## Query Service Discovery Configuration
   ## Specify content for servicediscovery.yml
@@ -313,8 +311,8 @@ query:
   service:
     ## Service type
     ##
-    # type: ClusterIP
-    type: NodePort
+    type: ClusterIP
+    # type: NodePort
     ## Thanos Query service clusterIP IP
     ##
     # clusterIP: None
@@ -505,7 +503,7 @@ query:
 queryFrontend:
   ## Set to true to enable Thanos Query Frontend component
   ##
-  enabled: true
+  enabled: false
 
   ## Log level
   ##
@@ -1070,7 +1068,7 @@ bucketweb:
 compactor:
   ## Set to true to enable Thanos Compactor component
   ##
-  enabled: true
+  enabled: false
 
   ## Log level
   ##
@@ -1095,7 +1093,7 @@ compactor:
 
   ## Resolution and Retention flags
   ##
-  retentionResolutionRaw: 10d
+  retentionResolutionRaw: 30d
   retentionResolution5m: 30d
   retentionResolution1h: 10y
 
