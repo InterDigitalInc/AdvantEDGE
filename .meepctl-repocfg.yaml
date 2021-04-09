@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.6.8
+version: 1.6.9
 repo:
   name: AdvantEDGE
 
@@ -642,7 +642,7 @@ repo:
       # enable meepctl deploy/delete
       deploy: true
       # location of deployment chart
-      chart: charts/nginx-ingress
+      chart: charts/ingress-nginx
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-ingress.yaml
     meep-redis:
