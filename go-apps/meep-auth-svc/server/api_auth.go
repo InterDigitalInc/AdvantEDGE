@@ -51,3 +51,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 func TriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 	asTriggerWatchdog(w, r)
 }
+
+func LoginSupported(w http.ResponseWriter, r *http.Request) {
+	asLoginSupported(w, r)
+}

@@ -112,4 +112,11 @@ var routes = Routes{
 		"/auth/v1/watchdog",
 		TriggerWatchdog,
 	},
+
+	Route{
+		"LoginSupported",
+		strings.ToUpper("Get"),
+		"/auth/v1/loginSupported",
+		LoginSupported,
+	},
 }

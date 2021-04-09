@@ -67,7 +67,6 @@ class IDNewSandboxDialog extends Component {
         cydata={MEEP_DLG_NEW_SANDBOX}
       >
         <TextField
-          outlined
           style={{ width: '100%' }}
           label={'Sandbox Name'}
           onChange={this.onChange}

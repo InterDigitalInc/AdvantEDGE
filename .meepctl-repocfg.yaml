@@ -49,6 +49,8 @@ repo:
     auth:
       # enable authentication & authorization
       enabled: true
+      # Is platform [open|secure] for all github/gitlab users or only selected ones
+      provider-mode: open
       # Session config
       session:
         # session encryption key k8s secret (data: encryption-key)
@@ -134,7 +136,7 @@ repo:
         # AdvantEDGE resources included in Docker container image
         docker-data:
           # location of REST API permissions file
-          'permissions.yaml': config/permissions.yaml
+          'permissions.yaml': config/permissions-open.yaml
       meep-ingress-certs:
         # enable meepctl build
         build: false

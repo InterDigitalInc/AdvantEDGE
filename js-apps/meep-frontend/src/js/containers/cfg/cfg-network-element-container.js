@@ -675,7 +675,7 @@ const PortProtocolGroup = ({ onUpdate, element }) => {
         cydata={CFG_ELEM_EXT_PORT}
       />
 
-      <GridCell span={4} style={{ paddingTop: 16 }}>
+      <GridCell span={4}>
         <Select
           style={{ width: '100%' }}
           label="Protocol"
@@ -707,7 +707,7 @@ const GpuGroup = ({ onUpdate, element }) => {
         fieldName={FIELD_GPU_COUNT}
         cydata={CFG_ELEM_GPU_COUNT}
       />
-      <GridCell span={8} style={{ paddingTop: 16 }}>
+      <GridCell span={8}>
         <IDSelect
           label="GPU Type"
           span={8}
@@ -1171,7 +1171,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           prefixes={[PREFIX_LINK]}
         />
 
-        <Grid style={{ paddingTop: 16 }} >
+        <Grid>
           <GridCell span={6}>
             <IDSelect
               label='Initial Connection State'
@@ -1196,7 +1196,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           </GridCell>
         </Grid>
         {isWireless ? (
-          <Grid>
+          <Grid style={{ paddingTop: 16 }}>
             <CfgTextFieldCell
               span={12}
               onUpdate={onUpdate}
@@ -1238,7 +1238,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           />
         </Grid>
         <Grid>
-          <GridCell span={6} style={{ paddingTop: 16 }}>
+          <GridCell span={6}>
             <IDSelect
               label='End-of-Path Mode'
               span={12}
@@ -1284,7 +1284,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           prefixes={[PREFIX_LINK]}
         />
 
-        <Grid style={{ paddingTop: 16 }} >
+        <Grid>
           <GridCell span={6}>
             <IDSelect
               label='Initial Connection State'
@@ -1309,7 +1309,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           </GridCell>
         </Grid>
         {isWireless ? (
-          <Grid>
+          <Grid style={{ paddingTop: 16 }}>
             <CfgTextFieldCell
               span={12}
               onUpdate={onUpdate}
@@ -1320,8 +1320,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
           </Grid> 
-        ) : ( 
-          <></>
+        ) : (
+          <Grid style={{ paddingTop: 16 }}></Grid>
         )}
         
         <Grid>
@@ -1864,7 +1864,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisa
           />
         )}
       </Grid>
-      <Grid>
+      <Grid style={{ paddingTop: 16 }}>
         <CfgTextFieldCell
           span={12}
           onUpdate={onUpdate}

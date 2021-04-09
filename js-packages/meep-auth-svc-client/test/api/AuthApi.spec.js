@@ -98,8 +98,27 @@
           /*
           var opts = {};
           opts.provider = "provider_example";
+          opts.sbox = "sbox_example";
 
           instance.login(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('loginSupported', function() {
+        it('should call loginSupported successfully', function(done) {
+          // TODO: uncomment loginSupported call
+          /*
+
+          instance.loginSupported(function(error, data, response) {
             if (error) {
               done(error);
               return;

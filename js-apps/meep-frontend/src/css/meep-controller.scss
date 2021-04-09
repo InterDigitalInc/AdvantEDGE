@@ -49,6 +49,7 @@ select {
 // UI
 #meep-container {
     width: 100%;
+    overflow-x: hidden;
 }
 .ui-body {
     display: flex;
@@ -223,4 +224,28 @@ select {
     font-size: 12px;
     font-family: 'Roboto';
     font-weight: 600;
+}
+
+.mdc-tab--active .mdc-tab__text-label {
+    color: white
+}
+
+.mdc-tab__text-label {
+    opacity: 1;
+}
+
+.mdc-tab-indicator>.mdc-tab-indicator__content--underline {
+    background-color: white;
+}
+
+.mdc-tab__ripple:after, .mdc-tab__ripple:before {
+    background-color: white;
+}
+
+.menu-tabs .mdc-tab__text-label {
+    color: white;
+}
+
+.user-icon .material-icons {
+    font-size: 36px;
 }

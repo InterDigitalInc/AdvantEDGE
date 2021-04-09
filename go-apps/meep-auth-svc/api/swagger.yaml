@@ -97,6 +97,16 @@ paths:
         - "gitlab"
         x-exportParamName: "Provider"
         x-optionalDataType: "String"
+      - name: "sbox"
+        in: "query"
+        description: "Create Sandbox by default"
+        required: false
+        type: "string"
+        enum:
+        - "true"
+        - "false"
+        x-exportParamName: "Sbox"
+        x-optionalDataType: "String"
       responses:
         302:
           description: "Found"
@@ -162,6 +172,23 @@ paths:
           description: "OK"
         401:
           description: "Unauthorized"
+  /loginSupported:
+    get:
+      tags:
+      - "auth"
+      summary: "Check if login is supported"
+      description: "Check if login is supported and whether session exists"
+      operationId: "loginSupported"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
 definitions:
   Sandbox:
     type: "object"

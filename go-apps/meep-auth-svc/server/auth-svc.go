@@ -66,6 +66,7 @@ const moduleNamespace = "default"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
 const pfmCtrlBasepath = "http://meep-platform-ctrl/platform-ctrl/v1"
+const providerModeSecure = "secure"
 
 // Permission Configuration types
 type Permission struct {
@@ -109,8 +110,9 @@ type AuthRoute struct {
 }
 
 type LoginRequest struct {
-	provider string
-	timer    *time.Timer
+	provider      string
+	createSandbox string
+	timer         *time.Timer
 }
 
 type PermissionsCache struct {
@@ -482,10 +484,12 @@ func sessionTimeoutCb(session *sm.Session) {
 	metricSessionTimeout.Inc()
 
 	// Destroy session sandbox
-	_, err := authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
-	if err == nil {
-		metricSessionActive.Dec()
-		metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())
+	if session.Sandbox != "" {
+		_, err := authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+		if err == nil {
+			metricSessionActive.Dec()
+			metricSessionDuration.Observe(time.Since(session.StartTime).Minutes())
+		}
 	}
 }
 
@@ -771,8 +775,13 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	}
 	metric.User = userId
 
+	createSandbox, err := strconv.ParseBool(request.createSandbox)
+	if err != nil {
+		createSandbox = false
+	}
+
 	// Start user session
-	sandboxName, isNew, userRole, err, errCode := startSession(provider, userId, w, r)
+	sandboxName, isNew, userRole, err, errCode := startSession(provider, userId, w, r, createSandbox)
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
@@ -801,6 +810,7 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 	// Retrieve query parameters
 	query := r.URL.Query()
 	provider := query.Get("provider")
+	createSandbox := query.Get("sbox")
 	metric.Provider = provider
 
 	// Get provider-specific OAuth config
@@ -828,8 +838,9 @@ func asLogin(w http.ResponseWriter, r *http.Request) {
 
 	// Track oauth request & handle
 	request := &LoginRequest{
-		provider: provider,
-		timer:    time.NewTimer(10 * time.Minute),
+		provider:      provider,
+		createSandbox: createSandbox,
+		timer:         time.NewTimer(10 * time.Minute),
 	}
 	setLoginRequest(state, request)
 
@@ -870,7 +881,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start user session
-	sandboxName, isNew, _, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
+	sandboxName, isNew, _, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r, false)
 	if err != nil {
 		log.Error(err.Error())
 		metric.Description = err.Error()
@@ -904,7 +915,7 @@ func asLoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Retrieve existing user session or create a new one
-func startSession(provider string, username string, w http.ResponseWriter, r *http.Request) (sandboxName string, isNew bool, userRole string, err error, code int) {
+func startSession(provider string, username string, w http.ResponseWriter, r *http.Request, createSandbox bool) (sandboxName string, isNew bool, userRole string, err error, code int) {
 
 	// Get existing session by user name, if any
 	sessionStore := authSvc.sessionMgr.GetSessionStore()
@@ -918,25 +929,31 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 		}
 
 		// Get requested sandbox name & role from user profile, if any
+		providerMode := strings.TrimSpace(os.Getenv("MEEP_OAUTH_PROVIDER_MODE"))
 		role := users.RoleUser
 		user, err := authSvc.userStore.GetUser(provider, username)
 		if err == nil {
 			sandboxName = user.Sboxname
 			role = user.Role
 		}
+		if err != nil && providerMode == providerModeSecure {
+			return "", false, "", err, http.StatusUnauthorized
+		}
 
 		// Create sandbox
-		var sandboxConfig pcc.SandboxConfig
-		if sandboxName == "" {
-			sandbox, _, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandbox(context.TODO(), sandboxConfig)
-			if err != nil {
-				return "", false, "", err, http.StatusInternalServerError
-			}
-			sandboxName = sandbox.Name
-		} else {
-			_, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandboxWithName(context.TODO(), sandboxName, sandboxConfig)
-			if err != nil {
-				return "", false, "", err, http.StatusInternalServerError
+		if createSandbox {
+			var sandboxConfig pcc.SandboxConfig
+			if sandboxName == "" {
+				sandbox, _, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandbox(context.TODO(), sandboxConfig)
+				if err != nil {
+					return "", false, "", err, http.StatusInternalServerError
+				}
+				sandboxName = sandbox.Name
+			} else {
+				_, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandboxWithName(context.TODO(), sandboxName, sandboxConfig)
+				if err != nil {
+					return "", false, "", err, http.StatusInternalServerError
+				}
 			}
 		}
 
@@ -958,7 +975,7 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 	if err != nil {
 		log.Error("Failed to set session with err: ", err.Error())
 		// Remove newly created sandbox on failure
-		if session.ID == "" {
+		if session.ID == "" && createSandbox {
 			_, _ = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), sandboxName)
 		}
 		return "", false, "", err, code
@@ -979,10 +996,13 @@ func asLogout(w http.ResponseWriter, r *http.Request) {
 		metric.Provider = session.Provider
 		metric.User = session.Username
 		metric.Sandbox = session.Sandbox
+
 		// Delete sandbox
-		_, err = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
-		if err == nil {
-			sandboxDeleted = true
+		if session.Sandbox != "" {
+			_, err = authSvc.pfmCtrlClient.SandboxControlApi.DeleteSandbox(context.TODO(), session.Sandbox)
+			if err == nil {
+				sandboxDeleted = true
+			}
 		}
 	}
 
@@ -1016,4 +1036,30 @@ func asTriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+/*
+* Response Code 200: Login is Supported and Session exists
+* Response Code 401: Login is Supported and Session doesn't exists
+* Response Code 404: Login is not Supported
+ */
+func asLoginSupported(w http.ResponseWriter, r *http.Request) {
+	log.Info("----- LOGIN SUPPORTED-----")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// Check if Github is enabled
+	githubEnabledStr := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_ENABLED"))
+	githubEnabled, err := strconv.ParseBool(githubEnabledStr)
+	if err != nil || !githubEnabled {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		// Retrieve user session, if any
+		session, err := authSvc.sessionMgr.GetSessionStore().Get(r)
+		if err != nil || session == nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+	}
 }

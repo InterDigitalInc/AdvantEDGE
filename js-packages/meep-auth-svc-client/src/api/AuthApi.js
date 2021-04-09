@@ -167,6 +167,7 @@
      * Start OAuth login procedure with provider
      * @param {Object} opts Optional parameters
      * @param {module:model/String} opts.provider Oauth provider
+     * @param {module:model/String} opts.sbox Create Sandbox by default
      * @param {module:api/AuthApi~loginCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.login = function(opts, callback) {
@@ -178,6 +179,7 @@
       };
       var queryParams = {
         'provider': opts['provider'],
+        'sbox': opts['sbox'],
       };
       var collectionQueryParams = {
       };
@@ -193,6 +195,46 @@
 
       return this.apiClient.callApi(
         '/login', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the loginSupported operation.
+     * @callback module:api/AuthApi~loginSupportedCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Check if login is supported
+     * Check if login is supported and whether session exists
+     * @param {module:api/AuthApi~loginSupportedCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.loginSupported = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/loginSupported', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

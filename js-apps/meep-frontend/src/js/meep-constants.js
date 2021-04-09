@@ -16,6 +16,13 @@
 
 export const HOST_PATH = location.origin;
 
+// Sign In Status
+export const STATUS_SIGNIN_NOT_SUPPORTED = 'SIGNED-NOT-SUPPORTED';
+export const STATUS_SIGNED_IN = 'SIGNED-IN';
+export const STATUS_SIGNING_IN = 'SIGNING-IN';
+export const STATUS_SIGNED_OUT = 'SIGNED-OUT';
+export const OAUTH_PROVIDER_GITHUB = 'github';
+
 // MEEP types
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
@@ -24,6 +31,14 @@ export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
 export const PAGE_EXECUTE = 'PAGE_EXECUTE';
 export const PAGE_MONITOR = 'PAGE_MONITOR';
 export const PAGE_SETTINGS = 'PAGE_SETTINGS';
+export const PAGE_LOGIN = 'PAGE_LOGIN';
+
+// Page tab index
+export const PAGE_LOGIN_INDEX = 0;
+export const PAGE_CONFIGURE_INDEX = 1;
+export const PAGE_EXECUTE_INDEX = 2;
+export const PAGE_MONITOR_INDEX = 3;
+export const PAGE_SETTINGS_INDEX = 4;
 
 // Help URLs
 export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/configuration-view';
@@ -36,6 +51,7 @@ export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
 export const MEEP_TAB_MON = 'meep-tab-mon';
 export const MEEP_TAB_SET = 'meep-tab-set';
+export const MEEP_TAB_HOME = 'meep-tab-home';
 export const MEEP_LBL_SCENARIO_NAME = 'meep-lbl-scenario-name';
 export const MEEP_BTN_CANCEL = 'meep-btn-cancel';
 export const MEEP_BTN_APPLY = 'meep-btn-apply';

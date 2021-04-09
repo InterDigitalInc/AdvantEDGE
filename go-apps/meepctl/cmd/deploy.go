@@ -320,10 +320,12 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			tokenUrl := utils.RepoCfg.GetString("repo.deployment.auth.github.token-url")
 			redirectUri := utils.RepoCfg.GetString("repo.deployment.auth.github.redirect-uri")
 			secret := utils.RepoCfg.GetString("repo.deployment.auth.github.secret")
+			providerMode := utils.RepoCfg.GetString("repo.deployment.auth.provider-mode")
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_ENABLED=true")
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_AUTH_URL="+authUrl)
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_TOKEN_URL="+tokenUrl)
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_REDIRECT_URI="+redirectUri)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_PROVIDER_MODE="+providerMode)
 			if secret != "" {
 				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_CLIENT_ID.name="+secret)
 				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_SECRET.name="+secret)

@@ -46,6 +46,7 @@ class IDOpenScenarioDialog extends Component {
         cydata={MEEP_DLG_OPEN_SCENARIO}
       >
         <IDSelect
+          isDialog={true}
           label={this.props.label || 'Scenario'}
           value={this.props.value}
           options={this.props.options}

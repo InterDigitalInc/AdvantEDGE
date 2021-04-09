@@ -24,7 +24,7 @@ const IDSelect = props => {
       <Select
         style={{ width: '100%' }}
         label={props.label}
-        outlined
+        outlined={props.isDialog?false:true}
         options={props.options}
         onChange={props.onChange}
         disabled={props.disabled}
