@@ -60,7 +60,7 @@ const initialState = {
   sandbox: '',
   sandboxes: [],
   sandboxCfg: {},
-  helpMenuDisplay: false,
+  userMenuDisplay: false,
   signInStatus: '',
   signInUsername: '',
   activeTabIndex: 0
@@ -349,10 +349,10 @@ export const uiExecChangeReplayLoop = val => {
 };
 
 // Change the help menu display
-const CHANGE_HELP_MENU_DISPLAY = 'CHANGE_HELP_MENU_DISPLAY';
-export function uiChangeHelpMenuDisplay(display) {
+const CHANGE_USER_MENU_DISPLAY = 'CHANGE_USER_MENU_DISPLAY';
+export function uiChangeUserMenuDisplay(display) {
   return {
-    type: CHANGE_HELP_MENU_DISPLAY,
+    type: CHANGE_USER_MENU_DISPLAY,
     payload: display
   };
 }
@@ -445,8 +445,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { replayFileDesc: action.payload });
   case UI_EXEC_CHANGE_REPLAY_LOOP:
     return updateObject(state, { eventReplayLoop: action.payload });
-  case CHANGE_HELP_MENU_DISPLAY:
-    return updateObject(state, { helpMenuDisplay: action.payload });
+  case CHANGE_USER_MENU_DISPLAY:
+    return updateObject(state, { userMenuDisplay: action.payload });
   case UI_CHANGE_SIGN_IN_STATUS:
     return updateObject(state, { signInStatus: action.payload });
   case UI_CHANGE_SIGN_IN_USER_NAME:

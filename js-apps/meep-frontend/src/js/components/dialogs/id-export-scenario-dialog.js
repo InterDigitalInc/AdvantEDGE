@@ -73,7 +73,6 @@ class IDExportScenarioDialog extends Component {
         okDisabled={this.state.err}
       >
         <TextField
-          outlined
           style={{ width: '100%' }}
           label={'Export filename'}
           invalid={this.state.err}

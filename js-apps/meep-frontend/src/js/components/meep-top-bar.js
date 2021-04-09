@@ -29,7 +29,7 @@ import { Menu, MenuItem, MenuSurfaceAnchor } from '@rmwc/menu';
 
 import {
   uiChangeCurrentPage,
-  uiChangeHelpMenuDisplay,
+  uiChangeUserMenuDisplay,
   uiChangeCurrentTab
 } from '@/js/state/ui';
 
@@ -107,20 +107,14 @@ class MeepTopBar extends Component {
     this.logo = require('@/img/ID-Icon-01-idcc.svg');
     this.advantEdge = require('@/img/AdvantEDGE-logo-NoTagline_White_RGB.png');
     /* eslint-enable */
-    this.state = {
-      menuoptions: [
-        'Signed in as ' + this.props.signInUsername,
-        'Sign Out'
-      ]
-    };
   }
 
   componentWillMount() {
-    this.props.changeHelpMenuDisplay(false);
+    this.props.changeUserMenuDisplay(false);
   }
 
   handleItemClick(page, tabIndex) {
-    this.props.changeHelpMenuDisplay(false);
+    this.props.changeUserMenuDisplay(false);
     if (this.props.currentPage !== page) {
       this.props.changeCurrentPage(page);
       this.props.changeTabIndex(tabIndex);
@@ -206,9 +200,9 @@ class MeepTopBar extends Component {
                   { this.props.signInStatus === STATUS_SIGNED_IN ?
                     <MenuSurfaceAnchor style={{ height: 48 }}>
                       <Menu
-                        open={this.props.helpMenuDisplay}
+                        open={this.props.userMenuDisplay}
                         onSelect={() => {}}
-                        onClose={() => this.props.changeHelpMenuDisplay(false)}
+                        onClose={() => this.props.changeUserMenuDisplay(false)}
                         anchorCorner={'bottomLeft'}
                         align={'left'}
                         style={{ whiteSpace: 'nowrap', marginTop: 5 }}
@@ -219,7 +213,7 @@ class MeepTopBar extends Component {
                         <div style={{ width: '100%', borderTop: '1px solid #e4e4e4'}} />
                         <MenuItem onClick={() => {
                           this.props.onClickSignIn();
-                          this.props.changeHelpMenuDisplay(false);
+                          this.props.changeUserMenuDisplay(false);
                         }}>
                           <Typography use="body1">Sign out</Typography>
                         </MenuItem>
@@ -228,7 +222,7 @@ class MeepTopBar extends Component {
                         icon="account_circle"
                         className='user-icon'
                         style={styles.icon}
-                        onClick={() => this.props.changeHelpMenuDisplay(true)}
+                        onClick={() => this.props.changeUserMenuDisplay(true)}
                       />
                     </MenuSurfaceAnchor>
                     : null
@@ -245,7 +239,7 @@ class MeepTopBar extends Component {
 
 const styles = {
   mdcTab: {
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: 'Roboto'
   },
   icon: {
@@ -259,14 +253,14 @@ const mapDispatchToProps = dispatch => {
   return {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
     changeTabIndex: index => dispatch(uiChangeCurrentTab(index)),
-    changeHelpMenuDisplay: val => dispatch(uiChangeHelpMenuDisplay(val))
+    changeUserMenuDisplay: val => dispatch(uiChangeUserMenuDisplay(val))
   };
 };
 
 const mapStateToProps = state => {
   return {
     currentPage: state.ui.page,
-    helpMenuDisplay: state.ui.helpMenuDisplay,
+    userMenuDisplay: state.ui.userMenuDisplay,
     signInStatus: state.ui.signInStatus,
     signInUsername: state.ui.signInUsername,
     activeTabIndex: state.ui.activeTabIndex
