@@ -23,7 +23,6 @@ import (
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
-	"github.com/KromDaniel/rejonson"
 	"github.com/go-redis/redis"
 )
 
@@ -35,7 +34,7 @@ type Connector struct {
 	addr          string
 	table         int
 	connected     bool
-	client        *rejonson.Client
+	client        *redis.Client
 	pubsub        *redis.PubSub
 	isListening   bool
 	doneListening chan bool
@@ -69,12 +68,11 @@ func (rc *Connector) connectDB(addr string, table int) error {
 	rc.table = table
 	log.Debug("Redis Connector connecting to ", rc.addr)
 
-	redisClient := redis.NewClient(&redis.Options{
+	rc.client = redis.NewClient(&redis.Options{
 		Addr:     rc.addr,
 		Password: "",    // no password set
 		DB:       table, // 0 is default DB
 	})
-	rc.client = rejonson.ExtendClient(redisClient)
 
 	pong, err := rc.client.Ping().Result()
 
@@ -193,7 +191,7 @@ func (rc *Connector) ForEachJSONEntry(keyMatchStr string, entryHandler func(stri
 		}
 		if len(keys) > 0 {
 			for i := 0; i < len(keys); i++ {
-				jsonInfo, err := rc.client.JsonGet(keys[i], ".").Result()
+				jsonInfo, err := rc.client.Get(keys[i]).Result()
 				if err != nil || jsonInfo == "" {
 					log.Debug("Failed to retrieve entry fields")
 					break
@@ -247,7 +245,7 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 		return "", errors.New("Redis Connector is disconnected (JSONGetEntry)")
 	}
 	// Retreive JSON entry if it exists
-	json, err := rc.client.JsonGet(key, path).Result()
+	json, err := rc.client.Get(key).Result()
 	if err != nil {
 		return "", err
 	}
@@ -260,7 +258,7 @@ func (rc *Connector) JSONSetEntry(key string, path string, json string) error {
 		return errors.New("Redis Connector is disconnected (JSONSetEntry)")
 	}
 	// Update existing entry or create new entry if it does not exist
-	_, err := rc.client.JsonSet(key, path, json).Result()
+	_, err := rc.client.Set(key, json, 0).Result()
 	if err != nil {
 		log.Error("key: ", key, ": ", err.Error())
 		return err
@@ -274,7 +272,7 @@ func (rc *Connector) JSONDelEntry(key string, path string) error {
 		return errors.New("Redis Connector is disconnected (JSONDelEntry)")
 	}
 	// Update existing entry or create new entry if it does not exist
-	_, err := rc.client.JsonDel(key, path).Result()
+	_, err := rc.client.Del(key, path).Result()
 	if err != nil {
 		return err
 	}

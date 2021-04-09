@@ -14,13 +14,11 @@ global:
 ##
 image:
   registry: docker.io
-  # repository: bitnami/redis
-  repository: redislabs/rejson
+  repository: bitnami/redis
   ## Bitnami Redis(TM) image tag
   ## ref: https://github.com/bitnami/bitnami-docker-redis#supported-tags-and-respective-dockerfile-links
   ##
-  # tag: 6.0.9-debian-10-r66
-  tag: 1.0.7
+  tag: 6.0.9-debian-10-r66
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
