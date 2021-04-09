@@ -319,6 +319,7 @@ repo:
           meep-sandbox-ctrl-api: js-packages/meep-sandbox-ctrl-client
           meep-mon-engine-api: js-packages/meep-mon-engine-client
           meep-gis-engine-api: js-packages/meep-gis-engine-client
+          meep-auth-svc-client: js-packages/meep-auth-svc-client
       meep-platform-swagger-ui:
         # location of source code
         src: js-apps/meep-swagger-ui
