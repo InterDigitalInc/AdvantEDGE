@@ -138,11 +138,8 @@ class MeepContainer extends Component {
     document.title = 'AdvantEDGE';
     this.setBasepath(this.props.sandbox);
     this.refreshScenario();
-    this.startTimers();
     this.monitorTabFocus();
-  }
 
-  componentWillMount() {
     this.meepAuthApi.loginSupported((_, __, response) => {
       if (response.status === 404) {
         this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
@@ -153,8 +150,11 @@ class MeepContainer extends Component {
         this.props.changeSignInStatus(STATUS_SIGNED_OUT);
         this.logout();
       }
+      this.startTimers();
     });
+  }
 
+  componentWillMount() {
     // Handle OAuth login in progress
     if (this.props.signInStatus === STATUS_SIGNING_IN) {
       let params = (new URL(document.location)).searchParams;
