@@ -732,6 +732,1882 @@
           done();
         });
       });
+      describe('getActiveScenarioDomain', function() {
+        it('should call getActiveScenarioDomain successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioDomain call and complete the assertions
+          /*
+          var opts = {};
+          opts.domain = "domain_example";
+          opts.domainType = "domainType_example";
+          opts.zone = "zone_example";
+          opts.nl = "nl_example";
+          opts.nlType = "nlType_example";
+          opts.pl = "pl_example";
+          opts.plType = "plType_example";
+          opts.proc = "proc_example";
+          opts.procType = "procType_example";
+          opts.children = true;
+          opts.minimize = true;
+
+          instance.getActiveScenarioDomain(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Domains);
+            {
+              let dataCtr = data.domains;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Domain);
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.name).to.be.a('string');
+                expect(data.name).to.be("");
+                expect(data.type).to.be.a('string');
+                expect(data.type).to.be("OPERATOR");
+                expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                      expect(data.netChar.latency).to.be.a('number');
+                  expect(data.netChar.latency).to.be(0);
+                  expect(data.netChar.latencyVariation).to.be.a('number');
+                  expect(data.netChar.latencyVariation).to.be(0);
+                  expect(data.netChar.latencyDistribution).to.be.a('string');
+                  expect(data.netChar.latencyDistribution).to.be("Normal");
+                  expect(data.netChar.throughput).to.be.a('number');
+                  expect(data.netChar.throughput).to.be(0);
+                  expect(data.netChar.throughputDl).to.be.a('number');
+                  expect(data.netChar.throughputDl).to.be(0);
+                  expect(data.netChar.throughputUl).to.be.a('number');
+                  expect(data.netChar.throughputUl).to.be(0);
+                  expect(data.netChar.packetLoss).to.be.a('number');
+                  expect(data.netChar.packetLoss).to.be(0.0);
+                expect(data.interZoneLatency).to.be.a('number');
+                expect(data.interZoneLatency).to.be(0);
+                expect(data.interZoneLatencyVariation).to.be.a('number');
+                expect(data.interZoneLatencyVariation).to.be(0);
+                expect(data.interZoneThroughput).to.be.a('number');
+                expect(data.interZoneThroughput).to.be(0);
+                expect(data.interZonePacketLoss).to.be.a('number');
+                expect(data.interZonePacketLoss).to.be(0.0);
+                {
+                  let dataCtr = data.meta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.userMeta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                expect(data.cellularDomainConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularDomainConfig);
+                      expect(data.cellularDomainConfig.mnc).to.be.a('string');
+                  expect(data.cellularDomainConfig.mnc).to.be("");
+                  expect(data.cellularDomainConfig.mcc).to.be.a('string');
+                  expect(data.cellularDomainConfig.mcc).to.be("");
+                  expect(data.cellularDomainConfig.defaultCellId).to.be.a('string');
+                  expect(data.cellularDomainConfig.defaultCellId).to.be("");
+                {
+                  let dataCtr = data.zones;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Zone);
+                    expect(data.id).to.be.a('string');
+                    expect(data.id).to.be("");
+                    expect(data.name).to.be.a('string');
+                    expect(data.name).to.be("");
+                    expect(data.type).to.be.a('string');
+                    expect(data.type).to.be("ZONE");
+                    expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                          expect(data.netChar.latency).to.be.a('number');
+                      expect(data.netChar.latency).to.be(0);
+                      expect(data.netChar.latencyVariation).to.be.a('number');
+                      expect(data.netChar.latencyVariation).to.be(0);
+                      expect(data.netChar.latencyDistribution).to.be.a('string');
+                      expect(data.netChar.latencyDistribution).to.be("Normal");
+                      expect(data.netChar.throughput).to.be.a('number');
+                      expect(data.netChar.throughput).to.be(0);
+                      expect(data.netChar.throughputDl).to.be.a('number');
+                      expect(data.netChar.throughputDl).to.be(0);
+                      expect(data.netChar.throughputUl).to.be.a('number');
+                      expect(data.netChar.throughputUl).to.be(0);
+                      expect(data.netChar.packetLoss).to.be.a('number');
+                      expect(data.netChar.packetLoss).to.be(0.0);
+                    expect(data.interFogLatency).to.be.a('number');
+                    expect(data.interFogLatency).to.be(0);
+                    expect(data.interFogLatencyVariation).to.be.a('number');
+                    expect(data.interFogLatencyVariation).to.be(0);
+                    expect(data.interFogThroughput).to.be.a('number');
+                    expect(data.interFogThroughput).to.be(0);
+                    expect(data.interFogPacketLoss).to.be.a('number');
+                    expect(data.interFogPacketLoss).to.be(0.0);
+                    expect(data.interEdgeLatency).to.be.a('number');
+                    expect(data.interEdgeLatency).to.be(0);
+                    expect(data.interEdgeLatencyVariation).to.be.a('number');
+                    expect(data.interEdgeLatencyVariation).to.be(0);
+                    expect(data.interEdgeThroughput).to.be.a('number');
+                    expect(data.interEdgeThroughput).to.be(0);
+                    expect(data.interEdgePacketLoss).to.be.a('number');
+                    expect(data.interEdgePacketLoss).to.be(0.0);
+                    expect(data.edgeFogLatency).to.be.a('number');
+                    expect(data.edgeFogLatency).to.be(0);
+                    expect(data.edgeFogLatencyVariation).to.be.a('number');
+                    expect(data.edgeFogLatencyVariation).to.be(0);
+                    expect(data.edgeFogThroughput).to.be.a('number');
+                    expect(data.edgeFogThroughput).to.be(0);
+                    expect(data.edgeFogPacketLoss).to.be.a('number');
+                    expect(data.edgeFogPacketLoss).to.be(0.0);
+                    {
+                      let dataCtr = data.meta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    {
+                      let dataCtr = data.userMeta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    {
+                      let dataCtr = data.networkLocations;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkLocation);
+                        expect(data.id).to.be.a('string');
+                        expect(data.id).to.be("");
+                        expect(data.name).to.be.a('string');
+                        expect(data.name).to.be("");
+                        expect(data.type).to.be.a('string');
+                        expect(data.type).to.be("POA");
+                        expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                              expect(data.netChar.latency).to.be.a('number');
+                          expect(data.netChar.latency).to.be(0);
+                          expect(data.netChar.latencyVariation).to.be.a('number');
+                          expect(data.netChar.latencyVariation).to.be(0);
+                          expect(data.netChar.latencyDistribution).to.be.a('string');
+                          expect(data.netChar.latencyDistribution).to.be("Normal");
+                          expect(data.netChar.throughput).to.be.a('number');
+                          expect(data.netChar.throughput).to.be(0);
+                          expect(data.netChar.throughputDl).to.be.a('number');
+                          expect(data.netChar.throughputDl).to.be(0);
+                          expect(data.netChar.throughputUl).to.be.a('number');
+                          expect(data.netChar.throughputUl).to.be(0);
+                          expect(data.netChar.packetLoss).to.be.a('number');
+                          expect(data.netChar.packetLoss).to.be(0.0);
+                        expect(data.terminalLinkLatency).to.be.a('number');
+                        expect(data.terminalLinkLatency).to.be(0);
+                        expect(data.terminalLinkLatencyVariation).to.be.a('number');
+                        expect(data.terminalLinkLatencyVariation).to.be(0);
+                        expect(data.terminalLinkThroughput).to.be.a('number');
+                        expect(data.terminalLinkThroughput).to.be(0);
+                        expect(data.terminalLinkPacketLoss).to.be.a('number');
+                        expect(data.terminalLinkPacketLoss).to.be(0.0);
+                        {
+                          let dataCtr = data.meta;
+                          expect(dataCtr).to.be.an(Object);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        {
+                          let dataCtr = data.userMeta;
+                          expect(dataCtr).to.be.an(Object);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        expect(data.cellularPoaConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularPoaConfig);
+                              expect(data.cellularPoaConfig.cellId).to.be.a('string');
+                          expect(data.cellularPoaConfig.cellId).to.be("");
+                        expect(data.poa4GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa4GConfig);
+                              expect(data.poa4GConfig.cellId).to.be.a('string');
+                          expect(data.poa4GConfig.cellId).to.be("");
+                        expect(data.poa5GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa5GConfig);
+                              expect(data.poa5GConfig.cellId).to.be.a('string');
+                          expect(data.poa5GConfig.cellId).to.be("");
+                        expect(data.poaWifiConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.PoaWifiConfig);
+                              expect(data.poaWifiConfig.macId).to.be.a('string');
+                          expect(data.poaWifiConfig.macId).to.be("");
+                        expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                              expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                                expect(data.geoData.location.type).to.be.a('string');
+                            expect(data.geoData.location.type).to.be("Point");
+                            {
+                              let dataCtr = data.geoData.location.coordinates;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('number');
+                                expect(data).to.be();
+                              }
+                            }
+                          expect(data.geoData.radius).to.be.a('number');
+                          expect(data.geoData.radius).to.be();
+                          expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                                expect(data.geoData.path.type).to.be.a('string');
+                            expect(data.geoData.path.type).to.be("LineString");
+                            {
+                              let dataCtr = data.geoData.path.coordinates;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a(Array);
+                                expect(data).to.be([]);
+                              }
+                            }
+                          expect(data.geoData.eopMode).to.be.a('string');
+                          expect(data.geoData.eopMode).to.be("LOOP");
+                          expect(data.geoData.velocity).to.be.a('number');
+                          expect(data.geoData.velocity).to.be();
+                        {
+                          let dataCtr = data.physicalLocations;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+                            expect(data.id).to.be.a('string');
+                            expect(data.id).to.be("");
+                            expect(data.name).to.be.a('string');
+                            expect(data.name).to.be("");
+                            expect(data.type).to.be.a('string');
+                            expect(data.type).to.be("UE");
+                            expect(data.isExternal).to.be.a('boolean');
+                            expect(data.isExternal).to.be(false);
+                            expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                                  expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                                    expect(data.geoData.location.type).to.be.a('string');
+                                expect(data.geoData.location.type).to.be("Point");
+                                {
+                                  let dataCtr = data.geoData.location.coordinates;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('number');
+                                    expect(data).to.be();
+                                  }
+                                }
+                              expect(data.geoData.radius).to.be.a('number');
+                              expect(data.geoData.radius).to.be();
+                              expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                                    expect(data.geoData.path.type).to.be.a('string');
+                                expect(data.geoData.path.type).to.be("LineString");
+                                {
+                                  let dataCtr = data.geoData.path.coordinates;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a(Array);
+                                    expect(data).to.be([]);
+                                  }
+                                }
+                              expect(data.geoData.eopMode).to.be.a('string');
+                              expect(data.geoData.eopMode).to.be("LOOP");
+                              expect(data.geoData.velocity).to.be.a('number');
+                              expect(data.geoData.velocity).to.be();
+                            {
+                              let dataCtr = data.networkLocationsInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            expect(data.connected).to.be.a('boolean');
+                            expect(data.connected).to.be(false);
+                            expect(data.wireless).to.be.a('boolean');
+                            expect(data.wireless).to.be(false);
+                            expect(data.wirelessType).to.be.a('string');
+                            expect(data.wirelessType).to.be("");
+                            {
+                              let dataCtr = data.meta;
+                              expect(dataCtr).to.be.an(Object);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.userMeta;
+                              expect(dataCtr).to.be.an(Object);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.processes;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                                expect(data.id).to.be.a('string');
+                                expect(data.id).to.be("");
+                                expect(data.name).to.be.a('string');
+                                expect(data.name).to.be("");
+                                expect(data.type).to.be.a('string');
+                                expect(data.type).to.be("UE-APP");
+                                expect(data.isExternal).to.be.a('boolean');
+                                expect(data.isExternal).to.be(false);
+                                expect(data.image).to.be.a('string');
+                                expect(data.image).to.be("");
+                                expect(data.environment).to.be.a('string');
+                                expect(data.environment).to.be("");
+                                expect(data.commandArguments).to.be.a('string');
+                                expect(data.commandArguments).to.be("");
+                                expect(data.commandExe).to.be.a('string');
+                                expect(data.commandExe).to.be("");
+                                expect(data.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                                      expect(data.serviceConfig.name).to.be.a('string');
+                                  expect(data.serviceConfig.name).to.be("");
+                                  expect(data.serviceConfig.meSvcName).to.be.a('string');
+                                  expect(data.serviceConfig.meSvcName).to.be("");
+                                  {
+                                    let dataCtr = data.serviceConfig.ports;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                                      expect(data.protocol).to.be.a('string');
+                                      expect(data.protocol).to.be("");
+                                      expect(data.port).to.be.a('number');
+                                      expect(data.port).to.be(0);
+                                      expect(data.externalPort).to.be.a('number');
+                                      expect(data.externalPort).to.be(0);
+                                    }
+                                  }
+                                expect(data.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                                      expect(data.gpuConfig.type).to.be.a('string');
+                                  expect(data.gpuConfig.type).to.be("");
+                                  expect(data.gpuConfig.count).to.be.a('number');
+                                  expect(data.gpuConfig.count).to.be(0);
+                                expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                                      expect(data.memoryConfig.min).to.be.a('number');
+                                  expect(data.memoryConfig.min).to.be(0);
+                                  expect(data.memoryConfig.max).to.be.a('number');
+                                  expect(data.memoryConfig.max).to.be(0);
+                                expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                                      expect(data.cpuConfig.min).to.be.a('number');
+                                  expect(data.cpuConfig.min).to.be(0.0);
+                                  expect(data.cpuConfig.max).to.be.a('number');
+                                  expect(data.cpuConfig.max).to.be(0.0);
+                                expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                                      {
+                                    let dataCtr = data.externalConfig.ingressServiceMap;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                                      expect(data.name).to.be.a('string');
+                                      expect(data.name).to.be("");
+                                      expect(data.port).to.be.a('number');
+                                      expect(data.port).to.be(0);
+                                      expect(data.externalPort).to.be.a('number');
+                                      expect(data.externalPort).to.be(0);
+                                      expect(data.protocol).to.be.a('string');
+                                      expect(data.protocol).to.be("");
+                                    }
+                                  }
+                                  {
+                                    let dataCtr = data.externalConfig.egressServiceMap;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                                      expect(data.name).to.be.a('string');
+                                      expect(data.name).to.be("");
+                                      expect(data.meSvcName).to.be.a('string');
+                                      expect(data.meSvcName).to.be("");
+                                      expect(data.ip).to.be.a('string');
+                                      expect(data.ip).to.be("");
+                                      expect(data.port).to.be.a('number');
+                                      expect(data.port).to.be(0);
+                                      expect(data.protocol).to.be.a('string');
+                                      expect(data.protocol).to.be("");
+                                    }
+                                  }
+                                expect(data.status).to.be.a('string');
+                                expect(data.status).to.be("");
+                                expect(data.userChartLocation).to.be.a('string');
+                                expect(data.userChartLocation).to.be("");
+                                expect(data.userChartAlternateValues).to.be.a('string');
+                                expect(data.userChartAlternateValues).to.be("");
+                                expect(data.userChartGroup).to.be.a('string');
+                                expect(data.userChartGroup).to.be("");
+                                {
+                                  let dataCtr = data.meta;
+                                  expect(dataCtr).to.be.an(Object);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
+                                {
+                                  let dataCtr = data.userMeta;
+                                  expect(dataCtr).to.be.an(Object);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
+                                expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                                      expect(data.netChar.latency).to.be.a('number');
+                                  expect(data.netChar.latency).to.be(0);
+                                  expect(data.netChar.latencyVariation).to.be.a('number');
+                                  expect(data.netChar.latencyVariation).to.be(0);
+                                  expect(data.netChar.latencyDistribution).to.be.a('string');
+                                  expect(data.netChar.latencyDistribution).to.be("Normal");
+                                  expect(data.netChar.throughput).to.be.a('number');
+                                  expect(data.netChar.throughput).to.be(0);
+                                  expect(data.netChar.throughputDl).to.be.a('number');
+                                  expect(data.netChar.throughputDl).to.be(0);
+                                  expect(data.netChar.throughputUl).to.be.a('number');
+                                  expect(data.netChar.throughputUl).to.be(0);
+                                  expect(data.netChar.packetLoss).to.be.a('number');
+                                  expect(data.netChar.packetLoss).to.be(0.0);
+                                expect(data.appLatency).to.be.a('number');
+                                expect(data.appLatency).to.be(0);
+                                expect(data.appLatencyVariation).to.be.a('number');
+                                expect(data.appLatencyVariation).to.be(0);
+                                expect(data.appThroughput).to.be.a('number');
+                                expect(data.appThroughput).to.be(0);
+                                expect(data.appPacketLoss).to.be.a('number');
+                                expect(data.appPacketLoss).to.be(0.0);
+                                expect(data.placementId).to.be.a('string');
+                                expect(data.placementId).to.be("");
+                              }
+                            }
+                            expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                                  expect(data.netChar.latency).to.be.a('number');
+                              expect(data.netChar.latency).to.be(0);
+                              expect(data.netChar.latencyVariation).to.be.a('number');
+                              expect(data.netChar.latencyVariation).to.be(0);
+                              expect(data.netChar.latencyDistribution).to.be.a('string');
+                              expect(data.netChar.latencyDistribution).to.be("Normal");
+                              expect(data.netChar.throughput).to.be.a('number');
+                              expect(data.netChar.throughput).to.be(0);
+                              expect(data.netChar.throughputDl).to.be.a('number');
+                              expect(data.netChar.throughputDl).to.be(0);
+                              expect(data.netChar.throughputUl).to.be.a('number');
+                              expect(data.netChar.throughputUl).to.be(0);
+                              expect(data.netChar.packetLoss).to.be.a('number');
+                              expect(data.netChar.packetLoss).to.be(0.0);
+                            expect(data.linkLatency).to.be.a('number');
+                            expect(data.linkLatency).to.be(0);
+                            expect(data.linkLatencyVariation).to.be.a('number');
+                            expect(data.linkLatencyVariation).to.be(0);
+                            expect(data.linkThroughput).to.be.a('number');
+                            expect(data.linkThroughput).to.be(0);
+                            expect(data.linkPacketLoss).to.be.a('number');
+                            expect(data.linkPacketLoss).to.be(0.0);
+                            expect(data.macId).to.be.a('string');
+                            expect(data.macId).to.be("");
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getActiveScenarioNl', function() {
+        it('should call getActiveScenarioNl successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioNl call and complete the assertions
+          /*
+          var opts = {};
+          opts.domain = "domain_example";
+          opts.domainType = "domainType_example";
+          opts.zone = "zone_example";
+          opts.nl = "nl_example";
+          opts.nlType = "nlType_example";
+          opts.pl = "pl_example";
+          opts.plType = "plType_example";
+          opts.proc = "proc_example";
+          opts.procType = "procType_example";
+          opts.children = true;
+          opts.minimize = true;
+
+          instance.getActiveScenarioNl(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkLocations);
+            {
+              let dataCtr = data.networkLocations;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkLocation);
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.name).to.be.a('string');
+                expect(data.name).to.be("");
+                expect(data.type).to.be.a('string');
+                expect(data.type).to.be("POA");
+                expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                      expect(data.netChar.latency).to.be.a('number');
+                  expect(data.netChar.latency).to.be(0);
+                  expect(data.netChar.latencyVariation).to.be.a('number');
+                  expect(data.netChar.latencyVariation).to.be(0);
+                  expect(data.netChar.latencyDistribution).to.be.a('string');
+                  expect(data.netChar.latencyDistribution).to.be("Normal");
+                  expect(data.netChar.throughput).to.be.a('number');
+                  expect(data.netChar.throughput).to.be(0);
+                  expect(data.netChar.throughputDl).to.be.a('number');
+                  expect(data.netChar.throughputDl).to.be(0);
+                  expect(data.netChar.throughputUl).to.be.a('number');
+                  expect(data.netChar.throughputUl).to.be(0);
+                  expect(data.netChar.packetLoss).to.be.a('number');
+                  expect(data.netChar.packetLoss).to.be(0.0);
+                expect(data.terminalLinkLatency).to.be.a('number');
+                expect(data.terminalLinkLatency).to.be(0);
+                expect(data.terminalLinkLatencyVariation).to.be.a('number');
+                expect(data.terminalLinkLatencyVariation).to.be(0);
+                expect(data.terminalLinkThroughput).to.be.a('number');
+                expect(data.terminalLinkThroughput).to.be(0);
+                expect(data.terminalLinkPacketLoss).to.be.a('number');
+                expect(data.terminalLinkPacketLoss).to.be(0.0);
+                {
+                  let dataCtr = data.meta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.userMeta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                expect(data.cellularPoaConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularPoaConfig);
+                      expect(data.cellularPoaConfig.cellId).to.be.a('string');
+                  expect(data.cellularPoaConfig.cellId).to.be("");
+                expect(data.poa4GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa4GConfig);
+                      expect(data.poa4GConfig.cellId).to.be.a('string');
+                  expect(data.poa4GConfig.cellId).to.be("");
+                expect(data.poa5GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa5GConfig);
+                      expect(data.poa5GConfig.cellId).to.be.a('string');
+                  expect(data.poa5GConfig.cellId).to.be("");
+                expect(data.poaWifiConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.PoaWifiConfig);
+                      expect(data.poaWifiConfig.macId).to.be.a('string');
+                  expect(data.poaWifiConfig.macId).to.be("");
+                expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                      expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                        expect(data.geoData.location.type).to.be.a('string');
+                    expect(data.geoData.location.type).to.be("Point");
+                    {
+                      let dataCtr = data.geoData.location.coordinates;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('number');
+                        expect(data).to.be();
+                      }
+                    }
+                  expect(data.geoData.radius).to.be.a('number');
+                  expect(data.geoData.radius).to.be();
+                  expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                        expect(data.geoData.path.type).to.be.a('string');
+                    expect(data.geoData.path.type).to.be("LineString");
+                    {
+                      let dataCtr = data.geoData.path.coordinates;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a(Array);
+                        expect(data).to.be([]);
+                      }
+                    }
+                  expect(data.geoData.eopMode).to.be.a('string');
+                  expect(data.geoData.eopMode).to.be("LOOP");
+                  expect(data.geoData.velocity).to.be.a('number');
+                  expect(data.geoData.velocity).to.be();
+                {
+                  let dataCtr = data.physicalLocations;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+                    expect(data.id).to.be.a('string');
+                    expect(data.id).to.be("");
+                    expect(data.name).to.be.a('string');
+                    expect(data.name).to.be("");
+                    expect(data.type).to.be.a('string');
+                    expect(data.type).to.be("UE");
+                    expect(data.isExternal).to.be.a('boolean');
+                    expect(data.isExternal).to.be(false);
+                    expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                          expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                            expect(data.geoData.location.type).to.be.a('string');
+                        expect(data.geoData.location.type).to.be("Point");
+                        {
+                          let dataCtr = data.geoData.location.coordinates;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('number');
+                            expect(data).to.be();
+                          }
+                        }
+                      expect(data.geoData.radius).to.be.a('number');
+                      expect(data.geoData.radius).to.be();
+                      expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                            expect(data.geoData.path.type).to.be.a('string');
+                        expect(data.geoData.path.type).to.be("LineString");
+                        {
+                          let dataCtr = data.geoData.path.coordinates;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a(Array);
+                            expect(data).to.be([]);
+                          }
+                        }
+                      expect(data.geoData.eopMode).to.be.a('string');
+                      expect(data.geoData.eopMode).to.be("LOOP");
+                      expect(data.geoData.velocity).to.be.a('number');
+                      expect(data.geoData.velocity).to.be();
+                    {
+                      let dataCtr = data.networkLocationsInRange;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    expect(data.connected).to.be.a('boolean');
+                    expect(data.connected).to.be(false);
+                    expect(data.wireless).to.be.a('boolean');
+                    expect(data.wireless).to.be(false);
+                    expect(data.wirelessType).to.be.a('string');
+                    expect(data.wirelessType).to.be("");
+                    {
+                      let dataCtr = data.meta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    {
+                      let dataCtr = data.userMeta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    {
+                      let dataCtr = data.processes;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                        expect(data.id).to.be.a('string');
+                        expect(data.id).to.be("");
+                        expect(data.name).to.be.a('string');
+                        expect(data.name).to.be("");
+                        expect(data.type).to.be.a('string');
+                        expect(data.type).to.be("UE-APP");
+                        expect(data.isExternal).to.be.a('boolean');
+                        expect(data.isExternal).to.be(false);
+                        expect(data.image).to.be.a('string');
+                        expect(data.image).to.be("");
+                        expect(data.environment).to.be.a('string');
+                        expect(data.environment).to.be("");
+                        expect(data.commandArguments).to.be.a('string');
+                        expect(data.commandArguments).to.be("");
+                        expect(data.commandExe).to.be.a('string');
+                        expect(data.commandExe).to.be("");
+                        expect(data.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                              expect(data.serviceConfig.name).to.be.a('string');
+                          expect(data.serviceConfig.name).to.be("");
+                          expect(data.serviceConfig.meSvcName).to.be.a('string');
+                          expect(data.serviceConfig.meSvcName).to.be("");
+                          {
+                            let dataCtr = data.serviceConfig.ports;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                              expect(data.protocol).to.be.a('string');
+                              expect(data.protocol).to.be("");
+                              expect(data.port).to.be.a('number');
+                              expect(data.port).to.be(0);
+                              expect(data.externalPort).to.be.a('number');
+                              expect(data.externalPort).to.be(0);
+                            }
+                          }
+                        expect(data.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                              expect(data.gpuConfig.type).to.be.a('string');
+                          expect(data.gpuConfig.type).to.be("");
+                          expect(data.gpuConfig.count).to.be.a('number');
+                          expect(data.gpuConfig.count).to.be(0);
+                        expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                              expect(data.memoryConfig.min).to.be.a('number');
+                          expect(data.memoryConfig.min).to.be(0);
+                          expect(data.memoryConfig.max).to.be.a('number');
+                          expect(data.memoryConfig.max).to.be(0);
+                        expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                              expect(data.cpuConfig.min).to.be.a('number');
+                          expect(data.cpuConfig.min).to.be(0.0);
+                          expect(data.cpuConfig.max).to.be.a('number');
+                          expect(data.cpuConfig.max).to.be(0.0);
+                        expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                              {
+                            let dataCtr = data.externalConfig.ingressServiceMap;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                              expect(data.name).to.be.a('string');
+                              expect(data.name).to.be("");
+                              expect(data.port).to.be.a('number');
+                              expect(data.port).to.be(0);
+                              expect(data.externalPort).to.be.a('number');
+                              expect(data.externalPort).to.be(0);
+                              expect(data.protocol).to.be.a('string');
+                              expect(data.protocol).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.externalConfig.egressServiceMap;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                              expect(data.name).to.be.a('string');
+                              expect(data.name).to.be("");
+                              expect(data.meSvcName).to.be.a('string');
+                              expect(data.meSvcName).to.be("");
+                              expect(data.ip).to.be.a('string');
+                              expect(data.ip).to.be("");
+                              expect(data.port).to.be.a('number');
+                              expect(data.port).to.be(0);
+                              expect(data.protocol).to.be.a('string');
+                              expect(data.protocol).to.be("");
+                            }
+                          }
+                        expect(data.status).to.be.a('string');
+                        expect(data.status).to.be("");
+                        expect(data.userChartLocation).to.be.a('string');
+                        expect(data.userChartLocation).to.be("");
+                        expect(data.userChartAlternateValues).to.be.a('string');
+                        expect(data.userChartAlternateValues).to.be("");
+                        expect(data.userChartGroup).to.be.a('string');
+                        expect(data.userChartGroup).to.be("");
+                        {
+                          let dataCtr = data.meta;
+                          expect(dataCtr).to.be.an(Object);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        {
+                          let dataCtr = data.userMeta;
+                          expect(dataCtr).to.be.an(Object);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                              expect(data.netChar.latency).to.be.a('number');
+                          expect(data.netChar.latency).to.be(0);
+                          expect(data.netChar.latencyVariation).to.be.a('number');
+                          expect(data.netChar.latencyVariation).to.be(0);
+                          expect(data.netChar.latencyDistribution).to.be.a('string');
+                          expect(data.netChar.latencyDistribution).to.be("Normal");
+                          expect(data.netChar.throughput).to.be.a('number');
+                          expect(data.netChar.throughput).to.be(0);
+                          expect(data.netChar.throughputDl).to.be.a('number');
+                          expect(data.netChar.throughputDl).to.be(0);
+                          expect(data.netChar.throughputUl).to.be.a('number');
+                          expect(data.netChar.throughputUl).to.be(0);
+                          expect(data.netChar.packetLoss).to.be.a('number');
+                          expect(data.netChar.packetLoss).to.be(0.0);
+                        expect(data.appLatency).to.be.a('number');
+                        expect(data.appLatency).to.be(0);
+                        expect(data.appLatencyVariation).to.be.a('number');
+                        expect(data.appLatencyVariation).to.be(0);
+                        expect(data.appThroughput).to.be.a('number');
+                        expect(data.appThroughput).to.be(0);
+                        expect(data.appPacketLoss).to.be.a('number');
+                        expect(data.appPacketLoss).to.be(0.0);
+                        expect(data.placementId).to.be.a('string');
+                        expect(data.placementId).to.be("");
+                      }
+                    }
+                    expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                          expect(data.netChar.latency).to.be.a('number');
+                      expect(data.netChar.latency).to.be(0);
+                      expect(data.netChar.latencyVariation).to.be.a('number');
+                      expect(data.netChar.latencyVariation).to.be(0);
+                      expect(data.netChar.latencyDistribution).to.be.a('string');
+                      expect(data.netChar.latencyDistribution).to.be("Normal");
+                      expect(data.netChar.throughput).to.be.a('number');
+                      expect(data.netChar.throughput).to.be(0);
+                      expect(data.netChar.throughputDl).to.be.a('number');
+                      expect(data.netChar.throughputDl).to.be(0);
+                      expect(data.netChar.throughputUl).to.be.a('number');
+                      expect(data.netChar.throughputUl).to.be(0);
+                      expect(data.netChar.packetLoss).to.be.a('number');
+                      expect(data.netChar.packetLoss).to.be(0.0);
+                    expect(data.linkLatency).to.be.a('number');
+                    expect(data.linkLatency).to.be(0);
+                    expect(data.linkLatencyVariation).to.be.a('number');
+                    expect(data.linkLatencyVariation).to.be(0);
+                    expect(data.linkThroughput).to.be.a('number');
+                    expect(data.linkThroughput).to.be(0);
+                    expect(data.linkPacketLoss).to.be.a('number');
+                    expect(data.linkPacketLoss).to.be(0.0);
+                    expect(data.macId).to.be.a('string');
+                    expect(data.macId).to.be("");
+                  }
+                }
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getActiveScenarioPl', function() {
+        it('should call getActiveScenarioPl successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioPl call and complete the assertions
+          /*
+          var opts = {};
+          opts.domain = "domain_example";
+          opts.domainType = "domainType_example";
+          opts.zone = "zone_example";
+          opts.nl = "nl_example";
+          opts.nlType = "nlType_example";
+          opts.pl = "pl_example";
+          opts.plType = "plType_example";
+          opts.proc = "proc_example";
+          opts.procType = "procType_example";
+          opts.children = true;
+          opts.minimize = true;
+
+          instance.getActiveScenarioPl(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PhysicalLocations);
+            {
+              let dataCtr = data.physicalLocations;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.name).to.be.a('string');
+                expect(data.name).to.be("");
+                expect(data.type).to.be.a('string');
+                expect(data.type).to.be("UE");
+                expect(data.isExternal).to.be.a('boolean');
+                expect(data.isExternal).to.be(false);
+                expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                      expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                        expect(data.geoData.location.type).to.be.a('string');
+                    expect(data.geoData.location.type).to.be("Point");
+                    {
+                      let dataCtr = data.geoData.location.coordinates;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('number');
+                        expect(data).to.be();
+                      }
+                    }
+                  expect(data.geoData.radius).to.be.a('number');
+                  expect(data.geoData.radius).to.be();
+                  expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                        expect(data.geoData.path.type).to.be.a('string');
+                    expect(data.geoData.path.type).to.be("LineString");
+                    {
+                      let dataCtr = data.geoData.path.coordinates;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a(Array);
+                        expect(data).to.be([]);
+                      }
+                    }
+                  expect(data.geoData.eopMode).to.be.a('string');
+                  expect(data.geoData.eopMode).to.be("LOOP");
+                  expect(data.geoData.velocity).to.be.a('number');
+                  expect(data.geoData.velocity).to.be();
+                {
+                  let dataCtr = data.networkLocationsInRange;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                expect(data.connected).to.be.a('boolean');
+                expect(data.connected).to.be(false);
+                expect(data.wireless).to.be.a('boolean');
+                expect(data.wireless).to.be(false);
+                expect(data.wirelessType).to.be.a('string');
+                expect(data.wirelessType).to.be("");
+                {
+                  let dataCtr = data.meta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.userMeta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.processes;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                    expect(data.id).to.be.a('string');
+                    expect(data.id).to.be("");
+                    expect(data.name).to.be.a('string');
+                    expect(data.name).to.be("");
+                    expect(data.type).to.be.a('string');
+                    expect(data.type).to.be("UE-APP");
+                    expect(data.isExternal).to.be.a('boolean');
+                    expect(data.isExternal).to.be(false);
+                    expect(data.image).to.be.a('string');
+                    expect(data.image).to.be("");
+                    expect(data.environment).to.be.a('string');
+                    expect(data.environment).to.be("");
+                    expect(data.commandArguments).to.be.a('string');
+                    expect(data.commandArguments).to.be("");
+                    expect(data.commandExe).to.be.a('string');
+                    expect(data.commandExe).to.be("");
+                    expect(data.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                          expect(data.serviceConfig.name).to.be.a('string');
+                      expect(data.serviceConfig.name).to.be("");
+                      expect(data.serviceConfig.meSvcName).to.be.a('string');
+                      expect(data.serviceConfig.meSvcName).to.be("");
+                      {
+                        let dataCtr = data.serviceConfig.ports;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                          expect(data.protocol).to.be.a('string');
+                          expect(data.protocol).to.be("");
+                          expect(data.port).to.be.a('number');
+                          expect(data.port).to.be(0);
+                          expect(data.externalPort).to.be.a('number');
+                          expect(data.externalPort).to.be(0);
+                        }
+                      }
+                    expect(data.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                          expect(data.gpuConfig.type).to.be.a('string');
+                      expect(data.gpuConfig.type).to.be("");
+                      expect(data.gpuConfig.count).to.be.a('number');
+                      expect(data.gpuConfig.count).to.be(0);
+                    expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                          expect(data.memoryConfig.min).to.be.a('number');
+                      expect(data.memoryConfig.min).to.be(0);
+                      expect(data.memoryConfig.max).to.be.a('number');
+                      expect(data.memoryConfig.max).to.be(0);
+                    expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                          expect(data.cpuConfig.min).to.be.a('number');
+                      expect(data.cpuConfig.min).to.be(0.0);
+                      expect(data.cpuConfig.max).to.be.a('number');
+                      expect(data.cpuConfig.max).to.be(0.0);
+                    expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                          {
+                        let dataCtr = data.externalConfig.ingressServiceMap;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                          expect(data.name).to.be.a('string');
+                          expect(data.name).to.be("");
+                          expect(data.port).to.be.a('number');
+                          expect(data.port).to.be(0);
+                          expect(data.externalPort).to.be.a('number');
+                          expect(data.externalPort).to.be(0);
+                          expect(data.protocol).to.be.a('string');
+                          expect(data.protocol).to.be("");
+                        }
+                      }
+                      {
+                        let dataCtr = data.externalConfig.egressServiceMap;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                          expect(data.name).to.be.a('string');
+                          expect(data.name).to.be("");
+                          expect(data.meSvcName).to.be.a('string');
+                          expect(data.meSvcName).to.be("");
+                          expect(data.ip).to.be.a('string');
+                          expect(data.ip).to.be("");
+                          expect(data.port).to.be.a('number');
+                          expect(data.port).to.be(0);
+                          expect(data.protocol).to.be.a('string');
+                          expect(data.protocol).to.be("");
+                        }
+                      }
+                    expect(data.status).to.be.a('string');
+                    expect(data.status).to.be("");
+                    expect(data.userChartLocation).to.be.a('string');
+                    expect(data.userChartLocation).to.be("");
+                    expect(data.userChartAlternateValues).to.be.a('string');
+                    expect(data.userChartAlternateValues).to.be("");
+                    expect(data.userChartGroup).to.be.a('string');
+                    expect(data.userChartGroup).to.be("");
+                    {
+                      let dataCtr = data.meta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    {
+                      let dataCtr = data.userMeta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                          expect(data.netChar.latency).to.be.a('number');
+                      expect(data.netChar.latency).to.be(0);
+                      expect(data.netChar.latencyVariation).to.be.a('number');
+                      expect(data.netChar.latencyVariation).to.be(0);
+                      expect(data.netChar.latencyDistribution).to.be.a('string');
+                      expect(data.netChar.latencyDistribution).to.be("Normal");
+                      expect(data.netChar.throughput).to.be.a('number');
+                      expect(data.netChar.throughput).to.be(0);
+                      expect(data.netChar.throughputDl).to.be.a('number');
+                      expect(data.netChar.throughputDl).to.be(0);
+                      expect(data.netChar.throughputUl).to.be.a('number');
+                      expect(data.netChar.throughputUl).to.be(0);
+                      expect(data.netChar.packetLoss).to.be.a('number');
+                      expect(data.netChar.packetLoss).to.be(0.0);
+                    expect(data.appLatency).to.be.a('number');
+                    expect(data.appLatency).to.be(0);
+                    expect(data.appLatencyVariation).to.be.a('number');
+                    expect(data.appLatencyVariation).to.be(0);
+                    expect(data.appThroughput).to.be.a('number');
+                    expect(data.appThroughput).to.be(0);
+                    expect(data.appPacketLoss).to.be.a('number');
+                    expect(data.appPacketLoss).to.be(0.0);
+                    expect(data.placementId).to.be.a('string');
+                    expect(data.placementId).to.be("");
+                  }
+                }
+                expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                      expect(data.netChar.latency).to.be.a('number');
+                  expect(data.netChar.latency).to.be(0);
+                  expect(data.netChar.latencyVariation).to.be.a('number');
+                  expect(data.netChar.latencyVariation).to.be(0);
+                  expect(data.netChar.latencyDistribution).to.be.a('string');
+                  expect(data.netChar.latencyDistribution).to.be("Normal");
+                  expect(data.netChar.throughput).to.be.a('number');
+                  expect(data.netChar.throughput).to.be(0);
+                  expect(data.netChar.throughputDl).to.be.a('number');
+                  expect(data.netChar.throughputDl).to.be(0);
+                  expect(data.netChar.throughputUl).to.be.a('number');
+                  expect(data.netChar.throughputUl).to.be(0);
+                  expect(data.netChar.packetLoss).to.be.a('number');
+                  expect(data.netChar.packetLoss).to.be(0.0);
+                expect(data.linkLatency).to.be.a('number');
+                expect(data.linkLatency).to.be(0);
+                expect(data.linkLatencyVariation).to.be.a('number');
+                expect(data.linkLatencyVariation).to.be(0);
+                expect(data.linkThroughput).to.be.a('number');
+                expect(data.linkThroughput).to.be(0);
+                expect(data.linkPacketLoss).to.be.a('number');
+                expect(data.linkPacketLoss).to.be(0.0);
+                expect(data.macId).to.be.a('string');
+                expect(data.macId).to.be("");
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getActiveScenarioProc', function() {
+        it('should call getActiveScenarioProc successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioProc call and complete the assertions
+          /*
+          var opts = {};
+          opts.domain = "domain_example";
+          opts.domainType = "domainType_example";
+          opts.zone = "zone_example";
+          opts.nl = "nl_example";
+          opts.nlType = "nlType_example";
+          opts.pl = "pl_example";
+          opts.plType = "plType_example";
+          opts.proc = "proc_example";
+          opts.procType = "procType_example";
+          opts.children = true;
+          opts.minimize = true;
+
+          instance.getActiveScenarioProc(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Processes);
+            {
+              let dataCtr = data.processes;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.name).to.be.a('string');
+                expect(data.name).to.be("");
+                expect(data.type).to.be.a('string');
+                expect(data.type).to.be("UE-APP");
+                expect(data.isExternal).to.be.a('boolean');
+                expect(data.isExternal).to.be(false);
+                expect(data.image).to.be.a('string');
+                expect(data.image).to.be("");
+                expect(data.environment).to.be.a('string');
+                expect(data.environment).to.be("");
+                expect(data.commandArguments).to.be.a('string');
+                expect(data.commandArguments).to.be("");
+                expect(data.commandExe).to.be.a('string');
+                expect(data.commandExe).to.be("");
+                expect(data.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                      expect(data.serviceConfig.name).to.be.a('string');
+                  expect(data.serviceConfig.name).to.be("");
+                  expect(data.serviceConfig.meSvcName).to.be.a('string');
+                  expect(data.serviceConfig.meSvcName).to.be("");
+                  {
+                    let dataCtr = data.serviceConfig.ports;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                      expect(data.protocol).to.be.a('string');
+                      expect(data.protocol).to.be("");
+                      expect(data.port).to.be.a('number');
+                      expect(data.port).to.be(0);
+                      expect(data.externalPort).to.be.a('number');
+                      expect(data.externalPort).to.be(0);
+                    }
+                  }
+                expect(data.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                      expect(data.gpuConfig.type).to.be.a('string');
+                  expect(data.gpuConfig.type).to.be("");
+                  expect(data.gpuConfig.count).to.be.a('number');
+                  expect(data.gpuConfig.count).to.be(0);
+                expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                      expect(data.memoryConfig.min).to.be.a('number');
+                  expect(data.memoryConfig.min).to.be(0);
+                  expect(data.memoryConfig.max).to.be.a('number');
+                  expect(data.memoryConfig.max).to.be(0);
+                expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                      expect(data.cpuConfig.min).to.be.a('number');
+                  expect(data.cpuConfig.min).to.be(0.0);
+                  expect(data.cpuConfig.max).to.be.a('number');
+                  expect(data.cpuConfig.max).to.be(0.0);
+                expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                      {
+                    let dataCtr = data.externalConfig.ingressServiceMap;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                      expect(data.name).to.be.a('string');
+                      expect(data.name).to.be("");
+                      expect(data.port).to.be.a('number');
+                      expect(data.port).to.be(0);
+                      expect(data.externalPort).to.be.a('number');
+                      expect(data.externalPort).to.be(0);
+                      expect(data.protocol).to.be.a('string');
+                      expect(data.protocol).to.be("");
+                    }
+                  }
+                  {
+                    let dataCtr = data.externalConfig.egressServiceMap;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                      expect(data.name).to.be.a('string');
+                      expect(data.name).to.be("");
+                      expect(data.meSvcName).to.be.a('string');
+                      expect(data.meSvcName).to.be("");
+                      expect(data.ip).to.be.a('string');
+                      expect(data.ip).to.be("");
+                      expect(data.port).to.be.a('number');
+                      expect(data.port).to.be(0);
+                      expect(data.protocol).to.be.a('string');
+                      expect(data.protocol).to.be("");
+                    }
+                  }
+                expect(data.status).to.be.a('string');
+                expect(data.status).to.be("");
+                expect(data.userChartLocation).to.be.a('string');
+                expect(data.userChartLocation).to.be("");
+                expect(data.userChartAlternateValues).to.be.a('string');
+                expect(data.userChartAlternateValues).to.be("");
+                expect(data.userChartGroup).to.be.a('string');
+                expect(data.userChartGroup).to.be("");
+                {
+                  let dataCtr = data.meta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.userMeta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                      expect(data.netChar.latency).to.be.a('number');
+                  expect(data.netChar.latency).to.be(0);
+                  expect(data.netChar.latencyVariation).to.be.a('number');
+                  expect(data.netChar.latencyVariation).to.be(0);
+                  expect(data.netChar.latencyDistribution).to.be.a('string');
+                  expect(data.netChar.latencyDistribution).to.be("Normal");
+                  expect(data.netChar.throughput).to.be.a('number');
+                  expect(data.netChar.throughput).to.be(0);
+                  expect(data.netChar.throughputDl).to.be.a('number');
+                  expect(data.netChar.throughputDl).to.be(0);
+                  expect(data.netChar.throughputUl).to.be.a('number');
+                  expect(data.netChar.throughputUl).to.be(0);
+                  expect(data.netChar.packetLoss).to.be.a('number');
+                  expect(data.netChar.packetLoss).to.be(0.0);
+                expect(data.appLatency).to.be.a('number');
+                expect(data.appLatency).to.be(0);
+                expect(data.appLatencyVariation).to.be.a('number');
+                expect(data.appLatencyVariation).to.be(0);
+                expect(data.appThroughput).to.be.a('number');
+                expect(data.appThroughput).to.be(0);
+                expect(data.appPacketLoss).to.be.a('number');
+                expect(data.appPacketLoss).to.be(0.0);
+                expect(data.placementId).to.be.a('string');
+                expect(data.placementId).to.be("");
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getActiveScenarioZone', function() {
+        it('should call getActiveScenarioZone successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioZone call and complete the assertions
+          /*
+          var opts = {};
+          opts.domain = "domain_example";
+          opts.domainType = "domainType_example";
+          opts.zone = "zone_example";
+          opts.nl = "nl_example";
+          opts.nlType = "nlType_example";
+          opts.pl = "pl_example";
+          opts.plType = "plType_example";
+          opts.proc = "proc_example";
+          opts.procType = "procType_example";
+          opts.children = true;
+          opts.minimize = true;
+
+          instance.getActiveScenarioZone(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Zones);
+            {
+              let dataCtr = data.zones;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Zone);
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.name).to.be.a('string');
+                expect(data.name).to.be("");
+                expect(data.type).to.be.a('string');
+                expect(data.type).to.be("ZONE");
+                expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                      expect(data.netChar.latency).to.be.a('number');
+                  expect(data.netChar.latency).to.be(0);
+                  expect(data.netChar.latencyVariation).to.be.a('number');
+                  expect(data.netChar.latencyVariation).to.be(0);
+                  expect(data.netChar.latencyDistribution).to.be.a('string');
+                  expect(data.netChar.latencyDistribution).to.be("Normal");
+                  expect(data.netChar.throughput).to.be.a('number');
+                  expect(data.netChar.throughput).to.be(0);
+                  expect(data.netChar.throughputDl).to.be.a('number');
+                  expect(data.netChar.throughputDl).to.be(0);
+                  expect(data.netChar.throughputUl).to.be.a('number');
+                  expect(data.netChar.throughputUl).to.be(0);
+                  expect(data.netChar.packetLoss).to.be.a('number');
+                  expect(data.netChar.packetLoss).to.be(0.0);
+                expect(data.interFogLatency).to.be.a('number');
+                expect(data.interFogLatency).to.be(0);
+                expect(data.interFogLatencyVariation).to.be.a('number');
+                expect(data.interFogLatencyVariation).to.be(0);
+                expect(data.interFogThroughput).to.be.a('number');
+                expect(data.interFogThroughput).to.be(0);
+                expect(data.interFogPacketLoss).to.be.a('number');
+                expect(data.interFogPacketLoss).to.be(0.0);
+                expect(data.interEdgeLatency).to.be.a('number');
+                expect(data.interEdgeLatency).to.be(0);
+                expect(data.interEdgeLatencyVariation).to.be.a('number');
+                expect(data.interEdgeLatencyVariation).to.be(0);
+                expect(data.interEdgeThroughput).to.be.a('number');
+                expect(data.interEdgeThroughput).to.be(0);
+                expect(data.interEdgePacketLoss).to.be.a('number');
+                expect(data.interEdgePacketLoss).to.be(0.0);
+                expect(data.edgeFogLatency).to.be.a('number');
+                expect(data.edgeFogLatency).to.be(0);
+                expect(data.edgeFogLatencyVariation).to.be.a('number');
+                expect(data.edgeFogLatencyVariation).to.be(0);
+                expect(data.edgeFogThroughput).to.be.a('number');
+                expect(data.edgeFogThroughput).to.be(0);
+                expect(data.edgeFogPacketLoss).to.be.a('number');
+                expect(data.edgeFogPacketLoss).to.be(0.0);
+                {
+                  let dataCtr = data.meta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.userMeta;
+                  expect(dataCtr).to.be.an(Object);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.networkLocations;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkLocation);
+                    expect(data.id).to.be.a('string');
+                    expect(data.id).to.be("");
+                    expect(data.name).to.be.a('string');
+                    expect(data.name).to.be("");
+                    expect(data.type).to.be.a('string');
+                    expect(data.type).to.be("POA");
+                    expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                          expect(data.netChar.latency).to.be.a('number');
+                      expect(data.netChar.latency).to.be(0);
+                      expect(data.netChar.latencyVariation).to.be.a('number');
+                      expect(data.netChar.latencyVariation).to.be(0);
+                      expect(data.netChar.latencyDistribution).to.be.a('string');
+                      expect(data.netChar.latencyDistribution).to.be("Normal");
+                      expect(data.netChar.throughput).to.be.a('number');
+                      expect(data.netChar.throughput).to.be(0);
+                      expect(data.netChar.throughputDl).to.be.a('number');
+                      expect(data.netChar.throughputDl).to.be(0);
+                      expect(data.netChar.throughputUl).to.be.a('number');
+                      expect(data.netChar.throughputUl).to.be(0);
+                      expect(data.netChar.packetLoss).to.be.a('number');
+                      expect(data.netChar.packetLoss).to.be(0.0);
+                    expect(data.terminalLinkLatency).to.be.a('number');
+                    expect(data.terminalLinkLatency).to.be(0);
+                    expect(data.terminalLinkLatencyVariation).to.be.a('number');
+                    expect(data.terminalLinkLatencyVariation).to.be(0);
+                    expect(data.terminalLinkThroughput).to.be.a('number');
+                    expect(data.terminalLinkThroughput).to.be(0);
+                    expect(data.terminalLinkPacketLoss).to.be.a('number');
+                    expect(data.terminalLinkPacketLoss).to.be(0.0);
+                    {
+                      let dataCtr = data.meta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    {
+                      let dataCtr = data.userMeta;
+                      expect(dataCtr).to.be.an(Object);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a('string');
+                        expect(data).to.be("");
+                      }
+                    }
+                    expect(data.cellularPoaConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularPoaConfig);
+                          expect(data.cellularPoaConfig.cellId).to.be.a('string');
+                      expect(data.cellularPoaConfig.cellId).to.be("");
+                    expect(data.poa4GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa4GConfig);
+                          expect(data.poa4GConfig.cellId).to.be.a('string');
+                      expect(data.poa4GConfig.cellId).to.be("");
+                    expect(data.poa5GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa5GConfig);
+                          expect(data.poa5GConfig.cellId).to.be.a('string');
+                      expect(data.poa5GConfig.cellId).to.be("");
+                    expect(data.poaWifiConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.PoaWifiConfig);
+                          expect(data.poaWifiConfig.macId).to.be.a('string');
+                      expect(data.poaWifiConfig.macId).to.be("");
+                    expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                          expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                            expect(data.geoData.location.type).to.be.a('string');
+                        expect(data.geoData.location.type).to.be("Point");
+                        {
+                          let dataCtr = data.geoData.location.coordinates;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('number');
+                            expect(data).to.be();
+                          }
+                        }
+                      expect(data.geoData.radius).to.be.a('number');
+                      expect(data.geoData.radius).to.be();
+                      expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                            expect(data.geoData.path.type).to.be.a('string');
+                        expect(data.geoData.path.type).to.be("LineString");
+                        {
+                          let dataCtr = data.geoData.path.coordinates;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a(Array);
+                            expect(data).to.be([]);
+                          }
+                        }
+                      expect(data.geoData.eopMode).to.be.a('string');
+                      expect(data.geoData.eopMode).to.be("LOOP");
+                      expect(data.geoData.velocity).to.be.a('number');
+                      expect(data.geoData.velocity).to.be();
+                    {
+                      let dataCtr = data.physicalLocations;
+                      expect(dataCtr).to.be.an(Array);
+                      expect(dataCtr).to.not.be.empty();
+                      for (let p in dataCtr) {
+                        let data = dataCtr[p];
+                        expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+                        expect(data.id).to.be.a('string');
+                        expect(data.id).to.be("");
+                        expect(data.name).to.be.a('string');
+                        expect(data.name).to.be("");
+                        expect(data.type).to.be.a('string');
+                        expect(data.type).to.be("UE");
+                        expect(data.isExternal).to.be.a('boolean');
+                        expect(data.isExternal).to.be(false);
+                        expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                              expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                                expect(data.geoData.location.type).to.be.a('string');
+                            expect(data.geoData.location.type).to.be("Point");
+                            {
+                              let dataCtr = data.geoData.location.coordinates;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('number');
+                                expect(data).to.be();
+                              }
+                            }
+                          expect(data.geoData.radius).to.be.a('number');
+                          expect(data.geoData.radius).to.be();
+                          expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                                expect(data.geoData.path.type).to.be.a('string');
+                            expect(data.geoData.path.type).to.be("LineString");
+                            {
+                              let dataCtr = data.geoData.path.coordinates;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a(Array);
+                                expect(data).to.be([]);
+                              }
+                            }
+                          expect(data.geoData.eopMode).to.be.a('string');
+                          expect(data.geoData.eopMode).to.be("LOOP");
+                          expect(data.geoData.velocity).to.be.a('number');
+                          expect(data.geoData.velocity).to.be();
+                        {
+                          let dataCtr = data.networkLocationsInRange;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        expect(data.connected).to.be.a('boolean');
+                        expect(data.connected).to.be(false);
+                        expect(data.wireless).to.be.a('boolean');
+                        expect(data.wireless).to.be(false);
+                        expect(data.wirelessType).to.be.a('string');
+                        expect(data.wirelessType).to.be("");
+                        {
+                          let dataCtr = data.meta;
+                          expect(dataCtr).to.be.an(Object);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        {
+                          let dataCtr = data.userMeta;
+                          expect(dataCtr).to.be.an(Object);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a('string');
+                            expect(data).to.be("");
+                          }
+                        }
+                        {
+                          let dataCtr = data.processes;
+                          expect(dataCtr).to.be.an(Array);
+                          expect(dataCtr).to.not.be.empty();
+                          for (let p in dataCtr) {
+                            let data = dataCtr[p];
+                            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                            expect(data.id).to.be.a('string');
+                            expect(data.id).to.be("");
+                            expect(data.name).to.be.a('string');
+                            expect(data.name).to.be("");
+                            expect(data.type).to.be.a('string');
+                            expect(data.type).to.be("UE-APP");
+                            expect(data.isExternal).to.be.a('boolean');
+                            expect(data.isExternal).to.be(false);
+                            expect(data.image).to.be.a('string');
+                            expect(data.image).to.be("");
+                            expect(data.environment).to.be.a('string');
+                            expect(data.environment).to.be("");
+                            expect(data.commandArguments).to.be.a('string');
+                            expect(data.commandArguments).to.be("");
+                            expect(data.commandExe).to.be.a('string');
+                            expect(data.commandExe).to.be("");
+                            expect(data.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                                  expect(data.serviceConfig.name).to.be.a('string');
+                              expect(data.serviceConfig.name).to.be("");
+                              expect(data.serviceConfig.meSvcName).to.be.a('string');
+                              expect(data.serviceConfig.meSvcName).to.be("");
+                              {
+                                let dataCtr = data.serviceConfig.ports;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                                  expect(data.protocol).to.be.a('string');
+                                  expect(data.protocol).to.be("");
+                                  expect(data.port).to.be.a('number');
+                                  expect(data.port).to.be(0);
+                                  expect(data.externalPort).to.be.a('number');
+                                  expect(data.externalPort).to.be(0);
+                                }
+                              }
+                            expect(data.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                                  expect(data.gpuConfig.type).to.be.a('string');
+                              expect(data.gpuConfig.type).to.be("");
+                              expect(data.gpuConfig.count).to.be.a('number');
+                              expect(data.gpuConfig.count).to.be(0);
+                            expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                                  expect(data.memoryConfig.min).to.be.a('number');
+                              expect(data.memoryConfig.min).to.be(0);
+                              expect(data.memoryConfig.max).to.be.a('number');
+                              expect(data.memoryConfig.max).to.be(0);
+                            expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                                  expect(data.cpuConfig.min).to.be.a('number');
+                              expect(data.cpuConfig.min).to.be(0.0);
+                              expect(data.cpuConfig.max).to.be.a('number');
+                              expect(data.cpuConfig.max).to.be(0.0);
+                            expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                                  {
+                                let dataCtr = data.externalConfig.ingressServiceMap;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                                  expect(data.name).to.be.a('string');
+                                  expect(data.name).to.be("");
+                                  expect(data.port).to.be.a('number');
+                                  expect(data.port).to.be(0);
+                                  expect(data.externalPort).to.be.a('number');
+                                  expect(data.externalPort).to.be(0);
+                                  expect(data.protocol).to.be.a('string');
+                                  expect(data.protocol).to.be("");
+                                }
+                              }
+                              {
+                                let dataCtr = data.externalConfig.egressServiceMap;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                                  expect(data.name).to.be.a('string');
+                                  expect(data.name).to.be("");
+                                  expect(data.meSvcName).to.be.a('string');
+                                  expect(data.meSvcName).to.be("");
+                                  expect(data.ip).to.be.a('string');
+                                  expect(data.ip).to.be("");
+                                  expect(data.port).to.be.a('number');
+                                  expect(data.port).to.be(0);
+                                  expect(data.protocol).to.be.a('string');
+                                  expect(data.protocol).to.be("");
+                                }
+                              }
+                            expect(data.status).to.be.a('string');
+                            expect(data.status).to.be("");
+                            expect(data.userChartLocation).to.be.a('string');
+                            expect(data.userChartLocation).to.be("");
+                            expect(data.userChartAlternateValues).to.be.a('string');
+                            expect(data.userChartAlternateValues).to.be("");
+                            expect(data.userChartGroup).to.be.a('string');
+                            expect(data.userChartGroup).to.be("");
+                            {
+                              let dataCtr = data.meta;
+                              expect(dataCtr).to.be.an(Object);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.userMeta;
+                              expect(dataCtr).to.be.an(Object);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                                  expect(data.netChar.latency).to.be.a('number');
+                              expect(data.netChar.latency).to.be(0);
+                              expect(data.netChar.latencyVariation).to.be.a('number');
+                              expect(data.netChar.latencyVariation).to.be(0);
+                              expect(data.netChar.latencyDistribution).to.be.a('string');
+                              expect(data.netChar.latencyDistribution).to.be("Normal");
+                              expect(data.netChar.throughput).to.be.a('number');
+                              expect(data.netChar.throughput).to.be(0);
+                              expect(data.netChar.throughputDl).to.be.a('number');
+                              expect(data.netChar.throughputDl).to.be(0);
+                              expect(data.netChar.throughputUl).to.be.a('number');
+                              expect(data.netChar.throughputUl).to.be(0);
+                              expect(data.netChar.packetLoss).to.be.a('number');
+                              expect(data.netChar.packetLoss).to.be(0.0);
+                            expect(data.appLatency).to.be.a('number');
+                            expect(data.appLatency).to.be(0);
+                            expect(data.appLatencyVariation).to.be.a('number');
+                            expect(data.appLatencyVariation).to.be(0);
+                            expect(data.appThroughput).to.be.a('number');
+                            expect(data.appThroughput).to.be(0);
+                            expect(data.appPacketLoss).to.be.a('number');
+                            expect(data.appPacketLoss).to.be(0.0);
+                            expect(data.placementId).to.be.a('string');
+                            expect(data.placementId).to.be("");
+                          }
+                        }
+                        expect(data.netChar).to.be.a(AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
+                              expect(data.netChar.latency).to.be.a('number');
+                          expect(data.netChar.latency).to.be(0);
+                          expect(data.netChar.latencyVariation).to.be.a('number');
+                          expect(data.netChar.latencyVariation).to.be(0);
+                          expect(data.netChar.latencyDistribution).to.be.a('string');
+                          expect(data.netChar.latencyDistribution).to.be("Normal");
+                          expect(data.netChar.throughput).to.be.a('number');
+                          expect(data.netChar.throughput).to.be(0);
+                          expect(data.netChar.throughputDl).to.be.a('number');
+                          expect(data.netChar.throughputDl).to.be(0);
+                          expect(data.netChar.throughputUl).to.be.a('number');
+                          expect(data.netChar.throughputUl).to.be(0);
+                          expect(data.netChar.packetLoss).to.be.a('number');
+                          expect(data.netChar.packetLoss).to.be(0.0);
+                        expect(data.linkLatency).to.be.a('number');
+                        expect(data.linkLatency).to.be(0);
+                        expect(data.linkLatencyVariation).to.be.a('number');
+                        expect(data.linkLatencyVariation).to.be(0);
+                        expect(data.linkThroughput).to.be.a('number');
+                        expect(data.linkThroughput).to.be(0);
+                        expect(data.linkPacketLoss).to.be.a('number');
+                        expect(data.linkPacketLoss).to.be(0.0);
+                        expect(data.macId).to.be.a('string');
+                        expect(data.macId).to.be("");
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('terminateScenario', function() {
         it('should call terminateScenario successfully', function(done) {
           // TODO: uncomment terminateScenario call

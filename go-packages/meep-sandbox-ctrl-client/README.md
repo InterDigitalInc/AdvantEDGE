@@ -24,6 +24,11 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**ActivateScenario**](docs/ActiveScenarioApi.md#activatescenario) | **Post** /active/{name} | Deploy a scenario
 *ActiveScenarioApi* | [**GetActiveNodeServiceMaps**](docs/ActiveScenarioApi.md#getactivenodeservicemaps) | **Get** /active/serviceMaps | Get deployed scenario&#39;s port mapping
 *ActiveScenarioApi* | [**GetActiveScenario**](docs/ActiveScenarioApi.md#getactivescenario) | **Get** /active | Get the deployed scenario
+*ActiveScenarioApi* | [**GetActiveScenarioDomain**](docs/ActiveScenarioApi.md#getactivescenariodomain) | **Get** /active/domain | Get deployed scenario&#39;s domain element hierarchy
+*ActiveScenarioApi* | [**GetActiveScenarioNl**](docs/ActiveScenarioApi.md#getactivescenarionl) | **Get** /active/nl | Get deployed scenario&#39;s network location element hierarchy
+*ActiveScenarioApi* | [**GetActiveScenarioPl**](docs/ActiveScenarioApi.md#getactivescenariopl) | **Get** /active/pl | Get deployed scenario&#39;s physical location element hierarchy
+*ActiveScenarioApi* | [**GetActiveScenarioProc**](docs/ActiveScenarioApi.md#getactivescenarioproc) | **Get** /active/proc | Get deployed scenario&#39;s process element hierarchy
+*ActiveScenarioApi* | [**GetActiveScenarioZone**](docs/ActiveScenarioApi.md#getactivescenariozone) | **Get** /active/zone | Get deployed scenario&#39;s zone element hierarchy
 *ActiveScenarioApi* | [**TerminateScenario**](docs/ActiveScenarioApi.md#terminatescenario) | **Delete** /active | Terminate the deployed scenario
 *ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
 *ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
@@ -50,6 +55,7 @@ Class | Method | HTTP request | Description
  - [Deployment](docs/Deployment.md)
  - [DnConfig](docs/DnConfig.md)
  - [Domain](docs/Domain.md)
+ - [Domains](docs/Domains.md)
  - [EgressService](docs/EgressService.md)
  - [Event](docs/Event.md)
  - [EventMobility](docs/EventMobility.md)
@@ -64,15 +70,18 @@ Class | Method | HTTP request | Description
  - [MemoryConfig](docs/MemoryConfig.md)
  - [NetworkCharacteristics](docs/NetworkCharacteristics.md)
  - [NetworkLocation](docs/NetworkLocation.md)
+ - [NetworkLocations](docs/NetworkLocations.md)
  - [NodeDataUnion](docs/NodeDataUnion.md)
  - [NodeServiceMaps](docs/NodeServiceMaps.md)
  - [PduSessionInfo](docs/PduSessionInfo.md)
  - [PhysicalLocation](docs/PhysicalLocation.md)
+ - [PhysicalLocations](docs/PhysicalLocations.md)
  - [Poa4GConfig](docs/Poa4GConfig.md)
  - [Poa5GConfig](docs/Poa5GConfig.md)
  - [PoaWifiConfig](docs/PoaWifiConfig.md)
  - [Point](docs/Point.md)
  - [Process](docs/Process.md)
+ - [Processes](docs/Processes.md)
  - [Replay](docs/Replay.md)
  - [ReplayEvent](docs/ReplayEvent.md)
  - [ReplayFileList](docs/ReplayFileList.md)
@@ -84,6 +93,7 @@ Class | Method | HTTP request | Description
  - [ServiceConfig](docs/ServiceConfig.md)
  - [ServicePort](docs/ServicePort.md)
  - [Zone](docs/Zone.md)
+ - [Zones](docs/Zones.md)
 
 
 ## Documentation For Authorization

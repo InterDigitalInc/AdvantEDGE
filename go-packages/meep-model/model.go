@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"net/http"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -269,6 +270,31 @@ func (m *Model) GetScenarioMinimized() (j []byte, err error) {
 	}
 
 	return json.Marshal(scenario)
+}
+
+// GetScenarioMinimized - Get Minimized Scenario JSON string
+func (m *Model) GetSubScenario(requestLevel string, r *http.Request)  (j []byte, err error) {
+        m.lock.RLock()
+        defer m.lock.RUnlock()
+
+        // Marshal scenario
+        j, err = json.Marshal(m.scenario)
+        if err != nil {
+                return j, err
+        }
+
+        // Unmarshal scenario in new variable to update
+        var scenario dataModel.Scenario
+        err = json.Unmarshal(j, &scenario)
+        if err != nil {
+                return nil, err
+        }
+        j, err = subScenario(&scenario, requestLevel, r)
+        if err != nil {
+                return nil, err
+        }
+
+        return j, nil
 }
 
 // Activate - Make scenario the active scenario

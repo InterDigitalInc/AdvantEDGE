@@ -247,6 +247,13 @@ definitions:
           $ref: '#/definitions/Zone'
     description: Operator domain object
     example: {}
+  Domains:
+    type: object
+    properties:
+      domains:
+        type: array
+        items:
+          $ref: '#/definitions/Domain'
   EgressService:
     type: object
     properties:
@@ -518,6 +525,13 @@ definitions:
           $ref: '#/definitions/PhysicalLocation'
     description: Logical network location object
     example: {}
+  NetworkLocations:
+    type: object
+    properties:
+      networkLocations:
+        type: array
+        items:
+          $ref: '#/definitions/NetworkLocation'
   NodeDataUnion:
     type: object
     description: |-
@@ -641,6 +655,13 @@ definitions:
         description: Physical location MAC Address
     description: Physical location object
     example: {}
+  PhysicalLocations:
+    type: object
+    properties:
+      physicalLocations:
+        type: array
+        items:
+          $ref: '#/definitions/PhysicalLocation'
   Process:
     type: object
     properties:
@@ -731,6 +752,13 @@ definitions:
         description: Identifier used for process placement in AdvantEDGE cluster
     description: Application or service object
     example: {}
+  Processes:
+    type: object
+    properties:
+      processes:
+        type: array
+        items:
+          $ref: '#/definitions/Process'
   Release:
     type: object
     properties:
@@ -1018,6 +1046,13 @@ definitions:
           $ref: '#/definitions/NetworkLocation'
     description: Logical zone (MEC network) object
     example: {}
+  Zones:
+    type: object
+    properties:
+      zones:
+        type: array
+        items:
+          $ref: '#/definitions/Zone'
   MemoryConfig:
     type: object
     properties:

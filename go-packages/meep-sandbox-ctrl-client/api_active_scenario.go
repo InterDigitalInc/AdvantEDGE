@@ -332,6 +332,741 @@ func (a *ActiveScenarioApiService) GetActiveScenario(ctx context.Context, localV
 }
 
 /*
+ActiveScenarioApiService Get deployed scenario&#39;s domain element hierarchy
+Returns the deployed scenario&#39;s domain element hierarchy
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param optional nil or *GetActiveScenarioDomainOpts - Optional Parameters:
+     * @param "Domain" (optional.String) -  Domain name
+     * @param "DomainType" (optional.String) -  Domain type
+     * @param "Zone" (optional.String) -  Zone name
+     * @param "Nl" (optional.String) -  Network Location name
+     * @param "NlType" (optional.String) -  Network Location type
+     * @param "Pl" (optional.String) -  Physical Location name
+     * @param "PlType" (optional.String) -  Physical Location type
+     * @param "Proc" (optional.String) -  Process name
+     * @param "ProcType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Including children under the queried element
+     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+
+@return Domains
+*/
+
+type GetActiveScenarioDomainOpts struct {
+	Domain     optional.String
+	DomainType optional.String
+	Zone       optional.String
+	Nl         optional.String
+	NlType     optional.String
+	Pl         optional.String
+	PlType     optional.String
+	Proc       optional.String
+	ProcType   optional.String
+	Children   optional.Bool
+	Minimize   optional.Bool
+}
+
+func (a *ActiveScenarioApiService) GetActiveScenarioDomain(ctx context.Context, localVarOptionals *GetActiveScenarioDomainOpts) (Domains, *http.Response, error) {
+	var (
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue Domains
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/active/domain"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.Domain.IsSet() {
+		localVarQueryParams.Add("domain", parameterToString(localVarOptionals.Domain.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.DomainType.IsSet() {
+		localVarQueryParams.Add("domainType", parameterToString(localVarOptionals.DomainType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
+		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
+		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
+		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
+		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
+		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
+		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
+		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
+		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
+		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v Domains
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+
+/*
+ActiveScenarioApiService Get deployed scenario&#39;s network location element hierarchy
+Returns the deployed scenario&#39;s network location element hierarchy
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param optional nil or *GetActiveScenarioNlOpts - Optional Parameters:
+     * @param "Domain" (optional.String) -  Domain name
+     * @param "DomainType" (optional.String) -  Domain type
+     * @param "Zone" (optional.String) -  Zone name
+     * @param "Nl" (optional.String) -  Network Location name
+     * @param "NlType" (optional.String) -  Network Location type
+     * @param "Pl" (optional.String) -  Physical Location name
+     * @param "PlType" (optional.String) -  Physical Location type
+     * @param "Proc" (optional.String) -  Process name
+     * @param "ProcType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Including children under the queried element
+     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+
+@return NetworkLocations
+*/
+
+type GetActiveScenarioNlOpts struct {
+	Domain     optional.String
+	DomainType optional.String
+	Zone       optional.String
+	Nl         optional.String
+	NlType     optional.String
+	Pl         optional.String
+	PlType     optional.String
+	Proc       optional.String
+	ProcType   optional.String
+	Children   optional.Bool
+	Minimize   optional.Bool
+}
+
+func (a *ActiveScenarioApiService) GetActiveScenarioNl(ctx context.Context, localVarOptionals *GetActiveScenarioNlOpts) (NetworkLocations, *http.Response, error) {
+	var (
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue NetworkLocations
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/active/nl"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.Domain.IsSet() {
+		localVarQueryParams.Add("domain", parameterToString(localVarOptionals.Domain.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.DomainType.IsSet() {
+		localVarQueryParams.Add("domainType", parameterToString(localVarOptionals.DomainType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
+		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
+		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
+		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
+		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
+		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
+		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
+		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
+		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
+		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v NetworkLocations
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+
+/*
+ActiveScenarioApiService Get deployed scenario&#39;s physical location element hierarchy
+Returns the deployed scenario&#39;s physical location element hierarchy
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param optional nil or *GetActiveScenarioPlOpts - Optional Parameters:
+     * @param "Domain" (optional.String) -  Domain name
+     * @param "DomainType" (optional.String) -  Domain type
+     * @param "Zone" (optional.String) -  Zone name
+     * @param "Nl" (optional.String) -  Network Location name
+     * @param "NlType" (optional.String) -  Network Location type
+     * @param "Pl" (optional.String) -  Physical Location name
+     * @param "PlType" (optional.String) -  Physical Location type
+     * @param "Proc" (optional.String) -  Process name
+     * @param "ProcType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Including children under the queried element
+     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+
+@return PhysicalLocations
+*/
+
+type GetActiveScenarioPlOpts struct {
+	Domain     optional.String
+	DomainType optional.String
+	Zone       optional.String
+	Nl         optional.String
+	NlType     optional.String
+	Pl         optional.String
+	PlType     optional.String
+	Proc       optional.String
+	ProcType   optional.String
+	Children   optional.Bool
+	Minimize   optional.Bool
+}
+
+func (a *ActiveScenarioApiService) GetActiveScenarioPl(ctx context.Context, localVarOptionals *GetActiveScenarioPlOpts) (PhysicalLocations, *http.Response, error) {
+	var (
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue PhysicalLocations
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/active/pl"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.Domain.IsSet() {
+		localVarQueryParams.Add("domain", parameterToString(localVarOptionals.Domain.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.DomainType.IsSet() {
+		localVarQueryParams.Add("domainType", parameterToString(localVarOptionals.DomainType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
+		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
+		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
+		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
+		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
+		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
+		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
+		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
+		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
+		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v PhysicalLocations
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+
+/*
+ActiveScenarioApiService Get deployed scenario&#39;s process element hierarchy
+Returns the deployed scenario&#39;s process element hierarchy
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param optional nil or *GetActiveScenarioProcOpts - Optional Parameters:
+     * @param "Domain" (optional.String) -  Domain name
+     * @param "DomainType" (optional.String) -  Domain type
+     * @param "Zone" (optional.String) -  Zone name
+     * @param "Nl" (optional.String) -  Network Location name
+     * @param "NlType" (optional.String) -  Network Location type
+     * @param "Pl" (optional.String) -  Physical Location name
+     * @param "PlType" (optional.String) -  Physical Location type
+     * @param "Proc" (optional.String) -  Process name
+     * @param "ProcType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Including children under the queried element
+     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+
+@return Processes
+*/
+
+type GetActiveScenarioProcOpts struct {
+	Domain     optional.String
+	DomainType optional.String
+	Zone       optional.String
+	Nl         optional.String
+	NlType     optional.String
+	Pl         optional.String
+	PlType     optional.String
+	Proc       optional.String
+	ProcType   optional.String
+	Children   optional.Bool
+	Minimize   optional.Bool
+}
+
+func (a *ActiveScenarioApiService) GetActiveScenarioProc(ctx context.Context, localVarOptionals *GetActiveScenarioProcOpts) (Processes, *http.Response, error) {
+	var (
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue Processes
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/active/proc"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.Domain.IsSet() {
+		localVarQueryParams.Add("domain", parameterToString(localVarOptionals.Domain.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.DomainType.IsSet() {
+		localVarQueryParams.Add("domainType", parameterToString(localVarOptionals.DomainType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
+		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
+		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
+		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
+		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
+		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
+		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
+		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
+		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
+		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v Processes
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+
+/*
+ActiveScenarioApiService Get deployed scenario&#39;s zone element hierarchy
+Returns the deployed scenario&#39;s zone element hierarchy
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param optional nil or *GetActiveScenarioZoneOpts - Optional Parameters:
+     * @param "Domain" (optional.String) -  Domain name
+     * @param "DomainType" (optional.String) -  Domain type
+     * @param "Zone" (optional.String) -  Zone name
+     * @param "Nl" (optional.String) -  Network Location name
+     * @param "NlType" (optional.String) -  Network Location type
+     * @param "Pl" (optional.String) -  Physical Location name
+     * @param "PlType" (optional.String) -  Physical Location type
+     * @param "Proc" (optional.String) -  Process name
+     * @param "ProcType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Including children under the queried element
+     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+
+@return Zones
+*/
+
+type GetActiveScenarioZoneOpts struct {
+	Domain     optional.String
+	DomainType optional.String
+	Zone       optional.String
+	Nl         optional.String
+	NlType     optional.String
+	Pl         optional.String
+	PlType     optional.String
+	Proc       optional.String
+	ProcType   optional.String
+	Children   optional.Bool
+	Minimize   optional.Bool
+}
+
+func (a *ActiveScenarioApiService) GetActiveScenarioZone(ctx context.Context, localVarOptionals *GetActiveScenarioZoneOpts) (Zones, *http.Response, error) {
+	var (
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue Zones
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/active/zone"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.Domain.IsSet() {
+		localVarQueryParams.Add("domain", parameterToString(localVarOptionals.Domain.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.DomainType.IsSet() {
+		localVarQueryParams.Add("domainType", parameterToString(localVarOptionals.DomainType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
+		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
+		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
+		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
+		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
+		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
+		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
+		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
+		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
+		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v Zones
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+
+/*
 ActiveScenarioApiService Terminate the deployed scenario
 Terminate the scenario currently deployed on the platform
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().

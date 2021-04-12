@@ -136,6 +136,561 @@ paths:
               $ref: "#/definitions/NodeServiceMaps"
         404:
           description: "Not found"
+  /active/domain:
+    get:
+      tags:
+      - "Active Scenario"
+      summary: "Get deployed scenario's domain element hierarchy"
+      description: "Returns the deployed scenario's domain element hierarchy"
+      operationId: "getActiveScenarioDomain"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "domain"
+        in: "query"
+        description: "Domain name"
+        required: false
+        type: "string"
+        x-exportParamName: "Domain"
+        x-optionalDataType: "String"
+      - name: "domainType"
+        in: "query"
+        description: "Domain type"
+        required: false
+        type: "string"
+        enum:
+        - "OPERATOR"
+        - "OPERATOR-CELLULAR"
+        x-exportParamName: "DomainType"
+        x-optionalDataType: "String"
+      - name: "zone"
+        in: "query"
+        description: "Zone name"
+        required: false
+        type: "string"
+        x-exportParamName: "Zone"
+        x-optionalDataType: "String"
+      - name: "nl"
+        in: "query"
+        description: "Network Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Nl"
+        x-optionalDataType: "String"
+      - name: "nlType"
+        in: "query"
+        description: "Network Location type"
+        required: false
+        type: "string"
+        enum:
+        - "POA"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
+        x-exportParamName: "NlType"
+        x-optionalDataType: "String"
+      - name: "pl"
+        in: "query"
+        description: "Physical Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Pl"
+        x-optionalDataType: "String"
+      - name: "plType"
+        in: "query"
+        description: "Physical Location type"
+        required: false
+        type: "string"
+        enum:
+        - "DC"
+        - "EDGE"
+        - "FOG"
+        - "UE"
+        x-exportParamName: "PlType"
+        x-optionalDataType: "String"
+      - name: "proc"
+        in: "query"
+        description: "Process name"
+        required: false
+        type: "string"
+        x-exportParamName: "Proc"
+        x-optionalDataType: "String"
+      - name: "procType"
+        in: "query"
+        description: "Process type"
+        required: false
+        type: "string"
+        enum:
+        - "CLOUD-APP"
+        - "EDGE-APP"
+        - "UE-APP"
+        x-exportParamName: "ProcType"
+        x-optionalDataType: "String"
+      - name: "children"
+        in: "query"
+        description: "Including children under the queried element"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Children"
+        x-optionalDataType: "Bool"
+      - name: "minimize"
+        in: "query"
+        description: "Return a minimized active scenario"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Minimize"
+        x-optionalDataType: "Bool"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Domains"
+        404:
+          description: "Not found"
+  /active/zone:
+    get:
+      tags:
+      - "Active Scenario"
+      summary: "Get deployed scenario's zone element hierarchy"
+      description: "Returns the deployed scenario's zone element hierarchy"
+      operationId: "getActiveScenarioZone"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "domain"
+        in: "query"
+        description: "Domain name"
+        required: false
+        type: "string"
+        x-exportParamName: "Domain"
+        x-optionalDataType: "String"
+      - name: "domainType"
+        in: "query"
+        description: "Domain type"
+        required: false
+        type: "string"
+        enum:
+        - "OPERATOR"
+        - "OPERATOR-CELLULAR"
+        x-exportParamName: "DomainType"
+        x-optionalDataType: "String"
+      - name: "zone"
+        in: "query"
+        description: "Zone name"
+        required: false
+        type: "string"
+        x-exportParamName: "Zone"
+        x-optionalDataType: "String"
+      - name: "nl"
+        in: "query"
+        description: "Network Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Nl"
+        x-optionalDataType: "String"
+      - name: "nlType"
+        in: "query"
+        description: "Network Location type"
+        required: false
+        type: "string"
+        enum:
+        - "POA"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
+        x-exportParamName: "NlType"
+        x-optionalDataType: "String"
+      - name: "pl"
+        in: "query"
+        description: "Physical Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Pl"
+        x-optionalDataType: "String"
+      - name: "plType"
+        in: "query"
+        description: "Physical Location type"
+        required: false
+        type: "string"
+        enum:
+        - "DC"
+        - "EDGE"
+        - "FOG"
+        - "UE"
+        x-exportParamName: "PlType"
+        x-optionalDataType: "String"
+      - name: "proc"
+        in: "query"
+        description: "Process name"
+        required: false
+        type: "string"
+        x-exportParamName: "Proc"
+        x-optionalDataType: "String"
+      - name: "procType"
+        in: "query"
+        description: "Process type"
+        required: false
+        type: "string"
+        enum:
+        - "CLOUD-APP"
+        - "EDGE-APP"
+        - "UE-APP"
+        x-exportParamName: "ProcType"
+        x-optionalDataType: "String"
+      - name: "children"
+        in: "query"
+        description: "Including children under the queried element"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Children"
+        x-optionalDataType: "Bool"
+      - name: "minimize"
+        in: "query"
+        description: "Return a minimized active scenario"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Minimize"
+        x-optionalDataType: "Bool"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Zones"
+        404:
+          description: "Not found"
+  /active/nl:
+    get:
+      tags:
+      - "Active Scenario"
+      summary: "Get deployed scenario's network location element hierarchy"
+      description: "Returns the deployed scenario's network location element hierarchy"
+      operationId: "getActiveScenarioNl"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "domain"
+        in: "query"
+        description: "Domain name"
+        required: false
+        type: "string"
+        x-exportParamName: "Domain"
+        x-optionalDataType: "String"
+      - name: "domainType"
+        in: "query"
+        description: "Domain type"
+        required: false
+        type: "string"
+        enum:
+        - "OPERATOR"
+        - "OPERATOR-CELLULAR"
+        x-exportParamName: "DomainType"
+        x-optionalDataType: "String"
+      - name: "zone"
+        in: "query"
+        description: "Zone name"
+        required: false
+        type: "string"
+        x-exportParamName: "Zone"
+        x-optionalDataType: "String"
+      - name: "nl"
+        in: "query"
+        description: "Network Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Nl"
+        x-optionalDataType: "String"
+      - name: "nlType"
+        in: "query"
+        description: "Network Location type"
+        required: false
+        type: "string"
+        enum:
+        - "POA"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
+        x-exportParamName: "NlType"
+        x-optionalDataType: "String"
+      - name: "pl"
+        in: "query"
+        description: "Physical Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Pl"
+        x-optionalDataType: "String"
+      - name: "plType"
+        in: "query"
+        description: "Physical Location type"
+        required: false
+        type: "string"
+        enum:
+        - "DC"
+        - "EDGE"
+        - "FOG"
+        - "UE"
+        x-exportParamName: "PlType"
+        x-optionalDataType: "String"
+      - name: "proc"
+        in: "query"
+        description: "Process name"
+        required: false
+        type: "string"
+        x-exportParamName: "Proc"
+        x-optionalDataType: "String"
+      - name: "procType"
+        in: "query"
+        description: "Process type"
+        required: false
+        type: "string"
+        enum:
+        - "CLOUD-APP"
+        - "EDGE-APP"
+        - "UE-APP"
+        x-exportParamName: "ProcType"
+        x-optionalDataType: "String"
+      - name: "children"
+        in: "query"
+        description: "Including children under the queried element"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Children"
+        x-optionalDataType: "Bool"
+      - name: "minimize"
+        in: "query"
+        description: "Return a minimized active scenario"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Minimize"
+        x-optionalDataType: "Bool"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/NetworkLocations"
+        404:
+          description: "Not found"
+  /active/pl:
+    get:
+      tags:
+      - "Active Scenario"
+      summary: "Get deployed scenario's physical location element hierarchy"
+      description: "Returns the deployed scenario's physical location element hierarchy"
+      operationId: "getActiveScenarioPl"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "domain"
+        in: "query"
+        description: "Domain name"
+        required: false
+        type: "string"
+        x-exportParamName: "Domain"
+        x-optionalDataType: "String"
+      - name: "domainType"
+        in: "query"
+        description: "Domain type"
+        required: false
+        type: "string"
+        enum:
+        - "OPERATOR"
+        - "OPERATOR-CELLULAR"
+        x-exportParamName: "DomainType"
+        x-optionalDataType: "String"
+      - name: "zone"
+        in: "query"
+        description: "Zone name"
+        required: false
+        type: "string"
+        x-exportParamName: "Zone"
+        x-optionalDataType: "String"
+      - name: "nl"
+        in: "query"
+        description: "Network Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Nl"
+        x-optionalDataType: "String"
+      - name: "nlType"
+        in: "query"
+        description: "Network Location type"
+        required: false
+        type: "string"
+        enum:
+        - "POA"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
+        x-exportParamName: "NlType"
+        x-optionalDataType: "String"
+      - name: "pl"
+        in: "query"
+        description: "Physical Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Pl"
+        x-optionalDataType: "String"
+      - name: "plType"
+        in: "query"
+        description: "Physical Location type"
+        required: false
+        type: "string"
+        enum:
+        - "DC"
+        - "EDGE"
+        - "FOG"
+        - "UE"
+        x-exportParamName: "PlType"
+        x-optionalDataType: "String"
+      - name: "proc"
+        in: "query"
+        description: "Process name"
+        required: false
+        type: "string"
+        x-exportParamName: "Proc"
+        x-optionalDataType: "String"
+      - name: "procType"
+        in: "query"
+        description: "Process type"
+        required: false
+        type: "string"
+        enum:
+        - "CLOUD-APP"
+        - "EDGE-APP"
+        - "UE-APP"
+        x-exportParamName: "ProcType"
+        x-optionalDataType: "String"
+      - name: "children"
+        in: "query"
+        description: "Including children under the queried element"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Children"
+        x-optionalDataType: "Bool"
+      - name: "minimize"
+        in: "query"
+        description: "Return a minimized active scenario"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Minimize"
+        x-optionalDataType: "Bool"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/PhysicalLocations"
+        404:
+          description: "Not found"
+  /active/proc:
+    get:
+      tags:
+      - "Active Scenario"
+      summary: "Get deployed scenario's process element hierarchy"
+      description: "Returns the deployed scenario's process element hierarchy"
+      operationId: "getActiveScenarioProc"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "domain"
+        in: "query"
+        description: "Domain name"
+        required: false
+        type: "string"
+        x-exportParamName: "Domain"
+        x-optionalDataType: "String"
+      - name: "domainType"
+        in: "query"
+        description: "Domain type"
+        required: false
+        type: "string"
+        enum:
+        - "OPERATOR"
+        - "OPERATOR-CELLULAR"
+        x-exportParamName: "DomainType"
+        x-optionalDataType: "String"
+      - name: "zone"
+        in: "query"
+        description: "Zone name"
+        required: false
+        type: "string"
+        x-exportParamName: "Zone"
+        x-optionalDataType: "String"
+      - name: "nl"
+        in: "query"
+        description: "Network Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Nl"
+        x-optionalDataType: "String"
+      - name: "nlType"
+        in: "query"
+        description: "Network Location type"
+        required: false
+        type: "string"
+        enum:
+        - "POA"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
+        x-exportParamName: "NlType"
+        x-optionalDataType: "String"
+      - name: "pl"
+        in: "query"
+        description: "Physical Location name"
+        required: false
+        type: "string"
+        x-exportParamName: "Pl"
+        x-optionalDataType: "String"
+      - name: "plType"
+        in: "query"
+        description: "Physical Location type"
+        required: false
+        type: "string"
+        enum:
+        - "DC"
+        - "EDGE"
+        - "FOG"
+        - "UE"
+        x-exportParamName: "PlType"
+        x-optionalDataType: "String"
+      - name: "proc"
+        in: "query"
+        description: "Process name"
+        required: false
+        type: "string"
+        x-exportParamName: "Proc"
+        x-optionalDataType: "String"
+      - name: "procType"
+        in: "query"
+        description: "Process type"
+        required: false
+        type: "string"
+        enum:
+        - "CLOUD-APP"
+        - "EDGE-APP"
+        - "UE-APP"
+        x-exportParamName: "ProcType"
+        x-optionalDataType: "String"
+      - name: "children"
+        in: "query"
+        description: "Including children under the queried element"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Children"
+        x-optionalDataType: "Bool"
+      - name: "minimize"
+        in: "query"
+        description: "Return a minimized active scenario"
+        required: false
+        type: "boolean"
+        x-exportParamName: "Minimize"
+        x-optionalDataType: "Bool"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Processes"
+        404:
+          description: "Not found"
   /events/{type}:
     post:
       tags:
@@ -1177,6 +1732,61 @@ definitions:
           $ref: "#/definitions/EgressService"
     description: "Node-specific mapping of exposed internal & external services"
     example: {}
+  Domains:
+    type: "object"
+    properties:
+      domains:
+        type: "array"
+        items:
+          $ref: "#/definitions/Domain"
+    example:
+      domains:
+      - {}
+      - {}
+  Zones:
+    type: "object"
+    properties:
+      zones:
+        type: "array"
+        items:
+          $ref: "#/definitions/Zone"
+    example:
+      zones:
+      - {}
+      - {}
+  NetworkLocations:
+    type: "object"
+    properties:
+      networkLocations:
+        type: "array"
+        items:
+          $ref: "#/definitions/NetworkLocation"
+    example:
+      networkLocations:
+      - {}
+      - {}
+  PhysicalLocations:
+    type: "object"
+    properties:
+      physicalLocations:
+        type: "array"
+        items:
+          $ref: "#/definitions/PhysicalLocation"
+    example:
+      physicalLocations:
+      - {}
+      - {}
+  Processes:
+    type: "object"
+    properties:
+      processes:
+        type: "array"
+        items:
+          $ref: "#/definitions/Process"
+    example:
+      processes:
+      - {}
+      - {}
   Event:
     type: "object"
     properties:

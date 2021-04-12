@@ -416,6 +416,231 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(scenario))
 }
 
+// Retrieves the active scenario domains
+// GET /active
+func ceGetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
+	log.Debug("CEGetActiveScenarioDomain")
+
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	var result []byte
+	var err error
+
+	result, err = sbxCtrl.activeModel.GetSubScenario("domain", r)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if result == nil {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+
+		var domains dataModel.Domains
+		err = json.Unmarshal([]byte(result), &domains.Domains)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(domains)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(jsonResponse))
+	}
+}
+
+// Retrieves the active scenario network locations
+// GET /active
+func ceGetActiveScenarioNl(w http.ResponseWriter, r *http.Request) {
+	log.Debug("CEGetActiveScenarioNl")
+
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	var result []byte
+	var err error
+
+	result, err = sbxCtrl.activeModel.GetSubScenario("nl", r)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if result == nil {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+
+		var nls dataModel.NetworkLocations
+		err = json.Unmarshal([]byte(result), &nls.NetworkLocations)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(nls)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(jsonResponse))
+	}
+}
+
+// Retrieves the active scenario physical locations
+// GET /active
+func ceGetActiveScenarioPl(w http.ResponseWriter, r *http.Request) {
+	log.Debug("CEGetActiveScenarioPl")
+
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	var result []byte
+	var err error
+
+	result, err = sbxCtrl.activeModel.GetSubScenario("pl", r)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if result == nil {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+
+		var pls dataModel.PhysicalLocations
+		err = json.Unmarshal([]byte(result), &pls.PhysicalLocations)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(pls)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(jsonResponse))
+	}
+}
+
+// Retrieves the active scenario processes
+// GET /active
+func ceGetActiveScenarioProc(w http.ResponseWriter, r *http.Request) {
+	log.Debug("CEGetActiveScenarioProc")
+
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	var result []byte
+	var err error
+
+	result, err = sbxCtrl.activeModel.GetSubScenario("proc", r)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if result == nil {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+
+		var procs dataModel.Processes
+		err = json.Unmarshal([]byte(result), &procs.Processes)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(procs)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(jsonResponse))
+	}
+}
+
+// Retrieves the active scenario zones
+// GET /active
+func ceGetActiveScenarioZone(w http.ResponseWriter, r *http.Request) {
+	log.Debug("CEGetActiveScenarioZone")
+
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	var result []byte
+	var err error
+
+	result, err = sbxCtrl.activeModel.GetSubScenario("zone", r)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if result == nil {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+
+		var zones dataModel.Zones
+		err = json.Unmarshal([]byte(result), &zones.Zones)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(zones)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(jsonResponse))
+	}
+}
+
 // Retrieves service maps of the active scenario
 // GET /active/serviceMaps
 // NOTE: query parameters 'node', 'type' and 'service' may be specified to filter results
