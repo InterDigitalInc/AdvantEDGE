@@ -44,7 +44,7 @@ const postgisUser = "postgres"
 const postgisPwd = "pwd"
 
 // Enable profiling
-const profiling = false
+const profiling = true
 
 var proStart time.Time
 var proFinish time.Time
