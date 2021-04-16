@@ -30,6 +30,7 @@ const SesMetSid = "sid"
 const SesMetSbox = "sbox"
 const SesMetErrType = "errtype"
 const SesMetDesc = "description"
+const SesMetTime = "time"
 
 // Session metric types
 const (
@@ -95,7 +96,7 @@ func (ms *MetricStore) GetSessionMetric(typ string, duration string, count int) 
 	// Format event metrics
 	metrics = make([]SessionMetric, len(valuesArray))
 	for index, values := range valuesArray {
-		metrics[index].Time = values[NetMetTime]
+		metrics[index].Time = values[SesMetTime]
 		if val, ok := values[SesMetProvider].(string); ok {
 			metrics[index].Provider = val
 		}

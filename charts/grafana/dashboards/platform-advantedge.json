@@ -15,7 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1613495656791,
+  "id": 17,
+  "iteration": 1618533539997,
   "links": [],
   "panels": [
     {
@@ -26,6 +27,270 @@
         "w": 24,
         "x": 0,
         "y": 0
+      },
+      "id": 91,
+      "panels": [],
+      "title": "Sandbox Metrics",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "meep-influxdb",
+      "decimals": 2,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "displayName": "Sbox Creation Time",
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 7,
+      "gridPos": {
+        "h": 7,
+        "w": 10,
+        "x": 0,
+        "y": 1
+      },
+      "hiddenSeries": false,
+      "id": 93,
+      "interval": "",
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": false,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.3.5",
+      "pointradius": 2,
+      "points": true,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "hide": false,
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT createtime FROM global_sandbox_metrics.autogen.sbox WHERE $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Sandbox Creation Time",
+      "tooltip": {
+        "shared": false,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 10,
+        "y": 1
+      },
+      "id": 95,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum(increase(mon_engine_sbox_create_duration_sum[$__range])) / sum(increase(mon_engine_sbox_create_duration_count[$__range]))",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Average Sandbox Creation Time",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-green",
+                "value": null
+              },
+              {
+                "color": "light-green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 10,
+        "x": 14,
+        "y": 1
+      },
+      "id": 97,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum by (le) (increase(mon_engine_sbox_create_duration_bucket[$__range]))",
+          "format": "heatmap",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Sandbox Creation Time Distribution (seconds)",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
       },
       "id": 37,
       "panels": [],
@@ -44,7 +309,7 @@
         "h": 1,
         "w": 12,
         "x": 0,
-        "y": 1
+        "y": 9
       },
       "id": 78,
       "options": {
@@ -69,7 +334,7 @@
         "h": 1,
         "w": 12,
         "x": 12,
-        "y": 1
+        "y": 9
       },
       "id": 79,
       "options": {
@@ -106,7 +371,7 @@
         "h": 5,
         "w": 4,
         "x": 0,
-        "y": 2
+        "y": 10
       },
       "id": 55,
       "options": {
@@ -167,7 +432,7 @@
         "h": 5,
         "w": 8,
         "x": 4,
-        "y": 2
+        "y": 10
       },
       "id": 77,
       "options": {
@@ -242,7 +507,7 @@
         "h": 5,
         "w": 4,
         "x": 12,
-        "y": 2
+        "y": 10
       },
       "id": 85,
       "options": {
@@ -303,7 +568,7 @@
         "h": 5,
         "w": 8,
         "x": 16,
-        "y": 2
+        "y": 10
       },
       "id": 86,
       "options": {
@@ -385,7 +650,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 15
       },
       "id": 30,
       "options": {
@@ -473,7 +738,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 15
       },
       "id": 87,
       "options": {
@@ -532,7 +797,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 24
       },
       "id": 33,
       "options": {
@@ -591,7 +856,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 24
       },
       "id": 88,
       "options": {
@@ -655,7 +920,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 30
       },
       "id": 38,
       "options": {
@@ -719,7 +984,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 30
       },
       "id": 89,
       "options": {
@@ -813,5 +1078,5 @@
   "timezone": "",
   "title": "Platform (AdvantEDGE)",
   "uid": "platform-advantedge",
-  "version": 1
+  "version": 2
 }

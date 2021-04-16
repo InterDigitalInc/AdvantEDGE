@@ -27,6 +27,7 @@ import (
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
@@ -104,6 +105,8 @@ var stopChan = make(chan struct{})
 var mqGlobal *mq.MsgQueue
 var handlerId int
 var sandboxStore *sbs.SandboxStore
+var metricStore *met.MetricStore
+var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 var mutex sync.Mutex
 
 var sandboxes map[string]*Sandbox
@@ -185,6 +188,13 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
+
+	// Connect to Metric Store
+	metricStore, err = met.NewMetricStore("sandbox-metrics", "global", influxDBAddr, met.MetricsDbDisabled)
+	if err != nil {
+		log.Error("Failed connection to Metric Store: ", err)
+		return err
+	}
 
 	// Initialize sandbox map
 	sandboxes = make(map[string]*Sandbox)
@@ -500,6 +510,11 @@ func monitorSboxCreation(monEngineInfo *MonEngineInfo) {
 					sbox.Running = true
 					creationTime := float64(time.Since(sbox.StartTime).Milliseconds()) / 1000.0
 					log.Info("Sbox: ", sboxName, " creationTime: ", creationTime)
+
+					var metric met.SandboxMetric
+					metric.Name = sboxName
+					metric.CreateTime = creationTime
+					_ = metricStore.SetSandboxMetric(met.SboxMetCreateTime, metric)
 					metricSboxCreateDuration.Observe(creationTime)
 				}
 			}
