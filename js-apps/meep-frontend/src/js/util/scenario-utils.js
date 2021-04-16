@@ -15,7 +15,7 @@
  */
 
 import _ from 'lodash';
-import * as vis from 'vis';
+import * as visdata from 'vis-data';
 import { updateObject, deepCopy } from './object-util';
 import uuid from 'uuid';
 
@@ -298,8 +298,8 @@ export function parseScenario(scenario) {
 
   // Update visualization data
   var visData = {};
-  visData.nodes = new vis.DataSet(nodes);
-  visData.edges = new vis.DataSet(edges);
+  visData.nodes = new visdata.DataSet(nodes);
+  visData.edges = new visdata.DataSet(edges);
 
   // Update map data
   var mapData = {};
@@ -1642,11 +1642,31 @@ export function getElementFromScenario(scenario, elementId) {
   }
 }
 
+function createTooltip(id) {
+  var elem = document.createElement('div');
+  elem.style.backgroundColor = 'white';
+  elem.style.padding = '10px';
+  elem.innerHTML = '<b>id: ' + id + '</b>';
+  return elem;
+}
+
+function appendNetChar(elem, netChar) {
+  elem.innerHTML += '<br>latency: ' + (netChar.latency || 0) + ' ms';
+  elem.innerHTML += '<br>jitter: ' + (netChar.latencyVariation || '0')  + ' ms';
+  elem.innerHTML += '<br>packet loss: ' + (netChar.packetLoss || '0') + ' %';
+  elem.innerHTML += '<br>UL throughput: ' + (netChar.throughputUl || 0) + ' mb/s';
+  elem.innerHTML += '<br>DL throughput: ' + (netChar.throughputDl || 0) + ' mb/s';
+}
+
 // Add scenario node
 export function addScenarioNode(scenario, nodes) {
+  var elem = createTooltip('Internet');
+  appendNetChar(elem, scenario.deployment.netChar);
+
   var n = {
     id: scenario.name,
     name: scenario.name,
+    title: elem,
     label: 'Internet',
     level: 0
   };
@@ -1665,9 +1685,13 @@ export function addScenarioNode(scenario, nodes) {
 
 // Add domain node
 export function addDomainNode(domain, parent, nodes, edges) {
+  var elem = createTooltip(domain.name);
+  appendNetChar(elem, domain.netChar);
+
   var n = {
     id: domain.id,
     name: domain.name,
+    title: elem,
     label: domain.name,
     level: 1
   };
@@ -1697,9 +1721,13 @@ export function addDomainNode(domain, parent, nodes, edges) {
 
 // Add zone node
 export function addZoneNode(zone, parent, nodes, edges) {
+  var elem = createTooltip(zone.name);
+  appendNetChar(elem, zone.netChar);
+
   var n = {
     id: zone.id,
     name: zone.name,
+    title: elem,
     label: zone.name,
     level: 2
   };
@@ -1734,9 +1762,13 @@ export function addZoneNode(zone, parent, nodes, edges) {
 
 // Add network location node
 export function addNlNode(nl, parent, nodes, edges) {
+  var elem = createTooltip(nl.name);
+  appendNetChar(elem, nl.netChar);
+
   var n = {
     id: nl.id,
     name: nl.name,
+    title: elem,
     label: nl.name,
     level: 3
   };
@@ -1766,9 +1798,13 @@ export function addNlNode(nl, parent, nodes, edges) {
 
 // Add physical location node
 export function addPlNode(pl, parent, nodes, edges) {
+  var elem = createTooltip(pl.name);
+  appendNetChar(elem, pl.netChar);
+
   var n = {
     id: pl.id,
     name: pl.name,
+    title: elem,
     label: pl.name
   };
 
@@ -1900,9 +1936,13 @@ export function addPlNode(pl, parent, nodes, edges) {
 
 // Add process node
 export function addProcessNode(proc, parent, nodes, edges) {
+  var elem = createTooltip(proc.name);
+  appendNetChar(elem, proc.netChar);
+  
   var n = {
     id: proc.id,
     name: proc.name,
+    title: elem,
     label: proc.name
   };
 

@@ -19,7 +19,7 @@ import { connect } from 'react-redux';
 import React, { Component, createRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
-import * as vis from 'vis';
+import * as visnetwork from 'vis-network';
 import { updateObject } from '../util/object-util';
 import {
   execChangeTable,
@@ -107,7 +107,7 @@ class IDCVis extends Component {
 
   initializeVisualizationOptions(vis, container) {
     vis.options = {
-      //clickToUse:true,
+      // clickToUse:true,
       configure: {
         enabled: false,
         filter: '',
@@ -129,7 +129,8 @@ class IDCVis extends Component {
         hideEdgesOnDrag: true,
         hover: true,
         multiselect: true,
-        navigationButtons: true
+        navigationButtons: true,
+        tooltipDelay: 200
       },
       physics: {
         enabled: false,
@@ -239,7 +240,7 @@ class IDCVis extends Component {
     this.initializeVisualizationOptions(newVis, this.configRef.current);
 
     var domNode = ReactDOM.findDOMNode(this);
-    newVis.network = new vis.Network(
+    newVis.network = new visnetwork.Network(
       domNode,
       this.props.type === TYPE_CFG ? newVis.data : this.props.execVisData,
       newVis.options
