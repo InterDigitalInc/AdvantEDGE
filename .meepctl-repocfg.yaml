@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.6.9
+version: 1.6.10
 repo:
   name: AdvantEDGE
 
@@ -20,6 +20,13 @@ repo:
   #  Deployment
   #------------------------------
   deployment:
+    # permissions
+    permissions:
+      # user id
+      uid: 1000
+      # group id
+      gid: 1000
+
     # user supplied resources
     user:
       # user supplied frontend UI located @ .meep/user/frontend
@@ -49,7 +56,7 @@ repo:
     auth:
       # enable authentication & authorization
       enabled: true
-      # Is platform [open|secure] for all github/gitlab users or only selected ones
+      # Provider-authenticated users allowed (open) or limited to user database (secure)
       provider-mode: open
       # Session config
       session:
