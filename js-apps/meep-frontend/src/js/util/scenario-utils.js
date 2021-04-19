@@ -1642,31 +1642,61 @@ export function getElementFromScenario(scenario, elementId) {
   }
 }
 
-function createTooltip(id) {
-  var elem = document.createElement('div');
-  elem.style.backgroundColor = 'white';
-  elem.style.padding = '10px';
-  elem.innerHTML = '<b>id: ' + id + '</b>';
-  return elem;
+function createTooltip() {
+  var tooltip = document.createElement('div');
+  tooltip.style.padding = '10px';
+  return tooltip;
 }
 
-function appendNetChar(elem, netChar) {
-  elem.innerHTML += '<br>latency: ' + (netChar.latency || 0) + ' ms';
-  elem.innerHTML += '<br>jitter: ' + (netChar.latencyVariation || '0')  + ' ms';
-  elem.innerHTML += '<br>packet loss: ' + (netChar.packetLoss || '0') + ' %';
-  elem.innerHTML += '<br>UL throughput: ' + (netChar.throughputUl || 0) + ' mb/s';
-  elem.innerHTML += '<br>DL throughput: ' + (netChar.throughputDl || 0) + ' mb/s';
+function addTitle(tooltip, title) {
+  tooltip.innerHTML += '<b>' + title + '</b>';
+}
+
+function addType(tooltip, type) {
+  tooltip.innerHTML += '<br>type: ' + type;
+}
+
+function addNetChar(tooltip, netChar) {
+  tooltip.innerHTML += '<br>latency: ' + (netChar.latency || 0) + ' ms';
+  tooltip.innerHTML += '<br>jitter: ' + (netChar.latencyVariation || '0')  + ' ms';
+  tooltip.innerHTML += '<br>packet loss: ' + (netChar.packetLoss || '0') + ' %';
+  tooltip.innerHTML += '<br>UL throughput: ' + (netChar.throughputUl || 0) + ' mb/s';
+  tooltip.innerHTML += '<br>DL throughput: ' + (netChar.throughputDl || 0) + ' mb/s';
+}
+
+function addConnectivityModel(tooltip, model) {
+  tooltip.innerHTML += '<br>connectivity model: ' + (model || '');
+}
+
+function addCellId(tooltip, cellId) {
+  tooltip.innerHTML += '<br>cell id: ' + (cellId || '');
+}
+
+function addMacAddress(tooltip, mac) {
+  tooltip.innerHTML += '<br>mac: ' + (mac || '');
+}
+
+function addConnectionState(tooltip, state) {
+  tooltip.innerHTML += '<br>state: ' + ((state) ? 'CONNECTED' : 'DISCONNECTED');
+}
+
+function addWirelessTypes(tooltip, type) {
+  if (type) {
+    tooltip.innerHTML += '<br>wireless types: ' + type;
+  }
 }
 
 // Add scenario node
 export function addScenarioNode(scenario, nodes) {
-  var elem = createTooltip('Internet');
-  appendNetChar(elem, scenario.deployment.netChar);
+  var nodeTooltip = createTooltip();
+  addTitle(nodeTooltip, 'id: Internet');
+  addType(nodeTooltip, 'scenario');
+  addConnectivityModel(nodeTooltip, scenario.deployment.connectivity.model);
 
   var n = {
     id: scenario.name,
     name: scenario.name,
-    title: elem,
+    title: nodeTooltip,
     label: 'Internet',
     level: 0
   };
@@ -1685,18 +1715,24 @@ export function addScenarioNode(scenario, nodes) {
 
 // Add domain node
 export function addDomainNode(domain, parent, nodes, edges) {
-  var elem = createTooltip(domain.name);
-  appendNetChar(elem, domain.netChar);
+  var nodeTooltip = createTooltip();
+  addTitle(nodeTooltip, 'id: ' + domain.name);
+  addType(nodeTooltip, domain.type);
 
   var n = {
     id: domain.id,
     name: domain.name,
-    title: elem,
+    title: nodeTooltip,
     label: domain.name,
     level: 1
   };
 
+  var edgeTooltip = createTooltip();
+  addTitle(edgeTooltip, 'link type: inter-domain');
+  addNetChar(edgeTooltip, parent.deployment.netChar);
+
   var e = {
+    title: edgeTooltip,
     from: parent.name,
     to: domain.id
   };
@@ -1710,9 +1746,9 @@ export function addDomainNode(domain, parent, nodes, edges) {
     n['group'] = 'domain';
   }
 
-  var latency = parseInt(parent.deployment.interDomainLatency);
-  if (!isNaN(latency)) {
-    e['label'] = String(latency / 2) + ' ms';
+  var latency = parent.deployment.netChar.latency || 0;
+  if (latency) {
+    e['label'] = latency + ' ms';
   }
 
   nodes.push(n);
@@ -1721,18 +1757,24 @@ export function addDomainNode(domain, parent, nodes, edges) {
 
 // Add zone node
 export function addZoneNode(zone, parent, nodes, edges) {
-  var elem = createTooltip(zone.name);
-  appendNetChar(elem, zone.netChar);
+  var nodeTooltip = createTooltip();
+  addTitle(nodeTooltip, 'id: ' + zone.name);
+  addType(nodeTooltip, zone.type);
 
   var n = {
     id: zone.id,
     name: zone.name,
-    title: elem,
+    title: nodeTooltip,
     label: zone.name,
     level: 2
   };
 
+  var edgeTooltip = createTooltip();
+  addTitle(edgeTooltip, 'link type: inter-zone');
+  addNetChar(edgeTooltip, parent.netChar);
+
   var e = {
+    title: edgeTooltip,
     from: parent.id,
     to: zone.id,
     color: {
@@ -1751,10 +1793,10 @@ export function addZoneNode(zone, parent, nodes, edges) {
     n['group'] = 'zone';
   }
 
-  // var latency = "0";
-  // if (latency) {
-  //     e["label"] = latency + " ms";
-  // }
+  var latency = parent.netChar.latency || 0;
+  if (latency) {
+    e['label'] = latency + ' ms';
+  }
 
   nodes.push(n);
   edges.push(e);
@@ -1762,18 +1804,24 @@ export function addZoneNode(zone, parent, nodes, edges) {
 
 // Add network location node
 export function addNlNode(nl, parent, nodes, edges) {
-  var elem = createTooltip(nl.name);
-  appendNetChar(elem, nl.netChar);
+  var nodeTooltip = createTooltip();
+  addTitle(nodeTooltip, 'id: ' + nl.name);
+  addType(nodeTooltip, nl.type);
 
   var n = {
     id: nl.id,
     name: nl.name,
-    title: elem,
+    title: nodeTooltip,
     label: nl.name,
     level: 3
   };
 
+  var edgeTooltip = createTooltip();
+  addTitle(edgeTooltip, 'link type: intra-zone');
+  addNetChar(edgeTooltip, parent.netChar);
+
   var e = {
+    title: edgeTooltip,
     from: parent.id,
     to: nl.id
   };
@@ -1787,7 +1835,23 @@ export function addNlNode(nl, parent, nodes, edges) {
     n['group'] = 'nLocPoa';
   }
 
-  var latency = (parent.netChar) ? parent.netChar.latency : 0;
+  // Set level and group based on PL type
+  switch (nl.type) {
+  case POA_4G_TYPE_STR:
+    addCellId(nodeTooltip, nl.poa4GConfig.cellId);
+    break;
+  case POA_5G_TYPE_STR:
+    addCellId(nodeTooltip, nl.poa5GConfig.cellId);
+    break;
+  case POA_WIFI_TYPE_STR:
+    addMacAddress(nodeTooltip, nl.poaWifiConfig.macId);
+    break;
+  default:
+    break;
+  }
+
+
+  var latency = parent.netChar.latency || 0;
   if (latency) {
     e['label'] = latency + ' ms';
   }
@@ -1798,16 +1862,19 @@ export function addNlNode(nl, parent, nodes, edges) {
 
 // Add physical location node
 export function addPlNode(pl, parent, nodes, edges) {
-  var elem = createTooltip(pl.name);
-  appendNetChar(elem, pl.netChar);
+  var nodeTooltip = createTooltip();
+  addTitle(nodeTooltip, 'id: ' + pl.name);
+  addType(nodeTooltip, (pl.type === UE_TYPE_STR) ? 'TERMINAL' : pl.type);
 
   var n = {
     id: pl.id,
     name: pl.name,
-    title: elem,
+    title: nodeTooltip,
     label: pl.name
   };
 
+  var edgeTooltip = null;
+  
   var e = {
     from: parent.id,
     to: pl.id
@@ -1818,7 +1885,7 @@ export function addPlNode(pl, parent, nodes, edges) {
     e.from = parent.name;
   }
 
-  var latency = null;
+  var latency = (parent.netChar) ? parent.netChar.latency : 0;
   var lineColor = (pl.connected) ? '#606060' : '#FF0000';
   e['color'] = {
     color: lineColor,
@@ -1830,7 +1897,7 @@ export function addPlNode(pl, parent, nodes, edges) {
   // Set level and group based on PL type
   switch (pl.type) {
   case FOG_TYPE_STR: {
-    // latency = "0";
+    latency = 0;
     n['level'] = 4;
     
     if (pl.isExternal) {
@@ -1847,7 +1914,11 @@ export function addPlNode(pl, parent, nodes, edges) {
     break;
   }
   case EDGE_TYPE_STR: {
-    // latency = "0";
+    edgeTooltip = createTooltip();
+    addTitle(edgeTooltip, 'link type: intra-zone');
+    addNetChar(edgeTooltip, parent.netChar);
+    addConnectionState(edgeTooltip, pl.connected);
+
     n['level'] = 3;
 
     if (pl.isExternal) {
@@ -1865,7 +1936,13 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
 
   case UE_TYPE_STR: {
-    latency = parent.terminalLinkLatency;
+    addWirelessTypes(nodeTooltip, pl.wirelessType);
+
+    edgeTooltip = createTooltip();
+    addTitle(edgeTooltip, 'link type: terminal-link');
+    addNetChar(edgeTooltip, parent.netChar);
+    addConnectionState(edgeTooltip, pl.connected);
+
     n['level'] = 4;
      
     if (pl.isExternal) {
@@ -1893,17 +1970,18 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
 
   case CN_TYPE_STR: {
-    // latency = "0";
     n['level'] = 2;
     n['group'] = pl.isExternal ? 'pLocExtCN' : 'pLocIntCN';
     break;
   }
 
   case DC_TYPE_STR: {
-    var interDomainLatency = parseInt(parent.deployment.interDomainLatency);
-    if (!isNaN(interDomainLatency)) {
-      latency = String(interDomainLatency / 2);
-    }
+    edgeTooltip = createTooltip();
+    addTitle(edgeTooltip, 'link type: inter-domain');
+    addNetChar(edgeTooltip, parent.deployment.netChar);
+    addConnectionState(edgeTooltip, pl.connected);
+    latency = (parent.deployment.netChar) ? parent.deployment.netChar.latency : 0;
+    
     n['level'] = -1;
 
     if (pl.isExternal) {
@@ -1925,6 +2003,11 @@ export function addPlNode(pl, parent, nodes, edges) {
     break;
   }
 
+  // Set tooltip
+  if (edgeTooltip) {
+    e['title'] = edgeTooltip;
+  }
+
   // Set latency label
   if (latency) {
     e['label'] = latency + ' ms';
@@ -1936,17 +2019,25 @@ export function addPlNode(pl, parent, nodes, edges) {
 
 // Add process node
 export function addProcessNode(proc, parent, nodes, edges) {
-  var elem = createTooltip(proc.name);
-  appendNetChar(elem, proc.netChar);
-  
+  var nodeTooltip = createTooltip();
+  addTitle(nodeTooltip, 'id: ' + proc.name);
+  addType(nodeTooltip, proc.type);
+  addTitle(nodeTooltip, '<br><br>application net char');
+  addNetChar(nodeTooltip, proc.netChar);
+
   var n = {
     id: proc.id,
     name: proc.name,
-    title: elem,
+    title: nodeTooltip,
     label: proc.name
   };
 
+  var edgeTooltip = createTooltip();
+  addTitle(edgeTooltip, 'link type: node');
+  addNetChar(edgeTooltip, parent.netChar);
+
   var e = {
+    title: edgeTooltip,
     from: parent.id,
     to: proc.id,
     color: {
@@ -1968,6 +2059,11 @@ export function addProcessNode(proc, parent, nodes, edges) {
   } else if (proc.type === 'CLOUD-APP') {
     n['level'] = -2;
     n['group'] = proc.isExternal ? 'procExtCloudApp' : 'procIntCloudApp';
+  }
+
+  var latency = parent.netChar.latency || 0;
+  if (latency) {
+    e['label'] = latency + ' ms';
   }
 
   nodes.push(n);

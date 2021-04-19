@@ -1393,6 +1393,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
 
           {isExternal ? (
             <>
+              <div style={{marginTop: 20 }}></div>
               <ExternalFields onUpdate={onUpdate} element={element} />
               <CfgTextField
                 onUpdate={onUpdate}
@@ -1413,6 +1414,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                 >
                   User-Defined Chart
                 </Checkbox>
+                <div style={{marginTop: 20 }}></div>
 
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />
@@ -1471,6 +1473,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
 
           {isExternal ? (
             <>
+              <div style={{marginTop: 20 }}></div>
               <ExternalFields onUpdate={onUpdate} element={element} />
               <CfgTextField
                 onUpdate={onUpdate}
@@ -1491,7 +1494,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                 >
                   User-Defined Chart
                 </Checkbox>
-
+                <div style={{marginTop: 20 }}></div>
+                
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />
                 ) : (
@@ -1549,6 +1553,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
 
           {isExternal ? (
             <>
+              <div style={{marginTop: 20 }}></div>
               <ExternalFields onUpdate={onUpdate} element={element} />
               <CfgTextField
                 onUpdate={onUpdate}
@@ -1569,6 +1574,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                 >
                   User-Defined Chart
                 </Checkbox>
+                <div style={{marginTop: 20 }}></div>
 
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />
