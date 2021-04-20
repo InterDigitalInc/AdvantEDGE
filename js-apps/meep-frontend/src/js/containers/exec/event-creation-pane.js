@@ -19,20 +19,17 @@ import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
-import { updateObject } from '../../util/object-util';
+import { updateObject } from '@/js/util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 import ScenarioUpdateEventPane from './scenario-update-event-pane';
 
 import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
 
-import { uiExecChangeCurrentEvent } from '../../state/ui';
-
 import {
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT,
-  SCENARIO_UPDATE_EVENT
-} from '../../meep-constants';
+  uiExecChangeCurrentEvent,
+  uiExecChangeEventStatus
+} from '@/js/state/ui';
 
 import {
   execChangeSelectedScenarioElement,
@@ -45,9 +42,15 @@ import {
   execFogs,
   execFogEdges,
   execZones
-} from '../../state/exec';
+} from '@/js/state/exec';
 
-import { EXEC_EVT_TYPE, PAGE_EXECUTE } from '../../meep-constants';
+import {
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT,
+  SCENARIO_UPDATE_EVENT,
+  EXEC_EVT_TYPE,
+  PAGE_EXECUTE
+} from '@/js/meep-constants';
 
 const EventTypeSelect = props => {
   return (
@@ -125,6 +128,7 @@ class EventCreationPane extends Component {
   onEventPaneClose(e) {
     e.preventDefault();
     this.props.changeEvent('');
+    this.props.changeEventStatus('');
     this.props.onClose(e);
   }
 
@@ -142,6 +146,8 @@ class EventCreationPane extends Component {
     if (this.props.page !== PAGE_EXECUTE || this.props.hide) {
       return null;
     }
+    
+    const statusColor = (this.props.eventStatus && this.props.eventStatus.startsWith('[200]')) ? 'green' : 'red';
 
     return (
       <div style={{ padding: 10 }}>
@@ -152,6 +158,7 @@ class EventCreationPane extends Component {
           eventTypes={this.props.eventTypes}
           onChange={event => {
             this.props.changeEvent(event.target.value);
+            this.props.changeEventStatus('');
           }}
           value={this.props.currentEvent}
         />
@@ -185,6 +192,17 @@ class EventCreationPane extends Component {
             removeCyApply={true}
           />
         </div>
+
+        {
+          (this.props.eventStatus) ?
+          // <Grid style={{ marginTop: 20, border: '1px solid #e4e4e4' }}>
+            <Grid style={{ marginTop: 20 }}>
+              <GridCell span={12} style={{ padding: 5 }}>
+                <Typography use="body1">Status:</Typography>
+                <Typography use="body2" style={{ marginLeft: 5, color: statusColor}}>{this.props.eventStatus}</Typography>
+              </GridCell>
+            </Grid> : null
+        }
       </div>
     );
   }
@@ -216,7 +234,8 @@ const mapStateToProps = state => {
     EdgeApps: execEdgeApps(state),
     FogEdges: execFogEdges(state),
     table: state.exec.table,
-    networkElements: state.exec.table.entries
+    networkElements: state.exec.table.entries,
+    eventStatus: state.ui.eventStatus
   };
 };
 
@@ -225,7 +244,8 @@ const mapDispatchToProps = dispatch => {
     changeEvent: event => dispatch(uiExecChangeCurrentEvent(event)),
     changeSelectedScenarioElement: element =>
       dispatch(execChangeSelectedScenarioElement(element)),
-    resetSelectedScenarioElement: () => dispatch(execResetSelectedScenarioElement())
+    resetSelectedScenarioElement: () => dispatch(execResetSelectedScenarioElement()),
+    changeEventStatus: status => dispatch(uiExecChangeEventStatus(status))
   };
 };
 

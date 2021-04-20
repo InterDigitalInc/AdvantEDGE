@@ -48,6 +48,7 @@ const initialState = {
   execShowApps: false,
   dashCfgMode: false,
   eventCfgMode: false,
+  eventStatus: '',
   dashboardView1: NET_TOPOLOGY_VIEW,
   dashboardView2: VIEW_NAME_NONE,
   sourceNodeSelected: '',
@@ -244,6 +245,14 @@ export function uiExecChangeEventCfgMode(val) {
   };
 }
 
+const UI_EXEC_CHANGE_EVENT_STATUS = 'UI_EXEC_CHANGE_EVENT_STATUS';
+export function uiExecChangeEventStatus(status) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_STATUS,
+    payload: status
+  };
+}
+
 const UI_CHANGE_DEV_MODE = 'UI_CHANGE_DEV_MODE';
 export function uiChangeDevMode(mode) {
   return {
@@ -423,6 +432,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { dashCfgMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_CFG_MODE:
     return updateObject(state, { eventCfgMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_STATUS:
+    return updateObject(state, { eventStatus: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:
