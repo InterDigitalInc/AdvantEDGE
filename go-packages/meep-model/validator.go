@@ -562,7 +562,7 @@ func validateDeployment(deployment *dataModel.Deployment) (err error) {
 	// Connectivity Model
 	err = validateStringEnum(deployment.Connectivity.Model, CONNECTIVITY_MODEL_ENUM)
 	if err != nil {
-		return err
+		return errors.New("Invalid connectivity model: " + err.Error())
 	}
 	return nil
 }
@@ -649,7 +649,7 @@ func validateProc(proc *dataModel.Process) (err error) {
 		// User Chart Location
 		err = validatePath(proc.UserChartLocation, true)
 		if err != nil {
-			return err
+			return errors.New("Invalid user chart location: " + err.Error())
 		}
 		// User Chart Group
 		err = validateChartGroup(proc.UserChartGroup)
@@ -659,7 +659,7 @@ func validateProc(proc *dataModel.Process) (err error) {
 		// User Chart Alternate values
 		err = validatePath(proc.UserChartAlternateValues, false)
 		if err != nil {
-			return err
+			return errors.New("Invalid user chart alternate values: " + err.Error())
 		}
 
 	} else {
@@ -668,7 +668,7 @@ func validateProc(proc *dataModel.Process) (err error) {
 		// Container Image Name
 		err = validatePath(proc.Image, true)
 		if err != nil {
-			return err
+			return errors.New("Invalid container image name: " + err.Error())
 		}
 		// GPU Config
 		err = validateGpuConfig(proc.GpuConfig)
@@ -688,12 +688,12 @@ func validateProc(proc *dataModel.Process) (err error) {
 		// Environment variables
 		err = validateEnvVar(proc.Environment)
 		if err != nil {
-			return err
+			return errors.New("Invalid env var: " + err.Error())
 		}
 		// Command
 		err = validatePath(proc.CommandExe, false)
 		if err != nil {
-			return err
+			return errors.New("Invalid command: " + err.Error())
 		}
 		// TODO - Validate command arguments
 		// TODO - Validate placement identifier
@@ -730,27 +730,27 @@ func validateNetChar(nc *dataModel.NetworkCharacteristics) (err error) {
 	// Validate fields
 	err = validateInt32Range(nc.Latency, LATENCY_MIN, LATENCY_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid latency: " + err.Error())
 	}
 	err = validateInt32Range(nc.LatencyVariation, JITTER_MIN, JITTER_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid jitter: " + err.Error())
 	}
 	err = validateStringEnum(nc.LatencyDistribution, LATENCY_DIST_ENUM)
 	if err != nil {
-		return err
+		return errors.New("Invalid latency distribution: " + err.Error())
 	}
 	err = validateFloat64Range(nc.PacketLoss, PACKET_LOSS_MIN, PACKET_LOSS_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid packet loss: " + err.Error())
 	}
 	err = validateInt32Range(nc.ThroughputUl, THROUGHPUT_MIN, THROUGHPUT_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid UL throughput: " + err.Error())
 	}
 	err = validateInt32Range(nc.ThroughputDl, THROUGHPUT_MIN, THROUGHPUT_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid DL throughput: " + err.Error())
 	}
 	return nil
 }
@@ -788,7 +788,7 @@ func validateGeoData(gd *dataModel.GeoData, typ string) (err error) {
 	if IsNetLoc(typ) {
 		err = validateFloat32Range(gd.Radius, RADIUS_MIN, RADIUS_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid radius: " + err.Error())
 		}
 	}
 	// Path (optional)
@@ -796,12 +796,12 @@ func validateGeoData(gd *dataModel.GeoData, typ string) (err error) {
 		// End-of-path mode
 		err = validateStringEnum(gd.EopMode, EOP_MODE_ENUM)
 		if err != nil {
-			return err
+			return errors.New("Invalid EOP mode: " + err.Error())
 		}
 		// Velocity
 		err = validateFloat32Range(gd.Velocity, VELOCITY_MIN, VELOCITY_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid velocity: " + err.Error())
 		}
 		// TODO - Validate Path
 	}
@@ -819,12 +819,12 @@ func validateGpuConfig(cfg *dataModel.GpuConfig) (err error) {
 	// GPU Count
 	err = validateInt32Range(cfg.Count, GPU_COUNT_MIN, GPU_COUNT_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid GPU count: " + err.Error())
 	}
 	// GPU Type
 	err = validateStringEnum(cfg.Type_, GPU_TYPE_ENUM)
 	if err != nil {
-		return err
+		return errors.New("Invalid GPU type: " + err.Error())
 	}
 	return nil
 }
@@ -838,14 +838,14 @@ func validateCpuConfig(cfg *dataModel.CpuConfig) (err error) {
 	if cfg.Min != 0 {
 		err = validateFloat32Range(cfg.Min, MIN_CPU_COUNT_MIN, MIN_CPU_COUNT_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid min CPU count: " + err.Error())
 		}
 	}
 	// Max CPU Count (optional)
 	if cfg.Max != 0 {
 		err = validateFloat32Range(cfg.Max, MAX_CPU_COUNT_MIN, MAX_CPU_COUNT_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid max CPU count: " + err.Error())
 		}
 	}
 	// Max CPU must be greater than Min CPU
@@ -864,14 +864,14 @@ func validateMemoryConfig(cfg *dataModel.MemoryConfig) (err error) {
 	if cfg.Min != 0 {
 		err = validateInt32Range(cfg.Min, MIN_MEMORY_MIN, MIN_MEMORY_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid min memory: " + err.Error())
 		}
 	}
 	// Max Memory (optional)
 	if cfg.Max != 0 {
 		err = validateInt32Range(cfg.Max, MAX_MEMORY_MIN, MAX_MEMORY_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid max memory: " + err.Error())
 		}
 	}
 	// Max Memory must be greater than Min Memory
@@ -907,13 +907,13 @@ func validateServiceConfig(cfg *dataModel.ServiceConfig) (err error) {
 	// Service Name -- TBD if it needs to be same as unique element name
 	err = validateName(cfg.Name)
 	if err != nil {
-		return err
+		return errors.New("Invalid service name: " + err.Error())
 	}
 	// Multi-Edge (Group) Service Name (optional)
 	if cfg.MeSvcName != "" {
 		err = validateName(cfg.MeSvcName)
 		if err != nil {
-			return err
+			return errors.New("Invalid group svc name: " + err.Error())
 		}
 	}
 	// Service Ports
@@ -921,18 +921,18 @@ func validateServiceConfig(cfg *dataModel.ServiceConfig) (err error) {
 		// Protocol
 		err = validateStringEnum(port.Protocol, PROTOCOL_ENUM)
 		if err != nil {
-			return err
+			return errors.New("Invalid service protocol: " + err.Error())
 		}
 		// Port
 		err = validateInt32Range(port.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid service port: " + err.Error())
 		}
 		// External Port
 		if port.ExternalPort != 0 {
 			err = validateInt32Range(port.ExternalPort, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
 			if err != nil {
-				return err
+				return errors.New("Invalid service ext port: " + err.Error())
 			}
 		}
 	}
@@ -948,28 +948,28 @@ func validateChartGroup(group string) (err error) {
 		// Svc name
 		err = validateFullName(fields[0])
 		if err != nil {
-			return err
+			return errors.New("Invalid chart group svc name: " + err.Error())
 		}
 		// Svc group name (optional)
 		if fields[1] != "" {
 			err = validateName(fields[1])
 			if err != nil {
-				return err
+				return errors.New("Invalid chart group name: " + err.Error())
 			}
 		}
 		// Port
 		port, err := strconv.Atoi(fields[2])
 		if err != nil {
-			return err
+			return errors.New("Invalid chart group port: " + err.Error())
 		}
 		err = validateInt32Range(int32(port), SERVICE_PORT_MIN, SERVICE_PORT_MAX)
 		if err != nil {
-			return err
+			return errors.New("Invalid chart group port: " + err.Error())
 		}
 		// Protocol
 		err = validateStringEnum(fields[3], PROTOCOL_ENUM)
 		if err != nil {
-			return err
+			return errors.New("Invalid chart group protocol: " + err.Error())
 		}
 	}
 	return nil
@@ -979,22 +979,22 @@ func validateIngressSvc(svc *dataModel.IngressService) (err error) {
 	// External Port
 	err = validateInt32Range(svc.ExternalPort, SERVICE_NODE_PORT_MIN, SERVICE_NODE_PORT_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid Ingress ext port: " + err.Error())
 	}
 	// Svc name
 	err = validateFullName(svc.Name)
 	if err != nil {
-		return err
+		return errors.New("Invalid Ingress svc name: " + err.Error())
 	}
 	// Port
 	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid Ingress port: " + err.Error())
 	}
 	// Protocol
 	err = validateStringEnum(svc.Protocol, PROTOCOL_ENUM)
 	if err != nil {
-		return err
+		return errors.New("Invalid Ingress protocol: " + err.Error())
 	}
 	return nil
 }
@@ -1003,24 +1003,24 @@ func validateEgressSvc(svc *dataModel.EgressService) (err error) {
 	// Svc name
 	err = validateFullName(svc.Name)
 	if err != nil {
-		return err
+		return errors.New("Invalid Egress svc name: " + err.Error())
 	}
 	// Group Svc name (optional)
 	if svc.MeSvcName != "" {
 		err = validateFullName(svc.MeSvcName)
 		if err != nil {
-			return err
+			return errors.New("Invalid Egress group svc name: " + err.Error())
 		}
 	}
 	// Port
 	err = validateInt32Range(svc.Port, SERVICE_PORT_MIN, SERVICE_PORT_MAX)
 	if err != nil {
-		return err
+		return errors.New("Invalid Egress port: " + err.Error())
 	}
 	// Protocol
 	err = validateStringEnum(svc.Protocol, PROTOCOL_ENUM)
 	if err != nil {
-		return err
+		return errors.New("Invalid Egress protocol: " + err.Error())
 	}
 
 	// TODO -- Validate IP
