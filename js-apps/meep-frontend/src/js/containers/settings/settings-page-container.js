@@ -122,7 +122,7 @@ class SettingsPageContainer extends Component {
     return (
       <div>
         <IDConfirmDialog
-          title="Clear UI cache (reset default frontend state)"
+          title='Clear UI cache (reset default frontend state)'
           open={this.props.currentDialog === IDC_DIALOG_CLEAR_UI_CACHE}
           onClose={() => {
             this.closeDialog();
@@ -133,13 +133,13 @@ class SettingsPageContainer extends Component {
           <Grid style={{ width: '100%' }}>
             <GridCell span={12}>
               <Elevation
-                className="component-style"
+                className='idcc-elevation'
                 z={2}
                 style={styles.elevation}
               >
                 <GridInner>
                   <GridCell align={'middle'} span={4}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                         Settings:{' '}
                     </span>
                   </GridCell>
@@ -153,7 +153,7 @@ class SettingsPageContainer extends Component {
                         }}
                       >
                         <Icon
-                          icon="help_outline"
+                          icon='help_outline'
                           iconOptions={{ strategy: 'ligature' }}
                           style={styles.icon}
                         />
@@ -164,13 +164,13 @@ class SettingsPageContainer extends Component {
               </Elevation>
 
               <Elevation
-                className="component-style"
+                className='idcc-elevation'
                 z={2}
                 style={styles.elevation}
               >
                 {/* <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                       Execution:{' '}
                     </span>
                   </div>
@@ -193,7 +193,7 @@ class SettingsPageContainer extends Component {
                         <TextField
                           outlined
                           style={this.styles().interval}
-                          label="Interval (ms)"
+                          label='Interval (ms)'
                           onChange={e => this.handleIntervalChange(e.target.value)}
                           value={this.props.refreshInterval}
                           disabled={!this.props.automaticRefresh}
@@ -215,7 +215,7 @@ class SettingsPageContainer extends Component {
 
                 <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                       Development:{' '}
                     </span>
                   </div>
@@ -231,7 +231,7 @@ class SettingsPageContainer extends Component {
 
                 <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                       Local Storage:{' '}
                     </span>
                   </div>
@@ -248,7 +248,7 @@ class SettingsPageContainer extends Component {
  
                 <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                         About:{' '}
                     </span>
                   </div>

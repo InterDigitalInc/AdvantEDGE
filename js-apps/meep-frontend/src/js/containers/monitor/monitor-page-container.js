@@ -59,7 +59,7 @@ const DashboardContainer = props => {
       <GridInner style={{ width: '100%', height: '100%' }}>
         <GridCell span={12} style={styles.inner}>
           <Elevation
-            className="component-style"
+            className='idcc-elevation'
             z={2}
             style={{
               width: '100%',
@@ -72,9 +72,9 @@ const DashboardContainer = props => {
               <div data-cy={MON_DASHBOARD_IFRAME} style={{ height: '100%' }}>
                 <Iframe
                   url={props.dashboardUrl}
-                  id="myId"
-                  display="initial"
-                  position="relative"
+                  id='myId'
+                  display='initial'
+                  position='relative'
                   allowFullScreen
                   width='100%'
                   height='100%'
@@ -106,60 +106,58 @@ const MonitorPageHeadlineBar = props => {
   const dashboardViewList = getDashboardLabels(DEFAULT_DASHBOARD_OPTIONS).concat(getDashboardLabels(props.dashboardOptions));
 
   return (
-    <div style={{ width: '100%' }}>
-      <Grid style={styles.headlineGrid}>
-        <GridCell span={12}>
-          <Elevation className="component-style" z={2} style={styles.headline}>
-            <GridInner>
-              <GridCell span={4} align={'middle'}>
-                <Select
-                  style={{ width: '100%' }}
-                  label="Dashboard"
-                  disabled={props.dashboardSelectDisabled}
-                  outlined
-                  options={dashboardViewList}
-                  onChange={props.onChangeDashboard}
-                  value={props.currentDashboard}
-                  data-cy={MON_DASHBOARD_SELECT}
-                />
-              </GridCell>
-              <GridCell span={8} align={'middle'}>
-                <div align={'right'}>
-                  <Button
-                    raised
-                    disabled={props.isEditMode()}
-                    style={styles.button}
-                    onClick={props.startEditMode}
-                  >
+    <Grid style={styles.headlineGrid}>
+      <GridCell span={12}>
+        <Elevation className='idcc-elevation' z={2} style={styles.headline}>
+          <GridInner>
+            <GridCell span={4} align={'middle'}>
+              <Select
+                style={{ width: '100%' }}
+                label='Dashboard'
+                disabled={props.dashboardSelectDisabled}
+                outlined
+                options={dashboardViewList}
+                onChange={props.onChangeDashboard}
+                value={props.currentDashboard}
+                data-cy={MON_DASHBOARD_SELECT}
+              />
+            </GridCell>
+            <GridCell span={8} align={'middle'}>
+              <div align={'right'}>
+                <Button
+                  raised
+                  disabled={props.isEditMode()}
+                  style={styles.button}
+                  onClick={props.startEditMode}
+                >
                     EDIT
-                  </Button>
-                  <Button
-                    raised
-                    style={styles.button}
-                    onClick={() => window.open(grafanaUrl, '_blank')}
-                  >
+                </Button>
+                <Button
+                  raised
+                  style={styles.button}
+                  onClick={() => window.open(grafanaUrl, '_blank')}
+                >
                     OPEN GRAFANA
-                  </Button>
-                  <Button
-                    raised
-                    style={{ ...styles.button, marginLeft: 10 }}
-                    onClick={() => {
-                      window.open(MEEP_HELP_PAGE_MON_URL,'_blank');
-                    }}
-                  >
-                    <Icon
-                      icon="help_outline"
-                      iconOptions={{ strategy: 'ligature' }}
-                      style={styles.icon}
-                    />
-                  </Button>
-                </div>
-              </GridCell>
-            </GridInner>
-          </Elevation>
-        </GridCell>
-      </Grid>
-    </div>
+                </Button>
+                <Button
+                  raised
+                  style={{ ...styles.button, marginLeft: 10 }}
+                  onClick={() => {
+                    window.open(MEEP_HELP_PAGE_MON_URL,'_blank');
+                  }}
+                >
+                  <Icon
+                    icon='help_outline'
+                    iconOptions={{ strategy: 'ligature' }}
+                    style={styles.icon}
+                  />
+                </Button>
+              </div>
+            </GridCell>
+          </GridInner>
+        </Elevation>
+      </GridCell>
+    </Grid>
   );
 };
 
@@ -312,7 +310,7 @@ class MonitorPageContainer extends Component {
     return (
       <div style={{ width: '100%', height: '100%' }}>
         <IDConfirmDialog
-          title="Delete selected dashboards"
+          title='Delete selected dashboards'
           open={this.props.currentDialog === IDC_DIALOG_DELETE_DASHBOARD_LIST}
           onClose={() => {
             this.closeDialog();

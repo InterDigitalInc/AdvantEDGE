@@ -24,6 +24,7 @@ import { Elevation } from '@rmwc/elevation';
 import { Grid, GridCell } from '@rmwc/grid';
 import { TabBar, Tab } from '@rmwc/tabs';
 import { Typography } from '@rmwc/typography';
+import { Button } from '@rmwc/button';
 import { IconButton } from '@rmwc/icon-button';
 import { Menu, MenuItem, MenuSurfaceAnchor } from '@rmwc/menu';
 
@@ -43,10 +44,11 @@ import {
   PAGE_MONITOR,
   PAGE_SETTINGS,
   PAGE_CONFIGURE,
-  PAGE_LOGIN,
+  PAGE_HOME,
   STATUS_SIGNED_IN,
+  STATUS_SIGNED_OUT,
   STATUS_SIGNIN_NOT_SUPPORTED,
-  PAGE_LOGIN_INDEX,
+  PAGE_HOME_INDEX,
   PAGE_CONFIGURE_INDEX,
   PAGE_EXECUTE_INDEX,
   PAGE_MONITOR_INDEX,
@@ -126,8 +128,8 @@ class MeepTopBar extends Component {
       this.props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED);
     return (
       <div>
-        <Toolbar>
-          <Elevation z={4}>
+        <Toolbar fixed style={{ zIndex: 9000 }}>
+          <Elevation z={2}>
             <ToolbarRow>
               <ToolbarSection alignStart style={{display:'contents'}}>
                 <img
@@ -135,7 +137,7 @@ class MeepTopBar extends Component {
                   className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
                   src={this.logo}
                   alt=''
-                  onClick={() => this.handleItemClick(PAGE_LOGIN, PAGE_LOGIN_INDEX)}
+                  onClick={() => this.handleItemClick(PAGE_HOME, PAGE_HOME_INDEX)}
                 />
                 <img id='AdvantEdgeLogo' height={50} src={this.advantEdge} alt='' />
                 <Grid>
@@ -150,7 +152,7 @@ class MeepTopBar extends Component {
                           data-cy={MEEP_TAB_HOME}
                           style={styles.mdcTab}
                           label="Home"
-                          onClick={() => { this.handleItemClick(PAGE_LOGIN, PAGE_LOGIN_INDEX); }}
+                          onClick={() => { this.handleItemClick(PAGE_HOME, PAGE_HOME_INDEX); }}
                         />
                       </GridCell>
                       <GridCell span="2" style={{visibility:hideTabs?'hidden':null}}>
@@ -190,44 +192,56 @@ class MeepTopBar extends Component {
                   </GridCell>
                 </Grid>
               </ToolbarSection>
+              
               <ToolbarSection alignEnd>
                 <CorePodsLed
                   corePodsRunning={this.props.corePodsRunning}
                   corePodsErrors={this.props.corePodsErrors}
                   signInStatus={this.props.signInStatus}
                 />
-                <GridCell align={'middle'}>
-                  { this.props.signInStatus === STATUS_SIGNED_IN ?
-                    <MenuSurfaceAnchor style={{ height: 48 }}>
-                      <Menu
-                        open={this.props.userMenuDisplay}
-                        onSelect={() => {}}
-                        onClose={() => this.props.changeUserMenuDisplay(false)}
-                        anchorCorner={'bottomLeft'}
-                        align={'left'}
-                        style={{ whiteSpace: 'nowrap', marginTop: 5 }}
-                      >
-                        <MenuItem>
-                          <Typography use="body1">Signed in as <b>{this.props.signInUsername}</b></Typography>
-                        </MenuItem>
-                        <div style={{ width: '100%', borderTop: '1px solid #e4e4e4'}} />
-                        <MenuItem onClick={() => {
-                          this.props.onClickSignIn();
-                          this.props.changeUserMenuDisplay(false);
-                        }}>
-                          <Typography use="body1">Sign out</Typography>
-                        </MenuItem>
-                      </Menu>
-                      <IconButton
-                        icon="account_circle"
-                        className='user-icon'
-                        style={styles.icon}
-                        onClick={() => this.props.changeUserMenuDisplay(true)}
-                      />
-                    </MenuSurfaceAnchor>
-                    : null
-                  }
-                </GridCell>
+
+                { this.props.signInStatus === STATUS_SIGNED_IN ?
+                  <MenuSurfaceAnchor style={{ height: 48 }}>
+                    <Menu
+                      open={this.props.userMenuDisplay}
+                      onSelect={() => {}}
+                      onClose={() => this.props.changeUserMenuDisplay(false)}
+                      anchorCorner={'bottomLeft'}
+                      align={'left'}
+                      style={{ whiteSpace: 'nowrap', marginTop: 15, marginRight: 15}}
+                    >
+                      <MenuItem>
+                        <Typography use="body1">Signed in as <b>{this.props.signInUsername}</b></Typography>
+                      </MenuItem>
+                      <div style={{ width: '100%', borderTop: '1px solid #e4e4e4'}} />
+                      <MenuItem onClick={() => {
+                        this.props.onClickSignIn();
+                        this.props.changeUserMenuDisplay(false);
+                      }}>
+                        <Typography use="body1">Sign out</Typography>
+                      </MenuItem>
+                    </Menu>
+                    <IconButton
+                      icon="account_circle"
+                      className='user-icon'
+                      style={styles.icon}
+                      onClick={() => this.props.changeUserMenuDisplay(true)}
+                    />
+                  </MenuSurfaceAnchor>
+                  : null
+                  
+                }
+
+                { this.props.signInStatus === STATUS_SIGNED_OUT ?
+                  <Button
+                    style={styles.btnSignin}
+                    onClick={() => this.props.onClickSignIn()}
+                  >
+                    SIGN IN
+                  </Button>
+                  : null
+                }
+
               </ToolbarSection>
             </ToolbarRow>
           </Elevation>
@@ -246,6 +260,13 @@ const styles = {
     color: '#ffffff',
     padding: 5,
     marginRight: 10
+  },
+  btnSignin: {
+    marginTop: 6,
+    marginBottom: 6,
+    color: 'white',
+    border: 'none',
+    borderRadius: 0
   }
 };
 

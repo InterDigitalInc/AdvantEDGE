@@ -21,11 +21,11 @@ import {
   MOBILITY_EVENT,
   CFG_VIEW_NETWORK,
   SCENARIO_UPDATE_ACTION_NONE,
-  PAGE_LOGIN
+  PAGE_HOME
 } from '../../meep-constants';
 
 const initialState = {
-  page: PAGE_LOGIN,
+  page: PAGE_HOME,
   cfgView: CFG_VIEW_NETWORK,
   mapCfg: {},
   eventCreationMode: false,

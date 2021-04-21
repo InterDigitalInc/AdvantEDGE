@@ -568,7 +568,7 @@ class CfgPageContainer extends Component {
     return (
       <>
         <IDNewScenarioDialog
-          title="Create New Scenario"
+          title='Create New Scenario'
           open={this.props.currentDialog === IDC_DIALOG_NEW_SCENARIO}
           onClose={() => {
             this.closeDialog();
@@ -578,7 +578,7 @@ class CfgPageContainer extends Component {
         />
 
         <IDSaveScenarioDialog
-          title="Save Scenario"
+          title='Save Scenario'
           open={this.props.currentDialog === IDC_DIALOG_SAVE_SCENARIO}
           onClose={() => {
             this.closeDialog();
@@ -589,7 +589,7 @@ class CfgPageContainer extends Component {
         />
 
         <IDOpenScenarioDialog
-          title="Open Scenario"
+          title='Open Scenario'
           open={this.props.currentDialog === IDC_DIALOG_OPEN_SCENARIO}
           options={this.props.scenarios}
           onClose={() => {
@@ -602,7 +602,7 @@ class CfgPageContainer extends Component {
         />
 
         <IDDeleteScenarioDialog
-          title="Delete Scenario"
+          title='Delete Scenario'
           open={this.props.currentDialog === IDC_DIALOG_DELETE_SCENARIO}
           onClose={() => {
             this.closeDialog();
@@ -612,7 +612,7 @@ class CfgPageContainer extends Component {
         />
 
         <IDExportScenarioDialog
-          title="Export Current Configuration"
+          title='Export Current Configuration'
           open={this.props.currentDialog === IDC_DIALOG_EXPORT_SCENARIO}
           onClose={() => {
             this.closeDialog();
@@ -633,71 +633,69 @@ class CfgPageContainer extends Component {
       <div style={styles.page}>
         {this.renderDialogs()}
 
-        <div style={styles.fullwidth}>
-          <Grid style={styles.headlineGrid}>
-            <GridCell span={12}>
-              <Elevation
-                className="component-style"
-                z={2}
-                style={styles.headline}
-              >
-                <GridInner>
-                  <IDSelect
-                    label="View"
-                    span={2}
-                    options={[CFG_VIEW_NETWORK, CFG_VIEW_MAP]}
-                    onChange={(e) => this.props.changeView(e.target.value)}
-                    value={this.props.cfgView}
-                    disabled={false}
-                    cydata={CFG_VIEW_TYPE}
-                  />
-                  <GridCell align={'middle'} style={styles.fullheight} span={3}>
-                    <GridInner style={{ marginLeft: 10, height: '100%', borderLeft: '2px solid #e4e4e4'}}>
-                      <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
-                        <HeadlineBar
-                          titleLabel="Scenario"
-                          scenarioName={this.props.scenarioName}
-                        />
-                      </GridCell>
-                    </GridInner>
-                  </GridCell>
-                  <GridCell align={'middle'} span={7}>
-                    <GridInner align={'right'}>
-                      <GridCell span={12}>
-                        <CfgPageScenarioButtons
-                          {...this.props}
-                          onDeleteScenario={() => {
-                            this.onDeleteScenario();
-                          }}
-                          onSaveScenario={() => {
-                            this.onSaveScenario();
-                          }}
-                          onNewScenario={() => {
-                            this.onNewScenario();
-                          }}
-                          onOpenScenario={() => {
-                            this.onOpenScenario();
-                          }}
-                          onInputScenario={elem =>
-                            this.onScenarioInputChange(elem)
-                          }
-                          onExportScenario={() => this.onExportScenario()}
-                        />
-                      </GridCell>
-                    </GridInner>
-                  </GridCell>
-                </GridInner>
-              </Elevation>
-            </GridCell>
-          </Grid>
-        </div>
+        <Grid style={styles.headlineGrid}>
+          <GridCell span={12}>
+            <Elevation
+              className='idcc-elevation'
+              z={2}
+              style={styles.headline}
+            >
+              <GridInner>
+                <IDSelect
+                  label='View'
+                  span={2}
+                  options={[CFG_VIEW_NETWORK, CFG_VIEW_MAP]}
+                  onChange={(e) => this.props.changeView(e.target.value)}
+                  value={this.props.cfgView}
+                  disabled={false}
+                  cydata={CFG_VIEW_TYPE}
+                />
+                <GridCell align={'middle'} span={3}>
+                  <GridInner style={{ marginLeft: 10, height: '100%', borderLeft: '2px solid #e4e4e4'}}>
+                    <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
+                      <HeadlineBar
+                        titleLabel='Scenario'
+                        scenarioName={this.props.scenarioName}
+                      />
+                    </GridCell>
+                  </GridInner>
+                </GridCell>
+                <GridCell align={'middle'} span={7}>
+                  <GridInner align={'right'}>
+                    <GridCell span={12}>
+                      <CfgPageScenarioButtons
+                        {...this.props}
+                        onDeleteScenario={() => {
+                          this.onDeleteScenario();
+                        }}
+                        onSaveScenario={() => {
+                          this.onSaveScenario();
+                        }}
+                        onNewScenario={() => {
+                          this.onNewScenario();
+                        }}
+                        onOpenScenario={() => {
+                          this.onOpenScenario();
+                        }}
+                        onInputScenario={elem =>
+                          this.onScenarioInputChange(elem)
+                        }
+                        onExportScenario={() => this.onExportScenario()}
+                      />
+                    </GridCell>
+                  </GridInner>
+                </GridCell>
+              </GridInner>
+            </Elevation>
+          </GridCell>
+        </Grid>
 
         {this.props.cfgState !== CFG_STATE_IDLE && (
           <>
             <Grid style={{ width: '100%'}}>
               <GridInner>
                 <GridCell span={8}>
-                  <Elevation className="component-style" z={2}>
+                  <Elevation className='idcc-elevation' z={2}>
                     <div style={{ padding: 10, height: '70vh' }}>
                       {this.props.cfgView === CFG_VIEW_NETWORK && (
                         <IDCVis
@@ -717,7 +715,7 @@ class CfgPageContainer extends Component {
                   </Elevation>
                 </GridCell>
                 <GridCell span={4} style={styles.inner}>
-                  <Elevation className="component-style" z={2}>
+                  <Elevation className='idcc-elevation' z={2}>
                     <CfgNetworkElementContainer
                       style={{ height: '100%' }}
                       onNewElement={() => this.onNewElement()}
@@ -751,12 +749,6 @@ class CfgPageContainer extends Component {
 }
 
 const styles = {
-  fullwidth: {
-    width: '100%'
-  },
-  fullheight: {
-    height: '100%'
-  },
   headlineGrid: {
     marginBottom: 10
   },

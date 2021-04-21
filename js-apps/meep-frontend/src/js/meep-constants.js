@@ -22,6 +22,7 @@ export const STATUS_SIGNED_IN = 'SIGNED-IN';
 export const STATUS_SIGNING_IN = 'SIGNING-IN';
 export const STATUS_SIGNED_OUT = 'SIGNED-OUT';
 export const OAUTH_PROVIDER_GITHUB = 'github';
+export const OAUTH_PROVIDER_GITLAB = 'gitlab';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -31,20 +32,25 @@ export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
 export const PAGE_EXECUTE = 'PAGE_EXECUTE';
 export const PAGE_MONITOR = 'PAGE_MONITOR';
 export const PAGE_SETTINGS = 'PAGE_SETTINGS';
-export const PAGE_LOGIN = 'PAGE_LOGIN';
+export const PAGE_HOME = 'PAGE_HOME';
 
 // Page tab index
-export const PAGE_LOGIN_INDEX = 0;
+export const PAGE_HOME_INDEX = 0;
 export const PAGE_CONFIGURE_INDEX = 1;
 export const PAGE_EXECUTE_INDEX = 2;
 export const PAGE_MONITOR_INDEX = 3;
 export const PAGE_SETTINGS_INDEX = 4;
 
-// Help URLs
+// URLs
 export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/configuration-view';
 export const MEEP_HELP_PAGE_EXEC_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/execution-view';
 export const MEEP_HELP_PAGE_MON_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/monitoring-view';
 export const MEEP_HELP_PAGE_SET_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/settings-view';
+export const MEEP_FOOTER_WIKI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
+export const MEEP_FOOTER_GITHUB_URL = 'https://github.com/InterDigitalInc/AdvantEDGE';
+export const MEEP_FOOTER_DISCUSSIONS_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/discussions';
+export const MEEP_FOOTER_LICENSE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE';
+export const MEEP_FOOTER_CONTRIBUTING_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md';
 
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
@@ -72,12 +78,13 @@ export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
 export const MEEP_DLG_INVALID_SCENARIO = 'meep-dlg-invalid-scenario';
 export const MEEP_DLG_EXPORT_SCENARIO = 'meep-dlg-export-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO = 'meep-dlg-deploy-scenario';
-export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
-  'meep-dlg-deploy-scenario-select';
+export const MEEP_DLG_DEPLOY_SCENARIO_SELECT = 'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
 // Dialog Types
+// HOME
+export const IDC_DIALOG_SIGN_IN = 'IDC_DIALOG_SIGN_IN';
 // CFG
 export const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
 export const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';

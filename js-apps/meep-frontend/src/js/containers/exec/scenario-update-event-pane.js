@@ -226,10 +226,10 @@ class ScenarioUpdateEventPane extends Component {
     return (
       <div style={styles.page}>
         <Grid style={styles.field}>
-          <GridCell span="8">
+          <GridCell span='8'>
             <Select
               style={styles.select}
-              label="Action Type"
+              label='Action Type'
               outlined
               data-cy={EXEC_EVT_SU_ACTION}
               options={this.state.actionTypes}
@@ -237,13 +237,13 @@ class ScenarioUpdateEventPane extends Component {
               value={this.props.scenarioUpdateAction}
             />
           </GridCell>
-          <GridCell span="4"></GridCell>
+          <GridCell span='4'></GridCell>
         </Grid>
         { this.props.scenarioUpdateAction === SCENARIO_UPDATE_ACTION_ADD ||
           this.props.scenarioUpdateAction === SCENARIO_UPDATE_ACTION_MODIFY ?
           <Grid>
             <GridCell span={12} style={styles.inner}>
-              <Elevation className="component-style" z={2}>
+              <Elevation className='idcc-elevation' z={2}>
                 <CfgNetworkElementContainer
                   style={{ height: '100%' }}
                   onNewElement={() => {}}
@@ -262,10 +262,10 @@ class ScenarioUpdateEventPane extends Component {
         { this.props.scenarioUpdateAction === 'REMOVE' ?          
           <div>
             <Grid style={styles.block}>
-              <GridCell span="8">
+              <GridCell span='8'>
                 <Select
                   style={styles.select}
-                  label="Process Type"
+                  label='Process Type'
                   outlined
                   options={elementTypes}
                   onChange={e => { this.changeElementType(e.target.value); }}
@@ -273,13 +273,13 @@ class ScenarioUpdateEventPane extends Component {
                   value={this.props.scenarioUpdateRemoveEleType}
                 />
               </GridCell>
-              <GridCell span="4"></GridCell>
+              <GridCell span='4'></GridCell>
             </Grid>
             <Grid style={styles.block}>
-              <GridCell span="8">
+              <GridCell span='8'>
                 <Select
                   style={styles.select}
-                  label="Process Name"
+                  label='Process Name'
                   outlined
                   options={elementNames}
                   onChange={e => { this.props.changeRemoveActionEleName(e.target.value); }}
@@ -287,15 +287,15 @@ class ScenarioUpdateEventPane extends Component {
                   value={this.props.scenarioUpdateRemoveEleName}
                 />
               </GridCell>
-              <GridCell span="4"></GridCell>
+              <GridCell span='4'></GridCell>
             </Grid>
           </div> : null
         }
         { this.props.scenarioUpdateAction === SCENARIO_UPDATE_ACTION_NONE ||
           this.props.scenarioUpdateAction === SCENARIO_UPDATE_ACTION_REMOVE ?
           <CancelApplyPair
-            cancelText="Cancel"
-            applyText="Apply"
+            cancelText='Cancel'
+            applyText='Apply'
             onCancel={e => this.onCancelElement(e)}
             onApply={e => this.onDeleteElement(e)}
             saveDisabled={

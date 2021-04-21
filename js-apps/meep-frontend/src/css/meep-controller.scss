@@ -33,7 +33,28 @@ $mdc-layout-grid-default-gutter: (
   phone: 16px
 ) !default;
 
-@import "material-components-web/material-components-web";
+// MDC
+@import 'material-components-web/material-components-web';
+
+// Outlined Select issue causing horizontal scrolling
+.mdc-select--outlined::before, .mdc-select--outlined::after {
+    content: none;
+}
+
+// Colors
+.mdc-dialog {
+    @include mdc-dialog-max-width(865px, 20px);
+    @include mdc-dialog-min-width(500px);
+}
+.detailed-dialog {
+    @include mdc-dialog-max-width(1024px, 20px);
+}
+
+.rmwc-icon--size-large {
+    font-size: 2.25rem;
+    width: 1em;
+    height: 1em;
+}
 
 // Ensure layout covers the entire screen
 
@@ -48,8 +69,9 @@ select {
 
 // UI
 #meep-container {
+    // height: 100%;
     width: 100%;
-    overflow-x: hidden;
+    // overflow-x: hidden;
 }
 .ui-body {
     display: flex;
@@ -57,9 +79,9 @@ select {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    height: 100%;
+    // height: 100%;
     width: 100%;
-    background-color: #FCFCFC;
+    background-color: #fafafa;
 }
 .ui-content {
     flex-direction: column;
@@ -70,8 +92,8 @@ select {
 .ui-main {
     padding: 16px;
 }
-.component-style {
-    background-color: #FFFFFF;
+.ui-background {
+    background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)), url(../img/network.png);
 }
 
 
@@ -127,8 +149,6 @@ div.vis-tooltip {
     display: none;
 }
 
-
-
 #refresh-interval-form-div {
     display: inline-block;
     vertical-align: middle;
@@ -143,6 +163,13 @@ div.vis-tooltip {
 }
 
 // IDCC Styles
+.idcc-page {
+    padding: 10px;
+    min-height: calc(100vh - 138px);
+}
+.idcc-elevation {
+    background-color: #FFFFFF;
+}
 .idcc-button {
     @include mdc-button-ink-color(#fff);
 }

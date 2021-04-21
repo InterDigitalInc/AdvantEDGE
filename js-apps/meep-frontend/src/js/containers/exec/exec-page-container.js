@@ -306,19 +306,19 @@ class ExecPageContainer extends Component {
     return (
       <>
         <IDNewSandboxDialog
-          title="Create New Sandbox"
+          title='Create New Sandbox'
           open={this.props.currentDialog === IDC_DIALOG_NEW_SANDBOX}
           onClose={this.closeDialog}
           createSandbox={this.props.createSandbox}
         />
         <IDDeleteSandboxDialog
-          title="Delete Sandbox"
+          title='Delete Sandbox'
           open={this.props.currentDialog === IDC_DIALOG_DELETE_SANDBOX}
           onClose={this.closeDialog}
           deleteSandbox={this.props.deleteSandbox}
         />
         <IDDeployScenarioDialog
-          title="Open Scenario"
+          title='Open Scenario'
           open={this.props.currentDialog === IDC_DIALOG_DEPLOY_SCENARIO}
           options={this.props.scenarios}
           onClose={this.closeDialog}
@@ -326,21 +326,21 @@ class ExecPageContainer extends Component {
           activateScenarioCb={this.activateScenarioCb}
         />
         <IDSaveScenarioDialog
-          title="Save Scenario as ..."
+          title='Save Scenario as ...'
           open={this.props.currentDialog === IDC_DIALOG_SAVE_SCENARIO}
           onClose={this.closeDialog}
           saveScenario={this.saveScenario}
           scenarioNameRequired={true}
         />
         <IDTerminateScenarioDialog
-          title="Terminate Scenario"
+          title='Terminate Scenario'
           open={this.props.currentDialog === IDC_DIALOG_TERMINATE_SCENARIO}
           scenario={this.props.scenario}
           onClose={this.closeDialog}
           onSubmit={this.terminateScenario}
         />
         <IDSaveReplayDialog
-          title="Save Events as Replay file"
+          title='Save Events as Replay file'
           open={this.props.currentDialog === IDC_DIALOG_SAVE_REPLAY}
           onClose={this.closeDialog}
           api={this.props.replayApi}
@@ -369,119 +369,115 @@ class ExecPageContainer extends Component {
     const spanLeft = eventPaneOpen ? 8 : 12;
     const spanRight = eventPaneOpen ? 4 : 0;
     return (
-      <div style={{ width: '100%' }}>
+      <div>
         {this.renderDialogs()}
 
-        <div style={{ width: '100%' }}>
-          <Grid style={styles.headlineGrid}>
-            <GridCell span={12}>
-              <Elevation
-                className="component-style"
-                z={2}
-                style={styles.headline}
-              >
-                <GridInner>
-                  <IDSelect
-                    label="Sandbox"
-                    span={2}
-                    options={sandboxes}
-                    onChange={this.onSandboxChange}
-                    value={sandbox}
-                    disabled={false}
-                    cydata={EXEC_SELECT_SANDBOX}
+        <Grid style={styles.headlineGrid}>
+          <GridCell span={12}>
+            <Elevation
+              className='idcc-elevation'
+              z={2}
+              style={styles.headline}
+            >
+              <GridInner>
+                <IDSelect
+                  label='Sandbox'
+                  span={2}
+                  options={sandboxes}
+                  onChange={this.onSandboxChange}
+                  value={sandbox}
+                  disabled={false}
+                  cydata={EXEC_SELECT_SANDBOX}
+                />
+                <GridCell align={'middle'} span={2}>
+                  <ExecPageSandboxButtons
+                    sandbox={sandbox}
+                    onNewSandbox={this.onNewSandbox}
+                    onDeleteSandbox={this.onDeleteSandbox}
                   />
-                  <GridCell align={'middle'} span={2}>
-                    <ExecPageSandboxButtons
-                      sandbox={sandbox}
-                      onNewSandbox={this.onNewSandbox}
-                      onDeleteSandbox={this.onDeleteSandbox}
-                    />
-                  </GridCell>
-                  <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
-                    <GridInner style={{ height: '100%', borderLeft: '2px solid #e4e4e4'}}>
-                      <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
-                        <HeadlineBar
-                          titleLabel="Scenario"
-                          scenarioName={scenarioName}
-                        />
-                      </GridCell>
-                    </GridInner>
-                  </GridCell>
-                  <GridCell align={'middle'} span={5}>
-                    <GridInner align={'right'}>
-                      <GridCell align={'middle'} span={12}>
-                        <ExecPageScenarioButtons
-                          sandbox={sandbox}
-                          onDeploy={this.onDeployScenario}
-                          onSaveScenario={this.onSaveScenario}
-                          onTerminate={this.onTerminateScenario}
-                          onOpenDashCfg={this.onOpenDashCfg}
-                          onOpenEventCfg={this.onOpenEventCfg}
-                        />
-                      </GridCell>
-                    </GridInner>
-                  </GridCell>
-                </GridInner>
+                </GridCell>
+                <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
+                  <GridInner style={{ height: '100%', borderLeft: '2px solid #e4e4e4'}}>
+                    <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
+                      <HeadlineBar
+                        titleLabel='Scenario'
+                        scenarioName={scenarioName}
+                      />
+                    </GridCell>
+                  </GridInner>
+                </GridCell>
+                <GridCell align={'middle'} span={5}>
+                  <GridInner align={'right'}>
+                    <GridCell align={'middle'} span={12}>
+                      <ExecPageScenarioButtons
+                        sandbox={sandbox}
+                        onDeploy={this.onDeployScenario}
+                        onSaveScenario={this.onSaveScenario}
+                        onTerminate={this.onTerminateScenario}
+                        onOpenDashCfg={this.onOpenDashCfg}
+                        onOpenEventCfg={this.onOpenEventCfg}
+                      />
+                    </GridCell>
+                  </GridInner>
+                </GridCell>
+              </GridInner>
+            </Elevation>
+          </GridCell>
+        </Grid>
+
+        {this.props.scenarioState !== EXEC_STATE_IDLE && (
+          <Grid style={{ width: '100%' }}>
+            <GridCell span={spanLeft}>
+              <div>
+                <EventContainer
+                  scenarioName={this.props.execScenarioName}
+                  eventCfgMode={this.props.eventCfgMode}
+                  onCloseEventCfg={this.onCloseEventCfg}
+                  onSaveReplay={this.onSaveReplay}
+                  onShowReplay={this.onShowReplay}
+                  api={this.props.replayApi}
+                />
+
+                <DashboardContainer
+                  sandbox={this.props.sandbox}
+                  scenarioName={this.props.execScenarioName}
+                  onShowAppsChanged={this.showApps}
+                  showApps={this.props.showApps}
+                  dashCfgMode={this.props.dashCfgMode}
+                  onCloseDashCfg={this.onCloseDashCfg}
+                />
+              </div>
+            </GridCell>
+            <GridCell
+              span={spanRight}
+              hidden={!eventPaneOpen}
+              style={styles.inner}
+            >
+              <Elevation className='idcc-elevation' z={2}>
+                <EventReplayPane
+                  api={this.props.replayApi}
+                  hide={!this.props.eventReplayMode}
+                  onClose={this.onQuitEventReplayMode}
+                />
+              </Elevation>
+              <Elevation className='idcc-elevation' z={2}>
+                <EventCreationPane
+                  eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT, SCENARIO_UPDATE_EVENT]}
+                  api={this.props.eventsApi}
+                  hide={!this.props.eventCreationMode}
+                  onSuccess={this.props.refreshScenario}
+                  onClose={this.onQuitEventCreationMode}
+                />
+              </Elevation>
+              <Elevation className='idcc-elevation' z={2}>
+                <EventAutomationPane
+                  api={this.props.automationApi}
+                  hide={!this.props.eventAutomationMode}
+                  onClose={this.onQuitEventAutomationMode}
+                />
               </Elevation>
             </GridCell>
           </Grid>
-        </div>
-
-        {this.props.scenarioState !== EXEC_STATE_IDLE && (
-          <>
-            <Grid style={{ width: '100%' }}>
-              <GridCell span={spanLeft}>
-                <div>
-                  <EventContainer
-                    scenarioName={this.props.execScenarioName}
-                    eventCfgMode={this.props.eventCfgMode}
-                    onCloseEventCfg={this.onCloseEventCfg}
-                    onSaveReplay={this.onSaveReplay}
-                    onShowReplay={this.onShowReplay}
-                    api={this.props.replayApi}
-                  />
-
-                  <DashboardContainer
-                    sandbox={this.props.sandbox}
-                    scenarioName={this.props.execScenarioName}
-                    onShowAppsChanged={this.showApps}
-                    showApps={this.props.showApps}
-                    dashCfgMode={this.props.dashCfgMode}
-                    onCloseDashCfg={this.onCloseDashCfg}
-                  />
-                </div>
-              </GridCell>
-              <GridCell
-                span={spanRight}
-                hidden={!eventPaneOpen}
-                style={styles.inner}
-              >
-                <Elevation className="component-style" z={2}>
-                  <EventReplayPane
-                    api={this.props.replayApi}
-                    hide={!this.props.eventReplayMode}
-                    onClose={this.onQuitEventReplayMode}
-                  />
-                </Elevation>
-                <Elevation className="component-style" z={2}>
-                  <EventCreationPane
-                    eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT, SCENARIO_UPDATE_EVENT]}
-                    api={this.props.eventsApi}
-                    hide={!this.props.eventCreationMode}
-                    onSuccess={this.props.refreshScenario}
-                    onClose={this.onQuitEventCreationMode}
-                  />
-                </Elevation>
-                <Elevation className="component-style" z={2}>
-                  <EventAutomationPane
-                    api={this.props.automationApi}
-                    hide={!this.props.eventAutomationMode}
-                    onClose={this.onQuitEventAutomationMode}
-                  />
-                </Elevation>
-              </GridCell>
-            </Grid>
-          </>
         )}
         
         {sandbox && 

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import React, { Component } from 'react';
-import { Grid, GridCell } from '@rmwc/grid';
+import React from 'react';
+import { Typography } from '@rmwc/typography';
 
 import {
   Dialog,
@@ -25,84 +25,65 @@ import {
   DialogButton
 } from '@rmwc/dialog';
 
-class IDDialog extends Component {
-  constructor(props) {
-    super(props);
+const IDDialog = props => {
+  return (
+    <Dialog
+      style={{ zIndex: 10000 }}
+      open={props.open}
+      onClose={(evt) => {
+        var closeOnSubmit = (evt.detail.action === 'accept' ? true : false);
+        props.onClose(closeOnSubmit);
+      }}
+      className={props.className ? props.className : ''}
+      data-cy={props.cydata}
+    >
 
-    this.state = {
-      sandboxName: '',
-      err: null
-      
-    };
-  }
+      <DialogTitle theme="primary" style={styles.title}>
+        <Typography use="headline5">{props.title}</Typography>
+      </DialogTitle>
 
-  render() {
-    return (
-      <Dialog
-        style={{zIndex: 10000}}
-        open={this.props.open}
-        onClose={this.props.onClose}
-        data-cy={this.props.cydata}
-      >
-        <DialogTitle style={styles.title}>
-          <Grid>
-            <GridCell span={12}>{this.props.title}</GridCell>
-          </Grid>
-        </DialogTitle>
+      <DialogContent style={styles.content}>
+        {props.children}
+      </DialogContent>
 
-        <DialogContent style={styles.content}>
-          <Grid>
-            <GridCell span={12}>{this.props.children}</GridCell>
-          </Grid>
-        </DialogContent>
-
-        <DialogActions style={styles.actions}>
-          <Grid>
-            <GridCell span={8}></GridCell>
-            <GridCell span={2}>
-              <DialogButton
-                style={styles.button}
-                action="close"
-                onClick={this.props.onClose}
-              >
-                Cancel
-              </DialogButton>
-            </GridCell>
-
-            <GridCell span={2}>
-              <DialogButton
-                style={styles.button}
-                action="accept"
-                isDefaultAction
-                onClick={this.props.onSubmit}
-                disabled={this.props.okDisabled}
-              >
-                Ok
-              </DialogButton>
-            </GridCell>
-          </Grid>
-        </DialogActions>
-      </Dialog>
-    );
-  }
-}
+      <DialogActions style={styles.actions}>
+        {props.onClose && (
+          <DialogButton
+            style={styles.button}
+            action="close"
+            onClick={props.onClose}
+          >
+            {(props.closeLabel === undefined) ? 'Cancel' : props.closeLabel}
+          </DialogButton>
+        )}
+        {props.onSubmit && (
+          <DialogButton
+            style={styles.button}
+            action="accept"
+            isDefaultAction
+            onClick={() => props.onSubmit()}
+            disabled={props.okDisabled}
+          >
+            {(props.submitLabel === undefined) ? 'Ok' : props.submitLabel}
+          </DialogButton>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 const styles = {
   title: {
-    paddingLeft: 25,
-    paddingRight: 25
-  },
-  content: {
-    paddingLeft: 25,
-    paddingRight: 30,
-    paddingTop: 20,
-    overflow: 'hidden'
+    paddingTop: 10,
+    paddingBottom: 15
   },
   actions: {
-    marginTop: 20
+    paddingBottom: 10,
+    paddingRight: 24
   },
   button: {
-    margin: 5
+    marginBottom: 5,
+    marginLeft: 10
   }
 };
 
