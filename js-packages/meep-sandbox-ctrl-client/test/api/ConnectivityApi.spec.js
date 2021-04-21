@@ -72,6 +72,59 @@
           done();
         });
       });
+      describe('getPduSessionList', function() {
+        it('should call getPduSessionList successfully', function(done) {
+          // TODO: uncomment, update parameter values for getPduSessionList call and complete the assertions
+          /*
+          var opts = {};
+          opts.ue = "ue_example";
+          opts.id = "id_example";
+
+          instance.getPduSessionList(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            let dataCtr = data;
+            expect(dataCtr).to.be.an(Array);
+            expect(dataCtr).to.not.be.empty();
+            for (let p in dataCtr) {
+              let data = dataCtr[p];
+              expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionList);
+              {
+                let dataCtr = data.sessions;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSession);
+                  expect(data.id).to.be.a('string');
+                  expect(data.id).to.be("");
+                  expect(data.ue).to.be.a('string');
+                  expect(data.ue).to.be("");
+                  {
+                    let dataCtr = data.info;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
+                      expect(data.dnn).to.be.a('string');
+                      expect(data.dnn).to.be("");
+                    }
+                  }
+                }
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('terminatePduSession', function() {
         it('should call terminatePduSession successfully', function(done) {
           // TODO: uncomment, update parameter values for terminatePduSession call

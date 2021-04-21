@@ -94,13 +94,6 @@ var routes = Routes{
 	},
 
 	Route{
-		"S1BearerInfoGET",
-		strings.ToUpper("Get"),
-		"/rni/v2/queries/s1_bearer_info",
-		S1BearerInfoGET,
-	},
-
-	Route{
 		"SubscriptionLinkListSubscriptionsGET",
 		strings.ToUpper("Get"),
 		"/rni/v2/subscriptions",
@@ -133,5 +126,12 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/rni/v2/subscriptions/{subscriptionId}",
 		SubscriptionsPUT,
+	},
+
+	Route{
+		"S1BearerInfoGET",
+		strings.ToUpper("Get"),
+		"/rni/v2/queries/s1_bearer_info",
+		S1BearerInfoGET,
 	},
 }

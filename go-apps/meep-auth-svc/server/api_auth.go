@@ -40,6 +40,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	asLogin(w, r)
 }
 
+func LoginSupported(w http.ResponseWriter, r *http.Request) {
+	asLoginSupported(w, r)
+}
+
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	asLoginUser(w, r)
 }
@@ -50,8 +54,4 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 
 func TriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 	asTriggerWatchdog(w, r)
-}
-
-func LoginSupported(w http.ResponseWriter, r *http.Request) {
-	asLoginSupported(w, r)
 }

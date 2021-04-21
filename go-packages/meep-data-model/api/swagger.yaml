@@ -1075,13 +1075,33 @@ definitions:
         format: float
         description: Maximum requested CPU
     description: CPU configuration object
+  PDUSession:
+    type: object
+    properties:
+      id:
+        type: string
+        description: PDU Session ID
+      ue:
+        type: string
+        description: UE name as defined in the scenario
+      info:
+        type: array
+        items:
+          $ref: '#/definitions/PDUSessionInfo'
+    description: PDU Session
+    example: {}
   PDUSessionInfo:
     type: object
     properties:
       dnn:
         type: string
         description: Data Network Name as defined in the scenario
-      
-        
-      
-      
+  PDUSessionList:
+    type: object
+    properties:
+      sessions:
+        type: array
+        items:
+          $ref: '#/definitions/PDUSession'
+    description: PDUSession list
+    example: {}

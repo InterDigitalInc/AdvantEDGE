@@ -5,6 +5,7 @@ All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createPduSession**](ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+[**getPduSessionList**](ConnectivityApi.md#getPduSessionList) | **GET** /connectivity/pdu-session | Get list of PDU Sessions
 [**terminatePduSession**](ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 
 
@@ -50,6 +51,55 @@ Name | Type | Description  | Notes
 ### Return type
 
 null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getPduSessionList"></a>
+# **getPduSessionList**
+> [PDUSessionList] getPduSessionList(opts)
+
+Get list of PDU Sessions
+
+Get list of active PDU Sessions matching provided filters
+
+### Example
+```javascript
+var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
+
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ConnectivityApi();
+
+var opts = { 
+  'ue': "ue_example", // String | Return PDU sessions matching provided UE name
+  'id': "id_example" // String | Return PDU session matching provided PDU session ID
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getPduSessionList(opts, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ue** | **String**| Return PDU sessions matching provided UE name | [optional] 
+ **id** | **String**| Return PDU session matching provided PDU session ID | [optional] 
+
+### Return type
+
+[**[PDUSessionList]**](PDUSessionList.md)
 
 ### Authorization
 

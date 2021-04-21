@@ -158,6 +158,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"GetPduSessionList",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/connectivity/pdu-session",
+		GetPduSessionList,
+	},
+
+	Route{
 		"TerminatePduSession",
 		strings.ToUpper("Delete"),
 		"/sandbox-ctrl/v1/connectivity/pdu-session/{ueName}/{pduSessionId}",

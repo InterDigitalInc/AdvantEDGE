@@ -207,10 +207,20 @@
      */
     NodeServiceMaps: NodeServiceMaps,
     /**
+     * The PDUSession model constructor.
+     * @property {module:model/PDUSession}
+     */
+    PDUSession: PDUSession,
+    /**
      * The PDUSessionInfo model constructor.
      * @property {module:model/PDUSessionInfo}
      */
     PDUSessionInfo: PDUSessionInfo,
+    /**
+     * The PDUSessionList model constructor.
+     * @property {module:model/PDUSessionList}
+     */
+    PDUSessionList: PDUSessionList,
     /**
      * The PhysicalLocation model constructor.
      * @property {module:model/PhysicalLocation}

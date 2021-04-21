@@ -130,6 +130,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveScenarioZone**](docs/ActiveScenarioApi.md#getActiveScenarioZone) | **GET** /active/zones | Get zone elements from the deployed scenario
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**terminateScenario**](docs/ActiveScenarioApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
 *AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**createPduSession**](docs/ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+*AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**getPduSessionList**](docs/ConnectivityApi.md#getPduSessionList) | **GET** /connectivity/pdu-session | Get list of PDU Sessions
 *AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**terminatePduSession**](docs/ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**createReplayFile**](docs/EventReplayApi.md#createReplayFile) | **POST** /replay/{name} | Add a replay file
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**createReplayFileFromScenarioExec**](docs/EventReplayApi.md#createReplayFileFromScenarioExec) | **POST** /replay/{name}/generate | Generate a replay file from Active Scenario events
@@ -172,7 +173,9 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeSandboxControllerRestApi.NetworkLocations](docs/NetworkLocations.md)
  - [AdvantEdgeSandboxControllerRestApi.NodeDataUnion](docs/NodeDataUnion.md)
  - [AdvantEdgeSandboxControllerRestApi.NodeServiceMaps](docs/NodeServiceMaps.md)
+ - [AdvantEdgeSandboxControllerRestApi.PDUSession](docs/PDUSession.md)
  - [AdvantEdgeSandboxControllerRestApi.PDUSessionInfo](docs/PDUSessionInfo.md)
+ - [AdvantEdgeSandboxControllerRestApi.PDUSessionList](docs/PDUSessionList.md)
  - [AdvantEdgeSandboxControllerRestApi.PhysicalLocation](docs/PhysicalLocation.md)
  - [AdvantEdgeSandboxControllerRestApi.PhysicalLocations](docs/PhysicalLocations.md)
  - [AdvantEdgeSandboxControllerRestApi.Poa4GConfig](docs/Poa4GConfig.md)
