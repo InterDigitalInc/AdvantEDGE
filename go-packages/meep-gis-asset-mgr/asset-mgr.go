@@ -42,8 +42,7 @@ const (
 // Enable profiling
 const profiling = false
 
-var proStart time.Time
-var proFinish time.Time
+var profilingTimers map[string]time.Time
 
 const (
 	FieldPosition  = "position"
@@ -147,6 +146,13 @@ type AssetMgr struct {
 	db        *sql.DB
 	connected bool
 	updateCb  func(string, string)
+}
+
+// Profiling init
+func init() {
+	if profiling {
+		profilingTimers = make(map[string]time.Time)
+	}
 }
 
 // NewAssetMgr - Creates and initializes a new GIS Asset Manager
@@ -408,7 +414,7 @@ func (am *AssetMgr) DeleteTable(tableName string) (err error) {
 // CreateUe - Create new UE
 func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["CreateUe"] = time.Now()
 	}
 
 	var position string
@@ -511,8 +517,8 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 	am.notifyListener(TypeUe, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("CreateUe: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("CreateUe: ", now.Sub(profilingTimers["CreateUe"]))
 	}
 	return nil
 }
@@ -520,7 +526,7 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 // CreatePoa - Create new POA
 func (am *AssetMgr) CreatePoa(id string, name string, data map[string]interface{}) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["CreatePoa"] = time.Now()
 	}
 
 	var subtype string
@@ -582,8 +588,8 @@ func (am *AssetMgr) CreatePoa(id string, name string, data map[string]interface{
 	am.notifyListener(TypePoa, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("CreatePoa: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("CreatePoa: ", now.Sub(profilingTimers["CreatePoa"]))
 	}
 	return nil
 }
@@ -591,7 +597,7 @@ func (am *AssetMgr) CreatePoa(id string, name string, data map[string]interface{
 // CreateCompute - Create new Compute
 func (am *AssetMgr) CreateCompute(id string, name string, data map[string]interface{}) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["CreateCompute"] = time.Now()
 	}
 
 	var subtype string
@@ -645,8 +651,8 @@ func (am *AssetMgr) CreateCompute(id string, name string, data map[string]interf
 	am.notifyListener(TypeCompute, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("CreateCompute: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("CreateCompute: ", now.Sub(profilingTimers["CreateCompute"]))
 	}
 	return nil
 }
@@ -654,7 +660,7 @@ func (am *AssetMgr) CreateCompute(id string, name string, data map[string]interf
 // UpdateUe - Update existing UE
 func (am *AssetMgr) UpdateUe(name string, data map[string]interface{}) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["UpdateUe"] = time.Now()
 	}
 
 	// Validate input
@@ -780,8 +786,8 @@ func (am *AssetMgr) UpdateUe(name string, data map[string]interface{}) (err erro
 	am.notifyListener(TypeUe, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("UpdateUe: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("UpdateUe: ", now.Sub(profilingTimers["UpdateUe"]))
 	}
 	return nil
 }
@@ -789,7 +795,7 @@ func (am *AssetMgr) UpdateUe(name string, data map[string]interface{}) (err erro
 // UpdatePoa - Update existing POA
 func (am *AssetMgr) UpdatePoa(name string, data map[string]interface{}) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["UpdatePoa"] = time.Now()
 	}
 
 	// Validate input
@@ -841,8 +847,8 @@ func (am *AssetMgr) UpdatePoa(name string, data map[string]interface{}) (err err
 	am.notifyListener(TypePoa, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("UpdatePoa: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("UpdatePoa: ", now.Sub(profilingTimers["UpdatePoa"]))
 	}
 	return nil
 }
@@ -850,7 +856,7 @@ func (am *AssetMgr) UpdatePoa(name string, data map[string]interface{}) (err err
 // UpdateCompute - Update existing Compute
 func (am *AssetMgr) UpdateCompute(name string, data map[string]interface{}) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["UpdateCompute"] = time.Now()
 	}
 
 	// Validate input
@@ -901,8 +907,8 @@ func (am *AssetMgr) UpdateCompute(name string, data map[string]interface{}) (err
 	am.notifyListener(TypeCompute, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("UpdateCompute: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("UpdateCompute: ", now.Sub(profilingTimers["UpdateCompute"]))
 	}
 	return nil
 }
@@ -910,7 +916,7 @@ func (am *AssetMgr) UpdateCompute(name string, data map[string]interface{}) (err
 // GetUe - Get UE information
 func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["GetUe"] = time.Now()
 	}
 
 	// Validate input
@@ -979,8 +985,8 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 	}
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("GetUe: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("GetUe: ", now.Sub(profilingTimers["GetUe"]))
 	}
 	return ue, nil
 }
@@ -988,7 +994,7 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 // GetPoa - Get POA information
 func (am *AssetMgr) GetPoa(name string) (poa *Poa, err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["GetPoa"] = time.Now()
 	}
 
 	// Validate input
@@ -1030,8 +1036,8 @@ func (am *AssetMgr) GetPoa(name string) (poa *Poa, err error) {
 	}
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("GetPoa: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("GetPoa: ", now.Sub(profilingTimers["GetPoa"]))
 	}
 	return poa, nil
 }
@@ -1039,7 +1045,7 @@ func (am *AssetMgr) GetPoa(name string) (poa *Poa, err error) {
 // GetCompute - Get Compute information
 func (am *AssetMgr) GetCompute(name string) (compute *Compute, err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["GetCompute"] = time.Now()
 	}
 
 	// Validate input
@@ -1081,8 +1087,8 @@ func (am *AssetMgr) GetCompute(name string) (compute *Compute, err error) {
 	}
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("GetCompute: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("GetCompute: ", now.Sub(profilingTimers["GetCompute"]))
 	}
 	return compute, nil
 }
@@ -1090,7 +1096,7 @@ func (am *AssetMgr) GetCompute(name string) (compute *Compute, err error) {
 // GetAllUe - Get All UE information
 func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["GetAllUe"] = time.Now()
 	}
 
 	// Create UE map
@@ -1151,8 +1157,8 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 	}
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("GetAllUe: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("GetAllUe: ", now.Sub(profilingTimers["GetAllUe"]))
 	}
 	return ueMap, nil
 }
@@ -1160,7 +1166,7 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 // GetAllPoa - Get all POA information
 func (am *AssetMgr) GetAllPoa() (poaMap map[string]*Poa, err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["GetAllPoa"] = time.Now()
 	}
 
 	// Create POA map
@@ -1197,8 +1203,8 @@ func (am *AssetMgr) GetAllPoa() (poaMap map[string]*Poa, err error) {
 	}
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("GetAllPoa: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("GetAllPoa: ", now.Sub(profilingTimers["GetAllPoa"]))
 	}
 	return poaMap, nil
 }
@@ -1206,7 +1212,7 @@ func (am *AssetMgr) GetAllPoa() (poaMap map[string]*Poa, err error) {
 // GetAllCompute - Get all Compute information
 func (am *AssetMgr) GetAllCompute() (computeMap map[string]*Compute, err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["GetAllCompute"] = time.Now()
 	}
 
 	// Create Compute map
@@ -1243,8 +1249,8 @@ func (am *AssetMgr) GetAllCompute() (computeMap map[string]*Compute, err error) 
 	}
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("GetAllCompute: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("GetAllCompute: ", now.Sub(profilingTimers["GetAllCompute"]))
 	}
 	return computeMap, nil
 }
@@ -1252,7 +1258,7 @@ func (am *AssetMgr) GetAllCompute() (computeMap map[string]*Compute, err error) 
 // DeleteUe - Delete UE entry
 func (am *AssetMgr) DeleteUe(name string) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["DeleteUe"] = time.Now()
 	}
 
 	// Validate input
@@ -1271,8 +1277,8 @@ func (am *AssetMgr) DeleteUe(name string) (err error) {
 	am.notifyListener(TypeUe, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("DeleteUe: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("DeleteUe: ", now.Sub(profilingTimers["DeleteUe"]))
 	}
 	return nil
 }
@@ -1280,7 +1286,7 @@ func (am *AssetMgr) DeleteUe(name string) (err error) {
 // DeletePoa - Delete POA entry
 func (am *AssetMgr) DeletePoa(name string) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["DeletePoa"] = time.Now()
 	}
 
 	// Validate input
@@ -1307,8 +1313,8 @@ func (am *AssetMgr) DeletePoa(name string) (err error) {
 	am.notifyListener(TypePoa, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("DeletePoa: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("DeletePoa: ", now.Sub(profilingTimers["DeletePoa"]))
 	}
 	return nil
 }
@@ -1316,7 +1322,7 @@ func (am *AssetMgr) DeletePoa(name string) (err error) {
 // DeleteCompute - Delete Compute entry
 func (am *AssetMgr) DeleteCompute(name string) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["DeleteCompute"] = time.Now()
 	}
 
 	// Validate input
@@ -1335,8 +1341,8 @@ func (am *AssetMgr) DeleteCompute(name string) (err error) {
 	am.notifyListener(TypeCompute, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("DeleteCompute: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("DeleteCompute: ", now.Sub(profilingTimers["DeleteCompute"]))
 	}
 	return nil
 }
@@ -1344,7 +1350,7 @@ func (am *AssetMgr) DeleteCompute(name string) (err error) {
 // DeleteAllUe - Delete all UE entries
 func (am *AssetMgr) DeleteAllUe() (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["DeleteAllUe"] = time.Now()
 	}
 
 	// !!! IMPORTANT NOTE !!!
@@ -1365,8 +1371,8 @@ func (am *AssetMgr) DeleteAllUe() (err error) {
 	am.notifyListener(TypeUe, "")
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("DeleteAllUe: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("DeleteAllUe: ", now.Sub(profilingTimers["DeleteAllUe"]))
 	}
 	return nil
 }
@@ -1374,7 +1380,7 @@ func (am *AssetMgr) DeleteAllUe() (err error) {
 // DeleteAllPoa - Delete all POA entries
 func (am *AssetMgr) DeleteAllPoa() (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["DeleteAllPoa"] = time.Now()
 	}
 
 	_, err = am.db.Exec(`DELETE FROM ` + PoaTable)
@@ -1395,8 +1401,8 @@ func (am *AssetMgr) DeleteAllPoa() (err error) {
 	am.notifyListener(TypePoa, AllAssets)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("DeleteAllPoa: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("DeleteAllPoa: ", now.Sub(profilingTimers["DeleteAllPoa"]))
 	}
 	return nil
 }
@@ -1404,7 +1410,7 @@ func (am *AssetMgr) DeleteAllPoa() (err error) {
 // DeleteAllCompute - Delete all Compute entries
 func (am *AssetMgr) DeleteAllCompute() (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["DeleteAllCompute"] = time.Now()
 	}
 
 	_, err = am.db.Exec(`DELETE FROM ` + ComputeTable)
@@ -1417,8 +1423,8 @@ func (am *AssetMgr) DeleteAllCompute() (err error) {
 	am.notifyListener(TypeCompute, AllAssets)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("DeleteAllCompute: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("DeleteAllCompute: ", now.Sub(profilingTimers["DeleteAllCompute"]))
 	}
 	return nil
 }
@@ -1426,7 +1432,7 @@ func (am *AssetMgr) DeleteAllCompute() (err error) {
 // AdvanceUePosition - Advance UE along path by provided number of increments
 func (am *AssetMgr) AdvanceUePosition(name string, increment float32) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["AdvanceUePosition"] = time.Now()
 	}
 
 	// Set new position
@@ -1462,8 +1468,8 @@ func (am *AssetMgr) AdvanceUePosition(name string, increment float32) (err error
 	am.notifyListener(TypeUe, name)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("AdvanceUePosition: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("AdvanceUePosition: ", now.Sub(profilingTimers["AdvanceUePosition"]))
 	}
 	return nil
 }
@@ -1471,7 +1477,7 @@ func (am *AssetMgr) AdvanceUePosition(name string, increment float32) (err error
 // AdvanceAllUePosition - Advance all UEs along path by provided number of increments
 func (am *AssetMgr) AdvanceAllUePosition(increment float32) (err error) {
 	if profiling {
-		proStart = time.Now()
+		profilingTimers["AdvanceAllUePosition"] = time.Now()
 	}
 
 	// Set new position
@@ -1517,8 +1523,8 @@ func (am *AssetMgr) AdvanceAllUePosition(increment float32) (err error) {
 	am.notifyListener(TypeUe, AllAssets)
 
 	if profiling {
-		proFinish = time.Now()
-		log.Debug("AdvanceAllUePosition: ", proFinish.Sub(proStart))
+		now := time.Now()
+		log.Debug("AdvanceAllUePosition: ", now.Sub(profilingTimers["AdvanceAllUePosition"]))
 	}
 	return nil
 }
@@ -1527,6 +1533,10 @@ func (am *AssetMgr) AdvanceAllUePosition(increment float32) (err error) {
 
 // Recalculate UE path length & increment
 func (am *AssetMgr) refreshUePath(name string) (err error) {
+	if profiling {
+		profilingTimers["refreshUePath"] = time.Now()
+	}
+
 	query := `UPDATE ` + UeTable + `
 		SET path_length = ST_Length(path::geography),
 			path_increment = path_velocity / ST_Length(path::geography),
@@ -1537,11 +1547,19 @@ func (am *AssetMgr) refreshUePath(name string) (err error) {
 		log.Error(err.Error())
 		return err
 	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("- refreshUePath: ", now.Sub(profilingTimers["refreshUePath"]))
+	}
 	return nil
 }
 
 // Recalculate nearest POA & POAs in range for provided UE
 func (am *AssetMgr) refreshUe(name string) (err error) {
+	if profiling {
+		profilingTimers["refreshUe"] = time.Now()
+	}
 
 	// Initialize UE information map
 	ueMap := make(map[string]*Ue)
@@ -1566,11 +1584,19 @@ func (am *AssetMgr) refreshUe(name string) (err error) {
 	if err != nil {
 		return err
 	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("- refreshUe: ", now.Sub(profilingTimers["refreshUe"]))
+	}
 	return nil
 }
 
 // Refresh UE information for all UEs
 func (am *AssetMgr) refreshAllUe() (err error) {
+	if profiling {
+		profilingTimers["refreshAllUe"] = time.Now()
+	}
 
 	// Initialize UE information map
 	ueMap := make(map[string]*Ue)
@@ -1595,12 +1621,23 @@ func (am *AssetMgr) refreshAllUe() (err error) {
 	if err != nil {
 		return err
 	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("- refreshAllUe: ", now.Sub(profilingTimers["refreshAllUe"]))
+	}
 	return nil
 }
 
 // Parse UE to POA information results
 func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map[string]bool) (err error) {
+	if profiling {
+		profilingTimers["parseUePoaInfo"] = time.Now()
+	}
 
+	if profiling {
+		profilingTimers["parseUePoaInfo-query"] = time.Now()
+	}
 	// Get full matrix of UE to POA information in order to perform
 	// POA selection & UE measurement calculations
 	var rows *sql.Rows
@@ -1623,6 +1660,15 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 		return err
 	}
 	defer rows.Close()
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUePoaInfo-query: ", now.Sub(profilingTimers["parseUePoaInfo-query"]))
+	}
+
+	if profiling {
+		profilingTimers["parseUePoaInfo-scan"] = time.Now()
+	}
 
 	for rows.Next() {
 		ueName := ""
@@ -1672,11 +1718,24 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 		log.Error(err)
 	}
 
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUePoaInfo-scan: ", now.Sub(profilingTimers["parseUePoaInfo-scan"]))
+	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUePoaInfo: ", now.Sub(profilingTimers["parseUePoaInfo"]))
+	}
 	return nil
 }
 
 // reset UE Poa Info
 func (am *AssetMgr) resetUePoaInfo(name string, ueMap map[string]*Ue) (err error) {
+	if profiling {
+		profilingTimers["resetUePoaInfo"] = time.Now()
+	}
+
 	if name == "" {
 		rows, err := am.db.Query(`SELECT name FROM ` + UeTable)
 		if err != nil {
@@ -1717,13 +1776,18 @@ func (am *AssetMgr) resetUePoaInfo(name string, ueMap map[string]*Ue) (err error
 		ueMap[name] = ue
 	}
 
+	if profiling {
+		now := time.Now()
+		log.Debug("-- resetUePoaInfo: ", now.Sub(profilingTimers["resetUePoaInfo"]))
+	}
 	return nil
 }
 
 // Update all UE Poa Info
 func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
-
-	// start := time.Now()
+	if profiling {
+		profilingTimers["updateUeInfo"] = time.Now()
+	}
 
 	// Begin Update Transaction
 	tx, err := am.db.Begin()
@@ -1791,9 +1855,10 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 		}
 	}
 
-	// finish := time.Now()
-	// log.Error("UPDATE DURATION: ", finish.Sub(start))
-
+	if profiling {
+		now := time.Now()
+		log.Debug("-- updateUeInfo: ", now.Sub(profilingTimers["updateUeInfo"]))
+	}
 	return nil
 }
 

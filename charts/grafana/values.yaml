@@ -526,6 +526,8 @@ grafana.ini:
     org_role: Viewer
   security:
     allow_embedding: true
+  dashboards:
+    min_refresh_interval: 1s
  # https://grafana.com/docs/grafana/latest/auth/github/#enable-github-in-grafana
  # auth.github:
  #    enabled: false

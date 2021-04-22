@@ -60,6 +60,9 @@ func resetAutomation() {
 }
 
 func setAutomation(automationType string, state bool) (err error) {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
 	// Validate automation type
 	if _, found := ge.automation[automationType]; !found {
 		return errors.New("Automation type not found")
