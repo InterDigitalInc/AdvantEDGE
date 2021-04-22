@@ -7,11 +7,11 @@ Method | HTTP request | Description
 [**ActivateScenario**](ActiveScenarioApi.md#ActivateScenario) | **Post** /active/{name} | Deploy a scenario
 [**GetActiveNodeServiceMaps**](ActiveScenarioApi.md#GetActiveNodeServiceMaps) | **Get** /active/serviceMaps | Get deployed scenario&#39;s port mapping
 [**GetActiveScenario**](ActiveScenarioApi.md#GetActiveScenario) | **Get** /active | Get the deployed scenario
-[**GetActiveScenarioDomain**](ActiveScenarioApi.md#GetActiveScenarioDomain) | **Get** /active/domain | Get deployed scenario&#39;s domain element hierarchy
-[**GetActiveScenarioNl**](ActiveScenarioApi.md#GetActiveScenarioNl) | **Get** /active/nl | Get deployed scenario&#39;s network location element hierarchy
-[**GetActiveScenarioPl**](ActiveScenarioApi.md#GetActiveScenarioPl) | **Get** /active/pl | Get deployed scenario&#39;s physical location element hierarchy
-[**GetActiveScenarioProc**](ActiveScenarioApi.md#GetActiveScenarioProc) | **Get** /active/proc | Get deployed scenario&#39;s process element hierarchy
-[**GetActiveScenarioZone**](ActiveScenarioApi.md#GetActiveScenarioZone) | **Get** /active/zone | Get deployed scenario&#39;s zone element hierarchy
+[**GetActiveScenarioDomain**](ActiveScenarioApi.md#GetActiveScenarioDomain) | **Get** /active/domains | Get domain elements from the deployed scenario
+[**GetActiveScenarioNetworkLocation**](ActiveScenarioApi.md#GetActiveScenarioNetworkLocation) | **Get** /active/networkLocations | Get network location elements from the deployed scenario
+[**GetActiveScenarioPhysicalLocation**](ActiveScenarioApi.md#GetActiveScenarioPhysicalLocation) | **Get** /active/physicalLocations | Get physical location elements from the deployed scenario
+[**GetActiveScenarioProcess**](ActiveScenarioApi.md#GetActiveScenarioProcess) | **Get** /active/processes | Get process elements from the deployed scenario
+[**GetActiveScenarioZone**](ActiveScenarioApi.md#GetActiveScenarioZone) | **Get** /active/zones | Get zone elements from the deployed scenario
 [**TerminateScenario**](ActiveScenarioApi.md#TerminateScenario) | **Delete** /active | Terminate the deployed scenario
 
 
@@ -107,7 +107,7 @@ Optional parameters are passed through a pointer to a GetActiveScenarioOpts stru
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **minimize** | **optional.String**| Return a minimized active scenario (default: false) | 
+ **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
 
@@ -126,9 +126,9 @@ No authorization required
 
 # **GetActiveScenarioDomain**
 > Domains GetActiveScenarioDomain(ctx, optional)
-Get deployed scenario's domain element hierarchy
+Get domain elements from the deployed scenario
 
-Returns the deployed scenario's domain element hierarchy
+Returns a filtered list of domain elements from the deployed scenario using the provided query parameters
 
 ### Required Parameters
 
@@ -145,14 +145,14 @@ Name | Type | Description  | Notes
  **domain** | **optional.String**| Domain name | 
  **domainType** | **optional.String**| Domain type | 
  **zone** | **optional.String**| Zone name | 
- **nl** | **optional.String**| Network Location name | 
- **nlType** | **optional.String**| Network Location type | 
- **pl** | **optional.String**| Physical Location name | 
- **plType** | **optional.String**| Physical Location type | 
- **proc** | **optional.String**| Process name | 
- **procType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Including children under the queried element | 
- **minimize** | **optional.Bool**| Return a minimized active scenario | 
+ **networkLocation** | **optional.String**| Network Location name | 
+ **networkLocationType** | **optional.String**| Network Location type | 
+ **physicalLocation** | **optional.String**| Physical Location name | 
+ **physicalLocationType** | **optional.String**| Physical Location type | 
+ **process** | **optional.String**| Process name | 
+ **processType** | **optional.String**| Process type | 
+ **children** | **optional.Bool**| Include child elements in response | 
+ **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
 
@@ -169,35 +169,35 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **GetActiveScenarioNl**
-> NetworkLocations GetActiveScenarioNl(ctx, optional)
-Get deployed scenario's network location element hierarchy
+# **GetActiveScenarioNetworkLocation**
+> NetworkLocations GetActiveScenarioNetworkLocation(ctx, optional)
+Get network location elements from the deployed scenario
 
-Returns the deployed scenario's network location element hierarchy
+Returns a filtered list of network location elements from the deployed scenario using the provided query parameters
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***GetActiveScenarioNlOpts** | optional parameters | nil if no parameters
+ **optional** | ***GetActiveScenarioNetworkLocationOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a GetActiveScenarioNlOpts struct
+Optional parameters are passed through a pointer to a GetActiveScenarioNetworkLocationOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **domain** | **optional.String**| Domain name | 
  **domainType** | **optional.String**| Domain type | 
  **zone** | **optional.String**| Zone name | 
- **nl** | **optional.String**| Network Location name | 
- **nlType** | **optional.String**| Network Location type | 
- **pl** | **optional.String**| Physical Location name | 
- **plType** | **optional.String**| Physical Location type | 
- **proc** | **optional.String**| Process name | 
- **procType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Including children under the queried element | 
- **minimize** | **optional.Bool**| Return a minimized active scenario | 
+ **networkLocation** | **optional.String**| Network Location name | 
+ **networkLocationType** | **optional.String**| Network Location type | 
+ **physicalLocation** | **optional.String**| Physical Location name | 
+ **physicalLocationType** | **optional.String**| Physical Location type | 
+ **process** | **optional.String**| Process name | 
+ **processType** | **optional.String**| Process type | 
+ **children** | **optional.Bool**| Include child elements in response | 
+ **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
 
@@ -214,35 +214,35 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **GetActiveScenarioPl**
-> PhysicalLocations GetActiveScenarioPl(ctx, optional)
-Get deployed scenario's physical location element hierarchy
+# **GetActiveScenarioPhysicalLocation**
+> PhysicalLocations GetActiveScenarioPhysicalLocation(ctx, optional)
+Get physical location elements from the deployed scenario
 
-Returns the deployed scenario's physical location element hierarchy
+Returns a filtered list of physical location elements from the deployed scenario using the provided query parameters
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***GetActiveScenarioPlOpts** | optional parameters | nil if no parameters
+ **optional** | ***GetActiveScenarioPhysicalLocationOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a GetActiveScenarioPlOpts struct
+Optional parameters are passed through a pointer to a GetActiveScenarioPhysicalLocationOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **domain** | **optional.String**| Domain name | 
  **domainType** | **optional.String**| Domain type | 
  **zone** | **optional.String**| Zone name | 
- **nl** | **optional.String**| Network Location name | 
- **nlType** | **optional.String**| Network Location type | 
- **pl** | **optional.String**| Physical Location name | 
- **plType** | **optional.String**| Physical Location type | 
- **proc** | **optional.String**| Process name | 
- **procType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Including children under the queried element | 
- **minimize** | **optional.Bool**| Return a minimized active scenario | 
+ **networkLocation** | **optional.String**| Network Location name | 
+ **networkLocationType** | **optional.String**| Network Location type | 
+ **physicalLocation** | **optional.String**| Physical Location name | 
+ **physicalLocationType** | **optional.String**| Physical Location type | 
+ **process** | **optional.String**| Process name | 
+ **processType** | **optional.String**| Process type | 
+ **children** | **optional.Bool**| Include child elements in response | 
+ **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
 
@@ -259,35 +259,35 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **GetActiveScenarioProc**
-> Processes GetActiveScenarioProc(ctx, optional)
-Get deployed scenario's process element hierarchy
+# **GetActiveScenarioProcess**
+> Processes GetActiveScenarioProcess(ctx, optional)
+Get process elements from the deployed scenario
 
-Returns the deployed scenario's process element hierarchy
+Returns a filtered list of process elements from the deployed scenario using the provided query parameters
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***GetActiveScenarioProcOpts** | optional parameters | nil if no parameters
+ **optional** | ***GetActiveScenarioProcessOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a GetActiveScenarioProcOpts struct
+Optional parameters are passed through a pointer to a GetActiveScenarioProcessOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **domain** | **optional.String**| Domain name | 
  **domainType** | **optional.String**| Domain type | 
  **zone** | **optional.String**| Zone name | 
- **nl** | **optional.String**| Network Location name | 
- **nlType** | **optional.String**| Network Location type | 
- **pl** | **optional.String**| Physical Location name | 
- **plType** | **optional.String**| Physical Location type | 
- **proc** | **optional.String**| Process name | 
- **procType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Including children under the queried element | 
- **minimize** | **optional.Bool**| Return a minimized active scenario | 
+ **networkLocation** | **optional.String**| Network Location name | 
+ **networkLocationType** | **optional.String**| Network Location type | 
+ **physicalLocation** | **optional.String**| Physical Location name | 
+ **physicalLocationType** | **optional.String**| Physical Location type | 
+ **process** | **optional.String**| Process name | 
+ **processType** | **optional.String**| Process type | 
+ **children** | **optional.Bool**| Include child elements in response | 
+ **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
 
@@ -306,9 +306,9 @@ No authorization required
 
 # **GetActiveScenarioZone**
 > Zones GetActiveScenarioZone(ctx, optional)
-Get deployed scenario's zone element hierarchy
+Get zone elements from the deployed scenario
 
-Returns the deployed scenario's zone element hierarchy
+Returns a filtered list of zone elements from the deployed scenario using the provided query parameters
 
 ### Required Parameters
 
@@ -325,14 +325,14 @@ Name | Type | Description  | Notes
  **domain** | **optional.String**| Domain name | 
  **domainType** | **optional.String**| Domain type | 
  **zone** | **optional.String**| Zone name | 
- **nl** | **optional.String**| Network Location name | 
- **nlType** | **optional.String**| Network Location type | 
- **pl** | **optional.String**| Physical Location name | 
- **plType** | **optional.String**| Physical Location type | 
- **proc** | **optional.String**| Process name | 
- **procType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Including children under the queried element | 
- **minimize** | **optional.Bool**| Return a minimized active scenario | 
+ **networkLocation** | **optional.String**| Network Location name | 
+ **networkLocationType** | **optional.String**| Network Location type | 
+ **physicalLocation** | **optional.String**| Physical Location name | 
+ **physicalLocationType** | **optional.String**| Physical Location type | 
+ **process** | **optional.String**| Process name | 
+ **processType** | **optional.String**| Process type | 
+ **children** | **optional.Bool**| Include child elements in response | 
+ **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
 

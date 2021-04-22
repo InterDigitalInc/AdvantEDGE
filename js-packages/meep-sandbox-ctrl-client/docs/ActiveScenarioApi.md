@@ -7,11 +7,11 @@ Method | HTTP request | Description
 [**activateScenario**](ActiveScenarioApi.md#activateScenario) | **POST** /active/{name} | Deploy a scenario
 [**getActiveNodeServiceMaps**](ActiveScenarioApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Get deployed scenario's port mapping
 [**getActiveScenario**](ActiveScenarioApi.md#getActiveScenario) | **GET** /active | Get the deployed scenario
-[**getActiveScenarioDomain**](ActiveScenarioApi.md#getActiveScenarioDomain) | **GET** /active/domain | Get deployed scenario's domain element hierarchy
-[**getActiveScenarioNl**](ActiveScenarioApi.md#getActiveScenarioNl) | **GET** /active/nl | Get deployed scenario's network location element hierarchy
-[**getActiveScenarioPl**](ActiveScenarioApi.md#getActiveScenarioPl) | **GET** /active/pl | Get deployed scenario's physical location element hierarchy
-[**getActiveScenarioProc**](ActiveScenarioApi.md#getActiveScenarioProc) | **GET** /active/proc | Get deployed scenario's process element hierarchy
-[**getActiveScenarioZone**](ActiveScenarioApi.md#getActiveScenarioZone) | **GET** /active/zone | Get deployed scenario's zone element hierarchy
+[**getActiveScenarioDomain**](ActiveScenarioApi.md#getActiveScenarioDomain) | **GET** /active/domains | Get domain elements from the deployed scenario
+[**getActiveScenarioNetworkLocation**](ActiveScenarioApi.md#getActiveScenarioNetworkLocation) | **GET** /active/networkLocations | Get network location elements from the deployed scenario
+[**getActiveScenarioPhysicalLocation**](ActiveScenarioApi.md#getActiveScenarioPhysicalLocation) | **GET** /active/physicalLocations | Get physical location elements from the deployed scenario
+[**getActiveScenarioProcess**](ActiveScenarioApi.md#getActiveScenarioProcess) | **GET** /active/processes | Get process elements from the deployed scenario
+[**getActiveScenarioZone**](ActiveScenarioApi.md#getActiveScenarioZone) | **GET** /active/zones | Get zone elements from the deployed scenario
 [**terminateScenario**](ActiveScenarioApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
 
 
@@ -131,7 +131,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
 
 var opts = { 
-  'minimize': "minimize_example" // String | Return a minimized active scenario (default: false)
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -148,7 +148,7 @@ apiInstance.getActiveScenario(opts, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **minimize** | **String**| Return a minimized active scenario (default: false) | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 
@@ -167,9 +167,9 @@ No authorization required
 # **getActiveScenarioDomain**
 > Domains getActiveScenarioDomain(opts)
 
-Get deployed scenario's domain element hierarchy
+Get domain elements from the deployed scenario
 
-Returns the deployed scenario's domain element hierarchy
+Returns a filtered list of domain elements from the deployed scenario using the provided query parameters
 
 ### Example
 ```javascript
@@ -181,14 +181,14 @@ var opts = {
   'domain': "domain_example", // String | Domain name
   'domainType': "domainType_example", // String | Domain type
   'zone': "zone_example", // String | Zone name
-  'nl': "nl_example", // String | Network Location name
-  'nlType': "nlType_example", // String | Network Location type
-  'pl': "pl_example", // String | Physical Location name
-  'plType': "plType_example", // String | Physical Location type
-  'proc': "proc_example", // String | Process name
-  'procType': "procType_example", // String | Process type
-  'children': true, // Boolean | Including children under the queried element
-  'minimize': true // Boolean | Return a minimized active scenario
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -208,14 +208,14 @@ Name | Type | Description  | Notes
  **domain** | **String**| Domain name | [optional] 
  **domainType** | **String**| Domain type | [optional] 
  **zone** | **String**| Zone name | [optional] 
- **nl** | **String**| Network Location name | [optional] 
- **nlType** | **String**| Network Location type | [optional] 
- **pl** | **String**| Physical Location name | [optional] 
- **plType** | **String**| Physical Location type | [optional] 
- **proc** | **String**| Process name | [optional] 
- **procType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Including children under the queried element | [optional] 
- **minimize** | **Boolean**| Return a minimized active scenario | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 
@@ -230,13 +230,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getActiveScenarioNl"></a>
-# **getActiveScenarioNl**
-> NetworkLocations getActiveScenarioNl(opts)
+<a name="getActiveScenarioNetworkLocation"></a>
+# **getActiveScenarioNetworkLocation**
+> NetworkLocations getActiveScenarioNetworkLocation(opts)
 
-Get deployed scenario's network location element hierarchy
+Get network location elements from the deployed scenario
 
-Returns the deployed scenario's network location element hierarchy
+Returns a filtered list of network location elements from the deployed scenario using the provided query parameters
 
 ### Example
 ```javascript
@@ -248,14 +248,14 @@ var opts = {
   'domain': "domain_example", // String | Domain name
   'domainType': "domainType_example", // String | Domain type
   'zone': "zone_example", // String | Zone name
-  'nl': "nl_example", // String | Network Location name
-  'nlType': "nlType_example", // String | Network Location type
-  'pl': "pl_example", // String | Physical Location name
-  'plType': "plType_example", // String | Physical Location type
-  'proc': "proc_example", // String | Process name
-  'procType': "procType_example", // String | Process type
-  'children': true, // Boolean | Including children under the queried element
-  'minimize': true // Boolean | Return a minimized active scenario
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -265,7 +265,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getActiveScenarioNl(opts, callback);
+apiInstance.getActiveScenarioNetworkLocation(opts, callback);
 ```
 
 ### Parameters
@@ -275,14 +275,14 @@ Name | Type | Description  | Notes
  **domain** | **String**| Domain name | [optional] 
  **domainType** | **String**| Domain type | [optional] 
  **zone** | **String**| Zone name | [optional] 
- **nl** | **String**| Network Location name | [optional] 
- **nlType** | **String**| Network Location type | [optional] 
- **pl** | **String**| Physical Location name | [optional] 
- **plType** | **String**| Physical Location type | [optional] 
- **proc** | **String**| Process name | [optional] 
- **procType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Including children under the queried element | [optional] 
- **minimize** | **Boolean**| Return a minimized active scenario | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 
@@ -297,13 +297,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getActiveScenarioPl"></a>
-# **getActiveScenarioPl**
-> PhysicalLocations getActiveScenarioPl(opts)
+<a name="getActiveScenarioPhysicalLocation"></a>
+# **getActiveScenarioPhysicalLocation**
+> PhysicalLocations getActiveScenarioPhysicalLocation(opts)
 
-Get deployed scenario's physical location element hierarchy
+Get physical location elements from the deployed scenario
 
-Returns the deployed scenario's physical location element hierarchy
+Returns a filtered list of physical location elements from the deployed scenario using the provided query parameters
 
 ### Example
 ```javascript
@@ -315,14 +315,14 @@ var opts = {
   'domain': "domain_example", // String | Domain name
   'domainType': "domainType_example", // String | Domain type
   'zone': "zone_example", // String | Zone name
-  'nl': "nl_example", // String | Network Location name
-  'nlType': "nlType_example", // String | Network Location type
-  'pl': "pl_example", // String | Physical Location name
-  'plType': "plType_example", // String | Physical Location type
-  'proc': "proc_example", // String | Process name
-  'procType': "procType_example", // String | Process type
-  'children': true, // Boolean | Including children under the queried element
-  'minimize': true // Boolean | Return a minimized active scenario
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -332,7 +332,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getActiveScenarioPl(opts, callback);
+apiInstance.getActiveScenarioPhysicalLocation(opts, callback);
 ```
 
 ### Parameters
@@ -342,14 +342,14 @@ Name | Type | Description  | Notes
  **domain** | **String**| Domain name | [optional] 
  **domainType** | **String**| Domain type | [optional] 
  **zone** | **String**| Zone name | [optional] 
- **nl** | **String**| Network Location name | [optional] 
- **nlType** | **String**| Network Location type | [optional] 
- **pl** | **String**| Physical Location name | [optional] 
- **plType** | **String**| Physical Location type | [optional] 
- **proc** | **String**| Process name | [optional] 
- **procType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Including children under the queried element | [optional] 
- **minimize** | **Boolean**| Return a minimized active scenario | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 
@@ -364,13 +364,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getActiveScenarioProc"></a>
-# **getActiveScenarioProc**
-> Processes getActiveScenarioProc(opts)
+<a name="getActiveScenarioProcess"></a>
+# **getActiveScenarioProcess**
+> Processes getActiveScenarioProcess(opts)
 
-Get deployed scenario's process element hierarchy
+Get process elements from the deployed scenario
 
-Returns the deployed scenario's process element hierarchy
+Returns a filtered list of process elements from the deployed scenario using the provided query parameters
 
 ### Example
 ```javascript
@@ -382,14 +382,14 @@ var opts = {
   'domain': "domain_example", // String | Domain name
   'domainType': "domainType_example", // String | Domain type
   'zone': "zone_example", // String | Zone name
-  'nl': "nl_example", // String | Network Location name
-  'nlType': "nlType_example", // String | Network Location type
-  'pl': "pl_example", // String | Physical Location name
-  'plType': "plType_example", // String | Physical Location type
-  'proc': "proc_example", // String | Process name
-  'procType': "procType_example", // String | Process type
-  'children': true, // Boolean | Including children under the queried element
-  'minimize': true // Boolean | Return a minimized active scenario
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -399,7 +399,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getActiveScenarioProc(opts, callback);
+apiInstance.getActiveScenarioProcess(opts, callback);
 ```
 
 ### Parameters
@@ -409,14 +409,14 @@ Name | Type | Description  | Notes
  **domain** | **String**| Domain name | [optional] 
  **domainType** | **String**| Domain type | [optional] 
  **zone** | **String**| Zone name | [optional] 
- **nl** | **String**| Network Location name | [optional] 
- **nlType** | **String**| Network Location type | [optional] 
- **pl** | **String**| Physical Location name | [optional] 
- **plType** | **String**| Physical Location type | [optional] 
- **proc** | **String**| Process name | [optional] 
- **procType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Including children under the queried element | [optional] 
- **minimize** | **Boolean**| Return a minimized active scenario | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 
@@ -435,9 +435,9 @@ No authorization required
 # **getActiveScenarioZone**
 > Zones getActiveScenarioZone(opts)
 
-Get deployed scenario's zone element hierarchy
+Get zone elements from the deployed scenario
 
-Returns the deployed scenario's zone element hierarchy
+Returns a filtered list of zone elements from the deployed scenario using the provided query parameters
 
 ### Example
 ```javascript
@@ -449,14 +449,14 @@ var opts = {
   'domain': "domain_example", // String | Domain name
   'domainType': "domainType_example", // String | Domain type
   'zone': "zone_example", // String | Zone name
-  'nl': "nl_example", // String | Network Location name
-  'nlType': "nlType_example", // String | Network Location type
-  'pl': "pl_example", // String | Physical Location name
-  'plType': "plType_example", // String | Physical Location type
-  'proc': "proc_example", // String | Process name
-  'procType': "procType_example", // String | Process type
-  'children': true, // Boolean | Including children under the queried element
-  'minimize': true // Boolean | Return a minimized active scenario
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -476,14 +476,14 @@ Name | Type | Description  | Notes
  **domain** | **String**| Domain name | [optional] 
  **domainType** | **String**| Domain type | [optional] 
  **zone** | **String**| Zone name | [optional] 
- **nl** | **String**| Network Location name | [optional] 
- **nlType** | **String**| Network Location type | [optional] 
- **pl** | **String**| Physical Location name | [optional] 
- **plType** | **String**| Physical Location type | [optional] 
- **proc** | **String**| Process name | [optional] 
- **procType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Including children under the queried element | [optional] 
- **minimize** | **Boolean**| Return a minimized active scenario | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 

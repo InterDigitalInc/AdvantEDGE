@@ -111,35 +111,35 @@ var routes = Routes{
 	Route{
 		"GetActiveScenarioDomain",
 		strings.ToUpper("Get"),
-		"/sandbox-ctrl/v1/active/domain",
+		"/sandbox-ctrl/v1/active/domains",
 		GetActiveScenarioDomain,
 	},
 
 	Route{
-		"GetActiveScenarioNl",
+		"GetActiveScenarioNetworkLocation",
 		strings.ToUpper("Get"),
-		"/sandbox-ctrl/v1/active/nl",
-		GetActiveScenarioNl,
+		"/sandbox-ctrl/v1/active/networkLocations",
+		GetActiveScenarioNetworkLocation,
 	},
 
 	Route{
-		"GetActiveScenarioPl",
+		"GetActiveScenarioPhysicalLocation",
 		strings.ToUpper("Get"),
-		"/sandbox-ctrl/v1/active/pl",
-		GetActiveScenarioPl,
+		"/sandbox-ctrl/v1/active/physicalLocations",
+		GetActiveScenarioPhysicalLocation,
 	},
 
 	Route{
-		"GetActiveScenarioProc",
+		"GetActiveScenarioProcess",
 		strings.ToUpper("Get"),
-		"/sandbox-ctrl/v1/active/proc",
-		GetActiveScenarioProc,
+		"/sandbox-ctrl/v1/active/processes",
+		GetActiveScenarioProcess,
 	},
 
 	Route{
 		"GetActiveScenarioZone",
 		strings.ToUpper("Get"),
-		"/sandbox-ctrl/v1/active/zone",
+		"/sandbox-ctrl/v1/active/zones",
 		GetActiveScenarioZone,
 	},
 

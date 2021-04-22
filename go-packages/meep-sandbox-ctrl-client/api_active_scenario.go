@@ -239,13 +239,13 @@ ActiveScenarioApiService Get the deployed scenario
 Get the scenario currently deployed on the platform
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *GetActiveScenarioOpts - Optional Parameters:
-     * @param "Minimize" (optional.String) -  Return a minimized active scenario (default: false)
+     * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Scenario
 */
 
 type GetActiveScenarioOpts struct {
-	Minimize optional.String
+	Minimize optional.Bool
 }
 
 func (a *ActiveScenarioApiService) GetActiveScenario(ctx context.Context, localVarOptionals *GetActiveScenarioOpts) (Scenario, *http.Response, error) {
@@ -332,37 +332,37 @@ func (a *ActiveScenarioApiService) GetActiveScenario(ctx context.Context, localV
 }
 
 /*
-ActiveScenarioApiService Get deployed scenario&#39;s domain element hierarchy
-Returns the deployed scenario&#39;s domain element hierarchy
+ActiveScenarioApiService Get domain elements from the deployed scenario
+Returns a filtered list of domain elements from the deployed scenario using the provided query parameters
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *GetActiveScenarioDomainOpts - Optional Parameters:
      * @param "Domain" (optional.String) -  Domain name
      * @param "DomainType" (optional.String) -  Domain type
      * @param "Zone" (optional.String) -  Zone name
-     * @param "Nl" (optional.String) -  Network Location name
-     * @param "NlType" (optional.String) -  Network Location type
-     * @param "Pl" (optional.String) -  Physical Location name
-     * @param "PlType" (optional.String) -  Physical Location type
-     * @param "Proc" (optional.String) -  Process name
-     * @param "ProcType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Including children under the queried element
-     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+     * @param "NetworkLocation" (optional.String) -  Network Location name
+     * @param "NetworkLocationType" (optional.String) -  Network Location type
+     * @param "PhysicalLocation" (optional.String) -  Physical Location name
+     * @param "PhysicalLocationType" (optional.String) -  Physical Location type
+     * @param "Process" (optional.String) -  Process name
+     * @param "ProcessType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Domains
 */
 
 type GetActiveScenarioDomainOpts struct {
-	Domain     optional.String
-	DomainType optional.String
-	Zone       optional.String
-	Nl         optional.String
-	NlType     optional.String
-	Pl         optional.String
-	PlType     optional.String
-	Proc       optional.String
-	ProcType   optional.String
-	Children   optional.Bool
-	Minimize   optional.Bool
+	Domain               optional.String
+	DomainType           optional.String
+	Zone                 optional.String
+	NetworkLocation      optional.String
+	NetworkLocationType  optional.String
+	PhysicalLocation     optional.String
+	PhysicalLocationType optional.String
+	Process              optional.String
+	ProcessType          optional.String
+	Children             optional.Bool
+	Minimize             optional.Bool
 }
 
 func (a *ActiveScenarioApiService) GetActiveScenarioDomain(ctx context.Context, localVarOptionals *GetActiveScenarioDomainOpts) (Domains, *http.Response, error) {
@@ -375,7 +375,7 @@ func (a *ActiveScenarioApiService) GetActiveScenarioDomain(ctx context.Context, 
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/active/domain"
+	localVarPath := a.client.cfg.BasePath + "/active/domains"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -390,23 +390,23 @@ func (a *ActiveScenarioApiService) GetActiveScenarioDomain(ctx context.Context, 
 	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
 		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
-		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocation.IsSet() {
+		localVarQueryParams.Add("networkLocation", parameterToString(localVarOptionals.NetworkLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
-		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocationType.IsSet() {
+		localVarQueryParams.Add("networkLocationType", parameterToString(localVarOptionals.NetworkLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
-		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocation.IsSet() {
+		localVarQueryParams.Add("physicalLocation", parameterToString(localVarOptionals.PhysicalLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
-		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocationType.IsSet() {
+		localVarQueryParams.Add("physicalLocationType", parameterToString(localVarOptionals.PhysicalLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
-		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Process.IsSet() {
+		localVarQueryParams.Add("process", parameterToString(localVarOptionals.Process.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
-		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
+		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
 		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
@@ -479,40 +479,40 @@ func (a *ActiveScenarioApiService) GetActiveScenarioDomain(ctx context.Context, 
 }
 
 /*
-ActiveScenarioApiService Get deployed scenario&#39;s network location element hierarchy
-Returns the deployed scenario&#39;s network location element hierarchy
+ActiveScenarioApiService Get network location elements from the deployed scenario
+Returns a filtered list of network location elements from the deployed scenario using the provided query parameters
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *GetActiveScenarioNlOpts - Optional Parameters:
+ * @param optional nil or *GetActiveScenarioNetworkLocationOpts - Optional Parameters:
      * @param "Domain" (optional.String) -  Domain name
      * @param "DomainType" (optional.String) -  Domain type
      * @param "Zone" (optional.String) -  Zone name
-     * @param "Nl" (optional.String) -  Network Location name
-     * @param "NlType" (optional.String) -  Network Location type
-     * @param "Pl" (optional.String) -  Physical Location name
-     * @param "PlType" (optional.String) -  Physical Location type
-     * @param "Proc" (optional.String) -  Process name
-     * @param "ProcType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Including children under the queried element
-     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+     * @param "NetworkLocation" (optional.String) -  Network Location name
+     * @param "NetworkLocationType" (optional.String) -  Network Location type
+     * @param "PhysicalLocation" (optional.String) -  Physical Location name
+     * @param "PhysicalLocationType" (optional.String) -  Physical Location type
+     * @param "Process" (optional.String) -  Process name
+     * @param "ProcessType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return NetworkLocations
 */
 
-type GetActiveScenarioNlOpts struct {
-	Domain     optional.String
-	DomainType optional.String
-	Zone       optional.String
-	Nl         optional.String
-	NlType     optional.String
-	Pl         optional.String
-	PlType     optional.String
-	Proc       optional.String
-	ProcType   optional.String
-	Children   optional.Bool
-	Minimize   optional.Bool
+type GetActiveScenarioNetworkLocationOpts struct {
+	Domain               optional.String
+	DomainType           optional.String
+	Zone                 optional.String
+	NetworkLocation      optional.String
+	NetworkLocationType  optional.String
+	PhysicalLocation     optional.String
+	PhysicalLocationType optional.String
+	Process              optional.String
+	ProcessType          optional.String
+	Children             optional.Bool
+	Minimize             optional.Bool
 }
 
-func (a *ActiveScenarioApiService) GetActiveScenarioNl(ctx context.Context, localVarOptionals *GetActiveScenarioNlOpts) (NetworkLocations, *http.Response, error) {
+func (a *ActiveScenarioApiService) GetActiveScenarioNetworkLocation(ctx context.Context, localVarOptionals *GetActiveScenarioNetworkLocationOpts) (NetworkLocations, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -522,7 +522,7 @@ func (a *ActiveScenarioApiService) GetActiveScenarioNl(ctx context.Context, loca
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/active/nl"
+	localVarPath := a.client.cfg.BasePath + "/active/networkLocations"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -537,23 +537,23 @@ func (a *ActiveScenarioApiService) GetActiveScenarioNl(ctx context.Context, loca
 	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
 		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
-		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocation.IsSet() {
+		localVarQueryParams.Add("networkLocation", parameterToString(localVarOptionals.NetworkLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
-		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocationType.IsSet() {
+		localVarQueryParams.Add("networkLocationType", parameterToString(localVarOptionals.NetworkLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
-		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocation.IsSet() {
+		localVarQueryParams.Add("physicalLocation", parameterToString(localVarOptionals.PhysicalLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
-		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocationType.IsSet() {
+		localVarQueryParams.Add("physicalLocationType", parameterToString(localVarOptionals.PhysicalLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
-		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Process.IsSet() {
+		localVarQueryParams.Add("process", parameterToString(localVarOptionals.Process.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
-		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
+		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
 		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
@@ -626,40 +626,40 @@ func (a *ActiveScenarioApiService) GetActiveScenarioNl(ctx context.Context, loca
 }
 
 /*
-ActiveScenarioApiService Get deployed scenario&#39;s physical location element hierarchy
-Returns the deployed scenario&#39;s physical location element hierarchy
+ActiveScenarioApiService Get physical location elements from the deployed scenario
+Returns a filtered list of physical location elements from the deployed scenario using the provided query parameters
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *GetActiveScenarioPlOpts - Optional Parameters:
+ * @param optional nil or *GetActiveScenarioPhysicalLocationOpts - Optional Parameters:
      * @param "Domain" (optional.String) -  Domain name
      * @param "DomainType" (optional.String) -  Domain type
      * @param "Zone" (optional.String) -  Zone name
-     * @param "Nl" (optional.String) -  Network Location name
-     * @param "NlType" (optional.String) -  Network Location type
-     * @param "Pl" (optional.String) -  Physical Location name
-     * @param "PlType" (optional.String) -  Physical Location type
-     * @param "Proc" (optional.String) -  Process name
-     * @param "ProcType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Including children under the queried element
-     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+     * @param "NetworkLocation" (optional.String) -  Network Location name
+     * @param "NetworkLocationType" (optional.String) -  Network Location type
+     * @param "PhysicalLocation" (optional.String) -  Physical Location name
+     * @param "PhysicalLocationType" (optional.String) -  Physical Location type
+     * @param "Process" (optional.String) -  Process name
+     * @param "ProcessType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return PhysicalLocations
 */
 
-type GetActiveScenarioPlOpts struct {
-	Domain     optional.String
-	DomainType optional.String
-	Zone       optional.String
-	Nl         optional.String
-	NlType     optional.String
-	Pl         optional.String
-	PlType     optional.String
-	Proc       optional.String
-	ProcType   optional.String
-	Children   optional.Bool
-	Minimize   optional.Bool
+type GetActiveScenarioPhysicalLocationOpts struct {
+	Domain               optional.String
+	DomainType           optional.String
+	Zone                 optional.String
+	NetworkLocation      optional.String
+	NetworkLocationType  optional.String
+	PhysicalLocation     optional.String
+	PhysicalLocationType optional.String
+	Process              optional.String
+	ProcessType          optional.String
+	Children             optional.Bool
+	Minimize             optional.Bool
 }
 
-func (a *ActiveScenarioApiService) GetActiveScenarioPl(ctx context.Context, localVarOptionals *GetActiveScenarioPlOpts) (PhysicalLocations, *http.Response, error) {
+func (a *ActiveScenarioApiService) GetActiveScenarioPhysicalLocation(ctx context.Context, localVarOptionals *GetActiveScenarioPhysicalLocationOpts) (PhysicalLocations, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -669,7 +669,7 @@ func (a *ActiveScenarioApiService) GetActiveScenarioPl(ctx context.Context, loca
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/active/pl"
+	localVarPath := a.client.cfg.BasePath + "/active/physicalLocations"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -684,23 +684,23 @@ func (a *ActiveScenarioApiService) GetActiveScenarioPl(ctx context.Context, loca
 	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
 		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
-		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocation.IsSet() {
+		localVarQueryParams.Add("networkLocation", parameterToString(localVarOptionals.NetworkLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
-		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocationType.IsSet() {
+		localVarQueryParams.Add("networkLocationType", parameterToString(localVarOptionals.NetworkLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
-		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocation.IsSet() {
+		localVarQueryParams.Add("physicalLocation", parameterToString(localVarOptionals.PhysicalLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
-		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocationType.IsSet() {
+		localVarQueryParams.Add("physicalLocationType", parameterToString(localVarOptionals.PhysicalLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
-		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Process.IsSet() {
+		localVarQueryParams.Add("process", parameterToString(localVarOptionals.Process.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
-		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
+		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
 		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
@@ -773,40 +773,40 @@ func (a *ActiveScenarioApiService) GetActiveScenarioPl(ctx context.Context, loca
 }
 
 /*
-ActiveScenarioApiService Get deployed scenario&#39;s process element hierarchy
-Returns the deployed scenario&#39;s process element hierarchy
+ActiveScenarioApiService Get process elements from the deployed scenario
+Returns a filtered list of process elements from the deployed scenario using the provided query parameters
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *GetActiveScenarioProcOpts - Optional Parameters:
+ * @param optional nil or *GetActiveScenarioProcessOpts - Optional Parameters:
      * @param "Domain" (optional.String) -  Domain name
      * @param "DomainType" (optional.String) -  Domain type
      * @param "Zone" (optional.String) -  Zone name
-     * @param "Nl" (optional.String) -  Network Location name
-     * @param "NlType" (optional.String) -  Network Location type
-     * @param "Pl" (optional.String) -  Physical Location name
-     * @param "PlType" (optional.String) -  Physical Location type
-     * @param "Proc" (optional.String) -  Process name
-     * @param "ProcType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Including children under the queried element
-     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+     * @param "NetworkLocation" (optional.String) -  Network Location name
+     * @param "NetworkLocationType" (optional.String) -  Network Location type
+     * @param "PhysicalLocation" (optional.String) -  Physical Location name
+     * @param "PhysicalLocationType" (optional.String) -  Physical Location type
+     * @param "Process" (optional.String) -  Process name
+     * @param "ProcessType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Processes
 */
 
-type GetActiveScenarioProcOpts struct {
-	Domain     optional.String
-	DomainType optional.String
-	Zone       optional.String
-	Nl         optional.String
-	NlType     optional.String
-	Pl         optional.String
-	PlType     optional.String
-	Proc       optional.String
-	ProcType   optional.String
-	Children   optional.Bool
-	Minimize   optional.Bool
+type GetActiveScenarioProcessOpts struct {
+	Domain               optional.String
+	DomainType           optional.String
+	Zone                 optional.String
+	NetworkLocation      optional.String
+	NetworkLocationType  optional.String
+	PhysicalLocation     optional.String
+	PhysicalLocationType optional.String
+	Process              optional.String
+	ProcessType          optional.String
+	Children             optional.Bool
+	Minimize             optional.Bool
 }
 
-func (a *ActiveScenarioApiService) GetActiveScenarioProc(ctx context.Context, localVarOptionals *GetActiveScenarioProcOpts) (Processes, *http.Response, error) {
+func (a *ActiveScenarioApiService) GetActiveScenarioProcess(ctx context.Context, localVarOptionals *GetActiveScenarioProcessOpts) (Processes, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -816,7 +816,7 @@ func (a *ActiveScenarioApiService) GetActiveScenarioProc(ctx context.Context, lo
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/active/proc"
+	localVarPath := a.client.cfg.BasePath + "/active/processes"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -831,23 +831,23 @@ func (a *ActiveScenarioApiService) GetActiveScenarioProc(ctx context.Context, lo
 	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
 		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
-		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocation.IsSet() {
+		localVarQueryParams.Add("networkLocation", parameterToString(localVarOptionals.NetworkLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
-		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocationType.IsSet() {
+		localVarQueryParams.Add("networkLocationType", parameterToString(localVarOptionals.NetworkLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
-		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocation.IsSet() {
+		localVarQueryParams.Add("physicalLocation", parameterToString(localVarOptionals.PhysicalLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
-		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocationType.IsSet() {
+		localVarQueryParams.Add("physicalLocationType", parameterToString(localVarOptionals.PhysicalLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
-		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Process.IsSet() {
+		localVarQueryParams.Add("process", parameterToString(localVarOptionals.Process.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
-		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
+		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
 		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
@@ -920,37 +920,37 @@ func (a *ActiveScenarioApiService) GetActiveScenarioProc(ctx context.Context, lo
 }
 
 /*
-ActiveScenarioApiService Get deployed scenario&#39;s zone element hierarchy
-Returns the deployed scenario&#39;s zone element hierarchy
+ActiveScenarioApiService Get zone elements from the deployed scenario
+Returns a filtered list of zone elements from the deployed scenario using the provided query parameters
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *GetActiveScenarioZoneOpts - Optional Parameters:
      * @param "Domain" (optional.String) -  Domain name
      * @param "DomainType" (optional.String) -  Domain type
      * @param "Zone" (optional.String) -  Zone name
-     * @param "Nl" (optional.String) -  Network Location name
-     * @param "NlType" (optional.String) -  Network Location type
-     * @param "Pl" (optional.String) -  Physical Location name
-     * @param "PlType" (optional.String) -  Physical Location type
-     * @param "Proc" (optional.String) -  Process name
-     * @param "ProcType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Including children under the queried element
-     * @param "Minimize" (optional.Bool) -  Return a minimized active scenario
+     * @param "NetworkLocation" (optional.String) -  Network Location name
+     * @param "NetworkLocationType" (optional.String) -  Network Location type
+     * @param "PhysicalLocation" (optional.String) -  Physical Location name
+     * @param "PhysicalLocationType" (optional.String) -  Physical Location type
+     * @param "Process" (optional.String) -  Process name
+     * @param "ProcessType" (optional.String) -  Process type
+     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Zones
 */
 
 type GetActiveScenarioZoneOpts struct {
-	Domain     optional.String
-	DomainType optional.String
-	Zone       optional.String
-	Nl         optional.String
-	NlType     optional.String
-	Pl         optional.String
-	PlType     optional.String
-	Proc       optional.String
-	ProcType   optional.String
-	Children   optional.Bool
-	Minimize   optional.Bool
+	Domain               optional.String
+	DomainType           optional.String
+	Zone                 optional.String
+	NetworkLocation      optional.String
+	NetworkLocationType  optional.String
+	PhysicalLocation     optional.String
+	PhysicalLocationType optional.String
+	Process              optional.String
+	ProcessType          optional.String
+	Children             optional.Bool
+	Minimize             optional.Bool
 }
 
 func (a *ActiveScenarioApiService) GetActiveScenarioZone(ctx context.Context, localVarOptionals *GetActiveScenarioZoneOpts) (Zones, *http.Response, error) {
@@ -963,7 +963,7 @@ func (a *ActiveScenarioApiService) GetActiveScenarioZone(ctx context.Context, lo
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/active/zone"
+	localVarPath := a.client.cfg.BasePath + "/active/zones"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -978,23 +978,23 @@ func (a *ActiveScenarioApiService) GetActiveScenarioZone(ctx context.Context, lo
 	if localVarOptionals != nil && localVarOptionals.Zone.IsSet() {
 		localVarQueryParams.Add("zone", parameterToString(localVarOptionals.Zone.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Nl.IsSet() {
-		localVarQueryParams.Add("nl", parameterToString(localVarOptionals.Nl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocation.IsSet() {
+		localVarQueryParams.Add("networkLocation", parameterToString(localVarOptionals.NetworkLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.NlType.IsSet() {
-		localVarQueryParams.Add("nlType", parameterToString(localVarOptionals.NlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.NetworkLocationType.IsSet() {
+		localVarQueryParams.Add("networkLocationType", parameterToString(localVarOptionals.NetworkLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Pl.IsSet() {
-		localVarQueryParams.Add("pl", parameterToString(localVarOptionals.Pl.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocation.IsSet() {
+		localVarQueryParams.Add("physicalLocation", parameterToString(localVarOptionals.PhysicalLocation.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.PlType.IsSet() {
-		localVarQueryParams.Add("plType", parameterToString(localVarOptionals.PlType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.PhysicalLocationType.IsSet() {
+		localVarQueryParams.Add("physicalLocationType", parameterToString(localVarOptionals.PhysicalLocationType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Proc.IsSet() {
-		localVarQueryParams.Add("proc", parameterToString(localVarOptionals.Proc.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Process.IsSet() {
+		localVarQueryParams.Add("process", parameterToString(localVarOptionals.Process.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.ProcType.IsSet() {
-		localVarQueryParams.Add("procType", parameterToString(localVarOptionals.ProcType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
+		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
 		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))

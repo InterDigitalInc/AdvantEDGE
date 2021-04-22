@@ -145,7 +145,7 @@
           // TODO: uncomment, update parameter values for getActiveScenario call and complete the assertions
           /*
           var opts = {};
-          opts.minimize = "minimize_example";
+          opts.minimize = true;
 
           instance.getActiveScenario(opts, function(error, data, response) {
             if (error) {
@@ -740,12 +740,12 @@
           opts.domain = "domain_example";
           opts.domainType = "domainType_example";
           opts.zone = "zone_example";
-          opts.nl = "nl_example";
-          opts.nlType = "nlType_example";
-          opts.pl = "pl_example";
-          opts.plType = "plType_example";
-          opts.proc = "proc_example";
-          opts.procType = "procType_example";
+          opts.networkLocation = "networkLocation_example";
+          opts.networkLocationType = "networkLocationType_example";
+          opts.physicalLocation = "physicalLocation_example";
+          opts.physicalLocationType = "physicalLocationType_example";
+          opts.process = "process_example";
+          opts.processType = "processType_example";
           opts.children = true;
           opts.minimize = true;
 
@@ -1056,6 +1056,13 @@
                             expect(data.wireless).to.be(false);
                             expect(data.wirelessType).to.be.a('string');
                             expect(data.wirelessType).to.be("");
+                            expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
+                                  expect(data.dataNetwork.dnn).to.be.a('string');
+                              expect(data.dataNetwork.dnn).to.be("");
+                              expect(data.dataNetwork.ladn).to.be.a('boolean');
+                              expect(data.dataNetwork.ladn).to.be(false);
+                              expect(data.dataNetwork.ecsp).to.be.a('string');
+                              expect(data.dataNetwork.ecsp).to.be("");
                             {
                               let dataCtr = data.meta;
                               expect(dataCtr).to.be.an(Object);
@@ -1267,24 +1274,24 @@
           done();
         });
       });
-      describe('getActiveScenarioNl', function() {
-        it('should call getActiveScenarioNl successfully', function(done) {
-          // TODO: uncomment, update parameter values for getActiveScenarioNl call and complete the assertions
+      describe('getActiveScenarioNetworkLocation', function() {
+        it('should call getActiveScenarioNetworkLocation successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioNetworkLocation call and complete the assertions
           /*
           var opts = {};
           opts.domain = "domain_example";
           opts.domainType = "domainType_example";
           opts.zone = "zone_example";
-          opts.nl = "nl_example";
-          opts.nlType = "nlType_example";
-          opts.pl = "pl_example";
-          opts.plType = "plType_example";
-          opts.proc = "proc_example";
-          opts.procType = "procType_example";
+          opts.networkLocation = "networkLocation_example";
+          opts.networkLocationType = "networkLocationType_example";
+          opts.physicalLocation = "physicalLocation_example";
+          opts.physicalLocationType = "physicalLocationType_example";
+          opts.process = "process_example";
+          opts.processType = "processType_example";
           opts.children = true;
           opts.minimize = true;
 
-          instance.getActiveScenarioNl(opts, function(error, data, response) {
+          instance.getActiveScenarioNetworkLocation(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -1456,6 +1463,13 @@
                     expect(data.wireless).to.be(false);
                     expect(data.wirelessType).to.be.a('string');
                     expect(data.wirelessType).to.be("");
+                    expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
+                          expect(data.dataNetwork.dnn).to.be.a('string');
+                      expect(data.dataNetwork.dnn).to.be("");
+                      expect(data.dataNetwork.ladn).to.be.a('boolean');
+                      expect(data.dataNetwork.ladn).to.be(false);
+                      expect(data.dataNetwork.ecsp).to.be.a('string');
+                      expect(data.dataNetwork.ecsp).to.be("");
                     {
                       let dataCtr = data.meta;
                       expect(dataCtr).to.be.an(Object);
@@ -1663,24 +1677,24 @@
           done();
         });
       });
-      describe('getActiveScenarioPl', function() {
-        it('should call getActiveScenarioPl successfully', function(done) {
-          // TODO: uncomment, update parameter values for getActiveScenarioPl call and complete the assertions
+      describe('getActiveScenarioPhysicalLocation', function() {
+        it('should call getActiveScenarioPhysicalLocation successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioPhysicalLocation call and complete the assertions
           /*
           var opts = {};
           opts.domain = "domain_example";
           opts.domainType = "domainType_example";
           opts.zone = "zone_example";
-          opts.nl = "nl_example";
-          opts.nlType = "nlType_example";
-          opts.pl = "pl_example";
-          opts.plType = "plType_example";
-          opts.proc = "proc_example";
-          opts.procType = "procType_example";
+          opts.networkLocation = "networkLocation_example";
+          opts.networkLocationType = "networkLocationType_example";
+          opts.physicalLocation = "physicalLocation_example";
+          opts.physicalLocationType = "physicalLocationType_example";
+          opts.process = "process_example";
+          opts.processType = "processType_example";
           opts.children = true;
           opts.minimize = true;
 
-          instance.getActiveScenarioPl(opts, function(error, data, response) {
+          instance.getActiveScenarioPhysicalLocation(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -1751,6 +1765,13 @@
                 expect(data.wireless).to.be(false);
                 expect(data.wirelessType).to.be.a('string');
                 expect(data.wirelessType).to.be("");
+                expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
+                      expect(data.dataNetwork.dnn).to.be.a('string');
+                  expect(data.dataNetwork.dnn).to.be("");
+                  expect(data.dataNetwork.ladn).to.be.a('boolean');
+                  expect(data.dataNetwork.ladn).to.be(false);
+                  expect(data.dataNetwork.ecsp).to.be.a('string');
+                  expect(data.dataNetwork.ecsp).to.be("");
                 {
                   let dataCtr = data.meta;
                   expect(dataCtr).to.be.an(Object);
@@ -1956,24 +1977,24 @@
           done();
         });
       });
-      describe('getActiveScenarioProc', function() {
-        it('should call getActiveScenarioProc successfully', function(done) {
-          // TODO: uncomment, update parameter values for getActiveScenarioProc call and complete the assertions
+      describe('getActiveScenarioProcess', function() {
+        it('should call getActiveScenarioProcess successfully', function(done) {
+          // TODO: uncomment, update parameter values for getActiveScenarioProcess call and complete the assertions
           /*
           var opts = {};
           opts.domain = "domain_example";
           opts.domainType = "domainType_example";
           opts.zone = "zone_example";
-          opts.nl = "nl_example";
-          opts.nlType = "nlType_example";
-          opts.pl = "pl_example";
-          opts.plType = "plType_example";
-          opts.proc = "proc_example";
-          opts.procType = "procType_example";
+          opts.networkLocation = "networkLocation_example";
+          opts.networkLocationType = "networkLocationType_example";
+          opts.physicalLocation = "physicalLocation_example";
+          opts.physicalLocationType = "physicalLocationType_example";
+          opts.process = "process_example";
+          opts.processType = "processType_example";
           opts.children = true;
           opts.minimize = true;
 
-          instance.getActiveScenarioProc(opts, function(error, data, response) {
+          instance.getActiveScenarioProcess(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -2146,12 +2167,12 @@
           opts.domain = "domain_example";
           opts.domainType = "domainType_example";
           opts.zone = "zone_example";
-          opts.nl = "nl_example";
-          opts.nlType = "nlType_example";
-          opts.pl = "pl_example";
-          opts.plType = "plType_example";
-          opts.proc = "proc_example";
-          opts.procType = "procType_example";
+          opts.networkLocation = "networkLocation_example";
+          opts.networkLocationType = "networkLocationType_example";
+          opts.physicalLocation = "physicalLocation_example";
+          opts.physicalLocationType = "physicalLocationType_example";
+          opts.process = "process_example";
+          opts.processType = "processType_example";
           opts.children = true;
           opts.minimize = true;
 
@@ -2399,6 +2420,13 @@
                         expect(data.wireless).to.be(false);
                         expect(data.wirelessType).to.be.a('string');
                         expect(data.wirelessType).to.be("");
+                        expect(data.dataNetwork).to.be.a(AdvantEdgeSandboxControllerRestApi.DNConfig);
+                              expect(data.dataNetwork.dnn).to.be.a('string');
+                          expect(data.dataNetwork.dnn).to.be("");
+                          expect(data.dataNetwork.ladn).to.be.a('boolean');
+                          expect(data.dataNetwork.ladn).to.be(false);
+                          expect(data.dataNetwork.ecsp).to.be.a('string');
+                          expect(data.dataNetwork.ecsp).to.be("");
                         {
                           let dataCtr = data.meta;
                           expect(dataCtr).to.be.an(Object);

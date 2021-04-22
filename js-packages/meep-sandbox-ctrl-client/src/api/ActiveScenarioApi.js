@@ -173,7 +173,7 @@
      * Get the deployed scenario
      * Get the scenario currently deployed on the platform
      * @param {Object} opts Optional parameters
-     * @param {module:model/String} opts.minimize Return a minimized active scenario (default: false)
+     * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Scenario}
      */
@@ -215,20 +215,20 @@
      */
 
     /**
-     * Get deployed scenario's domain element hierarchy
-     * Returns the deployed scenario's domain element hierarchy
+     * Get domain elements from the deployed scenario
+     * Returns a filtered list of domain elements from the deployed scenario using the provided query parameters
      * @param {Object} opts Optional parameters
      * @param {String} opts.domain Domain name
      * @param {module:model/String} opts.domainType Domain type
      * @param {String} opts.zone Zone name
-     * @param {String} opts.nl Network Location name
-     * @param {module:model/String} opts.nlType Network Location type
-     * @param {String} opts.pl Physical Location name
-     * @param {module:model/String} opts.plType Physical Location type
-     * @param {String} opts.proc Process name
-     * @param {module:model/String} opts.procType Process type
-     * @param {Boolean} opts.children Including children under the queried element
-     * @param {Boolean} opts.minimize Return a minimized active scenario
+     * @param {String} opts.networkLocation Network Location name
+     * @param {module:model/String} opts.networkLocationType Network Location type
+     * @param {String} opts.physicalLocation Physical Location name
+     * @param {module:model/String} opts.physicalLocationType Physical Location type
+     * @param {String} opts.process Process name
+     * @param {module:model/String} opts.processType Process type
+     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioDomainCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Domains}
      */
@@ -243,12 +243,12 @@
         'domain': opts['domain'],
         'domainType': opts['domainType'],
         'zone': opts['zone'],
-        'nl': opts['nl'],
-        'nlType': opts['nlType'],
-        'pl': opts['pl'],
-        'plType': opts['plType'],
-        'proc': opts['proc'],
-        'procType': opts['procType'],
+        'networkLocation': opts['networkLocation'],
+        'networkLocationType': opts['networkLocationType'],
+        'physicalLocation': opts['physicalLocation'],
+        'physicalLocationType': opts['physicalLocationType'],
+        'process': opts['process'],
+        'processType': opts['processType'],
         'children': opts['children'],
         'minimize': opts['minimize'],
       };
@@ -265,39 +265,39 @@
       var returnType = Domains;
 
       return this.apiClient.callApi(
-        '/active/domain', 'GET',
+        '/active/domains', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getActiveScenarioNl operation.
-     * @callback module:api/ActiveScenarioApi~getActiveScenarioNlCallback
+     * Callback function to receive the result of the getActiveScenarioNetworkLocation operation.
+     * @callback module:api/ActiveScenarioApi~getActiveScenarioNetworkLocationCallback
      * @param {String} error Error message, if any.
      * @param {module:model/NetworkLocations} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Get deployed scenario's network location element hierarchy
-     * Returns the deployed scenario's network location element hierarchy
+     * Get network location elements from the deployed scenario
+     * Returns a filtered list of network location elements from the deployed scenario using the provided query parameters
      * @param {Object} opts Optional parameters
      * @param {String} opts.domain Domain name
      * @param {module:model/String} opts.domainType Domain type
      * @param {String} opts.zone Zone name
-     * @param {String} opts.nl Network Location name
-     * @param {module:model/String} opts.nlType Network Location type
-     * @param {String} opts.pl Physical Location name
-     * @param {module:model/String} opts.plType Physical Location type
-     * @param {String} opts.proc Process name
-     * @param {module:model/String} opts.procType Process type
-     * @param {Boolean} opts.children Including children under the queried element
-     * @param {Boolean} opts.minimize Return a minimized active scenario
-     * @param {module:api/ActiveScenarioApi~getActiveScenarioNlCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {String} opts.networkLocation Network Location name
+     * @param {module:model/String} opts.networkLocationType Network Location type
+     * @param {String} opts.physicalLocation Physical Location name
+     * @param {module:model/String} opts.physicalLocationType Physical Location type
+     * @param {String} opts.process Process name
+     * @param {module:model/String} opts.processType Process type
+     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.minimize Return minimized scenario element content
+     * @param {module:api/ActiveScenarioApi~getActiveScenarioNetworkLocationCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/NetworkLocations}
      */
-    this.getActiveScenarioNl = function(opts, callback) {
+    this.getActiveScenarioNetworkLocation = function(opts, callback) {
       opts = opts || {};
       var postBody = null;
 
@@ -308,12 +308,12 @@
         'domain': opts['domain'],
         'domainType': opts['domainType'],
         'zone': opts['zone'],
-        'nl': opts['nl'],
-        'nlType': opts['nlType'],
-        'pl': opts['pl'],
-        'plType': opts['plType'],
-        'proc': opts['proc'],
-        'procType': opts['procType'],
+        'networkLocation': opts['networkLocation'],
+        'networkLocationType': opts['networkLocationType'],
+        'physicalLocation': opts['physicalLocation'],
+        'physicalLocationType': opts['physicalLocationType'],
+        'process': opts['process'],
+        'processType': opts['processType'],
         'children': opts['children'],
         'minimize': opts['minimize'],
       };
@@ -330,39 +330,39 @@
       var returnType = NetworkLocations;
 
       return this.apiClient.callApi(
-        '/active/nl', 'GET',
+        '/active/networkLocations', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getActiveScenarioPl operation.
-     * @callback module:api/ActiveScenarioApi~getActiveScenarioPlCallback
+     * Callback function to receive the result of the getActiveScenarioPhysicalLocation operation.
+     * @callback module:api/ActiveScenarioApi~getActiveScenarioPhysicalLocationCallback
      * @param {String} error Error message, if any.
      * @param {module:model/PhysicalLocations} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Get deployed scenario's physical location element hierarchy
-     * Returns the deployed scenario's physical location element hierarchy
+     * Get physical location elements from the deployed scenario
+     * Returns a filtered list of physical location elements from the deployed scenario using the provided query parameters
      * @param {Object} opts Optional parameters
      * @param {String} opts.domain Domain name
      * @param {module:model/String} opts.domainType Domain type
      * @param {String} opts.zone Zone name
-     * @param {String} opts.nl Network Location name
-     * @param {module:model/String} opts.nlType Network Location type
-     * @param {String} opts.pl Physical Location name
-     * @param {module:model/String} opts.plType Physical Location type
-     * @param {String} opts.proc Process name
-     * @param {module:model/String} opts.procType Process type
-     * @param {Boolean} opts.children Including children under the queried element
-     * @param {Boolean} opts.minimize Return a minimized active scenario
-     * @param {module:api/ActiveScenarioApi~getActiveScenarioPlCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {String} opts.networkLocation Network Location name
+     * @param {module:model/String} opts.networkLocationType Network Location type
+     * @param {String} opts.physicalLocation Physical Location name
+     * @param {module:model/String} opts.physicalLocationType Physical Location type
+     * @param {String} opts.process Process name
+     * @param {module:model/String} opts.processType Process type
+     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.minimize Return minimized scenario element content
+     * @param {module:api/ActiveScenarioApi~getActiveScenarioPhysicalLocationCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/PhysicalLocations}
      */
-    this.getActiveScenarioPl = function(opts, callback) {
+    this.getActiveScenarioPhysicalLocation = function(opts, callback) {
       opts = opts || {};
       var postBody = null;
 
@@ -373,12 +373,12 @@
         'domain': opts['domain'],
         'domainType': opts['domainType'],
         'zone': opts['zone'],
-        'nl': opts['nl'],
-        'nlType': opts['nlType'],
-        'pl': opts['pl'],
-        'plType': opts['plType'],
-        'proc': opts['proc'],
-        'procType': opts['procType'],
+        'networkLocation': opts['networkLocation'],
+        'networkLocationType': opts['networkLocationType'],
+        'physicalLocation': opts['physicalLocation'],
+        'physicalLocationType': opts['physicalLocationType'],
+        'process': opts['process'],
+        'processType': opts['processType'],
         'children': opts['children'],
         'minimize': opts['minimize'],
       };
@@ -395,39 +395,39 @@
       var returnType = PhysicalLocations;
 
       return this.apiClient.callApi(
-        '/active/pl', 'GET',
+        '/active/physicalLocations', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getActiveScenarioProc operation.
-     * @callback module:api/ActiveScenarioApi~getActiveScenarioProcCallback
+     * Callback function to receive the result of the getActiveScenarioProcess operation.
+     * @callback module:api/ActiveScenarioApi~getActiveScenarioProcessCallback
      * @param {String} error Error message, if any.
      * @param {module:model/Processes} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Get deployed scenario's process element hierarchy
-     * Returns the deployed scenario's process element hierarchy
+     * Get process elements from the deployed scenario
+     * Returns a filtered list of process elements from the deployed scenario using the provided query parameters
      * @param {Object} opts Optional parameters
      * @param {String} opts.domain Domain name
      * @param {module:model/String} opts.domainType Domain type
      * @param {String} opts.zone Zone name
-     * @param {String} opts.nl Network Location name
-     * @param {module:model/String} opts.nlType Network Location type
-     * @param {String} opts.pl Physical Location name
-     * @param {module:model/String} opts.plType Physical Location type
-     * @param {String} opts.proc Process name
-     * @param {module:model/String} opts.procType Process type
-     * @param {Boolean} opts.children Including children under the queried element
-     * @param {Boolean} opts.minimize Return a minimized active scenario
-     * @param {module:api/ActiveScenarioApi~getActiveScenarioProcCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {String} opts.networkLocation Network Location name
+     * @param {module:model/String} opts.networkLocationType Network Location type
+     * @param {String} opts.physicalLocation Physical Location name
+     * @param {module:model/String} opts.physicalLocationType Physical Location type
+     * @param {String} opts.process Process name
+     * @param {module:model/String} opts.processType Process type
+     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.minimize Return minimized scenario element content
+     * @param {module:api/ActiveScenarioApi~getActiveScenarioProcessCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Processes}
      */
-    this.getActiveScenarioProc = function(opts, callback) {
+    this.getActiveScenarioProcess = function(opts, callback) {
       opts = opts || {};
       var postBody = null;
 
@@ -438,12 +438,12 @@
         'domain': opts['domain'],
         'domainType': opts['domainType'],
         'zone': opts['zone'],
-        'nl': opts['nl'],
-        'nlType': opts['nlType'],
-        'pl': opts['pl'],
-        'plType': opts['plType'],
-        'proc': opts['proc'],
-        'procType': opts['procType'],
+        'networkLocation': opts['networkLocation'],
+        'networkLocationType': opts['networkLocationType'],
+        'physicalLocation': opts['physicalLocation'],
+        'physicalLocationType': opts['physicalLocationType'],
+        'process': opts['process'],
+        'processType': opts['processType'],
         'children': opts['children'],
         'minimize': opts['minimize'],
       };
@@ -460,7 +460,7 @@
       var returnType = Processes;
 
       return this.apiClient.callApi(
-        '/active/proc', 'GET',
+        '/active/processes', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
@@ -475,20 +475,20 @@
      */
 
     /**
-     * Get deployed scenario's zone element hierarchy
-     * Returns the deployed scenario's zone element hierarchy
+     * Get zone elements from the deployed scenario
+     * Returns a filtered list of zone elements from the deployed scenario using the provided query parameters
      * @param {Object} opts Optional parameters
      * @param {String} opts.domain Domain name
      * @param {module:model/String} opts.domainType Domain type
      * @param {String} opts.zone Zone name
-     * @param {String} opts.nl Network Location name
-     * @param {module:model/String} opts.nlType Network Location type
-     * @param {String} opts.pl Physical Location name
-     * @param {module:model/String} opts.plType Physical Location type
-     * @param {String} opts.proc Process name
-     * @param {module:model/String} opts.procType Process type
-     * @param {Boolean} opts.children Including children under the queried element
-     * @param {Boolean} opts.minimize Return a minimized active scenario
+     * @param {String} opts.networkLocation Network Location name
+     * @param {module:model/String} opts.networkLocationType Network Location type
+     * @param {String} opts.physicalLocation Physical Location name
+     * @param {module:model/String} opts.physicalLocationType Physical Location type
+     * @param {String} opts.process Process name
+     * @param {module:model/String} opts.processType Process type
+     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioZoneCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Zones}
      */
@@ -503,12 +503,12 @@
         'domain': opts['domain'],
         'domainType': opts['domainType'],
         'zone': opts['zone'],
-        'nl': opts['nl'],
-        'nlType': opts['nlType'],
-        'pl': opts['pl'],
-        'plType': opts['plType'],
-        'proc': opts['proc'],
-        'procType': opts['procType'],
+        'networkLocation': opts['networkLocation'],
+        'networkLocationType': opts['networkLocationType'],
+        'physicalLocation': opts['physicalLocation'],
+        'physicalLocationType': opts['physicalLocationType'],
+        'process': opts['process'],
+        'processType': opts['processType'],
         'children': opts['children'],
         'minimize': opts['minimize'],
       };
@@ -525,7 +525,7 @@
       var returnType = Zones;
 
       return this.apiClient.callApi(
-        '/active/zone', 'GET',
+        '/active/zones', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

@@ -24,11 +24,11 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**ActivateScenario**](docs/ActiveScenarioApi.md#activatescenario) | **Post** /active/{name} | Deploy a scenario
 *ActiveScenarioApi* | [**GetActiveNodeServiceMaps**](docs/ActiveScenarioApi.md#getactivenodeservicemaps) | **Get** /active/serviceMaps | Get deployed scenario&#39;s port mapping
 *ActiveScenarioApi* | [**GetActiveScenario**](docs/ActiveScenarioApi.md#getactivescenario) | **Get** /active | Get the deployed scenario
-*ActiveScenarioApi* | [**GetActiveScenarioDomain**](docs/ActiveScenarioApi.md#getactivescenariodomain) | **Get** /active/domain | Get deployed scenario&#39;s domain element hierarchy
-*ActiveScenarioApi* | [**GetActiveScenarioNl**](docs/ActiveScenarioApi.md#getactivescenarionl) | **Get** /active/nl | Get deployed scenario&#39;s network location element hierarchy
-*ActiveScenarioApi* | [**GetActiveScenarioPl**](docs/ActiveScenarioApi.md#getactivescenariopl) | **Get** /active/pl | Get deployed scenario&#39;s physical location element hierarchy
-*ActiveScenarioApi* | [**GetActiveScenarioProc**](docs/ActiveScenarioApi.md#getactivescenarioproc) | **Get** /active/proc | Get deployed scenario&#39;s process element hierarchy
-*ActiveScenarioApi* | [**GetActiveScenarioZone**](docs/ActiveScenarioApi.md#getactivescenariozone) | **Get** /active/zone | Get deployed scenario&#39;s zone element hierarchy
+*ActiveScenarioApi* | [**GetActiveScenarioDomain**](docs/ActiveScenarioApi.md#getactivescenariodomain) | **Get** /active/domains | Get domain elements from the deployed scenario
+*ActiveScenarioApi* | [**GetActiveScenarioNetworkLocation**](docs/ActiveScenarioApi.md#getactivescenarionetworklocation) | **Get** /active/networkLocations | Get network location elements from the deployed scenario
+*ActiveScenarioApi* | [**GetActiveScenarioPhysicalLocation**](docs/ActiveScenarioApi.md#getactivescenariophysicallocation) | **Get** /active/physicalLocations | Get physical location elements from the deployed scenario
+*ActiveScenarioApi* | [**GetActiveScenarioProcess**](docs/ActiveScenarioApi.md#getactivescenarioprocess) | **Get** /active/processes | Get process elements from the deployed scenario
+*ActiveScenarioApi* | [**GetActiveScenarioZone**](docs/ActiveScenarioApi.md#getactivescenariozone) | **Get** /active/zones | Get zone elements from the deployed scenario
 *ActiveScenarioApi* | [**TerminateScenario**](docs/ActiveScenarioApi.md#terminatescenario) | **Delete** /active | Terminate the deployed scenario
 *ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
 *ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session

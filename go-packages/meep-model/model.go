@@ -22,7 +22,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"net/http"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -76,6 +75,20 @@ const (
 )
 
 const Disconnected = "DISCONNECTED"
+
+type NodeFindFilter struct {
+	DomainName           string
+	DomainType           string
+	ZoneName             string
+	NetworkLocationName  string
+	NetworkLocationType  string
+	PhysicalLocationName string
+	PhysicalLocationType string
+	ProcessName          string
+	ProcessType          string
+	Children             bool
+	Minimize             bool
+}
 
 // ModelCfg - Model Configuration
 type ModelCfg struct {
@@ -270,31 +283,6 @@ func (m *Model) GetScenarioMinimized() (j []byte, err error) {
 	}
 
 	return json.Marshal(scenario)
-}
-
-// GetScenarioMinimized - Get Minimized Scenario JSON string
-func (m *Model) GetSubScenario(requestLevel string, r *http.Request)  (j []byte, err error) {
-        m.lock.RLock()
-        defer m.lock.RUnlock()
-
-        // Marshal scenario
-        j, err = json.Marshal(m.scenario)
-        if err != nil {
-                return j, err
-        }
-
-        // Unmarshal scenario in new variable to update
-        var scenario dataModel.Scenario
-        err = json.Unmarshal(j, &scenario)
-        if err != nil {
-                return nil, err
-        }
-        j, err = subScenario(&scenario, requestLevel, r)
-        if err != nil {
-                return nil, err
-        }
-
-        return j, nil
 }
 
 // Activate - Make scenario the active scenario
@@ -967,6 +955,737 @@ func (m *Model) GetNodeContext(name string) (ctx interface{}) {
 		ctx = n.context
 	}
 	return ctx
+}
+
+// GetNodesQueriedLevelByFilter - Get list of nodes that match the hierarchy level provided
+//              Returned value is of type []*Node
+func (m *Model) GetNodesQueriedLevelByFilter(level string, filter *NodeFindFilter) []*Node {
+
+	var n *Node
+	var nList []*Node
+
+	switch level {
+	case "domain":
+		if filter.DomainName != "" {
+			if filter.DomainType != "" {
+				n = m.nodeMap.FindByType(filter.DomainName, filter.DomainType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.DomainName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.DomainType != "" {
+				nList = m.nodeMap.FindAllByType(filter.DomainType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypeOperatorCell)
+				nListOther := m.nodeMap.FindAllByType(NodeTypeOperator)
+				nList = append(nList, nListOther...)
+			}
+		}
+	case "zone":
+		if filter.ZoneName != "" {
+			n = m.nodeMap.FindByName(filter.ZoneName)
+			if n != nil {
+				nList = append(nList, n)
+			}
+		} else {
+			nList = m.nodeMap.FindAllByType(NodeTypeZone)
+		}
+		//only one type of zone... so no need to check for a different filter
+	case "networkLocation":
+		if filter.NetworkLocationName != "" {
+			if filter.NetworkLocationType != "" {
+				n = m.nodeMap.FindByType(filter.NetworkLocationName, filter.NetworkLocationType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.NetworkLocationName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.NetworkLocationType != "" {
+				nList = m.nodeMap.FindAllByType(filter.NetworkLocationType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypePoa)
+				nListOther := m.nodeMap.FindAllByType(NodeTypePoa4G)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypePoa5G)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypePoaWifi)
+				nList = append(nList, nListOther...)
+			}
+		}
+	case "physicalLocation":
+		if filter.PhysicalLocationName != "" {
+			if filter.PhysicalLocationType != "" {
+				n = m.nodeMap.FindByType(filter.PhysicalLocationName, filter.PhysicalLocationType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.PhysicalLocationName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.PhysicalLocationType != "" {
+				nList = m.nodeMap.FindAllByType(filter.PhysicalLocationType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypeCloud)
+				nListOther := m.nodeMap.FindAllByType(NodeTypeEdge)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypeFog)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypeUE)
+				nList = append(nList, nListOther...)
+			}
+		}
+	case "process":
+		if filter.ProcessName != "" {
+			if filter.ProcessType != "" {
+				n = m.nodeMap.FindByType(filter.ProcessName, filter.ProcessType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.ProcessName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.ProcessType != "" {
+				nList = m.nodeMap.FindAllByType(filter.ProcessType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypeEdgeApp)
+				nListOther := m.nodeMap.FindAllByType(NodeTypeUEApp)
+				nList = append(nList, nListOther...)
+			}
+		}
+	default:
+	}
+	return nList
+}
+
+// GetNodesByParentLevelFilter - Get list of nodes that match the filter values for all parents above the current hierarchy level provided
+//              Returned value is of type []*Node
+func (m *Model) GetNodesByParentLevelFilter(level string, filter *NodeFindFilter) []*Node {
+
+	var nodeList []*Node
+	nList := m.GetNodesQueriedLevelByFilter(level, filter)
+	//return immediately if no results
+	if nList == nil {
+		return nList
+	}
+	//levelsHierarchy := [5]string{"domain", "zone", "networkLocation", "physicalLocation", "process"}
+	//using an index value for a hierarchy level matching above string array
+	var initialLevelIndex int
+	//find current index level
+	switch level {
+	case "domain":
+		//no parents so return right away
+		//equivalent to currentLevelIndex = 0
+		return nList
+	case "zone":
+		initialLevelIndex = 1
+	case "networkLocation":
+		initialLevelIndex = 2
+	case "physicalLocation":
+		initialLevelIndex = 3
+	case "process":
+		initialLevelIndex = 4
+	default:
+		return nil
+	}
+
+	var parentName, parentType string
+	var parentFilterName, parentFilterType string
+
+	for _, currentNode := range nList {
+		addNode := true
+		parentNode := currentNode.parent
+		currentLevelIndex := initialLevelIndex
+		for currentLevelIndex != 0 {
+			switch currentLevelIndex {
+			case 1:
+				parentFilterName = filter.DomainName
+				parentFilterType = filter.DomainType
+				parentName = parentNode.(*dataModel.Domain).Name
+				parentType = parentNode.(*dataModel.Domain).Type_
+			case 2:
+				parentFilterName = filter.ZoneName
+				parentFilterType = ""
+				parentName = parentNode.(*dataModel.Zone).Name
+				parentType = parentNode.(*dataModel.Zone).Type_
+			case 3:
+				parentFilterName = filter.NetworkLocationName
+				parentFilterType = filter.NetworkLocationType
+				parentName = parentNode.(*dataModel.NetworkLocation).Name
+				parentType = parentNode.(*dataModel.NetworkLocation).Type_
+			case 4:
+				parentFilterName = filter.PhysicalLocationName
+				parentFilterType = filter.PhysicalLocationType
+				parentName = parentNode.(*dataModel.PhysicalLocation).Name
+				parentType = parentNode.(*dataModel.PhysicalLocation).Type_
+			default:
+				break
+			}
+
+			if parentFilterName != "" {
+				if parentName != parentFilterName {
+					addNode = false
+					break
+				}
+			}
+			if parentFilterType != "" {
+				if parentType != parentFilterType {
+					addNode = false
+					break
+				}
+			}
+			currentLevelIndex--
+			parentNode = m.GetNodeParent(parentName)
+		}
+		if addNode {
+			nodeList = append(nodeList, currentNode)
+		}
+	}
+	return nodeList
+}
+
+// GetDomainNodesByFilter - Get list of interfaces that match the filter provided for domains
+//              Returned value is of type []interface{}
+func (m *Model) GetDomainNodesByFilter(filter *NodeFindFilter) (node []interface{}) {
+	return m.GetNodesByFilter("domain", filter)
+}
+
+// GetZoneNodesByFilter - Get list of interfaces that match the filter provided for zones
+//              Returned value is of type []interface{}
+func (m *Model) GetZoneNodesByFilter(filter *NodeFindFilter) (node []interface{}) {
+	return m.GetNodesByFilter("zone", filter)
+}
+
+// GetNetworkLocationNodesByFilter - Get list of interfaces that match the filter providef for network locations
+//              Returned value is of type []interface{}
+func (m *Model) GetNetworkLocationNodesByFilter(filter *NodeFindFilter) (node []interface{}) {
+	return m.GetNodesByFilter("networkLocation", filter)
+}
+
+// GetPhysicalLocationNodesByFilter - Get list of interfaces that match the filter providef for physical locations
+//              Returned value is of type []interface{}
+func (m *Model) GetPhysicalLocationNodesByFilter(filter *NodeFindFilter) (node []interface{}) {
+	return m.GetNodesByFilter("physicalLocation", filter)
+
+}
+
+// GetProcessNodesByFilter - Get list of interfaces that match the filter provided for processes
+//              Returned value is of type []interface{}
+func (m *Model) GetProcessNodesByFilter(filter *NodeFindFilter) (node []interface{}) {
+	return m.GetNodesByFilter("process", filter)
+}
+
+// GetNodesByChildLevelFilter - Get list of interfaces that match the filter provided for children of provided hierachy level
+//              Returned value is of type []interface{}
+func (m *Model) GetNodesByChildLevelFilter(queriedLevel string, filter *NodeFindFilter, nList []*Node) (node []interface{}) {
+
+	switch queriedLevel {
+	case "domain":
+		return m.GetDomainNodesByChildLevelFilter(filter, nList)
+	case "zone":
+		return m.GetZoneNodesByChildLevelFilter(filter, nList)
+	case "networkLocation":
+		return m.GetNetworkLocationNodesByChildLevelFilter(filter, nList)
+	case "physicalLocation":
+		return m.GetPhysicalLocationNodesByChildLevelFilter(filter, nList)
+	case "process":
+		return m.GetProcessNodesByChildLevelFilter(filter, nList)
+	default:
+	}
+
+	return nil
+}
+
+// GetProcessNodesByChildLevelFilter - Get list of interfaces that match the filter provided for children of processes
+//              Returned value is of type []interface{}
+func (m *Model) GetProcessNodesByChildLevelFilter(filter *NodeFindFilter, nList []*Node) (node []interface{}) {
+	//no children to process so no check necessary
+	//just converting nList to interface
+	var nListInterface []interface{}
+	for _, currentNode := range nList {
+		process := currentNode.object.(*dataModel.Process)
+		nListInterface = append(nListInterface, process)
+	}
+	return nListInterface
+}
+
+// GetDomainNodesByChildLevelFilter - Get list of interfaces that match the filter provided for children of domains
+//              Returned value is of type []interface{}
+func (m *Model) GetDomainNodesByChildLevelFilter(filter *NodeFindFilter, nList []*Node) (node []interface{}) {
+
+	var foundDomain, validDomainChildren bool
+	var foundZone, validZoneChildren bool
+	var foundNl, validNlChildren bool
+	var foundPl, validPlChildren bool
+
+	var nListInterface []interface{}
+
+	for _, currentNode := range nList {
+		foundDomain = true
+		domainObj := currentNode.object.(*dataModel.Domain)
+
+		//create a deepCopy
+		var domain dataModel.Domain
+		byt, _ := json.Marshal(domainObj)
+		json.Unmarshal(byt, &domain)
+
+		//if at least one filter required for children, force it to check
+		if filter.ZoneName != "" || filter.NetworkLocationName != "" || filter.PhysicalLocationName != "" || filter.ProcessName != "" || filter.NetworkLocationType != "" || filter.PhysicalLocationType != "" || filter.ProcessType != "" {
+			validDomainChildren = false
+		} else {
+			//bypass going through children if no need to minimze or return the children
+			if filter.Minimize && filter.Children {
+				validDomainChildren = false
+			} else {
+				validDomainChildren = true
+			}
+		}
+		if !validDomainChildren {
+			for _, zone := range domain.Zones {
+				foundZone = true
+				if filter.ZoneName != "" {
+					if filter.ZoneName != zone.Name {
+						foundZone = false
+						continue
+					}
+				}
+
+				//check to see if other filters need to be taken into account
+				if filter.NetworkLocationName != "" || filter.PhysicalLocationName != "" || filter.ProcessName != "" || filter.NetworkLocationType != "" || filter.PhysicalLocationType != "" || filter.ProcessType != "" {
+					validZoneChildren = false
+				} else {
+					//continue only if there is a need for children data if there is no other filter parameters
+					if !filter.Minimize || !filter.Children {
+						validDomainChildren = true
+						break
+					}
+					validZoneChildren = true
+				}
+
+				for _, nl := range zone.NetworkLocations {
+					foundNl = true
+
+					if filter.NetworkLocationName != "" {
+						if filter.NetworkLocationName != nl.Name {
+							foundNl = false
+							continue
+						}
+					}
+					if filter.NetworkLocationType != "" {
+						if filter.NetworkLocationType != nl.Type_ {
+							foundNl = false
+							continue
+						}
+					}
+
+					// Physical Locations
+					if filter.PhysicalLocationName != "" || filter.ProcessName != "" || filter.PhysicalLocationType != "" || filter.ProcessType != "" {
+						validNlChildren = false
+					} else {
+						if !filter.Minimize || !filter.Children {
+							validZoneChildren = true
+							break
+						}
+
+						validNlChildren = true
+					}
+
+					if filter.Minimize {
+						nl.GeoData = nil
+					}
+
+					for _, pl := range nl.PhysicalLocations {
+						foundPl = true
+
+						if filter.PhysicalLocationName != "" {
+							if filter.PhysicalLocationName != pl.Name {
+								foundPl = false
+								continue
+							}
+						}
+						if filter.PhysicalLocationType != "" {
+							if filter.PhysicalLocationType != pl.Type_ {
+								foundPl = false
+								continue
+							}
+						}
+
+						// Processes
+						if filter.ProcessName != "" || filter.ProcessType != "" {
+							validPlChildren = false
+						} else {
+							if !filter.Minimize || !filter.Children {
+								validNlChildren = true
+								break
+							}
+
+							validPlChildren = true
+						}
+
+						if filter.Minimize {
+							pl.GeoData = nil
+						}
+
+						for _, proc := range pl.Processes {
+							if filter.ProcessName != "" {
+								if filter.ProcessName != proc.Name {
+									continue
+								}
+							}
+							if filter.ProcessType != "" {
+								if filter.ProcessType != proc.Type_ {
+									continue
+								}
+							}
+
+							validPlChildren = true
+						}
+
+						if foundPl && validPlChildren {
+							validNlChildren = true
+						}
+					}
+
+					if foundNl && validNlChildren {
+						validZoneChildren = true
+					}
+				}
+				if foundZone && validZoneChildren {
+					validDomainChildren = true
+				}
+			}
+		}
+		if foundDomain && validDomainChildren {
+			if !filter.Children {
+				domain.Zones = nil
+
+			}
+			nListInterface = append(nListInterface, &domain)
+
+		}
+
+	}
+	return nListInterface
+
+}
+
+// GetZoneNodesByChildLevelFilter - Get list of interfaces that match the filter provided for children of zones
+//              Returned value is of type []interface{}
+func (m *Model) GetZoneNodesByChildLevelFilter(filter *NodeFindFilter, nList []*Node) (node []interface{}) {
+
+	var foundZone, validZoneChildren bool
+	var foundNl, validNlChildren bool
+	var foundPl, validPlChildren bool
+
+	var nListInterface []interface{}
+
+	for _, currentNode := range nList {
+		foundZone = true
+		zoneObj := currentNode.object.(*dataModel.Zone)
+
+		//create a deepCopy
+		var zone dataModel.Zone
+		byt, _ := json.Marshal(zoneObj)
+		json.Unmarshal(byt, &zone)
+
+		if filter.NetworkLocationName != "" || filter.PhysicalLocationName != "" || filter.ProcessName != "" || filter.NetworkLocationType != "" || filter.PhysicalLocationType != "" || filter.ProcessType != "" {
+			validZoneChildren = false
+		} else {
+			//continue only if there is a need for children data if there is no other filter parameters
+			if filter.Minimize && filter.Children {
+				validZoneChildren = false
+			} else {
+				validZoneChildren = true
+			}
+		}
+		if !validZoneChildren {
+
+			for _, nl := range zone.NetworkLocations {
+				foundNl = true
+
+				if filter.NetworkLocationName != "" {
+					if filter.NetworkLocationName != nl.Name {
+						foundNl = false
+						continue
+					}
+				}
+				if filter.NetworkLocationType != "" {
+					if filter.NetworkLocationType != nl.Type_ {
+						foundNl = false
+						continue
+					}
+				}
+
+				// Physical Locations
+				if filter.PhysicalLocationName != "" || filter.ProcessName != "" || filter.PhysicalLocationType != "" || filter.ProcessType != "" {
+					validNlChildren = false
+				} else {
+					if !filter.Minimize || !filter.Children {
+						validZoneChildren = true
+						break
+					}
+
+					validNlChildren = true
+				}
+
+				if filter.Minimize {
+					nl.GeoData = nil
+				}
+
+				for _, pl := range nl.PhysicalLocations {
+					foundPl = true
+
+					if filter.PhysicalLocationName != "" {
+						if filter.PhysicalLocationName != pl.Name {
+							foundPl = false
+							continue
+						}
+					}
+					if filter.PhysicalLocationType != "" {
+						if filter.PhysicalLocationType != pl.Type_ {
+							foundPl = false
+							continue
+						}
+					}
+
+					// Processes
+					if filter.ProcessName != "" || filter.ProcessType != "" {
+						validPlChildren = false
+					} else {
+						if !filter.Minimize || !filter.Children {
+							validNlChildren = true
+							break
+						}
+
+						validPlChildren = true
+					}
+
+					if filter.Minimize {
+						pl.GeoData = nil
+					}
+
+					for _, proc := range pl.Processes {
+						if filter.ProcessName != "" {
+							if filter.ProcessName != proc.Name {
+								continue
+							}
+						}
+						if filter.ProcessType != "" {
+							if filter.ProcessType != proc.Type_ {
+								continue
+							}
+						}
+						validPlChildren = true
+					}
+
+					if foundPl && validPlChildren {
+						validNlChildren = true
+					}
+				}
+
+				if foundNl && validNlChildren {
+					validZoneChildren = true
+				}
+			}
+		}
+		if foundZone && validZoneChildren {
+			if !filter.Children {
+				zone.NetworkLocations = nil
+			}
+			nListInterface = append(nListInterface, &zone)
+		}
+	}
+	return nListInterface
+
+}
+
+// GetNetworkLocationNodesByChildLevelFilter - Get list of interfaces that match the filter provided for children of network locations
+//              Returned value is of type []interface{}
+func (m *Model) GetNetworkLocationNodesByChildLevelFilter(filter *NodeFindFilter, nList []*Node) (node []interface{}) {
+
+	var foundNl, validNlChildren bool
+	var foundPl, validPlChildren bool
+
+	var nListInterface []interface{}
+
+	for _, currentNode := range nList {
+		foundNl = true
+		nlObj := currentNode.object.(*dataModel.NetworkLocation)
+
+		//create a deepCopy
+		var nl dataModel.NetworkLocation
+		byt, _ := json.Marshal(nlObj)
+		json.Unmarshal(byt, &nl)
+
+		if filter.PhysicalLocationName != "" || filter.ProcessName != "" || filter.PhysicalLocationType != "" || filter.ProcessType != "" {
+			validNlChildren = false
+		} else {
+			//continue only if there is a need for children data if there is no other filter parameters
+			if filter.Minimize && filter.Children {
+				validNlChildren = false
+			} else {
+				validNlChildren = true
+			}
+		}
+		if !validNlChildren {
+
+			for _, pl := range nl.PhysicalLocations {
+				foundPl = true
+
+				if filter.PhysicalLocationName != "" {
+					if filter.PhysicalLocationName != pl.Name {
+						foundPl = false
+						continue
+					}
+				}
+				if filter.PhysicalLocationType != "" {
+					if filter.PhysicalLocationType != pl.Type_ {
+						foundPl = false
+						continue
+					}
+				}
+
+				// Processes
+				if filter.ProcessName != "" || filter.ProcessType != "" {
+					validPlChildren = false
+				} else {
+					if !filter.Minimize || !filter.Children {
+						validNlChildren = true
+						break
+					}
+
+					validPlChildren = true
+				}
+
+				if filter.Minimize {
+					pl.GeoData = nil
+				}
+
+				for _, proc := range pl.Processes {
+					if filter.ProcessName != "" {
+						if filter.ProcessName != proc.Name {
+							continue
+						}
+					}
+					if filter.ProcessType != "" {
+						if filter.ProcessType != proc.Type_ {
+							continue
+						}
+					}
+
+					validPlChildren = true
+				}
+
+				if foundPl && validPlChildren {
+					validNlChildren = true
+				}
+			}
+		}
+		if foundNl && validNlChildren {
+			if !filter.Children {
+				nl.PhysicalLocations = nil
+			}
+			nListInterface = append(nListInterface, &nl)
+
+		}
+	}
+	return nListInterface
+
+}
+
+// GetPhysicalLocationNodesByChildLevelFilter - Get list of interfaces that match the filter provided for children of physical locations
+//              Returned value is of type []interface{}
+func (m *Model) GetPhysicalLocationNodesByChildLevelFilter(filter *NodeFindFilter, nList []*Node) (node []interface{}) {
+
+	var foundPl, validPlChildren bool
+
+	var nListInterface []interface{}
+
+	for _, currentNode := range nList {
+		foundPl = true
+		plObj := currentNode.object.(*dataModel.PhysicalLocation)
+
+		//create a deepCopy
+		var pl dataModel.PhysicalLocation
+		byt, _ := json.Marshal(plObj)
+		json.Unmarshal(byt, &pl)
+
+		if filter.ProcessName != "" || filter.ProcessType != "" {
+			validPlChildren = false
+		} else {
+			//continue only if there is a need for children data if there is no other filter parameters
+			if filter.Minimize && filter.Children {
+				validPlChildren = false
+			} else {
+				validPlChildren = true
+			}
+		}
+		if !validPlChildren {
+
+			if filter.Minimize {
+				pl.GeoData = nil
+			}
+
+			for _, proc := range pl.Processes {
+				if filter.ProcessName != "" {
+					if filter.ProcessName != proc.Name {
+						continue
+					}
+				}
+				if filter.ProcessType != "" {
+					if filter.ProcessType != proc.Type_ {
+						continue
+					}
+				}
+
+				validPlChildren = true
+			}
+		}
+		if foundPl && validPlChildren {
+			if !filter.Children {
+				pl.Processes = nil
+			}
+			nListInterface = append(nListInterface, &pl)
+
+		}
+	}
+	return nListInterface
+
+}
+
+// GetNodesByFilter - Get nodes matching filter criteria
+//              Returned value is of type []interface{}
+//    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
+func (m *Model) GetNodesByFilter(queriedLevel string, filter *NodeFindFilter) (node []interface{}) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	//find matching nodes matching filter criteria in parents hierarchy
+	nList := m.GetNodesByParentLevelFilter(queriedLevel, filter)
+
+	//no need to check any further
+	if nList == nil {
+		return nil
+	}
+	return m.GetNodesByChildLevelFilter(queriedLevel, filter, nList)
 }
 
 // GetNetworkGraph - Get the network graph
