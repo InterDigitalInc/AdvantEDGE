@@ -2013,6 +2013,18 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		//although trigger is optional, lets force it to support the only trigger that we support if it is not there already
+		supportedTriggerAlreadyPresent := false
+		for _, currentTrigger := range subscription.FilterCriteriaAssocTri.Trigger {
+			if currentTrigger == TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS {
+				//already part of the list, no update needed
+				supportedTriggerAlreadyPresent = true
+			}
+		}
+		if !supportedTriggerAlreadyPresent {
+			subscription.FilterCriteriaAssocTri.Trigger = append(subscription.FilterCriteriaAssocTri.Trigger, TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS)
+		}
+
 		//registration
 		registerMr(&subscription, subsIdStr)
 		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
@@ -2042,6 +2054,18 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "For non null nrcgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
+		}
+
+		//although trigger is optional, lets force it to support the only trigger that we support if it is not there already
+		supportedTriggerAlreadyPresent := false
+		for _, currentTrigger := range subscription.FilterCriteriaNrMrs.TriggerNr {
+			if currentTrigger == TRIGGER_NR_NR_PERIODICAL {
+				//already part of the list, no update needed
+				supportedTriggerAlreadyPresent = true
+			}
+		}
+		if !supportedTriggerAlreadyPresent {
+			subscription.FilterCriteriaNrMrs.TriggerNr = append(subscription.FilterCriteriaNrMrs.TriggerNr, TRIGGER_NR_NR_PERIODICAL)
 		}
 
 		//registration
