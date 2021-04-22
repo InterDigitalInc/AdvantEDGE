@@ -25,9 +25,9 @@ package model
 
 // PDU Session
 type PduSession struct {
-	// PDU Session ID
-	Id string `json:"id,omitempty"`
 	// UE name as defined in the scenario
-	Ue   string           `json:"ue,omitempty"`
-	Info []PduSessionInfo `json:"info,omitempty"`
+	Ue string `json:"ue,omitempty"`
+	// PDU Session ID
+	Id   string          `json:"id,omitempty"`
+	Info *PduSessionInfo `json:"info,omitempty"`
 }

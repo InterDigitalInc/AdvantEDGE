@@ -203,7 +203,7 @@ import * as droneBlue from '../../img/drone-blue.svg';
 import * as droneBlack from '../../img/drone-black.svg';
 
 // Parse scenario to populate visualization & table
-export function parseScenario(scenario) {
+export function parseScenario(scenario, pduSessions) {
   if (!scenario) {
     return null;
   }
@@ -262,7 +262,7 @@ export function parseScenario(scenario) {
           const parent = domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario :
             zone.type === COMMON_ZONE_TYPE_STR ? domain :
               nl.type === DEFAULT_NL_TYPE_STR ? zone : nl;
-          addPlNode(pl, parent, nodes, edges);
+          addPlNode(pl, parent, nodes, edges, pduSessions);
 
           // Add PL with geodata to map
           if (pl.geoData && pl.geoData.location) {
@@ -1683,6 +1683,33 @@ function addWirelessTypes(tooltip, type) {
     tooltip.innerHTML += '<br>wireless types: ' + type;
   }
 }
+function addEdgeDataNetwork(tooltip, dataNetwork) {
+  if (dataNetwork) {
+    if (dataNetwork.dnn) {
+      tooltip.innerHTML += '<br>data network: ' + (dataNetwork.dnn || '');
+      tooltip.innerHTML += '<br>local area: ' + ((dataNetwork.ladn) ? 'true' : 'false');
+    }
+    if (dataNetwork.ecsp) {
+      tooltip.innerHTML += '<br>service provider: ' + (dataNetwork.ecsp || '');
+    }
+  }
+}
+function addPduSessions(tooltip, pduSessions, ueName) {
+  if (pduSessions && pduSessions.sessions) {
+    addTitle(tooltip, '<br><br>Active PDU Sessions');
+    var found = false;
+    for (var i = 0; i < pduSessions.sessions.length; i++) {
+      var session = pduSessions.sessions[i];
+      if (session.ue === ueName) {
+        tooltip.innerHTML += '<br>id/dnn: ' + (session.id || '') + '/' + ((session.info) ? session.info.dnn || '' : '');
+        found = true;
+      }
+    }
+    if (!found) {
+      tooltip.innerHTML += '<br>none';
+    }
+  }
+}
 
 // Add scenario node
 export function addScenarioNode(scenario, nodes) {
@@ -1846,7 +1873,7 @@ export function addNlNode(nl, parent, nodes, edges) {
 }
 
 // Add physical location node
-export function addPlNode(pl, parent, nodes, edges) {
+export function addPlNode(pl, parent, nodes, edges, pduSessions) {
   var nodeTooltip = createTooltip('Node Configuration');
   addName(nodeTooltip, pl.name);
   addType(nodeTooltip, (pl.type === UE_TYPE_STR) ? 'TERMINAL' : pl.type);
@@ -1882,6 +1909,8 @@ export function addPlNode(pl, parent, nodes, edges) {
   // Set level and group based on PL type
   switch (pl.type) {
   case FOG_TYPE_STR: {
+    addEdgeDataNetwork(nodeTooltip, pl.dataNetwork);
+
     latency = 0;
     n['level'] = 4;
     
@@ -1899,6 +1928,8 @@ export function addPlNode(pl, parent, nodes, edges) {
     break;
   }
   case EDGE_TYPE_STR: {
+    addEdgeDataNetwork(nodeTooltip, pl.dataNetwork);
+
     edgeTooltip = createTooltip('Link Configuration');
     addType(edgeTooltip, 'intra-zone');
     addConnectionState(edgeTooltip, pl.connected);
@@ -1922,6 +1953,7 @@ export function addPlNode(pl, parent, nodes, edges) {
 
   case UE_TYPE_STR: {
     addWirelessTypes(nodeTooltip, pl.wirelessType);
+    addPduSessions(nodeTooltip, pduSessions, pl.name);
 
     edgeTooltip = createTooltip('Link Configuration');
     addType(edgeTooltip, 'terminal-link');
@@ -1961,6 +1993,8 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
 
   case DC_TYPE_STR: {
+    addEdgeDataNetwork(nodeTooltip, pl.dataNetwork);
+
     edgeTooltip = createTooltip('Link Configuration');
     addType(edgeTooltip, 'inter-domain');
     addConnectionState(edgeTooltip, pl.connected);

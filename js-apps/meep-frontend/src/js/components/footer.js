@@ -30,11 +30,11 @@ const Footer = () => {
 
   return (
     <Grid style={styles.footer}>
-      <GridCell span={1}/>
-      <GridCell span={4} align={'middle'} style={styles.copyright}>
-        <Typography use="body1">Copyright © 2021 InterDigital Communications, Inc</Typography>
+      <GridCell span={2}/>
+      <GridCell span={3} align={'middle'} style={styles.copyright}>
+        <Typography use="body1">© 2021 InterDigital, Inc</Typography>
       </GridCell>
-      <GridCell span={6} align={'middle'}>
+      <GridCell span={5} align={'middle'}>
         <div align={'right'}>
           <a href={MEEP_FOOTER_WIKI_URL} target="_blank" style={styles.link}>
             <Typography use="body1">Wiki</Typography>

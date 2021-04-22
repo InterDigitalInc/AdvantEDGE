@@ -124,7 +124,7 @@ Get list of active PDU Sessions matching provided filters
      * @param "Ue" (optional.String) -  Return PDU sessions matching provided UE name
      * @param "Id" (optional.String) -  Return PDU session matching provided PDU session ID
 
-@return []PduSessionList
+@return PduSessionList
 */
 
 type GetPduSessionListOpts struct {
@@ -132,13 +132,13 @@ type GetPduSessionListOpts struct {
 	Id optional.String
 }
 
-func (a *ConnectivityApiService) GetPduSessionList(ctx context.Context, localVarOptionals *GetPduSessionListOpts) ([]PduSessionList, *http.Response, error) {
+func (a *ConnectivityApiService) GetPduSessionList(ctx context.Context, localVarOptionals *GetPduSessionListOpts) (PduSessionList, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue []PduSessionList
+		localVarReturnValue PduSessionList
 	)
 
 	// create path and map variables
@@ -202,7 +202,7 @@ func (a *ConnectivityApiService) GetPduSessionList(ctx context.Context, localVar
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v []PduSessionList
+			var v PduSessionList
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

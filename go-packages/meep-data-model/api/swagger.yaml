@@ -1078,16 +1078,14 @@ definitions:
   PDUSession:
     type: object
     properties:
-      id:
-        type: string
-        description: PDU Session ID
       ue:
         type: string
         description: UE name as defined in the scenario
+      id:
+        type: string
+        description: PDU Session ID
       info:
-        type: array
-        items:
-          $ref: '#/definitions/PDUSessionInfo'
+        $ref: '#/definitions/PDUSessionInfo'
     description: PDU Session
     example: {}
   PDUSessionInfo:

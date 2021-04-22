@@ -18,6 +18,7 @@ import React, { Component }  from 'react';
 import { connect } from 'react-redux';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+import '../../../img/AdvantEDGE-logo_Blue-01.png';
 
 class HomePageContainer extends Component {
   constructor(props) {

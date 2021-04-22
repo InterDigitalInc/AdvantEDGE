@@ -129,6 +129,9 @@ export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
 export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
 
+export const getElemByName = (entries, name) => {
+  return (entries && entries[name]) ? entries[name] : null;
+};
 
 export const getElemFieldVal = (elem, field) => {
   return (elem && elem[field]) ? elem[field].val : null;

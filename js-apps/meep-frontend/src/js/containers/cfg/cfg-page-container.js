@@ -696,7 +696,7 @@ class CfgPageContainer extends Component {
               <GridInner>
                 <GridCell span={8}>
                   <Elevation className='idcc-elevation' z={2}>
-                    <div style={{ padding: 10, height: '70vh' }}>
+                    <div style={styles.vis}>
                       {this.props.cfgView === CFG_VIEW_NETWORK && (
                         <IDCVis
                           type={TYPE_CFG}
@@ -767,6 +767,11 @@ const styles = {
   cfgTable: {
     marginTop: 20,
     padding: 10
+  },
+  vis: {
+    padding: 10,
+    height: '70vh',
+    minHeight: 600
   }
 };
 

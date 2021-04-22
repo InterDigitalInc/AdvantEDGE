@@ -106,6 +106,12 @@ import {
   cfgChangeMap
 } from '../state/cfg';
 
+import {
+  FIELD_CONNECTIVITY_MODEL,
+  getElemByName,
+  getElemFieldVal
+} from '../util/elem-utils';
+
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
 meepPlatformCtrlRestApiClient.ApiClient.instance.basePath = basepathPlatformCtrl.replace(/\/+$/,'');
@@ -125,6 +131,8 @@ class MeepContainer extends Component {
     super(props);
     autoBind(this);
 
+    this.pduSessions = null;
+
     this.sessionKeepaliveTimer = null;
     this.platformRefreshIntervalTimer = null;
     this.execPageRefreshIntervalTimer = null;
@@ -137,6 +145,7 @@ class MeepContainer extends Component {
     this.meepEventAutomationApi = new meepGisEngineRestApiClient.AutomationApi();
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
     this.meepAuthApi = new meepAuthSvcRestApiClient.AuthApi();
+    this.meepConnectivityApi = new meepSandboxCtrlRestApiClient.ConnectivityApi();
   }
 
   componentDidMount() {
@@ -218,6 +227,7 @@ class MeepContainer extends Component {
           this.refreshSandboxList();
           if (this.props.sandbox) {
             this.checkScenarioStatus();
+            this.refreshPduSessions();
             this.refreshScenario();
             this.refreshMap();
           }
@@ -415,13 +425,18 @@ class MeepContainer extends Component {
     }
 
     // Parse Scenario object to retrieve visualization data and scenario table
-    var page = pageType === TYPE_CFG ? this.props.cfg : this.props.exec;
-    var parsedScenario = parseScenario(page.scenario);
+    var page = (pageType === TYPE_CFG) ? this.props.cfg : this.props.exec;
+    var pduSessions = (pageType === TYPE_CFG) ? null : this.pduSessions;
+    var scenarioName = (page.scenario) ? page.scenario.name : '';
+    var parsedScenario = parseScenario(page.scenario, pduSessions);
     var updatedMapData = updateObject({}, parsedScenario.mapData);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
     // updatedVisData.nodes._data.sort();
     // updatedVisData.edges._data.sort();
     var updatedTable = updateObject(page.table, parsedScenario.table);
+
+    // Update connectivity mode
+    this.updateConnectivityMode(pageType, updatedTable, scenarioName);
 
     // Dispatch state updates
     if (pageType === TYPE_CFG) {
@@ -456,7 +471,7 @@ class MeepContainer extends Component {
           //restore the canvas position and scale in vis
           vis.network.canvas.body.view = view;
         });
-      }
+      } 
     }
   }
 
@@ -580,6 +595,40 @@ class MeepContainer extends Component {
     this.meepGeoDataApi.getAssetData({assetType: 'COMPUTE'}, (error, data) =>
       this.getComputeAssetDataCb(error, data)
     );
+  }
+
+  /**
+   * Callback function to receive the result of the getPduSessionList operation.
+   * @callback module:api/ConnectivityApi~getPduSessionListCallback
+   * @param {String} error Error message, if any.
+   * @param {Array.<module:model/PDUSessionList>} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getPduSessionListCb(error, data) {
+    if (error !== null) {
+      return;
+    }
+
+    // Update PDU session map
+    this.pduSessions = data;
+  }
+
+  // Refresh PDU Sessions
+  refreshPduSessions() {
+    if (this.connectivityMode === 'PDU') {
+      this.meepConnectivityApi.getPduSessionList(null, (error, data) =>
+        this.getPduSessionListCb(error, data)
+      );
+    }
+  }
+
+  // Update connectivity mode
+  updateConnectivityMode(pageType, table, name) {
+    if (pageType === TYPE_CFG) {
+      this.connectivityMode = '';
+    } else {
+      this.connectivityMode = getElemFieldVal(getElemByName(table.entries, name), FIELD_CONNECTIVITY_MODEL);
+    }
   }
 
   // Set sandox-specific API basepath
@@ -711,6 +760,7 @@ class MeepContainer extends Component {
   signInOAuth(provider) {
     // Set state to signing in
     this.props.changeSignInStatus(STATUS_SIGNING_IN);
+    this.closeDialog();
     window.location.href = HOST_PATH + '/auth/v1/login?provider=' + provider;
   }
 

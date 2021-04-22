@@ -966,9 +966,7 @@ paths:
         200:
           description: "OK"
           schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/PDUSessionList"
+            $ref: "#/definitions/PDUSessionList"
         400:
           description: "Bad request"
   /connectivity/pdu-session/{ueName}/{pduSessionId}:
@@ -2052,16 +2050,14 @@ definitions:
   PDUSession:
     type: "object"
     properties:
-      id:
-        type: "string"
-        description: "PDU Session ID"
       ue:
         type: "string"
         description: "UE name as defined in the scenario"
+      id:
+        type: "string"
+        description: "PDU Session ID"
       info:
-        type: "array"
-        items:
-          $ref: "#/definitions/PDUSessionInfo"
+        $ref: "#/definitions/PDUSessionInfo"
     description: "PDU Session"
     example: {}
   PDUSessionInfo:

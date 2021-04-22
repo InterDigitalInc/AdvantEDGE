@@ -55,16 +55,16 @@
         expect(instance).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSession);
       });
 
-      it('should have the property id (base name: "id")', function() {
-        // TODO: update the code to test the property id
-        expect(instance).to.have.property('id');
-        // expect(instance.id).to.be(expectedValueLiteral);
-      });
-
       it('should have the property ue (base name: "ue")', function() {
         // TODO: update the code to test the property ue
         expect(instance).to.have.property('ue');
         // expect(instance.ue).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property id (base name: "id")', function() {
+        // TODO: update the code to test the property id
+        expect(instance).to.have.property('id');
+        // expect(instance.id).to.be(expectedValueLiteral);
       });
 
       it('should have the property info (base name: "info")', function() {

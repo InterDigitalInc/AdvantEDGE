@@ -86,35 +86,21 @@
               return;
             }
             // TODO: update response assertions
-            let dataCtr = data;
-            expect(dataCtr).to.be.an(Array);
-            expect(dataCtr).to.not.be.empty();
-            for (let p in dataCtr) {
-              let data = dataCtr[p];
-              expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionList);
-              {
-                let dataCtr = data.sessions;
-                expect(dataCtr).to.be.an(Array);
-                expect(dataCtr).to.not.be.empty();
-                for (let p in dataCtr) {
-                  let data = dataCtr[p];
-                  expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSession);
-                  expect(data.id).to.be.a('string');
-                  expect(data.id).to.be("");
-                  expect(data.ue).to.be.a('string');
-                  expect(data.ue).to.be("");
-                  {
-                    let dataCtr = data.info;
-                    expect(dataCtr).to.be.an(Array);
-                    expect(dataCtr).to.not.be.empty();
-                    for (let p in dataCtr) {
-                      let data = dataCtr[p];
-                      expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
-                      expect(data.dnn).to.be.a('string');
-                      expect(data.dnn).to.be("");
-                    }
-                  }
-                }
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionList);
+            {
+              let dataCtr = data.sessions;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSession);
+                expect(data.ue).to.be.a('string');
+                expect(data.ue).to.be("");
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.info).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
+                      expect(data.info.dnn).to.be.a('string');
+                  expect(data.info.dnn).to.be("");
               }
             }
 

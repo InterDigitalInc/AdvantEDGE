@@ -70,21 +70,15 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
-      if (data.hasOwnProperty('id'))
-        obj.id = ApiClient.convertToType(data['id'], 'String');
       if (data.hasOwnProperty('ue'))
         obj.ue = ApiClient.convertToType(data['ue'], 'String');
+      if (data.hasOwnProperty('id'))
+        obj.id = ApiClient.convertToType(data['id'], 'String');
       if (data.hasOwnProperty('info'))
-        obj.info = ApiClient.convertToType(data['info'], [PDUSessionInfo]);
+        obj.info = PDUSessionInfo.constructFromObject(data['info']);
     }
     return obj;
   }
-
-  /**
-   * PDU Session ID
-   * @member {String} id
-   */
-  exports.prototype.id = undefined;
 
   /**
    * UE name as defined in the scenario
@@ -93,7 +87,13 @@
   exports.prototype.ue = undefined;
 
   /**
-   * @member {Array.<module:model/PDUSessionInfo>} info
+   * PDU Session ID
+   * @member {String} id
+   */
+  exports.prototype.id = undefined;
+
+  /**
+   * @member {module:model/PDUSessionInfo} info
    */
   exports.prototype.info = undefined;
 

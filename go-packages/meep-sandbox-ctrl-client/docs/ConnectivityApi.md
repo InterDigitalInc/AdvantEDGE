@@ -40,7 +40,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetPduSessionList**
-> []PduSessionList GetPduSessionList(ctx, optional)
+> PduSessionList GetPduSessionList(ctx, optional)
 Get list of PDU Sessions
 
 Get list of active PDU Sessions matching provided filters
@@ -62,7 +62,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]PduSessionList**](PDUSessionList.md)
+[**PduSessionList**](PDUSessionList.md)
 
 ### Authorization
 

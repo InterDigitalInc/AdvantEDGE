@@ -126,7 +126,7 @@
      * Callback function to receive the result of the getPduSessionList operation.
      * @callback module:api/ConnectivityApi~getPduSessionListCallback
      * @param {String} error Error message, if any.
-     * @param {Array.<module:model/PDUSessionList>} data The data returned by the service call.
+     * @param {module:model/PDUSessionList} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -137,7 +137,7 @@
      * @param {String} opts.ue Return PDU sessions matching provided UE name
      * @param {String} opts.id Return PDU session matching provided PDU session ID
      * @param {module:api/ConnectivityApi~getPduSessionListCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link Array.<module:model/PDUSessionList>}
+     * data is of type: {@link module:model/PDUSessionList}
      */
     this.getPduSessionList = function(opts, callback) {
       opts = opts || {};
@@ -160,7 +160,7 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = [PDUSessionList];
+      var returnType = PDUSessionList;
 
       return this.apiClient.callApi(
         '/connectivity/pdu-session', 'GET',

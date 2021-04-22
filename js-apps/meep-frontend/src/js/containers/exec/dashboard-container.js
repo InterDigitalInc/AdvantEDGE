@@ -53,6 +53,10 @@ import { updateObject } from '../../util/object-util';
 const styles = {
   button: {
     marginRight: 10
+  },
+  dashboard: {
+    height: '70vh',
+    minHeight: 600
   }
 };
 
@@ -147,7 +151,7 @@ const ViewForName = ({
   // Handle Map view
   if (viewName === MAP_VIEW) {
     return (
-      <div style={{ height: '80vh' }}>
+      <div style={styles.dashboard}>
         <IDCMap
           type={TYPE_EXEC}
           sandboxName={sandboxName}
@@ -159,7 +163,7 @@ const ViewForName = ({
   // Handle Network Topology view
   if (viewName === NET_TOPOLOGY_VIEW) {
     return (
-      <div style={{ height: '80vh' }}>
+      <div style={styles.dashboard}>
         <IDCVis
           type={TYPE_EXEC}
           width='100%'
@@ -193,7 +197,7 @@ const ViewForName = ({
     }
 
     return (
-      <div style={{ height: '80vh' }}>
+      <div style={styles.dashboard}>
         <Iframe
           url={selectedUrl}
           id='myId'

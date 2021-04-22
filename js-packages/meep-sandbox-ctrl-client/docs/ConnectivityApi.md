@@ -63,7 +63,7 @@ No authorization required
 
 <a name="getPduSessionList"></a>
 # **getPduSessionList**
-> [PDUSessionList] getPduSessionList(opts)
+> PDUSessionList getPduSessionList(opts)
 
 Get list of PDU Sessions
 
@@ -99,7 +99,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[PDUSessionList]**](PDUSessionList.md)
+[**PDUSessionList**](PDUSessionList.md)
 
 ### Authorization
 

@@ -1289,7 +1289,7 @@ func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
 	ueName := vars["ueName"]
 	log.Debug("UE name: ", ueName)
 	pduSessionId := vars["pduSessionId"]
-	log.Debug("UE name: ", pduSessionId)
+	log.Debug("PDU Session ID: ", pduSessionId)
 
 	// Retrieve PDU Session Info from request body
 	if r.Body == nil {
@@ -1329,6 +1329,54 @@ func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func ceGetPduSessionList(w http.ResponseWriter, r *http.Request) {
+
+	// Retrieve query parameters
+	query := r.URL.Query()
+	ueName := query.Get("ue")
+	pduSessionId := query.Get("id")
+
+	// Get PDU Sessions
+	pduSessions, err := sbxCtrl.pduSessionStore.GetAllPduSessions()
+	if err != nil {
+		log.Error("Failed to get PDU sessions. Error: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Prepare PDU Session List
+	pduSessionList := new(dataModel.PduSessionList)
+	for name, session := range pduSessions {
+		// Filter based on UE name
+		if ueName == "" || ueName == name {
+			for id, info := range session {
+				// Filter based on PDU Session ID
+				if pduSessionId == "" || pduSessionId == id {
+					var pduSession dataModel.PduSession
+					pduSession.Ue = name
+					pduSession.Id = id
+					pduSession.Info = new(dataModel.PduSessionInfo)
+					pduSession.Info.Dnn = info.Dnn
+					pduSessionList.Sessions = append(pduSessionList.Sessions, pduSession)
+				}
+			}
+		}
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(*pduSessionList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
