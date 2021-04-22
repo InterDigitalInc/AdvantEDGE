@@ -19,11 +19,11 @@ import IDDialog from './id-dialog';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Button } from '@rmwc/button';
 import GitHubIcon from '@/img/logo-github.svg';
-import GitLabIcon from '@/img/logo-gitlab.svg';
+// import GitLabIcon from '@/img/logo-gitlab.svg';
 
 import {
-  OAUTH_PROVIDER_GITHUB,
-  OAUTH_PROVIDER_GITLAB
+  OAUTH_PROVIDER_GITHUB
+  // OAUTH_PROVIDER_GITLAB
 } from '@/js/meep-constants';
 
 class IDSignInOAuthDialog extends Component {
@@ -47,12 +47,12 @@ class IDSignInOAuthDialog extends Component {
               GitHub
             </Button>
           </GridCell>
-          <GridCell span={6}>
+          {/* <GridCell span={6}>
             <Button style={styles.button} outlined onClick={() => this.props.onSignIn(OAUTH_PROVIDER_GITLAB)}>
               <img style={styles.icon} src={GitLabIcon}/>
-              GitLab (EOL Account)
+              GitLab
             </Button>
-          </GridCell>
+          </GridCell> */}
         </Grid>
         <span style={styles.text}>
           Authenticating with an external provider will:
