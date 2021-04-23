@@ -23,6 +23,7 @@ import { updateObject } from '@/js/util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 import ScenarioUpdateEventPane from './scenario-update-event-pane';
+import PduSessionEventPane from './pdu-session-event-pane';
 
 import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
 
@@ -41,13 +42,15 @@ import {
   execEdgeApps,
   execFogs,
   execFogEdges,
-  execZones
+  execZones,
+  execDNs
 } from '@/js/state/exec';
 
 import {
   MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
   SCENARIO_UPDATE_EVENT,
+  PDU_SESSION_EVENT,
   EXEC_EVT_TYPE,
   PAGE_EXECUTE
 } from '@/js/meep-constants';
@@ -114,6 +117,17 @@ const EventCreationFields = props => {
         api={props.api}
       />
     );
+  case PDU_SESSION_EVENT:
+    return (
+      <PduSessionEventPane
+        currentEvent={props.currentEvent}
+        onSuccess={props.onSuccess}
+        onClose={props.onClose}
+        api={props.api}
+        UEs={props.UEs}
+        DNs={props.DNs}
+      />
+    );
   default:
     return <div></div>;
   }
@@ -123,8 +137,12 @@ class EventCreationPane extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-  }
 
+    if (!this.props.currentEvent) {
+      this.props.changeEvent('');
+    }
+  }
+  
   onEventPaneClose(e) {
     e.preventDefault();
     this.props.changeEvent('');
@@ -179,6 +197,7 @@ class EventCreationPane extends Component {
           MobTypes={this.props.MobTypes}
           EdgeApps={this.props.EdgeApps}
           FogEdges={this.props.FogEdges}
+          DNs={this.props.DNs}
           table={this.props.table}
           networkElements={this.props.networkElements}
         />
@@ -213,7 +232,7 @@ const styles = {
     marginBottom: 20
   },
   field: {
-    marginBottom: 10
+    marginBottom: 20
   },
   select: {
     width: '100%'
@@ -230,6 +249,7 @@ const mapStateToProps = state => {
     EDGEs: execEdges(state),
     FOGs: execFogs(state),
     ZONEs: execZones(state),
+    DNs: execDNs(state),
     MobTypes: execMobTypes(state),
     EdgeApps: execEdgeApps(state),
     FogEdges: execFogEdges(state),

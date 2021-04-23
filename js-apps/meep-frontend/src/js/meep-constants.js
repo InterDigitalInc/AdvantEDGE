@@ -221,6 +221,11 @@ export const EXEC_EVT_SU_ACTION = 'exec-evt-su-action';
 export const EXEC_EVT_SU_REMOVE_ELEM_TYPE = 'exec-evt-su-remove-elem-type';
 export const EXEC_EVT_SU_REMOVE_ELEM_NAME = 'exec-evt-su-remove-elem-name';
 
+export const EXEC_EVT_PDU_SESSION_ACTION = 'exec-evt-pdu-session-action';
+export const EXEC_EVT_PDU_SESSION_UE = 'exec-evt-pdu-session-ue';
+export const EXEC_EVT_PDU_SESSION_ID = 'exec-evt-pdu-session-id';
+export const EXEC_EVT_PDU_SESSION_DNN = 'exec-evt-pdu-session-dnn';
+
 export const MEEP_EVENT_COUNT = 'meep-event-count';
 
 // Trivia
@@ -357,14 +362,19 @@ export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const DEST_DISCONNECTED = 'DISCONNECTED';
+
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 export const SCENARIO_UPDATE_EVENT = 'SCENARIO-UPDATE';
+export const PDU_SESSION_EVENT = 'PDU-SESSION';
 
 export const SCENARIO_UPDATE_ACTION_NONE = 'NONE';
 export const SCENARIO_UPDATE_ACTION_ADD = 'ADD';
 export const SCENARIO_UPDATE_ACTION_REMOVE = 'REMOVE';
 export const SCENARIO_UPDATE_ACTION_MODIFY = 'MODIFY';
+
+export const PDU_SESSION_ACTION_ADD = 'ADD';
+export const PDU_SESSION_ACTION_REMOVE = 'REMOVE';
 
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [

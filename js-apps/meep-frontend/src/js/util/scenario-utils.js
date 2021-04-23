@@ -1695,14 +1695,16 @@ function addEdgeDataNetwork(tooltip, dataNetwork) {
   }
 }
 function addPduSessions(tooltip, pduSessions, ueName) {
-  if (pduSessions && pduSessions.sessions) {
-    addTitle(tooltip, '<br><br>Active PDU Sessions');
+  if (pduSessions) {
+    addTitle(tooltip, '<br><br>PDU Sessions (id:dnn)');
     var found = false;
-    for (var i = 0; i < pduSessions.sessions.length; i++) {
-      var session = pduSessions.sessions[i];
-      if (session.ue === ueName) {
-        tooltip.innerHTML += '<br>id/dnn: ' + (session.id || '') + '/' + ((session.info) ? session.info.dnn || '' : '');
-        found = true;
+    if (pduSessions.sessions) {
+      for (var i = 0; i < pduSessions.sessions.length; i++) {
+        var session = pduSessions.sessions[i];
+        if (session.ue === ueName) {
+          tooltip.innerHTML += '<br>' + (session.id || '') + ': ' + ((session.info) ? session.info.dnn || '' : '');
+          found = true;
+        }
       }
     }
     if (!found) {

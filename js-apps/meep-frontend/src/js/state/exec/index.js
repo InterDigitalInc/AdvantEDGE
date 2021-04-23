@@ -44,7 +44,8 @@ import {
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_FOG,
   ELEMENT_TYPE_UE,
-  ELEMENT_TYPE_EDGE_APP
+  ELEMENT_TYPE_EDGE_APP,
+  ELEMENT_TYPE_DC
 } from '../../meep-constants';
 
 export * from './type-reducer';
@@ -59,14 +60,15 @@ export * from './api-results';
 export * from './element-configuration';
 
 const execTableElements = state => state.exec.table.entries;
-const execUEs = createSelector(
+
+export const execUEs = createSelector(
   [execTableElements],
   elems => {
     return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_UE);
   }
 );
 
-const execMobTypes = createSelector(
+export const execMobTypes = createSelector(
   [execTableElements],
   elems => {
     return _.filter(
@@ -81,7 +83,7 @@ const execMobTypes = createSelector(
   }
 );
 
-const execFogEdges = createSelector(
+export const execFogEdges = createSelector(
   [execTableElements],
   elems => {
     return _.filter(
@@ -93,7 +95,7 @@ const execFogEdges = createSelector(
   }
 );
 
-const execEdgeApps = createSelector(
+export const execEdgeApps = createSelector(
   [execTableElements],
   elems => {
     return _.filter(
@@ -103,7 +105,7 @@ const execEdgeApps = createSelector(
   }
 );
 
-const execEdges = createSelector(
+export const execEdges = createSelector(
   [execTableElements],
   elems => {
     return _.filter(
@@ -113,14 +115,14 @@ const execEdges = createSelector(
   }
 );
 
-const execFogs = createSelector(
+export const execFogs = createSelector(
   [execTableElements],
   elems => {
     return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_FOG);
   }
 );
 
-const execZones = createSelector(
+export const execZones = createSelector(
   [execTableElements],
   elems => {
     return _.filter(
@@ -130,7 +132,7 @@ const execZones = createSelector(
   }
 );
 
-const execPOAs = createSelector(
+export const execPOAs = createSelector(
   [execTableElements],
   elems => {
     return _.filter(
@@ -144,16 +146,18 @@ const execPOAs = createSelector(
   }
 );
 
-export {
-  execUEs,
-  execPOAs,
-  execMobTypes,
-  execEdges,
-  execFogs,
-  execZones,
-  execEdgeApps,
-  execFogEdges
-};
+export const execDNs = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(
+      elems,
+      elem =>
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_FOG ||
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_EDGE ||
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_DC
+    );
+  }
+);
 
 const execReducer = combineReducers({
   type: typeReducer,

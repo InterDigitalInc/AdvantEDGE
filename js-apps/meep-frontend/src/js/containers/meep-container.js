@@ -195,6 +195,9 @@ class MeepContainer extends Component {
       this.startExecPageRefresh();
       this.startReplayStatusRefresh();
     }
+    if (this.props.signInStatus === STATUS_SIGNED_IN) {
+      this.startSessionKeepaliveTimer();
+    }
   }
   stopTimers() {
     this.stopReplayStatusRefresh();
@@ -623,11 +626,11 @@ class MeepContainer extends Component {
   }
 
   // Update connectivity mode
-  updateConnectivityMode(pageType, table, name) {
+  updateConnectivityMode(pageType, table, scenarioName) {
     if (pageType === TYPE_CFG) {
       this.connectivityMode = '';
     } else {
-      this.connectivityMode = getElemFieldVal(getElemByName(table.entries, name), FIELD_CONNECTIVITY_MODEL);
+      this.connectivityMode = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_CONNECTIVITY_MODEL);
     }
   }
 

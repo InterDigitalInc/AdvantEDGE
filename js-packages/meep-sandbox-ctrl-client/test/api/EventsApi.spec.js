@@ -232,6 +232,13 @@
           event.eventScenarioUpdate.node.nodeDataUnion.process.placementId = "";
           event.eventScenarioUpdate.node.parent = "";
           event.eventScenarioUpdate.node.children = [""];
+          event.eventPduSession = new AdvantEdgeSandboxControllerRestApi.EventPduSession();
+          event.eventPduSession.action = "ADD";
+          event.eventPduSession.pduSession = new AdvantEdgeSandboxControllerRestApi.PDUSession();
+          event.eventPduSession.pduSession.ue = "";
+          event.eventPduSession.pduSession.id = "";
+          event.eventPduSession.pduSession.info = new AdvantEdgeSandboxControllerRestApi.PDUSessionInfo();
+          event.eventPduSession.pduSession.info.dnn = "";
 
           instance.sendEvent(type, event, function(error, data, response) {
             if (error) {

@@ -23,15 +23,9 @@
 
 package model
 
-// Event object
-type Event struct {
-	// Event name
-	Name string `json:"name,omitempty"`
-	// Event type
-	Type_                             string                             `json:"type,omitempty"`
-	EventMobility                     *EventMobility                     `json:"eventMobility,omitempty"`
-	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
-	EventPoasInRange                  *EventPoasInRange                  `json:"eventPoasInRange,omitempty"`
-	EventScenarioUpdate               *EventScenarioUpdate               `json:"eventScenarioUpdate,omitempty"`
-	EventPduSession                   *EventPduSession                   `json:"eventPduSession,omitempty"`
+// PDU Session Event object.<br> Specifies a PDU session action to perform for the provided UE. <p>Supported Actions: <li>ADD - Create new PDU Session from UE to target data network. <li>REMOVE - Remove active PDU Session. Only UE name & PDU session ID are required.
+type EventPduSession struct {
+	// PDU Session action to perform for provided UE
+	Action     string      `json:"action,omitempty"`
+	PduSession *PduSession `json:"pduSession,omitempty"`
 }

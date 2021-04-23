@@ -287,6 +287,7 @@ definitions:
           - NETWORK-CHARACTERISTICS-UPDATE
           - POAS-IN-RANGE
           - SCENARIO-UPDATE
+          - PDU-SESSION
       eventMobility:
         $ref: '#/definitions/EventMobility'
       eventNetworkCharacteristicsUpdate:
@@ -295,6 +296,8 @@ definitions:
         $ref: '#/definitions/EventPoasInRange'
       eventScenarioUpdate:
         $ref: '#/definitions/EventScenarioUpdate'
+      eventPduSession:
+        $ref: '#/definitions/EventPduSession'
     description: Event object
     example:
       name: name
@@ -392,6 +395,25 @@ definitions:
           - MODIFY
       node:
         $ref: '#/definitions/ScenarioNode'
+    example: {}
+  EventPduSession:
+    type: object
+    description: >-
+      PDU Session Event object.<br>
+      Specifies a PDU session action to perform for the provided UE.
+
+      <p>Supported Actions:
+      <li>ADD - Create new PDU Session from UE to target data network.
+      <li>REMOVE - Remove active PDU Session. Only UE name & PDU session ID are required.
+    properties:
+      action:
+        type: string
+        description: PDU Session action to perform for provided UE
+        enum:
+          - ADD
+          - REMOVE
+      pduSession:
+        $ref: '#/definitions/PDUSession'
     example: {}
   ExternalConfig:
     type: object

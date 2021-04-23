@@ -236,6 +236,13 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.placementId = "";
           replayFile.events[0].event.eventScenarioUpdate.node.parent = "";
           replayFile.events[0].event.eventScenarioUpdate.node.children = [""];
+          replayFile.events[0].event.eventPduSession = new AdvantEdgeSandboxControllerRestApi.EventPduSession();
+          replayFile.events[0].event.eventPduSession.action = "ADD";
+          replayFile.events[0].event.eventPduSession.pduSession = new AdvantEdgeSandboxControllerRestApi.PDUSession();
+          replayFile.events[0].event.eventPduSession.pduSession.ue = "";
+          replayFile.events[0].event.eventPduSession.pduSession.id = "";
+          replayFile.events[0].event.eventPduSession.pduSession.info = new AdvantEdgeSandboxControllerRestApi.PDUSessionInfo();
+          replayFile.events[0].event.eventPduSession.pduSession.info.dnn = "";
 
           instance.createReplayFile(name, replayFile, function(error, data, response) {
             if (error) {
@@ -799,6 +806,17 @@
                           expect(data).to.be("");
                         }
                       }
+                  expect(data.event.eventPduSession).to.be.a(AdvantEdgeSandboxControllerRestApi.EventPduSession);
+                        expect(data.event.eventPduSession.action).to.be.a('string');
+                    expect(data.event.eventPduSession.action).to.be("ADD");
+                    expect(data.event.eventPduSession.pduSession).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSession);
+                          expect(data.event.eventPduSession.pduSession.ue).to.be.a('string');
+                      expect(data.event.eventPduSession.pduSession.ue).to.be("");
+                      expect(data.event.eventPduSession.pduSession.id).to.be.a('string');
+                      expect(data.event.eventPduSession.pduSession.id).to.be("");
+                      expect(data.event.eventPduSession.pduSession.info).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
+                            expect(data.event.eventPduSession.pduSession.info.dnn).to.be.a('string');
+                        expect(data.event.eventPduSession.pduSession.info.dnn).to.be("");
               }
             }
 

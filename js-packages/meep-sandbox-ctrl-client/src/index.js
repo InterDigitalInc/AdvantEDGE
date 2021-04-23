@@ -142,6 +142,11 @@
      */
     EventNetworkCharacteristicsUpdate: EventNetworkCharacteristicsUpdate,
     /**
+     * The EventPduSession model constructor.
+     * @property {module:model/EventPduSession}
+     */
+    EventPduSession: EventPduSession,
+    /**
      * The EventPoasInRange model constructor.
      * @property {module:model/EventPoasInRange}
      */

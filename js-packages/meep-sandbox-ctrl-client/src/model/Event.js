@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventPoasInRange', 'model/EventScenarioUpdate'], factory);
+    define(['ApiClient', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventPduSession', 'model/EventPoasInRange', 'model/EventScenarioUpdate'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./EventMobility'), require('./EventNetworkCharacteristicsUpdate'), require('./EventPoasInRange'), require('./EventScenarioUpdate'));
+    module.exports = factory(require('../ApiClient'), require('./EventMobility'), require('./EventNetworkCharacteristicsUpdate'), require('./EventPduSession'), require('./EventPoasInRange'), require('./EventScenarioUpdate'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Event = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.EventMobility, root.AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate, root.AdvantEdgeSandboxControllerRestApi.EventPoasInRange, root.AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate);
+    root.AdvantEdgeSandboxControllerRestApi.Event = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.EventMobility, root.AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate, root.AdvantEdgeSandboxControllerRestApi.EventPduSession, root.AdvantEdgeSandboxControllerRestApi.EventPoasInRange, root.AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate);
   }
-}(this, function(ApiClient, EventMobility, EventNetworkCharacteristicsUpdate, EventPoasInRange, EventScenarioUpdate) {
+}(this, function(ApiClient, EventMobility, EventNetworkCharacteristicsUpdate, EventPduSession, EventPoasInRange, EventScenarioUpdate) {
   'use strict';
 
   /**
@@ -82,6 +82,8 @@
         obj.eventPoasInRange = EventPoasInRange.constructFromObject(data['eventPoasInRange']);
       if (data.hasOwnProperty('eventScenarioUpdate'))
         obj.eventScenarioUpdate = EventScenarioUpdate.constructFromObject(data['eventScenarioUpdate']);
+      if (data.hasOwnProperty('eventPduSession'))
+        obj.eventPduSession = EventPduSession.constructFromObject(data['eventPduSession']);
     }
     return obj;
   }
@@ -118,6 +120,11 @@
    */
   exports.prototype.eventScenarioUpdate = undefined;
 
+  /**
+   * @member {module:model/EventPduSession} eventPduSession
+   */
+  exports.prototype.eventPduSession = undefined;
+
 
   /**
    * Allowed values for the <code>type</code> property.
@@ -147,7 +154,13 @@
      * value: "SCENARIO-UPDATE"
      * @const
      */
-    SCENARIO_UPDATE: "SCENARIO-UPDATE"
+    SCENARIO_UPDATE: "SCENARIO-UPDATE",
+
+    /**
+     * value: "PDU-SESSION"
+     * @const
+     */
+    PDU_SESSION: "PDU-SESSION"
   };
 
   return exports;

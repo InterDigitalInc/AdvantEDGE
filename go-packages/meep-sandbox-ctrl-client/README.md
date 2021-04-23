@@ -61,6 +61,7 @@ Class | Method | HTTP request | Description
  - [Event](docs/Event.md)
  - [EventMobility](docs/EventMobility.md)
  - [EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
+ - [EventPduSession](docs/EventPduSession.md)
  - [EventPoasInRange](docs/EventPoasInRange.md)
  - [EventScenarioUpdate](docs/EventScenarioUpdate.md)
  - [ExternalConfig](docs/ExternalConfig.md)

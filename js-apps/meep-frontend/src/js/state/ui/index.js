@@ -38,6 +38,7 @@ const initialState = {
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   mobilityEventTarget: '',
   mobilityEventDestination: '',
+  pduSessionEvent: {},
   scenarioUpdateAction: SCENARIO_UPDATE_ACTION_NONE,
   scenarioUpdateRemoveEleName: '',
   scenarioUpdateRemoveEleType: '',
@@ -145,6 +146,14 @@ const UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION = 'UI_EXEC_CHANGE_MOBILITY_EVENT
 export function uiExecChangeMobilityEventDestination(event) {
   return {
     type: UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_PDU_SESSION_EVENT = 'UI_EXEC_CHANGE_PDU_SESSION_EVENT';
+export function uiExecChangePduSessionEvent(event) {
+  return {
+    type: UI_EXEC_CHANGE_PDU_SESSION_EVENT,
     payload: event
   };
 }
@@ -404,6 +413,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { mobilityEventTarget: action.payload });
   case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
     return updateObject(state, { mobilityEventDestination: action.payload });
+  case UI_EXEC_CHANGE_PDU_SESSION_EVENT:
+    return updateObject(state, { pduSessionEvent: action.payload });
   case UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION:
     return updateObject(state, { scenarioUpdateAction: action.payload });
   case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME:

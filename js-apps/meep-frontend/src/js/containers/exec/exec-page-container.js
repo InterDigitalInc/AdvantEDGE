@@ -73,6 +73,7 @@ import {
   MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
   SCENARIO_UPDATE_EVENT,
+  PDU_SESSION_EVENT,
   EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
@@ -462,7 +463,7 @@ class ExecPageContainer extends Component {
               </Elevation>
               <Elevation className='idcc-elevation' z={2}>
                 <EventCreationPane
-                  eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT, SCENARIO_UPDATE_EVENT]}
+                  eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT, SCENARIO_UPDATE_EVENT, PDU_SESSION_EVENT]}
                   api={this.props.eventsApi}
                   hide={!this.props.eventCreationMode}
                   onSuccess={this.props.refreshScenario}

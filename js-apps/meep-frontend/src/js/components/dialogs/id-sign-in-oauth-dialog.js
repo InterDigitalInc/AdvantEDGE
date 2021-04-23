@@ -41,7 +41,7 @@ class IDSignInOAuthDialog extends Component {
         onClose={this.props.onClose}
       >
         <Grid style={{ marginBottom: 20 }}>
-          <GridCell span={6}>
+          <GridCell span={12}>
             <Button style={styles.button} outlined onClick={() => this.props.onSignIn(OAUTH_PROVIDER_GITHUB)}>
               <img style={styles.icon} src={GitHubIcon}/>
               GitHub

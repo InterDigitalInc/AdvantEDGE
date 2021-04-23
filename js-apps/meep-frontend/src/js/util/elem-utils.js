@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import _ from 'lodash';
+
 import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
@@ -151,6 +153,12 @@ export const setElemFieldErr = (elem, field, err) => {
   if (elem) {
     elem[field].err = err;
   }
+};
+
+export const validElem = (element) => {
+  var fieldsInError = 0;
+  _.forOwn(element, val => (fieldsInError = val.err ? fieldsInError + 1 : fieldsInError));
+  return (fieldsInError) ? false : true;
 };
 
 export const resetElem = (elem) => {

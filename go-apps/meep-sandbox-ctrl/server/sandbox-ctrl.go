@@ -78,6 +78,12 @@ const (
 	eventTypeNetCharUpdate  = "NETWORK-CHARACTERISTICS-UPDATE"
 	eventTypePoasInRange    = "POAS-IN-RANGE"
 	eventTypeScenarioUpdate = "SCENARIO-UPDATE"
+	eventTypePduSession     = "PDU-SESSION"
+)
+
+const (
+	PduSessionAdd    string = "ADD"
+	PduSessionRemove string = "REMOVE"
 )
 
 // Declare as variables to enable overwrite in test
@@ -792,6 +798,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		err, httpStatus, description = sendEventPoasInRange(event)
 	case eventTypeScenarioUpdate:
 		err, httpStatus, description = sendEventScenarioUpdate(event)
+	case eventTypePduSession:
+		err, httpStatus, description = sendEventPduSession(event)
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
@@ -934,6 +942,43 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 		return err, http.StatusInternalServerError, ""
 	}
 	return nil, -1, description
+}
+
+// sendEventPduSession - Process a PDU Session event
+func sendEventPduSession(event dataModel.Event) (error, int, string) {
+	var err error
+	var code int
+	var description string
+
+	// Validate request
+	if event.EventPduSession == nil {
+		err = errors.New("Malformed request: missing EventPduSession")
+		return err, http.StatusBadRequest, ""
+	}
+	pduSession := event.EventPduSession.PduSession
+	if pduSession == nil {
+		err = errors.New("Malformed request: missing PduSession")
+		return err, http.StatusBadRequest, ""
+	}
+
+	// Perform necessary action on scenario
+	switch event.EventPduSession.Action {
+	case PduSessionAdd:
+		code, err = createPduSession(pduSession.Ue, pduSession.Id, pduSession.Info)
+		if err == nil {
+			description = "Added PDU [" + pduSession.Id + ":" + pduSession.Info.Dnn + "] for [" + pduSession.Ue + "]"
+		}
+	case PduSessionRemove:
+		code, err = deletePduSession(pduSession.Ue, pduSession.Id)
+		if err == nil {
+			description = "Removed PDU [" + pduSession.Id + "] for [" + pduSession.Ue + "]"
+		}
+	default:
+		err = errors.New("Unsupported PDU Session action: " + event.EventPduSession.Action)
+		code = http.StatusInternalServerError
+	}
+
+	return err, code, description
 }
 
 // Retrieve element name from type-specific structure
@@ -1282,55 +1327,6 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 }
 
-func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
-
-	// Get UE name & PDU Session ID from request parameters
-	vars := mux.Vars(r)
-	ueName := vars["ueName"]
-	log.Debug("UE name: ", ueName)
-	pduSessionId := vars["pduSessionId"]
-	log.Debug("PDU Session ID: ", pduSessionId)
-
-	// Retrieve PDU Session Info from request body
-	if r.Body == nil {
-		err := errors.New("Request body is missing")
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	var pduSessionInfo dataModel.PduSessionInfo
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&pduSessionInfo)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Create PDU session
-	err = sbxCtrl.pduSessionStore.CreatePduSession(ueName, pduSessionId, &pduSessionInfo)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Send message to inform other modules of created PDU session
-	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
-	msg.Payload[fieldNodeName] = ueName
-	msg.Payload[fieldPduSessionId] = pduSessionId
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = sbxCtrl.mqLocal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
-
 func ceGetPduSessionList(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve query parameters
@@ -1379,6 +1375,66 @@ func ceGetPduSessionList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
+func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("PDU Session ID: ", pduSessionId)
+
+	// Retrieve PDU Session Info from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var pduSessionInfo dataModel.PduSessionInfo
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create PDU session
+	code, err := createPduSession(ueName, pduSessionId, &pduSessionInfo)
+	if err != nil {
+		http.Error(w, err.Error(), code)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Create PDU session
+func createPduSession(ueName string, pduSessionId string, pduSessionInfo *dataModel.PduSessionInfo) (code int, err error) {
+
+	// Create PDU session
+	err = sbxCtrl.pduSessionStore.CreatePduSession(ueName, pduSessionId, pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		return http.StatusBadRequest, err
+	}
+
+	// Send message to inform other modules of created PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
+
 func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
 
 	// Get UE name & PDU Session ID from request parameters
@@ -1389,27 +1445,38 @@ func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
 	log.Debug("UE name: ", pduSessionId)
 
 	// Delete PDU session
-	err := sbxCtrl.pduSessionStore.DeletePduSession(ueName, pduSessionId)
+	code, err := deletePduSession(ueName, pduSessionId)
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), code)
 		return
 	}
 
-	// Send message to inform other modules of terminated PDU session
-	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionTerminated, mq.TargetAll, mq.TargetAll)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Delete PDU session
+func deletePduSession(ueName string, pduSessionId string) (code int, err error) {
+
+	// Create PDU session
+	err = sbxCtrl.pduSessionStore.DeletePduSession(ueName, pduSessionId)
+	if err != nil {
+		log.Error(err.Error())
+		return http.StatusNotFound, err
+	}
+
+	// Send message to inform other modules of created PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldNodeName] = ueName
 	msg.Payload[fieldPduSessionId] = pduSessionId
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError, err
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	return http.StatusOK, nil
 }
 
 func activeScenarioUpdateCb(eventType string, userData interface{}) {
