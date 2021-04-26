@@ -195,15 +195,11 @@ class MeepContainer extends Component {
       this.startExecPageRefresh();
       this.startReplayStatusRefresh();
     }
-    if (this.props.signInStatus === STATUS_SIGNED_IN) {
-      this.startSessionKeepaliveTimer();
-    }
   }
   stopTimers() {
     this.stopReplayStatusRefresh();
     this.stopExecPageRefresh();
     this.stopPlatformRefresh();
-    this.stopSessionKeepaliveTimer();
   }
 
   // Platform refresh
