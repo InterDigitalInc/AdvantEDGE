@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -416,19 +417,10 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(scenario))
 }
 
-// Retrieves the active scenario domains
-// GET /active/domains
-func ceGetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
-	log.Debug("CEGetActiveScenarioDomain")
-
-	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
-		http.Error(w, "No scenario is active", http.StatusNotFound)
-		return
-	}
+func getNodeFilterFromQueryParams(query url.Values) mod.NodeFindFilter {
 
 	//Retrieve query parameters and populate filter
 	var filter mod.NodeFindFilter
-	query := r.URL.Query()
 	minimizeStr := query.Get("minimize")
 	if minimizeStr == "true" {
 		filter.Minimize = true
@@ -452,21 +444,23 @@ func ceGetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
 	filter.ProcessName = query.Get("process")
 	filter.ProcessType = query.Get("processType")
 
-	log.Info("SIMON NEW")
-	nodeList := sbxCtrl.activeModel.GetDomainNodesByFilter(&filter)
-	var domains dataModel.Domains
+	return filter
+}
 
-	//var domains dataModel.Domains
-	filteredList := new([]dataModel.Domain)
-	for _, node := range nodeList {
-		currentDomain := node.(*dataModel.Domain)
-		//	if children == "false" {
-		//		currentDomain.Zones = nil
-		//	}
-		log.Info("SIMON domain active:", currentDomain.Name)
-		*filteredList = append(*filteredList, *currentDomain)
-		domains.Domains = append(domains.Domains, *currentDomain)
+// Retrieves the active scenario domains
+// GET /active/domains
+func ceGetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
+	log.Debug("CEGetActiveScenarioDomain")
+
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
 	}
+
+	//Retrieve query parameters and populate filter
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
+
+	domains := sbxCtrl.activeModel.GetDomainNodesByFilter(&filter)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -499,42 +493,9 @@ func ceGetActiveScenarioZone(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Retrieve query parameters and populate filter
-	var filter mod.NodeFindFilter
-	query := r.URL.Query()
-	minimizeStr := query.Get("minimize")
-	if minimizeStr == "true" {
-		filter.Minimize = true
-	} else {
-		filter.Minimize = false
-	}
-	childrenStr := query.Get("children")
-	if childrenStr == "true" {
-		filter.Children = true
-	} else {
-		filter.Children = false
-	}
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	filter.DomainName = query.Get("domain")
-	filter.DomainType = query.Get("domainType")
-	filter.ZoneName = query.Get("zone")
-	filter.NetworkLocationName = query.Get("networkLocation")
-	filter.NetworkLocationType = query.Get("networkLocationType")
-	filter.PhysicalLocationName = query.Get("physicalLocation")
-	filter.PhysicalLocationType = query.Get("physicalLocationType")
-	filter.ProcessName = query.Get("process")
-	filter.ProcessType = query.Get("processType")
-
-	log.Info("SIMON NEW")
-	nodeList := sbxCtrl.activeModel.GetZoneNodesByFilter(&filter)
-	var zones dataModel.Zones
-
-	//var domains dataModel.Domains
-	filteredList := new([]dataModel.Zone)
-	for _, node := range nodeList {
-		currentZone := node.(*dataModel.Zone)
-		*filteredList = append(*filteredList, *currentZone)
-		zones.Zones = append(zones.Zones, *currentZone)
-	}
+	zones := sbxCtrl.activeModel.GetZoneNodesByFilter(&filter)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -565,42 +526,9 @@ func ceGetActiveScenarioNetworkLocation(w http.ResponseWriter, r *http.Request) 
 	}
 
 	//Retrieve query parameters and populate filter
-	var filter mod.NodeFindFilter
-	query := r.URL.Query()
-	minimizeStr := query.Get("minimize")
-	if minimizeStr == "true" {
-		filter.Minimize = true
-	} else {
-		filter.Minimize = false
-	}
-	childrenStr := query.Get("children")
-	if childrenStr == "true" {
-		filter.Children = true
-	} else {
-		filter.Children = false
-	}
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	filter.DomainName = query.Get("domain")
-	filter.DomainType = query.Get("domainType")
-	filter.ZoneName = query.Get("zone")
-	filter.NetworkLocationName = query.Get("networkLocation")
-	filter.NetworkLocationType = query.Get("networkLocationType")
-	filter.PhysicalLocationName = query.Get("physicalLocation")
-	filter.PhysicalLocationType = query.Get("physicalLocationType")
-	filter.ProcessName = query.Get("process")
-	filter.ProcessType = query.Get("processType")
-
-	log.Info("SIMON NEW")
-	nodeList := sbxCtrl.activeModel.GetNetworkLocationNodesByFilter(&filter)
-	var networkLocations dataModel.NetworkLocations
-
-	//var domains dataModel.Domains
-	filteredList := new([]dataModel.NetworkLocation)
-	for _, node := range nodeList {
-		currentNetworkLocation := node.(*dataModel.NetworkLocation)
-		*filteredList = append(*filteredList, *currentNetworkLocation)
-		networkLocations.NetworkLocations = append(networkLocations.NetworkLocations, *currentNetworkLocation)
-	}
+	networkLocations := sbxCtrl.activeModel.GetNetworkLocationNodesByFilter(&filter)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -631,41 +559,9 @@ func ceGetActiveScenarioPhysicalLocation(w http.ResponseWriter, r *http.Request)
 	}
 
 	//Retrieve query parameters and populate filter
-	var filter mod.NodeFindFilter
-	query := r.URL.Query()
-	minimizeStr := query.Get("minimize")
-	if minimizeStr == "true" {
-		filter.Minimize = true
-	} else {
-		filter.Minimize = false
-	}
-	childrenStr := query.Get("children")
-	if childrenStr == "true" {
-		filter.Children = true
-	} else {
-		filter.Children = false
-	}
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	filter.DomainName = query.Get("domain")
-	filter.DomainType = query.Get("domainType")
-	filter.ZoneName = query.Get("zone")
-	filter.NetworkLocationName = query.Get("networkLocation")
-	filter.NetworkLocationType = query.Get("networkLocationType")
-	filter.PhysicalLocationName = query.Get("physicalLocation")
-	filter.PhysicalLocationType = query.Get("physicalLocationType")
-	filter.ProcessName = query.Get("process")
-	filter.ProcessType = query.Get("processType")
-
-	nodeList := sbxCtrl.activeModel.GetPhysicalLocationNodesByFilter(&filter)
-	var physicalLocations dataModel.PhysicalLocations
-
-	//var domains dataModel.Domains
-	filteredList := new([]dataModel.PhysicalLocation)
-	for _, node := range nodeList {
-		currentPhysicalLocation := node.(*dataModel.PhysicalLocation)
-		*filteredList = append(*filteredList, *currentPhysicalLocation)
-		physicalLocations.PhysicalLocations = append(physicalLocations.PhysicalLocations, *currentPhysicalLocation)
-	}
+	physicalLocations := sbxCtrl.activeModel.GetPhysicalLocationNodesByFilter(&filter)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -696,40 +592,9 @@ func ceGetActiveScenarioProcess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Retrieve query parameters and populate filter
-	var filter mod.NodeFindFilter
-	query := r.URL.Query()
-	minimizeStr := query.Get("minimize")
-	if minimizeStr == "true" {
-		filter.Minimize = true
-	} else {
-		filter.Minimize = false
-	}
-	childrenStr := query.Get("children")
-	if childrenStr == "true" {
-		filter.Children = true
-	} else {
-		filter.Children = false
-	}
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	filter.DomainName = query.Get("domain")
-	filter.DomainType = query.Get("domainType")
-	filter.ZoneName = query.Get("zone")
-	filter.NetworkLocationName = query.Get("networkLocation")
-	filter.NetworkLocationType = query.Get("networkLocationType")
-	filter.PhysicalLocationName = query.Get("physicalLocation")
-	filter.PhysicalLocationType = query.Get("physicalLocationType")
-	filter.ProcessName = query.Get("process")
-	filter.ProcessType = query.Get("processType")
-
-	nodeList := sbxCtrl.activeModel.GetProcessNodesByFilter(&filter)
-	var processes dataModel.Processes
-
-	filteredList := new([]dataModel.Process)
-	for _, node := range nodeList {
-		currentProcess := node.(*dataModel.Process)
-		*filteredList = append(*filteredList, *currentProcess)
-		processes.Processes = append(processes.Processes, *currentProcess)
-	}
+	processes := sbxCtrl.activeModel.GetProcessNodesByFilter(&filter)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

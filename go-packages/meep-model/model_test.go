@@ -124,6 +124,94 @@ func TestGetSetScenario(t *testing.T) {
 	}
 }
 
+func TestGetSetActiveElements(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
+
+	cfg := ModelCfg{Name: modelName, Namespace: moduleNamespace, Module: "test-mod", DbAddr: modelRedisAddr}
+	m, err := NewModel(cfg)
+	if err != nil {
+		t.Fatalf("Unable to create model")
+	}
+
+	fmt.Println("Set Model")
+	err = m.SetScenario([]byte(testScenario))
+	if err != nil {
+		t.Fatalf("Error setting model")
+	}
+	if m.scenario.Name != "demo1" {
+		t.Fatalf("SetScenario failed")
+	}
+
+	var filter, badFilter NodeFindFilter
+	filter.ZoneName = "zone1"
+	badFilter.ZoneName = "DO NOT EXIST"
+	filter.ProcessType = "EDGE-APP"
+
+	//success path
+	fmt.Println("Get Domains")
+	respDomain := m.GetDomainNodesByFilter(&filter)
+	if len(respDomain.Domains) != 1 {
+		t.Fatalf("Failed to get expected number of domains")
+	}
+
+	fmt.Println("Get Zones")
+	respZone := m.GetZoneNodesByFilter(&filter)
+	if len(respZone.Zones) != 1 {
+		t.Fatalf("Failed to get expected number of zones")
+	}
+
+	fmt.Println("Get Network Locations")
+	respNl := m.GetNetworkLocationNodesByFilter(&filter)
+	if len(respNl.NetworkLocations) != 2 {
+		t.Fatalf("Failed to get expected number of network locations")
+	}
+
+	fmt.Println("Get Physical Locations")
+	respPl := m.GetPhysicalLocationNodesByFilter(&filter)
+	if len(respPl.PhysicalLocations) != 2 {
+		t.Fatalf("Failed to get expected number of physical locations")
+	}
+	fmt.Println("Get Processes")
+	respProc := m.GetProcessNodesByFilter(&filter)
+	if len(respProc.Processes) != 4 {
+		t.Fatalf("Failed to get expected number of processes")
+	}
+
+	//failure path
+	fmt.Println("Get Domains")
+	respDomain = m.GetDomainNodesByFilter(&badFilter)
+	if len(respDomain.Domains) != 0 {
+		t.Fatalf("Failed to get expected number of domains")
+	}
+
+	fmt.Println("Get Zones")
+	respZone = m.GetZoneNodesByFilter(&badFilter)
+	if len(respZone.Zones) != 0 {
+		t.Fatalf("Failed to get expected number of zones")
+	}
+
+	fmt.Println("Get Network Locations")
+	respNl = m.GetNetworkLocationNodesByFilter(&badFilter)
+	if len(respNl.NetworkLocations) != 0 {
+		t.Fatalf("Failed to get expected number of network locations")
+	}
+
+	fmt.Println("Get Physical Locations")
+	respPl = m.GetPhysicalLocationNodesByFilter(&badFilter)
+	if len(respPl.PhysicalLocations) != 0 {
+		t.Fatalf("Failed to get expected number of physical locations")
+	}
+	fmt.Println("Get Processes")
+	respProc = m.GetProcessNodesByFilter(&badFilter)
+	if len(respProc.Processes) != 0 {
+		t.Fatalf("Failed to get expected number of processes")
+	}
+}
+
 func TestActivateDeactivate(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
