@@ -403,6 +403,9 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
 		flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
 	case "meep-prometheus":
+		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
+		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.securityContext.runAsUser="+uid)
+		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.securityContext.runAsUser="+uid)
 		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.persistentVolume.location="+deployData.workdir+"/prometheus/server/")
 		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.persistentVolume.location="+deployData.workdir+"/prometheus/alertmanager/")
 		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")

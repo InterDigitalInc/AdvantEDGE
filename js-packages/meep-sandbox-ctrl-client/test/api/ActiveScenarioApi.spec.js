@@ -746,7 +746,7 @@
           opts.physicalLocationType = "physicalLocationType_example";
           opts.process = "process_example";
           opts.processType = "processType_example";
-          opts.children = true;
+          opts.excludeChildren = true;
           opts.minimize = true;
 
           instance.getActiveScenarioDomain(opts, function(error, data, response) {
@@ -1288,7 +1288,7 @@
           opts.physicalLocationType = "physicalLocationType_example";
           opts.process = "process_example";
           opts.processType = "processType_example";
-          opts.children = true;
+          opts.excludeChildren = true;
           opts.minimize = true;
 
           instance.getActiveScenarioNetworkLocation(opts, function(error, data, response) {
@@ -1691,7 +1691,7 @@
           opts.physicalLocationType = "physicalLocationType_example";
           opts.process = "process_example";
           opts.processType = "processType_example";
-          opts.children = true;
+          opts.excludeChildren = true;
           opts.minimize = true;
 
           instance.getActiveScenarioPhysicalLocation(opts, function(error, data, response) {
@@ -1991,7 +1991,7 @@
           opts.physicalLocationType = "physicalLocationType_example";
           opts.process = "process_example";
           opts.processType = "processType_example";
-          opts.children = true;
+          opts.excludeChildren = true;
           opts.minimize = true;
 
           instance.getActiveScenarioProcess(opts, function(error, data, response) {
@@ -2173,7 +2173,7 @@
           opts.physicalLocationType = "physicalLocationType_example";
           opts.process = "process_example";
           opts.processType = "processType_example";
-          opts.children = true;
+          opts.excludeChildren = true;
           opts.minimize = true;
 
           instance.getActiveScenarioZone(opts, function(error, data, response) {

@@ -72,6 +72,45 @@
           done();
         });
       });
+      describe('getPduSessionList', function() {
+        it('should call getPduSessionList successfully', function(done) {
+          // TODO: uncomment, update parameter values for getPduSessionList call and complete the assertions
+          /*
+          var opts = {};
+          opts.ue = "ue_example";
+          opts.id = "id_example";
+
+          instance.getPduSessionList(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionList);
+            {
+              let dataCtr = data.sessions;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSession);
+                expect(data.ue).to.be.a('string');
+                expect(data.ue).to.be("");
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
+                expect(data.info).to.be.a(AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
+                      expect(data.info.dnn).to.be.a('string');
+                  expect(data.info.dnn).to.be("");
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('terminatePduSession', function() {
         it('should call terminatePduSession successfully', function(done) {
           // TODO: uncomment, update parameter values for terminatePduSession call

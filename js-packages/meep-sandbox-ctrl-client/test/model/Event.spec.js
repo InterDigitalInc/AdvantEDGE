@@ -91,6 +91,12 @@
         // expect(instance.eventScenarioUpdate).to.be(expectedValueLiteral);
       });
 
+      it('should have the property eventPduSession (base name: "eventPduSession")', function() {
+        // TODO: update the code to test the property eventPduSession
+        expect(instance).to.have.property('eventPduSession');
+        // expect(instance.eventPduSession).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

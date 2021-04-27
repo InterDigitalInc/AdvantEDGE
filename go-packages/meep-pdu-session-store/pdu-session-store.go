@@ -88,7 +88,7 @@ func (pss *PduSessionStore) CreatePduSession(ueName string, pduId string, info *
 
 	// Error if PDU session already exist (not allowed to modify)
 	if pss.rc.EntryExists(key) {
-		err := errors.New("PDU Session already exists:")
+		err := errors.New("PDU Session already exists")
 		log.Error(err.Error(), key)
 		return err
 	}

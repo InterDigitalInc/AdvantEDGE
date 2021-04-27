@@ -133,12 +133,12 @@ class CfgTable extends Component {
         <Grid>
           <GridCell span={12}>
             <Elevation
-              className="component-style"
+              className='idcc-elevation'
               z={2}
               style={styles.cfgTable}
             >
               <div>
-                <span className="mdc-typography--headline6">
+                <span className='mdc-typography--headline6'>
                   Network Elements{' '}
                 </span>
               </div>
@@ -146,7 +146,7 @@ class CfgTable extends Component {
                 <div className={classes.tableWrapper}>
                   <Table
                     className={classes.table}
-                    aria-labelledby="tableTitle"
+                    aria-labelledby='tableTitle'
                     style={{ width: '100%' }}
                   >
                     <TableHead className={classes.tableHead}>
@@ -165,7 +165,7 @@ class CfgTable extends Component {
                               className={classes.tableHeadColor}
                             >
                               <Tooltip
-                                title="Sort"
+                                title='Sort'
                                 placement={
                                   column.numeric ? 'bottom-end' : 'bottom-start'
                                 }
@@ -203,13 +203,13 @@ class CfgTable extends Component {
                             <TableRow
                               hover
                               onClick={event => this.onClick(event, name)}
-                              role="checkbox"
+                              role='checkbox'
                               aria-checked={isSelected}
                               tabIndex={-1}
                               key={name}
                               selected={isSelected}
                             >
-                              <TableCell component="th" scope="row">
+                              <TableCell component='th' scope='row'>
                                 {name}
                               </TableCell>
                               <TableCell>{type}</TableCell>
@@ -226,7 +226,7 @@ class CfgTable extends Component {
                   </Table>
                 </div>
                 <TablePagination
-                  component="div"
+                  component='div'
                   count={length}
                   rowsPerPage={rowsPerPage}
                   page={page}

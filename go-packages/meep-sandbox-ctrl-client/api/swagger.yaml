@@ -224,12 +224,12 @@ paths:
         - "UE-APP"
         x-exportParamName: "ProcessType"
         x-optionalDataType: "String"
-      - name: "children"
+      - name: "excludeChildren"
         in: "query"
         description: "Include child elements in response"
         required: false
         type: "boolean"
-        x-exportParamName: "Children"
+        x-exportParamName: "ExcludeChildren"
         x-optionalDataType: "Bool"
       - name: "minimize"
         in: "query"
@@ -336,12 +336,12 @@ paths:
         - "UE-APP"
         x-exportParamName: "ProcessType"
         x-optionalDataType: "String"
-      - name: "children"
+      - name: "excludeChildren"
         in: "query"
         description: "Include child elements in response"
         required: false
         type: "boolean"
-        x-exportParamName: "Children"
+        x-exportParamName: "ExcludeChildren"
         x-optionalDataType: "Bool"
       - name: "minimize"
         in: "query"
@@ -448,12 +448,12 @@ paths:
         - "UE-APP"
         x-exportParamName: "ProcessType"
         x-optionalDataType: "String"
-      - name: "children"
+      - name: "excludeChildren"
         in: "query"
         description: "Include child elements in response"
         required: false
         type: "boolean"
-        x-exportParamName: "Children"
+        x-exportParamName: "ExcludeChildren"
         x-optionalDataType: "Bool"
       - name: "minimize"
         in: "query"
@@ -560,12 +560,12 @@ paths:
         - "UE-APP"
         x-exportParamName: "ProcessType"
         x-optionalDataType: "String"
-      - name: "children"
+      - name: "excludeChildren"
         in: "query"
         description: "Include child elements in response"
         required: false
         type: "boolean"
-        x-exportParamName: "Children"
+        x-exportParamName: "ExcludeChildren"
         x-optionalDataType: "Bool"
       - name: "minimize"
         in: "query"
@@ -672,12 +672,12 @@ paths:
         - "UE-APP"
         x-exportParamName: "ProcessType"
         x-optionalDataType: "String"
-      - name: "children"
+      - name: "excludeChildren"
         in: "query"
         description: "Include child elements in response"
         required: false
         type: "boolean"
-        x-exportParamName: "Children"
+        x-exportParamName: "ExcludeChildren"
         x-optionalDataType: "Bool"
       - name: "minimize"
         in: "query"
@@ -702,7 +702,8 @@ paths:
         \ move a node in the emulated network\n<li>NETWORK-CHARACTERISTICS-UPDATE:\
         \ change network characteristics dynamically\n<li>POAS-IN-RANGE: provide PoAs\
         \ in range of a UE (used with ApplicationState Transfer)\n<li>SCENARIO-UPDATE:\
-        \ Add/Remove/Modify node in active scenario"
+        \ Add/Remove/Modify node in active scenario\n<li>PDU-SESSION: Add/Remove active\
+        \ PDU session"
       operationId: "sendEvent"
       produces:
       - "application/json"
@@ -938,6 +939,37 @@ paths:
           description: "OK"
         404:
           description: "Not found"
+  /connectivity/pdu-session:
+    get:
+      tags:
+      - "Connectivity"
+      summary: "Get list of PDU Sessions"
+      description: "Get list of active PDU Sessions matching provided filters"
+      operationId: "getPduSessionList"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "ue"
+        in: "query"
+        description: "Return PDU sessions matching provided UE name"
+        required: false
+        type: "string"
+        x-exportParamName: "Ue"
+        x-optionalDataType: "String"
+      - name: "id"
+        in: "query"
+        description: "Return PDU session matching provided PDU session ID"
+        required: false
+        type: "string"
+        x-exportParamName: "Id"
+        x-optionalDataType: "String"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/PDUSessionList"
+        400:
+          description: "Bad request"
   /connectivity/pdu-session/{ueName}/{pduSessionId}:
     post:
       tags:
@@ -1803,6 +1835,7 @@ definitions:
         - "NETWORK-CHARACTERISTICS-UPDATE"
         - "POAS-IN-RANGE"
         - "SCENARIO-UPDATE"
+        - "PDU-SESSION"
       eventMobility:
         $ref: "#/definitions/EventMobility"
       eventNetworkCharacteristicsUpdate:
@@ -1811,6 +1844,8 @@ definitions:
         $ref: "#/definitions/EventPoasInRange"
       eventScenarioUpdate:
         $ref: "#/definitions/EventScenarioUpdate"
+      eventPduSession:
+        $ref: "#/definitions/EventPduSession"
     description: "Event object"
     example:
       name: "name"
@@ -1932,6 +1967,41 @@ definitions:
     description: "Union of node data objects\nNOTE: Only one of the following objects\
       \ must be filled"
     example: {}
+  EventPduSession:
+    type: "object"
+    properties:
+      action:
+        type: "string"
+        description: "PDU Session action to perform for provided UE"
+        enum:
+        - "ADD"
+        - "REMOVE"
+      pduSession:
+        $ref: "#/definitions/PDUSession"
+    description: "PDU Session Event object.<br> Specifies a PDU session action to\
+      \ perform for the provided UE.\n<p>Supported Actions: <li>ADD - Create new PDU\
+      \ Session from UE to target data network. <li>REMOVE - Remove active PDU Session.\
+      \ Only UE name & PDU session ID are required."
+    example: {}
+  PDUSession:
+    type: "object"
+    properties:
+      ue:
+        type: "string"
+        description: "UE name as defined in the scenario"
+      id:
+        type: "string"
+        description: "PDU Session ID"
+      info:
+        $ref: "#/definitions/PDUSessionInfo"
+    description: "PDU Session"
+    example: {}
+  PDUSessionInfo:
+    type: "object"
+    properties:
+      dnn:
+        type: "string"
+        description: "Data Network Name as defined in the scenario"
   ReplayFileList:
     type: "object"
     properties:
@@ -2007,12 +2077,15 @@ definitions:
         description: "User description of the replay file"
     description: "Scenario information"
     example: {}
-  PDUSessionInfo:
+  PDUSessionList:
     type: "object"
     properties:
-      dnn:
-        type: "string"
-        description: "Data Network Name as defined in the scenario"
+      sessions:
+        type: "array"
+        items:
+          $ref: "#/definitions/PDUSession"
+    description: "PDUSession list"
+    example: {}
 parameters:
   Query.Domain:
     name: "domain"
@@ -2103,13 +2176,13 @@ parameters:
     - "UE-APP"
     x-exportParamName: "ProcessType"
     x-optionalDataType: "String"
-  Query.Children:
-    name: "children"
+  Query.ExcludeChildren:
+    name: "excludeChildren"
     in: "query"
     description: "Include child elements in response"
     required: false
     type: "boolean"
-    x-exportParamName: "Children"
+    x-exportParamName: "ExcludeChildren"
     x-optionalDataType: "Bool"
   Query.Minimize:
     name: "minimize"

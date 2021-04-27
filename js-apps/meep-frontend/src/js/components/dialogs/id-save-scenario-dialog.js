@@ -71,9 +71,8 @@ class IDSaveScenarioDialog extends Component {
         cydata={MEEP_DLG_SAVE_SCENARIO}
       >
         <span style={styles.text}>
-          {
-            'Store the scenario in the MEEP Controller (overwrites any existing scenario with the same name)'
-          }
+            Store the scenario in the MEEP Controller<br/>
+            NOTE: overwrites any existing scenario with the same name
         </span>
 
         <TextField

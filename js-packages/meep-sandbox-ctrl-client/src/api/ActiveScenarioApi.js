@@ -227,7 +227,7 @@
      * @param {module:model/String} opts.physicalLocationType Physical Location type
      * @param {String} opts.process Process name
      * @param {module:model/String} opts.processType Process type
-     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.excludeChildren Include child elements in response
      * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioDomainCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Domains}
@@ -249,7 +249,7 @@
         'physicalLocationType': opts['physicalLocationType'],
         'process': opts['process'],
         'processType': opts['processType'],
-        'children': opts['children'],
+        'excludeChildren': opts['excludeChildren'],
         'minimize': opts['minimize'],
       };
       var collectionQueryParams = {
@@ -292,7 +292,7 @@
      * @param {module:model/String} opts.physicalLocationType Physical Location type
      * @param {String} opts.process Process name
      * @param {module:model/String} opts.processType Process type
-     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.excludeChildren Include child elements in response
      * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioNetworkLocationCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/NetworkLocations}
@@ -314,7 +314,7 @@
         'physicalLocationType': opts['physicalLocationType'],
         'process': opts['process'],
         'processType': opts['processType'],
-        'children': opts['children'],
+        'excludeChildren': opts['excludeChildren'],
         'minimize': opts['minimize'],
       };
       var collectionQueryParams = {
@@ -357,7 +357,7 @@
      * @param {module:model/String} opts.physicalLocationType Physical Location type
      * @param {String} opts.process Process name
      * @param {module:model/String} opts.processType Process type
-     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.excludeChildren Include child elements in response
      * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioPhysicalLocationCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/PhysicalLocations}
@@ -379,7 +379,7 @@
         'physicalLocationType': opts['physicalLocationType'],
         'process': opts['process'],
         'processType': opts['processType'],
-        'children': opts['children'],
+        'excludeChildren': opts['excludeChildren'],
         'minimize': opts['minimize'],
       };
       var collectionQueryParams = {
@@ -422,7 +422,7 @@
      * @param {module:model/String} opts.physicalLocationType Physical Location type
      * @param {String} opts.process Process name
      * @param {module:model/String} opts.processType Process type
-     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.excludeChildren Include child elements in response
      * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioProcessCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Processes}
@@ -444,7 +444,7 @@
         'physicalLocationType': opts['physicalLocationType'],
         'process': opts['process'],
         'processType': opts['processType'],
-        'children': opts['children'],
+        'excludeChildren': opts['excludeChildren'],
         'minimize': opts['minimize'],
       };
       var collectionQueryParams = {
@@ -487,7 +487,7 @@
      * @param {module:model/String} opts.physicalLocationType Physical Location type
      * @param {String} opts.process Process name
      * @param {module:model/String} opts.processType Process type
-     * @param {Boolean} opts.children Include child elements in response
+     * @param {Boolean} opts.excludeChildren Include child elements in response
      * @param {Boolean} opts.minimize Return minimized scenario element content
      * @param {module:api/ActiveScenarioApi~getActiveScenarioZoneCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Zones}
@@ -509,7 +509,7 @@
         'physicalLocationType': opts['physicalLocationType'],
         'process': opts['process'],
         'processType': opts['processType'],
-        'children': opts['children'],
+        'excludeChildren': opts['excludeChildren'],
         'minimize': opts['minimize'],
       };
       var collectionQueryParams = {

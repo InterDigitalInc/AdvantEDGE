@@ -93,6 +93,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"LoginSupported",
+		strings.ToUpper("Get"),
+		"/auth/v1/loginSupported",
+		LoginSupported,
+	},
+
+	Route{
 		"LoginUser",
 		strings.ToUpper("Post"),
 		"/auth/v1/login",
@@ -111,12 +118,5 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/auth/v1/watchdog",
 		TriggerWatchdog,
-	},
-
-	Route{
-		"LoginSupported",
-		strings.ToUpper("Get"),
-		"/auth/v1/loginSupported",
-		LoginSupported,
 	},
 }

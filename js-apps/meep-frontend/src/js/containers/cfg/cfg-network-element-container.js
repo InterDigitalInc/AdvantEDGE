@@ -26,12 +26,11 @@ import { Typography } from '@rmwc/typography';
 import { Icon } from '@rmwc/icon';
 import { ChromePicker } from 'react-color';
 
-import { updateObject } from '../../util/object-util';
-import L from 'leaflet';
+import { updateObject } from '@/js/util/object-util';
 
-import IDSelect from '../../components/helper-components/id-select';
-import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
-import NCGroup from '../../components/helper-components/nc-group';
+import IDSelect from '@/js/components/helper-components/id-select';
+import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
+import NCGroup from '@/js/components/helper-components/nc-group';
 
 import {
   // Network Element Fields
@@ -83,7 +82,7 @@ import {
   FIELD_CPU_MAX,
   FIELD_MEMORY_MIN,
   FIELD_MEMORY_MAX
-} from '../../util/elem-utils';
+} from '@/js/util/elem-utils';
 
 import {
   CFG_ELEM_MODE_NEW,
@@ -91,12 +90,41 @@ import {
   CFG_ELEM_MODE_CLONE,
   cfgElemUpdate,
   cfgElemClone
-} from '../../state/cfg';
+} from '@/js/state/cfg';
 
 import {
   execElemUpdate,
   execElemClone
 } from '@/js/state/exec';
+
+import {
+  CONNECTIVITY_MODELS,
+  EOP_MODES,
+  validatePort,
+  validateExternalPort,
+  validateGpuCount,
+  validateCpuValue,
+  validateMemoryValue,
+  validatePath,
+  validateCommandArguments,
+  validateIngressServiceMapping,
+  validateEgressServiceMapping,
+  validateChartGroupEntry,
+  validateCellularMccMnc,
+  validateCellularCellId,
+  validateColor,
+  validateLocation,
+  validatePositiveInt,
+  validateNumber,
+  validateCellularNrCellId,
+  validateMacAddress,
+  validateWirelessType,
+  validateGeoPath,
+  validateDnn,
+  validateEcsp,
+  validateEnvironmentVariables,
+  validateName
+} from '@/js/util/validate';
 
 import {
   TYPE_CFG,
@@ -128,10 +156,6 @@ import {
   OPT_DISCONNECTED,
   OPT_WIRELESS,
   OPT_WIRED,
-
-  // Connectivity model
-  CONNECTIVITY_MODEL_OPEN,
-  CONNECTIVITY_MODEL_PDU,
 
   // GPU types
   GPU_TYPE_NVIDIA,
@@ -192,413 +216,8 @@ import {
   CFG_ELEM_META_DISPLAY_MAP_COLOR,
   CFG_BTN_NEW_ELEM,
   CFG_BTN_DEL_ELEM,
-  CFG_BTN_CLONE_ELEM,
-
-  // Layout type
-  GEO_EOP_MODE_LOOP,
-  GEO_EOP_MODE_REVERSE
-} from '../../meep-constants';
-
-// ELEMENT VALIDATION
-
-const SERVICE_PORT_MIN = 1;
-const SERVICE_PORT_MAX = 65535;
-const SERVICE_NODE_PORT_MIN = 30000;
-const SERVICE_NODE_PORT_MAX = 32767;
-const GPU_COUNT_MIN = 1;
-const GPU_COUNT_MAX = 4;
-const CONNECTIVITY_MODELS = [CONNECTIVITY_MODEL_OPEN, CONNECTIVITY_MODEL_PDU];
-const EOP_MODES = [GEO_EOP_MODE_LOOP, GEO_EOP_MODE_REVERSE];
-
-const validateName = val => {
-  if (val) {
-    if (val.length > 30) {
-      return 'Maximum 30 characters';
-    } else if (!val.match(/^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$/)) {
-      return 'Lowercase alphanumeric or \'-\' or \'.\'';
-    }
-  }
-  return null;
-};
-
-const validateFullName = val => {
-  if (val) {
-    if (val.length > 60) {
-      return 'Maximum 60 characters';
-    } else if (!val.match(/^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$/)) {
-      return 'Lowercase alphanumeric or \'-\' or \'.\'';
-    }
-  }
-  return null;
-};
-
-const validateVariableName = val => {
-  if (val) {
-    if (val.length > 30) {
-      return 'Maximum 30 characters';
-    } else if (!val.match(/^(([_a-z0-9A-Z][_-a-z0-9A-Z.]*)?[_a-z0-9A-Z])+$/)) {
-      return 'Alphanumeric or \'_\' or \'.\'';
-    }
-  }
-  return null;
-};
-
-const validateDnn = val => {
-  if (val) {
-    if (val.length > 50) {
-      return 'Maximum 50 characters';
-    } else if (!val.match(/^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$/)) {
-      return 'Alphanumeric or \'-\' or \'.\'';
-    }
-  }
-  return null;
-};
-
-const validateEcsp = val => {
-  if (val) {
-    if (val.length > 50) {
-      return 'Maximum 50 characters';
-    } else if (!val.match(/^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$/)) {
-      return 'Alphanumeric or \' \'';
-    }
-  }
-  return null;
-};
-
-// const validateOptionalName = (val) => {
-//   if (val ==='') {return null;}
-//   return validateName(val);
-// };
-
-// const validateChars = (val) => {
-//   /*eslint-disable */
-//   if (val.match(/^.*?(?=[\^#%&$\*:<>\?/\{\|\} ]).*$/)) {
-//   /*eslint-enable */
-//     return 'Invalid characters';
-//   }
-//   return null;
-// };
-
-const notNull = val => val;
-const validateNotNull = val => {
-  if (!notNull(val)) {
-    return 'Value is required';
-  }
-};
-
-const validateNumber = val => {
-  if (isNaN(val)) {
-    return 'Must be a number';
-  }
-  return null;
-};
-
-const validateInt = val => {
-  const numberError = validateNumber(val);
-  if (numberError) {
-    return numberError;
-  }
-  return val.indexOf('.') === -1 ? null : 'Must be an integer';
-};
-
-const validatePositiveInt = val => {
-  const intError = validateInt(val);
-  if (intError) {
-    return intError;
-  }
-  return val >= 0 ? null : 'Must be a positive integer';
-};
-
-const validatePath = val => {
-  /*eslint-disable */
-  if (val.match(/^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$/)) {
-    /*eslint-enable */
-    return 'Invalid characters';
-  }
-  return null;
-};
-
-const validatePositiveFloat = val => {
-  const floatError = validateNumber(val);
-  if (floatError) {
-    return floatError;
-  }
-  return val >= 0 ? null : 'Must be a positive float';
-};
-
-const validateCpuValue = count => {
-  if (count === '') {
-    return null;
-  }
-
-  const notPosFloatError = validatePositiveFloat(count);
-  if (notPosFloatError) {
-    return notPosFloatError;
-  }
-
-  const p = Number(count);
-  if (p !== '' && p === 0) {
-    return 'Must be a float greater than 0';
-  }
-  return null;
-};
-
-const validateMemoryValue = count => {
-  if (count === '') {
-    return null;
-  }
-
-  const notPosIntError = validatePositiveInt(count);
-  if (notPosIntError) {
-    return notPosIntError;
-  }
-
-  const p = Number(count);
-  if (p !== '' && p === 0) {
-    return 'Must be an integer greater than 0';
-  }
-  return null;
-};
-
-const validatePort = port => {
-  if (port === '') {
-    return null;
-  }
-
-  const notIntError = validateInt(port);
-  if (notIntError) {
-    return notIntError;
-  }
-
-  const p = Number(port);
-  if (p !== '' && (p < SERVICE_PORT_MIN || p > SERVICE_PORT_MAX)) {
-    return SERVICE_PORT_MIN + ' < port < ' + SERVICE_PORT_MAX;
-  }
-  return null;
-};
-
-const validateGpuCount = count => {
-  if (count === '') {
-    return null;
-  }
-
-  const notIntError = validateInt(count);
-  if (notIntError) {
-    return notIntError;
-  }
-
-  const p = Number(count);
-  if (p !== '' && (p < GPU_COUNT_MIN || p > GPU_COUNT_MAX)) {
-    return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
-  }
-  return null;
-};
-
-const validateWirelessType = val => {
-  if (val) {
-    if (!val.match(/^((,\s*)?(wifi|5g|4g|other))+$/)) {
-      return 'Comma-separated values: wifi|5g|4g|other';
-    }
-  }
-  return null;
-};
-
-const validateCellularMccMnc = val => {
-  if (val) {
-    if (val.length > 3) {
-      return 'Maximum 3 numeric characters';
-    } else if (!val.match(/^(([0-9][0-9]*)?[0-9])+$/)) {
-      return 'Numeric characters only';
-    }
-  }
-  return null;
-};
-
-const validateCellularCellId = val => {
-  if (val) {
-    if (val.length > 7) {
-      return 'Maximum 7 characters';
-    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
-      return 'Alphanumeric hex characters only';
-    }
-  }
-  return null;
-};
-
-const validateCellularNrCellId = val => {
-  if (val) {
-    if (val.length > 9) {
-      return 'Maximum 9 characters';
-    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
-      return 'Alphanumeric hex characters only';
-    }
-  }
-  return null;
-};
-
-const validateMacAddress = val => {
-  if (val) {
-    if (val.length > 12) {
-      return 'Maximum 12 characters';
-    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
-      return 'Alphanumeric hex characters only';
-    }
-  }
-  return null;
-};
-
-const validateLocation = val => {
-  if (val) {
-    try {
-      L.GeoJSON.coordsToLatLng(JSON.parse(val));
-    } catch(e) {
-      return '[longitude,latitude]';
-    }
-  }
-  return null;
-};
-
-const validateGeoPath = val => {
-  if (val) {
-    // TODO -- Validate location format
-    try {
-      L.GeoJSON.coordsToLatLngs(JSON.parse(val),0);
-    } catch(e) {
-      return '[[longitude,latitude],...]';
-    }
-  }
-  return null;
-};
-
-const validateExternalPort = port => {
-  if (port === '') {
-    return null;
-  }
-
-  const notIntError = validateInt(port);
-  if (notIntError) {
-    return notIntError;
-  }
-
-  const p = Number(port);
-  if (p !== '' && (p < SERVICE_NODE_PORT_MIN || p > SERVICE_NODE_PORT_MAX)) {
-    return SERVICE_NODE_PORT_MIN + ' < ext. port < ' + SERVICE_NODE_PORT_MAX;
-  }
-  return null;
-};
-
-const validateProtocol = protocol => {
-  if (protocol === '') {
-    return null;
-  }
-
-  if (protocol) {
-    if (protocol !== '' && protocol !== 'TCP' && protocol !== 'UDP') {
-      return 'Must be TCP or UDP';
-    }
-  }
-  return null;
-};
-
-const validateColor = val => {
-  if (val === '') {
-    return null;
-  }
-  if (!val.match(/^#[0-9A-Fa-f]{6}$/)) {
-    return 'Invalid hex format';
-  }
-  return null;
-};
-
-// Validates list of similar comma-separated entries
-const validateEntries = validator => entries => {
-  return _.chain(entries.split(','))
-    .map(validator)
-    .flatten()
-    .value()
-    .join(', \n');
-};
-
-const validateIngressServiceMappingEntry = entry => {
-  if (entry === '') {
-    return null;
-  }
-
-  const args = entry.split(':');
-  if (args.length !== 4) {
-    return ` ${'Ext Port:Svc Name:Port:Protocol[,Ext Port: Svc Name:Port:Protocol]'}`;
-  }
-
-  return [
-    validateExternalPort(args[0]),
-    validateFullName(args[1]),
-    validatePort(args[2]),
-    validateProtocol(args[3])
-  ].filter(notNull);
-};
-
-const validateEgressServiceMappingEntry = entry => {
-  if (entry === '') {
-    return null;
-  }
-
-  const args = entry.split(':');
-  if (args.length !== 5) {
-    return ` ${'Svc Name:ME Svc Name:IP:Port:Protocol[,Svc Name:ME Svc Name:IP:Port:Protocol]'}`;
-  }
-
-  return [
-    validateFullName(args[0]),
-    validateFullName(args[1]),
-    // validateIP(args[2]), <-- TODO
-    validatePort(args[3]),
-    validateProtocol(args[4])
-  ].filter(notNull);
-};
-
-const validateEnvironmentVariableEntry = entry => {
-  if (entry === '') {
-    return null;
-  }
-
-  const parts = entry.split('=');
-  if (parts.length !== 2) {
-    return `${'VAR=value[,VAR=value]'}`;
-  }
-
-  return [validateVariableName(parts[0]), validateNotNull(parts[1])].filter(
-    notNull
-  );
-};
-
-const validateChartGroupEntry = entry => {
-  if (entry === '') {
-    return null;
-  }
-
-  const args = entry.split(':');
-  if (args.length !== 4) {
-    return ` ${'Svc instance:svc group name:port:protocol'}`;
-  }
-
-  return [
-    validateFullName(args[0]),
-    validateName(args[1]),
-    validatePort(args[2]),
-    validateProtocol(args[3])
-  ]
-    .filter(notNull)
-    .join(',');
-};
-
-const validateIngressServiceMapping = entries =>
-  validateEntries(validateIngressServiceMappingEntry)(entries);
-const validateEgressServiceMapping = entries =>
-  validateEntries(validateEgressServiceMappingEntry)(entries);
-const validateEnvironmentVariables = entries =>
-  validateEntries(validateEnvironmentVariableEntry)(entries);
-
-const validateCommandArguments = () => null;
+  CFG_BTN_CLONE_ELEM
+} from '@/js/meep-constants';
 
 // COMPONENTS
 const CfgTextField = props => {
@@ -1274,6 +893,93 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
       </>
     );
   case ELEMENT_TYPE_DC:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_LINK]}
+        />
+
+        <Grid>
+          <GridCell span={6}>
+            <IDSelect
+              label='Initial Connection State'
+              span={12}
+              options={[OPT_CONNECTED, OPT_DISCONNECTED]}
+              onChange={e => onUpdate(FIELD_CONNECTED, e.target.value === 'true', null)}
+              value={isConnected}
+              disabled={false}
+              cydata={CFG_ELEM_CONNECTED}
+            />
+          </GridCell>
+          <GridCell span={6}>
+            <IDSelect
+              label='Connection Mode'
+              span={12}
+              options={[OPT_WIRED]}
+              onChange={e => onUpdate(FIELD_WIRELESS, e.target.value === 'true', null)}
+              value={isWireless}
+              disabled={false}
+              cydata={CFG_ELEM_WIRELESS}
+            />
+          </GridCell>
+        </Grid>
+        {isWireless ? (
+          <Grid style={{ paddingTop: 16 }}>
+            <CfgTextFieldCell
+              span={12}
+              onUpdate={onUpdate}
+              element={element}
+              validate={validateWirelessType}
+              label='Supported Wireless Types (order by priority)'
+              fieldName={FIELD_WIRELESS_TYPE}
+              cydata={CFG_ELEM_WIRELESS_TYPE}
+            />
+          </Grid> 
+        ) : (
+          <Grid style={{ paddingTop: 16 }}></Grid>
+        )}
+        
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateDnn}
+            label='Data Network Name'
+            fieldName={FIELD_DN_NAME}
+            cydata={CFG_ELEM_DN_NAME}
+          />
+        </Grid>
+
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateEcsp}
+            label='Service Provider'
+            fieldName={FIELD_DN_ECSP}
+            cydata={CFG_ELEM_DN_ECSP}
+          />
+        </Grid>
+
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+        </Grid>
+      </>
+    );
   case ELEMENT_TYPE_EDGE:
   case ELEMENT_TYPE_FOG:
     return (
@@ -1343,7 +1049,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               Local (LADN)
             </Checkbox>
           </GridCell>
-        </Grid> 
+        </Grid>
 
         <Grid>
           <CfgTextFieldCell
@@ -1356,8 +1062,6 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             cydata={CFG_ELEM_DN_ECSP}
           />
         </Grid>
-
-        
 
         <Grid>
           <CfgTextFieldCell
@@ -1393,6 +1097,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
 
           {isExternal ? (
             <>
+              <div style={{marginTop: 20 }}></div>
               <ExternalFields onUpdate={onUpdate} element={element} />
               <CfgTextField
                 onUpdate={onUpdate}
@@ -1413,6 +1118,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                 >
                   User-Defined Chart
                 </Checkbox>
+                <div style={{marginTop: 20 }}></div>
 
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />
@@ -1471,6 +1177,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
 
           {isExternal ? (
             <>
+              <div style={{marginTop: 20 }}></div>
               <ExternalFields onUpdate={onUpdate} element={element} />
               <CfgTextField
                 onUpdate={onUpdate}
@@ -1491,7 +1198,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                 >
                   User-Defined Chart
                 </Checkbox>
-
+                <div style={{marginTop: 20 }}></div>
+                
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />
                 ) : (
@@ -1549,6 +1257,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
 
           {isExternal ? (
             <>
+              <div style={{marginTop: 20 }}></div>
               <ExternalFields onUpdate={onUpdate} element={element} />
               <CfgTextField
                 onUpdate={onUpdate}
@@ -1569,6 +1278,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                 >
                   User-Defined Chart
                 </Checkbox>
+                <div style={{marginTop: 20 }}></div>
 
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />

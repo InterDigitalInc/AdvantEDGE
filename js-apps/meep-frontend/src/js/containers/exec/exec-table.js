@@ -166,9 +166,9 @@ class ExecTable extends Component {
     return (
       <Grid>
         <GridCell span={12}>
-          <Elevation className="component-style" z={2} style={styles.execTable}>
+          <Elevation className='idcc-elevation' z={2} style={styles.execTable}>
             <div>
-              <span className="mdc-typography--headline6">
+              <span className='mdc-typography--headline6'>
                 Network Elements{' '}
               </span>
             </div>
@@ -176,7 +176,7 @@ class ExecTable extends Component {
               <div className={classes.tableWrapper}>
                 <Table
                   className={classes.table}
-                  aria-labelledby="tableTitle"
+                  aria-labelledby='tableTitle'
                   style={{ width: '100%' }}
                 >
                   <TableHead className={classes.tableHead}>
@@ -193,7 +193,7 @@ class ExecTable extends Component {
                             className={classes.tableHeadColor}
                           >
                             <Tooltip
-                              title="Sort"
+                              title='Sort'
                               placement={
                                 column.numeric ? 'bottom-end' : 'bottom-start'
                               }
@@ -228,13 +228,13 @@ class ExecTable extends Component {
                           <TableRow
                             hover
                             onClick={event => this.onClick(event, n.name)}
-                            role="checkbox"
+                            role='checkbox'
                             aria-checked={isSelected}
                             tabIndex={-1}
                             key={n.name}
                             selected={isSelected}
                           >
-                            <TableCell component="th" scope="row">
+                            <TableCell component='th' scope='row'>
                               {n.name}
                             </TableCell>
                             <TableCell
@@ -280,7 +280,7 @@ class ExecTable extends Component {
                 </Table>
               </div>
               <TablePagination
-                component="div"
+                component='div'
                 count={data.length ? data.length : 0}
                 rowsPerPage={rowsPerPage}
                 page={page}

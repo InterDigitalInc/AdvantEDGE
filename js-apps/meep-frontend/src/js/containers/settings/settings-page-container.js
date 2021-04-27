@@ -16,12 +16,11 @@
 
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
-import { Grid, GridCell, GridInner } from '@rmwc/grid';
+import { Grid, GridCell } from '@rmwc/grid';
 // import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
-import { Icon } from '@rmwc/icon';
 import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
 
 import {
@@ -36,10 +35,7 @@ import {
 } from '../../state/ui';
 
 import {
-  MEEP_HELP_PAGE_SET_URL,
   PAGE_SETTINGS,
-  // SET_EXEC_REFRESH_CHECKBOX,
-  // SET_EXEC_REFRESH_INT,
   SET_VIS_CFG_CHECKBOX,
   SET_VIS_CFG_LABEL,
   SET_RESET_SETTINGS_BUTTON,
@@ -122,7 +118,7 @@ class SettingsPageContainer extends Component {
     return (
       <div>
         <IDConfirmDialog
-          title="Clear UI cache (reset default frontend state)"
+          title='Clear UI cache (reset default frontend state)'
           open={this.props.currentDialog === IDC_DIALOG_CLEAR_UI_CACHE}
           onClose={() => {
             this.closeDialog();
@@ -133,89 +129,13 @@ class SettingsPageContainer extends Component {
           <Grid style={{ width: '100%' }}>
             <GridCell span={12}>
               <Elevation
-                className="component-style"
+                className='idcc-elevation'
                 z={2}
                 style={styles.elevation}
               >
-                <GridInner>
-                  <GridCell align={'middle'} span={4}>
-                    <span className="mdc-typography--headline6">
-                        Settings:{' '}
-                    </span>
-                  </GridCell>
-                  <GridCell align={'middle'} span={8}>
-                    <div align={'right'}>
-                      <Button
-                        raised
-                        style={{ ...styles.button, marginLeft: 10 }}
-                        onClick={() => {
-                          window.open(MEEP_HELP_PAGE_SET_URL,'_blank');
-                        }}
-                      >
-                        <Icon
-                          icon="help_outline"
-                          iconOptions={{ strategy: 'ligature' }}
-                          style={styles.icon}
-                        />
-                      </Button>
-                    </div>
-                  </GridCell>
-                </GridInner>
-              </Elevation>
-
-              <Elevation
-                className="component-style"
-                z={2}
-                style={styles.elevation}
-              >
-                {/* <div style={styles.section}>
-                  <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
-                      Execution:{' '}
-                    </span>
-                  </div>
-                  <div style={styles.content}>
-                    <Grid span={12}>
-                      <GridCell span={2}>
-                        <div style={{ marginTop: 20 }}>
-                          <Checkbox
-                            checked={this.props.automaticRefresh}
-                            onChange={e =>
-                              this.handleCheckboxChange(e.target.checked)
-                            }
-                            data-cy={SET_EXEC_REFRESH_CHECKBOX}
-                          >
-                            Automatic refresh:
-                          </Checkbox>
-                        </div>
-                      </GridCell>
-                      <GridCell span={10}>
-                        <TextField
-                          outlined
-                          style={this.styles().interval}
-                          label="Interval (ms)"
-                          onChange={e => this.handleIntervalChange(e.target.value)}
-                          value={this.props.refreshInterval}
-                          disabled={!this.props.automaticRefresh}
-                          data-cy={SET_EXEC_REFRESH_INT}
-                        />
-                      </GridCell>
-                    </Grid>
-
-                    <Grid>
-                      <GridCell span={2}></GridCell>
-                      <GridCell span={10} style={this.styles().errorGridCell}>
-                        <p style={this.styles().errorText}>
-                          500 &lt; value &lt; 60000
-                        </p>
-                      </GridCell>
-                    </Grid>
-                  </div>
-                </div> */}
-
                 <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                       Development:{' '}
                     </span>
                   </div>
@@ -231,7 +151,7 @@ class SettingsPageContainer extends Component {
 
                 <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                       Local Storage:{' '}
                     </span>
                   </div>
@@ -248,7 +168,7 @@ class SettingsPageContainer extends Component {
  
                 <div style={styles.section}>
                   <div style={styles.headline}>
-                    <span className="mdc-typography--headline6">
+                    <span className='mdc-typography--headline6'>
                         About:{' '}
                     </span>
                   </div>

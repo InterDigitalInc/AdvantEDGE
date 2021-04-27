@@ -49,19 +49,19 @@ const StatusTable = props => {
   return (
     <Grid style={{border: '1px solid #e4e4e4'}}>
       <GridCell span={2}>
-        <Typography use="headline6" style={{ marginLeft: 10 }}>Status:</Typography>
+        <Typography use='headline6' style={{ marginLeft: 10 }}>Status:</Typography>
       </GridCell>
       <GridCell align={'middle'} span={3}>
-        <Typography use="subtitle2" style={{ marginRight: 10 }}>REPLAY FILE:</Typography>
-        <Typography use="body2">{props.name}</Typography>
+        <Typography use='subtitle2' style={{ marginRight: 10 }}>REPLAY FILE:</Typography>
+        <Typography use='body2'>{props.name}</Typography>
       </GridCell>
       <GridCell align={'middle'} span={3}>
-        <Typography use="subtitle2" style={{ marginRight: 10 }}>EVENT COUNT:</Typography>
-        <Typography use="body2" data-cy={MEEP_EVENT_COUNT}>{props.index} / {props.maxIndex}</Typography>
+        <Typography use='subtitle2' style={{ marginRight: 10 }}>EVENT COUNT:</Typography>
+        <Typography use='body2' data-cy={MEEP_EVENT_COUNT}>{props.index} / {props.maxIndex}</Typography>
       </GridCell>
       <GridCell align={'middle'} span={4}>
-        <Typography use="subtitle2" style={{ marginRight: 10 }}>NEXT/LAST EVENT (S):</Typography>
-        <Typography use="body2">{timeToNextEvent.toFixed(2)} / {timeRemaining.toFixed(2)}</Typography>
+        <Typography use='subtitle2' style={{ marginRight: 10 }}>NEXT/LAST EVENT (S):</Typography>
+        <Typography use='body2'>{timeToNextEvent.toFixed(2)} / {timeRemaining.toFixed(2)}</Typography>
       </GridCell>
     </Grid>
   );
@@ -121,13 +121,13 @@ class EventContainer extends Component {
       <>
         <Elevation
           z={2}
-          className="component-style"
+          className='idcc-elevation'
           style={{ padding: 10, marginBottom: 10 }}
         >
           <Grid style={{ marginBottom: 10 }}>
             <GridCell span={2}>
               <div style={{ marginBottom: 10 }}>
-                <span className="mdc-typography--headline6">
+                <span className='mdc-typography--headline6'>
                   Event
                 </span>
               </div>

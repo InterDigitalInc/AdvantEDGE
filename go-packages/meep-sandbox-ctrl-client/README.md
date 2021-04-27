@@ -31,6 +31,7 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**GetActiveScenarioZone**](docs/ActiveScenarioApi.md#getactivescenariozone) | **Get** /active/zones | Get zone elements from the deployed scenario
 *ActiveScenarioApi* | [**TerminateScenario**](docs/ActiveScenarioApi.md#terminatescenario) | **Delete** /active | Terminate the deployed scenario
 *ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+*ConnectivityApi* | [**GetPduSessionList**](docs/ConnectivityApi.md#getpdusessionlist) | **Get** /connectivity/pdu-session | Get list of PDU Sessions
 *ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 *EventReplayApi* | [**CreateReplayFile**](docs/EventReplayApi.md#createreplayfile) | **Post** /replay/{name} | Add a replay file
 *EventReplayApi* | [**CreateReplayFileFromScenarioExec**](docs/EventReplayApi.md#createreplayfilefromscenarioexec) | **Post** /replay/{name}/generate | Generate a replay file from Active Scenario events
@@ -60,6 +61,7 @@ Class | Method | HTTP request | Description
  - [Event](docs/Event.md)
  - [EventMobility](docs/EventMobility.md)
  - [EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
+ - [EventPduSession](docs/EventPduSession.md)
  - [EventPoasInRange](docs/EventPoasInRange.md)
  - [EventScenarioUpdate](docs/EventScenarioUpdate.md)
  - [ExternalConfig](docs/ExternalConfig.md)
@@ -73,7 +75,9 @@ Class | Method | HTTP request | Description
  - [NetworkLocations](docs/NetworkLocations.md)
  - [NodeDataUnion](docs/NodeDataUnion.md)
  - [NodeServiceMaps](docs/NodeServiceMaps.md)
+ - [PduSession](docs/PduSession.md)
  - [PduSessionInfo](docs/PduSessionInfo.md)
+ - [PduSessionList](docs/PduSessionList.md)
  - [PhysicalLocation](docs/PhysicalLocation.md)
  - [PhysicalLocations](docs/PhysicalLocations.md)
  - [Poa4GConfig](docs/Poa4GConfig.md)

@@ -86,7 +86,7 @@ type NodeFilter struct {
 	PhysicalLocationType string
 	ProcessName          string
 	ProcessType          string
-	Children             bool
+	ExcludeChildren      bool
 	Minimize             bool
 }
 
@@ -975,7 +975,7 @@ func (m *Model) GetDomains(filter *NodeFilter) dataModel.Domains {
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.Domain)
-			if !filter.Children || filter.Minimize {
+			if filter.ExcludeChildren || filter.Minimize {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &domain)
 				if err != nil {
@@ -983,7 +983,7 @@ func (m *Model) GetDomains(filter *NodeFilter) dataModel.Domains {
 				}
 
 				// Remove children
-				if !filter.Children {
+				if filter.ExcludeChildren {
 					domain.Zones = nil
 				}
 				// Minimize node
@@ -1019,7 +1019,7 @@ func (m *Model) GetZones(filter *NodeFilter) dataModel.Zones {
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.Zone)
-			if !filter.Children || filter.Minimize {
+			if filter.ExcludeChildren || filter.Minimize {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &zone)
 				if err != nil {
@@ -1027,7 +1027,7 @@ func (m *Model) GetZones(filter *NodeFilter) dataModel.Zones {
 				}
 
 				// Remove children
-				if !filter.Children {
+				if filter.ExcludeChildren {
 					zone.NetworkLocations = nil
 				}
 				// Minimize node
@@ -1066,7 +1066,7 @@ func (m *Model) GetNetworkLocations(filter *NodeFilter) dataModel.NetworkLocatio
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.NetworkLocation)
-			if !filter.Children || filter.Minimize {
+			if filter.ExcludeChildren || filter.Minimize {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &networkLocation)
 				if err != nil {
@@ -1074,7 +1074,7 @@ func (m *Model) GetNetworkLocations(filter *NodeFilter) dataModel.NetworkLocatio
 				}
 
 				// Remove children
-				if !filter.Children {
+				if filter.ExcludeChildren {
 					networkLocation.PhysicalLocations = nil
 				}
 				// Minimize node
@@ -1113,7 +1113,7 @@ func (m *Model) GetPhysicalLocations(filter *NodeFilter) dataModel.PhysicalLocat
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.PhysicalLocation)
-			if !filter.Children || filter.Minimize {
+			if filter.ExcludeChildren || filter.Minimize {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &physicalLocation)
 				if err != nil {
@@ -1121,7 +1121,7 @@ func (m *Model) GetPhysicalLocations(filter *NodeFilter) dataModel.PhysicalLocat
 				}
 
 				// Remove children
-				if !filter.Children {
+				if filter.ExcludeChildren {
 					physicalLocation.Processes = nil
 				}
 

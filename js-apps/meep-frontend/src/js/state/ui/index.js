@@ -21,11 +21,11 @@ import {
   MOBILITY_EVENT,
   CFG_VIEW_NETWORK,
   SCENARIO_UPDATE_ACTION_NONE,
-  PAGE_LOGIN
+  PAGE_HOME
 } from '../../meep-constants';
 
 const initialState = {
-  page: PAGE_LOGIN,
+  page: PAGE_HOME,
   cfgView: CFG_VIEW_NETWORK,
   mapCfg: {},
   eventCreationMode: false,
@@ -38,6 +38,7 @@ const initialState = {
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   mobilityEventTarget: '',
   mobilityEventDestination: '',
+  pduSessionEvent: {},
   scenarioUpdateAction: SCENARIO_UPDATE_ACTION_NONE,
   scenarioUpdateRemoveEleName: '',
   scenarioUpdateRemoveEleType: '',
@@ -48,6 +49,7 @@ const initialState = {
   execShowApps: false,
   dashCfgMode: false,
   eventCfgMode: false,
+  eventStatus: '',
   dashboardView1: NET_TOPOLOGY_VIEW,
   dashboardView2: VIEW_NAME_NONE,
   sourceNodeSelected: '',
@@ -148,6 +150,14 @@ export function uiExecChangeMobilityEventDestination(event) {
   };
 }
 
+const UI_EXEC_CHANGE_PDU_SESSION_EVENT = 'UI_EXEC_CHANGE_PDU_SESSION_EVENT';
+export function uiExecChangePduSessionEvent(event) {
+  return {
+    type: UI_EXEC_CHANGE_PDU_SESSION_EVENT,
+    payload: event
+  };
+}
+
 const UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION = 'UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION';
 export function uiExecChangeScenarioUpdateAction(event) {
   return {
@@ -241,6 +251,14 @@ export function uiExecChangeEventCfgMode(val) {
   return {
     type: UI_EXEC_CHANGE_EVENT_CFG_MODE,
     payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_EVENT_STATUS = 'UI_EXEC_CHANGE_EVENT_STATUS';
+export function uiExecChangeEventStatus(status) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_STATUS,
+    payload: status
   };
 }
 
@@ -395,6 +413,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { mobilityEventTarget: action.payload });
   case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
     return updateObject(state, { mobilityEventDestination: action.payload });
+  case UI_EXEC_CHANGE_PDU_SESSION_EVENT:
+    return updateObject(state, { pduSessionEvent: action.payload });
   case UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION:
     return updateObject(state, { scenarioUpdateAction: action.payload });
   case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME:
@@ -423,6 +443,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { dashCfgMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_CFG_MODE:
     return updateObject(state, { eventCfgMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_STATUS:
+    return updateObject(state, { eventStatus: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:

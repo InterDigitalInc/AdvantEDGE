@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/PDUSessionInfo'], factory);
+    define(['ApiClient', 'model/PDUSessionInfo', 'model/PDUSessionList'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/PDUSessionInfo'));
+    module.exports = factory(require('../ApiClient'), require('../model/PDUSessionInfo'), require('../model/PDUSessionList'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.ConnectivityApi = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.PDUSessionInfo);
+    root.AdvantEdgeSandboxControllerRestApi.ConnectivityApi = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.PDUSessionInfo, root.AdvantEdgeSandboxControllerRestApi.PDUSessionList);
   }
-}(this, function(ApiClient, PDUSessionInfo) {
+}(this, function(ApiClient, PDUSessionInfo, PDUSessionList) {
   'use strict';
 
   /**
@@ -117,6 +117,53 @@
 
       return this.apiClient.callApi(
         '/connectivity/pdu-session/{ueName}/{pduSessionId}', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the getPduSessionList operation.
+     * @callback module:api/ConnectivityApi~getPduSessionListCallback
+     * @param {String} error Error message, if any.
+     * @param {module:model/PDUSessionList} data The data returned by the service call.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Get list of PDU Sessions
+     * Get list of active PDU Sessions matching provided filters
+     * @param {Object} opts Optional parameters
+     * @param {String} opts.ue Return PDU sessions matching provided UE name
+     * @param {String} opts.id Return PDU session matching provided PDU session ID
+     * @param {module:api/ConnectivityApi~getPduSessionListCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/PDUSessionList}
+     */
+    this.getPduSessionList = function(opts, callback) {
+      opts = opts || {};
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+        'ue': opts['ue'],
+        'id': opts['id'],
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = PDUSessionList;
+
+      return this.apiClient.callApi(
+        '/connectivity/pdu-session', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

@@ -32,6 +32,10 @@ func CreatePduSession(w http.ResponseWriter, r *http.Request) {
 	ceCreatePduSession(w, r)
 }
 
+func GetPduSessionList(w http.ResponseWriter, r *http.Request) {
+	ceGetPduSessionList(w, r)
+}
+
 func TerminatePduSession(w http.ResponseWriter, r *http.Request) {
 	ceTerminatePduSession(w, r)
 }

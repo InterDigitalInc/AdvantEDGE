@@ -34,4 +34,5 @@ type Event struct {
 	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
 	EventPoasInRange                  *EventPoasInRange                  `json:"eventPoasInRange,omitempty"`
 	EventScenarioUpdate               *EventScenarioUpdate               `json:"eventScenarioUpdate,omitempty"`
+	EventPduSession                   *EventPduSession                   `json:"eventPduSession,omitempty"`
 }

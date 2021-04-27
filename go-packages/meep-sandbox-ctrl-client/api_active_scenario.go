@@ -345,7 +345,7 @@ Returns a filtered list of domain elements from the deployed scenario using the 
      * @param "PhysicalLocationType" (optional.String) -  Physical Location type
      * @param "Process" (optional.String) -  Process name
      * @param "ProcessType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "ExcludeChildren" (optional.Bool) -  Include child elements in response
      * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Domains
@@ -361,7 +361,7 @@ type GetActiveScenarioDomainOpts struct {
 	PhysicalLocationType optional.String
 	Process              optional.String
 	ProcessType          optional.String
-	Children             optional.Bool
+	ExcludeChildren      optional.Bool
 	Minimize             optional.Bool
 }
 
@@ -408,8 +408,8 @@ func (a *ActiveScenarioApiService) GetActiveScenarioDomain(ctx context.Context, 
 	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
 		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
-		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ExcludeChildren.IsSet() {
+		localVarQueryParams.Add("excludeChildren", parameterToString(localVarOptionals.ExcludeChildren.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
 		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
@@ -492,7 +492,7 @@ Returns a filtered list of network location elements from the deployed scenario 
      * @param "PhysicalLocationType" (optional.String) -  Physical Location type
      * @param "Process" (optional.String) -  Process name
      * @param "ProcessType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "ExcludeChildren" (optional.Bool) -  Include child elements in response
      * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return NetworkLocations
@@ -508,7 +508,7 @@ type GetActiveScenarioNetworkLocationOpts struct {
 	PhysicalLocationType optional.String
 	Process              optional.String
 	ProcessType          optional.String
-	Children             optional.Bool
+	ExcludeChildren      optional.Bool
 	Minimize             optional.Bool
 }
 
@@ -555,8 +555,8 @@ func (a *ActiveScenarioApiService) GetActiveScenarioNetworkLocation(ctx context.
 	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
 		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
-		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ExcludeChildren.IsSet() {
+		localVarQueryParams.Add("excludeChildren", parameterToString(localVarOptionals.ExcludeChildren.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
 		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
@@ -639,7 +639,7 @@ Returns a filtered list of physical location elements from the deployed scenario
      * @param "PhysicalLocationType" (optional.String) -  Physical Location type
      * @param "Process" (optional.String) -  Process name
      * @param "ProcessType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "ExcludeChildren" (optional.Bool) -  Include child elements in response
      * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return PhysicalLocations
@@ -655,7 +655,7 @@ type GetActiveScenarioPhysicalLocationOpts struct {
 	PhysicalLocationType optional.String
 	Process              optional.String
 	ProcessType          optional.String
-	Children             optional.Bool
+	ExcludeChildren      optional.Bool
 	Minimize             optional.Bool
 }
 
@@ -702,8 +702,8 @@ func (a *ActiveScenarioApiService) GetActiveScenarioPhysicalLocation(ctx context
 	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
 		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
-		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ExcludeChildren.IsSet() {
+		localVarQueryParams.Add("excludeChildren", parameterToString(localVarOptionals.ExcludeChildren.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
 		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
@@ -786,7 +786,7 @@ Returns a filtered list of process elements from the deployed scenario using the
      * @param "PhysicalLocationType" (optional.String) -  Physical Location type
      * @param "Process" (optional.String) -  Process name
      * @param "ProcessType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "ExcludeChildren" (optional.Bool) -  Include child elements in response
      * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Processes
@@ -802,7 +802,7 @@ type GetActiveScenarioProcessOpts struct {
 	PhysicalLocationType optional.String
 	Process              optional.String
 	ProcessType          optional.String
-	Children             optional.Bool
+	ExcludeChildren      optional.Bool
 	Minimize             optional.Bool
 }
 
@@ -849,8 +849,8 @@ func (a *ActiveScenarioApiService) GetActiveScenarioProcess(ctx context.Context,
 	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
 		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
-		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ExcludeChildren.IsSet() {
+		localVarQueryParams.Add("excludeChildren", parameterToString(localVarOptionals.ExcludeChildren.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
 		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
@@ -933,7 +933,7 @@ Returns a filtered list of zone elements from the deployed scenario using the pr
      * @param "PhysicalLocationType" (optional.String) -  Physical Location type
      * @param "Process" (optional.String) -  Process name
      * @param "ProcessType" (optional.String) -  Process type
-     * @param "Children" (optional.Bool) -  Include child elements in response
+     * @param "ExcludeChildren" (optional.Bool) -  Include child elements in response
      * @param "Minimize" (optional.Bool) -  Return minimized scenario element content
 
 @return Zones
@@ -949,7 +949,7 @@ type GetActiveScenarioZoneOpts struct {
 	PhysicalLocationType optional.String
 	Process              optional.String
 	ProcessType          optional.String
-	Children             optional.Bool
+	ExcludeChildren      optional.Bool
 	Minimize             optional.Bool
 }
 
@@ -996,8 +996,8 @@ func (a *ActiveScenarioApiService) GetActiveScenarioZone(ctx context.Context, lo
 	if localVarOptionals != nil && localVarOptionals.ProcessType.IsSet() {
 		localVarQueryParams.Add("processType", parameterToString(localVarOptionals.ProcessType.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Children.IsSet() {
-		localVarQueryParams.Add("children", parameterToString(localVarOptionals.Children.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.ExcludeChildren.IsSet() {
+		localVarQueryParams.Add("excludeChildren", parameterToString(localVarOptionals.ExcludeChildren.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
 		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))

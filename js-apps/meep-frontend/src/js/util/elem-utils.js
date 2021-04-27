@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import _ from 'lodash';
+
 import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
@@ -129,6 +131,9 @@ export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
 export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
 
+export const getElemByName = (entries, name) => {
+  return (entries && entries[name]) ? entries[name] : null;
+};
 
 export const getElemFieldVal = (elem, field) => {
   return (elem && elem[field]) ? elem[field].val : null;
@@ -148,6 +153,12 @@ export const setElemFieldErr = (elem, field, err) => {
   if (elem) {
     elem[field].err = err;
   }
+};
+
+export const validElem = (element) => {
+  var fieldsInError = 0;
+  _.forOwn(element, val => (fieldsInError = val.err ? fieldsInError + 1 : fieldsInError));
+  return (fieldsInError) ? false : true;
 };
 
 export const resetElem = (elem) => {

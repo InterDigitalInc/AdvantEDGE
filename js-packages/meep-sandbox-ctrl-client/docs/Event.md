@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **eventNetworkCharacteristicsUpdate** | [**EventNetworkCharacteristicsUpdate**](EventNetworkCharacteristicsUpdate.md) |  | [optional] 
 **eventPoasInRange** | [**EventPoasInRange**](EventPoasInRange.md) |  | [optional] 
 **eventScenarioUpdate** | [**EventScenarioUpdate**](EventScenarioUpdate.md) |  | [optional] 
+**eventPduSession** | [**EventPduSession**](EventPduSession.md) |  | [optional] 
 
 
 <a name="TypeEnum"></a>
@@ -22,6 +23,8 @@ Name | Type | Description | Notes
 * `POAS_IN_RANGE` (value: `"POAS-IN-RANGE"`)
 
 * `SCENARIO_UPDATE` (value: `"SCENARIO-UPDATE"`)
+
+* `PDU_SESSION` (value: `"PDU-SESSION"`)
 
 
 
