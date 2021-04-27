@@ -19,7 +19,6 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -966,7 +965,6 @@ func (m *Model) GetDomains(filter *NodeFilter) dataModel.Domains {
 	nMap := make(map[string]*Node)
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypeOperatorCell))
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypeOperator))
-	fmt.Printf("%+v\n", nMap)
 
 	// Find nodes that match filter criteria
 	var domains dataModel.Domains
@@ -1058,7 +1056,6 @@ func (m *Model) GetNetworkLocations(filter *NodeFilter) dataModel.NetworkLocatio
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypePoa4G))
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypePoa5G))
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypePoaWifi))
-	fmt.Printf("%+v\n", nMap)
 
 	// Find nodes that match filter criteria
 	var networkLocations dataModel.NetworkLocations
