@@ -151,7 +151,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **optional.String**| Physical Location type | 
  **process** | **optional.String**| Process name | 
  **processType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Include child elements in response | 
+ **excludeChildren** | **optional.Bool**| Include child elements in response | 
  **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
@@ -196,7 +196,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **optional.String**| Physical Location type | 
  **process** | **optional.String**| Process name | 
  **processType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Include child elements in response | 
+ **excludeChildren** | **optional.Bool**| Include child elements in response | 
  **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
@@ -241,7 +241,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **optional.String**| Physical Location type | 
  **process** | **optional.String**| Process name | 
  **processType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Include child elements in response | 
+ **excludeChildren** | **optional.Bool**| Include child elements in response | 
  **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
@@ -286,7 +286,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **optional.String**| Physical Location type | 
  **process** | **optional.String**| Process name | 
  **processType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Include child elements in response | 
+ **excludeChildren** | **optional.Bool**| Include child elements in response | 
  **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type
@@ -331,7 +331,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **optional.String**| Physical Location type | 
  **process** | **optional.String**| Process name | 
  **processType** | **optional.String**| Process type | 
- **children** | **optional.Bool**| Include child elements in response | 
+ **excludeChildren** | **optional.Bool**| Include child elements in response | 
  **minimize** | **optional.Bool**| Return minimized scenario element content | 
 
 ### Return type

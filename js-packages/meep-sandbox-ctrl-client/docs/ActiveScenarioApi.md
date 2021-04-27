@@ -187,7 +187,7 @@ var opts = {
   'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
   'process': "process_example", // String | Process name
   'processType': "processType_example", // String | Process type
-  'children': true, // Boolean | Include child elements in response
+  'excludeChildren': true, // Boolean | Include child elements in response
   'minimize': true // Boolean | Return minimized scenario element content
 };
 
@@ -214,7 +214,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **String**| Physical Location type | [optional] 
  **process** | **String**| Process name | [optional] 
  **processType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Include child elements in response | [optional] 
+ **excludeChildren** | **Boolean**| Include child elements in response | [optional] 
  **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
@@ -254,7 +254,7 @@ var opts = {
   'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
   'process': "process_example", // String | Process name
   'processType': "processType_example", // String | Process type
-  'children': true, // Boolean | Include child elements in response
+  'excludeChildren': true, // Boolean | Include child elements in response
   'minimize': true // Boolean | Return minimized scenario element content
 };
 
@@ -281,7 +281,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **String**| Physical Location type | [optional] 
  **process** | **String**| Process name | [optional] 
  **processType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Include child elements in response | [optional] 
+ **excludeChildren** | **Boolean**| Include child elements in response | [optional] 
  **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
@@ -321,7 +321,7 @@ var opts = {
   'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
   'process': "process_example", // String | Process name
   'processType': "processType_example", // String | Process type
-  'children': true, // Boolean | Include child elements in response
+  'excludeChildren': true, // Boolean | Include child elements in response
   'minimize': true // Boolean | Return minimized scenario element content
 };
 
@@ -348,7 +348,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **String**| Physical Location type | [optional] 
  **process** | **String**| Process name | [optional] 
  **processType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Include child elements in response | [optional] 
+ **excludeChildren** | **Boolean**| Include child elements in response | [optional] 
  **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
@@ -388,7 +388,7 @@ var opts = {
   'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
   'process': "process_example", // String | Process name
   'processType': "processType_example", // String | Process type
-  'children': true, // Boolean | Include child elements in response
+  'excludeChildren': true, // Boolean | Include child elements in response
   'minimize': true // Boolean | Return minimized scenario element content
 };
 
@@ -415,7 +415,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **String**| Physical Location type | [optional] 
  **process** | **String**| Process name | [optional] 
  **processType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Include child elements in response | [optional] 
+ **excludeChildren** | **Boolean**| Include child elements in response | [optional] 
  **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
@@ -455,7 +455,7 @@ var opts = {
   'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
   'process': "process_example", // String | Process name
   'processType': "processType_example", // String | Process type
-  'children': true, // Boolean | Include child elements in response
+  'excludeChildren': true, // Boolean | Include child elements in response
   'minimize': true // Boolean | Return minimized scenario element content
 };
 
@@ -482,7 +482,7 @@ Name | Type | Description  | Notes
  **physicalLocationType** | **String**| Physical Location type | [optional] 
  **process** | **String**| Process name | [optional] 
  **processType** | **String**| Process type | [optional] 
- **children** | **Boolean**| Include child elements in response | [optional] 
+ **excludeChildren** | **Boolean**| Include child elements in response | [optional] 
  **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type

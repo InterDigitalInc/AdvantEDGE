@@ -433,7 +433,7 @@ func getNodeFilterFromQueryParams(query url.Values) mod.NodeFilter {
 	} else {
 		filter.Minimize = false
 	}
-	childrenStr := query.Get("children")
+	childrenStr := query.Get("excludeChildren")
 	if childrenStr == "true" {
 		filter.Children = true
 	} else {
