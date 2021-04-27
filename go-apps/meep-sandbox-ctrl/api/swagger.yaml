@@ -2086,25 +2086,6 @@ definitions:
           $ref: "#/definitions/PDUSession"
     description: "PDUSession list"
     example: {}
-  PDUSession:
-    type: "object"
-    properties:
-      ue:
-        type: "string"
-        description: "UE name as defined in the scenario"
-      id:
-        type: "string"
-        description: "PDU Session ID"
-      info:
-        $ref: "#/definitions/PDUSessionInfo"
-    description: "PDU Session"
-    example: {}
-  PDUSessionInfo:
-    type: "object"
-    properties:
-      dnn:
-        type: "string"
-        description: "Data Network Name as defined in the scenario"
 parameters:
   Query.Domain:
     name: "domain"
