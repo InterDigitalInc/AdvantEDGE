@@ -970,6 +970,7 @@ func (m *Model) GetDomains(filter *NodeFilter) dataModel.Domains {
 
 	// Find nodes that match filter criteria
 	var domains dataModel.Domains
+	domains.Domains = []dataModel.Domain{}
 	for _, node := range nMap {
 		if m.filterNode(node, Domain, filter) {
 			var domain dataModel.Domain
@@ -1013,6 +1014,7 @@ func (m *Model) GetZones(filter *NodeFilter) dataModel.Zones {
 
 	// Find nodes that match filter criteria
 	var zones dataModel.Zones
+	zones.Zones = []dataModel.Zone{}
 	for _, node := range nMap {
 		if m.filterNode(node, Zone, filter) {
 			var zone dataModel.Zone
@@ -1060,6 +1062,7 @@ func (m *Model) GetNetworkLocations(filter *NodeFilter) dataModel.NetworkLocatio
 
 	// Find nodes that match filter criteria
 	var networkLocations dataModel.NetworkLocations
+	networkLocations.NetworkLocations = []dataModel.NetworkLocation{}
 	for _, node := range nMap {
 		if m.filterNode(node, NetLoc, filter) {
 			var networkLocation dataModel.NetworkLocation
@@ -1106,6 +1109,7 @@ func (m *Model) GetPhysicalLocations(filter *NodeFilter) dataModel.PhysicalLocat
 
 	// Find nodes that match filter criteria
 	var physicalLocations dataModel.PhysicalLocations
+	physicalLocations.PhysicalLocations = []dataModel.PhysicalLocation{}
 	for _, node := range nMap {
 		if m.filterNode(node, PhyLoc, filter) {
 			var physicalLocation dataModel.PhysicalLocation
@@ -1150,10 +1154,9 @@ func (m *Model) GetProcesses(filter *NodeFilter) dataModel.Processes {
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypeEdgeApp))
 	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypeCloudApp))
 
-	fmt.Printf("%+v\n", nMap)
-
 	// Find nodes that match filter criteria
 	var processes dataModel.Processes
+	processes.Processes = []dataModel.Process{}
 	for _, node := range nMap {
 		if m.filterNode(node, Proc, filter) {
 			process := *(node.object.(*dataModel.Process))
@@ -1476,7 +1479,7 @@ func (m *Model) filterNode(node *Node, typ string, filter *NodeFilter) bool {
 				return false
 			}
 		} else {
-			if ctx.Parents[Proc] != filter.ProcessName {
+			if node.name != filter.ProcessName {
 				return false
 			}
 		}
