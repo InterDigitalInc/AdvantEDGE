@@ -417,10 +417,10 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(scenario))
 }
 
-func getNodeFilterFromQueryParams(query url.Values) mod.NodeFindFilter {
+func getNodeFilterFromQueryParams(query url.Values) mod.NodeFilter {
 
 	//Retrieve query parameters and populate filter
-	var filter mod.NodeFindFilter
+	var filter mod.NodeFilter
 	minimizeStr := query.Get("minimize")
 	if minimizeStr == "true" {
 		filter.Minimize = true
@@ -450,168 +450,156 @@ func getNodeFilterFromQueryParams(query url.Values) mod.NodeFindFilter {
 // Retrieves the active scenario domains
 // GET /active/domains
 func ceGetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
-	log.Debug("CEGetActiveScenarioDomain")
+	log.Debug("ceGetActiveScenarioDomain")
 
+	// Make sure scenario is active
 	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
-	//Retrieve query parameters and populate filter
+	// Get filters from query params
 	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	domains := sbxCtrl.activeModel.GetDomainNodesByFilter(&filter)
+	// Get domains
+	domains := sbxCtrl.activeModel.GetDomains(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(domains)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if len(domains.Domains) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-
-		//var domains dataModel.Domains
-		//domains.Domains = nodeListDomains
-		jsonResponse, err := json.Marshal(domains)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, string(jsonResponse))
-	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Retrieves the active scenario domains
 // GET /active/zones
 func ceGetActiveScenarioZone(w http.ResponseWriter, r *http.Request) {
-	log.Debug("CEGetActiveScenarioZone")
+	log.Debug("ceGetActiveScenarioZone")
 
+	// Make sure scenario is active
 	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
-	//Retrieve query parameters and populate filter
+	// Get filters from query params
 	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	zones := sbxCtrl.activeModel.GetZoneNodesByFilter(&filter)
+	// Get zones
+	zones := sbxCtrl.activeModel.GetZones(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(zones)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if len(zones.Zones) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-
-		jsonResponse, err := json.Marshal(zones)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, string(jsonResponse))
-	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Retrieves the active scenario domains
-// GET /active/zones
+// GET /active/networkLocations
 func ceGetActiveScenarioNetworkLocation(w http.ResponseWriter, r *http.Request) {
-	log.Debug("CEGetActiveScenarioNetworkLocation")
+	log.Debug("ceGetActiveScenarioNetworkLocation")
 
+	// Make sure scenario is active
 	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
-	//Retrieve query parameters and populate filter
+	// Get filters from query params
 	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	networkLocations := sbxCtrl.activeModel.GetNetworkLocationNodesByFilter(&filter)
+	// Get network locations
+	networkLocations := sbxCtrl.activeModel.GetNetworkLocations(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(networkLocations)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if len(networkLocations.NetworkLocations) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-
-		jsonResponse, err := json.Marshal(networkLocations)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, string(jsonResponse))
-	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Retrieves the active scenario domains
 // GET /active/physicalLocations
 func ceGetActiveScenarioPhysicalLocation(w http.ResponseWriter, r *http.Request) {
-	log.Debug("CEGetActiveScenarioPhysicalLocation")
+	log.Debug("ceGetActiveScenarioPhysicalLocation")
 
+	// Make sure scenario is active
 	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
-	//Retrieve query parameters and populate filter
+	// Get filters from query params
 	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	physicalLocations := sbxCtrl.activeModel.GetPhysicalLocationNodesByFilter(&filter)
+	// Get physical locations
+	physicalLocations := sbxCtrl.activeModel.GetPhysicalLocations(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(physicalLocations)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if len(physicalLocations.PhysicalLocations) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-
-		jsonResponse, err := json.Marshal(physicalLocations)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, string(jsonResponse))
-	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Retrieves the active scenario domains
 // GET /active/processes
 func ceGetActiveScenarioProcess(w http.ResponseWriter, r *http.Request) {
-	log.Debug("CEGetActiveScenarioProcess")
+	log.Debug("ceGetActiveScenarioProcess")
 
+	// Make sure scenario is active
 	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
-	//Retrieve query parameters and populate filter
+	// Get filters from query params
 	filter := getNodeFilterFromQueryParams(r.URL.Query())
 
-	processes := sbxCtrl.activeModel.GetProcessNodesByFilter(&filter)
+	// Get processes
+	processes := sbxCtrl.activeModel.GetProcesses(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(processes)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if len(processes.Processes) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-
-		jsonResponse, err := json.Marshal(processes)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, string(jsonResponse))
-	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Retrieves service maps of the active scenario

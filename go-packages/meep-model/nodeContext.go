@@ -26,12 +26,11 @@ const Proc = "Proc"
 // NodeContext
 type NodeContext struct {
 	Parents  map[string]string
-	Children map[string][]string
+	Children map[string]map[string]string
 }
 
 // NewNodeContext - allocate a new NodeContext
-//parameters are for parents and children
-func NewNodeContext(deployment, domain, zone, netLoc, phyLoc string, domains []string, zones []string, netLocs []string, phyLocs []string, procs []string) (ctx *NodeContext) {
+func NewNodeContext(deployment, domain, zone, netLoc, phyLoc string) (ctx *NodeContext) {
 	ctx = new(NodeContext)
 	ctx.Parents = make(map[string]string)
 	ctx.Parents[Deployment] = deployment
@@ -39,12 +38,16 @@ func NewNodeContext(deployment, domain, zone, netLoc, phyLoc string, domains []s
 	ctx.Parents[Zone] = zone
 	ctx.Parents[NetLoc] = netLoc
 	ctx.Parents[PhyLoc] = phyLoc
-        ctx.Children = make(map[string][]string)
-	ctx.Children[Domain] = domains
-	ctx.Children[Zone] = zones
-	ctx.Children[NetLoc] = netLocs
-	ctx.Children[PhyLoc] = phyLocs
-	ctx.Children[Proc] = procs
-
+	ctx.Children = make(map[string]map[string]string)
+	ctx.Children[Domain] = make(map[string]string)
+	ctx.Children[Zone] = make(map[string]string)
+	ctx.Children[NetLoc] = make(map[string]string)
+	ctx.Children[PhyLoc] = make(map[string]string)
+	ctx.Children[Proc] = make(map[string]string)
 	return ctx
+}
+
+// AddChild - add a child node to context
+func (ctx *NodeContext) AddChild(name string, typ string) {
+	ctx.Children[typ][name] = name
 }

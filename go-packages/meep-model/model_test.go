@@ -146,67 +146,67 @@ func TestGetSetActiveElements(t *testing.T) {
 		t.Fatalf("SetScenario failed")
 	}
 
-	var filter, badFilter NodeFindFilter
+	var filter, badFilter NodeFilter
 	filter.ZoneName = "zone1"
 	badFilter.ZoneName = "DO NOT EXIST"
 	filter.ProcessType = "EDGE-APP"
 
 	//success path
 	fmt.Println("Get Domains")
-	respDomain := m.GetDomainNodesByFilter(&filter)
+	respDomain := m.GetDomains(&filter)
 	if len(respDomain.Domains) != 1 {
 		t.Fatalf("Failed to get expected number of domains")
 	}
 
 	fmt.Println("Get Zones")
-	respZone := m.GetZoneNodesByFilter(&filter)
+	respZone := m.GetZones(&filter)
 	if len(respZone.Zones) != 1 {
 		t.Fatalf("Failed to get expected number of zones")
 	}
 
 	fmt.Println("Get Network Locations")
-	respNl := m.GetNetworkLocationNodesByFilter(&filter)
-	if len(respNl.NetworkLocations) != 2 {
+	respNl := m.GetNetworkLocations(&filter)
+	if len(respNl.NetworkLocations) != 1 {
 		t.Fatalf("Failed to get expected number of network locations")
 	}
 
 	fmt.Println("Get Physical Locations")
-	respPl := m.GetPhysicalLocationNodesByFilter(&filter)
+	respPl := m.GetPhysicalLocations(&filter)
 	if len(respPl.PhysicalLocations) != 2 {
 		t.Fatalf("Failed to get expected number of physical locations")
 	}
 	fmt.Println("Get Processes")
-	respProc := m.GetProcessNodesByFilter(&filter)
+	respProc := m.GetProcesses(&filter)
 	if len(respProc.Processes) != 4 {
 		t.Fatalf("Failed to get expected number of processes")
 	}
 
 	//failure path
 	fmt.Println("Get Domains")
-	respDomain = m.GetDomainNodesByFilter(&badFilter)
+	respDomain = m.GetDomains(&badFilter)
 	if len(respDomain.Domains) != 0 {
 		t.Fatalf("Failed to get expected number of domains")
 	}
 
 	fmt.Println("Get Zones")
-	respZone = m.GetZoneNodesByFilter(&badFilter)
+	respZone = m.GetZones(&badFilter)
 	if len(respZone.Zones) != 0 {
 		t.Fatalf("Failed to get expected number of zones")
 	}
 
 	fmt.Println("Get Network Locations")
-	respNl = m.GetNetworkLocationNodesByFilter(&badFilter)
+	respNl = m.GetNetworkLocations(&badFilter)
 	if len(respNl.NetworkLocations) != 0 {
 		t.Fatalf("Failed to get expected number of network locations")
 	}
 
 	fmt.Println("Get Physical Locations")
-	respPl = m.GetPhysicalLocationNodesByFilter(&badFilter)
+	respPl = m.GetPhysicalLocations(&badFilter)
 	if len(respPl.PhysicalLocations) != 0 {
 		t.Fatalf("Failed to get expected number of physical locations")
 	}
 	fmt.Println("Get Processes")
-	respProc = m.GetProcessNodesByFilter(&badFilter)
+	respProc = m.GetProcesses(&badFilter)
 	if len(respProc.Processes) != 0 {
 		t.Fatalf("Failed to get expected number of processes")
 	}
