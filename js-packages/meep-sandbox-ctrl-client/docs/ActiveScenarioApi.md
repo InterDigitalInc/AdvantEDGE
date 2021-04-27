@@ -7,6 +7,11 @@ Method | HTTP request | Description
 [**activateScenario**](ActiveScenarioApi.md#activateScenario) | **POST** /active/{name} | Deploy a scenario
 [**getActiveNodeServiceMaps**](ActiveScenarioApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Get deployed scenario's port mapping
 [**getActiveScenario**](ActiveScenarioApi.md#getActiveScenario) | **GET** /active | Get the deployed scenario
+[**getActiveScenarioDomain**](ActiveScenarioApi.md#getActiveScenarioDomain) | **GET** /active/domains | Get domain elements from the deployed scenario
+[**getActiveScenarioNetworkLocation**](ActiveScenarioApi.md#getActiveScenarioNetworkLocation) | **GET** /active/networkLocations | Get network location elements from the deployed scenario
+[**getActiveScenarioPhysicalLocation**](ActiveScenarioApi.md#getActiveScenarioPhysicalLocation) | **GET** /active/physicalLocations | Get physical location elements from the deployed scenario
+[**getActiveScenarioProcess**](ActiveScenarioApi.md#getActiveScenarioProcess) | **GET** /active/processes | Get process elements from the deployed scenario
+[**getActiveScenarioZone**](ActiveScenarioApi.md#getActiveScenarioZone) | **GET** /active/zones | Get zone elements from the deployed scenario
 [**terminateScenario**](ActiveScenarioApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
 
 
@@ -126,7 +131,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
 
 var opts = { 
-  'minimize': "minimize_example" // String | Return a minimized active scenario (default: false)
+  'minimize': true // Boolean | Return minimized scenario element content
 };
 
 var callback = function(error, data, response) {
@@ -143,11 +148,346 @@ apiInstance.getActiveScenario(opts, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **minimize** | **String**| Return a minimized active scenario (default: false) | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
 
 ### Return type
 
 [**Scenario**](Scenario.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getActiveScenarioDomain"></a>
+# **getActiveScenarioDomain**
+> Domains getActiveScenarioDomain(opts)
+
+Get domain elements from the deployed scenario
+
+Returns a filtered list of domain elements from the deployed scenario using the provided query parameters
+
+### Example
+```javascript
+var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
+
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
+
+var opts = { 
+  'domain': "domain_example", // String | Domain name
+  'domainType': "domainType_example", // String | Domain type
+  'zone': "zone_example", // String | Zone name
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getActiveScenarioDomain(opts, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **domain** | **String**| Domain name | [optional] 
+ **domainType** | **String**| Domain type | [optional] 
+ **zone** | **String**| Zone name | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
+
+### Return type
+
+[**Domains**](Domains.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getActiveScenarioNetworkLocation"></a>
+# **getActiveScenarioNetworkLocation**
+> NetworkLocations getActiveScenarioNetworkLocation(opts)
+
+Get network location elements from the deployed scenario
+
+Returns a filtered list of network location elements from the deployed scenario using the provided query parameters
+
+### Example
+```javascript
+var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
+
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
+
+var opts = { 
+  'domain': "domain_example", // String | Domain name
+  'domainType': "domainType_example", // String | Domain type
+  'zone': "zone_example", // String | Zone name
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getActiveScenarioNetworkLocation(opts, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **domain** | **String**| Domain name | [optional] 
+ **domainType** | **String**| Domain type | [optional] 
+ **zone** | **String**| Zone name | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
+
+### Return type
+
+[**NetworkLocations**](NetworkLocations.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getActiveScenarioPhysicalLocation"></a>
+# **getActiveScenarioPhysicalLocation**
+> PhysicalLocations getActiveScenarioPhysicalLocation(opts)
+
+Get physical location elements from the deployed scenario
+
+Returns a filtered list of physical location elements from the deployed scenario using the provided query parameters
+
+### Example
+```javascript
+var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
+
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
+
+var opts = { 
+  'domain': "domain_example", // String | Domain name
+  'domainType': "domainType_example", // String | Domain type
+  'zone': "zone_example", // String | Zone name
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getActiveScenarioPhysicalLocation(opts, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **domain** | **String**| Domain name | [optional] 
+ **domainType** | **String**| Domain type | [optional] 
+ **zone** | **String**| Zone name | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
+
+### Return type
+
+[**PhysicalLocations**](PhysicalLocations.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getActiveScenarioProcess"></a>
+# **getActiveScenarioProcess**
+> Processes getActiveScenarioProcess(opts)
+
+Get process elements from the deployed scenario
+
+Returns a filtered list of process elements from the deployed scenario using the provided query parameters
+
+### Example
+```javascript
+var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
+
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
+
+var opts = { 
+  'domain': "domain_example", // String | Domain name
+  'domainType': "domainType_example", // String | Domain type
+  'zone': "zone_example", // String | Zone name
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getActiveScenarioProcess(opts, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **domain** | **String**| Domain name | [optional] 
+ **domainType** | **String**| Domain type | [optional] 
+ **zone** | **String**| Zone name | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
+
+### Return type
+
+[**Processes**](Processes.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getActiveScenarioZone"></a>
+# **getActiveScenarioZone**
+> Zones getActiveScenarioZone(opts)
+
+Get zone elements from the deployed scenario
+
+Returns a filtered list of zone elements from the deployed scenario using the provided query parameters
+
+### Example
+```javascript
+var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
+
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
+
+var opts = { 
+  'domain': "domain_example", // String | Domain name
+  'domainType': "domainType_example", // String | Domain type
+  'zone': "zone_example", // String | Zone name
+  'networkLocation': "networkLocation_example", // String | Network Location name
+  'networkLocationType': "networkLocationType_example", // String | Network Location type
+  'physicalLocation': "physicalLocation_example", // String | Physical Location name
+  'physicalLocationType': "physicalLocationType_example", // String | Physical Location type
+  'process': "process_example", // String | Process name
+  'processType': "processType_example", // String | Process type
+  'children': true, // Boolean | Include child elements in response
+  'minimize': true // Boolean | Return minimized scenario element content
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getActiveScenarioZone(opts, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **domain** | **String**| Domain name | [optional] 
+ **domainType** | **String**| Domain type | [optional] 
+ **zone** | **String**| Zone name | [optional] 
+ **networkLocation** | **String**| Network Location name | [optional] 
+ **networkLocationType** | **String**| Network Location type | [optional] 
+ **physicalLocation** | **String**| Physical Location name | [optional] 
+ **physicalLocationType** | **String**| Physical Location type | [optional] 
+ **process** | **String**| Process name | [optional] 
+ **processType** | **String**| Process type | [optional] 
+ **children** | **Boolean**| Include child elements in response | [optional] 
+ **minimize** | **Boolean**| Return minimized scenario element content | [optional] 
+
+### Return type
+
+[**Zones**](Zones.md)
 
 ### Authorization
 

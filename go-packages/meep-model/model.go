@@ -76,6 +76,20 @@ const (
 
 const Disconnected = "DISCONNECTED"
 
+type NodeFindFilter struct {
+	DomainName           string
+	DomainType           string
+	ZoneName             string
+	NetworkLocationName  string
+	NetworkLocationType  string
+	PhysicalLocationName string
+	PhysicalLocationType string
+	ProcessName          string
+	ProcessType          string
+	Children             bool
+	Minimize             bool
+}
+
 // ModelCfg - Model Configuration
 type ModelCfg struct {
 	Name      string
@@ -943,6 +957,594 @@ func (m *Model) GetNodeContext(name string) (ctx interface{}) {
 	return ctx
 }
 
+// GetNodesQueriedLevelByFilter - Get list of nodes that match the hierarchy level provided
+//              Returned value is of type []*Node
+func (m *Model) FilterNodes(level string, filter *NodeFindFilter) []*Node {
+
+	var n *Node
+	var nList []*Node
+
+	switch level {
+	case Domain:
+		if filter.DomainName != "" {
+			if filter.DomainType != "" {
+				n = m.nodeMap.FindByType(filter.DomainName, filter.DomainType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.DomainName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.DomainType != "" {
+				nList = m.nodeMap.FindAllByType(filter.DomainType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypeOperatorCell)
+				nListOther := m.nodeMap.FindAllByType(NodeTypeOperator)
+				nList = append(nList, nListOther...)
+			}
+		}
+	case Zone:
+		if filter.ZoneName != "" {
+			n = m.nodeMap.FindByName(filter.ZoneName)
+			if n != nil {
+				nList = append(nList, n)
+			}
+		} else {
+			nList = m.nodeMap.FindAllByType(NodeTypeZone)
+		}
+		//only one type of zone... so no need to check for a different filter
+	case NetLoc:
+		if filter.NetworkLocationName != "" {
+			if filter.NetworkLocationType != "" {
+				n = m.nodeMap.FindByType(filter.NetworkLocationName, filter.NetworkLocationType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.NetworkLocationName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.NetworkLocationType != "" {
+				nList = m.nodeMap.FindAllByType(filter.NetworkLocationType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypePoa)
+				nListOther := m.nodeMap.FindAllByType(NodeTypePoa4G)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypePoa5G)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypePoaWifi)
+				nList = append(nList, nListOther...)
+			}
+		}
+	case PhyLoc:
+		if filter.PhysicalLocationName != "" {
+			if filter.PhysicalLocationType != "" {
+				n = m.nodeMap.FindByType(filter.PhysicalLocationName, filter.PhysicalLocationType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.PhysicalLocationName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.PhysicalLocationType != "" {
+				nList = m.nodeMap.FindAllByType(filter.PhysicalLocationType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypeCloud)
+				nListOther := m.nodeMap.FindAllByType(NodeTypeEdge)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypeFog)
+				nList = append(nList, nListOther...)
+				nListOther = m.nodeMap.FindAllByType(NodeTypeUE)
+				nList = append(nList, nListOther...)
+			}
+		}
+	case Proc:
+		if filter.ProcessName != "" {
+			if filter.ProcessType != "" {
+				n = m.nodeMap.FindByType(filter.ProcessName, filter.ProcessType)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			} else {
+				n = m.nodeMap.FindByName(filter.ProcessName)
+				if n != nil {
+					nList = append(nList, n)
+				}
+			}
+		} else {
+			if filter.ProcessType != "" {
+				nList = m.nodeMap.FindAllByType(filter.ProcessType)
+			} else {
+				nList = m.nodeMap.FindAllByType(NodeTypeEdgeApp)
+				nListOther := m.nodeMap.FindAllByType(NodeTypeUEApp)
+				nList = append(nList, nListOther...)
+			}
+		}
+	default:
+	}
+	return nList
+}
+
+func (m *Model) IsFilterNodeByDomainPresent(filter *NodeFindFilter) bool {
+	if filter.DomainName != "" || filter.DomainType != "" {
+		return true
+	}
+	return false
+}
+
+func (m *Model) IsFilterNodeByZonePresent(filter *NodeFindFilter) bool {
+	if filter.ZoneName != "" {
+		return true
+	}
+	return false
+}
+
+func (m *Model) IsFilterNodeByNetworkLocationPresent(filter *NodeFindFilter) bool {
+	if filter.NetworkLocationName != "" || filter.NetworkLocationType != "" {
+		return true
+	}
+	return false
+}
+
+func (m *Model) IsFilterNodeByPhysicalLocationPresent(filter *NodeFindFilter) bool {
+	if filter.PhysicalLocationName != "" || filter.PhysicalLocationType != "" {
+		return true
+	}
+	return false
+}
+
+func (m *Model) IsFilterNodeByProcessPresent(filter *NodeFindFilter) bool {
+	if filter.ProcessName != "" || filter.ProcessType != "" {
+		return true
+	}
+	return false
+}
+
+func (m *Model) FilterNodeByDomain(node *Node, filter *NodeFindFilter) bool {
+
+	if filter.DomainName != "" {
+		if node.name != filter.DomainName {
+			return false
+		}
+	}
+	if filter.DomainType != "" {
+		if node.nodeType != filter.DomainType {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Model) FilterNodeByZone(node *Node, filter *NodeFindFilter) bool {
+
+	if filter.ZoneName != "" {
+		if node.name != filter.ZoneName {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Model) FilterNodeByNetworkLocation(node *Node, filter *NodeFindFilter) bool {
+
+	if filter.NetworkLocationName != "" {
+		if node.name != filter.NetworkLocationName {
+			return false
+		}
+	}
+	if filter.NetworkLocationType != "" {
+		if node.nodeType != filter.NetworkLocationType {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Model) FilterNodeByPhysicalLocation(node *Node, filter *NodeFindFilter) bool {
+
+	if filter.PhysicalLocationName != "" {
+		if node.name != filter.PhysicalLocationName {
+			return false
+		}
+	}
+	if filter.PhysicalLocationType != "" {
+		if node.nodeType != filter.PhysicalLocationType {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Model) FilterNodeByProcess(node *Node, filter *NodeFindFilter) bool {
+
+	if filter.ProcessName != "" {
+		if node.name != filter.ProcessName {
+			return false
+		}
+	}
+	if filter.ProcessType != "" {
+		if node.nodeType != filter.ProcessType {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Model) FilterNodesByParents(nList []*Node, filter *NodeFindFilter) []*Node {
+
+	var nodeList []*Node
+	var node *Node
+	var isValid bool
+
+	for _, currentNode := range nList {
+		ctx := currentNode.context.(*NodeContext)
+		//check every possible parent type
+
+		//domain
+		domainName := ctx.Parents[Domain]
+		node = m.nodeMap.FindByName(domainName)
+		if node == nil {
+			//valid node, add to response
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+		isValid = m.FilterNodeByDomain(node, filter)
+		if !isValid {
+			//filter the node by not adding it to response
+			continue
+		}
+
+		//zone
+		zoneName := ctx.Parents[Zone]
+		node = m.nodeMap.FindByName(zoneName)
+		if node == nil {
+			//valid node, add to response
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+		isValid = m.FilterNodeByZone(node, filter)
+		if !isValid {
+			//filter the node by not adding it to response
+			continue
+		}
+
+		//networkLocation
+		networkLocationName := ctx.Parents[NetLoc]
+		node = m.nodeMap.FindByName(networkLocationName)
+		if node == nil {
+			//valid node, add to response
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+		isValid = m.FilterNodeByNetworkLocation(node, filter)
+		if !isValid {
+			//filter the node by not adding it to response
+			continue
+		}
+
+		//physicalLocation
+		physicalLocationName := ctx.Parents[PhyLoc]
+		node = m.nodeMap.FindByName(physicalLocationName)
+		if node == nil {
+			//valid node, add to response
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+		isValid = m.FilterNodeByPhysicalLocation(node, filter)
+		if !isValid {
+			//filter the node by not adding it to response
+			continue
+		}
+
+		//process cannot be parent of anyone and check was already done if it was a process
+		//passed all the parents criteria, add the node
+		nodeList = append(nodeList, currentNode)
+	}
+	return nodeList
+}
+
+func (m *Model) FilterNodesByChildren(nList []*Node, filter *NodeFindFilter) []*Node {
+
+	var nodeList []*Node
+	var node *Node
+	var isValid bool
+
+	for _, currentNode := range nList {
+		ctx := currentNode.context.(*NodeContext)
+		//check every possible child type
+		//domain cannot be a child so no check done
+
+		//process
+		processNames := ctx.Children[Proc]
+
+		if len(processNames) == 0 {
+			//if no more children
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+
+		//as soon as one children matches the filter, the node is valid, continue to check other filters
+		for _, processName := range processNames {
+			node = m.nodeMap.FindByName(processName)
+			isValid = m.FilterNodeByProcess(node, filter)
+			if isValid {
+				break
+			}
+		}
+		if !isValid {
+			//node is not valid, do not add it to response
+			continue
+		}
+
+		//physicalLocation
+		physicalLocationNames := ctx.Children[PhyLoc]
+
+		if len(physicalLocationNames) == 0 {
+			//if no more children
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+
+		//as soon as one children matches the filter, the node is valid, continue to check other filters
+		for _, physicalLocationName := range physicalLocationNames {
+			node = m.nodeMap.FindByName(physicalLocationName)
+			isValid = m.FilterNodeByPhysicalLocation(node, filter)
+			if isValid {
+				break
+			}
+		}
+		if !isValid {
+			//node is not valid, do not add it to response
+			continue
+		}
+
+		//networkLocation
+		networkLocationNames := ctx.Children[NetLoc]
+
+		if len(networkLocationNames) == 0 {
+			//if no more children
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+
+		//as soon as one children matches the filter, the node is valid, continue to check other filters
+		for _, networkLocationName := range networkLocationNames {
+			node = m.nodeMap.FindByName(networkLocationName)
+			isValid = m.FilterNodeByNetworkLocation(node, filter)
+			if isValid {
+				break
+			}
+		}
+		if !isValid {
+			//node is not valid, do not add it to response
+			continue
+		}
+
+		//zone
+		zoneNames := ctx.Children[Zone]
+		if len(zoneNames) == 0 {
+			//if no more children
+			nodeList = append(nodeList, currentNode)
+			continue
+		}
+
+		//as soon as one children matches the filter, the node is valid, continue to check other filters
+		for _, zoneName := range zoneNames {
+
+			node = m.nodeMap.FindByName(zoneName)
+			isValid = m.FilterNodeByZone(node, filter)
+			if isValid {
+				break
+			}
+		}
+
+		if !isValid {
+			//node is not valid, do not add it to response
+			continue
+		}
+
+		//passed all the children criteria, add the node
+		nodeList = append(nodeList, currentNode)
+	}
+	return nodeList
+}
+
+// GetNodesByFilter - Get nodes matching filter criteria
+//              Returned value is of type []interface{}
+//    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
+func (m *Model) GetNodesByFilter(level string, filter *NodeFindFilter) (node []*Node) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	nList := m.FilterNodes(level, filter)
+	//return immediately if no results
+	if nList == nil {
+		return nList
+	}
+
+	nList = m.FilterNodesByParents(nList, filter)
+	//return immediately if no results
+	if nList == nil {
+		return nList
+	}
+	nList = m.FilterNodesByChildren(nList, filter)
+
+	return nList
+}
+
+// GetDomainNodesByFilter - Get list of interfaces that match the filter provided for domains
+//              Returned value is of type []interface{}
+func (m *Model) GetDomainNodesByFilter(filter *NodeFindFilter) dataModel.Domains {
+
+	nodeList := m.GetNodesByFilter(Domain, filter)
+
+	var domains dataModel.Domains
+	filteredList := new([]dataModel.Domain)
+	for _, node := range nodeList {
+		domainObj := node.object.(*dataModel.Domain)
+		//create a deepCopy
+		var currentDomain dataModel.Domain
+		if !filter.Children || filter.Minimize {
+			byt, _ := json.Marshal(domainObj)
+			json.Unmarshal(byt, &currentDomain)
+		} else {
+			currentDomain = *domainObj
+		}
+
+		if !filter.Children {
+			currentDomain.Zones = nil
+		} else {
+			if filter.Minimize {
+				err := minimizeDomain(&currentDomain)
+				if err != nil {
+					log.Error("Error while minimizing: ", err)
+					continue
+				}
+			}
+		}
+		*filteredList = append(*filteredList, currentDomain)
+		domains.Domains = append(domains.Domains, currentDomain)
+	}
+	return domains
+}
+
+// GetZoneNodesByFilter - Get list of interfaces that match the filter provided for zones
+//              Returned value is of type []interface{}
+func (m *Model) GetZoneNodesByFilter(filter *NodeFindFilter) dataModel.Zones {
+
+	nodeList := m.GetNodesByFilter(Zone, filter)
+
+	var zones dataModel.Zones
+	filteredList := new([]dataModel.Zone)
+	for _, node := range nodeList {
+		zoneObj := node.object.(*dataModel.Zone)
+		//create a deepCopy
+		var currentZone dataModel.Zone
+		if !filter.Children || filter.Minimize {
+
+			byt, _ := json.Marshal(zoneObj)
+			json.Unmarshal(byt, &currentZone)
+		} else {
+			currentZone = *zoneObj
+		}
+
+		if !filter.Children {
+			currentZone.NetworkLocations = nil
+		} else {
+			if filter.Minimize {
+				err := minimizeZone(&currentZone)
+				if err != nil {
+					log.Error("Error while minimizing: ", err)
+					continue
+				}
+			}
+		}
+		*filteredList = append(*filteredList, currentZone)
+		zones.Zones = append(zones.Zones, currentZone)
+	}
+	return zones
+}
+
+// GetNetworkLocationNodesByFilter - Get list of interfaces that match the filter providef for network locations
+//              Returned value is of type []interface{}
+func (m *Model) GetNetworkLocationNodesByFilter(filter *NodeFindFilter) dataModel.NetworkLocations {
+
+	nodeList := m.GetNodesByFilter(NetLoc, filter)
+
+	var networkLocations dataModel.NetworkLocations
+	filteredList := new([]dataModel.NetworkLocation)
+	for _, node := range nodeList {
+		nlObj := node.object.(*dataModel.NetworkLocation)
+		//create a deepCopy
+		var currentNetworkLocation dataModel.NetworkLocation
+		if !filter.Children || filter.Minimize {
+
+			byt, _ := json.Marshal(nlObj)
+			json.Unmarshal(byt, &currentNetworkLocation)
+		} else {
+			currentNetworkLocation = *nlObj
+		}
+
+		if !filter.Children {
+			currentNetworkLocation.PhysicalLocations = nil
+		}
+		if filter.Minimize {
+			err := minimizeNetLoc(&currentNetworkLocation)
+			if err != nil {
+				log.Error("Error while minimizing: ", err)
+				continue
+			}
+		}
+		*filteredList = append(*filteredList, currentNetworkLocation)
+		networkLocations.NetworkLocations = append(networkLocations.NetworkLocations, currentNetworkLocation)
+	}
+	return networkLocations
+}
+
+// GetPhysicalLocationNodesByFilter - Get list of interfaces that match the filter providef for physical locations
+//              Returned value is of type []interface{}
+func (m *Model) GetPhysicalLocationNodesByFilter(filter *NodeFindFilter) dataModel.PhysicalLocations {
+
+	nodeList := m.GetNodesByFilter(PhyLoc, filter)
+
+	var physicalLocations dataModel.PhysicalLocations
+	filteredList := new([]dataModel.PhysicalLocation)
+	for _, node := range nodeList {
+		plObj := node.object.(*dataModel.PhysicalLocation)
+		//create a deepCopy
+		var currentPhysicalLocation dataModel.PhysicalLocation
+		if !filter.Children || filter.Minimize {
+			byt, _ := json.Marshal(plObj)
+			json.Unmarshal(byt, &currentPhysicalLocation)
+		} else {
+			currentPhysicalLocation = *plObj
+		}
+		byt, _ := json.Marshal(plObj)
+		json.Unmarshal(byt, &currentPhysicalLocation)
+
+		if !filter.Children {
+			currentPhysicalLocation.Processes = nil
+		}
+		if filter.Minimize {
+			err := minimizePhyLoc(&currentPhysicalLocation)
+			if err != nil {
+				log.Error("Error while minimizing: ", err)
+				continue
+			}
+		}
+		*filteredList = append(*filteredList, currentPhysicalLocation)
+		physicalLocations.PhysicalLocations = append(physicalLocations.PhysicalLocations, currentPhysicalLocation)
+	}
+	return physicalLocations
+}
+
+// GetProcessNodesByFilter - Get list of interfaces that match the filter provided for processes
+//              Returned value is of type []interface{}
+func (m *Model) GetProcessNodesByFilter(filter *NodeFindFilter) dataModel.Processes {
+
+	nodeList := m.GetNodesByFilter(Proc, filter)
+
+	var processes dataModel.Processes
+	filteredList := new([]dataModel.Process)
+	for _, node := range nodeList {
+		currentProcess := node.object.(*dataModel.Process)
+		*filteredList = append(*filteredList, *currentProcess)
+		processes.Processes = append(processes.Processes, *currentProcess)
+	}
+	return processes
+}
+
 // GetNetworkGraph - Get the network graph
 func (m *Model) GetNetworkGraph() *dijkstra.Graph {
 	m.lock.RLock()
@@ -970,45 +1572,27 @@ func (m *Model) parseNodes() (err error) {
 	if m.scenario != nil {
 		if m.scenario.Deployment != nil {
 			deployment := m.scenario.Deployment
-			ctx := NewNodeContext(m.scenario.Name, "", "", "", "")
-			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
-			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
-			if deployment.Connectivity != nil {
-				m.connectivityModel = deployment.Connectivity.Model
-			}
-
+			var deploymentDomainNames, deploymentZoneNames, deploymentNetworkLocationNames, deploymentPhysicalLocationNames, deploymentProcessNames []string
 			// Domains
 			for iDomain := range m.scenario.Deployment.Domains {
 				domain := &m.scenario.Deployment.Domains[iDomain]
-				ctx := NewNodeContext(m.scenario.Name, domain.Name, "", "", "")
-				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, ctx))
-				m.networkGraph.AddNode(domain.Name, "", false)
-
+				var domainZoneNames, domainNetworkLocationNames, domainPhysicalLocationNames, domainProcessNames []string
 				// Zones
 				for iZone := range domain.Zones {
 					zone := &domain.Zones[iZone]
-					ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, "", "")
-					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
-					m.networkGraph.AddNode(zone.Name, domain.Name, IsDefaultZone(zone.Type_))
-
+					var zoneNetworkLocationNames, zonePhysicalLocationNames, zoneProcessNames []string
 					// Network Locations
 					for iNL := range zone.NetworkLocations {
 						nl := &zone.NetworkLocations[iNL]
-						ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, "")
-						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, ctx))
-						m.networkGraph.AddNode(nl.Name, zone.Name, IsDefaultNetLoc(nl.Type_))
-
+						var networkLocationPhysicalLocationNames, networkLocationProcessNames []string
 						// Physical Locations
 						for iPL := range nl.PhysicalLocations {
 							pl := &nl.PhysicalLocations[iPL]
-							ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
-							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, ctx))
-							m.networkGraph.AddNode(pl.Name, nl.Name, false)
-
+							var physicalLocationProcessNames []string
 							// Processes
 							for iProc := range pl.Processes {
 								proc := &pl.Processes[iProc]
-								ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
+								ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name, nil, nil, nil, nil, nil)
 								m.nodeMap.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, ctx))
 								m.networkGraph.AddNode(proc.Name, pl.Name, false)
 
@@ -1020,10 +1604,43 @@ func (m *Model) parseNodes() (err error) {
 									nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap, proc.ExternalConfig.EgressServiceMap...)
 									m.svcMap = append(m.svcMap, nodeServiceMaps)
 								}
+								physicalLocationProcessNames = append(physicalLocationProcessNames, proc.Name)
 							}
+							ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name, nil, nil, nil, nil, physicalLocationProcessNames)
+							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, ctx))
+							m.networkGraph.AddNode(pl.Name, nl.Name, false)
+							networkLocationProcessNames = append(networkLocationProcessNames, physicalLocationProcessNames...)
+							networkLocationPhysicalLocationNames = append(networkLocationPhysicalLocationNames, pl.Name)
 						}
+						ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, "", nil, nil, nil, networkLocationPhysicalLocationNames, networkLocationProcessNames)
+						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, ctx))
+						m.networkGraph.AddNode(nl.Name, zone.Name, IsDefaultNetLoc(nl.Type_))
+						zoneProcessNames = append(zoneProcessNames, networkLocationProcessNames...)
+						zonePhysicalLocationNames = append(zonePhysicalLocationNames, networkLocationPhysicalLocationNames...)
+						zoneNetworkLocationNames = append(zoneNetworkLocationNames, nl.Name)
 					}
+					ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, "", "", nil, nil, zoneNetworkLocationNames, zonePhysicalLocationNames, zoneProcessNames)
+					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
+					m.networkGraph.AddNode(zone.Name, domain.Name, IsDefaultZone(zone.Type_))
+					domainProcessNames = append(domainProcessNames, zoneProcessNames...)
+					domainPhysicalLocationNames = append(domainPhysicalLocationNames, zonePhysicalLocationNames...)
+					domainNetworkLocationNames = append(domainNetworkLocationNames, zoneNetworkLocationNames...)
+					domainZoneNames = append(domainZoneNames, zone.Name)
 				}
+				ctx := NewNodeContext(m.scenario.Name, domain.Name, "", "", "", nil, domainZoneNames, domainNetworkLocationNames, domainPhysicalLocationNames, domainProcessNames)
+				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, ctx))
+				m.networkGraph.AddNode(domain.Name, "", false)
+				deploymentProcessNames = append(deploymentProcessNames, domainProcessNames...)
+				deploymentPhysicalLocationNames = append(deploymentPhysicalLocationNames, domainPhysicalLocationNames...)
+				deploymentNetworkLocationNames = append(deploymentNetworkLocationNames, domainNetworkLocationNames...)
+				deploymentZoneNames = append(deploymentZoneNames, domainZoneNames...)
+				deploymentDomainNames = append(deploymentDomainNames, domain.Name)
+			}
+			ctx := NewNodeContext(m.scenario.Name, "", "", "", "", deploymentDomainNames, deploymentZoneNames, deploymentNetworkLocationNames, deploymentPhysicalLocationNames, deploymentProcessNames)
+			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
+			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
+			if deployment.Connectivity != nil {
+				m.connectivityModel = deployment.Connectivity.Model
 			}
 		}
 	}

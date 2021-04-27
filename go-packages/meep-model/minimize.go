@@ -60,3 +60,91 @@ func minimizeScenario(scenario *dataModel.Scenario) error {
 	}
 	return nil
 }
+
+// minimizeDomain - Minimizes domain
+func minimizeDomain(domain *dataModel.Domain) error {
+                                // Zones
+                                for iZone := range domain.Zones {
+                                        zone := &domain.Zones[iZone]
+
+                                        // Network Locations
+                                        for iNL := range zone.NetworkLocations {
+                                                nl := &zone.NetworkLocations[iNL]
+
+                                                // Remove geodata
+                                                nl.GeoData = nil
+
+                                                // Physical Locations
+                                                for iPL := range nl.PhysicalLocations {
+                                                        pl := &nl.PhysicalLocations[iPL]
+
+                                                        // Remove geodata
+                                                        pl.GeoData = nil
+
+                                                        // // Processes
+                                                        // for iProc := range pl.Processes {
+                                                        //      proc := &pl.Processes[iProc]
+                                                        // }
+                                                }
+                                        }
+                                }
+        return nil
+}
+
+// minimizeZone - Minimizes zone
+func minimizeZone(zone *dataModel.Zone) error {
+                                        // Network Locations
+                                        for iNL := range zone.NetworkLocations {
+                                                nl := &zone.NetworkLocations[iNL]
+
+                                                // Remove geodata
+                                                nl.GeoData = nil
+
+                                                // Physical Locations
+                                                for iPL := range nl.PhysicalLocations {
+                                                        pl := &nl.PhysicalLocations[iPL]
+
+                                                        // Remove geodata
+                                                        pl.GeoData = nil
+
+                                                        // // Processes
+                                                        // for iProc := range pl.Processes {
+                                                        //      proc := &pl.Processes[iProc]
+                                                        // }
+                                                }
+                                        }
+        return nil
+}
+
+// minimizeNetLoc - Minimizes network location
+func minimizeNetLoc(nl *dataModel.NetworkLocation) error {
+                                                // Remove geodata
+                                                nl.GeoData = nil
+
+                                                // Physical Locations
+                                                for iPL := range nl.PhysicalLocations {
+                                                        pl := &nl.PhysicalLocations[iPL]
+
+                                                        // Remove geodata
+                                                        pl.GeoData = nil
+
+                                                        // // Processes
+                                                        // for iProc := range pl.Processes {
+                                                        //      proc := &pl.Processes[iProc]
+                                                        // }
+                                        }
+        return nil
+}
+
+// minimizePlyLoc - Minimizes physical location
+func minimizePhyLoc(pl *dataModel.PhysicalLocation) error {
+                                                        // Remove geodata
+                                                        pl.GeoData = nil
+
+                                                        // // Processes
+                                                        // for iProc := range pl.Processes {
+                                                        //      proc := &pl.Processes[iProc]
+                                                        // }
+        return nil
+}
+

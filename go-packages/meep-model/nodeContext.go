@@ -21,14 +21,17 @@ const Domain = "Domain"
 const Zone = "Zone"
 const NetLoc = "NetLoc"
 const PhyLoc = "PhyLoc"
+const Proc = "Proc"
 
 // NodeContext
 type NodeContext struct {
-	Parents map[string]string
+	Parents  map[string]string
+	Children map[string][]string
 }
 
-// NewNodeContext - allocate an new NodeContext
-func NewNodeContext(deployment, domain, zone, netLoc, phyLoc string) (ctx *NodeContext) {
+// NewNodeContext - allocate a new NodeContext
+//parameters are for parents and children
+func NewNodeContext(deployment, domain, zone, netLoc, phyLoc string, domains []string, zones []string, netLocs []string, phyLocs []string, procs []string) (ctx *NodeContext) {
 	ctx = new(NodeContext)
 	ctx.Parents = make(map[string]string)
 	ctx.Parents[Deployment] = deployment
@@ -36,5 +39,12 @@ func NewNodeContext(deployment, domain, zone, netLoc, phyLoc string) (ctx *NodeC
 	ctx.Parents[Zone] = zone
 	ctx.Parents[NetLoc] = netLoc
 	ctx.Parents[PhyLoc] = phyLoc
+        ctx.Children = make(map[string][]string)
+	ctx.Children[Domain] = domains
+	ctx.Children[Zone] = zones
+	ctx.Children[NetLoc] = netLocs
+	ctx.Children[PhyLoc] = phyLocs
+	ctx.Children[Proc] = procs
+
 	return ctx
 }
