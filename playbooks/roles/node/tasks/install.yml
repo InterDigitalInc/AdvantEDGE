@@ -29,4 +29,4 @@
 
 - name: Install npm and eslint
   become: false
-  shell: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh && npm install -g npm && npm install -g eslint@{{ eslint_version }} && npm install -g eslint-plugin-react"
+  shell: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh && npm install -g npm@{{ npm_version }} && npm install -g eslint@{{ eslint_version }} && npm install -g eslint-plugin-react"
