@@ -25,6 +25,7 @@ import { Grid, GridCell } from '@rmwc/grid';
 import { TabBar, Tab } from '@rmwc/tabs';
 import { Typography } from '@rmwc/typography';
 import { Button } from '@rmwc/button';
+import { Icon } from '@rmwc/icon';
 import { IconButton } from '@rmwc/icon-button';
 import { Menu, MenuItem, MenuSurfaceAnchor } from '@rmwc/menu';
 
@@ -52,7 +53,8 @@ import {
   PAGE_CONFIGURE_INDEX,
   PAGE_EXECUTE_INDEX,
   PAGE_MONITOR_INDEX,
-  PAGE_SETTINGS_INDEX
+  PAGE_SETTINGS_INDEX,
+  MEEP_HELP_GUI_URL
 } from '@/js/meep-constants';
 
 const CorePodsLed = props => {
@@ -71,7 +73,7 @@ const CorePodsLed = props => {
               src={props.corePodsRunning ? greenLed : redLed}
               height={30}
               width={30}
-              style={{ marginRight: 15, marginTop: 7 }}
+              style={{ marginRight: 15, marginTop: 3 }}
             />
           </a>
           <ReactTooltip
@@ -194,6 +196,20 @@ class MeepTopBar extends Component {
               </ToolbarSection>
               
               <ToolbarSection alignEnd>
+                <Button
+                  style={{ marginLeft: 10 }}
+                  onClick={() => {
+                    window.open(MEEP_HELP_GUI_URL,'_blank');
+                  }}
+                >
+                  <Icon
+                    title="GUI Help Page"
+                    icon="help_outline"
+                    iconOptions={{ size: 'large', strategy: 'ligature' }}
+                    style={styles.helpIcon}
+                  />
+                </Button>
+
                 <CorePodsLed
                   corePodsRunning={this.props.corePodsRunning}
                   corePodsErrors={this.props.corePodsErrors}
@@ -255,6 +271,9 @@ const styles = {
   mdcTab: {
     fontSize: 15,
     fontFamily: 'Roboto'
+  },
+  helpIcon: {
+    color: '#ffffff'
   },
   icon: {
     color: '#ffffff',

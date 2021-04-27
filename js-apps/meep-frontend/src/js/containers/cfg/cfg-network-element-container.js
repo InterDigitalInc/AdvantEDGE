@@ -893,6 +893,93 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
       </>
     );
   case ELEMENT_TYPE_DC:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_LINK]}
+        />
+
+        <Grid>
+          <GridCell span={6}>
+            <IDSelect
+              label='Initial Connection State'
+              span={12}
+              options={[OPT_CONNECTED, OPT_DISCONNECTED]}
+              onChange={e => onUpdate(FIELD_CONNECTED, e.target.value === 'true', null)}
+              value={isConnected}
+              disabled={false}
+              cydata={CFG_ELEM_CONNECTED}
+            />
+          </GridCell>
+          <GridCell span={6}>
+            <IDSelect
+              label='Connection Mode'
+              span={12}
+              options={[OPT_WIRED]}
+              onChange={e => onUpdate(FIELD_WIRELESS, e.target.value === 'true', null)}
+              value={isWireless}
+              disabled={false}
+              cydata={CFG_ELEM_WIRELESS}
+            />
+          </GridCell>
+        </Grid>
+        {isWireless ? (
+          <Grid style={{ paddingTop: 16 }}>
+            <CfgTextFieldCell
+              span={12}
+              onUpdate={onUpdate}
+              element={element}
+              validate={validateWirelessType}
+              label='Supported Wireless Types (order by priority)'
+              fieldName={FIELD_WIRELESS_TYPE}
+              cydata={CFG_ELEM_WIRELESS_TYPE}
+            />
+          </Grid> 
+        ) : (
+          <Grid style={{ paddingTop: 16 }}></Grid>
+        )}
+        
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateDnn}
+            label='Data Network Name'
+            fieldName={FIELD_DN_NAME}
+            cydata={CFG_ELEM_DN_NAME}
+          />
+        </Grid>
+
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateEcsp}
+            label='Service Provider'
+            fieldName={FIELD_DN_ECSP}
+            cydata={CFG_ELEM_DN_ECSP}
+          />
+        </Grid>
+
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+        </Grid>
+      </>
+    );
   case ELEMENT_TYPE_EDGE:
   case ELEMENT_TYPE_FOG:
     return (
@@ -975,8 +1062,6 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             cydata={CFG_ELEM_DN_ECSP}
           />
         </Grid>
-
-        
 
         <Grid>
           <CfgTextFieldCell

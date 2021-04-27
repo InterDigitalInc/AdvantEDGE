@@ -18,10 +18,8 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
 import { TextField } from '@rmwc/textfield';
-import { Icon } from '@rmwc/icon';
 
 import {
-  MEEP_HELP_PAGE_CFG_URL,
   CFG_STATE_IDLE,
   CFG_STATE_NEW,
   CFG_STATE_LOADED,
@@ -152,20 +150,6 @@ class CfgPageScenarioButtons extends Component {
           data-cy={CFG_BTN_EXP_SCENARIO}
         >
           EXPORT
-        </Button>
-
-        <Button
-          raised
-          style={{ ...styles.button, marginLeft: 10 }}
-          onClick={() => {
-            window.open(MEEP_HELP_PAGE_CFG_URL,'_blank');
-          }}
-        >
-          <Icon
-            icon="help_outline"
-            iconOptions={{ strategy: 'ligature' }}
-            style={styles.icon}
-          />
         </Button>
 
         <a id="export-scenario-link" download="config.yaml" hidden></a>

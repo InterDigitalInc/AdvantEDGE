@@ -24,7 +24,6 @@ import { Button } from '@rmwc/button';
 import Iframe from 'react-iframe';
 import { ListEditPane } from './list-edit-pane';
 import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
-import { Icon } from '@rmwc/icon';
 
 import {
   uiChangeCurrentDialog
@@ -41,7 +40,6 @@ import {
 } from '../../state/monitor';
 
 import {
-  MEEP_HELP_PAGE_MON_URL,
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME,
   IDC_DIALOG_DELETE_DASHBOARD_LIST,
@@ -139,19 +137,6 @@ const MonitorPageHeadlineBar = props => {
                 >
                     OPEN GRAFANA
                 </Button>
-                <Button
-                  raised
-                  style={{ ...styles.button, marginLeft: 10 }}
-                  onClick={() => {
-                    window.open(MEEP_HELP_PAGE_MON_URL,'_blank');
-                  }}
-                >
-                  <Icon
-                    icon='help_outline'
-                    iconOptions={{ strategy: 'ligature' }}
-                    style={styles.icon}
-                  />
-                </Button>
               </div>
             </GridCell>
           </GridInner>
@@ -164,7 +149,7 @@ const MonitorPageHeadlineBar = props => {
 const MainPane = props => {
   if (props.editedDashboardOptions) {
     return (
-      <Elevation z={4} style={{ marginBottom: 10, padding: 10 }}>
+      <Elevation className='idcc-elevation' z={4} style={{ marginBottom: 10, padding: 10 }}>
         <ListEditPane
           items={props.editedDashboardOptions}
           cancelEditMode={props.cancelEditMode}

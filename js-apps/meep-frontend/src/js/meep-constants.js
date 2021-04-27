@@ -42,10 +42,7 @@ export const PAGE_MONITOR_INDEX = 3;
 export const PAGE_SETTINGS_INDEX = 4;
 
 // URLs
-export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/configuration-view';
-export const MEEP_HELP_PAGE_EXEC_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/execution-view';
-export const MEEP_HELP_PAGE_MON_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/monitoring-view';
-export const MEEP_HELP_PAGE_SET_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/settings-view';
+export const MEEP_HELP_GUI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-gui-overview';
 export const MEEP_FOOTER_WIKI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
 export const MEEP_FOOTER_GITHUB_URL = 'https://github.com/InterDigitalInc/AdvantEDGE';
 export const MEEP_FOOTER_DISCUSSIONS_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/discussions';
