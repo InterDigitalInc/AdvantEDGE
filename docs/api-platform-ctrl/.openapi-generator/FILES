@@ -3,7 +3,9 @@ Apis/SandboxControlApi.md
 Apis/ScenarioConfigurationApi.md
 Models/CellularDomainConfig.md
 Models/CellularPoaConfig.md
+Models/ConnectivityConfig.md
 Models/CpuConfig.md
+Models/DNConfig.md
 Models/Deployment.md
 Models/Domain.md
 Models/EgressService.md

@@ -26,7 +26,9 @@ Class | Method | HTTP request | Description
 
  - [CellularDomainConfig](./Models/CellularDomainConfig.md)
  - [CellularPoaConfig](./Models/CellularPoaConfig.md)
+ - [ConnectivityConfig](./Models/ConnectivityConfig.md)
  - [CpuConfig](./Models/CpuConfig.md)
+ - [DNConfig](./Models/DNConfig.md)
  - [Deployment](./Models/Deployment.md)
  - [Domain](./Models/Domain.md)
  - [EgressService](./Models/EgressService.md)
