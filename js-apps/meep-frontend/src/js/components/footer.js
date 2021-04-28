@@ -19,11 +19,11 @@ import { Typography } from '@rmwc/typography';
 import { Grid, GridCell } from '@rmwc/grid';
 
 import {
-  MEEP_FOOTER_WIKI_URL,
-  MEEP_FOOTER_GITHUB_URL,
-  MEEP_FOOTER_DISCUSSIONS_URL,
-  MEEP_FOOTER_LICENSE_URL,
-  MEEP_FOOTER_CONTRIBUTING_URL
+  MEEP_WIKI_URL,
+  MEEP_GITHUB_URL,
+  MEEP_DISCUSSIONS_URL,
+  MEEP_LICENSE_URL,
+  MEEP_CONTRIBUTING_URL
 } from '../meep-constants';
 
 const Footer = () => {
@@ -36,23 +36,23 @@ const Footer = () => {
       </GridCell>
       <GridCell span={5} align={'middle'}>
         <div align={'right'}>
-          <a href={MEEP_FOOTER_WIKI_URL} target="_blank" style={styles.link}>
+          <a href={MEEP_WIKI_URL} target="_blank" style={styles.link}>
             <Typography use="body1">Wiki</Typography>
           </a>
           <span style={styles.separator}>|</span>
-          <a href={MEEP_FOOTER_GITHUB_URL} target="_blank" style={styles.link}>
+          <a href={MEEP_GITHUB_URL} target="_blank" style={styles.link}>
             <Typography use="body1">GitHub</Typography>
           </a>
           <span style={styles.separator}>|</span>
-          <a href={MEEP_FOOTER_DISCUSSIONS_URL} target="_blank" style={styles.link}>
+          <a href={MEEP_DISCUSSIONS_URL} target="_blank" style={styles.link}>
             <Typography use="body1">Discussions</Typography>
           </a>
           <span style={styles.separator}>|</span>
-          <a href={MEEP_FOOTER_LICENSE_URL} target="_blank" style={styles.link}>
+          <a href={MEEP_LICENSE_URL} target="_blank" style={styles.link}>
             <Typography use="body1">License</Typography>
           </a>
           <span style={styles.separator}>|</span>
-          <a href={MEEP_FOOTER_CONTRIBUTING_URL} target="_blank" style={styles.link}>
+          <a href={MEEP_CONTRIBUTING_URL} target="_blank" style={styles.link}>
             <Typography use="body1">Contributing</Typography>
           </a>
         </div>
