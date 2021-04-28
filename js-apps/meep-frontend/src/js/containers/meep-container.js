@@ -56,7 +56,8 @@ import {
   STATUS_SIGNIN_NOT_SUPPORTED,
   PAGE_HOME_INDEX,
   PAGE_CONFIGURE_INDEX,
-  IDC_DIALOG_SIGN_IN
+  IDC_DIALOG_SIGN_IN,
+  IDC_DIALOG_SESSION_TERMINATED
 } from '../meep-constants';
 
 import {
@@ -159,7 +160,6 @@ class MeepContainer extends Component {
         this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
       } else if (response.status === 200) {
         this.props.changeSignInStatus(STATUS_SIGNED_IN);
-        this.startSessionKeepaliveTimer();
       } else {
         this.props.changeSignInStatus(STATUS_SIGNED_OUT);
         this.logout();
@@ -179,7 +179,6 @@ class MeepContainer extends Component {
         this.props.changeSignInStatus(STATUS_SIGNED_IN);
         this.props.changeCurrentPage(PAGE_CONFIGURE);
         this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
-        this.startSessionKeepaliveTimer();
       } else {
         // Sign in failed
         this.logout();
@@ -206,6 +205,12 @@ class MeepContainer extends Component {
   startPlatformRefresh() {
     this.platformRefreshIntervalTimer = setInterval(
       () => {
+        // Make sure watchdog timer is running if we are signed in
+        if (this.props.signInStatus === STATUS_SIGNED_IN) {
+          if (!this.sessionKeepaliveTimer) {
+            this.startSessionKeepaliveTimer();
+          }
+        }
         this.checkPlatformStatus();
       },
       1000
@@ -303,8 +308,16 @@ class MeepContainer extends Component {
       .then(res => {
         this.props.changeCorePodsPhases(res.data.podStatus);
       })
-      .catch(() => {
+      .catch(error => {
         this.props.changeCorePodsPhases([]);
+
+        // Log out if session was terminated
+        if (this.props.signInStatus === STATUS_SIGNED_IN) {
+          if (error.response.status === 401) {
+            this.logout();
+            this.props.changeCurrentDialog(IDC_DIALOG_SESSION_TERMINATED);
+          }
+        }
       });
   }
 
