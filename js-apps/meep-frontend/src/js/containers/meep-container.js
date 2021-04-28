@@ -32,6 +32,7 @@ import * as meepAuthSvcRestApiClient from '../../../../../js-packages/meep-auth-
 import MeepTopBar from '@/js/components/meep-top-bar';
 import Footer from '@/js/components/footer';
 import IDSignInOAuthDialog from '@/js/components/dialogs/id-sign-in-oauth-dialog';
+import IDSessionTerminatedDialog from '@/js/components/dialogs/id-session-terminated-dialog';
 import CfgPageContainer from '@/js/containers/cfg/cfg-page-container';
 import ExecPageContainer from '@/js/containers/exec/exec-page-container';
 import SettingsPageContainer from '@/js/containers/settings/settings-page-container';
@@ -788,6 +789,11 @@ class MeepContainer extends Component {
           title='Sign in with'
           open={this.props.currentDialog === IDC_DIALOG_SIGN_IN}
           onSignIn={provider => this.signInOAuth(provider)}
+          onClose={() => this.closeDialog()}
+        />
+        <IDSessionTerminatedDialog
+          title='Session ended'
+          open={this.props.currentDialog === IDC_DIALOG_SESSION_TERMINATED}
           onClose={() => this.closeDialog()}
         />
       </>
