@@ -32,6 +32,7 @@ import * as meepAuthSvcRestApiClient from '../../../../../js-packages/meep-auth-
 import MeepTopBar from '@/js/components/meep-top-bar';
 import Footer from '@/js/components/footer';
 import IDSignInOAuthDialog from '@/js/components/dialogs/id-sign-in-oauth-dialog';
+import IDSessionTerminatedDialog from '@/js/components/dialogs/id-session-terminated-dialog';
 import CfgPageContainer from '@/js/containers/cfg/cfg-page-container';
 import ExecPageContainer from '@/js/containers/exec/exec-page-container';
 import SettingsPageContainer from '@/js/containers/settings/settings-page-container';
@@ -56,7 +57,8 @@ import {
   STATUS_SIGNIN_NOT_SUPPORTED,
   PAGE_HOME_INDEX,
   PAGE_CONFIGURE_INDEX,
-  IDC_DIALOG_SIGN_IN
+  IDC_DIALOG_SIGN_IN,
+  IDC_DIALOG_SESSION_TERMINATED
 } from '../meep-constants';
 
 import {
@@ -159,7 +161,6 @@ class MeepContainer extends Component {
         this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
       } else if (response.status === 200) {
         this.props.changeSignInStatus(STATUS_SIGNED_IN);
-        this.startSessionKeepaliveTimer();
       } else {
         this.props.changeSignInStatus(STATUS_SIGNED_OUT);
         this.logout();
@@ -179,7 +180,6 @@ class MeepContainer extends Component {
         this.props.changeSignInStatus(STATUS_SIGNED_IN);
         this.props.changeCurrentPage(PAGE_CONFIGURE);
         this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
-        this.startSessionKeepaliveTimer();
       } else {
         // Sign in failed
         this.logout();
@@ -206,6 +206,12 @@ class MeepContainer extends Component {
   startPlatformRefresh() {
     this.platformRefreshIntervalTimer = setInterval(
       () => {
+        // Make sure watchdog timer is running if we are signed in
+        if (this.props.signInStatus === STATUS_SIGNED_IN) {
+          if (!this.sessionKeepaliveTimer) {
+            this.startSessionKeepaliveTimer();
+          }
+        }
         this.checkPlatformStatus();
       },
       1000
@@ -303,8 +309,16 @@ class MeepContainer extends Component {
       .then(res => {
         this.props.changeCorePodsPhases(res.data.podStatus);
       })
-      .catch(() => {
+      .catch(error => {
         this.props.changeCorePodsPhases([]);
+
+        // Log out if session was terminated
+        if (this.props.signInStatus === STATUS_SIGNED_IN) {
+          if (error.response.status === 401) {
+            this.logout();
+            this.props.changeCurrentDialog(IDC_DIALOG_SESSION_TERMINATED);
+          }
+        }
       });
   }
 
@@ -775,6 +789,11 @@ class MeepContainer extends Component {
           title='Sign in with'
           open={this.props.currentDialog === IDC_DIALOG_SIGN_IN}
           onSignIn={provider => this.signInOAuth(provider)}
+          onClose={() => this.closeDialog()}
+        />
+        <IDSessionTerminatedDialog
+          title='Session ended'
+          open={this.props.currentDialog === IDC_DIALOG_SESSION_TERMINATED}
           onClose={() => this.closeDialog()}
         />
       </>

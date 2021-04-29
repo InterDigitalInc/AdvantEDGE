@@ -43,11 +43,14 @@ export const PAGE_SETTINGS_INDEX = 4;
 
 // URLs
 export const MEEP_HELP_GUI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-gui-overview';
-export const MEEP_FOOTER_WIKI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
-export const MEEP_FOOTER_GITHUB_URL = 'https://github.com/InterDigitalInc/AdvantEDGE';
-export const MEEP_FOOTER_DISCUSSIONS_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/discussions';
-export const MEEP_FOOTER_LICENSE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE';
-export const MEEP_FOOTER_CONTRIBUTING_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md';
+export const MEEP_ARCHITECTURE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-architecture';
+export const MEEP_USAGE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-workflow';
+export const MEEP_WIKI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
+export const MEEP_GITHUB_URL = 'https://github.com/InterDigitalInc/AdvantEDGE';
+export const MEEP_DISCUSSIONS_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/discussions';
+export const MEEP_LICENSE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE';
+export const MEEP_CONTRIBUTING_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md';
+export const MEEP_ISSUES_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/issues';
 
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
@@ -82,6 +85,7 @@ export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 // Dialog Types
 // HOME
 export const IDC_DIALOG_SIGN_IN = 'IDC_DIALOG_SIGN_IN';
+export const IDC_DIALOG_SESSION_TERMINATED = 'IDC_DIALOG_SESSION_TERMINATED';
 // CFG
 export const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
 export const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';

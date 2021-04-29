@@ -21,7 +21,6 @@ import { connect } from 'react-redux';
 
 import { Toolbar, ToolbarRow, ToolbarSection } from '@rmwc/toolbar';
 import { Elevation } from '@rmwc/elevation';
-import { Grid, GridCell } from '@rmwc/grid';
 import { TabBar, Tab } from '@rmwc/tabs';
 import { Typography } from '@rmwc/typography';
 import { Button } from '@rmwc/button';
@@ -134,130 +133,119 @@ class MeepTopBar extends Component {
           <Elevation z={2}>
             <ToolbarRow>
               <ToolbarSection alignStart style={{display:'contents'}}>
-                <img
-                  id='idcc-logo'
-                  className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
-                  src={this.logo}
-                  alt=''
-                  onClick={() => this.handleItemClick(PAGE_HOME, PAGE_HOME_INDEX)}
-                />
-                <img id='AdvantEdgeLogo' height={50} src={this.advantEdge} alt='' />
-                <Grid>
-                  <GridCell span="12">
-                    <TabBar
-                      className='menu-tabs'
-                      activeTabIndex={this.props.activeTabIndex}
-                      onActivate={evt => this.props.changeTabIndex(evt.detail.index)}
-                    >
-                      <GridCell span="2">
-                        <Tab
-                          data-cy={MEEP_TAB_HOME}
-                          style={styles.mdcTab}
-                          label="Home"
-                          onClick={() => { this.handleItemClick(PAGE_HOME, PAGE_HOME_INDEX); }}
-                        />
-                      </GridCell>
-                      <GridCell span="2" style={{visibility:hideTabs?'hidden':null}}>
-                        <Tab
-                          hidden={hideTabs}
-                          data-cy={MEEP_TAB_CFG}
-                          style={styles.mdcTab}
-                          label="Configure"
-                          onClick={() => { this.handleItemClick(PAGE_CONFIGURE, PAGE_CONFIGURE_INDEX); }}
-                        />
-                      </GridCell>
-                      <GridCell span="2" style={{visibility:hideTabs?'hidden':null}}>
-                        <Tab
-                          data-cy={MEEP_TAB_EXEC}
-                          style={styles.mdcTab}
-                          label="Execute"
-                          onClick={() => { this.handleItemClick(PAGE_EXECUTE, PAGE_EXECUTE_INDEX); }}
-                        />
-                      </GridCell>
-                      <GridCell span="2" style={{visibility:hideTabs?'hidden':null}}>
-                        <Tab
-                          data-cy={MEEP_TAB_MON}
-                          style={styles.mdcTab}
-                          label="Monitor"
-                          onClick={() => { this.handleItemClick(PAGE_MONITOR, PAGE_MONITOR_INDEX); }}
-                        />
-                      </GridCell>
-                      <GridCell span="2" style={{visibility:hideTabs?'hidden':null}}>
-                        <Tab
-                          data-cy={MEEP_TAB_SET}
-                          style={styles.mdcTab}
-                          label="Settings"
-                          onClick={() => { this.handleItemClick(PAGE_SETTINGS, PAGE_SETTINGS_INDEX); }}
-                        />
-                      </GridCell>
-                    </TabBar>
-                  </GridCell>
-                </Grid>
-              </ToolbarSection>
-              
-              <ToolbarSection alignEnd>
-                <Button
-                  style={{ marginLeft: 10 }}
-                  onClick={() => {
-                    window.open(MEEP_HELP_GUI_URL,'_blank');
-                  }}
-                >
-                  <Icon
-                    title="GUI Help Page"
-                    icon="help_outline"
-                    iconOptions={{ size: 'large', strategy: 'ligature' }}
-                    style={styles.helpIcon}
+                <div style={styles.flex}>
+                  <img
+                    id='idcc-logo'
+                    className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
+                    src={this.logo}
+                    alt=''
+                    onClick={() => this.handleItemClick(PAGE_HOME, PAGE_HOME_INDEX)}
                   />
-                </Button>
 
-                <CorePodsLed
-                  corePodsRunning={this.props.corePodsRunning}
-                  corePodsErrors={this.props.corePodsErrors}
-                  signInStatus={this.props.signInStatus}
-                />
+                  <img id='AdvantEdgeLogo' height={50} src={this.advantEdge} alt='' />
 
-                { this.props.signInStatus === STATUS_SIGNED_IN ?
-                  <MenuSurfaceAnchor style={{ height: 48 }}>
-                    <Menu
-                      open={this.props.userMenuDisplay}
-                      onSelect={() => {}}
-                      onClose={() => this.props.changeUserMenuDisplay(false)}
-                      anchorCorner={'bottomLeft'}
-                      align={'left'}
-                      style={{ whiteSpace: 'nowrap', marginTop: 15, marginRight: 15}}
-                    >
-                      <MenuItem>
-                        <Typography use="body1">Signed in as <b>{this.props.signInUsername}</b></Typography>
-                      </MenuItem>
-                      <div style={{ width: '100%', borderTop: '1px solid #e4e4e4'}} />
-                      <MenuItem onClick={() => {
-                        this.props.onClickSignIn();
-                        this.props.changeUserMenuDisplay(false);
-                      }}>
-                        <Typography use="body1">Sign out</Typography>
-                      </MenuItem>
-                    </Menu>
-                    <IconButton
-                      icon="account_circle"
-                      className='user-icon'
-                      style={styles.icon}
-                      onClick={() => this.props.changeUserMenuDisplay(true)}
-                    />
-                  </MenuSurfaceAnchor>
-                  : null
-                  
-                }
-
-                { this.props.signInStatus === STATUS_SIGNED_OUT ?
-                  <Button
-                    style={styles.btnSignin}
-                    onClick={() => this.props.onClickSignIn()}
+                  <TabBar
+                    className='menu-tabs'
+                    activeTabIndex={this.props.activeTabIndex}
+                    onActivate={evt => this.props.changeTabIndex(evt.detail.index)}
                   >
-                    SIGN IN
-                  </Button>
-                  : null
-                }
+                    <Tab
+                      data-cy={MEEP_TAB_HOME}
+                      label="Home"
+                      onClick={() => { this.handleItemClick(PAGE_HOME, PAGE_HOME_INDEX); }}
+                    />
+                    <Tab
+                      hidden={hideTabs}
+                      data-cy={MEEP_TAB_CFG}
+                      style={{visibility:hideTabs?'hidden':null}}
+                      label="Configure"
+                      onClick={() => { this.handleItemClick(PAGE_CONFIGURE, PAGE_CONFIGURE_INDEX); }}
+                    />
+                    <Tab
+                      data-cy={MEEP_TAB_EXEC}
+                      style={{visibility:hideTabs?'hidden':null}}
+                      label="Execute"
+                      onClick={() => { this.handleItemClick(PAGE_EXECUTE, PAGE_EXECUTE_INDEX); }}
+                    />
+                    <Tab
+                      data-cy={MEEP_TAB_MON}
+                      style={{visibility:hideTabs?'hidden':null}}
+                      label="Monitor"
+                      onClick={() => { this.handleItemClick(PAGE_MONITOR, PAGE_MONITOR_INDEX); }}
+                    />
+                    <Tab
+                      data-cy={MEEP_TAB_SET}
+                      style={{visibility:hideTabs?'hidden':null}}
+                      label="Settings"
+                      onClick={() => { this.handleItemClick(PAGE_SETTINGS, PAGE_SETTINGS_INDEX); }}
+                    />
+                  </TabBar>
+                </div>
+              </ToolbarSection>
 
+              <ToolbarSection alignEnd>
+                <div style={styles.flex}>
+                  <Button
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      window.open(MEEP_HELP_GUI_URL,'_blank');
+                    }}
+                  >
+                    <Icon
+                      title="GUI Help Page"
+                      icon="help_outline"
+                      iconOptions={{ size: 'large', strategy: 'ligature' }}
+                      style={styles.helpIcon}
+                    />
+                  </Button>
+
+                  <CorePodsLed
+                    corePodsRunning={this.props.corePodsRunning}
+                    corePodsErrors={this.props.corePodsErrors}
+                    signInStatus={this.props.signInStatus}
+                  />
+
+                  { this.props.signInStatus === STATUS_SIGNED_IN ?
+                    <MenuSurfaceAnchor style={{ height: 48 }}>
+                      <Menu
+                        open={this.props.userMenuDisplay}
+                        onSelect={() => {}}
+                        onClose={() => this.props.changeUserMenuDisplay(false)}
+                        anchorCorner={'bottomLeft'}
+                        align={'left'}
+                        style={{ whiteSpace: 'nowrap', marginTop: 15, marginRight: 15}}
+                      >
+                        <MenuItem>
+                          <Typography use="body1">Signed in as <b>{this.props.signInUsername}</b></Typography>
+                        </MenuItem>
+                        <div style={{ width: '100%', borderTop: '1px solid #e4e4e4'}} />
+                        <MenuItem onClick={() => {
+                          this.props.onClickSignIn();
+                          this.props.changeUserMenuDisplay(false);
+                        }}>
+                          <Typography use="body1">Sign out</Typography>
+                        </MenuItem>
+                      </Menu>
+                      <IconButton
+                        icon="account_circle"
+                        className='user-icon'
+                        style={styles.icon}
+                        onClick={() => this.props.changeUserMenuDisplay(true)}
+                      />
+                    </MenuSurfaceAnchor>
+                    : null
+                  }
+
+                  { this.props.signInStatus === STATUS_SIGNED_OUT ?
+                    <Button
+                      style={styles.btnSignin}
+                      onClick={() => this.props.onClickSignIn()}
+                    >
+                    SIGN IN
+                    </Button>
+                    : null 
+                  } 
+                </div>
               </ToolbarSection>
             </ToolbarRow>
           </Elevation>
@@ -268,10 +256,6 @@ class MeepTopBar extends Component {
 }
 
 const styles = {
-  mdcTab: {
-    fontSize: 15,
-    fontFamily: 'Roboto'
-  },
   helpIcon: {
     color: '#ffffff'
   },
@@ -281,11 +265,15 @@ const styles = {
     marginRight: 10
   },
   btnSignin: {
-    marginTop: 6,
-    marginBottom: 6,
     color: 'white',
     border: 'none',
     borderRadius: 0
+  },
+  flex: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 48
   }
 };
 

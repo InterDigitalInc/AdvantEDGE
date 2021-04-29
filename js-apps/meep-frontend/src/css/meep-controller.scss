@@ -163,6 +163,9 @@ div.vis-tooltip {
 }
 
 // IDCC Styles
+.text-color-main {
+    color: #3e484f;
+}
 .idcc-page {
     padding: 10px;
     min-height: calc(100vh - 138px);
@@ -185,6 +188,12 @@ div.vis-tooltip {
 }
 .idcc-fullwidth {
     width: 100%;
+}
+.idcc-link:link, .idcc-link:visited {
+    color: #379DD8;
+}
+.idcc-link:hover, .idcc-link:hover {
+    color: #178fd4;
 }
 
 #new-element-error-message {

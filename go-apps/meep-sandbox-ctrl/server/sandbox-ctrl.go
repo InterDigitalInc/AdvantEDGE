@@ -435,9 +435,9 @@ func getNodeFilterFromQueryParams(query url.Values) mod.NodeFilter {
 	}
 	childrenStr := query.Get("excludeChildren")
 	if childrenStr == "true" {
-		filter.Children = true
+		filter.ExcludeChildren = true
 	} else {
-		filter.Children = false
+		filter.ExcludeChildren = false
 	}
 
 	filter.DomainName = query.Get("domain")
