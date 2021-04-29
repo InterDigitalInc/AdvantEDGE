@@ -91,7 +91,6 @@ class IDNewScenarioDialog extends Component {
         cydata={MEEP_DLG_NEW_SCENARIO}
       >
         <TextField
-          outlined
           style={{ width: '100%' }}
           label={'Scenario Name'}
           onChange={e => {

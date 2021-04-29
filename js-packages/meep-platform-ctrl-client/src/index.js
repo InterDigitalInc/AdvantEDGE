@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/CpuConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig', 'model/Point', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi', 'api/UserAuthenticationApi'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/ConnectivityConfig', 'model/CpuConfig', 'model/DNConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig', 'model/Point', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/CpuConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/MemoryConfig'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Poa4GConfig'), require('./model/Poa5GConfig'), require('./model/PoaWifiConfig'), require('./model/Point'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'), require('./api/UserAuthenticationApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/ConnectivityConfig'), require('./model/CpuConfig'), require('./model/DNConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/MemoryConfig'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Poa4GConfig'), require('./model/Poa5GConfig'), require('./model/PoaWifiConfig'), require('./model/Point'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
   }
-}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, CpuConfig, Deployment, Domain, EgressService, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, MemoryConfig, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Poa4GConfig, Poa5GConfig, PoaWifiConfig, Point, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi, UserAuthenticationApi) {
+}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, ConnectivityConfig, CpuConfig, DNConfig, Deployment, Domain, EgressService, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, MemoryConfig, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Poa4GConfig, Poa5GConfig, PoaWifiConfig, Point, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
   'use strict';
 
   /**
@@ -87,10 +87,20 @@
      */
     CellularPoaConfig: CellularPoaConfig,
     /**
+     * The ConnectivityConfig model constructor.
+     * @property {module:model/ConnectivityConfig}
+     */
+    ConnectivityConfig: ConnectivityConfig,
+    /**
      * The CpuConfig model constructor.
      * @property {module:model/CpuConfig}
      */
     CpuConfig: CpuConfig,
+    /**
+     * The DNConfig model constructor.
+     * @property {module:model/DNConfig}
+     */
+    DNConfig: DNConfig,
     /**
      * The Deployment model constructor.
      * @property {module:model/Deployment}
@@ -230,12 +240,7 @@
      * The ScenarioConfigurationApi service constructor.
      * @property {module:api/ScenarioConfigurationApi}
      */
-    ScenarioConfigurationApi: ScenarioConfigurationApi,
-    /**
-     * The UserAuthenticationApi service constructor.
-     * @property {module:api/UserAuthenticationApi}
-     */
-    UserAuthenticationApi: UserAuthenticationApi
+    ScenarioConfigurationApi: ScenarioConfigurationApi
   };
 
   return exports;

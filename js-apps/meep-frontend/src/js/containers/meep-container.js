@@ -20,19 +20,24 @@ import React, { Component } from 'react';
 import autoBind from 'react-autobind';
 import axios from 'axios';
 import { updateObject, deepCopy } from '../util/object-util';
+import { ToolbarFixedAdjust } from '@rmwc/toolbar';
 
 // Import JS dependencies
 import * as meepPlatformCtrlRestApiClient from '../../../../../js-packages/meep-platform-ctrl-client/src/index.js';
 import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-sandbox-ctrl-client/src/index.js';
 import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
 import * as meepGisEngineRestApiClient from '../../../../../js-packages/meep-gis-engine-client/src/index.js';
+import * as meepAuthSvcRestApiClient from '../../../../../js-packages/meep-auth-svc-client/src/index.js';
 
-import MeepDrawer from './meep-drawer';
-import MeepTopBar from '../components/meep-top-bar';
-import CfgPageContainer from './cfg/cfg-page-container';
-import ExecPageContainer from './exec/exec-page-container';
-import SettingsPageContainer from './settings/settings-page-container';
-import MonitorPageContainer from './monitor/monitor-page-container';
+import MeepTopBar from '@/js/components/meep-top-bar';
+import Footer from '@/js/components/footer';
+import IDSignInOAuthDialog from '@/js/components/dialogs/id-sign-in-oauth-dialog';
+import IDSessionTerminatedDialog from '@/js/components/dialogs/id-session-terminated-dialog';
+import CfgPageContainer from '@/js/containers/cfg/cfg-page-container';
+import ExecPageContainer from '@/js/containers/exec/exec-page-container';
+import SettingsPageContainer from '@/js/containers/settings/settings-page-container';
+import MonitorPageContainer from '@/js/containers/monitor/monitor-page-container';
+import HomePageContainer from '@/js/containers/home/home-page-container';
 
 import {
   HOST_PATH,
@@ -44,7 +49,16 @@ import {
   PAGE_CONFIGURE,
   PAGE_EXECUTE,
   PAGE_MONITOR,
-  PAGE_SETTINGS
+  PAGE_SETTINGS,
+  PAGE_HOME,
+  STATUS_SIGNED_IN,
+  STATUS_SIGNING_IN,
+  STATUS_SIGNED_OUT,
+  STATUS_SIGNIN_NOT_SUPPORTED,
+  PAGE_HOME_INDEX,
+  PAGE_CONFIGURE_INDEX,
+  IDC_DIALOG_SIGN_IN,
+  IDC_DIALOG_SESSION_TERMINATED
 } from '../meep-constants';
 
 import {
@@ -57,13 +71,16 @@ import {
 } from '../util/scenario-utils';
 
 import {
+  uiChangeCurrentDialog,
   uiChangeCurrentPage,
   uiExecChangeSandbox,
   uiExecChangeSandboxList,
   uiExecChangeSandboxCfg,
   uiExecChangeEventCreationMode,
   uiExecChangeEventReplayMode,
-  uiToggleMainDrawer
+  uiChangeSignInStatus,
+  uiChangeSignInUsername,
+  uiChangeCurrentTab
 } from '../state/ui';
 
 import {
@@ -91,6 +108,12 @@ import {
   cfgChangeMap
 } from '../state/cfg';
 
+import {
+  FIELD_CONNECTIVITY_MODEL,
+  getElemByName,
+  getElemFieldVal
+} from '../util/elem-utils';
+
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
 meepPlatformCtrlRestApiClient.ApiClient.instance.basePath = basepathPlatformCtrl.replace(/\/+$/,'');
@@ -100,13 +123,19 @@ var basepathMonEngine = HOST_PATH + '/mon-engine/v1';
 meepMonEngineRestApiClient.ApiClient.instance.basePath = basepathMonEngine.replace(/\/+$/,'');
 var basepathGisEngine = HOST_PATH + '/gis/v1';
 meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
+var basepathAuthSvc = HOST_PATH + '/auth/v1';
+meepAuthSvcRestApiClient.ApiClient.instance.basePath = basepathAuthSvc.replace(/\/+$/,'');
+
+const SESSION_KEEPALIVE_INTERVAL = 600000; // 10 min
 
 class MeepContainer extends Component {
   constructor(props) {
     super(props);
     autoBind(this);
 
-    this.state = {};
+    this.pduSessions = null;
+
+    this.sessionKeepaliveTimer = null;
     this.platformRefreshIntervalTimer = null;
     this.execPageRefreshIntervalTimer = null;
     this.replayStatusRefreshIntervalTimer = null;
@@ -117,21 +146,55 @@ class MeepContainer extends Component {
     this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
     this.meepEventAutomationApi = new meepGisEngineRestApiClient.AutomationApi();
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
+    this.meepAuthApi = new meepAuthSvcRestApiClient.AuthApi();
+    this.meepConnectivityApi = new meepSandboxCtrlRestApiClient.ConnectivityApi();
   }
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
     this.setBasepath(this.props.sandbox);
     this.refreshScenario();
-    this.startTimers();
     this.monitorTabFocus();
+
+    this.meepAuthApi.loginSupported((_, __, response) => {
+      if (response.status === 404) {
+        this.props.changeSignInStatus(STATUS_SIGNIN_NOT_SUPPORTED);
+      } else if (response.status === 200) {
+        this.props.changeSignInStatus(STATUS_SIGNED_IN);
+      } else {
+        this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+        this.logout();
+      }
+      this.startTimers();
+    });
   }
 
+  componentWillMount() {
+    // Handle OAuth login in progress
+    if (this.props.signInStatus === STATUS_SIGNING_IN) {
+      let params = (new URL(document.location)).searchParams;
+      let userName = params.get('user');
+      if (userName) {
+        this.props.changeSignInUsername(userName);
+        window.history.replaceState({}, document.title, '/');
+        this.props.changeSignInStatus(STATUS_SIGNED_IN);
+        this.props.changeCurrentPage(PAGE_CONFIGURE);
+        this.props.changeTabIndex(PAGE_CONFIGURE_INDEX);
+      } else {
+        // Sign in failed
+        this.logout();
+        this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+      }
+    }
+  }
+  
   // Timers
   startTimers() {
-    this.startPlatformRefresh();
-    this.startExecPageRefresh();
-    this.startReplayStatusRefresh();
+    if (this.props.signInStatus === STATUS_SIGNED_IN || this.props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED) {
+      this.startPlatformRefresh();
+      this.startExecPageRefresh();
+      this.startReplayStatusRefresh();
+    }
   }
   stopTimers() {
     this.stopReplayStatusRefresh();
@@ -143,13 +206,22 @@ class MeepContainer extends Component {
   startPlatformRefresh() {
     this.platformRefreshIntervalTimer = setInterval(
       () => {
+        // Make sure watchdog timer is running if we are signed in
+        if (this.props.signInStatus === STATUS_SIGNED_IN) {
+          if (!this.sessionKeepaliveTimer) {
+            this.startSessionKeepaliveTimer();
+          }
+        }
         this.checkPlatformStatus();
       },
       1000
     );
   }
   stopPlatformRefresh() {
-    clearInterval(this.platformRefreshIntervalTimer);
+    if (this.platformRefreshIntervalTimer) {
+      clearInterval(this.platformRefreshIntervalTimer);
+      this.platformRefreshIntervalTimer = null;
+    }
   }
 
   // Exec page refresh
@@ -160,6 +232,7 @@ class MeepContainer extends Component {
           this.refreshSandboxList();
           if (this.props.sandbox) {
             this.checkScenarioStatus();
+            this.refreshPduSessions();
             this.refreshScenario();
             this.refreshMap();
           }
@@ -168,8 +241,12 @@ class MeepContainer extends Component {
       1000
     );
   }
+
   stopExecPageRefresh() {
-    clearInterval(this.execPageRefreshIntervalTimer);
+    if (this.execPageRefreshIntervalTimer) {
+      clearInterval(this.execPageRefreshIntervalTimer);
+      this.execPageRefreshIntervalTimer = null;
+    }
   }
 
   // Replay status refresh
@@ -180,7 +257,10 @@ class MeepContainer extends Component {
     );
   }
   stopReplayStatusRefresh() {
-    clearInterval(this.replayStatusRefreshIntervalTimer);
+    if (this.replayStatusRefreshIntervalTimer) {
+      clearInterval(this.replayStatusRefreshIntervalTimer);
+      this.replayStatusRefreshIntervalTimer = null;
+    }
   }
 
   monitorTabFocus() {
@@ -229,8 +309,16 @@ class MeepContainer extends Component {
       .then(res => {
         this.props.changeCorePodsPhases(res.data.podStatus);
       })
-      .catch(() => {
+      .catch(error => {
         this.props.changeCorePodsPhases([]);
+
+        // Log out if session was terminated
+        if (this.props.signInStatus === STATUS_SIGNED_IN) {
+          if (error.response.status === 401) {
+            this.logout();
+            this.props.changeCurrentDialog(IDC_DIALOG_SESSION_TERMINATED);
+          }
+        }
       });
   }
 
@@ -350,13 +438,18 @@ class MeepContainer extends Component {
     }
 
     // Parse Scenario object to retrieve visualization data and scenario table
-    var page = pageType === TYPE_CFG ? this.props.cfg : this.props.exec;
-    var parsedScenario = parseScenario(page.scenario);
+    var page = (pageType === TYPE_CFG) ? this.props.cfg : this.props.exec;
+    var pduSessions = (pageType === TYPE_CFG) ? null : this.pduSessions;
+    var scenarioName = (page.scenario) ? page.scenario.name : '';
+    var parsedScenario = parseScenario(page.scenario, pduSessions);
     var updatedMapData = updateObject({}, parsedScenario.mapData);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
     // updatedVisData.nodes._data.sort();
     // updatedVisData.edges._data.sort();
     var updatedTable = updateObject(page.table, parsedScenario.table);
+
+    // Update connectivity mode
+    this.updateConnectivityMode(pageType, updatedTable, scenarioName);
 
     // Dispatch state updates
     if (pageType === TYPE_CFG) {
@@ -391,7 +484,7 @@ class MeepContainer extends Component {
           //restore the canvas position and scale in vis
           vis.network.canvas.body.view = view;
         });
-      }
+      } 
     }
   }
 
@@ -517,6 +610,40 @@ class MeepContainer extends Component {
     );
   }
 
+  /**
+   * Callback function to receive the result of the getPduSessionList operation.
+   * @callback module:api/ConnectivityApi~getPduSessionListCallback
+   * @param {String} error Error message, if any.
+   * @param {Array.<module:model/PDUSessionList>} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getPduSessionListCb(error, data) {
+    if (error !== null) {
+      return;
+    }
+
+    // Update PDU session map
+    this.pduSessions = data;
+  }
+
+  // Refresh PDU Sessions
+  refreshPduSessions() {
+    if (this.connectivityMode === 'PDU') {
+      this.meepConnectivityApi.getPduSessionList(null, (error, data) =>
+        this.getPduSessionListCb(error, data)
+      );
+    }
+  }
+
+  // Update connectivity mode
+  updateConnectivityMode(pageType, table, scenarioName) {
+    if (pageType === TYPE_CFG) {
+      this.connectivityMode = '';
+    } else {
+      this.connectivityMode = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_CONNECTIVITY_MODEL);
+    }
+  }
+
   // Set sandox-specific API basepath
   setBasepath(sandboxName) {
     var sandboxPath = (sandboxName) ? '/' + sandboxName : '';
@@ -590,6 +717,89 @@ class MeepContainer extends Component {
     });
   }
 
+  // Session Keep-alive
+  startSessionKeepaliveTimer() {
+    if (!this.sessionKeepaliveTimer) {
+      this.meepAuthApi.triggerWatchdog();
+
+      // Start keepalive timer
+      this.sessionKeepaliveTimer = setInterval(() => {
+        this.meepAuthApi.triggerWatchdog();
+      },
+      SESSION_KEEPALIVE_INTERVAL
+      );
+    }
+  }
+
+  stopSessionKeepaliveTimer() {
+    if (this.sessionKeepaliveTimer) {
+      clearInterval(this.sessionKeepaliveTimer);
+      this.sessionKeepaliveTimer = null;
+    }
+  }
+
+  /**
+   * Callback function to receive the result of the logout operation.
+   * @callback module:api/AuthenticationApi~logout
+   * @param {String} error Error message, if any.
+   * @param none
+   * @param {String} response The complete HTTP response.
+   */
+  logoutCb() {
+    this.props.changeSignInStatus(STATUS_SIGNED_OUT);
+    if (this.props.currentPage !== PAGE_HOME) {
+      this.props.changeCurrentPage(PAGE_HOME);
+      this.props.changeTabIndex(PAGE_HOME_INDEX);
+    }
+  }
+
+  logout() {
+    this.stopSessionKeepaliveTimer();
+    this.meepAuthApi.logout((error, data, response) => {
+      this.logoutCb(error, data, response);
+    });
+  }
+
+  signInProcedure() {
+    if (this.props.signInStatus === STATUS_SIGNED_IN) {
+      this.logout();
+    } else {
+      this.props.changeCurrentDialog(IDC_DIALOG_SIGN_IN);
+      // this.props.changeCurrentPage(PAGE_HOME);
+      // this.props.changeTabIndex(PAGE_HOME_INDEX);
+    }
+  }
+
+  signInOAuth(provider) {
+    // Set state to signing in
+    this.props.changeSignInStatus(STATUS_SIGNING_IN);
+    this.closeDialog();
+    window.location.href = HOST_PATH + '/auth/v1/login?provider=' + provider;
+  }
+
+  // CLOSE DIALOG
+  closeDialog() {
+    this.props.changeCurrentDialog(Math.random());
+  }
+  
+  renderDialogs() {
+    return (
+      <>
+        <IDSignInOAuthDialog
+          title='Sign in with'
+          open={this.props.currentDialog === IDC_DIALOG_SIGN_IN}
+          onSignIn={provider => this.signInOAuth(provider)}
+          onClose={() => this.closeDialog()}
+        />
+        <IDSessionTerminatedDialog
+          title='Session ended'
+          open={this.props.currentDialog === IDC_DIALOG_SESSION_TERMINATED}
+          onClose={() => this.closeDialog()}
+        />
+      </>
+    );
+  }
+
   renderPage() {
     switch (this.props.page) {
     case PAGE_CONFIGURE:
@@ -637,7 +847,10 @@ class MeepContainer extends Component {
       );
 
     case PAGE_MONITOR:
-      return <MonitorPageContainer style={{ paddingRight: '100%' }} />;
+      return <MonitorPageContainer />;
+    
+    case PAGE_HOME:
+      return <HomePageContainer />;
 
     default:
       return null;
@@ -645,29 +858,24 @@ class MeepContainer extends Component {
   }
 
   render() {
-    const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
-
     return (
-      <div style={{ display: 'table', width: '100%', height: '100%' }}>
-        <div style={{ display: 'table-row' }}>
-          <MeepTopBar
-            title=""
-            toggleMainDrawer={this.props.toggleMainDrawer}
-            corePodsRunning={this.props.corePodsRunning}
-            corePodsErrors={this.props.corePodsErrors}
-          />
+      <div className='ui-background'>
+        {this.renderDialogs()}
+
+        <MeepTopBar
+          title=""
+          corePodsRunning={this.props.corePodsRunning}
+          corePodsErrors={this.props.corePodsErrors}
+          onClickSignIn={() => this.signInProcedure()}
+        />
+
+        <ToolbarFixedAdjust />
+
+        <div className='idcc-page'>
+          {this.renderPage()}
         </div>
-        <div style={{ display: 'table-row', height: '100%' }}>
-          <div style={{ display: 'flex', height: '100%' }}>
-            <div
-              className="component-style"
-              style={{ flex: flexString, borderRight: '1px solid #e4e4e4', overflow: 'hidden' }}
-            >
-              <MeepDrawer open={this.props.mainDrawerOpen} />
-            </div>
-            <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
-          </div>
-        </div>
+
+        <Footer />
       </div>
     );
   }
@@ -680,6 +888,7 @@ const mapStateToProps = state => {
     exec: state.exec,
     execScenarioState: state.exec.state.scenario,
     execVis: state.exec.vis,
+    currentDialog: state.ui.currentDialog,
     page: state.ui.page,
     sandbox: state.ui.sandbox,
     sandboxes: state.ui.sandboxes,
@@ -687,17 +896,18 @@ const mapStateToProps = state => {
     automaticRefresh: state.ui.automaticRefresh,
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
-    mainDrawerOpen: state.ui.mainDrawerOpen,
     eventReplayMode: state.ui.eventReplayMode,
     eventCfgMode: state.ui.eventCfgMode,
     corePodsRunning: corePodsRunning(state),
     corePodsErrors: corePodsErrors(state),
-    execVisData: execVisFilteredData(state)
+    execVisData: execVisFilteredData(state),
+    signInStatus: state.ui.signInStatus
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
+    changeCurrentDialog: type => dispatch(uiChangeCurrentDialog(type)),
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
     changeSandbox: name => dispatch(uiExecChangeSandbox(name)),
     changeSandboxList: list => dispatch(uiExecChangeSandboxList(list)),
@@ -720,7 +930,9 @@ const mapDispatchToProps = dispatch => {
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
-    toggleMainDrawer: () => dispatch(uiToggleMainDrawer())
+    changeSignInStatus: status => dispatch(uiChangeSignInStatus(status)),
+    changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
+    changeTabIndex: index => dispatch(uiChangeCurrentTab(index))
   };
 };
 

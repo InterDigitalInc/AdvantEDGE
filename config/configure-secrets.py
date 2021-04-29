@@ -22,7 +22,7 @@ def usage():
 
 # Parse secrets file
 def parse(fname):
-  print '\n>>> Parsing secrets file'
+  print ('\n>>> Parsing secrets file')
   with open(fname, 'r') as stream:
     secrets = {}
     try:

@@ -16,6 +16,7 @@
 
 import _ from 'lodash';
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { updateObject } from '../../util/object-util';
@@ -27,6 +28,10 @@ import {
   camelCasePrefix,
   firstLetterUpper
 } from '../../util/string-manipulation';
+
+import {
+  uiExecChangeEventStatus
+} from '@/js/state/ui';
 
 import {
   EXEC_EVT_NC_TYPE,
@@ -69,6 +74,7 @@ import {
   POA_5G_TYPE_STR,
   POA_WIFI_TYPE_STR,
   DC_TYPE_STR,
+  UE_TYPE_STR,
   UE_APP_TYPE_STR,
   EDGE_APP_TYPE_STR,
   CLOUD_APP_TYPE_STR
@@ -163,6 +169,27 @@ class NetworkCharacteristicsEventPane extends Component {
     this.props.onClose(e);
   }
 
+  /**
+   * Callback function to receive the result of the sendEvent operation.
+   * @callback module:api/EventsApi~sendEventCallback
+   * @param {String} error Error message, if any.
+   * @param data This operation does not return a value.
+   * @param {String} response The complete HTTP response.
+   */
+  sendEventCb(error, _, response) {
+    var status = '';
+    if (error) {
+      status = '[' + response.statusCode + '] ' + response.statusText + ': ' + response.text;
+      this.props.changeEventStatus(status);
+      return;
+    }
+
+    status = '[' + response.statusCode + '] ' + response.statusText;
+    this.props.changeEventStatus(status);
+    this.setState({ dialogOpen: true });
+    this.props.onSuccess();
+  }
+
   triggerEvent(e) {
     e.preventDefault();
     var element = this.props.element;
@@ -201,6 +228,9 @@ class NetworkCharacteristicsEventPane extends Component {
     case ELEMENT_TYPE_DC:
       neType = DC_TYPE_STR;
       break;
+    case ELEMENT_TYPE_UE:
+      neType = UE_TYPE_STR;
+      break;
     case ELEMENT_TYPE_UE_APP:
       neType = UE_APP_TYPE_STR;
       break;
@@ -228,11 +258,8 @@ class NetworkCharacteristicsEventPane extends Component {
     this.setNetCharFromElem(ncEvent.eventNetworkCharacteristicsUpdate.netChar, element);
 
     // trigger event with this.props.api
-    this.props.api.sendEvent(this.props.currentEvent, ncEvent, error => {
-      if (!error) {
-        this.setState({ dialogOpen: true });
-        this.props.onSuccess();
-      }
+    this.props.api.sendEvent(this.props.currentEvent, ncEvent, (error, data, response) => {
+      this.sendEventCb(error, data, response);
     });
   }
 
@@ -427,7 +454,7 @@ class NetworkCharacteristicsEventPane extends Component {
           <GridCell span="4"></GridCell>
         </Grid>
 
-        <Grid>
+        <Grid style={{ paddingBottom: 16 }}>
           <GridCell span="8">
             <IDSelect
               span="8"
@@ -481,4 +508,20 @@ const styles = {
   }
 };
 
-export default NetworkCharacteristicsEventPane;
+const mapStateToProps = () => {
+  return {
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    changeEventStatus: status => dispatch(uiExecChangeEventStatus(status))
+  };
+};
+
+const ConnectedNetworkCharacteristicsEventPane = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(NetworkCharacteristicsEventPane);
+
+export default ConnectedNetworkCharacteristicsEventPane;

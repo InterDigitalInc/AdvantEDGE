@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/metrics-notif/v2*
+All URIs are relative to *https://localhost/sandboxname/metrics-notif/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

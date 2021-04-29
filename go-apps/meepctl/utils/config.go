@@ -31,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.6.0"
+const configVersion = "1.7.0"
 
 const defaultNotSet = "not set"
 
@@ -309,6 +309,19 @@ func ConfigIsIpv4(host string) bool {
 		}
 	}
 	return true
+}
+
+// GetResourcePrerequisites retreives the keys based on group and operation type
+func GetResourcePrerequisites(group string) ([]string, []string) {
+	names := []string{}
+	paths := []string{}
+	if RepoCfg != nil {
+		for name, path := range RepoCfg.GetStringMapString(group) {
+			names = append(names, name)
+			paths = append(paths, path)
+		}
+	}
+	return names, paths
 }
 
 // GetTargets retreives the keys based on group and operation type

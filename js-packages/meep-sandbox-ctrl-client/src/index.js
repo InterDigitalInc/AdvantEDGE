@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ActivationInfo', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/CpuConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventPoasInRange', 'model/EventScenarioUpdate', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeDataUnion', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig', 'model/Point', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioNode', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/ActiveScenarioApi', 'api/EventReplayApi', 'api/EventsApi'], factory);
+    define(['ApiClient', 'model/ActivationInfo', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/ConnectivityConfig', 'model/CpuConfig', 'model/DNConfig', 'model/Deployment', 'model/Domain', 'model/Domains', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventPduSession', 'model/EventPoasInRange', 'model/EventScenarioUpdate', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NetworkLocations', 'model/NodeDataUnion', 'model/NodeServiceMaps', 'model/PDUSession', 'model/PDUSessionInfo', 'model/PDUSessionList', 'model/PhysicalLocation', 'model/PhysicalLocations', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig', 'model/Point', 'model/Process', 'model/Processes', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioNode', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'model/Zones', 'api/ActiveScenarioApi', 'api/ConnectivityApi', 'api/EventReplayApi', 'api/EventsApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/ActivationInfo'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/CpuConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventPoasInRange'), require('./model/EventScenarioUpdate'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/MemoryConfig'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeDataUnion'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/Poa4GConfig'), require('./model/Poa5GConfig'), require('./model/PoaWifiConfig'), require('./model/Point'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/ReplayInfo'), require('./model/ReplayStatus'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioNode'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/ActiveScenarioApi'), require('./api/EventReplayApi'), require('./api/EventsApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/ActivationInfo'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/ConnectivityConfig'), require('./model/CpuConfig'), require('./model/DNConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/Domains'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventPduSession'), require('./model/EventPoasInRange'), require('./model/EventScenarioUpdate'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/MemoryConfig'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NetworkLocations'), require('./model/NodeDataUnion'), require('./model/NodeServiceMaps'), require('./model/PDUSession'), require('./model/PDUSessionInfo'), require('./model/PDUSessionList'), require('./model/PhysicalLocation'), require('./model/PhysicalLocations'), require('./model/Poa4GConfig'), require('./model/Poa5GConfig'), require('./model/PoaWifiConfig'), require('./model/Point'), require('./model/Process'), require('./model/Processes'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/ReplayInfo'), require('./model/ReplayStatus'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioNode'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./model/Zones'), require('./api/ActiveScenarioApi'), require('./api/ConnectivityApi'), require('./api/EventReplayApi'), require('./api/EventsApi'));
   }
-}(function(ApiClient, ActivationInfo, CellularDomainConfig, CellularPoaConfig, CpuConfig, Deployment, Domain, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventPoasInRange, EventScenarioUpdate, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, MemoryConfig, NetworkCharacteristics, NetworkLocation, NodeDataUnion, NodeServiceMaps, PhysicalLocation, Poa4GConfig, Poa5GConfig, PoaWifiConfig, Point, Process, Replay, ReplayEvent, ReplayFileList, ReplayInfo, ReplayStatus, Scenario, ScenarioConfig, ScenarioNode, ServiceConfig, ServicePort, Zone, ActiveScenarioApi, EventReplayApi, EventsApi) {
+}(function(ApiClient, ActivationInfo, CellularDomainConfig, CellularPoaConfig, ConnectivityConfig, CpuConfig, DNConfig, Deployment, Domain, Domains, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventPduSession, EventPoasInRange, EventScenarioUpdate, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, MemoryConfig, NetworkCharacteristics, NetworkLocation, NetworkLocations, NodeDataUnion, NodeServiceMaps, PDUSession, PDUSessionInfo, PDUSessionList, PhysicalLocation, PhysicalLocations, Poa4GConfig, Poa5GConfig, PoaWifiConfig, Point, Process, Processes, Replay, ReplayEvent, ReplayFileList, ReplayInfo, ReplayStatus, Scenario, ScenarioConfig, ScenarioNode, ServiceConfig, ServicePort, Zone, Zones, ActiveScenarioApi, ConnectivityApi, EventReplayApi, EventsApi) {
   'use strict';
 
   /**
@@ -92,10 +92,20 @@
      */
     CellularPoaConfig: CellularPoaConfig,
     /**
+     * The ConnectivityConfig model constructor.
+     * @property {module:model/ConnectivityConfig}
+     */
+    ConnectivityConfig: ConnectivityConfig,
+    /**
      * The CpuConfig model constructor.
      * @property {module:model/CpuConfig}
      */
     CpuConfig: CpuConfig,
+    /**
+     * The DNConfig model constructor.
+     * @property {module:model/DNConfig}
+     */
+    DNConfig: DNConfig,
     /**
      * The Deployment model constructor.
      * @property {module:model/Deployment}
@@ -106,6 +116,11 @@
      * @property {module:model/Domain}
      */
     Domain: Domain,
+    /**
+     * The Domains model constructor.
+     * @property {module:model/Domains}
+     */
+    Domains: Domains,
     /**
      * The EgressService model constructor.
      * @property {module:model/EgressService}
@@ -126,6 +141,11 @@
      * @property {module:model/EventNetworkCharacteristicsUpdate}
      */
     EventNetworkCharacteristicsUpdate: EventNetworkCharacteristicsUpdate,
+    /**
+     * The EventPduSession model constructor.
+     * @property {module:model/EventPduSession}
+     */
+    EventPduSession: EventPduSession,
     /**
      * The EventPoasInRange model constructor.
      * @property {module:model/EventPoasInRange}
@@ -177,6 +197,11 @@
      */
     NetworkLocation: NetworkLocation,
     /**
+     * The NetworkLocations model constructor.
+     * @property {module:model/NetworkLocations}
+     */
+    NetworkLocations: NetworkLocations,
+    /**
      * The NodeDataUnion model constructor.
      * @property {module:model/NodeDataUnion}
      */
@@ -187,10 +212,30 @@
      */
     NodeServiceMaps: NodeServiceMaps,
     /**
+     * The PDUSession model constructor.
+     * @property {module:model/PDUSession}
+     */
+    PDUSession: PDUSession,
+    /**
+     * The PDUSessionInfo model constructor.
+     * @property {module:model/PDUSessionInfo}
+     */
+    PDUSessionInfo: PDUSessionInfo,
+    /**
+     * The PDUSessionList model constructor.
+     * @property {module:model/PDUSessionList}
+     */
+    PDUSessionList: PDUSessionList,
+    /**
      * The PhysicalLocation model constructor.
      * @property {module:model/PhysicalLocation}
      */
     PhysicalLocation: PhysicalLocation,
+    /**
+     * The PhysicalLocations model constructor.
+     * @property {module:model/PhysicalLocations}
+     */
+    PhysicalLocations: PhysicalLocations,
     /**
      * The Poa4GConfig model constructor.
      * @property {module:model/Poa4GConfig}
@@ -216,6 +261,11 @@
      * @property {module:model/Process}
      */
     Process: Process,
+    /**
+     * The Processes model constructor.
+     * @property {module:model/Processes}
+     */
+    Processes: Processes,
     /**
      * The Replay model constructor.
      * @property {module:model/Replay}
@@ -272,10 +322,20 @@
      */
     Zone: Zone,
     /**
+     * The Zones model constructor.
+     * @property {module:model/Zones}
+     */
+    Zones: Zones,
+    /**
      * The ActiveScenarioApi service constructor.
      * @property {module:api/ActiveScenarioApi}
      */
     ActiveScenarioApi: ActiveScenarioApi,
+    /**
+     * The ConnectivityApi service constructor.
+     * @property {module:api/ConnectivityApi}
+     */
+    ConnectivityApi: ConnectivityApi,
     /**
      * The EventReplayApi service constructor.
      * @property {module:api/EventReplayApi}

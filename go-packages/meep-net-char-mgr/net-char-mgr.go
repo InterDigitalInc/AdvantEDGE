@@ -23,9 +23,11 @@ import (
 	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	pss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
@@ -48,7 +50,7 @@ type NetCharMgr interface {
 
 // NetCharAlgo
 type NetCharAlgo interface {
-	ProcessScenario(*mod.Model) error
+	ProcessScenario(*mod.Model, map[string]map[string]*dataModel.PduSessionInfo) error
 	CalculateNetChar() []FlowNetChar
 	SetConfigAttribute(string, string)
 }
@@ -94,6 +96,8 @@ type NetCharManager struct {
 	isStarted        bool
 	ticker           *time.Ticker
 	rc               *redis.Connector
+	pduSessionStore  *pss.PduSessionStore
+	pduSessions      map[string]map[string]*dataModel.PduSessionInfo
 	mutex            sync.Mutex
 	config           NetCharConfig
 	mqLocal          *mq.MsgQueue
@@ -157,6 +161,14 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	}
 	log.Info("Connected to Control Listener redis DB")
 
+	// Connect to PDU Session Store
+	ncm.pduSessionStore, err = pss.NewPduSessionStore(ncm.namespace, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to PDU Session Store: ", err.Error())
+		return nil, err
+	}
+	log.Info("Connected to PDU Session Store")
+
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: ncm.msgHandler, UserData: nil}
 	ncm.handlerId, err = ncm.mqLocal.RegisterHandler(handler)
@@ -192,6 +204,9 @@ func (ncm *NetCharManager) Start() error {
 
 		// Process current controls
 		ncm.updateControls()
+
+		// Process current pdu sessions
+		go ncm.processPduSessionUpdate()
 
 		// Process current scenario
 		go ncm.processActiveScenarioUpdate()
@@ -238,6 +253,9 @@ func (ncm *NetCharManager) msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		ncm.processActiveScenarioUpdate()
+	case mq.MsgPduSessionCreated, mq.MsgPduSessionTerminated:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		ncm.processPduSessionUpdate()
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -265,10 +283,36 @@ func (ncm *NetCharManager) processActiveScenarioUpdate() {
 
 	if ncm.isStarted {
 		// Process updated scenario using algorithm
-		err := ncm.algo.ProcessScenario(ncm.activeModel)
+		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions)
 		if err != nil {
 			log.Error("Failed to process active model with error: ", err)
-			ncm.mutex.Unlock()
+			return
+		}
+
+		// Recalculate network characteristics
+		ncm.updateNetChars()
+	}
+}
+
+// processPduSessionUpdate
+func (ncm *NetCharManager) processPduSessionUpdate() {
+
+	ncm.mutex.Lock()
+	defer ncm.mutex.Unlock()
+
+	// Refresh PDU session cache
+	var err error
+	ncm.pduSessions, err = ncm.pduSessionStore.GetAllPduSessions()
+	if err != nil {
+		log.Error("Failed to retrieve PDU session maps with error: ", err)
+		return
+	}
+
+	if ncm.isStarted {
+		// Process updated scenario using algorithm
+		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions)
+		if err != nil {
+			log.Error("Failed to process active model with error: ", err)
 			return
 		}
 

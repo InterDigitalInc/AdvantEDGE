@@ -17,7 +17,6 @@
 import _ from 'lodash';
 import { updateObject } from '../../util/object-util';
 import { createSelector } from 'reselect';
-import * as vis from 'vis';
 
 import {
   ELEMENT_TYPE_UE_APP,
@@ -78,27 +77,30 @@ export const execVisFilteredData = createSelector(
       types[entry.id] = getElemFieldVal(entry,FIELD_TYPE);
     });
 
-    if (showApps) {
-      newNodes = data.nodes;
-      newEdges = data.edges;
-    } else {
-      var newNodes = new vis.DataSet(_.values(data.nodes._data));
-      _.forOwn(data.nodes._data, (elem, key) => {
-        if (_.includes(appTypes, types[elem.id])) {
-          newNodes.remove(key);
-        }
-      });
+    var newNodes = data.nodes;
+    var newEdges = data.edges;
 
-      var newEdges = new vis.DataSet(_.values(data.edges._data));
-      _.forOwn(data.edges._data, (edge, key) => {
-        if (
-          _.includes(appTypes, types[edge.from]) ||
-          _.includes(appTypes, types[edge.to])
-        ) {
-          newEdges.remove(key);
-        }
-      });
+    if (!showApps) {
+      if (data.nodes.length) {
+        _.forOwn(data.nodes.get(), (elem) => {
+          if (_.includes(appTypes, types[elem.id])) {
+            newNodes.remove(elem.id);
+          }
+        });
+      }
+      
+      if (data.nodes.length) {
+        _.forOwn(data.edges.get(), (edge) => {
+          if (
+            _.includes(appTypes, types[edge.from]) ||
+            _.includes(appTypes, types[edge.to])
+          ) {
+            newEdges.remove(edge.id);
+          }
+        });
+      }
     }
+
     return { nodes: newNodes, edges: newEdges };
   }
 );

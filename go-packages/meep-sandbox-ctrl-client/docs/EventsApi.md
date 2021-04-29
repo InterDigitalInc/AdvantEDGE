@@ -1,6 +1,6 @@
 # \EventsApi
 
-All URIs are relative to *https://localhost/sandbox-ctrl/v1*
+All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -11,7 +11,7 @@ Method | HTTP request | Description
 > SendEvent(ctx, type_, event)
 Send events to the deployed scenario
 
-Generate events towards the deployed scenario. Events: <li>MOBILITY: move a node in the emulated network <li>NETWORK-CHARACTERISTICS-UPDATE: change network characteristics dynamically <li>POAS-IN-RANGE: provide PoAs in range of a UE (used with ApplicationState Transfer) <li>SCENARIO-UPDATE: Add/Remove/Modify node in active scenario
+Generate events towards the deployed scenario. Events: <li>MOBILITY: move a node in the emulated network <li>NETWORK-CHARACTERISTICS-UPDATE: change network characteristics dynamically <li>POAS-IN-RANGE: provide PoAs in range of a UE (used with ApplicationState Transfer) <li>SCENARIO-UPDATE: Add/Remove/Modify node in active scenario <li>PDU-SESSION: Add/Remove active PDU session
 
 ### Required Parameters
 

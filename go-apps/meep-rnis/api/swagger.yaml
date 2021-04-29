@@ -10,7 +10,14 @@ info:
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis)
   <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network
-  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_"
+  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+  <p>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types.
+  <p>Supported subscriptions:
+  <p> - CellChangeSubscription
+  <p> - RabEstSubscription
+  <p> - RabRelSubscription
+  <p> - MeasRepUeSubscription
+  <p> - NrMeasRepUeSubscription"
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
@@ -18,9 +25,10 @@ externalDocs:
   description: ETSI GS MEC 012 Radio Network Information API, V2.1.1
   url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf'
 servers:
-  - url: 'https://localhost/rni/v2'
+  - url: 'https://localhost/sandboxname/rni/v2'
 tags:
 - name: 'rni'
+- name: 'unsupported'
 paths:
   /queries/rab_info:
     get:
@@ -94,7 +102,7 @@ paths:
   /queries/s1_bearer_info:
     get:
       tags:
-      - 'rni'
+      - 'unsupported'
       summary: 'Retrieve S1-U bearer information related to specific UE(s)'
       description: 'Queries information about the S1 bearer(s)'
       operationId: s1_bearer_infoGET

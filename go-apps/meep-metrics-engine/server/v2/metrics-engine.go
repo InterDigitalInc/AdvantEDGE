@@ -32,12 +32,11 @@ import (
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	clientv2 "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/mux"
 )
@@ -46,13 +45,19 @@ const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const metricEvent = "events"
 const metricNetwork = "network"
 
-const moduleName string = "meep-metrics-engine"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
-const metricsEngineKey string = "metrics-engine:"
+const ServiceName = "Metrics Engine"
+const ModuleName = "meep-metrics-engine"
+const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const metricsEngineKey = "metrics-engine:"
 
 const metricsBasePath = "/metrics/v2/"
 const typeNetworkSubscription = "netsubs"
 const typeEventSubscription = "eventsubs"
+
+const (
+	notifEventMetrics   = "EventMetricsNotification"
+	notifNetworkMetrics = "NetworkMetricsNotification"
+)
 
 var defaultDuration string = "1s"
 var defaultLimit int32 = 1
@@ -64,17 +69,16 @@ var nextEventSubscriptionIdAvailable int
 var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
 
-var sandboxName string
+var SandboxName string
 var mqLocal *mq.MsgQueue
 var handlerId int
 var activeModel *mod.Model
 var activeScenarioName string
-var metricStore *ms.MetricStore
+var metricStore *met.MetricStore
 var hostUrl *url.URL
 var basePath string
 var baseKey string
 
-var SessionMgr *sm.SessionMgr
 var rc *redis.Connector
 
 type EventRegistration struct {
@@ -92,13 +96,13 @@ type NetworkRegistration struct {
 // Init - Metrics engine initialization
 func Init() (err error) {
 	// Retrieve Sandbox name from environment variable
-	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-	if sandboxName == "" {
+	SandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if SandboxName == "" {
 		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
 		log.Error(err.Error())
 		return err
 	}
-	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+	log.Info("MEEP_SANDBOX_NAME: ", SandboxName)
 
 	// hostUrl is the url of the node serving the resourceURL
 	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
@@ -112,10 +116,10 @@ func Init() (err error) {
 	log.Info("resource URL: ", hostUrl)
 
 	// Set base path
-	basePath = "/" + sandboxName + metricsBasePath
+	basePath = "/" + SandboxName + metricsBasePath
 
 	// Create message queue
-	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(SandboxName), ModuleName, SandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -125,8 +129,8 @@ func Init() (err error) {
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
 		Name:      "activeScenario",
-		Namespace: sandboxName,
-		Module:    moduleName,
+		Namespace: SandboxName,
+		Module:    ModuleName,
 		UpdateCb:  nil,
 		DbAddr:    redisAddr,
 	}
@@ -137,14 +141,14 @@ func Init() (err error) {
 	}
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore("", sandboxName, influxDBAddr, redisAddr)
+	metricStore, err = met.NewMetricStore("", SandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
 
 	// Get base store key
-	baseKey = dkm.GetKeyRoot(sandboxName) + metricsEngineKey
+	baseKey = dkm.GetKeyRoot(SandboxName) + metricsEngineKey
 
 	// Connect to Redis DB to monitor metrics
 	rc, err = redis.NewConnector(redisAddr, METRICS_DB)
@@ -153,14 +157,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Redis DB")
-
-	// Connect to Session Manager
-	SessionMgr, err = sm.NewSessionMgr(moduleName, sandboxName, redisAddr, redisAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	nextNetworkSubscriptionIdAvailable = 1
 	nextEventSubscriptionIdAvailable = 1
@@ -213,7 +209,7 @@ func activateScenarioMetrics() {
 	}
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName, redisAddr, influxDBAddr)
+	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
 	err := metricStore.SetStore(activeScenarioName)
@@ -231,7 +227,7 @@ func activateScenarioMetrics() {
 	ev.Type_ = "OTHER"
 	j, _ := json.Marshal(ev)
 
-	var em ms.EventMetric
+	var em met.EventMetric
 	em.Event = string(j)
 	em.Description = "scenario deployed"
 	err = metricStore.SetEventMetric(ev.Type_, em)
@@ -256,7 +252,7 @@ func terminateScenarioMetrics() {
 	metricStore.StopSnapshotThread()
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName, redisAddr, influxDBAddr)
+	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
 	err := metricStore.SetStore("")
@@ -311,7 +307,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(ms.EvMetName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.EvMetName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -332,8 +328,8 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	for index, values := range valuesArray {
 		metric := &response.Values[index]
 		metric.Time = values["time"].(string)
-		if values[ms.EvMetEvent] != nil {
-			if val, ok := values[ms.EvMetEvent].(string); ok {
+		if values[met.EvMetEvent] != nil {
+			if val, ok := values[met.EvMetEvent].(string); ok {
 				metric.Event = val
 			}
 		}
@@ -391,7 +387,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		limit = int(params.Scope.Limit)
 	}
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(ms.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -412,52 +408,52 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 	for index, values := range valuesArray {
 		metric := &response.Values[index]
 		metric.Time = values["time"].(string)
-		if values[ms.HttpLoggerName] != nil {
-			if val, ok := values[ms.HttpLoggerName].(string); ok {
+		if values[met.HttpLoggerName] != nil {
+			if val, ok := values[met.HttpLoggerName].(string); ok {
 				metric.LoggerName = val
 			}
 		}
-		if values[ms.HttpLoggerDirection] != nil {
-			if val, ok := values[ms.HttpLoggerDirection].(string); ok {
+		if values[met.HttpLoggerDirection] != nil {
+			if val, ok := values[met.HttpLoggerDirection].(string); ok {
 				metric.Direction = val
 			}
 		}
 
-		if values[ms.HttpLogId] != nil {
-			metric.Id = ms.JsonNumToInt32(values[ms.HttpLogId].(json.Number))
+		if values[met.HttpLogId] != nil {
+			metric.Id = met.JsonNumToInt32(values[met.HttpLogId].(json.Number))
 		}
-		if values[ms.HttpLogEndpoint] != nil {
-			if val, ok := values[ms.HttpLogEndpoint].(string); ok {
+		if values[met.HttpLogEndpoint] != nil {
+			if val, ok := values[met.HttpLogEndpoint].(string); ok {
 				metric.Endpoint = val
 			}
 		}
-		if values[ms.HttpUrl] != nil {
-			if val, ok := values[ms.HttpUrl].(string); ok {
+		if values[met.HttpUrl] != nil {
+			if val, ok := values[met.HttpUrl].(string); ok {
 				metric.Url = val
 			}
 		}
-		if values[ms.HttpMethod] != nil {
-			if val, ok := values[ms.HttpMethod].(string); ok {
+		if values[met.HttpMethod] != nil {
+			if val, ok := values[met.HttpMethod].(string); ok {
 				metric.Method = val
 			}
 		}
-		if values[ms.HttpBody] != nil {
-			if val, ok := values[ms.HttpBody].(string); ok {
+		if values[met.HttpBody] != nil {
+			if val, ok := values[met.HttpBody].(string); ok {
 				metric.Body = val
 			}
 		}
-		if values[ms.HttpRespBody] != nil {
-			if val, ok := values[ms.HttpRespBody].(string); ok {
+		if values[met.HttpRespBody] != nil {
+			if val, ok := values[met.HttpRespBody].(string); ok {
 				metric.RespBody = val
 			}
 		}
-		if values[ms.HttpRespCode] != nil {
-			if val, ok := values[ms.HttpRespCode].(string); ok {
+		if values[met.HttpRespCode] != nil {
+			if val, ok := values[met.HttpRespCode].(string); ok {
 				metric.RespCode = val
 			}
 		}
-		if values[ms.HttpProcTime] != nil {
-			if val, ok := values[ms.HttpProcTime].(string); ok {
+		if values[met.HttpProcTime] != nil {
+			if val, ok := values[met.HttpProcTime].(string); ok {
 				metric.ProcTime = val
 			}
 		}
@@ -516,7 +512,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(ms.NetMetName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.NetMetName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -537,20 +533,20 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	for index, values := range valuesArray {
 		metric := &response.Values[index]
 		metric.Time = values["time"].(string)
-		if values[ms.NetMetLatency] != nil {
-			metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+		if values[met.NetMetLatency] != nil {
+			metric.Lat = met.JsonNumToInt32(values[met.NetMetLatency].(json.Number))
 		}
-		if values[ms.NetMetULThroughput] != nil {
-			metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+		if values[met.NetMetULThroughput] != nil {
+			metric.Ul = met.JsonNumToFloat64(values[met.NetMetULThroughput].(json.Number))
 		}
-		if values[ms.NetMetDLThroughput] != nil {
-			metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+		if values[met.NetMetDLThroughput] != nil {
+			metric.Dl = met.JsonNumToFloat64(values[met.NetMetDLThroughput].(json.Number))
 		}
-		if values[ms.NetMetULPktLoss] != nil {
-			metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+		if values[met.NetMetULPktLoss] != nil {
+			metric.Ulos = met.JsonNumToFloat64(values[met.NetMetULPktLoss].(json.Number))
 		}
-		if values[ms.NetMetDLPktLoss] != nil {
-			metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+		if values[met.NetMetDLPktLoss] != nil {
+			metric.Dlos = met.JsonNumToFloat64(values[met.NetMetDLPktLoss].(json.Number))
 		}
 	}
 
@@ -720,11 +716,15 @@ func sendEventNotification(notifyUrl string, ctx context.Context, subscriptionId
 		return
 	}
 
-	_, err = client.NotificationsApi.PostEventNotification(ctx, subscriptionId, notification)
+	startTime := time.Now()
+	resp, err := client.NotificationsApi.PostEventNotification(ctx, subscriptionId, notification)
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(SandboxName, ServiceName, notifEventMetrics, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(SandboxName, ServiceName, notifEventMetrics, notifyUrl, resp, duration)
 }
 
 func sendNetworkNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientv2.NetworkNotification) {
@@ -734,11 +734,15 @@ func sendNetworkNotification(notifyUrl string, ctx context.Context, subscription
 		return
 	}
 
-	_, err = client.NotificationsApi.PostNetworkNotification(ctx, subscriptionId, notification)
+	startTime := time.Now()
+	resp, err := client.NotificationsApi.PostNetworkNotification(ctx, subscriptionId, notification)
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(SandboxName, ServiceName, notifNetworkMetrics, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(SandboxName, ServiceName, notifNetworkMetrics, notifyUrl, resp, duration)
 }
 
 func processEventNotification(subsId string) {
@@ -766,8 +770,8 @@ func processEventNotification(subsId string) {
 			for index, values := range valuesArray {
 				metric := &response.Values[index]
 				metric.Time = values["time"].(string)
-				if values[ms.EvMetEvent] != nil {
-					if val, ok := values[ms.EvMetEvent].(string); ok {
+				if values[met.EvMetEvent] != nil {
+					if val, ok := values[met.EvMetEvent].(string); ok {
 						metric.Event = val
 					}
 				}
@@ -806,20 +810,20 @@ func processNetworkNotification(subsId string) {
 			for index, values := range valuesArray {
 				metric := &response.Values[index]
 				metric.Time = values["time"].(string)
-				if values[ms.NetMetLatency] != nil {
-					metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+				if values[met.NetMetLatency] != nil {
+					metric.Lat = met.JsonNumToInt32(values[met.NetMetLatency].(json.Number))
 				}
-				if values[ms.NetMetULThroughput] != nil {
-					metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+				if values[met.NetMetULThroughput] != nil {
+					metric.Ul = met.JsonNumToFloat64(values[met.NetMetULThroughput].(json.Number))
 				}
-				if values[ms.NetMetDLThroughput] != nil {
-					metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+				if values[met.NetMetDLThroughput] != nil {
+					metric.Dl = met.JsonNumToFloat64(values[met.NetMetDLThroughput].(json.Number))
 				}
-				if values[ms.NetMetULPktLoss] != nil {
-					metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+				if values[met.NetMetULPktLoss] != nil {
+					metric.Ulos = met.JsonNumToFloat64(values[met.NetMetULPktLoss].(json.Number))
 				}
-				if values[ms.NetMetDLPktLoss] != nil {
-					metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+				if values[met.NetMetDLPktLoss] != nil {
+					metric.Dlos = met.JsonNumToFloat64(values[met.NetMetDLPktLoss].(json.Number))
 				}
 			}
 		}

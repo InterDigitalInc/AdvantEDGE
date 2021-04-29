@@ -129,18 +129,15 @@ Class | Method | HTTP request | Description
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**getScenario**](docs/ScenarioConfigurationApi.md#getScenario) | **GET** /scenarios/{name} | Get a specific scenario
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**getScenarioList**](docs/ScenarioConfigurationApi.md#getScenarioList) | **GET** /scenarios | Get all scenarios
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**setScenario**](docs/ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update a scenario
-*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**authorize**](docs/UserAuthenticationApi.md#authorize) | **GET** /authorize | OAuth authorization response endpoint
-*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginOAuth**](docs/UserAuthenticationApi.md#loginOAuth) | **GET** /login | Initiate OAuth login procedure
-*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginUser**](docs/UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
-*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**logoutUser**](docs/UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
-*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**triggerWatchdog**](docs/UserAuthenticationApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog
 
 
 ## Documentation for Models
 
  - [AdvantEdgePlatformControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.ConnectivityConfig](docs/ConnectivityConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CpuConfig](docs/CpuConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.DNConfig](docs/DNConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgePlatformControllerRestApi.Domain](docs/Domain.md)
  - [AdvantEdgePlatformControllerRestApi.EgressService](docs/EgressService.md)

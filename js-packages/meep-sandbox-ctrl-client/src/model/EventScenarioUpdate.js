@@ -53,7 +53,7 @@
 
   /**
    * Constructs a new <code>EventScenarioUpdate</code>.
-   * Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided node. <p>Supported Actions: <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored. <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
+   * Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided node. <p>Supported Actions: <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored. <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only PhysicalLocation & Process network elements.
    * @alias module:model/EventScenarioUpdate
    * @class
    */

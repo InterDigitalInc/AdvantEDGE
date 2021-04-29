@@ -16,6 +16,14 @@
 
 export const HOST_PATH = location.origin;
 
+// Sign In Status
+export const STATUS_SIGNIN_NOT_SUPPORTED = 'SIGNED-NOT-SUPPORTED';
+export const STATUS_SIGNED_IN = 'SIGNED-IN';
+export const STATUS_SIGNING_IN = 'SIGNING-IN';
+export const STATUS_SIGNED_OUT = 'SIGNED-OUT';
+export const OAUTH_PROVIDER_GITHUB = 'github';
+export const OAUTH_PROVIDER_GITLAB = 'gitlab';
+
 // MEEP types
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
@@ -24,18 +32,32 @@ export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
 export const PAGE_EXECUTE = 'PAGE_EXECUTE';
 export const PAGE_MONITOR = 'PAGE_MONITOR';
 export const PAGE_SETTINGS = 'PAGE_SETTINGS';
+export const PAGE_HOME = 'PAGE_HOME';
 
-// Help URLs
-export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/configuration-view';
-export const MEEP_HELP_PAGE_EXEC_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/execution-view';
-export const MEEP_HELP_PAGE_MON_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/monitoring-view';
-export const MEEP_HELP_PAGE_SET_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/settings-view';
+// Page tab index
+export const PAGE_HOME_INDEX = 0;
+export const PAGE_CONFIGURE_INDEX = 1;
+export const PAGE_EXECUTE_INDEX = 2;
+export const PAGE_MONITOR_INDEX = 3;
+export const PAGE_SETTINGS_INDEX = 4;
+
+// URLs
+export const MEEP_HELP_GUI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-gui-overview';
+export const MEEP_ARCHITECTURE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-architecture';
+export const MEEP_USAGE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-workflow';
+export const MEEP_WIKI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
+export const MEEP_GITHUB_URL = 'https://github.com/InterDigitalInc/AdvantEDGE';
+export const MEEP_DISCUSSIONS_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/discussions';
+export const MEEP_LICENSE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE';
+export const MEEP_CONTRIBUTING_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md';
+export const MEEP_ISSUES_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/issues';
 
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
 export const MEEP_TAB_MON = 'meep-tab-mon';
 export const MEEP_TAB_SET = 'meep-tab-set';
+export const MEEP_TAB_HOME = 'meep-tab-home';
 export const MEEP_LBL_SCENARIO_NAME = 'meep-lbl-scenario-name';
 export const MEEP_BTN_CANCEL = 'meep-btn-cancel';
 export const MEEP_BTN_APPLY = 'meep-btn-apply';
@@ -56,12 +78,14 @@ export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
 export const MEEP_DLG_INVALID_SCENARIO = 'meep-dlg-invalid-scenario';
 export const MEEP_DLG_EXPORT_SCENARIO = 'meep-dlg-export-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO = 'meep-dlg-deploy-scenario';
-export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
-  'meep-dlg-deploy-scenario-select';
+export const MEEP_DLG_DEPLOY_SCENARIO_SELECT = 'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
 // Dialog Types
+// HOME
+export const IDC_DIALOG_SIGN_IN = 'IDC_DIALOG_SIGN_IN';
+export const IDC_DIALOG_SESSION_TERMINATED = 'IDC_DIALOG_SESSION_TERMINATED';
 // CFG
 export const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
 export const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
@@ -140,6 +164,10 @@ export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
 export const CFG_ELEM_CHART_ALT_VAL = 'cfg-elem-chart-alt-val';
 export const CFG_ELEM_CONNECTED = 'cfg-elem-connected';
+export const CFG_ELEM_CONNECTIVITY_MODEL = 'cfg-elem-connectivity-model';
+export const CFG_ELEM_DN_NAME = 'cfg-elem-dn-name';
+export const CFG_ELEM_DN_LADN_CHECK = 'cfg-elem-dn-ladn-check';
+export const CFG_ELEM_DN_ECSP = 'cfg-elem-dn-ecsp';
 export const CFG_ELEM_WIRELESS = 'cfg-elem-wireless';
 export const CFG_ELEM_WIRELESS_TYPE = 'cfg-elem-wireless-type';
 export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
@@ -190,6 +218,15 @@ export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
 export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
 
+export const EXEC_EVT_SU_ACTION = 'exec-evt-su-action';
+export const EXEC_EVT_SU_REMOVE_ELEM_TYPE = 'exec-evt-su-remove-elem-type';
+export const EXEC_EVT_SU_REMOVE_ELEM_NAME = 'exec-evt-su-remove-elem-name';
+
+export const EXEC_EVT_PDU_SESSION_ACTION = 'exec-evt-pdu-session-action';
+export const EXEC_EVT_PDU_SESSION_UE = 'exec-evt-pdu-session-ue';
+export const EXEC_EVT_PDU_SESSION_ID = 'exec-evt-pdu-session-id';
+export const EXEC_EVT_PDU_SESSION_DNN = 'exec-evt-pdu-session-dnn';
+
 export const MEEP_EVENT_COUNT = 'meep-event-count';
 
 // Trivia
@@ -230,9 +267,9 @@ export const ELEMENT_TYPE_DC = 'DISTANT CLOUD';
 export const ELEMENT_TYPE_CN = 'CORE NETWORK';
 export const ELEMENT_TYPE_EDGE = 'EDGE';
 export const ELEMENT_TYPE_FOG = 'FOG';
-export const ELEMENT_TYPE_UE = 'UE';
+export const ELEMENT_TYPE_UE = 'TERMINAL';
 export const ELEMENT_TYPE_MECSVC = 'MEC SERVICE';
-export const ELEMENT_TYPE_UE_APP = 'UE APPLICATION';
+export const ELEMENT_TYPE_UE_APP = 'TERMINAL APPLICATION';
 export const ELEMENT_TYPE_EDGE_APP = 'EDGE APPLICATION';
 export const ELEMENT_TYPE_CLOUD_APP = 'CLOUD APPLICATION';
 
@@ -275,6 +312,11 @@ export const OPT_CONNECTED = {label: 'Connected', value: true};
 export const OPT_DISCONNECTED = {label: 'Disconnected', value: false};
 export const OPT_WIRELESS = {label: 'Wireless', value: true};
 export const OPT_WIRED = {label: 'Wired', value: false};
+
+// Connectivity Models
+export const CONNECTIVITY_MODEL_OPEN = 'OPEN';
+export const CONNECTIVITY_MODEL_PDU = 'PDU';
+export const DEFAULT_CONNECTIVITY_MODEL = CONNECTIVITY_MODEL_OPEN;
 
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';
@@ -321,8 +363,19 @@ export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const DEST_DISCONNECTED = 'DISCONNECTED';
+
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+export const SCENARIO_UPDATE_EVENT = 'SCENARIO-UPDATE';
+export const PDU_SESSION_EVENT = 'PDU-SESSION';
+
+export const SCENARIO_UPDATE_ACTION_NONE = 'NONE';
+export const SCENARIO_UPDATE_ACTION_ADD = 'ADD';
+export const SCENARIO_UPDATE_ACTION_REMOVE = 'REMOVE';
+export const SCENARIO_UPDATE_ACTION_MODIFY = 'MODIFY';
+
+export const PDU_SESSION_ACTION_ADD = 'ADD';
+export const PDU_SESSION_ACTION_REMOVE = 'REMOVE';
 
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [
@@ -345,5 +398,13 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   {
     label: 'Http REST API Single Detailed Log',
     value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light'
+  },
+  {
+    label: 'Platform Metrics',
+    value: HOST_PATH + '/grafana/d/platform-advantedge/platform-advantedge?orgId=1&refresh=15s&kiosk=tv&theme=light'
+  },
+  {
+    label: 'Runtime Environment Metrics (Node)',
+    value: HOST_PATH + '/grafana/d/runtime-environment-node/runtime-environment-node?orgId=1&refresh=15s&kiosk=tv&theme=light'
   }
 ];

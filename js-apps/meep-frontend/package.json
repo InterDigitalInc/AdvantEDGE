@@ -8,7 +8,7 @@
     "test:verbose": "jest --verbose true",
     "test:coverage": "jest --verbose true --coverage --colors",
     "build": "webpack",
-    "build:dev": "webpack-dev-server --https true --port 8092 --host 10.3.16.105 --env.MEEP_HOST=10.3.16.105"
+    "build:dev": "webpack-dev-server --https true --port 8092 --host 10.190.114.150 --env.MEEP_HOST=10.190.114.150"
   },
   "author": "",
   "license": "ISC",
@@ -53,7 +53,7 @@
     "lodash": "^4.17.11",
     "mapbox-gl": "1.10.1",
     "mapbox-gl-leaflet": "0.0.12",
-    "material-components-web": "0.38.1",
+    "material-components-web": "0.41.1",
     "material-design-icons": "3.0.1",
     "prop-types": "15.6.2",
     "react": "^16.8.6",
@@ -72,7 +72,8 @@
     "reselect": "^4.0.0",
     "rmwc": "^4.0.1",
     "tinycolor2": "^1.4.1",
-    "vis": "4.21.0",
+    "vis-data": "^7.1.2",
+    "vis-network": "^9.0.4",
     "warning": "^4.0.1",
     "yamljs": "0.3.0"
   },

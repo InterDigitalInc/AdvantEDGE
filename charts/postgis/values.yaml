@@ -499,7 +499,7 @@ readinessProbe:
 ## Configure metrics exporter
 ##
 metrics:
-  enabled: false
+  enabled: true
   # resources: {}
   service:
     type: ClusterIP
@@ -508,7 +508,7 @@ metrics:
       prometheus.io/port: "9187"
     loadBalancerIP:
   serviceMonitor:
-    enabled: false
+    enabled: true
     additionalLabels: {}
     # namespace: monitoring
     # interval: 30s

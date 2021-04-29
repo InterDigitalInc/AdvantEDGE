@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -33,12 +34,12 @@ import (
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	pss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Scenario struct {
@@ -46,26 +47,30 @@ type Scenario struct {
 }
 
 type SandboxCtrl struct {
-	sandboxName   string
-	mqGlobal      *mq.MsgQueue
-	mqLocal       *mq.MsgQueue
-	scenarioStore *couch.Connector
-	replayStore   *couch.Connector
-	modelCfg      mod.ModelCfg
-	activeModel   *mod.Model
-	metricStore   *ms.MetricStore
-	replayMgr     *replay.ReplayMgr
-	sandboxStore  *ss.SandboxStore
-	sessionMgr    *sm.SessionMgr
+	sandboxName     string
+	mqGlobal        *mq.MsgQueue
+	mqLocal         *mq.MsgQueue
+	scenarioStore   *couch.Connector
+	replayStore     *couch.Connector
+	modelCfg        mod.ModelCfg
+	activeModel     *mod.Model
+	metricStore     *met.MetricStore
+	replayMgr       *replay.ReplayMgr
+	pduSessionStore *pss.PduSessionStore
+	sandboxStore    *ss.SandboxStore
 }
 
 const scenarioDBName = "scenarios"
 const replayDBName = "replays"
 const moduleName = "meep-sandbox-ctrl"
+const serviceName = "Sandbox Controller"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
 const fieldScenarioName = "scenario-name"
+const fieldEventType = "event-type"
+const fieldNodeName = "node-name"
+const fieldPduSessionId = "pdu-id"
 
 // Event types
 const (
@@ -73,6 +78,12 @@ const (
 	eventTypeNetCharUpdate  = "NETWORK-CHARACTERISTICS-UPDATE"
 	eventTypePoasInRange    = "POAS-IN-RANGE"
 	eventTypeScenarioUpdate = "SCENARIO-UPDATE"
+	eventTypePduSession     = "PDU-SESSION"
+)
+
+const (
+	PduSessionAdd    string = "ADD"
+	PduSessionRemove string = "REMOVE"
 )
 
 // Declare as variables to enable overwrite in test
@@ -146,7 +157,7 @@ func Init() (err error) {
 	log.Info("Connected to Replay DB")
 
 	// Connect to Metric Store
-	sbxCtrl.metricStore, err = ms.NewMetricStore("", sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
+	sbxCtrl.metricStore, err = met.NewMetricStore("", sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -159,6 +170,14 @@ func Init() (err error) {
 		return err
 	}
 
+	// Connect to PDU Session Store
+	sbxCtrl.pduSessionStore, err = pss.NewPduSessionStore(sbxCtrl.sandboxName, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to PDU Session Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to PDU Session Store")
+
 	// Connect to Sandbox Store
 	sbxCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
 	if err != nil {
@@ -166,14 +185,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
-
-	// Connect to Session Manager
-	sbxCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, sbxCtrl.sandboxName, redisDBAddr, redisDBAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	return nil
 }
@@ -412,6 +423,191 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(scenario))
 }
 
+func getNodeFilterFromQueryParams(query url.Values) mod.NodeFilter {
+
+	//Retrieve query parameters and populate filter
+	var filter mod.NodeFilter
+	minimizeStr := query.Get("minimize")
+	if minimizeStr == "true" {
+		filter.Minimize = true
+	} else {
+		filter.Minimize = false
+	}
+	childrenStr := query.Get("excludeChildren")
+	if childrenStr == "true" {
+		filter.ExcludeChildren = true
+	} else {
+		filter.ExcludeChildren = false
+	}
+
+	filter.DomainName = query.Get("domain")
+	filter.DomainType = query.Get("domainType")
+	filter.ZoneName = query.Get("zone")
+	filter.NetworkLocationName = query.Get("networkLocation")
+	filter.NetworkLocationType = query.Get("networkLocationType")
+	filter.PhysicalLocationName = query.Get("physicalLocation")
+	filter.PhysicalLocationType = query.Get("physicalLocationType")
+	filter.ProcessName = query.Get("process")
+	filter.ProcessType = query.Get("processType")
+
+	return filter
+}
+
+// Retrieves the active scenario domains
+// GET /active/domains
+func ceGetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceGetActiveScenarioDomain")
+
+	// Make sure scenario is active
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	// Get filters from query params
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
+
+	// Get domains
+	domains := sbxCtrl.activeModel.GetDomains(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(domains)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+// Retrieves the active scenario domains
+// GET /active/zones
+func ceGetActiveScenarioZone(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceGetActiveScenarioZone")
+
+	// Make sure scenario is active
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	// Get filters from query params
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
+
+	// Get zones
+	zones := sbxCtrl.activeModel.GetZones(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(zones)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+// Retrieves the active scenario domains
+// GET /active/networkLocations
+func ceGetActiveScenarioNetworkLocation(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceGetActiveScenarioNetworkLocation")
+
+	// Make sure scenario is active
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	// Get filters from query params
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
+
+	// Get network locations
+	networkLocations := sbxCtrl.activeModel.GetNetworkLocations(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(networkLocations)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+// Retrieves the active scenario domains
+// GET /active/physicalLocations
+func ceGetActiveScenarioPhysicalLocation(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceGetActiveScenarioPhysicalLocation")
+
+	// Make sure scenario is active
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	// Get filters from query params
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
+
+	// Get physical locations
+	physicalLocations := sbxCtrl.activeModel.GetPhysicalLocations(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(physicalLocations)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+// Retrieves the active scenario domains
+// GET /active/processes
+func ceGetActiveScenarioProcess(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceGetActiveScenarioProcess")
+
+	// Make sure scenario is active
+	if sbxCtrl.activeModel == nil || !sbxCtrl.activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	// Get filters from query params
+	filter := getNodeFilterFromQueryParams(r.URL.Query())
+
+	// Get processes
+	processes := sbxCtrl.activeModel.GetProcesses(&filter)
+
+	// Format response
+	jsonResponse, err := json.Marshal(processes)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
 // Retrieves service maps of the active scenario
 // GET /active/serviceMaps
 // NOTE: query parameters 'node', 'type' and 'service' may be specified to filter results
@@ -525,12 +721,15 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	// Send Terminate message to Virt Engine on Global Message Queue
 	msg = sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
-	msg.Payload[fieldScenarioName] = ""
+	msg.Payload[fieldScenarioName] = sbxCtrl.activeModel.GetScenarioName()
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = sbxCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+
+	// Delete all PDU sessions
+	sbxCtrl.pduSessionStore.DeleteAllPduSessions()
 
 	// Use new model instance
 	sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
@@ -599,6 +798,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		err, httpStatus, description = sendEventPoasInRange(event)
 	case eventTypeScenarioUpdate:
 		err, httpStatus, description = sendEventScenarioUpdate(event)
+	case eventTypePduSession:
+		err, httpStatus, description = sendEventPduSession(event)
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
@@ -613,7 +814,7 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	// Log successful event in metric store
 	eventJSONStr, err := json.Marshal(event)
 	if err == nil {
-		var metric ms.EventMetric
+		var metric met.EventMetric
 		metric.Event = string(eventJSONStr)
 		metric.Description = description
 		err = sbxCtrl.metricStore.SetEventMetric(eventType, metric)
@@ -643,7 +844,7 @@ func sendEventNetworkCharacteristics(event dataModel.Event) (error, int, string)
 		"throughputUl=" + strconv.Itoa(int(netCharEvent.NetChar.ThroughputUl)) + "Mbps " +
 		"packet-loss=" + strconv.FormatFloat(netCharEvent.NetChar.PacketLoss, 'f', -1, 64) + "% "
 
-	err := sbxCtrl.activeModel.UpdateNetChar(netCharEvent)
+	err := sbxCtrl.activeModel.UpdateNetChar(netCharEvent, nil)
 	if err != nil {
 		return err, http.StatusInternalServerError, ""
 	}
@@ -660,7 +861,7 @@ func sendEventMobility(event dataModel.Event) (error, int, string) {
 	destName := event.EventMobility.Dest
 	description := "[" + elemName + "] move to " + destName
 
-	oldNL, newNL, err := sbxCtrl.activeModel.MoveNode(elemName, destName)
+	oldNL, newNL, err := sbxCtrl.activeModel.MoveNode(elemName, destName, nil)
 	if err != nil {
 		return err, http.StatusInternalServerError, ""
 	}
@@ -681,7 +882,6 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 		err := errors.New("Malformed request: missing EventPoasInRange")
 		return err, http.StatusBadRequest, ""
 	}
-	var ue *dataModel.PhysicalLocation
 
 	// Retrieve UE name
 	ueName := event.EventPoasInRange.Ue
@@ -692,41 +892,9 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 
 	description := "[" + ueName + "] poas in range: " + strings.Join(poasInRange, ", ")
 
-	// Find UE
-	log.Debug("Searching for UE in active scenario")
-	n := sbxCtrl.activeModel.GetNode(ueName)
-	if n == nil {
-		err := errors.New("Node not found " + ueName)
-		return err, http.StatusNotFound, ""
-	}
-	ue, ok := n.(*dataModel.PhysicalLocation)
-	if !ok {
-		ue = nil
-	} else if ue.Type_ != "UE" {
-		ue = nil
-	}
-
-	// Update POAS in range if necessary
-	if ue != nil {
-		log.Debug("UE Found. Checking for update to visible POAs")
-
-		// Compare new list of poas with current UE list and update if necessary
-		if !equal(poasInRange, ue.NetworkLocationsInRange) {
-			log.Debug("Updating POAs in range for UE: " + ue.Name)
-			ue.NetworkLocationsInRange = poasInRange
-
-			//Publish updated scenario
-			err := sbxCtrl.activeModel.Activate()
-			if err != nil {
-				return err, http.StatusInternalServerError, ""
-			}
-
-			log.Debug("Active scenario updated")
-		} else {
-			log.Debug("POA list unchanged. Ignoring.")
-		}
-	} else {
-		err := errors.New("Failed to find UE")
+	// Update active model
+	err := sbxCtrl.activeModel.UpdatePoasInRange(ueName, poasInRange, nil)
+	if err != nil {
 		return err, http.StatusNotFound, ""
 	}
 	return nil, -1, description
@@ -746,21 +914,26 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 		return err, http.StatusBadRequest, ""
 	}
 
+	// Get node name
+	nodeName := getScenarioNodeName(event.EventScenarioUpdate.Node)
+
 	// Perform necessary action on scenario
 	switch event.EventScenarioUpdate.Action {
 	case mod.ScenarioAdd:
-		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node)
+		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
-
-			description = "Added node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+			description = "Added node [" + nodeName + "]"
 		}
-
+	case mod.ScenarioModify:
+		err = sbxCtrl.activeModel.ModifyScenarioNode(event.EventScenarioUpdate.Node, nodeName)
+		if err == nil {
+			description = "Modified node [" + nodeName + "]"
+		}
 	case mod.ScenarioRemove:
-		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node)
+		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
-			description = "Removed node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+			description = "Removed node [" + nodeName + "]"
 		}
-
 	default:
 		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
 	}
@@ -771,30 +944,58 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 	return nil, -1, description
 }
 
+// sendEventPduSession - Process a PDU Session event
+func sendEventPduSession(event dataModel.Event) (error, int, string) {
+	var err error
+	var code int
+	var description string
+
+	// Validate request
+	if event.EventPduSession == nil {
+		err = errors.New("Malformed request: missing EventPduSession")
+		return err, http.StatusBadRequest, ""
+	}
+	pduSession := event.EventPduSession.PduSession
+	if pduSession == nil {
+		err = errors.New("Malformed request: missing PduSession")
+		return err, http.StatusBadRequest, ""
+	}
+
+	// Perform necessary action on scenario
+	switch event.EventPduSession.Action {
+	case PduSessionAdd:
+		code, err = createPduSession(pduSession.Ue, pduSession.Id, pduSession.Info)
+		if err == nil {
+			description = "Added PDU [" + pduSession.Id + ":" + pduSession.Info.Dnn + "] for [" + pduSession.Ue + "]"
+		}
+	case PduSessionRemove:
+		code, err = deletePduSession(pduSession.Ue, pduSession.Id)
+		if err == nil {
+			description = "Removed PDU [" + pduSession.Id + "] for [" + pduSession.Ue + "]"
+		}
+	default:
+		err = errors.New("Unsupported PDU Session action: " + event.EventPduSession.Action)
+		code = http.StatusInternalServerError
+	}
+
+	return err, code, description
+}
+
 // Retrieve element name from type-specific structure
 func getScenarioNodeName(node *dataModel.ScenarioNode) string {
 	name := ""
-	if node.Type_ == mod.NodeTypeUE {
+	if mod.IsPhyLoc(node.Type_) {
 		if node.NodeDataUnion != nil && node.NodeDataUnion.PhysicalLocation != nil {
 			pl := node.NodeDataUnion.PhysicalLocation
 			name = pl.Name
 		}
-	}
-	return name
-}
-
-// Equal tells whether a and b contain the same elements.
-// A nil argument is equivalent to an empty slice.
-func equal(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
+	} else if mod.IsProc(node.Type_) {
+		if node.NodeDataUnion != nil && node.NodeDataUnion.Process != nil {
+			proc := node.NodeDataUnion.Process
+			name = proc.Name
 		}
 	}
-	return true
+	return name
 }
 
 func ceCreateReplayFile(w http.ResponseWriter, r *http.Request) {
@@ -899,8 +1100,8 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var tmpMetricStore *ms.MetricStore
-	tmpMetricStore, err = ms.NewMetricStore(replayInfo.ScenarioName, sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
+	var tmpMetricStore *met.MetricStore
+	tmpMetricStore, err = met.NewMetricStore(replayInfo.ScenarioName, sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed creating tmp metricStore: ", err)
 		return
@@ -1126,10 +1327,180 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 }
 
-func activeScenarioUpdateCb() {
+func ceGetPduSessionList(w http.ResponseWriter, r *http.Request) {
+
+	// Retrieve query parameters
+	query := r.URL.Query()
+	ueName := query.Get("ue")
+	pduSessionId := query.Get("id")
+
+	// Get PDU Sessions
+	pduSessions, err := sbxCtrl.pduSessionStore.GetAllPduSessions()
+	if err != nil {
+		log.Error("Failed to get PDU sessions. Error: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Prepare PDU Session List
+	pduSessionList := new(dataModel.PduSessionList)
+	for name, session := range pduSessions {
+		// Filter based on UE name
+		if ueName == "" || ueName == name {
+			for id, info := range session {
+				// Filter based on PDU Session ID
+				if pduSessionId == "" || pduSessionId == id {
+					var pduSession dataModel.PduSession
+					pduSession.Ue = name
+					pduSession.Id = id
+					pduSession.Info = new(dataModel.PduSessionInfo)
+					pduSession.Info.Dnn = info.Dnn
+					pduSessionList.Sessions = append(pduSessionList.Sessions, pduSession)
+				}
+			}
+		}
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(*pduSessionList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func ceCreatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("PDU Session ID: ", pduSessionId)
+
+	// Retrieve PDU Session Info from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var pduSessionInfo dataModel.PduSessionInfo
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create PDU session
+	code, err := createPduSession(ueName, pduSessionId, &pduSessionInfo)
+	if err != nil {
+		http.Error(w, err.Error(), code)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Create PDU session
+func createPduSession(ueName string, pduSessionId string, pduSessionInfo *dataModel.PduSessionInfo) (code int, err error) {
+
+	// Create PDU session
+	err = sbxCtrl.pduSessionStore.CreatePduSession(ueName, pduSessionId, pduSessionInfo)
+	if err != nil {
+		log.Error(err.Error())
+		return http.StatusBadRequest, err
+	}
+
+	// Send message to inform other modules of created PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func ceTerminatePduSession(w http.ResponseWriter, r *http.Request) {
+
+	// Get UE name & PDU Session ID from request parameters
+	vars := mux.Vars(r)
+	ueName := vars["ueName"]
+	log.Debug("UE name: ", ueName)
+	pduSessionId := vars["pduSessionId"]
+	log.Debug("UE name: ", pduSessionId)
+
+	// Delete PDU session
+	code, err := deletePduSession(ueName, pduSessionId)
+	if err != nil {
+		http.Error(w, err.Error(), code)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Delete PDU session
+func deletePduSession(ueName string, pduSessionId string) (code int, err error) {
+
+	// Create PDU session
+	err = sbxCtrl.pduSessionStore.DeletePduSession(ueName, pduSessionId)
+	if err != nil {
+		log.Error(err.Error())
+		return http.StatusNotFound, err
+	}
+
+	// Send message to inform other modules of created PDU session
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgPduSessionCreated, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldNodeName] = ueName
+	msg.Payload[fieldPduSessionId] = pduSessionId
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func activeScenarioUpdateCb(eventType string, userData interface{}) {
+
+	// Check if update requires Virt Engine intervention
+	if eventType == mod.EventAddNode || eventType == mod.EventRemoveNode || eventType == mod.EventModifyNode {
+		// Send Update message to Virt Engine on Global Message Queue
+		msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, mq.TargetAll)
+		msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
+		msg.Payload[fieldEventType] = eventType
+		msg.Payload[fieldNodeName] = userData.(string)
+		log.Debug("TX MSG: ", mq.PrintMsg(msg))
+		err := sbxCtrl.mqGlobal.SendMsg(msg)
+		if err != nil {
+			log.Error("Failed to send message. Error: ", err.Error())
+		}
+	}
 
 	// Send Update message on local Message Queue
 	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, sbxCtrl.sandboxName)
+	msg.Payload[fieldEventType] = eventType
+	if eventType == mod.EventAddNode || eventType == mod.EventRemoveNode || eventType == mod.EventModifyNode {
+		msg.Payload[fieldNodeName] = userData.(string)
+	}
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err := sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {

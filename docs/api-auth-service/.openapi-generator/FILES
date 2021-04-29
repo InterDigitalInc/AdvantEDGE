@@ -1,0 +1,4 @@
+.openapi-generator-ignore
+Apis/AuthApi.md
+Models/Sandbox.md
+README.md

@@ -16,16 +16,16 @@
 
 import { updateObject } from '../../util/object-util';
 import {
-  PAGE_CONFIGURE,
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
   MOBILITY_EVENT,
-  CFG_VIEW_NETWORK
+  CFG_VIEW_NETWORK,
+  SCENARIO_UPDATE_ACTION_NONE,
+  PAGE_HOME
 } from '../../meep-constants';
 
 const initialState = {
-  page: PAGE_CONFIGURE,
-  mainDrawerOpen: true,
+  page: PAGE_HOME,
   cfgView: CFG_VIEW_NETWORK,
   mapCfg: {},
   eventCreationMode: false,
@@ -38,6 +38,10 @@ const initialState = {
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   mobilityEventTarget: '',
   mobilityEventDestination: '',
+  pduSessionEvent: {},
+  scenarioUpdateAction: SCENARIO_UPDATE_ACTION_NONE,
+  scenarioUpdateRemoveEleName: '',
+  scenarioUpdateRemoveEleType: '',
   devMode: false,
   currentDialog: '',
   automaticRefresh: false,
@@ -45,6 +49,7 @@ const initialState = {
   execShowApps: false,
   dashCfgMode: false,
   eventCfgMode: false,
+  eventStatus: '',
   dashboardView1: NET_TOPOLOGY_VIEW,
   dashboardView2: VIEW_NAME_NONE,
   sourceNodeSelected: '',
@@ -56,7 +61,11 @@ const initialState = {
   replayFileDesc: '',
   sandbox: '',
   sandboxes: [],
-  sandboxCfg: {}
+  sandboxCfg: {},
+  userMenuDisplay: false,
+  signInStatus: '',
+  signInUsername: '',
+  activeTabIndex: 0
 };
 
 // Change the current page
@@ -68,11 +77,12 @@ export function uiChangeCurrentPage(page) {
   };
 }
 
-const TOGGLE_MAIN_DRAWER = 'TOGGLE_MAIN_DRAWER';
-export function uiToggleMainDrawer() {
+// Change the current tab index
+const CHANGE_CURRENT_TAB = 'CHANGE_CURRENT_TAB';
+export function uiChangeCurrentTab(activeTabIndex) {
   return {
-    type: TOGGLE_MAIN_DRAWER,
-    payload: null
+    type: CHANGE_CURRENT_TAB,
+    payload: activeTabIndex
   };
 }
 
@@ -136,6 +146,38 @@ const UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION = 'UI_EXEC_CHANGE_MOBILITY_EVENT
 export function uiExecChangeMobilityEventDestination(event) {
   return {
     type: UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_PDU_SESSION_EVENT = 'UI_EXEC_CHANGE_PDU_SESSION_EVENT';
+export function uiExecChangePduSessionEvent(event) {
+  return {
+    type: UI_EXEC_CHANGE_PDU_SESSION_EVENT,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION = 'UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION';
+export function uiExecChangeScenarioUpdateAction(event) {
+  return {
+    type: UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION,
+    payload: event
+  };
+}
+
+const UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME = 'UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME';
+export function uiExecScenarioUpdateRemoveEleName(event) {
+  return {
+    type: UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME,
+    payload: event
+  };
+}
+
+const UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE = 'UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE';
+export function uiExecScenarioUpdateRemoveEleType(event) {
+  return {
+    type: UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE,
     payload: event
   };
 }
@@ -209,6 +251,14 @@ export function uiExecChangeEventCfgMode(val) {
   return {
     type: UI_EXEC_CHANGE_EVENT_CFG_MODE,
     payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_EVENT_STATUS = 'UI_EXEC_CHANGE_EVENT_STATUS';
+export function uiExecChangeEventStatus(status) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_STATUS,
+    payload: status
   };
 }
 
@@ -316,12 +366,37 @@ export const uiExecChangeReplayLoop = val => {
   };
 };
 
+// Change the help menu display
+const CHANGE_USER_MENU_DISPLAY = 'CHANGE_USER_MENU_DISPLAY';
+export function uiChangeUserMenuDisplay(display) {
+  return {
+    type: CHANGE_USER_MENU_DISPLAY,
+    payload: display
+  };
+}
+
+const UI_CHANGE_SIGN_IN_STATUS = 'UI_CHANGE_SIGN_IN_STATUS';
+export function uiChangeSignInStatus(status) {
+  return {
+    type: UI_CHANGE_SIGN_IN_STATUS,
+    payload: status
+  };
+}
+
+const UI_CHANGE_SIGN_IN_USER_NAME = 'UI_CHANGE_SIGN_IN_USER_NAME';
+export function uiChangeSignInUsername(name) {
+  return {
+    type: UI_CHANGE_SIGN_IN_USER_NAME,
+    payload: name
+  };
+}
+
 export default function uiReducer(state = initialState, action) {
   switch (action.type) {
   case CHANGE_CURRENT_PAGE:
     return updateObject(state, { page: action.payload });
-  case TOGGLE_MAIN_DRAWER:
-    return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
+  case CHANGE_CURRENT_TAB:
+    return updateObject(state, { activeTabIndex: action.payload });
   case UI_CFG_CHANGE_VIEW:
     return updateObject(state, { cfgView: action.payload });
   case UI_CFG_CHANGE_MAP_CFG:
@@ -338,6 +413,14 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { mobilityEventTarget: action.payload });
   case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
     return updateObject(state, { mobilityEventDestination: action.payload });
+  case UI_EXEC_CHANGE_PDU_SESSION_EVENT:
+    return updateObject(state, { pduSessionEvent: action.payload });
+  case UI_EXEC_CHANGE_SCENARIO_UPDATE_ACTION:
+    return updateObject(state, { scenarioUpdateAction: action.payload });
+  case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_NAME:
+    return updateObject(state, { scenarioUpdateRemoveEleName: action.payload });
+  case UI_EXEC_SCENARIO_UPDATE_REMOVE_ELE_TYPE:
+    return updateObject(state, { scenarioUpdateRemoveEleType: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:
@@ -360,6 +443,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { dashCfgMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_CFG_MODE:
     return updateObject(state, { eventCfgMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_STATUS:
+    return updateObject(state, { eventStatus: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:
@@ -382,6 +467,12 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { replayFileDesc: action.payload });
   case UI_EXEC_CHANGE_REPLAY_LOOP:
     return updateObject(state, { eventReplayLoop: action.payload });
+  case CHANGE_USER_MENU_DISPLAY:
+    return updateObject(state, { userMenuDisplay: action.payload });
+  case UI_CHANGE_SIGN_IN_STATUS:
+    return updateObject(state, { signInStatus: action.payload });
+  case UI_CHANGE_SIGN_IN_USER_NAME:
+    return updateObject(state, { signInUsername: action.payload });
   default:
     return state;
   }

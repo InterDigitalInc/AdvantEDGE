@@ -28,7 +28,7 @@ import (
 	"testing"
 	"time"
 
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -6280,7 +6280,7 @@ func TestExpiryNotification(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	fmt.Println("Create valid Metric Store to get logs from")
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create store")
 	}
@@ -6369,7 +6369,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -6671,7 +6671,7 @@ func updateScenario(testUpdate string) {
 		elemName := "10.10.0.2"
 		destName := "w10"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}
@@ -6686,7 +6686,7 @@ func updateScenario(testUpdate string) {
 		elemName := "10.10.0.2"
 		destName := "w11"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}
@@ -6701,7 +6701,7 @@ func updateScenario(testUpdate string) {
 		elemName := "10.10.0.2"
 		destName := "4g-macro-cell-10"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}

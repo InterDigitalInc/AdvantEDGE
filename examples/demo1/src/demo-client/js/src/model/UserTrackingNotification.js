@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/UserEventType', 'model/UserInfo'], factory);
+    define(['ApiClient', 'model/TimeStamp', 'model/UserEventType', 'model/UserInfo'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./UserEventType'), require('./UserInfo'));
+    module.exports = factory(require('../ApiClient'), require('./TimeStamp'), require('./UserEventType'), require('./UserInfo'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepDemoAppApi) {
       root.MeepDemoAppApi = {};
     }
-    root.MeepDemoAppApi.UserTrackingNotification = factory(root.MeepDemoAppApi.ApiClient, root.MeepDemoAppApi.UserEventType, root.MeepDemoAppApi.UserInfo);
+    root.MeepDemoAppApi.UserTrackingNotification = factory(root.MeepDemoAppApi.ApiClient, root.MeepDemoAppApi.TimeStamp, root.MeepDemoAppApi.UserEventType, root.MeepDemoAppApi.UserInfo);
   }
-}(this, function(ApiClient, UserEventType, UserInfo) {
+}(this, function(ApiClient, TimeStamp, UserEventType, UserInfo) {
   'use strict';
 
   /**
@@ -57,7 +57,7 @@
    * @class
    * @param callbackData {String} CallBackData if passed by the application during the associated Subscription (Zone or User Tracking) operation
    * @param userInfo {module:model/UserInfo} 
-   * @param timeStamp {Date} Indicates the time of day for zonal presence notification.
+   * @param timeStamp {module:model/TimeStamp} 
    */
   var exports = function(callbackData, userInfo, timeStamp) {
     this.callbackData = callbackData;
@@ -80,7 +80,7 @@
       if (data.hasOwnProperty('userInfo'))
         obj.userInfo = UserInfo.constructFromObject(data['userInfo']);
       if (data.hasOwnProperty('timeStamp'))
-        obj.timeStamp = ApiClient.convertToType(data['timeStamp'], 'Date');
+        obj.timeStamp = TimeStamp.constructFromObject(data['timeStamp']);
       if (data.hasOwnProperty('userEventType'))
         obj.userEventType = UserEventType.constructFromObject(data['userEventType']);
     }
@@ -99,8 +99,7 @@
   exports.prototype.userInfo = undefined;
 
   /**
-   * Indicates the time of day for zonal presence notification.
-   * @member {Date} timeStamp
+   * @member {module:model/TimeStamp} timeStamp
    */
   exports.prototype.timeStamp = undefined;
 

@@ -116,7 +116,37 @@
      * value: "UE"
      * @const
      */
-    UE: "UE"
+    UE: "UE",
+
+    /**
+     * value: "FOG"
+     * @const
+     */
+    FOG: "FOG",
+
+    /**
+     * value: "EDGE"
+     * @const
+     */
+    EDGE: "EDGE",
+
+    /**
+     * value: "UE-APP"
+     * @const
+     */
+    UE_APP: "UE-APP",
+
+    /**
+     * value: "EDGE-APP"
+     * @const
+     */
+    EDGE_APP: "EDGE-APP",
+
+    /**
+     * value: "CLOUD-APP"
+     * @const
+     */
+    CLOUD_APP: "CLOUD-APP"
   };
 
   return exports;

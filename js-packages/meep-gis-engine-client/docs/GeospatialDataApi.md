@@ -1,6 +1,6 @@
 # AdvantEdgeGisEngineRestApi.GeospatialDataApi
 
-All URIs are relative to *https://localhost/gis/v1*
+All URIs are relative to *https://localhost/sandboxname/gis/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

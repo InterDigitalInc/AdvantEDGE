@@ -1,4 +1,4 @@
-version: 1.6.0
+version: 1.7.0
 name: demo1
 deployment:
     netChar:
@@ -9,6 +9,8 @@ deployment:
         throughputUl: 1000
         throughput: null
         packetLoss: null
+    connectivity:
+        model: OPEN
     domains:
         -
             id: PUBLIC
@@ -71,11 +73,11 @@ deployment:
                                                         externalPort: null
                                                 meSvcName: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -110,11 +112,11 @@ deployment:
                                                         externalPort: null
                                                 meSvcName: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -136,11 +138,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -148,6 +150,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -299,11 +302,11 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -338,11 +341,11 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -364,11 +367,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -376,6 +379,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -429,11 +433,11 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -468,11 +472,11 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -494,11 +498,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -506,6 +510,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -528,11 +533,11 @@ deployment:
                                             commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -554,17 +559,18 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -608,11 +614,11 @@ deployment:
                                                         protocol: UDP
                                                 egressServiceMap: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             image: null
@@ -635,17 +641,18 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -750,11 +757,11 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -789,11 +796,11 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -815,11 +822,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -827,6 +834,7 @@ deployment:
                                     networkLocationsInRange: null
                                     wireless: null
                                     wirelessType: null
+                                    dataNetwork: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null

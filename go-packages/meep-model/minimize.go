@@ -21,42 +21,45 @@ import (
 )
 
 // minimizeScenario - Minimizes scenario
-func minimizeScenario(scenario *dataModel.Scenario) error {
-	if scenario != nil {
-		if scenario.Deployment != nil {
-			deployment := scenario.Deployment
-
-			// Domains
-			for iDomain := range deployment.Domains {
-				domain := &deployment.Domains[iDomain]
-
-				// Zones
-				for iZone := range domain.Zones {
-					zone := &domain.Zones[iZone]
-
-					// Network Locations
-					for iNL := range zone.NetworkLocations {
-						nl := &zone.NetworkLocations[iNL]
-
-						// Remove geodata
-						nl.GeoData = nil
-
-						// Physical Locations
-						for iPL := range nl.PhysicalLocations {
-							pl := &nl.PhysicalLocations[iPL]
-
-							// Remove geodata
-							pl.GeoData = nil
-
-							// // Processes
-							// for iProc := range pl.Processes {
-							// 	proc := &pl.Processes[iProc]
-							// }
-						}
-					}
-				}
-			}
+func minimizeScenario(scenario *dataModel.Scenario) {
+	if scenario != nil && scenario.Deployment != nil {
+		deployment := scenario.Deployment
+		for i := range deployment.Domains {
+			domain := &deployment.Domains[i]
+			minimizeDomain(domain)
 		}
 	}
-	return nil
+}
+
+// minimizeDomain - Minimizes domain
+func minimizeDomain(domain *dataModel.Domain) {
+	for i := range domain.Zones {
+		zone := &domain.Zones[i]
+		minimizeZone(zone)
+	}
+}
+
+// minimizeZone - Minimizes zone
+func minimizeZone(zone *dataModel.Zone) {
+	for i := range zone.NetworkLocations {
+		nl := &zone.NetworkLocations[i]
+		minimizeNetLoc(nl)
+	}
+}
+
+// minimizeNetLoc - Minimizes network location
+func minimizeNetLoc(nl *dataModel.NetworkLocation) {
+	// Remove geodata
+	nl.GeoData = nil
+
+	for i := range nl.PhysicalLocations {
+		pl := &nl.PhysicalLocations[i]
+		minimizePhyLoc(pl)
+	}
+}
+
+// minimizePlyLoc - Minimizes physical location
+func minimizePhyLoc(pl *dataModel.PhysicalLocation) {
+	// Remove geodata
+	pl.GeoData = nil
 }

@@ -33,16 +33,16 @@ import (
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/mux"
 )
 
-const moduleName = "meep-loc-serv"
 const LocServBasePath = "/location/v2/"
-const locServKey string = "loc-serv:"
-const logModuleLocServ string = "meep-loc-serv"
+const locServKey = "loc-serv:"
+const logModuleLocServ = "meep-loc-serv"
+const serviceName = "Location Service"
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -50,6 +50,11 @@ const typeUser = "user"
 const typeZonalSubscription = "zonalsubs"
 const typeUserSubscription = "usersubs"
 const typeZoneStatusSubscription = "zonestatus"
+
+const (
+	notifZonalPresence = "ZonalPresenceNotification"
+	notifZoneStatus    = "ZoneStatusNotification"
+)
 
 type UeUserData struct {
 	queryZoneId  []string
@@ -99,7 +104,6 @@ var hostUrl *url.URL
 var sandboxName string
 var basePath string
 var baseKey string
-var sessionMgr *sm.SessionMgr
 var mutex sync.Mutex
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
@@ -146,14 +150,6 @@ func Init() (err error) {
 	}
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB, location service table")
-
-	// Connect to Session Manager
-	sessionMgr, err = sm.NewSessionMgr(moduleName, sandboxName, redisAddr, redisAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	userTrackingReInit()
 	zonalTrafficReInit()
@@ -449,35 +445,41 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 
 func sendZonalPresenceNotification(notifyUrl string, notification InlineZonalPresenceNotification) {
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifZonalPresence, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifZonalPresence, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
 func sendStatusNotification(notifyUrl string, notification InlineZoneStatusNotification) {
 	startTime := time.Now()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, nil, duration)
 		return
 	}
+	met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
@@ -593,6 +595,25 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	userData.queryApId = q["accessPointId"]
 	userData.queryAddress = q["address"]
 
+	validQueryParams := []string{"zoneId", "accessPointId", "address"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	// Get user list from DB
 	var response InlineUserList
 	var userList UserList
@@ -694,6 +715,25 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	q := u.Query()
 	userData.queryInterestRealm = q.Get("interestRealm")
 
+	validQueryParams := []string{"interestRealm"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	// Get user list from DB
 	var response InlineAccessPointList
 	var apList AccessPointList
@@ -701,6 +741,13 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	apList.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + vars["zoneId"] + "/accessPoints"
 	response.AccessPointList = &apList
 	userData.apList = &apList
+
+	//make sure the zone exists first
+	jsonZoneInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+vars["zoneId"], ".")
+	if jsonZoneInfo == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	keyName := baseKey + typeZone + ":" + vars["zoneId"] + ":*"
 	err := rc.ForEachJSONEntry(keyName, populateApList, &userData)
@@ -857,6 +904,12 @@ func populateApList(key string, jsonInfo string, userData interface{}) error {
 func userTrackingSubDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	err := rc.JSONDelEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
@@ -1078,6 +1131,12 @@ func populateUserTrackingList(key string, jsonInfo string, userData interface{})
 func zonalTrafficSubDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	err := rc.JSONDelEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
@@ -1310,6 +1369,12 @@ func populateZonalTrafficList(key string, jsonInfo string, userData interface{})
 func zoneStatusSubDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	err := rc.JSONDelEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
@@ -1583,6 +1648,12 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 	userInfo.ZoneId = zoneId
 	userInfo.AccessPointId = accessPointId
 
+	seconds := time.Now().Unix()
+	var timeStamp TimeStamp
+	timeStamp.Seconds = int32(seconds)
+
+	userInfo.Timestamp = &timeStamp
+
 	// Update position
 	if longitude == nil || latitude == nil {
 		userInfo.LocationInfo = nil
@@ -1596,10 +1667,6 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 		userInfo.LocationInfo.Longitude = append(userInfo.LocationInfo.Longitude, *longitude)
 		userInfo.LocationInfo.Latitude = nil
 		userInfo.LocationInfo.Latitude = append(userInfo.LocationInfo.Latitude, *latitude)
-
-		seconds := time.Now().Unix()
-		var timeStamp TimeStamp
-		timeStamp.Seconds = int32(seconds)
 
 		userInfo.LocationInfo.Timestamp = &timeStamp
 	}

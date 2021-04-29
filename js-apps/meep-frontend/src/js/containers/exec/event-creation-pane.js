@@ -19,18 +19,18 @@ import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
-import { updateObject } from '../../util/object-util';
+import { updateObject } from '@/js/util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
+import ScenarioUpdateEventPane from './scenario-update-event-pane';
+import PduSessionEventPane from './pdu-session-event-pane';
 
 import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
 
-import { uiExecChangeCurrentEvent } from '../../state/ui';
-
 import {
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
-} from '../../meep-constants';
+  uiExecChangeCurrentEvent,
+  uiExecChangeEventStatus
+} from '@/js/state/ui';
 
 import {
   execChangeSelectedScenarioElement,
@@ -42,10 +42,18 @@ import {
   execEdgeApps,
   execFogs,
   execFogEdges,
-  execZones
-} from '../../state/exec';
+  execZones,
+  execDNs
+} from '@/js/state/exec';
 
-import { EXEC_EVT_TYPE, PAGE_EXECUTE } from '../../meep-constants';
+import {
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT,
+  SCENARIO_UPDATE_EVENT,
+  PDU_SESSION_EVENT,
+  EXEC_EVT_TYPE,
+  PAGE_EXECUTE
+} from '@/js/meep-constants';
 
 const EventTypeSelect = props => {
   return (
@@ -100,6 +108,26 @@ const EventCreationFields = props => {
         networkElements={props.networkElements}
       />
     );
+  case SCENARIO_UPDATE_EVENT:
+    return (
+      <ScenarioUpdateEventPane
+        currentEvent={props.currentEvent}
+        onSuccess={props.onSuccess}
+        onClose={props.onClose}
+        api={props.api}
+      />
+    );
+  case PDU_SESSION_EVENT:
+    return (
+      <PduSessionEventPane
+        currentEvent={props.currentEvent}
+        onSuccess={props.onSuccess}
+        onClose={props.onClose}
+        api={props.api}
+        UEs={props.UEs}
+        DNs={props.DNs}
+      />
+    );
   default:
     return <div></div>;
   }
@@ -109,11 +137,16 @@ class EventCreationPane extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-  }
 
+    if (!this.props.currentEvent) {
+      this.props.changeEvent('');
+    }
+  }
+  
   onEventPaneClose(e) {
     e.preventDefault();
     this.props.changeEvent('');
+    this.props.changeEventStatus('');
     this.props.onClose(e);
   }
 
@@ -131,6 +164,8 @@ class EventCreationPane extends Component {
     if (this.props.page !== PAGE_EXECUTE || this.props.hide) {
       return null;
     }
+    
+    const statusColor = (this.props.eventStatus && this.props.eventStatus.startsWith('[200]')) ? 'green' : 'red';
 
     return (
       <div style={{ padding: 10 }}>
@@ -141,6 +176,7 @@ class EventCreationPane extends Component {
           eventTypes={this.props.eventTypes}
           onChange={event => {
             this.props.changeEvent(event.target.value);
+            this.props.changeEventStatus('');
           }}
           value={this.props.currentEvent}
         />
@@ -161,6 +197,7 @@ class EventCreationPane extends Component {
           MobTypes={this.props.MobTypes}
           EdgeApps={this.props.EdgeApps}
           FogEdges={this.props.FogEdges}
+          DNs={this.props.DNs}
           table={this.props.table}
           networkElements={this.props.networkElements}
         />
@@ -174,6 +211,17 @@ class EventCreationPane extends Component {
             removeCyApply={true}
           />
         </div>
+
+        {
+          (this.props.eventStatus) ?
+          // <Grid style={{ marginTop: 20, border: '1px solid #e4e4e4' }}>
+            <Grid style={{ marginTop: 20 }}>
+              <GridCell span={12} style={{ padding: 5 }}>
+                <Typography use="body1">Status:</Typography>
+                <Typography use="body2" style={{ marginLeft: 5, color: statusColor}}>{this.props.eventStatus}</Typography>
+              </GridCell>
+            </Grid> : null
+        }
       </div>
     );
   }
@@ -184,7 +232,7 @@ const styles = {
     marginBottom: 20
   },
   field: {
-    marginBottom: 10
+    marginBottom: 20
   },
   select: {
     width: '100%'
@@ -201,11 +249,13 @@ const mapStateToProps = state => {
     EDGEs: execEdges(state),
     FOGs: execFogs(state),
     ZONEs: execZones(state),
+    DNs: execDNs(state),
     MobTypes: execMobTypes(state),
     EdgeApps: execEdgeApps(state),
     FogEdges: execFogEdges(state),
     table: state.exec.table,
-    networkElements: state.exec.table.entries
+    networkElements: state.exec.table.entries,
+    eventStatus: state.ui.eventStatus
   };
 };
 
@@ -214,7 +264,8 @@ const mapDispatchToProps = dispatch => {
     changeEvent: event => dispatch(uiExecChangeCurrentEvent(event)),
     changeSelectedScenarioElement: element =>
       dispatch(execChangeSelectedScenarioElement(element)),
-    resetSelectedScenarioElement: () => dispatch(execResetSelectedScenarioElement())
+    resetSelectedScenarioElement: () => dispatch(execResetSelectedScenarioElement()),
+    changeEventStatus: status => dispatch(uiExecChangeEventStatus(status))
   };
 };
 

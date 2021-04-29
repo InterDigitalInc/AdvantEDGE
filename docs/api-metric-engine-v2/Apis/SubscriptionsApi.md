@@ -1,6 +1,6 @@
 # SubscriptionsApi
 
-All URIs are relative to *http://localhost/metrics/v2*
+All URIs are relative to *http://localhost/sandboxname/metrics/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

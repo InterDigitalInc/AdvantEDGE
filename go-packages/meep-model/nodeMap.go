@@ -70,3 +70,8 @@ func (nm *NodeMap) FindByName(name string) (n *Node) {
 func (nm *NodeMap) FindByType(name string, nodeType string) (n *Node) {
 	return nm.typeMap[nodeType][name]
 }
+
+// FindAllByType - find a list of nodes using a type
+func (nm *NodeMap) FindAllByType(nodeType string) map[string]*Node {
+	return nm.typeMap[nodeType]
+}

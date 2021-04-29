@@ -10,15 +10,16 @@ echo "USER_SWAGGER_SANDBOX: ${USER_SWAGGER_SANDBOX}"
 # OAS2: Set relative path to sandbox name + endpoint path (origin will be derived from browser URL)
 # OAS3: Set full path to provided Host URL + sandbox name + endpoint path
 setBasepath() {
-    # OAS2
-    echo "Prepending [${MEEP_SANDBOX_NAME}] to basepath in: $1"
-    sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $1;
-
     # OAS3
     hostName=$(echo "${MEEP_HOST_URL}" | sed -E 's/^\s*.*:\/\///g')
-    newHostName=${hostName}/${MEEP_SANDBOX_NAME}
-    echo "Replacing [localhost] with ${newHostName} to url in: $1"
-    sed -i "s,localhost,${newHostName},g" $1;
+    #newHostName=${hostName}/${MEEP_SANDBOX_NAME}
+    echo "Replacing [localhost] with ${hostName} to url in: $1"
+    sed -i "s,localhost,${hostName},g" $1;
+
+    # OAS2 and OAS3
+    echo "Replacing [sandboxname] with ${MEEP_SANDBOX_NAME} to basepath or url in: $1"
+    #sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $1;
+    sed -i "s,sandboxname,${MEEP_SANDBOX_NAME},g" $1;
 }
 
 # Set baspath for AdvantEDGE Swagger API files

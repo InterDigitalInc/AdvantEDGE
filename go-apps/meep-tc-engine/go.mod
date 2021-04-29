@@ -41,5 +41,6 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model => ../../go-packages/meep-model
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr => ../../go-packages/meep-net-char-mgr
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store => ../../go-packages/meep-pdu-session-store
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 )

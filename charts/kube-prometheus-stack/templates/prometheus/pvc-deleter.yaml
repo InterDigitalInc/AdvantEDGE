@@ -1,0 +1,67 @@
+{{- $prometheus := .Values.prometheus.enabled -}}
+{{- $alertmanager := .Values.alertmanager.enabled -}}
+{{- $promStorageSpec := .Values.prometheus.prometheusSpec.storageSpec }}
+{{- $alertStorageSpec := .Values.alertmanager.alertmanagerSpec.storage }}
+
+{{- if or (and $prometheus $promStorageSpec) (and $alertmanager $alertStorageSpec) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pvc-deleter-role
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "delete", "deletecollection"]
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pvc-deleter-sa
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pvc-deleter-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pvc-deleter-role
+subjects:
+- kind: ServiceAccount
+  name: pvc-deleter-sa
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pvc-deleter-job
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: post-delete-job
+        image: "bitnami/kubectl"
+        command: ["/bin/sh", "-c"]
+        args:
+        - kubectl delete pvc
+        {{- if and $prometheus $promStorageSpec }}
+          {{ $promStorageSpec.volumeClaimTemplate.metadata.name }}-prometheus-{{ template "kube-prometheus-stack.fullname" . }}-server-0
+        {{- end }}
+        {{- if and $alertmanager $alertStorageSpec }}
+          {{ $alertStorageSpec.volumeClaimTemplate.metadata.name }}-alertmanager-{{ template "kube-prometheus-stack.fullname" . }}-alertmanager-0
+        {{- end }}
+          ; echo done;
+      serviceAccountName: pvc-deleter-sa
+      securityContext:
+        runAsUser: 0
+{{- end }}

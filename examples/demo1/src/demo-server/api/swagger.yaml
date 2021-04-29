@@ -383,19 +383,21 @@ definitions:
         description: "The number of users currently on the access point"
     description: "A type containing zone information."
   TimeStamp:
+    type: "object"
+    required:
+    - "nanoSeconds"
+    - "seconds"
     properties:
       nanoSeconds:
-        description: The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
-        format: int32
-        type: integer
+        type: "integer"
+        format: "int32"
+        description: "The nanoseconds part of the time. Time is defined as Unix-time\
+          \ since January 1, 1970, 00:00:00 UTC."
       seconds:
-        description: The seconds part of the time. Time is defined as Unixtime since January 1, 1970, 00:00:00 UTC.
-        format: int32
-        type: integer
-    required:
-    - seconds
-    - nanoSeconds
-    type: object
+        type: "integer"
+        format: "int32"
+        description: "The seconds part of the time. Time is defined as Unixtime since\
+          \ January 1, 1970, 00:00:00 UTC."
   InlineTrackingNotification:
     type: "object"
     required:

@@ -43,6 +43,31 @@ func GetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	ceGetActiveScenario(w, r)
 }
 
+// GetActiveScenarioDomain - Retrieve active (deployed) scenario domains
+func GetActiveScenarioDomain(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveScenarioDomain(w, r)
+}
+
+// GetActiveScenarioNl - Retrieve active (deployed) scenario network locations
+func GetActiveScenarioNetworkLocation(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveScenarioNetworkLocation(w, r)
+}
+
+// GetActiveScenarioPl - Retrieve active (deployed) scenario physical locations
+func GetActiveScenarioPhysicalLocation(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveScenarioPhysicalLocation(w, r)
+}
+
+// GetActiveScenarioProc - Retrieve active (deployed) scenario processes
+func GetActiveScenarioProcess(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveScenarioProcess(w, r)
+}
+
+// GetActiveScenarioZone - Retrieve active (deployed) scenario zones
+func GetActiveScenarioZone(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveScenarioZone(w, r)
+}
+
 // TerminateScenario - Terminate active (deployed) scenario
 func TerminateScenario(w http.ResponseWriter, r *http.Request) {
 	ceTerminateScenario(w, r)

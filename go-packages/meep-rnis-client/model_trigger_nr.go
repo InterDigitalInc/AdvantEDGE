@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Radio Network Information Service REST API
  *
- * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+ * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription
  *
  * API version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -28,17 +28,17 @@ type TriggerNr int32
 
 // List of TriggerNr
 const (
-	0__TriggerNr TriggerNr = "0"
-	1__TriggerNr TriggerNr = "1"
-	2__TriggerNr TriggerNr = "2"
-	10__TriggerNr TriggerNr = "10"
-	11__TriggerNr TriggerNr = "11"
-	12__TriggerNr TriggerNr = "12"
-	13__TriggerNr TriggerNr = "13"
-	14__TriggerNr TriggerNr = "14"
-	15__TriggerNr TriggerNr = "15"
-	20__TriggerNr TriggerNr = "20"
-	21__TriggerNr TriggerNr = "21"
-	30__TriggerNr TriggerNr = "30"
-	31__TriggerNr TriggerNr = "31"
+        TRIGGER_NR_NOT_AVAILABLE        TriggerNr = 0
+        TRIGGER_NR_NR_PERIODICAL        TriggerNr = 1
+        TRIGGER_NR_NR_CGI               TriggerNr = 2
+        TRIGGER_NR_EVENT_A1             TriggerNr = 10
+        TRIGGER_NR_EVENT_A2             TriggerNr = 11
+        TRIGGER_NR_EVENT_A3             TriggerNr = 12
+        TRIGGER_NR_EVENT_A4             TriggerNr = 13
+        TRIGGER_NR_EVENT_A5             TriggerNr = 14
+        TRIGGER_NR_EVENT_A6             TriggerNr = 15
+        TRIGGER_NR_INTER_RAT_PERIODICAL TriggerNr = 20
+        TRIGGER_NR_INTER_RAT_CGI        TriggerNr = 21
+        TRIGGER_NR_EVENT_B1             TriggerNr = 30
+        TRIGGER_NR_EVENT_B2             TriggerNr = 31
 )

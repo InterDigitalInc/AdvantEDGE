@@ -2,69 +2,98 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: "{{ template "influxdb.fullname" . }}-backup"
+  name: {{ include "influxdb.fullname" . }}-backup
   labels:
-    app: "{{ template "influxdb.fullname" . }}"
-    chart: "{{ template "influxdb.chart" . }}"
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}"
+    {{- include "influxdb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
   annotations:
     {{- toYaml .Values.backup.annotations | nindent 4 }}
 spec:
-  schedule: {{.Values.backup.schedule | quote }}
+  schedule: {{ .Values.backup.schedule | quote }}
+  startingDeadlineSeconds: {{ .Values.backup.startingDeadlineSeconds }}
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
         metadata:
+          {{- if .Values.backup.podAnnotations }}
+          annotations:
+            {{ toYaml .Values.backup.podAnnotations | nindent 12 }}
+          {{- end }}
           labels:
-            app: {{ template "influxdb.fullname" . }}
-            release: "{{ .Release.Name }}"
+            {{- include "influxdb.selectorLabels" . | nindent 12 }}
         spec:
           restartPolicy: OnFailure
           volumes:
-          - name: backups
+          - name: backup
+          {{- if .Values.backup.persistence.enabled }}
+            persistentVolumeClaim:
+              claimName: {{ include "influxdb.fullname" . }}-backup
+          {{- else }}
             emptyDir: {}
-          {{- if and .Values.backup.gcs }}
+          {{- end }}
+          {{- if .Values.backup.gcs }}
+          {{- if .Values.backup.gcs.serviceAccountSecret }}
           - name: google-cloud-key
             secret:
               secretName: {{ .Values.backup.gcs.serviceAccountSecret | quote }}
           {{- end }}
+          {{- end }}
+          {{- if .Values.backup.s3 }}
+          {{- if .Values.backup.s3.credentialsSecret }}
+          - name: aws-credentials-secret
+            secret:
+              secretName: {{ .Values.backup.s3.credentialsSecret | quote }}
+          {{- end }}
+          {{- end }}
+          serviceAccountName: {{ include "influxdb.serviceAccountName" . }}
           initContainers:
           - name: influxdb-backup
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
             volumeMounts:
-            - name: backups
-              mountPath: /backups
+            - name: backup
+              mountPath: /backup
             command:
             - /bin/sh
             args:
             - '-c'
             - |
-              influxd backup -host {{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.config.rpc.bind_address }} -portable /backups/backup_$(date +%Y%m%d_%H%M%S)
+              influxd backup \
+                -host {{ include "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.config.rpc.bind_address | default 8088 }} \
+                -portable /backup/"$(date +%Y%m%d%H%M%S)"
+            resources:
+              {{- toYaml .Values.backup.resources | nindent 14 }}
           containers:
-          {{- if .Values.backup.gcs}}
+          {{- if .Values.backup.gcs }}
           - name: gsutil-cp
             image: google/cloud-sdk:alpine
             command:
             - /bin/sh
             args:
             - '-c'
+            - '-e'
             - |
-              gcloud auth activate-service-account --key-file $KEY_FILE
-              gsutil -m cp -r "$SRC_URL" "$DST_URL"
+              if [ -n "$KEY_FILE" ]; then
+                gcloud auth activate-service-account --key-file $KEY_FILE
+              fi
+              gsutil -m cp -r /backup/* "$DST_URL"
+              rm -rf /backup/*
             volumeMounts:
-            - name: backups
-              mountPath: /backups
+            - name: backup
+              mountPath: /backup
+            {{- if .Values.backup.gcs.serviceAccountSecretKey}}
             - name: google-cloud-key
               mountPath: /var/secrets/google/
+            {{- end }}
             env:
-              - name: SRC_URL
-                value: /backups
               - name: DST_URL
                 value: {{ .Values.backup.gcs.destination}}
+              {{- if .Values.backup.gcs.serviceAccountSecretKey}}
               - name: KEY_FILE
                 value: /var/secrets/google/{{ .Values.backup.gcs.serviceAccountSecretKey }}
+              {{- end }}
+            resources:
+              {{- toYaml .Values.backup.resources | nindent 14 }}
           {{- end }}
           {{- if .Values.backup.azure }}
           - name: azure-cli
@@ -73,15 +102,17 @@ spec:
             - /bin/sh
             args:
             - '-c'
+            - '-e'
             - |
               az storage container create --name "$DST_CONTAINER"
               az storage blob upload-batch --destination "$DST_CONTAINER" --destination-path "$DST_PATH" --source "$SRC_URL"
+              rm -rf /backup/*
             volumeMounts:
-            - name: backups
-              mountPath: /backups
+            - name: backup
+              mountPath: /backup
             env:
               - name: SRC_URL
-                value: /backups
+                value: /backup
               - name: DST_CONTAINER
                 value: {{ .Values.backup.azure.destination_container }}
               - name: DST_PATH
@@ -91,5 +122,35 @@ spec:
                   secretKeyRef:
                     name: {{ .Values.backup.azure.storageAccountSecret }}
                     key: connection-string
+            resources:
+              {{- toYaml .Values.backup.resources | nindent 14 }}
+          {{- end }}
+          {{- if .Values.backup.s3 }}
+          - name: aws-cli
+            image: amazon/aws-cli
+            command:
+            - /bin/sh
+            args:
+            - '-c'
+            - '-e'
+            - |
+              aws {{- if .Values.backup.s3.endpointUrl }} --endpoint-url={{ .Values.backup.s3.endpointUrl }} {{- end }} s3 cp --recursive "$SRC_URL" "$DST_URL"
+              rm -rf /backup/*
+            volumeMounts:
+            - name: backup
+              mountPath: /backup
+            {{- if .Values.backup.s3.credentialsSecret}}
+            - name: aws-credentials-secret
+              mountPath: /var/secrets/aws/
+            {{- end }}
+            env:
+              - name: AWS_CONFIG_FILE
+                value: /var/secrets/aws/credentials
+              - name: SRC_URL
+                value: /backup
+              - name: DST_URL
+                value: {{ .Values.backup.s3.destination }}
+            resources:
+              {{- toYaml .Values.backup.resources | nindent 14 }}
           {{- end }}
 {{- end }}

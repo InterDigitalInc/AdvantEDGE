@@ -33,10 +33,10 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	"github.com/gorilla/mux"
 )
 
+const serviceName = "GIS Engine"
 const moduleName = "meep-gis-engine"
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
@@ -87,7 +87,6 @@ type GisEngine struct {
 	sboxCtrlClient   *sbox.APIClient
 	activeModel      *mod.Model
 	gisCache         *gc.GisCache
-	sessionMgr       *sm.SessionMgr
 	assetMgr         *am.AssetMgr
 	assets           map[string]*Asset
 	ueInfo           map[string]*UeInfo
@@ -147,14 +146,6 @@ func Init() (err error) {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
-
-	// Connect to Session Manager
-	ge.sessionMgr, err = sm.NewSessionMgr(moduleName, ge.sandboxName, redisAddr, redisAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	// Connect to GIS cache
 	ge.gisCache, err = gc.NewGisCache(ge.sandboxName, redisAddr)

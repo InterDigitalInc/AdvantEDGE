@@ -6,7 +6,7 @@
         "datasource": "$datasource",
         "enable": true,
         "hide": false,
-        "iconColor": "rgba(0, 211, 255, 1)",
+        "iconColor": "#3274D9",
         "limit": 100,
         "name": "Mobility Events",
         "query": "SELECT type,description from $database.autogen.events WHERE type='MOBILITY' AND $timeFilter ORDER BY time ASC LIMIT 100",
@@ -16,21 +16,50 @@
         "type": "dashboard"
       },
       {
+        "builtIn": 1,
         "datasource": "$datasource",
         "enable": true,
         "hide": false,
-        "iconColor": "#FF9830",
+        "iconColor": "#FF780A",
         "name": "Net Char Events",
         "query": "SELECT type,description from $database.autogen.events WHERE type='NETWORK-CHARACTERISTICS-UPDATE' AND $timeFilter ORDER BY time ASC LIMIT 100",
         "showIn": 0,
-        "tagsColumn": "type"
+        "tagsColumn": "type",
+        "textColumn": "",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 1,
+        "datasource": "$datasource",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#A352CC",
+        "name": "PDU Session Events",
+        "query": "SELECT type,description from $database.autogen.events WHERE type='PDU-SESSION' AND $timeFilter ORDER BY time ASC LIMIT 100",
+        "showIn": 0,
+        "tagsColumn": "type",
+        "textColumn": "",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 1,
+        "datasource": "$datasource",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#E02F44",
+        "name": "Scenario Update Events",
+        "query": "SELECT type,description from $database.autogen.events WHERE type='SCENARIO-UPDATE' AND $timeFilter ORDER BY time ASC LIMIT 100",
+        "showIn": 0,
+        "tagsColumn": "type",
+        "textColumn": "",
+        "type": "dashboard"
       }
     ]
   },
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1582319088471,
+  "iteration": 1619633087561,
   "links": [],
   "panels": [
     {
@@ -55,6 +84,13 @@
       "dashes": false,
       "datasource": "$datasource",
       "description": "Shows latency & Throughput between source & destination applications",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 0,
       "fillGradient": 1,
       "gridPos": {
@@ -80,10 +116,10 @@
       "links": [],
       "nullPointMode": "connected",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "6.4.2",
+      "pluginVersion": "7.3.5",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -208,6 +244,13 @@
       "dashes": false,
       "datasource": "$datasource",
       "description": "Shows Up-Link Throughput from selected source",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 0,
       "fillGradient": 4,
       "gridPos": {
@@ -233,10 +276,10 @@
       "links": [],
       "nullPointMode": "connected",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "6.4.2",
+      "pluginVersion": "7.3.5",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -348,6 +391,13 @@
       "dashes": false,
       "datasource": "$datasource",
       "description": "Shows Down-Link Throughput to selected source",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 0,
       "fillGradient": 4,
       "gridPos": {
@@ -373,10 +423,10 @@
       "links": [],
       "nullPointMode": "connected",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "6.4.2",
+      "pluginVersion": "7.3.5",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -498,6 +548,12 @@
       "cacheTimeout": null,
       "columns": [],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fontSize": "100%",
       "gridPos": {
         "h": 6,
@@ -507,7 +563,6 @@
       },
       "id": 4,
       "links": [],
-      "options": {},
       "pageSize": null,
       "pluginVersion": "6.4.2",
       "showHeader": true,
@@ -518,12 +573,14 @@
       "styles": [
         {
           "alias": "Time",
+          "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "pattern": "Time",
           "type": "date"
         },
         {
           "alias": "Type",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "#C4162A",
@@ -545,11 +602,20 @@
             {
               "text": "Mobility",
               "value": "MOBILITY"
+            },
+            {
+              "text": "PDU Session",
+              "value": "PDU-SESSION"
+            },
+            {
+              "text": "Scenario",
+              "value": "SCENARIO-UPDATE"
             }
           ]
         },
         {
           "alias": "Description",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -593,20 +659,22 @@
       "timeShift": null,
       "title": "Events",
       "transform": "timeseries_to_columns",
-      "type": "table"
+      "type": "table-old"
     }
   ],
   "refresh": "1s",
-  "schemaVersion": 21,
+  "schemaVersion": 26,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
+          "selected": false,
           "text": "meep-influxdb",
           "value": "meep-influxdb"
         },
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",
@@ -622,11 +690,13 @@
       {
         "allValue": null,
         "current": {
-          "text": "demo1",
-          "value": "demo1"
+          "selected": false,
+          "text": "_internal",
+          "value": "_internal"
         },
         "datasource": "$datasource",
         "definition": "show databases",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -647,11 +717,14 @@
       {
         "allValue": null,
         "current": {
-          "text": "ue1-iperf",
-          "value": "ue1-iperf"
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
         },
         "datasource": "$datasource",
         "definition": "show tag values on $database from network with key = \"src\"",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "",

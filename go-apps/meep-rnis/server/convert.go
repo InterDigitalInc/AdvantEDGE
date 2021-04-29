@@ -22,9 +22,9 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func convertJsonToEcgi(jsonInfo string) *Ecgi {
+func convertJsonToAppInfo(jsonInfo string) *AppInfo {
 
-	var obj Ecgi
+	var obj AppInfo
 	err := json.Unmarshal([]byte(jsonInfo), &obj)
 	if err != nil {
 		log.Error(err.Error())
@@ -33,7 +33,29 @@ func convertJsonToEcgi(jsonInfo string) *Ecgi {
 	return &obj
 }
 
-func convertEcgiToJson(obj *Ecgi) string {
+func convertAppInfoToJson(obj *AppInfo) string {
+
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+func convertJsonToPoaInfo(jsonInfo string) *PoaInfo {
+
+	var obj PoaInfo
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertPoaInfoToJson(obj *PoaInfo) string {
 
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
@@ -167,6 +189,50 @@ func convertJsonToRabRelSubscription(jsonInfo string) *RabRelSubscription {
 }
 
 func convertRabRelSubscriptionToJson(obj *RabRelSubscription) string {
+
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+func convertJsonToMeasRepUeSubscription(jsonInfo string) *MeasRepUeSubscription {
+
+	var obj MeasRepUeSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertMeasRepUeSubscriptionToJson(obj *MeasRepUeSubscription) string {
+
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+func convertJsonToNrMeasRepUeSubscription(jsonInfo string) *NrMeasRepUeSubscription {
+
+	var obj NrMeasRepUeSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertNrMeasRepUeSubscriptionToJson(obj *NrMeasRepUeSubscription) string {
 
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {

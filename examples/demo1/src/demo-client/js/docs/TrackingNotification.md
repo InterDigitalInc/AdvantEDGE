@@ -10,6 +10,6 @@ Name | Type | Description | Notes
 **userEventType** | [**UserEventType**](UserEventType.md) |  | [optional] 
 **currentAccessPointId** | **String** | Unique identifier of a point of access | [optional] 
 **previousAccessPointId** | **String** | Unique identifier of a point of access | [optional] 
-**timestamp** | **Date** | Indicates the time of day for zonal presence notification. | [optional] 
+**timestamp** | [**TimeStamp**](TimeStamp.md) |  | [optional] 
 
 

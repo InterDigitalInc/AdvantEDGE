@@ -29,7 +29,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 
@@ -680,6 +680,120 @@ func TestFailSubscriptionRabRel(t *testing.T) {
 	terminateScenario()
 }
 
+func TestSuccessSubscriptionMeasRepUe(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+	//post
+	expectedGetResp := testSubscriptionMeasRepUePost(t)
+	//get
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//put
+	expectedGetResp = testSubscriptionMeasRepUePut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	//get
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//delete
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	terminateScenario()
+}
+
+func TestFailSubscriptionMeasRepUe(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+
+	//put
+	_ = testSubscriptionMeasRepUePut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+
+	//delete
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	terminateScenario()
+}
+
+func TestSuccessSubscriptionNrMeasRepUe(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+	//post
+	expectedGetResp := testSubscriptionNrMeasRepUePost(t)
+	//get
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//put
+	expectedGetResp = testSubscriptionNrMeasRepUePut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	//get
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//delete
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	terminateScenario()
+}
+
+func TestFailSubscriptionNrMeasRepUe(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+
+	//put
+	_ = testSubscriptionNrMeasRepUePut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+
+	//delete
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	terminateScenario()
+}
+
 func TestSubscriptionsListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -705,11 +819,19 @@ func TestSubscriptionsListGet(t *testing.T) {
 	_ = testSubscriptionRabEstPost(t)
 	_ = testSubscriptionRabRelPost(t)
 	_ = testSubscriptionRabRelPost(t)
+	_ = testSubscriptionMeasRepUePost(t)
+	_ = testSubscriptionMeasRepUePost(t)
+	_ = testSubscriptionNrMeasRepUePost(t)
+	_ = testSubscriptionNrMeasRepUePost(t)
 
 	//get list
 	testSubscriptionListGet(t)
 
 	//delete
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-10), true)
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-9), true)
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-8), true)
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-7), true)
 	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-6), true)
 	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-5), true)
 	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-4), true)
@@ -724,7 +846,7 @@ func testSubscriptionListGet(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedSubscriptionNb := 6
+	expectedSubscriptionNb := 10
 
 	/******************************
 	 * request vars section
@@ -1219,6 +1341,262 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	}
 }
 
+func testSubscriptionMeasRepUePost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
+	expectedEcgi := []Ecgi{expectedEcgi1}
+	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
+	expectedAssocId := []AssociateId{expectedAssocId1}
+	expectedFilter := MeasRepUeSubscriptionFilterCriteriaAssocTri{"myApp", expectedAssocId, expectedEcgi, []Trigger{1}}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	//expectedExpiry := TimeStamp{0, 1988599770}
+	expectedResponse := MeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	//filter is not exactly the same in response and request
+	subscriptionPost1 := MeasRepUeSubscription{nil, expectedCallBackRef, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
+
+	body, err := json.Marshal(subscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	mr, err := sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody MeasRepUeSubscription
+	err = json.Unmarshal([]byte(mr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if mr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testSubscriptionMeasRepUePut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
+	expectedEcgi := []Ecgi{expectedEcgi1}
+	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
+	expectedAssocId := []AssociateId{expectedAssocId1}
+	expectedFilter := MeasRepUeSubscriptionFilterCriteriaAssocTri{"myApp", expectedAssocId, expectedEcgi, []Trigger{1}}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
+	expectedResponse := MeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	subscription1 := MeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
+
+	body, err := json.Marshal(subscription1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		mr, err := sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), vars, nil, http.StatusOK, SubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody MeasRepUeSubscription
+		err = json.Unmarshal([]byte(mr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if mr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, SubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func testSubscriptionNrMeasRepUePost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedNrcgi1 := NRcgi{"1234567", &Plmn{"111", "222"}}
+	expectedNrcgi := []NRcgi{expectedNrcgi1}
+	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
+	expectedAssocId := []AssociateId{expectedAssocId1}
+	expectedFilter := NrMeasRepUeSubscriptionFilterCriteriaNrMrs{"myApp", expectedAssocId, expectedNrcgi, []TriggerNr{1}}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	//expectedExpiry := TimeStamp{0, 1988599770}
+	expectedResponse := NrMeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	//filter is not exactly the same in response and request
+	subscriptionPost1 := NrMeasRepUeSubscription{nil, expectedCallBackRef, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
+
+	body, err := json.Marshal(subscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	nrMr, err := sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody NrMeasRepUeSubscription
+	err = json.Unmarshal([]byte(nrMr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if nrMr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testSubscriptionNrMeasRepUePut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedNrcgi1 := NRcgi{"1234567", &Plmn{"111", "222"}}
+	expectedNrcgi := []NRcgi{expectedNrcgi1}
+	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
+	expectedAssocId := []AssociateId{expectedAssocId1}
+	expectedFilter := NrMeasRepUeSubscriptionFilterCriteriaNrMrs{"myApp", expectedAssocId, expectedNrcgi, []TriggerNr{1}}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
+	expectedResponse := NrMeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	subscription1 := NrMeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
+
+	body, err := json.Marshal(subscription1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		nrMr, err := sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), vars, nil, http.StatusOK, SubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody MeasRepUeSubscription
+		err = json.Unmarshal([]byte(nrMr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if nrMr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, SubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
 func TestSubscriptionCellChangeNotification(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())
@@ -1299,7 +1677,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -1443,7 +1821,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	updateScenario("mobility2")
 
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -1579,7 +1957,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 
 	updateScenario("mobility1")
 
-	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -1651,6 +2029,131 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 
 }
 
+func TestSubscriptionMeasRepUeNotification(t *testing.T) {
+
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//******************************
+	// * expected response section
+	// ****************************** /
+	expectedPlmnInNotif := Plmn{Mcc: "123", Mnc: "456"}
+	expectedCellId := "2345678"
+	expectedEcgi := Ecgi{Plmn: &expectedPlmnInNotif, CellId: expectedCellId}
+	movingUeAddr := "ue1" //based on the scenario change
+	expectedAssocIdInNotif1 := AssociateId{Type_: 1, Value: movingUeAddr}
+	expectedAssocIdInNotif := []AssociateId{expectedAssocIdInNotif1}
+	expectedTrigger := []Trigger{1}
+	expectedFilter := MeasRepUeSubscriptionFilterCriteriaAssocTri{Trigger: expectedTrigger}
+	expectedCallBackRef := "myCallbakRef"
+	//expectedExpiry := TimeStamp{0, 1988599770}
+
+	//******************************
+	// * request vars section
+	// ****************************** /
+
+	//******************************
+	// * request body section
+	// ****************************** /
+
+	measRepUeSubscriptionPost1 := MeasRepUeSubscription{nil, expectedCallBackRef, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
+
+	body, err := json.Marshal(measRepUeSubscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	//******************************
+	// * request queries section
+	// ****************************** /
+
+	//******************************
+	// * request execution section
+	// ****************************** /
+
+	_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//	updateScenario("mobility1")
+	time.Sleep(100 * time.Millisecond)
+	//	updateScenario("mobility2")
+
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	if err != nil {
+		t.Fatalf("Failed to create a store")
+	}
+
+	httpLog, err := metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
+	if err != nil || len(httpLog) != 1 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	var notification MeasRepUeNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//transform the assocId in string for comparison purpose
+	jsonResult, err := json.Marshal(notification.AssociateId)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationAssocIdStr := string(jsonResult)
+
+	//transform the ecgi in string for comparison purpose
+	jsonResult, err = json.Marshal(notification.Ecgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationEcgiStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedAssocIdInNotif)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedAssocIdStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedEcgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedEcgiStr := string(jsonResult)
+
+	//only check for ecgi, erabId, erabQosParameters and assocId, other values are dynamic such as the timestamp
+	if (notificationEcgiStr != expectedEcgiStr) ||
+		notification.Rsrp != 0 ||
+		notification.Rsrq != 0 ||
+		(notificationAssocIdStr != expectedAssocIdStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//cleanup allocated subscription
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+
+	//******************************
+	// * back to initial state section
+	// ****************************** /
+	terminateScenario()
+
+}
+
 func TestSbi(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())
@@ -1669,19 +2172,24 @@ func TestSbi(t *testing.T) {
 
 	ueName := "ue1"
 	appName := "zone1-edge1-iperf"
+	poaName := "zone1-poa-cell1"
+	poaNameAfter := "zone2-poa1"
 
 	/******************************
 	 * expected values section
 	 ******************************/
 	var expectedUeDataStr [2]string
 	var expectedUeData [2]UeData
-	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, 80}
-	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, 80}
 
-	var expectedAppEcgiStr [2]string
-	var expectedAppEcgi [2]Ecgi
-	expectedAppEcgi[INITIAL] = Ecgi{"", &Plmn{"123", "456"}}
-	expectedAppEcgi[UPDATED] = Ecgi{"", &Plmn{"123", "456"}}
+	expectedAppNames := []string{"ue1-iperf"}
+	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaName, nil, expectedAppNames, 0, 1000, 1000, 0.0}
+	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, &NRcgi{"", &Plmn{"123", "456"}}, 80, poaNameAfter, nil, expectedAppNames, 0, 1000, 1000, 0.0}
+
+	var expectedAppInfoStr string
+	expectedAppInfo := AppInfo{"EDGE", "zone1-edge1", 0, 1000, 1000, 0}
+
+	var expectedPoaInfoStr string
+	expectedPoaInfo := PoaInfo{"POA-4G", Ecgi{"2345678", &Plmn{"123", "456"}}, NRcgi{"", nil}, 1, 1000, 1000, 0}
 
 	j, err := json.Marshal(expectedUeData[INITIAL])
 	if err != nil {
@@ -1695,17 +2203,17 @@ func TestSbi(t *testing.T) {
 	}
 	expectedUeDataStr[UPDATED] = string(j)
 
-	j, err = json.Marshal(expectedAppEcgi[INITIAL])
+	j, err = json.Marshal(expectedAppInfo)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedAppEcgiStr[INITIAL] = string(j)
+	expectedAppInfoStr = string(j)
 
-	j, err = json.Marshal(expectedAppEcgi[UPDATED])
+	j, err = json.Marshal(expectedPoaInfo)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedAppEcgiStr[UPDATED] = string(j)
+	expectedPoaInfoStr = string(j)
 
 	/******************************
 	 * execution section
@@ -1714,26 +2222,28 @@ func TestSbi(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 
-	jsonEcgiInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeDataStr[INITIAL] {
+	time.Sleep(1000 * time.Millisecond)
+
+	jsonInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	if string(jsonInfo) != expectedUeDataStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
-	if string(jsonEcgiInfo) != expectedAppEcgiStr[INITIAL] {
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
+	if string(jsonInfo) != expectedAppInfoStr {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"POA:"+poaName, ".")
+	if string(jsonInfo) != expectedPoaInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
 
 	updateScenario("mobility1")
+	time.Sleep(1000 * time.Millisecond)
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeDataStr[UPDATED] {
-		fmt.Println("TEST FAILED but commented out, TODO")
-		//t.Fatalf("Failed to get expected response")
-	}
-
-	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
-	if string(jsonEcgiInfo) != expectedAppEcgiStr[UPDATED] {
+	jsonInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
+	if string(jsonInfo) != expectedUeDataStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -1938,7 +2448,7 @@ func updateScenario(testUpdate string) {
 		elemName := "ue1"
 		destName := "zone2-poa1"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}
@@ -1953,7 +2463,7 @@ func updateScenario(testUpdate string) {
 		elemName := "ue1"
 		destName := "zone1-poa-cell1"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}
@@ -1968,7 +2478,7 @@ func updateScenario(testUpdate string) {
 		elemName := "ue1"
 		destName := "zone1-poa-cell2"
 
-		_, _, err := m.MoveNode(elemName, destName)
+		_, _, err := m.MoveNode(elemName, destName, nil)
 		if err != nil {
 			log.Error("Error sending mobility event")
 		}

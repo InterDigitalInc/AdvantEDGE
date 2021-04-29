@@ -14,7 +14,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "mgm-notif/v1"
+basePath: "/sandboxname/mgm-notif/v1"
 tags:
 - name: "State Transfer"
 consumes:

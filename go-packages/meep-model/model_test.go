@@ -36,8 +36,10 @@ const testScenario_v1_3_0 string = `{"version":"1.3.0","name":"demo1","deploymen
 const testScenario_v1_4_0 string = `{"version":"1.4.0","name":"demo1","deployment":{"interDomainLatency":50,"interDomainLatencyVariation":5,"interDomainThroughput":1000,"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","interZoneLatency":6,"interZoneLatencyVariation":2,"interZoneThroughput":1000000,"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughput":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]}}]}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","interZoneLatency":15,"interZoneLatencyVariation":3,"interZoneThroughput":1000,"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughput":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughput":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":1000,"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash"}]},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]}}]}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","terminalLinkLatency":10,"terminalLinkLatencyVariation":2,"terminalLinkThroughput":50}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughput":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":20}]}]}]}}`
 const testScenario_v1_5_0 string = `{"version":"1.5.0","name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{}}],"netChar":{}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
 const testScenario_v1_5_3 string = `{"version":"1.5.3","name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","connected":true,"processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","connected":true,"processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}},{"id":"ue1","name":"ue1","type":"UE","connected":true,"wireless":true,"processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{}}],"netChar":{}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"connected":true,"wireless":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
-const testScenario string = `{"name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","connected":true,"processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","connected":true,"processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}},{"id":"ue1","name":"ue1","type":"UE","connected":true,"wireless":true,"processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{}}],"netChar":{}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"connected":true,"wireless":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
-const latestTestScenario string = testScenario_v1_5_3
+const testScenario_v1_6_6 string = `{"version":"1.6.6","name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","connected":true,"processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","connected":true,"processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"ue1","name":"ue1","type":"UE","connected":true,"wireless":true,"processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"connected":true,"wireless":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
+const testScenario_v1_6_8 string = `{"version":"1.6.8","name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"connectivity":{"model":"OPEN"},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","connected":true,"processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","connected":true,"processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"ue1","name":"ue1","type":"UE","connected":true,"wireless":true,"processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"connected":true,"wireless":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
+const testScenario string = `{"name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"connectivity":{"model":"OPEN"},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","connected":true,"processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000000,"throughputUl":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","connected":true,"processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"ue1","name":"ue1","type":"UE","connected":true,"wireless":true,"processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"connected":true,"wireless":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","connected":true,"processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}],"netChar":{"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
+const latestTestScenario string = testScenario_v1_6_8
 
 func TestNewModel(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -122,6 +124,94 @@ func TestGetSetScenario(t *testing.T) {
 	}
 }
 
+func TestGetSetActiveElements(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
+
+	cfg := ModelCfg{Name: modelName, Namespace: moduleNamespace, Module: "test-mod", DbAddr: modelRedisAddr}
+	m, err := NewModel(cfg)
+	if err != nil {
+		t.Fatalf("Unable to create model")
+	}
+
+	fmt.Println("Set Model")
+	err = m.SetScenario([]byte(testScenario))
+	if err != nil {
+		t.Fatalf("Error setting model")
+	}
+	if m.scenario.Name != "demo1" {
+		t.Fatalf("SetScenario failed")
+	}
+
+	var filter, badFilter NodeFilter
+	filter.ZoneName = "zone1"
+	badFilter.ZoneName = "DO NOT EXIST"
+	filter.ProcessType = "EDGE-APP"
+
+	//success path
+	fmt.Println("Get Domains")
+	respDomain := m.GetDomains(&filter)
+	if len(respDomain.Domains) != 1 {
+		t.Fatalf("Failed to get expected number of domains")
+	}
+
+	fmt.Println("Get Zones")
+	respZone := m.GetZones(&filter)
+	if len(respZone.Zones) != 1 {
+		t.Fatalf("Failed to get expected number of zones")
+	}
+
+	fmt.Println("Get Network Locations")
+	respNl := m.GetNetworkLocations(&filter)
+	if len(respNl.NetworkLocations) != 1 {
+		t.Fatalf("Failed to get expected number of network locations")
+	}
+
+	fmt.Println("Get Physical Locations")
+	respPl := m.GetPhysicalLocations(&filter)
+	if len(respPl.PhysicalLocations) != 2 {
+		t.Fatalf("Failed to get expected number of physical locations")
+	}
+	fmt.Println("Get Processes")
+	respProc := m.GetProcesses(&filter)
+	if len(respProc.Processes) != 4 {
+		t.Fatalf("Failed to get expected number of processes")
+	}
+
+	//failure path
+	fmt.Println("Get Domains")
+	respDomain = m.GetDomains(&badFilter)
+	if len(respDomain.Domains) != 0 {
+		t.Fatalf("Failed to get expected number of domains")
+	}
+
+	fmt.Println("Get Zones")
+	respZone = m.GetZones(&badFilter)
+	if len(respZone.Zones) != 0 {
+		t.Fatalf("Failed to get expected number of zones")
+	}
+
+	fmt.Println("Get Network Locations")
+	respNl = m.GetNetworkLocations(&badFilter)
+	if len(respNl.NetworkLocations) != 0 {
+		t.Fatalf("Failed to get expected number of network locations")
+	}
+
+	fmt.Println("Get Physical Locations")
+	respPl = m.GetPhysicalLocations(&badFilter)
+	if len(respPl.PhysicalLocations) != 0 {
+		t.Fatalf("Failed to get expected number of physical locations")
+	}
+	fmt.Println("Get Processes")
+	respProc = m.GetProcesses(&badFilter)
+	if len(respProc.Processes) != 0 {
+		t.Fatalf("Failed to get expected number of processes")
+	}
+}
+
 func TestActivateDeactivate(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -180,7 +270,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("SetScenario failed")
 	}
 	fmt.Println("Move ue1")
-	old, new, err := m.MoveNode("ue1", "zone2-poa1")
+	old, new, err := m.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -191,7 +281,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue2-ext")
-	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1")
+	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -202,7 +292,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue1 back")
-	old, new, err = m.MoveNode("ue1", "zone1-poa1")
+	old, new, err = m.MoveNode("ue1", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -213,7 +303,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue2-ext back")
-	old, new, err = m.MoveNode("ue2-ext", "zone1-poa1")
+	old, new, err = m.MoveNode("ue2-ext", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -224,7 +314,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue2-ext again")
-	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1")
+	old, new, err = m.MoveNode("ue2-ext", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -235,7 +325,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue1")
-	old, new, err = m.MoveNode("ue1", "zone2-poa1")
+	old, new, err = m.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -246,7 +336,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move ue1 back again")
-	old, new, err = m.MoveNode("ue1", "zone1-poa1")
+	old, new, err = m.MoveNode("ue1", "zone1-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -257,7 +347,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move edge node zone1-edge1 to a new zone")
-	old, new, err = m.MoveNode("zone1-edge1", "zone2")
+	old, new, err = m.MoveNode("zone1-edge1", "zone2", nil)
 	if err != nil {
 		t.Fatalf("Error moving EDGE node")
 	}
@@ -268,7 +358,7 @@ func TestMoveNode(t *testing.T) {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
 	fmt.Println("Move zone1-edge1-iperf")
-	_, _, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge2")
+	_, _, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge2", nil)
 	if err == nil {
 		t.Fatalf("Moving Edge-App part of mobility group should not be allowed")
 	}
@@ -281,7 +371,7 @@ func TestMoveNode(t *testing.T) {
 	}
 	proc := node.object.(*dataModel.Process)
 	proc.ServiceConfig.MeSvcName = ""
-	old, new, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge1")
+	old, new, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge1", nil)
 	if err != nil {
 		t.Fatalf("Error moving Edge-App")
 	}
@@ -293,12 +383,12 @@ func TestMoveNode(t *testing.T) {
 	}
 
 	fmt.Println("Move Node - not a UE")
-	_, _, err = m.MoveNode("Not-a-UE", "zone1-poa1")
+	_, _, err = m.MoveNode("Not-a-UE", "zone1-poa1", nil)
 	if err == nil {
 		t.Fatalf("Error moving UE - inexisting UE")
 	}
 	fmt.Println("Move Node - not a PoA")
-	_, _, err = m.MoveNode("ue1", "Not-a-poa")
+	_, _, err = m.MoveNode("ue1", "Not-a-poa", nil)
 	if err == nil {
 		t.Fatalf("Error moving UE - inexisting PoA")
 	}
@@ -337,7 +427,7 @@ func TestUpdateNetChar(t *testing.T) {
 	netChar.ThroughputUl = 5
 	netChar.PacketLoss = 4
 	nc.NetChar = &netChar
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -362,7 +452,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "operator1"
 	nc.ElementType = NodeTypeOperator
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -386,7 +476,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1"
 	nc.ElementType = NodeTypeZone
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -410,7 +500,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-poa1"
 	nc.ElementType = NodeTypePoa
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -434,7 +524,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-fog1"
 	nc.ElementType = NodeTypeFog
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -458,7 +548,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-edge1"
 	nc.ElementType = NodeTypeEdge
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -482,7 +572,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "ue1"
 	nc.ElementType = NodeTypeUE
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -506,7 +596,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "cloud1"
 	nc.ElementType = NodeTypeCloud
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -530,7 +620,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "zone1-edge1-iperf"
 	nc.ElementType = NodeTypeEdgeApp
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -554,7 +644,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "ue1-iperf"
 	nc.ElementType = NodeTypeUEApp
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -578,7 +668,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "cloud1-iperf"
 	nc.ElementType = NodeTypeCloudApp
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -602,14 +692,14 @@ func TestUpdateNetChar(t *testing.T) {
 
 	nc.ElementName = "Not-a-Name"
 	nc.ElementType = NodeTypePoa
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err == nil {
 		t.Fatalf("Update " + nc.ElementType + " should fail")
 	}
 
 	nc.ElementName = "ue1"
 	nc.ElementType = "Not-a-Type"
-	err = m.UpdateNetChar(&nc)
+	err = m.UpdateNetChar(&nc, nil)
 	if err == nil {
 		t.Fatalf("Unsupported type should fail")
 	}
@@ -674,7 +764,7 @@ func TestListenModel(t *testing.T) {
 
 	// MoveNode
 	fmt.Println("Move ue1")
-	old, new, err := mPub.MoveNode("ue1", "zone2-poa1")
+	old, new, err := mPub.MoveNode("ue1", "zone2-poa1", nil)
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
@@ -704,7 +794,7 @@ func TestListenModel(t *testing.T) {
 	netChar.ThroughputUl = 5
 	netChar.PacketLoss = 4
 	nc.NetChar = &netChar
-	err = mPub.UpdateNetChar(&nc)
+	err = mPub.UpdateNetChar(&nc, nil)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
@@ -998,46 +1088,46 @@ func TestScenarioUpdate(t *testing.T) {
 	fmt.Println("Invalid Add Requests")
 	ue_data := dataModel.NodeDataUnion{}
 	ue_node := dataModel.ScenarioNode{NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl := dataModel.PhysicalLocation{Id: "ue-id", Type_: NodeTypeUE}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Name: "ue"}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue_node)
+	err = m.AddScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue1_pl := dataModel.PhysicalLocation{Id: "ue1-id", Name: "ue1", Type_: NodeTypeUE}
 	ue1_data := dataModel.NodeDataUnion{PhysicalLocation: &ue1_pl}
 	ue1_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue1_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue1_node)
+	err = m.AddScenarioNode(&ue1_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
@@ -1045,44 +1135,45 @@ func TestScenarioUpdate(t *testing.T) {
 	fmt.Println("Invalid Remove Requests")
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Type_: NodeTypeUE}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Name: "ue"}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	err = m.RemoveScenarioNode(&ue_node)
+	err = m.RemoveScenarioNode(&ue_node, nil)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 
 	fmt.Println("Add ue3")
-	ue3_pl := dataModel.PhysicalLocation{Id: "ue3-id", Name: "ue3", Type_: NodeTypeUE}
+	ue3_nc := dataModel.NetworkCharacteristics{}
+	ue3_pl := dataModel.PhysicalLocation{Id: "ue3-id", Name: "ue3", Type_: NodeTypeUE, NetChar: &ue3_nc}
 	ue3_data := dataModel.NodeDataUnion{PhysicalLocation: &ue3_pl}
 	ue3_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue3_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue3_node)
+	err = m.AddScenarioNode(&ue3_node, nil)
 	if err != nil {
-		t.Fatalf("Error adding nodes")
+		t.Fatalf("Error adding nodes: " + err.Error())
 	}
 	n := m.nodeMap.FindByName("ue3")
 	if n == nil || n.name != "ue3" {
@@ -1098,12 +1189,13 @@ func TestScenarioUpdate(t *testing.T) {
 	}
 
 	fmt.Println("Add ue4")
-	ue4_pl := dataModel.PhysicalLocation{Id: "ue4-id", Name: "ue4", Type_: NodeTypeUE}
+	ue4_nc := dataModel.NetworkCharacteristics{}
+	ue4_pl := dataModel.PhysicalLocation{Id: "ue4-id", Name: "ue4", Type_: NodeTypeUE, NetChar: &ue4_nc}
 	ue4_data := dataModel.NodeDataUnion{PhysicalLocation: &ue4_pl}
 	ue4_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue4_data, Parent: "zone1-poa1"}
-	err = m.AddScenarioNode(&ue4_node)
+	err = m.AddScenarioNode(&ue4_node, nil)
 	if err != nil {
-		t.Fatalf("Error adding nodes")
+		t.Fatalf("Error adding nodes: " + err.Error())
 	}
 	n = m.nodeMap.FindByName("ue4")
 	if n == nil || n.name != "ue4" {
@@ -1120,7 +1212,7 @@ func TestScenarioUpdate(t *testing.T) {
 
 	fmt.Println("Remove ue4")
 	ue4_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue4_data}
-	err = m.RemoveScenarioNode(&ue4_node)
+	err = m.RemoveScenarioNode(&ue4_node, nil)
 	if err != nil {
 		t.Fatalf("Error removing nodes")
 	}
@@ -1131,7 +1223,7 @@ func TestScenarioUpdate(t *testing.T) {
 
 	fmt.Println("Remove ue3 & ue5")
 	ue3_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue3_data}
-	err = m.RemoveScenarioNode(&ue3_node)
+	err = m.RemoveScenarioNode(&ue3_node, nil)
 	if err != nil {
 		t.Fatalf("Error removing nodes")
 	}
@@ -1156,34 +1248,34 @@ func TestValidateScenario(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 3}
+	ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 8}
 
 	// Incompatible scenarios
 	fmt.Println("Validate empty scenario")
-	validJsonScenario, status, err := ValidateScenario([]byte(""))
+	validJsonScenario, status, err := ValidateScenario([]byte(""), "")
 	if validJsonScenario != nil || status != ValidatorStatusError || err == nil {
 		t.Fatalf("Empty scenario should not be valid")
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.0.0] == too old")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_0_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_0_0), "")
 	if validJsonScenario != nil || status != ValidatorStatusError || err == nil {
 		t.Fatalf("validJsonScenario should not be compatible")
 	}
 
 	// Compatible Scenarios
 	fmt.Println("Validate scenario: scenarioVer[none] == validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
-	fmt.Println(string(validJsonScenario))
+	// fmt.Println(string(validJsonScenario))
 	if string(validJsonScenario) != latestTestScenario {
 		t.Fatalf("validJsonScenario != latestTestScenario")
 	}
 
-	fmt.Println("Validate scenario: scenarioVer[1.5.3] == validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_3))
+	fmt.Println("Validate scenario: scenarioVer[1.6.8] == validatorVer[latest]")
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_6_8), "")
 	if validJsonScenario == nil || status != ValidatorStatusValid || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1191,8 +1283,26 @@ func TestValidateScenario(t *testing.T) {
 		t.Fatalf("validJsonScenario != latestTestScenario")
 	}
 
+	fmt.Println("Validate scenario: scenarioVer[1.6.6] < validatorVer[latest]")
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_6_6), "")
+	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
+		t.Fatalf("validJsonScenario should not be nil")
+	}
+	if string(validJsonScenario) != latestTestScenario {
+		t.Fatalf("validJsonScenario != latestTestScenario")
+	}
+
+	fmt.Println("Validate scenario: scenarioVer[1.5.3] < validatorVer[latest]")
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_3), "")
+	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
+		t.Fatalf("validJsonScenario should not be nil")
+	}
+	if string(validJsonScenario) != latestTestScenario {
+		t.Fatalf("validJsonScenario != latestTestScenario")
+	}
+
 	fmt.Println("Validate scenario: scenarioVer[1.5.0] < validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_0), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1201,7 +1311,7 @@ func TestValidateScenario(t *testing.T) {
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.4.0] < validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_4_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_4_0), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
@@ -1210,7 +1320,7 @@ func TestValidateScenario(t *testing.T) {
 	}
 
 	fmt.Println("Validate scenario: scenarioVer[1.3.0] < validatorVer[latest]")
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_3_0))
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_3_0), "")
 	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}

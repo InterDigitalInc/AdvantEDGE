@@ -29,6 +29,8 @@ import (
 	"net/http"
 	"strings"
 
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
+
 	"github.com/gorilla/mux"
 )
 
@@ -46,7 +48,7 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-		handler = ge.sessionMgr.Authorizer(handler)
+		handler = met.MetricsHandler(handler, ge.sandboxName, serviceName)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).

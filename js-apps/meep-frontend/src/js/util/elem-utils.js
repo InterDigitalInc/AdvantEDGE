@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import _ from 'lodash';
+
 import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
@@ -46,7 +48,8 @@ import {
   DEFAULT_LATENCY_JITTER_APP,
   DEFAULT_THROUGHPUT_DL_APP,
   DEFAULT_THROUGHPUT_UL_APP,
-  DEFAULT_PACKET_LOSS_APP
+  DEFAULT_PACKET_LOSS_APP,
+  DEFAULT_CONNECTIVITY_MODEL
 } from '../meep-constants';
 
 // Network Element Fields
@@ -88,6 +91,10 @@ export const FIELD_CHART_LOC = 'userChartLocation';
 export const FIELD_CHART_VAL = 'userChartAlternateValues';
 export const FIELD_CHART_GROUP = 'userChartGroup';
 export const FIELD_CONNECTED = 'connected';
+export const FIELD_CONNECTIVITY_MODEL = 'model';
+export const FIELD_DN_NAME = 'dnn';
+export const FIELD_DN_LADN = 'ladn';
+export const FIELD_DN_ECSP = 'ecsp';
 export const FIELD_WIRELESS = 'wireless';
 export const FIELD_WIRELESS_TYPE = 'wirelessType';
 export const FIELD_INT_DOM_LATENCY = 'interDomainLatency';
@@ -124,6 +131,9 @@ export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
 export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
 
+export const getElemByName = (entries, name) => {
+  return (entries && entries[name]) ? entries[name] : null;
+};
 
 export const getElemFieldVal = (elem, field) => {
   return (elem && elem[field]) ? elem[field].val : null;
@@ -143,6 +153,12 @@ export const setElemFieldErr = (elem, field, err) => {
   if (elem) {
     elem[field].err = err;
   }
+};
+
+export const validElem = (element) => {
+  var fieldsInError = 0;
+  _.forOwn(element, val => (fieldsInError = val.err ? fieldsInError + 1 : fieldsInError));
+  return (fieldsInError) ? false : true;
 };
 
 export const resetElem = (elem) => {
@@ -195,6 +211,10 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CHART_VAL, '');
   setElemFieldVal(elem, FIELD_CHART_GROUP, '');
   setElemFieldVal(elem, FIELD_CONNECTED, true);
+  setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, DEFAULT_CONNECTIVITY_MODEL);
+  setElemFieldVal(elem, FIELD_DN_NAME, '');
+  setElemFieldVal(elem, FIELD_DN_LADN, false);
+  setElemFieldVal(elem, FIELD_DN_ECSP, '');
   setElemFieldVal(elem, FIELD_WIRELESS, false);
   setElemFieldVal(elem, FIELD_WIRELESS_TYPE, '');
   setElemFieldVal(elem, FIELD_INT_DOM_LATENCY, DEFAULT_LATENCY_INTER_DOMAIN);

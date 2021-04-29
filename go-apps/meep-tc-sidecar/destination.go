@@ -25,7 +25,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 )
 
 type history struct {
@@ -150,7 +150,7 @@ func (u *destination) compute() (st stat) {
 	return
 }
 
-func (u *destination) processRxTx(ifbStatsStr string) float64 {
+func (u *destination) processRxTx(ifbStatsStr string, curTime time.Time) float64 {
 
 	// Retrieve ifb statistics from passed string
 	// NOTE: we have to read the ifbStats from the back since based on the results are always at
@@ -163,9 +163,6 @@ func (u *destination) processRxTx(ifbStatsStr string) float64 {
 	} else {
 		log.Error("Error in the ifb statistics output: ", ifbStats)
 	}
-
-	// Get timestamp for calculations
-	curTime := time.Now()
 
 	// Calculate throughput in Mbps
 	var tput float64
@@ -182,7 +179,7 @@ func (u *destination) processRxTx(ifbStatsStr string) float64 {
 	return tput
 }
 
-func (u *destination) logRxTx(ifbStatsStr string) {
+func (u *destination) logRxTx(ifbStatsStr string, curTime time.Time) {
 
 	// Retrieve ifb statistics from passed string
 	// NOTE: we have to read the ifbStats from the back since based on the results are always at
@@ -198,9 +195,6 @@ func (u *destination) logRxTx(ifbStatsStr string) {
 	} else {
 		log.Error("Error in the ifb statistics output: ", ifbStats)
 	}
-
-	// Get timestamp for calculations
-	curTime := time.Now()
 
 	// Calculate packet loss percentage
 	var loss float64
@@ -227,7 +221,7 @@ func (u *destination) logRxTx(ifbStatsStr string) {
 
 	// Store network metric
 	srcDest := u.hostName + ":" + u.remoteName
-	var metric ms.NetworkMetric
+	var metric met.NetworkMetric
 	metric.Src = u.remoteName
 	metric.Dst = u.hostName
 	semLatencyMap.Lock()

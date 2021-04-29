@@ -3,14 +3,22 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost/sandbox-ctrl/v1*
+All URIs are relative to *http://localhost/sandboxname/sandbox-ctrl/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *ActiveScenarioApi* | [**activateScenario**](Apis/ActiveScenarioApi.md#activatescenario) | **POST** /active/{name} | Deploy a scenario
 *ActiveScenarioApi* | [**getActiveNodeServiceMaps**](Apis/ActiveScenarioApi.md#getactivenodeservicemaps) | **GET** /active/serviceMaps | Get deployed scenario's port mapping
 *ActiveScenarioApi* | [**getActiveScenario**](Apis/ActiveScenarioApi.md#getactivescenario) | **GET** /active | Get the deployed scenario
+*ActiveScenarioApi* | [**getActiveScenarioDomain**](Apis/ActiveScenarioApi.md#getactivescenariodomain) | **GET** /active/domains | Get domain elements from the deployed scenario
+*ActiveScenarioApi* | [**getActiveScenarioNetworkLocation**](Apis/ActiveScenarioApi.md#getactivescenarionetworklocation) | **GET** /active/networkLocations | Get network location elements from the deployed scenario
+*ActiveScenarioApi* | [**getActiveScenarioPhysicalLocation**](Apis/ActiveScenarioApi.md#getactivescenariophysicallocation) | **GET** /active/physicalLocations | Get physical location elements from the deployed scenario
+*ActiveScenarioApi* | [**getActiveScenarioProcess**](Apis/ActiveScenarioApi.md#getactivescenarioprocess) | **GET** /active/processes | Get process elements from the deployed scenario
+*ActiveScenarioApi* | [**getActiveScenarioZone**](Apis/ActiveScenarioApi.md#getactivescenariozone) | **GET** /active/zones | Get zone elements from the deployed scenario
 *ActiveScenarioApi* | [**terminateScenario**](Apis/ActiveScenarioApi.md#terminatescenario) | **DELETE** /active | Terminate the deployed scenario
+*ConnectivityApi* | [**createPduSession**](Apis/ConnectivityApi.md#createpdusession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
+*ConnectivityApi* | [**getPduSessionList**](Apis/ConnectivityApi.md#getpdusessionlist) | **GET** /connectivity/pdu-session | Get list of PDU Sessions
+*ConnectivityApi* | [**terminatePduSession**](Apis/ConnectivityApi.md#terminatepdusession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
 *EventReplayApi* | [**createReplayFile**](Apis/EventReplayApi.md#createreplayfile) | **POST** /replay/{name} | Add a replay file
 *EventReplayApi* | [**createReplayFileFromScenarioExec**](Apis/EventReplayApi.md#createreplayfilefromscenarioexec) | **POST** /replay/{name}/generate | Generate a replay file from Active Scenario events
 *EventReplayApi* | [**deleteReplayFile**](Apis/EventReplayApi.md#deletereplayfile) | **DELETE** /replay/{name} | Delete a replay file
@@ -30,13 +38,17 @@ Class | Method | HTTP request | Description
  - [ActivationInfo](./Models/ActivationInfo.md)
  - [CellularDomainConfig](./Models/CellularDomainConfig.md)
  - [CellularPoaConfig](./Models/CellularPoaConfig.md)
+ - [ConnectivityConfig](./Models/ConnectivityConfig.md)
  - [CpuConfig](./Models/CpuConfig.md)
+ - [DNConfig](./Models/DNConfig.md)
  - [Deployment](./Models/Deployment.md)
  - [Domain](./Models/Domain.md)
+ - [Domains](./Models/Domains.md)
  - [EgressService](./Models/EgressService.md)
  - [Event](./Models/Event.md)
  - [EventMobility](./Models/EventMobility.md)
  - [EventNetworkCharacteristicsUpdate](./Models/EventNetworkCharacteristicsUpdate.md)
+ - [EventPduSession](./Models/EventPduSession.md)
  - [EventPoasInRange](./Models/EventPoasInRange.md)
  - [EventScenarioUpdate](./Models/EventScenarioUpdate.md)
  - [ExternalConfig](./Models/ExternalConfig.md)
@@ -47,14 +59,20 @@ Class | Method | HTTP request | Description
  - [MemoryConfig](./Models/MemoryConfig.md)
  - [NetworkCharacteristics](./Models/NetworkCharacteristics.md)
  - [NetworkLocation](./Models/NetworkLocation.md)
+ - [NetworkLocations](./Models/NetworkLocations.md)
  - [NodeDataUnion](./Models/NodeDataUnion.md)
  - [NodeServiceMaps](./Models/NodeServiceMaps.md)
+ - [PDUSession](./Models/PDUSession.md)
+ - [PDUSessionInfo](./Models/PDUSessionInfo.md)
+ - [PDUSessionList](./Models/PDUSessionList.md)
  - [PhysicalLocation](./Models/PhysicalLocation.md)
+ - [PhysicalLocations](./Models/PhysicalLocations.md)
  - [Poa4GConfig](./Models/Poa4GConfig.md)
  - [Poa5GConfig](./Models/Poa5GConfig.md)
  - [PoaWifiConfig](./Models/PoaWifiConfig.md)
  - [Point](./Models/Point.md)
  - [Process](./Models/Process.md)
+ - [Processes](./Models/Processes.md)
  - [Replay](./Models/Replay.md)
  - [ReplayEvent](./Models/ReplayEvent.md)
  - [ReplayFileList](./Models/ReplayFileList.md)
@@ -66,6 +84,7 @@ Class | Method | HTTP request | Description
  - [ServiceConfig](./Models/ServiceConfig.md)
  - [ServicePort](./Models/ServicePort.md)
  - [Zone](./Models/Zone.md)
+ - [Zones](./Models/Zones.md)
 
 
 <a name="documentation-for-authorization"></a>

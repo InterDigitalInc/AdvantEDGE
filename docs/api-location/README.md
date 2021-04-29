@@ -3,28 +3,12 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/location/v2*
+All URIs are relative to *https://localhost/sandboxname/location/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *LocationApi* | [**apByIdGET**](Apis/LocationApi.md#apbyidget) | **GET** /queries/zones/{zoneId}/accessPoints/{accessPointId} | Radio Node Location Lookup
 *LocationApi* | [**apGET**](Apis/LocationApi.md#apget) | **GET** /queries/zones/{zoneId}/accessPoints | Radio Node Location Lookup
-*LocationApi* | [**areaCircleSubDELETE**](Apis/LocationApi.md#areacirclesubdelete) | **DELETE** /subscriptions/area/circle/{subscriptionId} | Cancel a subscription
-*LocationApi* | [**areaCircleSubGET**](Apis/LocationApi.md#areacirclesubget) | **GET** /subscriptions/area/circle/{subscriptionId} | Retrieve subscription information
-*LocationApi* | [**areaCircleSubListGET**](Apis/LocationApi.md#areacirclesublistget) | **GET** /subscriptions/area/circle | Retrieves all active subscriptions to area change notifications
-*LocationApi* | [**areaCircleSubPOST**](Apis/LocationApi.md#areacirclesubpost) | **POST** /subscriptions/area/circle | Creates a subscription for area change notification
-*LocationApi* | [**areaCircleSubPUT**](Apis/LocationApi.md#areacirclesubput) | **PUT** /subscriptions/area/circle/{subscriptionId} | Updates a subscription information
-*LocationApi* | [**distanceGET**](Apis/LocationApi.md#distanceget) | **GET** /queries/distance | UE Distance Lookup of a specific UE
-*LocationApi* | [**distanceSubDELETE**](Apis/LocationApi.md#distancesubdelete) | **DELETE** /subscriptions/distance/{subscriptionId} | Cancel a subscription
-*LocationApi* | [**distanceSubGET**](Apis/LocationApi.md#distancesubget) | **GET** /subscriptions/distance/{subscriptionId} | Retrieve subscription information
-*LocationApi* | [**distanceSubListGET**](Apis/LocationApi.md#distancesublistget) | **GET** /subscriptions/distance | Retrieves all active subscriptions to distance change notifications
-*LocationApi* | [**distanceSubPOST**](Apis/LocationApi.md#distancesubpost) | **POST** /subscriptions/distance | Creates a subscription for distance change notification
-*LocationApi* | [**distanceSubPUT**](Apis/LocationApi.md#distancesubput) | **PUT** /subscriptions/distance/{subscriptionId} | Updates a subscription information
-*LocationApi* | [**periodicSubDELETE**](Apis/LocationApi.md#periodicsubdelete) | **DELETE** /subscriptions/periodic/{subscriptionId} | Cancel a subscription
-*LocationApi* | [**periodicSubGET**](Apis/LocationApi.md#periodicsubget) | **GET** /subscriptions/periodic/{subscriptionId} | Retrieve subscription information
-*LocationApi* | [**periodicSubListGET**](Apis/LocationApi.md#periodicsublistget) | **GET** /subscriptions/periodic | Retrieves all active subscriptions to periodic notifications
-*LocationApi* | [**periodicSubPOST**](Apis/LocationApi.md#periodicsubpost) | **POST** /subscriptions/periodic | Creates a subscription for periodic notification
-*LocationApi* | [**periodicSubPUT**](Apis/LocationApi.md#periodicsubput) | **PUT** /subscriptions/periodic/{subscriptionId} | Updates a subscription information
 *LocationApi* | [**userTrackingSubDELETE**](Apis/LocationApi.md#usertrackingsubdelete) | **DELETE** /subscriptions/userTracking/{subscriptionId} | Cancel a subscription
 *LocationApi* | [**userTrackingSubGET**](Apis/LocationApi.md#usertrackingsubget) | **GET** /subscriptions/userTracking/{subscriptionId} | Retrieve subscription information
 *LocationApi* | [**userTrackingSubListGET**](Apis/LocationApi.md#usertrackingsublistget) | **GET** /subscriptions/userTracking | Retrieves all active subscriptions to user tracking notifications
@@ -43,6 +27,22 @@ Class | Method | HTTP request | Description
 *LocationApi* | [**zoneStatusSubPUT**](Apis/LocationApi.md#zonestatussubput) | **PUT** /subscriptions/zoneStatus/{subscriptionId} | Updates a subscription information
 *LocationApi* | [**zonesGET**](Apis/LocationApi.md#zonesget) | **GET** /queries/zones | Zones information Lookup
 *LocationApi* | [**zonesGetById**](Apis/LocationApi.md#zonesgetbyid) | **GET** /queries/zones/{zoneId} | Zones information Lookup
+*UnsupportedApi* | [**areaCircleSubDELETE**](Apis/UnsupportedApi.md#areacirclesubdelete) | **DELETE** /subscriptions/area/circle/{subscriptionId} | Cancel a subscription
+*UnsupportedApi* | [**areaCircleSubGET**](Apis/UnsupportedApi.md#areacirclesubget) | **GET** /subscriptions/area/circle/{subscriptionId} | Retrieve subscription information
+*UnsupportedApi* | [**areaCircleSubListGET**](Apis/UnsupportedApi.md#areacirclesublistget) | **GET** /subscriptions/area/circle | Retrieves all active subscriptions to area change notifications
+*UnsupportedApi* | [**areaCircleSubPOST**](Apis/UnsupportedApi.md#areacirclesubpost) | **POST** /subscriptions/area/circle | Creates a subscription for area change notification
+*UnsupportedApi* | [**areaCircleSubPUT**](Apis/UnsupportedApi.md#areacirclesubput) | **PUT** /subscriptions/area/circle/{subscriptionId} | Updates a subscription information
+*UnsupportedApi* | [**distanceGET**](Apis/UnsupportedApi.md#distanceget) | **GET** /queries/distance | UE Distance Lookup of a specific UE
+*UnsupportedApi* | [**distanceSubDELETE**](Apis/UnsupportedApi.md#distancesubdelete) | **DELETE** /subscriptions/distance/{subscriptionId} | Cancel a subscription
+*UnsupportedApi* | [**distanceSubGET**](Apis/UnsupportedApi.md#distancesubget) | **GET** /subscriptions/distance/{subscriptionId} | Retrieve subscription information
+*UnsupportedApi* | [**distanceSubListGET**](Apis/UnsupportedApi.md#distancesublistget) | **GET** /subscriptions/distance | Retrieves all active subscriptions to distance change notifications
+*UnsupportedApi* | [**distanceSubPOST**](Apis/UnsupportedApi.md#distancesubpost) | **POST** /subscriptions/distance | Creates a subscription for distance change notification
+*UnsupportedApi* | [**distanceSubPUT**](Apis/UnsupportedApi.md#distancesubput) | **PUT** /subscriptions/distance/{subscriptionId} | Updates a subscription information
+*UnsupportedApi* | [**periodicSubDELETE**](Apis/UnsupportedApi.md#periodicsubdelete) | **DELETE** /subscriptions/periodic/{subscriptionId} | Cancel a subscription
+*UnsupportedApi* | [**periodicSubGET**](Apis/UnsupportedApi.md#periodicsubget) | **GET** /subscriptions/periodic/{subscriptionId} | Retrieve subscription information
+*UnsupportedApi* | [**periodicSubListGET**](Apis/UnsupportedApi.md#periodicsublistget) | **GET** /subscriptions/periodic | Retrieves all active subscriptions to periodic notifications
+*UnsupportedApi* | [**periodicSubPOST**](Apis/UnsupportedApi.md#periodicsubpost) | **POST** /subscriptions/periodic | Creates a subscription for periodic notification
+*UnsupportedApi* | [**periodicSubPUT**](Apis/UnsupportedApi.md#periodicsubput) | **PUT** /subscriptions/periodic/{subscriptionId} | Updates a subscription information
 
 
 <a name="documentation-for-models"></a>

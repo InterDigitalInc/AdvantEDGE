@@ -46,6 +46,5 @@ type TrackingNotification struct {
 	// Unique identifier of a point of access
 	PreviousAccessPointId string `json:"previousAccessPointId,omitempty"`
 
-	// Indicates the time of day for zonal presence notification.
-	Timestamp TimeStamp `json:"timestamp,omitempty"`
+	Timestamp *TimeStamp `json:"timestamp,omitempty"`
 }

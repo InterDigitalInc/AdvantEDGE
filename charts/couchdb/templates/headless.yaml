@@ -10,9 +10,9 @@ metadata:
     meepOrigin: {{ .Values.meepOrigin }}
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: couchdb
       port: 5984
   selector:
-    app: {{ template "couchdb.name" . }}
-    release: {{ .Release.Name }}
+{{ include "couchdb.ss.selector" . | indent 4 }}

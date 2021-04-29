@@ -53,6 +53,10 @@ import { updateObject } from '../../util/object-util';
 const styles = {
   button: {
     marginRight: 10
+  },
+  dashboard: {
+    height: '70vh',
+    minHeight: 600
   }
 };
 
@@ -147,7 +151,7 @@ const ViewForName = ({
   // Handle Map view
   if (viewName === MAP_VIEW) {
     return (
-      <div style={{ height: '80vh' }}>
+      <div style={styles.dashboard}>
         <IDCMap
           type={TYPE_EXEC}
           sandboxName={sandboxName}
@@ -159,7 +163,7 @@ const ViewForName = ({
   // Handle Network Topology view
   if (viewName === NET_TOPOLOGY_VIEW) {
     return (
-      <div style={{ height: '80vh' }}>
+      <div style={styles.dashboard}>
         <IDCVis
           type={TYPE_EXEC}
           width='100%'
@@ -193,12 +197,12 @@ const ViewForName = ({
     }
 
     return (
-      <div style={{ height: '80vh' }}>
+      <div style={styles.dashboard}>
         <Iframe
           url={selectedUrl}
-          id="myId"
-          display="initial"
-          position="relative"
+          id='myId'
+          display='initial'
+          position='relative'
           allowFullScreen
           width='100%'
           height='100%'
@@ -236,13 +240,13 @@ const DashboardConfiguration = props => {
   return (
     <Elevation
       z={2}
-      className="component-style"
+      className='idcc-elevation'
       style={{ padding: 10, marginBottom: 10 }}
     >
       <Grid>
         <GridCell span={6}>
           <div style={{ marginBottom: 10 }}>
-            <span className="mdc-typography--headline6">
+            <span className='mdc-typography--headline6'>
               Dashboard
             </span>
           </div>
@@ -423,10 +427,10 @@ class DashboardContainer extends Component {
 
         <Grid>
           {!view1Present ? null : (
-            <GridCell span={span1} className="chartContainer">
+            <GridCell span={span1} className='chartContainer'>
               <Elevation
                 z={2}
-                className="component-style"
+                className='idcc-elevation'
                 style={{ padding: 10 }}
               >
                 {view1}
@@ -438,11 +442,11 @@ class DashboardContainer extends Component {
             <GridCell
               span={span2}
               style={{ marginLeft: -10, paddingLeft: 10 }}
-              className="chartContainer"
+              className='chartContainer'
             >
               <Elevation
                 z={2}
-                className="component-style"
+                className='idcc-elevation'
                 style={{ padding: 10 }}
               >
                 {view2}

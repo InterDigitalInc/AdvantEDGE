@@ -29,10 +29,8 @@ image:
     MEEP_USER_SWAGGER: "false"
     MEEP_USER_SWAGGER_DIR: "/path/to/user/swagger"
     MEEP_HTTPS_ONLY: "false"
+    MEEP_AUTH_ENABLED: "\"false\""
   envSecret:
-    MEEP_SESSION_KEY:
-      name: meep-session
-      key: encryption-key
 
 service:
   type: ClusterIP

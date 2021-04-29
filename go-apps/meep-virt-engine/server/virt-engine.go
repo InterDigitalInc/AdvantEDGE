@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -38,8 +39,8 @@ const moduleNamespace string = "default"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
-
-// const fieldScenarioName = "scenario-name"
+const fieldEventType = "event-type"
+const fieldNodeName = "node-name"
 
 type VirtEngine struct {
 	wdPinger            *wd.Pinger
@@ -49,8 +50,8 @@ type VirtEngine struct {
 	hostUrl             string
 	userSwagger         string
 	userSwaggerDir      string
-	sessionKey          string
 	httpsOnly           bool
+	authEnabled         bool
 	handlerId           int
 	sboxPods            map[string]string
 }
@@ -115,11 +116,13 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_HTTPS_ONLY: ", httpsOnlyStr)
 
-	// Retrieve Session Encryption Key from environment variable
-	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
-	if ve.sessionKey == "" {
-		log.Warn("MEEP_SESSION_KEY not found")
+	// Retrieve Auth mode from environment variable
+	authEnabledStr := strings.TrimSpace(os.Getenv("MEEP_AUTH_ENABLED"))
+	authEnabled, err := strconv.ParseBool(authEnabledStr)
+	if err == nil {
+		ve.authEnabled = authEnabled
 	}
+	log.Info("MEEP_AUTH_ENABLED: ", authEnabledStr)
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)
@@ -173,6 +176,21 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioActivate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		activateScenario(msg.Payload[fieldSandboxName])
+	case mq.MsgScenarioUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		eventType := msg.Payload[fieldEventType]
+		sandboxName := msg.Payload[fieldSandboxName]
+		nodeName := msg.Payload[fieldNodeName]
+		switch eventType {
+		case mod.EventAddNode:
+			addScenarioNode(sandboxName, nodeName)
+		case mod.EventModifyNode:
+			modifyScenarioNode(sandboxName, nodeName)
+		case mod.EventRemoveNode:
+			removeScenarioNode(sandboxName, nodeName)
+		default:
+			log.Trace("Ignoring unsupported scenario update event type: ", eventType)
+		}
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		terminateScenario(msg.Payload[fieldSandboxName])
@@ -196,10 +214,125 @@ func activateScenario(sandboxName string) {
 	ve.activeScenarioNames[sandboxName] = activeModel.GetScenarioName()
 
 	// Deploy scenario
-	err := Deploy(sandboxName, activeModel)
+	err := Deploy(sandboxName, "", activeModel)
 	if err != nil {
 		log.Error("Error creating charts: ", err)
 		return
+	}
+}
+
+func addScenarioNode(sandboxName string, nodeName string) {
+	log.Info("Adding node: ", nodeName)
+
+	// Get sandbox-specific active model
+	activeModel := ve.activeModels[sandboxName]
+	if activeModel == nil {
+		log.Error("No active model for sandbox: ", sandboxName)
+		return
+	}
+
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
+	// Deploy single process
+	nodeType := activeModel.GetNodeType(nodeName)
+	if mod.IsProc(nodeType) {
+		err := Deploy(sandboxName, nodeName, activeModel)
+		if err != nil {
+			log.Error("Error creating charts: ", err)
+			return
+		}
+	} else {
+		log.Error("Unsupported node type: ", nodeType)
+		return
+	}
+}
+
+func modifyScenarioNode(sandboxName string, nodeName string) {
+	log.Info("Modifying node: ", nodeName)
+
+	// Get sandbox-specific active model
+	activeModel := ve.activeModels[sandboxName]
+	if activeModel == nil {
+		log.Error("No active model for sandbox: ", sandboxName)
+		return
+	}
+
+	// Get cached scenario name
+	scenarioName := ve.activeScenarioNames[sandboxName]
+
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
+	// Handle process updates only
+	nodeType := activeModel.GetNodeType(nodeName)
+	if mod.IsProc(nodeType) {
+
+		// Remove existing process
+		_, chartsToDelete := deleteReleases(sandboxName, scenarioName, nodeName)
+		log.Info("Number of charts to be deleted: ", chartsToDelete)
+
+		// Add updated process
+		err := Deploy(sandboxName, nodeName, activeModel)
+		if err != nil {
+			log.Error("Error creating charts: ", err)
+			return
+		}
+	} else {
+		log.Error("Unsupported node type: ", nodeType)
+		return
+	}
+}
+
+func removeScenarioNode(sandboxName string, nodeName string) {
+	log.Info("Removing node: ", nodeName)
+	if nodeName == "" {
+		log.Error("Missing node name")
+		return
+	}
+
+	// Get sandbox-specific active model
+	activeModel := ve.activeModels[sandboxName]
+	if activeModel == nil {
+		log.Error("No active model for sandbox: ", sandboxName)
+		return
+	}
+
+	// Get cached scenario name
+	scenarioName := ve.activeScenarioNames[sandboxName]
+
+	// Before updating active scenario, find processes to remove
+	procNames := []string{}
+	node := activeModel.GetNode(nodeName)
+	nodeType := activeModel.GetNodeType(nodeName)
+	if mod.IsPhyLoc(nodeType) {
+		pl, ok := node.(*dataModel.PhysicalLocation)
+		if !ok {
+			log.Error("Error casting physical location: " + nodeName)
+			return
+		}
+		for _, proc := range pl.Processes {
+			procNames = append(procNames, proc.Name)
+		}
+	} else if mod.IsProc(nodeType) {
+		proc, ok := node.(*dataModel.Process)
+		if !ok {
+			log.Error("Error casting process: " + nodeName)
+			return
+		}
+		procNames = append(procNames, proc.Name)
+	} else {
+		log.Error("Unsupported node type: ", nodeType)
+		return
+	}
+
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
+	// Delete releases & remove charts for each process
+	for _, procName := range procNames {
+		_, chartsToDelete := deleteReleases(sandboxName, scenarioName, procName)
+		log.Info("Number of charts to be deleted: ", chartsToDelete)
 	}
 }
 
@@ -218,7 +351,7 @@ func terminateScenario(sandboxName string) {
 	scenarioName := ve.activeScenarioNames[sandboxName]
 
 	// Process right away and start a ticker to retry until everything is deleted
-	_, chartsToDelete := deleteReleases(sandboxName, scenarioName)
+	_, chartsToDelete := deleteReleases(sandboxName, scenarioName, "")
 	log.Info("Number of charts to be deleted: ", chartsToDelete)
 	ve.activeScenarioNames[sandboxName] = ""
 
@@ -267,7 +400,7 @@ func createSandbox(sandboxName string) {
 
 func destroySandbox(sandboxName string) {
 	// Process right away and start a ticker to retry until everything is deleted
-	_, chartsToDelete := deleteReleases(sandboxName, "")
+	_, chartsToDelete := deleteReleases(sandboxName, "", "")
 	log.Info("Number of charts to be deleted: ", chartsToDelete)
 	ve.activeScenarioNames[sandboxName] = ""
 	ve.activeModels[sandboxName] = nil
@@ -291,7 +424,7 @@ func destroySandbox(sandboxName string) {
 	// }()
 }
 
-func deleteReleases(sandboxName string, scenarioName string) (error, int) {
+func deleteReleases(sandboxName string, scenarioName string, procName string) (error, int) {
 	if sandboxName == "" {
 		return nil, 0
 	}
@@ -300,8 +433,12 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 	path := "/charts/" + sandboxName
 	releasePrefix := "meep-"
 	if scenarioName != "" {
-		path += "/scenario/"
+		path += "/scenario/" + scenarioName
 		releasePrefix += scenarioName + "-"
+	}
+	if procName != "" {
+		path += "/" + procName
+		releasePrefix += procName
 	}
 
 	// Retrieve list of releases

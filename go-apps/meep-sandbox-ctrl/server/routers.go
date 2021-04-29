@@ -29,6 +29,8 @@ import (
 	"net/http"
 	"strings"
 
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
+
 	"github.com/gorilla/mux"
 )
 
@@ -46,7 +48,7 @@ func NewRouter(priSw string, altSw string) *mux.Router {
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
-		handler = sbxCtrl.sessionMgr.Authorizer(handler)
+		handler = met.MetricsHandler(handler, sbxCtrl.sandboxName, serviceName)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -57,7 +59,6 @@ func NewRouter(priSw string, altSw string) *mux.Router {
 	// Path prefix router order is important
 	if altSw != "" {
 		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
-		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/alt/api/").
 			Name("AltSw").
@@ -65,7 +66,6 @@ func NewRouter(priSw string, altSw string) *mux.Router {
 	}
 	if priSw != "" {
 		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
-		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/api/").
 			Name("PriSw").
@@ -109,10 +109,66 @@ var routes = Routes{
 	},
 
 	Route{
+		"GetActiveScenarioDomain",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/active/domains",
+		GetActiveScenarioDomain,
+	},
+
+	Route{
+		"GetActiveScenarioNetworkLocation",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/active/networkLocations",
+		GetActiveScenarioNetworkLocation,
+	},
+
+	Route{
+		"GetActiveScenarioPhysicalLocation",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/active/physicalLocations",
+		GetActiveScenarioPhysicalLocation,
+	},
+
+	Route{
+		"GetActiveScenarioProcess",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/active/processes",
+		GetActiveScenarioProcess,
+	},
+
+	Route{
+		"GetActiveScenarioZone",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/active/zones",
+		GetActiveScenarioZone,
+	},
+
+	Route{
 		"TerminateScenario",
 		strings.ToUpper("Delete"),
 		"/sandbox-ctrl/v1/active",
 		TerminateScenario,
+	},
+
+	Route{
+		"CreatePduSession",
+		strings.ToUpper("Post"),
+		"/sandbox-ctrl/v1/connectivity/pdu-session/{ueName}/{pduSessionId}",
+		CreatePduSession,
+	},
+
+	Route{
+		"GetPduSessionList",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/connectivity/pdu-session",
+		GetPduSessionList,
+	},
+
+	Route{
+		"TerminatePduSession",
+		strings.ToUpper("Delete"),
+		"/sandbox-ctrl/v1/connectivity/pdu-session/{ueName}/{pduSessionId}",
+		TerminatePduSession,
 	},
 
 	Route{

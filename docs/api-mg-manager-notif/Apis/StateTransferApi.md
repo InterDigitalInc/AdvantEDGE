@@ -1,6 +1,6 @@
 # StateTransferApi
 
-All URIs are relative to *http://mgm-notif/v1*
+All URIs are relative to *http://localhost/sandboxname/mgm-notif/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

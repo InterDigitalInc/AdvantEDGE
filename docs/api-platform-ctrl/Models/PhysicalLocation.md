@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **connected** | [**Boolean**](boolean.md) | true: Physical location has network connectivity false: Physical location has no network connectivity | [optional] [default to null]
 **wireless** | [**Boolean**](boolean.md) | true: Physical location uses a wireless connection false: Physical location uses a wired connection | [optional] [default to null]
 **wirelessType** | [**String**](string.md) | Prioritized, comma-separated list of supported wireless connection types. Default priority if not specififed is &#39;wifi,5g,4g,other&#39;. Wireless connection types: - 4g - 5g - wifi - other | [optional] [default to null]
+**dataNetwork** | [**DNConfig**](DNConfig.md) |  | [optional] [default to null]
 **meta** | [**Map**](string.md) | Key/Value Pair Map (string, string) | [optional] [default to null]
 **userMeta** | [**Map**](string.md) | Key/Value Pair Map (string, string) | [optional] [default to null]
 **processes** | [**List**](Process.md) |  | [optional] [default to null]

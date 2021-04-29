@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Radio Network Information Service REST API
  *
- * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+ * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription
  *
  * API version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -28,27 +28,29 @@ type Trigger int32
 
 // List of Trigger
 const (
-	0__Trigger Trigger = "0"
-	1__Trigger Trigger = "1"
-	2__Trigger Trigger = "2"
-	3__Trigger Trigger = "3"
-	4__Trigger Trigger = "4"
-	5__Trigger Trigger = "5"
-	10__Trigger Trigger = "10"
-	11__Trigger Trigger = "11"
-	12__Trigger Trigger = "12"
-	13__Trigger Trigger = "13"
-	14__Trigger Trigger = "14"
-	15__Trigger Trigger = "15"
-	20__Trigger Trigger = "20"
-	21__Trigger Trigger = "21"
-	30__Trigger Trigger = "30"
-	31__Trigger Trigger = "31"
-	40__Trigger Trigger = "40"
-	41__Trigger Trigger = "41"
-	42__Trigger Trigger = "42"
-	50__Trigger Trigger = "50"
-	51__Trigger Trigger = "51"
-	60__Trigger Trigger = "60"
-	61__Trigger Trigger = "61"
+        TRIGGER_NOT_AVAILABLE                             Trigger = 0
+        TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS         Trigger = 1
+        TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON Trigger = 2
+        TRIGGER_PERIODICAL_REPORT_CGI                     Trigger = 3
+        TRIGGER_INTRA_PERIODICAL_REPORT_STRONGEST_CELLS   Trigger = 4
+        TRIGGER_INTRA_PERIODICAL_REPORT_CGI               Trigger = 5
+        TRIGGER_EVENT_A1                                  Trigger = 10
+        TRIGGER_EVENT_A2                                  Trigger = 11
+        TRIGGER_EVENT_A3                                  Trigger = 12
+        TRIGGER_EVENT_A4                                  Trigger = 13
+        TRIGGER_EVENT_A5                                  Trigger = 14
+        TRIGGER_EVENT_A6                                  Trigger = 15
+        TRIGGER_EVENT_B1                                  Trigger = 20
+        TRIGGER_EVENT_B2                                  Trigger = 21
+        TRIGGER_EVENT_B1_NR                               Trigger = 20
+        TRIGGER_EVENT_B2_NR                               Trigger = 21
+        TRIGGER_EVENT_C1                                  Trigger = 30
+        TRIGGER_EVENT_C2                                  Trigger = 31
+        TRIGGER_EVENT_W1                                  Trigger = 40
+        TRIGGER_EVENT_W2                                  Trigger = 41
+        TRIGGER_EVENT_W3                                  Trigger = 42
+        TRIGGER_EVENT_V1                                  Trigger = 50
+        TRIGGER_EVENT_V2                                  Trigger = 51
+        TRIGGER_EVENT_H1                                  Trigger = 60
+        TRIGGER_EVENT_H2                                  Trigger = 61
 )

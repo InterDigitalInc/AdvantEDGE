@@ -56,6 +56,35 @@ definitions:
         description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
     description: Cellular domain configuration information
     example: {}
+  DNConfig:
+    type: object
+    properties:
+      dnn:
+        type: string
+        description: Data Network Name
+      ladn:
+        type: boolean
+        description: |-
+          true: Data network serves local area only
+          false: Data network is not limited to local area
+      ecsp:
+        type: string
+        description: Edge Compute Service Provider
+    description: Data Network Configuration
+    example: {}
+  ConnectivityConfig:
+    type: object
+    properties:
+      model:
+        description: >-
+          Connectivity Model:
+          <li>OPEN: Any node in the scenario can communicate with any node
+          <li>PDU: Terminal nodes (UE) require a PDU session to the target DN
+        type: string
+        enum:
+          - OPEN
+          - PDU
+    example: {}
   GeoData:
     description: Geographic data
     type: object
@@ -138,6 +167,8 @@ definitions:
     properties:
       netChar:
         $ref: '#/definitions/NetworkCharacteristics'
+      connectivity:
+        $ref: '#/definitions/ConnectivityConfig'
       interDomainLatency:
         type: integer
         description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
@@ -216,6 +247,13 @@ definitions:
           $ref: '#/definitions/Zone'
     description: Operator domain object
     example: {}
+  Domains:
+    type: object
+    properties:
+      domains:
+        type: array
+        items:
+          $ref: '#/definitions/Domain'
   EgressService:
     type: object
     properties:
@@ -249,6 +287,7 @@ definitions:
           - NETWORK-CHARACTERISTICS-UPDATE
           - POAS-IN-RANGE
           - SCENARIO-UPDATE
+          - PDU-SESSION
       eventMobility:
         $ref: '#/definitions/EventMobility'
       eventNetworkCharacteristicsUpdate:
@@ -257,6 +296,8 @@ definitions:
         $ref: '#/definitions/EventPoasInRange'
       eventScenarioUpdate:
         $ref: '#/definitions/EventScenarioUpdate'
+      eventPduSession:
+        $ref: '#/definitions/EventPduSession'
     description: Event object
     example:
       name: name
@@ -343,7 +384,7 @@ definitions:
       <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.
       <li>MODIFY - Modifies scenario node.
 
-      <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
+      <p>NOTE: Current backend implementation supports only PhysicalLocation & Process network elements.
     properties:
       action:
         type: string
@@ -354,6 +395,25 @@ definitions:
           - MODIFY
       node:
         $ref: '#/definitions/ScenarioNode'
+    example: {}
+  EventPduSession:
+    type: object
+    description: >-
+      PDU Session Event object.<br>
+      Specifies a PDU session action to perform for the provided UE.
+
+      <p>Supported Actions:
+      <li>ADD - Create new PDU Session from UE to target data network.
+      <li>REMOVE - Remove active PDU Session. Only UE name & PDU session ID are required.
+    properties:
+      action:
+        type: string
+        description: PDU Session action to perform for provided UE
+        enum:
+          - ADD
+          - REMOVE
+      pduSession:
+        $ref: '#/definitions/PDUSession'
     example: {}
   ExternalConfig:
     type: object
@@ -487,6 +547,13 @@ definitions:
           $ref: '#/definitions/PhysicalLocation'
     description: Logical network location object
     example: {}
+  NetworkLocations:
+    type: object
+    properties:
+      networkLocations:
+        type: array
+        items:
+          $ref: '#/definitions/NetworkLocation'
   NodeDataUnion:
     type: object
     description: |-
@@ -503,8 +570,8 @@ definitions:
       #   $ref: '#/definitions/NetworkLocation'
       physicalLocation:
         $ref: '#/definitions/PhysicalLocation'
-      # process:
-      #   $ref: '#/definitions/Process'
+      process:
+        $ref: '#/definitions/Process'
     example: {}
   PhysicalLocation:
     type: object
@@ -565,6 +632,9 @@ definitions:
           - wifi
           - other
         required: false
+      dataNetwork:
+        $ref: '#/definitions/DNConfig'
+        required: false
       meta:
         type: object
         description: 'Key/Value Pair Map (string, string)'
@@ -607,6 +677,13 @@ definitions:
         description: Physical location MAC Address
     description: Physical location object
     example: {}
+  PhysicalLocations:
+    type: object
+    properties:
+      physicalLocations:
+        type: array
+        items:
+          $ref: '#/definitions/PhysicalLocation'
   Process:
     type: object
     properties:
@@ -697,6 +774,13 @@ definitions:
         description: Identifier used for process placement in AdvantEDGE cluster
     description: Application or service object
     example: {}
+  Processes:
+    type: object
+    properties:
+      processes:
+        type: array
+        items:
+          $ref: '#/definitions/Process'
   Release:
     type: object
     properties:
@@ -859,6 +943,11 @@ definitions:
         description: Node type
         enum:
           - UE
+          - FOG
+          - EDGE
+          - UE-APP
+          - EDGE-APP
+          - CLOUD-APP
       nodeDataUnion:
         $ref: '#/definitions/NodeDataUnion'
       parent:
@@ -979,6 +1068,13 @@ definitions:
           $ref: '#/definitions/NetworkLocation'
     description: Logical zone (MEC network) object
     example: {}
+  Zones:
+    type: object
+    properties:
+      zones:
+        type: array
+        items:
+          $ref: '#/definitions/Zone'
   MemoryConfig:
     type: object
     properties:
@@ -1001,3 +1097,31 @@ definitions:
         format: float
         description: Maximum requested CPU
     description: CPU configuration object
+  PDUSession:
+    type: object
+    properties:
+      ue:
+        type: string
+        description: UE name as defined in the scenario
+      id:
+        type: string
+        description: PDU Session ID
+      info:
+        $ref: '#/definitions/PDUSessionInfo'
+    description: PDU Session
+    example: {}
+  PDUSessionInfo:
+    type: object
+    properties:
+      dnn:
+        type: string
+        description: Data Network Name as defined in the scenario
+  PDUSessionList:
+    type: object
+    properties:
+      sessions:
+        type: array
+        items:
+          $ref: '#/definitions/PDUSession'
+    description: PDUSession list
+    example: {}

@@ -30,12 +30,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EdgeInfo', 'model/MobilityGroupAppState', 'model/MobilityGroupEvent', 'model/SubscriptionId', 'model/TrackingNotification', 'model/UeState', 'model/UserEventType', 'model/UserInfo', 'model/UserList', 'model/UserTrackingNotification', 'model/ZoneInfo', 'api/EdgeAppInfoApi', 'api/NotificationsApi', 'api/StateTransferApi', 'api/UELocationApi', 'api/UEStateApi'], factory);
+    define(['ApiClient', 'model/EdgeInfo', 'model/InlineTrackingNotification', 'model/MobilityGroupAppState', 'model/MobilityGroupEvent', 'model/SubscriptionId', 'model/TimeStamp', 'model/TrackingNotification', 'model/UeState', 'model/UserEventType', 'model/UserInfo', 'model/UserList', 'model/UserTrackingNotification', 'model/ZoneInfo', 'api/EdgeAppInfoApi', 'api/NotificationsApi', 'api/StateTransferApi', 'api/UELocationApi', 'api/UEStateApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/EdgeInfo'), require('./model/MobilityGroupAppState'), require('./model/MobilityGroupEvent'), require('./model/SubscriptionId'), require('./model/TrackingNotification'), require('./model/UeState'), require('./model/UserEventType'), require('./model/UserInfo'), require('./model/UserList'), require('./model/UserTrackingNotification'), require('./model/ZoneInfo'), require('./api/EdgeAppInfoApi'), require('./api/NotificationsApi'), require('./api/StateTransferApi'), require('./api/UELocationApi'), require('./api/UEStateApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/EdgeInfo'), require('./model/InlineTrackingNotification'), require('./model/MobilityGroupAppState'), require('./model/MobilityGroupEvent'), require('./model/SubscriptionId'), require('./model/TimeStamp'), require('./model/TrackingNotification'), require('./model/UeState'), require('./model/UserEventType'), require('./model/UserInfo'), require('./model/UserList'), require('./model/UserTrackingNotification'), require('./model/ZoneInfo'), require('./api/EdgeAppInfoApi'), require('./api/NotificationsApi'), require('./api/StateTransferApi'), require('./api/UELocationApi'), require('./api/UEStateApi'));
   }
-}(function(ApiClient, EdgeInfo, MobilityGroupAppState, MobilityGroupEvent, SubscriptionId, TrackingNotification, UeState, UserEventType, UserInfo, UserList, UserTrackingNotification, ZoneInfo, EdgeAppInfoApi, NotificationsApi, StateTransferApi, UELocationApi, UEStateApi) {
+}(function(ApiClient, EdgeInfo, InlineTrackingNotification, MobilityGroupAppState, MobilityGroupEvent, SubscriptionId, TimeStamp, TrackingNotification, UeState, UserEventType, UserInfo, UserList, UserTrackingNotification, ZoneInfo, EdgeAppInfoApi, NotificationsApi, StateTransferApi, UELocationApi, UEStateApi) {
   'use strict';
 
   /**
@@ -81,6 +81,11 @@
      */
     EdgeInfo: EdgeInfo,
     /**
+     * The InlineTrackingNotification model constructor.
+     * @property {module:model/InlineTrackingNotification}
+     */
+    InlineTrackingNotification: InlineTrackingNotification,
+    /**
      * The MobilityGroupAppState model constructor.
      * @property {module:model/MobilityGroupAppState}
      */
@@ -95,6 +100,11 @@
      * @property {module:model/SubscriptionId}
      */
     SubscriptionId: SubscriptionId,
+    /**
+     * The TimeStamp model constructor.
+     * @property {module:model/TimeStamp}
+     */
+    TimeStamp: TimeStamp,
     /**
      * The TrackingNotification model constructor.
      * @property {module:model/TrackingNotification}

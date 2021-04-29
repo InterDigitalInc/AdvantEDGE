@@ -1,0 +1,89 @@
+# Default values for meep-auth-svc.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceAccount: meep-auth-svc
+
+deployment:
+  replicas: 1
+  port: 80
+  protocol: TCP
+  altPort: 8080
+  dependency: kube-dns
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+
+image:
+  repository: meep-auth-svc
+  tag: latest
+  pullPolicy: Always
+  env:
+    MEEP_MAX_SESSIONS: "10"
+    MEEP_OAUTH_GITHUB_ENABLED: "false"
+    MEEP_OAUTH_GITHUB_AUTH_URL: ""
+    MEEP_OAUTH_GITHUB_TOKEN_URL: ""
+    MEEP_OAUTH_GITHUB_REDIRECT_URI: ""
+    MEEP_OAUTH_GITLAB_ENABLED: "false"
+    MEEP_OAUTH_GITLAB_AUTH_URL: ""
+    MEEP_OAUTH_GITLAB_TOKEN_URL: ""
+    MEEP_OAUTH_GITLAB_REDIRECT_URI: ""
+    MEEP_OAUTH_GITLAB_API_URL: ""
+  envSecret:
+    MEEP_SESSION_KEY:
+      name: meep-session
+      key: encryption-key
+    MEEP_OAUTH_GITHUB_CLIENT_ID:
+      name: github-secret
+      key: client-id
+    MEEP_OAUTH_GITHUB_SECRET:
+      name: github-secret
+      key: secret
+    MEEP_OAUTH_GITLAB_CLIENT_ID:
+      name: gitlab-secret
+      key: client-id
+    MEEP_OAUTH_GITLAB_SECRET:
+      name: gitlab-secret
+      key: secret
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  hosts:
+    - name: ''
+      paths:
+        - /auth
+        # Deprecated endpoint support
+        - /platform-ctrl/v1/authorize
+        - /platform-ctrl/v1/login
+        - /platform-ctrl/v1/logout
+        - /platform-ctrl/v1/watchdog
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/platform-ctrl(/|$)(.*)$ /auth/$2 break;
+  labels: {}
+  tls:
+
+prometheus:
+  monitor:
+    enabled: true
+    port: 9000
+    interval: 10s
+    additionalLabels: {}
+    relabelings: []
+    scrapeTimeout: 5s
+
+codecov:
+  enabled: false
+  location: "<WORKDIR>/codecov/meep-auth-svc"
+
+meepOrigin: core
