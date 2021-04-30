@@ -16,9 +16,9 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/lkysow/go-gitlab v0.7.1
 	github.com/prometheus/client_golang v1.9.0
 	github.com/roymx/viper v1.3.3-0.20190416163942-b9a223fc58a3
+	github.com/xanzy/go-gitlab v0.7.1
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 )
 
