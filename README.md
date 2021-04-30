@@ -4,7 +4,7 @@
 
 **_What's New!_** 
 
-:zap: **v1.7.0 cool features :sunglasses: :point_right: [**process lifecycle API**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-features#process-lifecyle) and [**cellular connectivity API**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-features#cellular-connectivity-control) - open-up new edge experiments**
+:zap: **v1.7.0 cool features :sunglasses: :point_right: [**process lifecycle API**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-features#process-lifecycle) and [**cellular connectivity API**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-features#cellular-connectivity-control) - open-up new edge experiments**
 
 :zap:  **Wiki refresh was overdue :shamrock: Hope the :sparkles: new structure & [**Sitemap**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/project-sitemap) :sparkles: make it easier to navigate**
 
