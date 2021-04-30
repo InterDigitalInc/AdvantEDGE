@@ -49,10 +49,10 @@ import (
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
-	"github.com/lkysow/go-gitlab"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/roymx/viper"
+	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
 
