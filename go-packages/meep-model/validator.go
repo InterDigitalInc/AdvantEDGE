@@ -87,7 +87,7 @@ var PROTOCOL_ENUM = []string{"UDP", "TCP"}
 var CONNECTIVITY_MODEL_ENUM = []string{"OPEN", "PDU"}
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 7, Patch: 0}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 7, Patch: 1}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
