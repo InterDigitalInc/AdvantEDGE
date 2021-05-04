@@ -1718,7 +1718,9 @@ export function addScenarioNode(scenario, nodes) {
   var nodeTooltip = createTooltip('Node Configuration');
   addName(nodeTooltip, 'Internet');
   addType(nodeTooltip, 'scenario');
-  addConnectivityModel(nodeTooltip, scenario.deployment.connectivity.model);
+  if (scenario.deployment.connectivity) {
+    addConnectivityModel(nodeTooltip, scenario.deployment.connectivity.model);
+  }
 
   var n = {
     id: scenario.name,
