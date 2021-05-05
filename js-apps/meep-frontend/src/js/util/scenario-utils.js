@@ -1660,11 +1660,13 @@ function addType(tooltip, type) {
   tooltip.innerHTML += '<br>type: ' + type;
 }
 function addNetChar(tooltip, netChar) {
-  tooltip.innerHTML += '<br>latency: ' + (netChar.latency || 0) + ' ms';
-  tooltip.innerHTML += '<br>jitter: ' + (netChar.latencyVariation || '0')  + ' ms';
-  tooltip.innerHTML += '<br>packet loss: ' + (netChar.packetLoss || '0') + ' %';
-  tooltip.innerHTML += '<br>UL throughput: ' + (netChar.throughputUl || 0) + ' mb/s';
-  tooltip.innerHTML += '<br>DL throughput: ' + (netChar.throughputDl || 0) + ' mb/s';
+  if (netChar) {
+    tooltip.innerHTML += '<br>latency: ' + (netChar.latency || 0) + ' ms';
+    tooltip.innerHTML += '<br>jitter: ' + (netChar.latencyVariation || '0')  + ' ms';
+    tooltip.innerHTML += '<br>packet loss: ' + (netChar.packetLoss || '0') + ' %';
+    tooltip.innerHTML += '<br>UL throughput: ' + (netChar.throughputUl || 0) + ' mb/s';
+    tooltip.innerHTML += '<br>DL throughput: ' + (netChar.throughputDl || 0) + ' mb/s';
+  }
 }
 function addConnectivityModel(tooltip, model) {
   tooltip.innerHTML += '<br>connectivity model: ' + (model || '');
