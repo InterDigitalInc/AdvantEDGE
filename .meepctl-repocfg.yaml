@@ -212,6 +212,7 @@ repo:
           - meep-wais
           - meep-sandbox-ctrl
           - meep-tc-engine
+          - meep-edge-platform-app-enablement
       meep-platform-ctrl:
         # location of source code
         src: go-apps/meep-platform-ctrl
@@ -271,6 +272,7 @@ repo:
           meep-wais: charts/meep-wais
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
           meep-tc-engine: charts/meep-tc-engine
+          meep-edge-platform-app-enablement: charts/meep-edge-platform-app-enablement
           meep-virt-chart-templates: charts/meep-virt-chart-templates
         # list of sandbox specific pods
         sandbox-pods:
@@ -282,6 +284,7 @@ repo:
           - meep-wais
           - meep-sandbox-ctrl
           - meep-tc-engine
+          - meep-edge-platform-app-enablement
       meep-webhook:
         # location of source code
         src: go-apps/meep-webhook
@@ -367,6 +370,9 @@ repo:
           - sandbox.go-apps.meep-loc-serv
           - sandbox.go-apps.meep-rnis
           - sandbox.go-apps.meep-wais
+          # app-support and service-mgmt are under one executable: meep-edge-platform-app-enablement
+          - sandbox.go-apps.meep-app-support
+          - sandbox.go-apps.meep-service-mgmt
           - sandbox.go-apps.meep-metrics-engine
           - packages.go-packages.meep-metrics-engine-notification-client
           - sandbox.go-apps.meep-mg-manager
@@ -575,6 +581,79 @@ repo:
         codecov: false
         # supports linting
         lint: true
+      meep-edge-platform-app-enablement:
+        # location of source code
+        src: go-apps/meep-edge-platform-app-enablement
+        # location of binary
+        bin: bin/meep-edge-platform-app-enablement
+        # location of deployment chart
+        chart: charts/meep-edge-platform-app-enablement
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-edge-platform-app-enablement.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: false
+        # supports linting
+        lint: true
+        # location of API specification
+        api: go-apps/meep-edge-platform-app-enablement/api/app-support/swagger.yaml
+      meep-app-support:
+        ## location of source code
+        src: go-apps/meep-edge-platform-app-enablement/server/app-support
+        ## location of binary
+        #bin: bin/meep-edge-platform-app-enablement
+        ## location of deployment chart
+        #chart: charts/meep-edge-platform-app-enablement
+        ## user supplied value file located @ .meep/user/values (use below file name)
+        #chart-user-values: meep-edge-platform-app-enablement.yaml
+        # extra build flags
+        #build-flags:
+        #  - -mod=vendor
+        # enable meepctl build
+        build: false
+        # enable meepctl dockerize
+        dockerize: false
+        # enable meepctl deploy/delete
+        deploy: false
+        # supports code coverage measurement when built in codecov mode
+        codecov: false
+        # supports linting
+        lint: true
+        # location of API specification
+        api: go-apps/meep-edge-platform-app-enablement/api/app-support/swagger.yaml
+      meep-service-mgmt:
+        # location of source code
+        src: go-apps/meep-edge-platform-app-enablement/server/service-mgmt
+        ## location of binary
+        #bin: bin/meep-edge-platform-app-enablement
+        ## location of deployment chart
+        #chart: charts/meep-edge-platform-app-enablement
+        ## user supplied value file located @ .meep/user/values (use below file name)
+        #chart-user-values: meep-edge-platform-app-enablement.yaml
+        # extra build flags
+        #build-flags:
+        #  - -mod=vendor
+        # enable meepctl build
+        build: false
+        # enable meepctl dockerize
+        dockerize: false
+        # enable meepctl deploy/delete
+        deploy: false
+        # supports code coverage measurement when built in codecov mode
+        codecov: false
+        # supports linting
+        lint: true
+        # location of API specification
+        api: go-apps/meep-edge-platform-app-enablement/api/service-mgmt/swagger.yaml
+
 
   #------------------------------
   #  Dependencies

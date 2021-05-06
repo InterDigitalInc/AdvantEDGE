@@ -19,6 +19,7 @@ COPY ./meep-loc-serv /templates/sandbox/meep-loc-serv
 COPY ./meep-metrics-engine /templates/sandbox/meep-metrics-engine
 COPY ./meep-mg-manager /templates/sandbox/meep-mg-manager
 COPY ./meep-rnis /templates/sandbox/meep-rnis
+COPY ./meep-edge-platform-app-enablement /templates/sandbox/meep-edge-platform-app-enablement
 COPY ./meep-wais /templates/sandbox/meep-wais
 COPY ./meep-sandbox-ctrl /templates/sandbox/meep-sandbox-ctrl
 COPY ./meep-tc-engine /templates/sandbox/meep-tc-engine
