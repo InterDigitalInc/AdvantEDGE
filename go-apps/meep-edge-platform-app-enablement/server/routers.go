@@ -47,7 +47,6 @@ type Route struct {
 type Routes []Route
 
 func NewRouter() *mux.Router {
-	_ = Init()
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
@@ -77,98 +76,98 @@ var routes = Routes{
 	},
 
 	Route{
-		"AsApplicationsConfirmReadyPOST",
+		"ApplicationsConfirmReadyPOST",
 		strings.ToUpper("Post"),
 		"/mec_app_support/v1/applications/{appInstanceId}/confirm_ready",
 		appSupport.ApplicationsConfirmReadyPOST,
 	},
 
 	Route{
-		"AsApplicationsConfirmTerminationPOST",
+		"ApplicationsConfirmTerminationPOST",
 		strings.ToUpper("Post"),
 		"/mec_app_support/v1/applications/{appInstanceId}/confirm_termination",
 		appSupport.ApplicationsConfirmTerminationPOST,
 	},
 
 	Route{
-		"AsApplicationsDnsRuleGET",
+		"ApplicationsDnsRuleGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/applications/{appInstanceId}/dns_rules/{dnsRuleId}",
 		appSupport.ApplicationsDnsRuleGET,
 	},
 
 	Route{
-		"AsApplicationsDnsRulePUT",
+		"ApplicationsDnsRulePUT",
 		strings.ToUpper("Put"),
 		"/mec_app_support/v1/applications/{appInstanceId}/dns_rules/{dnsRuleId}",
 		appSupport.ApplicationsDnsRulePUT,
 	},
 
 	Route{
-		"AsApplicationsDnsRulesGET",
+		"ApplicationsDnsRulesGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/applications/{appInstanceId}/dns_rules",
 		appSupport.ApplicationsDnsRulesGET,
 	},
 
 	Route{
-		"AsApplicationsSubscriptionDELETE",
+		"ApplicationsSubscriptionDELETE",
 		strings.ToUpper("Delete"),
 		"/mec_app_support/v1/applications/{appInstanceId}/subscriptions/{subscriptionId}",
 		appSupport.ApplicationsSubscriptionDELETE,
 	},
 
 	Route{
-		"AsApplicationsSubscriptionGET",
+		"ApplicationsSubscriptionGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/applications/{appInstanceId}/subscriptions/{subscriptionId}",
 		appSupport.ApplicationsSubscriptionGET,
 	},
 
 	Route{
-		"AsApplicationsSubscriptionsGET",
+		"ApplicationsSubscriptionsGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/applications/{appInstanceId}/subscriptions",
 		appSupport.ApplicationsSubscriptionsGET,
 	},
 
 	Route{
-		"AsApplicationsSubscriptionsPOST",
+		"ApplicationsSubscriptionsPOST",
 		strings.ToUpper("Post"),
 		"/mec_app_support/v1/applications/{appInstanceId}/subscriptions",
 		appSupport.ApplicationsSubscriptionsPOST,
 	},
 
 	Route{
-		"AsApplicationsTrafficRuleGET",
+		"ApplicationsTrafficRuleGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/applications/{appInstanceId}/traffic_rules/{trafficRuleId}",
 		appSupport.ApplicationsTrafficRuleGET,
 	},
 
 	Route{
-		"AsApplicationsTrafficRulePUT",
+		"ApplicationsTrafficRulePUT",
 		strings.ToUpper("Put"),
 		"/mec_app_support/v1/applications/{appInstanceId}/traffic_rules/{trafficRuleId}",
 		appSupport.ApplicationsTrafficRulePUT,
 	},
 
 	Route{
-		"AsApplicationsTrafficRulesGET",
+		"ApplicationsTrafficRulesGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/applications/{appInstanceId}/traffic_rules",
 		appSupport.ApplicationsTrafficRulesGET,
 	},
 
 	Route{
-		"AsTimingCapsGET",
+		"TimingCapsGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/timing/timing_caps",
 		appSupport.TimingCapsGET,
 	},
 
 	Route{
-		"AsTimingCurrentTimeGET",
+		"TimingCurrentTimeGET",
 		strings.ToUpper("Get"),
 		"/mec_app_support/v1/timing/current_time",
 		appSupport.TimingCurrentTimeGET,
@@ -182,84 +181,84 @@ var routes = Routes{
 	},
 
 	Route{
-		"SmAppServicesGET",
+		"AppServicesGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/services",
 		svcMgmt.AppServicesGET,
 	},
 
 	Route{
-		"SmAppServicesPOST",
+		"AppServicesPOST",
 		strings.ToUpper("Post"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/services",
 		svcMgmt.AppServicesPOST,
 	},
 
 	Route{
-		"SmAppServicesServiceIdDELETE",
+		"AppServicesServiceIdDELETE",
 		strings.ToUpper("Delete"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/services/{serviceId}",
 		svcMgmt.AppServicesServiceIdDELETE,
 	},
 
 	Route{
-		"SmAppServicesServiceIdGET",
+		"AppServicesServiceIdGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/services/{serviceId}",
 		svcMgmt.AppServicesServiceIdGET,
 	},
 
 	Route{
-		"SmAppServicesServiceIdPUT",
+		"AppServicesServiceIdPUT",
 		strings.ToUpper("Put"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/services/{serviceId}",
 		svcMgmt.AppServicesServiceIdPUT,
 	},
 
 	Route{
-		"SmApplicationsSubscriptionDELETE",
+		"ApplicationsSubscriptionDELETE",
 		strings.ToUpper("Delete"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/subscriptions/{subscriptionId}",
 		svcMgmt.ApplicationsSubscriptionDELETE,
 	},
 
 	Route{
-		"SmApplicationsSubscriptionGET",
+		"ApplicationsSubscriptionGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/subscriptions/{subscriptionId}",
 		svcMgmt.ApplicationsSubscriptionGET,
 	},
 
 	Route{
-		"SmApplicationsSubscriptionsGET",
+		"ApplicationsSubscriptionsGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/subscriptions",
 		svcMgmt.ApplicationsSubscriptionsGET,
 	},
 
 	Route{
-		"SmApplicationsSubscriptionsPOST",
+		"ApplicationsSubscriptionsPOST",
 		strings.ToUpper("Post"),
 		"/mec_service_mgmt/v1/applications/{appInstanceId}/subscriptions",
 		svcMgmt.ApplicationsSubscriptionsPOST,
 	},
 
 	Route{
-		"SmServicesGET",
+		"ServicesGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/services",
 		svcMgmt.ServicesGET,
 	},
 
 	Route{
-		"SmServicesServiceIdGET",
+		"ServicesServiceIdGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/services/{serviceId}",
 		svcMgmt.ServicesServiceIdGET,
 	},
 
 	Route{
-		"SmTransportsGET",
+		"TransportsGET",
 		strings.ToUpper("Get"),
 		"/mec_service_mgmt/v1/transports",
 		svcMgmt.TransportsGET,
