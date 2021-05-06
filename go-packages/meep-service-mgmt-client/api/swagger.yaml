@@ -1,0 +1,2035 @@
+openapi: 3.0.2
+info:
+  title: AdvantEDGE MEC Service Management API
+  description: The ETSI MEC ISG MEC011 MEC Service Management API described using
+    OpenAPI
+  contact:
+    email: cti_support@etsi.org
+  license:
+    name: BSD-3-Clause
+    url: https://forge.etsi.org/legal-matters
+  version: 2.1.1
+externalDocs:
+  description: ETSI GS MEC011 Application Enablement API, V2.1.1
+  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
+servers:
+- url: https://localhost/sandboxname/mec_service_mgmt/v1
+tags:
+- name: appSubscriptions
+- name: appServices
+- name: services
+- name: transports
+- name: callbacks
+paths:
+  /services:
+    get:
+      tags:
+      - services
+      description: This method retrieves information about a list of mecService resources.
+        This method is typically used in "service availability query" procedure
+      operationId: Services_GET
+      parameters:
+      - name: ser_instance_id
+        in: query
+        description: A MEC application instance may use multiple ser_instance_ids
+          as an input parameter to query the availability of a list of MEC service
+          instances. Either "ser_instance_id" or "ser_name" or "ser_category_id" or
+          none of them shall be present.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: ser_name
+        in: query
+        description: A MEC application instance may use multiple ser_names as an input
+          parameter to query the availability of a list of MEC service instances.
+          Either "ser_instance_id" or "ser_name" or "ser_category_id" or none of them
+          shall be present.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: ser_category_id
+        in: query
+        description: A MEC application instance may use ser_category_id as an input
+          parameter to query the availability of a list of MEC service instances in
+          a serCategory. Either "ser_instance_id" or "ser_name" or "ser_category_id"
+          or none of them shall be present.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: consumed_local_only
+        in: query
+        description: Indicate whether the service can only be consumed by the MEC  applications
+          located in the same locality (as defined by  scopeOfLocality) as this service
+          instance.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: is_local
+        in: query
+        description: Indicate whether the service is located in the same locality
+          (as  defined by scopeOfLocality) as the consuming MEC application.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: scope_of_locality
+        in: query
+        description: A MEC application instance may use scope_of_locality as an input  parameter
+          to query the availability of a list of MEC service instances  with a certain
+          scope of locality.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                minItems: 0
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceInfo'
+                x-content-type: application/json
+              examples:
+                ServiceInfoList:
+                  $ref: '#/components/examples/ServiceInfoList'
+          links:
+            getIndividualmecService:
+              $ref: '#/components/links/GetIndividualmecService'
+            putIndividualmecService:
+              $ref: '#/components/links/PutIndividualmecService'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "414":
+          description: It is used to indicate that the server is refusing to process
+            the request because the request URI is longer than the server is willing
+            or able to process.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+  /services/{serviceId}:
+    get:
+      tags:
+      - services
+      description: This method retrieves information about a mecService resource.
+        This method is typically used in "service availability query" procedure
+      operationId: ServicesServiceId_GET
+      parameters:
+      - name: serviceId
+        in: path
+        description: Represents a MEC service instance.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ServiceInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+  /applications/{appInstanceId}/services:
+    get:
+      tags:
+      - appServices
+      description: This method retrieves information about a list of mecService resources.
+        This method is typically used in "service availability query" procedure
+      operationId: AppServices_GET
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: ser_instance_id
+        in: query
+        description: A MEC application instance may use multiple ser_instance_ids
+          as an input parameter to query the availability of a list of MEC service
+          instances. Either "ser_instance_id" or "ser_name" or "ser_category_id" or
+          none of them shall be present.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: ser_name
+        in: query
+        description: A MEC application instance may use multiple ser_names as an input
+          parameter to query the availability of a list of MEC service instances.
+          Either "ser_instance_id" or "ser_name" or "ser_category_id" or none of them
+          shall be present.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: ser_category_id
+        in: query
+        description: A MEC application instance may use ser_category_id as an input
+          parameter to query the availability of a list of MEC service instances in
+          a serCategory. Either "ser_instance_id" or "ser_name" or "ser_category_id"
+          or none of them shall be present.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: consumed_local_only
+        in: query
+        description: Indicate whether the service can only be consumed by the MEC  applications
+          located in the same locality (as defined by  scopeOfLocality) as this service
+          instance.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: is_local
+        in: query
+        description: Indicate whether the service is located in the same locality
+          (as  defined by scopeOfLocality) as the consuming MEC application.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: scope_of_locality
+        in: query
+        description: A MEC application instance may use scope_of_locality as an input  parameter
+          to query the availability of a list of MEC service instances  with a certain
+          scope of locality.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                minItems: 0
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceInfo'
+                x-content-type: application/json
+              examples:
+                ServiceInfoList:
+                  $ref: '#/components/examples/ServiceInfoList'
+          links:
+            getIndividualmecService:
+              $ref: '#/components/links/GetIndividualmecService'
+            putIndividualmecService:
+              $ref: '#/components/links/PutIndividualmecService'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "414":
+          description: It is used to indicate that the server is refusing to process
+            the request because the request URI is longer than the server is willing
+            or able to process.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    post:
+      tags:
+      - appServices
+      description: This method is used to create a mecService resource. This method
+        is typically used in "service availability update and new service registration"
+        procedure
+      operationId: AppServices_POST
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/Services.Post'
+      responses:
+        "201":
+          description: Upon success, the HTTP response shall include a Location HTTP
+            header that contains the resource URI of the created resource.
+          headers:
+            location:
+              description: The resource URI of the created resource
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ServiceInfo'
+          links:
+            getIndividualmecService:
+              $ref: '#/components/links/GetIndividualmecService'
+            putIndividualmecService:
+              $ref: '#/components/links/PutIndividualmecService'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+  /applications/{appInstanceId}/services/{serviceId}:
+    get:
+      tags:
+      - appServices
+      description: This method retrieves information about a mecService resource.
+        This method is typically used in "service availability query" procedure
+      operationId: AppServicesServiceId_GET
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: serviceId
+        in: path
+        description: Represents a MEC service instance.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ServiceInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    put:
+      tags:
+      - appServices
+      description: This method updates the information about a mecService resource
+      operationId: AppServicesServiceId_PUT
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: serviceId
+        in: path
+        description: Represents a MEC service instance.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/ServicesServiceId'
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ServiceInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "412":
+          description: Precondition Failed. It is used when a condition has failed
+            during conditional requests,  e.g. when using ETags to avoid write conflicts.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    delete:
+      tags:
+      - appServices
+      description: 'This method deletes a mecService resource. This method is typically
+        used in the service deregistration procedure. '
+      operationId: AppServicesServiceId_DELETE
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: serviceId
+        in: path
+        description: Represents a MEC service instance.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+  /applications/{appInstanceId}/subscriptions:
+    get:
+      tags:
+      - appSubscriptions
+      description: The GET method may be used to request information about all subscriptions
+        for this requestor. Upon success, the response contains entity body with all
+        the subscriptions for the requestor.
+      operationId: ApplicationsSubscriptions_GET
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Upon success, a response body containing the list of links
+            to the requested subscriptions is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MecServiceMgmtApiSubscriptionLinkList'
+          links:
+            getIndividualmecSerMgmtApiSubscriptionLinkList:
+              $ref: '#/components/links/GetIndividualmecSerMgmtApiSubscriptionLinkList'
+            delIndividualmecSerMgmtApiSubscriptionLinkList:
+              $ref: '#/components/links/DelIndividualmecSerMgmtApiSubscriptionLinkList'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    post:
+      tags:
+      - appSubscriptions
+      description: The POST method may be used to create a new subscription. One example
+        use case is to create a new subscription to the MEC service availability notifications.
+        Upon success, the response contains entity body describing the created subscription.
+      operationId: ApplicationsSubscriptions_POST
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/ApplicationsSubscriptions'
+      responses:
+        "201":
+          description: Entity body in the request contains a subscription to the MEC
+            service availability notifications that is to be created.
+          headers:
+            location:
+              description: The resource URI of the created resource
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SerAvailabilityNotificationSubscription'
+          links:
+            getIndividualmecSerMgmtApiSubscription:
+              $ref: '#/components/links/GetIndividualmecSerMgmtApiSubscription'
+            delIndividualmecSerMgmtApiSubscription:
+              $ref: '#/components/links/DelIndividualmecSerMgmtApiSubscription'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      callbacks:
+        serviceAvailabilityNotification:
+          $ref: '#/components/callbacks/ServiceAvailabilityNotification'
+  /applications/{appInstanceId}/subscriptions/{subscriptionId}:
+    get:
+      tags:
+      - appSubscriptions
+      description: The GET method requests information about a subscription for this
+        requestor. Upon success, the response contains entity body with the subscription
+        for the requestor.
+      operationId: ApplicationsSubscription_GET
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: subscriptionId
+        in: path
+        description: Represents a subscription to the notifications from the MEC platform.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Upon success, a response body containing the requested subscription
+            is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SerAvailabilityNotificationSubscription'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    delete:
+      tags:
+      - appSubscriptions
+      description: This method deletes a mecSrvMgmtSubscription. This method is typically
+        used in "Unsubscribing from service availability event notifications" procedure.
+      operationId: ApplicationsSubscription_DELETE
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC platform manager.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: subscriptionId
+        in: path
+        description: Represents a subscription to the notifications from the MEC platform.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+  /transports:
+    get:
+      tags:
+      - transports
+      description: This method retrieves information about a list of available transports.
+        This method is typically used by a service-producing application to discover
+        transports provided by the MEC platform in the "transport information query"
+        procedure
+      operationId: Transports_GET
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                minItems: 0
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransportInfo'
+                x-content-type: application/json
+          links:
+            getTransportInfo:
+              $ref: '#/components/links/GetTransportInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+components:
+  schemas:
+    Empty:
+      description: Empty schema
+    CategoryRef.Href:
+      type: string
+      description: Reference of the catalogue
+      format: uri
+      example: /example/catalogue1
+    CategoryRef.Id:
+      type: string
+      description: Unique identifier of the category
+      example: id12345
+    CategoryRef.Name:
+      type: string
+      description: Name of the category, example values include RNI, Location & Bandwidth
+        Management
+      example: RNI
+    CategoryRef.Version:
+      type: string
+      description: Category version
+      example: version1
+    CategoryRef:
+      required:
+      - href
+      - id
+      - name
+      - version
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/CategoryRef.Href'
+        id:
+          $ref: '#/components/schemas/CategoryRef.Id'
+        name:
+          $ref: '#/components/schemas/CategoryRef.Name'
+        version:
+          $ref: '#/components/schemas/CategoryRef.Version'
+      description: This type represents the category reference
+      example:
+        name: RNI
+        href: /example/catalogue1
+        id: id12345
+        version: version1
+    CategoryRefs:
+      minItems: 0
+      type: array
+      description: Categories of services about which to report events.
+      items:
+        $ref: '#/components/schemas/CategoryRef'
+      x-schema-name: CategoryRefs
+    EndPointInfo.Address.Host:
+      type: string
+      description: Host portion of the address
+      example: 192.0.2.0
+    EndPointInfo.Address_Port:
+      type: integer
+      description: Port portion of the address
+      format: uint32
+      example: 8080
+    EndPointInfo.Address:
+      required:
+      - host
+      - port
+      type: object
+      properties:
+        host:
+          $ref: '#/components/schemas/EndPointInfo.Address.Host'
+        port:
+          $ref: '#/components/schemas/EndPointInfo.Address_Port'
+      description: A IP address and port pair
+    EndPointInfo.Addresses:
+      required:
+      - addresses
+      type: object
+      properties:
+        addresses:
+          minItems: 0
+          type: array
+          items:
+            $ref: '#/components/schemas/EndPointInfo.Address'
+      description: Entry point information of the service as one or more pairs of
+        IP address and port
+    EndPointInfo.Alternative:
+      required:
+      - alternative
+      type: object
+      properties:
+        alternative:
+          type: object
+      description: Entry point information of the service in a format defined by an
+        implementation, or in an external specification.
+    EndPointInfo.Uri:
+      type: string
+      description: Entry point information of the service
+      format: uri
+      example: /mecSerMgmtApi/service/EntryPoint
+    EndPointInfo.Uris:
+      required:
+      - uris
+      type: object
+      properties:
+        uris:
+          minItems: 0
+          type: array
+          items:
+            $ref: '#/components/schemas/EndPointInfo.Uri'
+      description: Entry point information of the service as string, formatted according
+        to URI syntax
+    LinkType:
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/Href'
+      description: This type represents a type of link and may be referenced from
+        data structures
+      example:
+        href: /mecSerMgmtApi/example
+    Href:
+      type: string
+      description: URI referring to a resource
+      format: uri
+      example: /mecSerMgmtApi/example
+    MecServiceMgmtApiSubscriptionLinkList.Links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+        subscriptions:
+          type: array
+          description: The MEC application instance's subscriptions
+          items:
+            $ref: '#/components/schemas/MecServiceMgmtApiSubscriptionLinkList.Subscription'
+      description: Self-referring URI.
+      example:
+        subscriptions:
+        - rel: rel
+          href: null
+        - rel: rel
+          href: null
+        self:
+          href: /mecSerMgmtApi/example
+    MecServiceMgmtApiSubscriptionLinkList.Subscription:
+      required:
+      - href
+      - rel
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/Href'
+        rel:
+          type: string
+          description: The value shall be se to SerAvailabilityNotificationSubscription.
+      description: A link to a subscription.
+      example:
+        rel: rel
+        href: null
+    MecServiceMgmtApiSubscriptionLinkList:
+      required:
+      - _links
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/MecServiceMgmtApiSubscriptionLinkList.Links'
+      description: This type represents a list of links related to currently existing
+        subscriptions for a MEC application instance. This information is returned
+        when sending a request to receive current subscriptions.
+      example:
+        _links:
+          subscriptions:
+          - rel: rel
+            href: null
+          - rel: rel
+            href: null
+          self:
+            href: /mecSerMgmtApi/example
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Problem.type'
+        title:
+          $ref: '#/components/schemas/Problem.title'
+        status:
+          $ref: '#/components/schemas/Problem.status'
+        detail:
+          $ref: '#/components/schemas/Problem.detail'
+        instance:
+          $ref: '#/components/schemas/Problem.instance'
+    Problem.detail:
+      type: string
+      description: A human-readable explanation specific to this occurrence of the
+        problem
+    Problem.instance:
+      type: string
+      description: A URI reference that identifies the specific occurrence of the
+        problem
+      format: uri
+    Problem.status:
+      type: integer
+      description: The HTTP status code for this occurrence of the problem
+      format: uint32
+    Problem.title:
+      type: string
+      description: A short, human-readable summary of the problem type
+    Problem.type:
+      type: string
+      description: A URI reference according to IETF RFC 3986 that identifies the
+        problem type
+      format: uri
+    SecurityInfo.OAuth2Info.GrantType:
+      type: string
+      description: OAuth 2.0 grant type
+      example: OAUTH2_CLIENT_CREDENTIALS
+      enum:
+      - OAUTH2_AUTHORIZATION_CODE
+      - OAUTH2_IMPLICIT_GRANT
+      - OAUTH2_RESOURCE_OWNER
+      - OAUTH2_CLIENT_CREDENTIALS
+    SecurityInfo.OAuth2Info.GrantTypes:
+      maxItems: 4
+      minItems: 1
+      type: array
+      description: List of supported OAuth 2.0 grant types.
+      items:
+        $ref: '#/components/schemas/SecurityInfo.OAuth2Info.GrantType'
+      x-schema-name: SecurityInfo.OAuth2Info.GrantTypes
+    SecurityInfo.OAuth2Info.TokenEndpoint:
+      type: string
+      description: The token endpoint
+      format: uri
+      example: /mecSerMgmtApi/security/TokenEndPoint
+    SecurityInfo.OAuth2Info:
+      required:
+      - grantTypes
+      - tokenEndpoint
+      type: object
+      properties:
+        grantTypes:
+          $ref: '#/components/schemas/SecurityInfo.OAuth2Info.GrantTypes'
+        tokenEndpoint:
+          $ref: '#/components/schemas/SecurityInfo.OAuth2Info.TokenEndpoint'
+      description: Parameters related to use of OAuth 2.0
+      example:
+        tokenEndpoint: /mecSerMgmtApi/security/TokenEndPoint
+        grantTypes:
+        - OAUTH2_CLIENT_CREDENTIALS
+        - OAUTH2_CLIENT_CREDENTIALS
+        - OAUTH2_CLIENT_CREDENTIALS
+        - OAUTH2_CLIENT_CREDENTIALS
+    SecurityInfo:
+      type: object
+      properties:
+        oAuth2Info:
+          $ref: '#/components/schemas/SecurityInfo.OAuth2Info'
+      description: This type represents security information related to a transport
+      example:
+        oAuth2Info:
+          tokenEndpoint: /mecSerMgmtApi/security/TokenEndPoint
+          grantTypes:
+          - OAUTH2_CLIENT_CREDENTIALS
+          - OAUTH2_CLIENT_CREDENTIALS
+          - OAUTH2_CLIENT_CREDENTIALS
+          - OAUTH2_CLIENT_CREDENTIALS
+    Self:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: Self-referring URI.
+      readOnly: true
+      example:
+        self:
+          href: /mecSerMgmtApi/example
+    SerAvailabilityNotificationSubscription.CallbackReference:
+      type: string
+      description: URI selected by the MEC application instance to receive notifications
+        on the subscribed MEC service availability information. This shall be included
+        in both the request and the response.
+      format: uri
+    SerAvailabilityNotificationSubscription:
+      required:
+      - _links
+      - callbackReference
+      - subscriptionType
+      type: object
+      properties:
+        subscriptionType:
+          $ref: '#/components/schemas/SerAvailabilityNotificationSubscription.SubscriptionType'
+        callbackReference:
+          $ref: '#/components/schemas/SerAvailabilityNotificationSubscription.CallbackReference'
+        _links:
+          $ref: '#/components/schemas/Self'
+        filteringCriteria:
+          $ref: '#/components/schemas/SerAvailabilityNotificationSubscription.FilteringCriteria'
+      description: This type represents a subscription to the notifications from the  MEC
+        platform regarding the availability of a MEC service or a list of MEC services.
+      example:
+        filteringCriteria:
+          serNames:
+          - ExampleService
+          - ExampleService
+          serInstanceIds:
+          - ServiceInstance123
+          - ServiceInstance123
+          serCategories:
+          - name: RNI
+            href: /example/catalogue1
+            id: id12345
+            version: version1
+          - name: RNI
+            href: /example/catalogue1
+            id: id12345
+            version: version1
+          states:
+          - ACTIVE
+          - ACTIVE
+          isLocal: true
+        subscriptionType: SerAvailabilityNotificationSubscription
+        _links:
+          self:
+            href: /mecSerMgmtApi/example
+        callbackReference: http://example.com/aeiou
+    SerAvailabilityNotificationSubscription.FilteringCriteria:
+      type: object
+      not:
+        required:
+        - serCategories
+        - serInstanceIds
+        - serNames
+      properties:
+        serInstanceIds:
+          $ref: '#/components/schemas/SerInstanceIds'
+        serNames:
+          $ref: '#/components/schemas/SerNames'
+        serCategories:
+          $ref: '#/components/schemas/CategoryRefs'
+        states:
+          $ref: '#/components/schemas/ServiceStates'
+        isLocal:
+          $ref: '#/components/schemas/ServiceInfo.IsLocal'
+      description: Filtering criteria to match services for which events are requested
+        to be reported. If absent, matches all services. All child attributes are
+        combined with the logical  "AND" operation.
+      example:
+        serNames:
+        - ExampleService
+        - ExampleService
+        serInstanceIds:
+        - ServiceInstance123
+        - ServiceInstance123
+        serCategories:
+        - name: RNI
+          href: /example/catalogue1
+          id: id12345
+          version: version1
+        - name: RNI
+          href: /example/catalogue1
+          id: id12345
+          version: version1
+        states:
+        - ACTIVE
+        - ACTIVE
+        isLocal: true
+    SerAvailabilityNotificationSubscription.SubscriptionType:
+      type: string
+      description: Shall be set to SerAvailabilityNotificationSubscription.
+      example: SerAvailabilityNotificationSubscription
+    ServiceAvailabilityNotification:
+      required:
+      - _links
+      - notificationType
+      - serviceReferences
+      type: object
+      properties:
+        notificationType:
+          $ref: '#/components/schemas/SerAvailabilityNotificationSubscription.SubscriptionType'
+        serviceReferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAvailabilityNotification.ServiceReferences'
+        _links:
+          $ref: '#/components/schemas/Subscription'
+      description: This type represents the service availability information.
+    ServiceAvailabilityNotification.ServiceReferences:
+      required:
+      - changeType
+      - serInstanceId
+      - serName
+      - state
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/LinkType'
+        serName:
+          $ref: '#/components/schemas/ServiceInfo.SerName'
+        serInstanceId:
+          $ref: '#/components/schemas/ServiceInfo.SerInstanceId'
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        changeType:
+          $ref: '#/components/schemas/ServiceAvailabilityNotification.ChangeType'
+      description: List of links to services whose availability has changed.
+    ServiceAvailabilityNotification.ChangeType:
+      type: string
+      description: "Type of the change. Valid values:\n  ADDED: The service was newly\
+        \ added.\n  REMOVED: The service was removed.\n  STATE_CHANGED: Only the state\
+        \ of the service was changed. \n  ATTRIBUTES_CHANGED: At least one attribute\
+        \ of the service other than state was changed. The change may or may not include\
+        \ changing the state."
+      enum:
+      - ADDED
+      - REMOVED
+      - STATE_CHANGED
+      - ATTRIBUTES_CHANGED
+    SerializerType:
+      type: string
+      description: The enumeration  represents types of serializers
+      example: JSON
+      enum:
+      - JSON
+      - XML
+      - PROTOBUF3
+    LocalityType:
+      type: string
+      description: The scope of locality as expressed by "consumedLocalOnly" and "isLocal".
+        If absent, defaults to MEC_HOST
+      example: MEC_SYSTEM
+      enum:
+      - MEC_SYSTEM
+      - MEC_HOST
+      - NFVI_POP
+      - ZONE
+      - ZONE_GROUP
+      - NFVI_NODE
+    ServiceState:
+      type: string
+      description: This enumeration defines the possible states of a service.
+      example: ACTIVE
+      enum:
+      - ACTIVE
+      - INACTIVE
+    ServiceStates:
+      minItems: 0
+      type: array
+      description: States of the services about which to report events. If the event
+        is  a state change, this filter represents the state after the change.
+      items:
+        $ref: '#/components/schemas/ServiceState'
+      x-schema-name: ServiceStates
+    ServiceInfo.SerInstanceId:
+      type: string
+      description: Identifier of the service instance assigned by the MEC platform.
+      readOnly: true
+      example: ServiceInstance123
+    SerInstanceIds:
+      minItems: 0
+      type: array
+      description: Identifiers of service instances about which to report events.
+      items:
+        $ref: '#/components/schemas/ServiceInfo.SerInstanceId'
+      x-schema-name: SerInstanceIds
+    ServiceInfo.SerName:
+      type: string
+      description: The name of the service. This is how the service producing MEC
+        application identifies the service instance it produces.
+      example: ExampleService
+    SerNames:
+      minItems: 0
+      type: array
+      description: Names of services about which to report events.
+      items:
+        $ref: '#/components/schemas/ServiceInfo.SerName'
+      x-schema-name: SerNames
+    ServiceInfo.TransportId:
+      type: string
+      description: Identifier of the platform-provided transport to be used by the
+        service. Valid identifiers may be obtained using the "Transport information
+        query" procedure. May be present in POST requests to signal the use of a platform-provided
+        transport for the service, and shall be absent otherwise.
+      writeOnly: true
+      example: Rest1
+    ServiceInfo.Version:
+      type: string
+      description: Service version
+      example: ServiceVersion1
+    ServiceInfo.ConsumedLocalOnly:
+      type: boolean
+      description: Indicate whether the service can only be consumed by the MEC applications
+        located in the same locality (as defined by scopeOfLocality) as this  service
+        instance.
+      example: false
+    ServiceInfo.IsLocal:
+      type: boolean
+      description: Indicate whether the service is located in the same locality (as
+        defined by scopeOfLocality) as the consuming MEC application.
+      example: true
+    ServiceInfo.Post:
+      required:
+      - serName
+      - serializer
+      - state
+      - version
+      type: object
+      properties:
+        serInstanceId:
+          $ref: '#/components/schemas/ServiceInfo.SerInstanceId'
+        serName:
+          $ref: '#/components/schemas/ServiceInfo.SerName'
+        serCategory:
+          $ref: '#/components/schemas/CategoryRef'
+        version:
+          $ref: '#/components/schemas/ServiceInfo.Version'
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        transportId:
+          $ref: '#/components/schemas/ServiceInfo.TransportId'
+        transportInfo:
+          $ref: '#/components/schemas/TransportInfo'
+        serializer:
+          $ref: '#/components/schemas/SerializerType'
+        scopeOfLocality:
+          $ref: '#/components/schemas/LocalityType'
+        consumedLocalOnly:
+          $ref: '#/components/schemas/ServiceInfo.ConsumedLocalOnly'
+        isLocal:
+          $ref: '#/components/schemas/ServiceInfo.IsLocal'
+      description: This type represents the general information of a MEC service.
+      oneOf:
+      - required:
+        - transportId
+      - required:
+        - transportInfo
+    ServiceInfo:
+      required:
+      - serName
+      - serializer
+      - state
+      - transportInfo
+      - version
+      type: object
+      properties:
+        serInstanceId:
+          $ref: '#/components/schemas/ServiceInfo.SerInstanceId'
+        serName:
+          $ref: '#/components/schemas/ServiceInfo.SerName'
+        serCategory:
+          $ref: '#/components/schemas/CategoryRef'
+        version:
+          $ref: '#/components/schemas/ServiceInfo.Version'
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        transportInfo:
+          $ref: '#/components/schemas/TransportInfo'
+        serializer:
+          $ref: '#/components/schemas/SerializerType'
+        scopeOfLocality:
+          $ref: '#/components/schemas/LocalityType'
+        consumedLocalOnly:
+          $ref: '#/components/schemas/ServiceInfo.ConsumedLocalOnly'
+        isLocal:
+          $ref: '#/components/schemas/ServiceInfo.IsLocal'
+      description: This type represents the general information of a MEC service.
+      example:
+        serCategory:
+          name: RNI
+          href: /example/catalogue1
+          id: id12345
+          version: version1
+        scopeOfLocality: MEC_SYSTEM
+        transportInfo:
+          implSpecificInfo: {}
+          protocol: HTTP
+          endpoint: ""
+          security:
+            oAuth2Info:
+              tokenEndpoint: /mecSerMgmtApi/security/TokenEndPoint
+              grantTypes:
+              - OAUTH2_CLIENT_CREDENTIALS
+              - OAUTH2_CLIENT_CREDENTIALS
+              - OAUTH2_CLIENT_CREDENTIALS
+              - OAUTH2_CLIENT_CREDENTIALS
+          name: REST
+          description: REST API
+          id: TransId12345
+          type: REST_HTTP
+          version: "2.0"
+        serializer: JSON
+        serName: ExampleService
+        state: ACTIVE
+        consumedLocalOnly: false
+        version: ServiceVersion1
+        serInstanceId: ServiceInstance123
+        isLocal: true
+    Subscription:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: A link to the related subscription
+    TransportInfo.Description:
+      type: string
+      description: Human-readable description of this transport
+      example: REST API
+    TransportInfo.Id:
+      type: string
+      description: The identifier of this transport
+      example: TransId12345
+    TransportInfo.ImplSpecificInfo:
+      type: object
+      description: Additional implementation specific details of the transport
+    TransportInfo.Name:
+      type: string
+      description: The name of this transport
+      example: REST
+    TransportInfo.Protocol:
+      type: string
+      description: The name of the protocol used. Shall be set to HTTP for a REST
+        API.
+      example: HTTP
+    TransportInfo.Version:
+      type: string
+      description: The version of the protocol used
+      example: "2.0"
+    TransportInfo:
+      required:
+      - endpoint
+      - id
+      - name
+      - protocol
+      - security
+      - type
+      - version
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/TransportInfo.Id'
+        name:
+          $ref: '#/components/schemas/TransportInfo.Name'
+        description:
+          $ref: '#/components/schemas/TransportInfo.Description'
+        type:
+          $ref: '#/components/schemas/TransportType'
+        protocol:
+          $ref: '#/components/schemas/TransportInfo.Protocol'
+        version:
+          $ref: '#/components/schemas/TransportInfo.Version'
+        endpoint:
+          type: object
+          description: This type represents information about a transport endpoint
+          oneOf:
+          - $ref: '#/components/schemas/EndPointInfo.Uris'
+          - $ref: '#/components/schemas/EndPointInfo.Addresses'
+          - $ref: '#/components/schemas/EndPointInfo.Alternative'
+        security:
+          $ref: '#/components/schemas/SecurityInfo'
+        implSpecificInfo:
+          $ref: '#/components/schemas/TransportInfo.ImplSpecificInfo'
+      description: This type represents the general information of a MEC service.
+      example:
+        implSpecificInfo: {}
+        protocol: HTTP
+        endpoint: ""
+        security:
+          oAuth2Info:
+            tokenEndpoint: /mecSerMgmtApi/security/TokenEndPoint
+            grantTypes:
+            - OAUTH2_CLIENT_CREDENTIALS
+            - OAUTH2_CLIENT_CREDENTIALS
+            - OAUTH2_CLIENT_CREDENTIALS
+            - OAUTH2_CLIENT_CREDENTIALS
+        name: REST
+        description: REST API
+        id: TransId12345
+        type: REST_HTTP
+        version: "2.0"
+    TransportType:
+      type: string
+      description: The enumeration TransportType represents types of transports
+      example: REST_HTTP
+      enum:
+      - REST_HTTP
+      - MB_TOPIC_BASED
+      - MB_ROUTING
+      - MB_PUBSUB
+      - RPC
+      - RPC_STREAMING
+      - WEBSOCKET
+  responses:
+    ApplicationsSubscriptions.200:
+      description: Upon success, a response body containing the list of links to the
+        requested subscriptions is returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MecServiceMgmtApiSubscriptionLinkList'
+      links:
+        getIndividualmecSerMgmtApiSubscriptionLinkList:
+          $ref: '#/components/links/GetIndividualmecSerMgmtApiSubscriptionLinkList'
+        delIndividualmecSerMgmtApiSubscriptionLinkList:
+          $ref: '#/components/links/DelIndividualmecSerMgmtApiSubscriptionLinkList'
+    ApplicationsSubscriptions.201:
+      description: Entity body in the request contains a subscription to the MEC service
+        availability notifications that is to be created.
+      headers:
+        location:
+          description: The resource URI of the created resource
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uri
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SerAvailabilityNotificationSubscription'
+      links:
+        getIndividualmecSerMgmtApiSubscription:
+          $ref: '#/components/links/GetIndividualmecSerMgmtApiSubscription'
+        delIndividualmecSerMgmtApiSubscription:
+          $ref: '#/components/links/DelIndividualmecSerMgmtApiSubscription'
+    ApplicationsSubscription.200:
+      description: Upon success, a response body containing the requested subscription
+        is returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SerAvailabilityNotificationSubscription'
+    Services.200:
+      description: It is used to indicate nonspecific success. The response body contains
+        a representation of the resource.
+      content:
+        application/json:
+          schema:
+            minItems: 0
+            type: array
+            items:
+              $ref: '#/components/schemas/ServiceInfo'
+            x-content-type: application/json
+          examples:
+            ServiceInfoList:
+              $ref: '#/components/examples/ServiceInfoList'
+      links:
+        getIndividualmecService:
+          $ref: '#/components/links/GetIndividualmecService'
+        putIndividualmecService:
+          $ref: '#/components/links/PutIndividualmecService'
+    Services.201:
+      description: Upon success, the HTTP response shall include a Location HTTP header
+        that contains the resource URI of the created resource.
+      headers:
+        location:
+          description: The resource URI of the created resource
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uri
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceInfo'
+          examples:
+            ServiceInfo:
+              $ref: '#/components/examples/ServiceInfo'
+      links:
+        getIndividualmecService:
+          $ref: '#/components/links/GetIndividualmecService'
+        putIndividualmecService:
+          $ref: '#/components/links/PutIndividualmecService'
+    ServicesServiceId.200:
+      description: It is used to indicate nonspecific success. The response body contains
+        a representation of the resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceInfo'
+          examples:
+            ServiceInfo:
+              $ref: '#/components/examples/ServiceInfo'
+    Transports.200:
+      description: It is used to indicate nonspecific success. The response body contains
+        a representation of the resource.
+      content:
+        application/json:
+          schema:
+            minItems: 0
+            type: array
+            items:
+              $ref: '#/components/schemas/TransportInfo'
+            x-content-type: application/json
+      links:
+        getTransportInfo:
+          $ref: '#/components/links/GetTransportInfo'
+    Error.400:
+      description: Bad Request. It is used to indicate that incorrect parameters were
+        passed to the request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.401:
+      description: Unauthorized. It is used when the client did not submit the appropriate
+        credentials.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.403:
+      description: 'Forbidden. The operation is not allowed given the current status
+        of the resource. '
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Error.404:
+      description: Not Found. It is used when a client provided a URI that cannot
+        be mapped  to a valid resource URI.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.409:
+      description: Conflict. The operation cannot be executed currently, due to a
+        conflict with  the state of the resource. Typically, this is because the application  instance
+        resource is in NOT_INSTANTIATED state.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.412:
+      description: Precondition Failed. It is used when a condition has failed during
+        conditional requests,  e.g. when using ETags to avoid write conflicts.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.414:
+      description: It is used to indicate that the server is refusing to process the
+        request because the request URI is longer than the server is willing or able
+        to process.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.429:
+      description: Too Many Requests. It is used when a rate limiter has triggered.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+  parameters:
+    Path.AppInstanceId:
+      name: appInstanceId
+      in: path
+      description: Represents a MEC application instance. Note that the appInstanceId
+        is allocated by the MEC platform manager.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Path.SubscriptionId:
+      name: subscriptionId
+      in: path
+      description: Represents a subscription to the notifications from the MEC platform.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Path.ServiceId:
+      name: serviceId
+      in: path
+      description: Represents a MEC service instance.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Query.Ser_category_id:
+      name: ser_category_id
+      in: query
+      description: A MEC application instance may use ser_category_id as an input
+        parameter to query the availability of a list of MEC service instances in
+        a serCategory. Either "ser_instance_id" or "ser_name" or "ser_category_id"
+        or none of them shall be present.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    Query.Ser_instance_id:
+      name: ser_instance_id
+      in: query
+      description: A MEC application instance may use multiple ser_instance_ids as
+        an input parameter to query the availability of a list of MEC service instances.
+        Either "ser_instance_id" or "ser_name" or "ser_category_id" or none of them
+        shall be present.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    Query.Ser_name:
+      name: ser_name
+      in: query
+      description: A MEC application instance may use multiple ser_names as an input
+        parameter to query the availability of a list of MEC service instances. Either
+        "ser_instance_id" or "ser_name" or "ser_category_id" or none of them shall
+        be present.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    Query.LocalityType:
+      name: scope_of_locality
+      in: query
+      description: A MEC application instance may use scope_of_locality as an input  parameter
+        to query the availability of a list of MEC service instances  with a certain
+        scope of locality.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    Query.Is_local:
+      name: is_local
+      in: query
+      description: Indicate whether the service is located in the same locality (as  defined
+        by scopeOfLocality) as the consuming MEC application.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    Query.Consumed_local_only:
+      name: consumed_local_only
+      in: query
+      description: Indicate whether the service can only be consumed by the MEC  applications
+        located in the same locality (as defined by  scopeOfLocality) as this service
+        instance.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  examples:
+    ServiceInfo:
+      value:
+        serInstanceId: ServiceInstance123
+        serName: ExampleService
+        serCategory:
+          href: catItem1
+          id: id12345
+          name: RNI
+          version: version1
+        version: ServiceVersion1
+        state: ACTIVE
+        transportInfo:
+          id: TransId12345
+          name: REST
+          description: REST API
+          type: REST_HTTP
+          protocol: HTTP
+          version: "2.0"
+          endpoint:
+            uris:
+            - /mecSerMgmtApi/service/EntryPoint
+          security:
+            oAuth2Info:
+              grantTypes:
+              - OAUTH2_CLIENT_CREDENTIALS
+              tokenEndpoint: /mecSerMgmtApi/security/TokenEndPoint
+        serializer: JSON
+    ServiceInfoList:
+      value:
+      - serInstanceId: ServiceInstance123
+        serName: ExampleService
+        serCategory:
+          href: catItem1
+          id: id12345
+          name: RNI
+          version: version1
+        version: ServiceVersion1
+        state: ACTIVE
+        transportInfo:
+          id: TransId12345
+          name: REST
+          description: REST API
+          type: REST_HTTP
+          protocol: HTTP
+          version: "2.0"
+          endpoint:
+            addresses:
+            - host: 192.0.2.0
+              port: 8080
+          security:
+            oAuth2Info:
+              grantTypes:
+              - OAUTH2_CLIENT_CREDENTIALS
+              tokenEndpoint: /mecSerMgmtApi/security/TokenEndPoint
+        serializer: JSON
+  requestBodies:
+    ApplicationsSubscriptions:
+      description: Entity body in the request contains a subscription to the MEC application
+        termination notifications that is to be created.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SerAvailabilityNotificationSubscription'
+      required: true
+    Services:
+      description: New ServiceInfo with updated "state" is included as entity body
+        of the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceInfo'
+      required: true
+    Services.Post:
+      description: New ServiceInfo with updated "state" is included as entity body
+        of the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceInfo.Post'
+      required: true
+    ServicesServiceId:
+      description: New ServiceInfo with updated "state" is included as entity body
+        of the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceInfo'
+      required: true
+    ServiceAvailabilityNotification:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceAvailabilityNotification'
+      required: true
+  links:
+    GetIndividualmecService:
+      operationId: Sm_ServicesServiceId_GET
+      parameters:
+        serviceId: $response.body#/serviceId
+      description: The `serviceId` value returned in the response can be used as the
+        `serviceId` parameter in `GET /services/{serviceId}`
+    PutIndividualmecService:
+      operationId: Sm_ServicesServiceId_PUT
+      parameters:
+        serviceId: $response.body#/serviceId
+      description: The `serviceId` value returned in the response can be used as the
+        `serviceId` parameter in `PUT /services/{serviceId}`
+    GetTransportInfo:
+      operationId: Sm_AppServices_POST
+      parameters:
+        transportId: $response.body#/0/id
+      description: The `id` value returned in the response can be used as the `transportId`
+        parameter in `POST /applications/{appInstanceId}/services`. The first transport
+        is provided as the link as wildcards are not supported
+    GetIndividualmecSerMgmtApiSubscription:
+      operationId: Sm_ApplicationsSubscription_GET
+      parameters:
+        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/.*\/(.*);subscriptionId
+          = href.match(regex)[1];// where "href" is an attribute within the subscription
+          attribute within the _links attribute
+        subscriptionId: TBC
+      description: The `subscriptionId` value returned in the response can be used
+        as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+    DelIndividualmecSerMgmtApiSubscription:
+      operationId: Sm_ApplicationsSubscription_DELETE
+      parameters:
+        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
+          = href.match(regex)[1];// where "href" is an attribute within the subscription
+          attribute within the _links attribute
+        subscriptionId: TBC
+      description: The `subscriptionId` value returned in the response can be used
+        as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+    GetIndividualmecSerMgmtApiSubscriptionLinkList:
+      operationId: Sm_ApplicationsSubscription_GET
+      parameters:
+        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
+          = href.match(regex)[1];// where "href" is an attribute within the subscription
+          attribute within the _links attribute
+        subscriptionId: TBC
+      description: The `subscriptionId` value returned in the response can be used
+        as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+    DelIndividualmecSerMgmtApiSubscriptionLinkList:
+      operationId: Sm_ApplicationsSubscription_DELETE
+      parameters:
+        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
+          = href.match(regex)[1];// where "href" is an attribute within the subscription
+          attribute within the _links attribute
+        subscriptionId: TBC
+      description: The `subscriptionId` value returned in the response can be used
+        as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+  callbacks:
+    ServiceAvailabilityNotification:
+      '{$request.body#/callbackReference}':
+        post:
+          tags:
+          - callbacks
+          description: "'Represents the service availability information that  is\
+            \ used in the following cases - when the MEC platform announces the newly\
+            \ available\n services to the authorized relevant MEC applications (e.g.\
+            \ \n the applications that indicate the services as \"optional\" \n or\
+            \ \"required\") that are subscribed to the corresponding \n service availability\
+            \ notifications\n-  when the MEC platform notifies the authorized relevant\
+            \  applications that are subscribed to the corresponding  service availability\
+            \ notifications about the service availability changes.'"
+          operationId: Sm_ServiceAvailabilityNotification_POST
+          requestBody:
+            $ref: '#/components/requestBodies/ServiceAvailabilityNotification'
+          responses:
+            "200":
+              description: Expected responses from callback consumer, if it accepts
+                the callback
