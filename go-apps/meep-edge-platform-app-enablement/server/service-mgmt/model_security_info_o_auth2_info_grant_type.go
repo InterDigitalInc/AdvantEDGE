@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Service Management API
+ * AdvantEDGE MEC Service Management API
  *
  * The ETSI MEC ISG MEC011 MEC Service Management API described using OpenAPI
  *
@@ -28,8 +28,8 @@ type SecurityInfoOAuth2InfoGrantType string
 
 // List of SecurityInfo.OAuth2Info.GrantType
 const (
-	AUTHORIZATION_CODE SecurityInfoOAuth2InfoGrantType = "OAUTH2_AUTHORIZATION_CODE"
-	IMPLICIT_GRANT     SecurityInfoOAuth2InfoGrantType = "OAUTH2_IMPLICIT_GRANT"
-	RESOURCE_OWNER     SecurityInfoOAuth2InfoGrantType = "OAUTH2_RESOURCE_OWNER"
-	CLIENT_CREDENTIALS SecurityInfoOAuth2InfoGrantType = "OAUTH2_CLIENT_CREDENTIALS"
+	SecurityInfoOAuth2InfoGrantType_AUTHORIZATION_CODE SecurityInfoOAuth2InfoGrantType = "OAUTH2_AUTHORIZATION_CODE"
+	SecurityInfoOAuth2InfoGrantType_IMPLICIT_GRANT     SecurityInfoOAuth2InfoGrantType = "OAUTH2_IMPLICIT_GRANT"
+	SecurityInfoOAuth2InfoGrantType_RESOURCE_OWNER     SecurityInfoOAuth2InfoGrantType = "OAUTH2_RESOURCE_OWNER"
+	SecurityInfoOAuth2InfoGrantType_CLIENT_CREDENTIALS SecurityInfoOAuth2InfoGrantType = "OAUTH2_CLIENT_CREDENTIALS"
 )

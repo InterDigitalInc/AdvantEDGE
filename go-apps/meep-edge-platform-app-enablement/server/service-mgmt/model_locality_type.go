@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Service Management API
+ * AdvantEDGE MEC Service Management API
  *
  * The ETSI MEC ISG MEC011 MEC Service Management API described using OpenAPI
  *

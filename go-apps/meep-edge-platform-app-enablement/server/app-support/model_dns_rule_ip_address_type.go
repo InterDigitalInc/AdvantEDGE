@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -28,6 +28,6 @@ type DnsRuleIpAddressType string
 
 // List of DnsRule.IpAddressType
 const (
-	V6 DnsRuleIpAddressType = "IP_V6"
-	V4 DnsRuleIpAddressType = "IP_V4"
+	DnsRuleIpAddressType_V6 DnsRuleIpAddressType = "IP_V6"
+	DnsRuleIpAddressType_V4 DnsRuleIpAddressType = "IP_V4"
 )

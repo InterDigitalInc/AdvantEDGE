@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Service Management API
+ * AdvantEDGE MEC Service Management API
  *
  * The ETSI MEC ISG MEC011 MEC Service Management API described using OpenAPI
  *
@@ -28,8 +28,8 @@ type ServiceAvailabilityNotificationChangeType string
 
 // List of ServiceAvailabilityNotification.ChangeType
 const (
-	ADDED              ServiceAvailabilityNotificationChangeType = "ADDED"
-	REMOVED            ServiceAvailabilityNotificationChangeType = "REMOVED"
-	STATE_CHANGED      ServiceAvailabilityNotificationChangeType = "STATE_CHANGED"
-	ATTRIBUTES_CHANGED ServiceAvailabilityNotificationChangeType = "ATTRIBUTES_CHANGED"
+	ServiceAvailabilityNotificationChangeType_ADDED              ServiceAvailabilityNotificationChangeType = "ADDED"
+	ServiceAvailabilityNotificationChangeType_REMOVED            ServiceAvailabilityNotificationChangeType = "REMOVED"
+	ServiceAvailabilityNotificationChangeType_STATE_CHANGED      ServiceAvailabilityNotificationChangeType = "STATE_CHANGED"
+	ServiceAvailabilityNotificationChangeType_ATTRIBUTES_CHANGED ServiceAvailabilityNotificationChangeType = "ATTRIBUTES_CHANGED"
 )

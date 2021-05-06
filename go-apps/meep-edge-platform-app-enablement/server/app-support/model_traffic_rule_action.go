@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -28,10 +28,10 @@ type TrafficRuleAction string
 
 // List of TrafficRule.Action
 const (
-	DROP                   TrafficRuleAction = "DROP"
-	FORWARD_DECAPSULATED   TrafficRuleAction = "FORWARD_DECAPSULATED"
-	FORWARD_ENCAPSULATED   TrafficRuleAction = "FORWARD_ENCAPSULATED"
-	PASSTHROUGH            TrafficRuleAction = "PASSTHROUGH"
-	DUPLICATE_DECAPSULATED TrafficRuleAction = "DUPLICATE_DECAPSULATED"
-	DUPLICATE_ENCAPSULATED TrafficRuleAction = "DUPLICATE_ENCAPSULATED"
+	TrafficRuleAction_DROP                   TrafficRuleAction = "DROP"
+	TrafficRuleAction_FORWARD_DECAPSULATED   TrafficRuleAction = "FORWARD_DECAPSULATED"
+	TrafficRuleAction_FORWARD_ENCAPSULATED   TrafficRuleAction = "FORWARD_ENCAPSULATED"
+	TrafficRuleAction_PASSTHROUGH            TrafficRuleAction = "PASSTHROUGH"
+	TrafficRuleAction_DUPLICATE_DECAPSULATED TrafficRuleAction = "DUPLICATE_DECAPSULATED"
+	TrafficRuleAction_DUPLICATE_ENCAPSULATED TrafficRuleAction = "DUPLICATE_ENCAPSULATED"
 )

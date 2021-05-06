@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -28,6 +28,6 @@ type TrafficRuleFilterType string
 
 // List of TrafficRule.FilterType
 const (
-	FLOW   TrafficRuleFilterType = "FLOW"
-	PACKET TrafficRuleFilterType = "PACKET"
+	TrafficRuleFilterType_FLOW   TrafficRuleFilterType = "FLOW"
+	TrafficRuleFilterType_PACKET TrafficRuleFilterType = "PACKET"
 )

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -28,6 +28,6 @@ type TunnelInfoTunnelType string
 
 // List of TunnelInfo.TunnelType
 const (
-	GTP_U TunnelInfoTunnelType = "GTP_U"
-	GRE   TunnelInfoTunnelType = "GRE"
+	TunnelInfoTunnelType_GTP_U TunnelInfoTunnelType = "GTP_U"
+	TunnelInfoTunnelType_GRE   TunnelInfoTunnelType = "GRE"
 )

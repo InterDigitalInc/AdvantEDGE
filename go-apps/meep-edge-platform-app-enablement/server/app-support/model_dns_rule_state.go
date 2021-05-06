@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -26,8 +26,8 @@ package server
 // DnsRuleState : DNS rule state. This attribute may be updated using HTTP PUT method
 type DnsRuleState string
 
-// List of DnsRuleState
+// List of DnsRule.State
 const (
-	DnsRuleStateACTIVE   DnsRuleState = "ACTIVE"
-	DnsRuleStateINACTIVE DnsRuleState = "INACTIVE"
+	DnsRuleState_ACTIVE   DnsRuleState = "ACTIVE"
+	DnsRuleState_INACTIVE DnsRuleState = "INACTIVE"
 )

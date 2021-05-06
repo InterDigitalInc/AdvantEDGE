@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -28,6 +28,6 @@ type TrafficRuleState string
 
 // List of TrafficRule.State
 const (
-	TrafficRuleStateACTIVE   TrafficRuleState = "ACTIVE"
-	TrafficRuleStateINACTIVE TrafficRuleState = "INACTIVE"
+	TrafficRuleState_ACTIVE   TrafficRuleState = "ACTIVE"
+	TrafficRuleState_INACTIVE TrafficRuleState = "INACTIVE"
 )

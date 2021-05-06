@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * MEC Application Support API
+ * AdvantEDGE MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -28,7 +28,7 @@ type TimingCapsNtpServersAuthenticationOption string
 
 // List of TimingCaps.NtpServers.AuthenticationOption
 const (
-	NONE          TimingCapsNtpServersAuthenticationOption = "NONE"
-	SYMMETRIC_KEY TimingCapsNtpServersAuthenticationOption = "SYMMETRIC_KEY"
-	AUTO_KEY      TimingCapsNtpServersAuthenticationOption = "AUTO_KEY"
+	TimingCapsNtpServersAuthenticationOption_NONE          TimingCapsNtpServersAuthenticationOption = "NONE"
+	TimingCapsNtpServersAuthenticationOption_SYMMETRIC_KEY TimingCapsNtpServersAuthenticationOption = "SYMMETRIC_KEY"
+	TimingCapsNtpServersAuthenticationOption_AUTO_KEY      TimingCapsNtpServersAuthenticationOption = "AUTO_KEY"
 )
