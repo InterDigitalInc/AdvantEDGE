@@ -1476,9 +1476,6 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 						}
 
 						poaInfo := convertJsonToPoaInfo(jsonInfo)
-						//4G and 5G neighbours information are mutually exclusive
-						//If at least one 5G neighbor exist, only report 5G
-						report5GNeighborOnly := false
 
 						switch poaInfo.Type {
 						case poaType4G:
@@ -1497,12 +1494,7 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrcellId
 							neighborCell.NrNCellInfo = append(neighborCell.NrNCellInfo, measRepUeNotificationNrNCellInfo)
 							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
-							report5GNeighborOnly = true
 						default:
-						}
-
-						if report5GNeighborOnly {
-							notif.EutranNeighbourCellMeasInfo = nil
 						}
 					}
 				}
@@ -1601,6 +1593,10 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 				notif.AssociateId = append(notif.AssociateId, *assocId)
 
+				//4G and 5G neighbours information are mutually exclusive
+				//If at least one 5G neighbor exist, only report 5G
+				report5GNeighborOnly := false
+
 				strongestRsrp := int32(0)
 				//adding the data of all reachable cells
 				for _, poa := range ueData.InRangePoas {
@@ -1637,6 +1633,8 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 							}
 
 							notif.NrNeighCellMeasInfo = append(notif.NrNeighCellMeasInfo, neighborCell)
+							report5GNeighborOnly = true
+
 						case poaType4G:
 							var neighborCell NrMeasRepUeNotificationEutraNeighCellMeasInfo
 							neighborCell.Rsrp = poa.Rsrp
@@ -1647,6 +1645,11 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						}
 
 					}
+				}
+				if report5GNeighborOnly {
+					log.Info("SIMON4 ", report5GNeighborOnly)
+
+					notif.EutraNeighCellMeasInfo = nil
 				}
 
 				go sendNrMrNotification(subscription.CallbackReference, notif)
