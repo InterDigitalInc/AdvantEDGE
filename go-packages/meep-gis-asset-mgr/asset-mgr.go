@@ -1987,12 +1987,11 @@ func calculateCell4gPower(radius float32, distance float32) (rsrp float32, rsrq 
 // Equivalent RSRQ range: 0 to 127
 // IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
 // RSRP power range: -115 dBm to -65 dBm
-// Equivalent RSRP range: 39 to 92
-// RSRQ power range: -20 dBm to -5 dBm (valid range actuallu -43 to 20 dB
+// Equivalent RSRP range: 42 to 92
+// RSRQ power range: -20 dBm to -5 dBm
 // Equivalent RSRQ range: 47 to 77
 // Algorithm: Linear proportion to distance over radius, if in range
-// Algorithm: Linear proportion to distance over radius, if in range
-const minCell5gRsrp = float32(39)
+const minCell5gRsrp = float32(42)
 const maxCell5gRsrp = float32(92)
 const minCell5gRsrq = float32(47)
 const maxCell5gRsrq = float32(77)
