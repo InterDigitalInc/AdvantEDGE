@@ -1647,8 +1647,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 					}
 				}
 				if report5GNeighborOnly {
-					log.Info("SIMON4 ", report5GNeighborOnly)
-
 					notif.EutraNeighCellMeasInfo = nil
 				}
 
