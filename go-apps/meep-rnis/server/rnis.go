@@ -1476,6 +1476,9 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 						}
 
 						poaInfo := convertJsonToPoaInfo(jsonInfo)
+						//4G and 5G neighbours information are mutually exclusive
+						//If at least one 5G neighbor exist, only report 5G
+						report5GNeighborOnly := false
 
 						switch poaInfo.Type {
 						case poaType4G:
@@ -1494,9 +1497,13 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrcellId
 							neighborCell.NrNCellInfo = append(neighborCell.NrNCellInfo, measRepUeNotificationNrNCellInfo)
 							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
+							report5GNeighborOnly = true
 						default:
 						}
 
+						if report5GNeighborOnly {
+							notif.EutranNeighbourCellMeasInfo = nil
+						}
 					}
 				}
 
@@ -2021,6 +2028,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 				supportedTriggerAlreadyPresent = true
 			}
 		}
+
 		if !supportedTriggerAlreadyPresent {
 			subscription.FilterCriteriaAssocTri.Trigger = append(subscription.FilterCriteriaAssocTri.Trigger, TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS)
 		}
