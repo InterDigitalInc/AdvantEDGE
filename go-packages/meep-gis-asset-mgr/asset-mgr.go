@@ -1954,15 +1954,21 @@ func calculatePower(subtype string, radius float32, distance float32) (rssi floa
 }
 
 // 4G Cellular signal strength calculator
+// OFFICIAL COMPLETE RANGE
 // RSRP power range: -156 dBm to -44 dBm
 // Equivalent RSRP range: -17 to 97
 // RSRQ power range: -34 dBm to 2.5 dBm
 // Equivalent RSRQ range: -30 to 46
+// IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
+// RSRP power range: -100 dBm to -70 dBm
+// Equivalent RSRP range: 39 to 69
+// RSRQ power range: -20 dBm to -5 dBm
+// Equivalent RSRQ range: -2 to 28
 // Algorithm: Linear proportion to distance over radius, if in range
-const minCell4gRsrp = float32(-17)
-const maxCell4gRsrp = float32(97)
-const minCell4gRsrq = float32(-30)
-const maxCell4gRsrq = float32(46)
+const minCell4gRsrp = float32(39)
+const maxCell4gRsrp = float32(69)
+const minCell4gRsrq = float32(-2)
+const maxCell4gRsrq = float32(28)
 
 func calculateCell4gPower(radius float32, distance float32) (rsrp float32, rsrq float32) {
 	rsrp = minCell4gRsrp
@@ -1979,11 +1985,17 @@ func calculateCell4gPower(radius float32, distance float32) (rsrp float32, rsrq 
 // Equivalent RSRP range: 0 to 127
 // RSRQ power range: -43 dBm to 20 dBm
 // Equivalent RSRQ range: 0 to 127
+// IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
+// RSRP power range: -115 dBm to -65 dBm
+// Equivalent RSRP range: 39 to 92
+// RSRQ power range: -20 dBm to -5 dBm (valid range actuallu -43 to 20 dB
+// Equivalent RSRQ range: 47 to 77
 // Algorithm: Linear proportion to distance over radius, if in range
-const minCell5gRsrp = float32(0)
-const maxCell5gRsrp = float32(127)
-const minCell5gRsrq = float32(0)
-const maxCell5gRsrq = float32(127)
+// Algorithm: Linear proportion to distance over radius, if in range
+const minCell5gRsrp = float32(39)
+const maxCell5gRsrp = float32(92)
+const minCell5gRsrq = float32(47)
+const maxCell5gRsrq = float32(77)
 
 func calculateCell5gPower(radius float32, distance float32) (rsrp float32, rsrq float32) {
 	rsrp = minCell5gRsrp
@@ -1998,9 +2010,12 @@ func calculateCell5gPower(radius float32, distance float32) (rsrp float32, rsrq 
 // WiFi signal strength calculator
 // Signal power range: -113 dBm to -10 dBm
 // Equivalent RSSI range: 0 to 100
+// IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
+// Signal power range: -80 dBm to -30 dBm
+// Equivalent RSSI range: 32 to 77
 // Algorithm: Linear proportion to distance over radius, if in range
-const minWifiRssi = float32(0)
-const maxWifiRssi = float32(100)
+const minWifiRssi = float32(32)
+const maxWifiRssi = float32(77)
 
 func calculateWifiPower(radius float32, distance float32) (rssi float32) {
 	rssi = minWifiRssi
