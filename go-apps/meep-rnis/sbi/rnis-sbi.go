@@ -29,17 +29,21 @@ import (
 const moduleName string = "meep-rnis-sbi"
 
 type UeDataSbi struct {
-	Name         string
-	Mnc          string
-	Mcc          string
-	CellId       string
-	NrCellId     string
-	ErabIdValid  bool
-	AppNames     []string
-	Latency      int32
-	ThroughputUL int32
-	ThroughputDL int32
-	PacketLoss   float64
+	Name          string
+	Mnc           string
+	Mcc           string
+	CellId        string
+	NrCellId      string
+	ErabIdValid   bool
+	AppNames      []string
+	Latency       int32
+	ThroughputUL  int32
+	ThroughputDL  int32
+	PacketLoss    float64
+	ParentPoaName string
+	InRangePoas   []string
+	InRangeRsrps  []int32
+	InRangeRsrqs  []int32
 }
 
 type PoaInfoSbi struct {
@@ -326,18 +330,26 @@ func processActiveScenarioUpdate() {
 						throughputUL = ue.NetChar.ThroughputUl
 					}
 
+					//update measurements, don't wait for ticker
+					ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+					poaNamesInRange, rsrpsInRange, rsrqsInRange := getMeas(name, "", ueMeasMap)
+
 					var ueDataSbi = UeDataSbi{
-						Name:         name,
-						Mnc:          mnc,
-						Mcc:          mcc,
-						CellId:       cellId,
-						NrCellId:     nrcellId,
-						ErabIdValid:  erabIdValid,
-						AppNames:     appNames,
-						Latency:      latency,
-						ThroughputUL: throughputUL,
-						ThroughputDL: throughputDL,
-						PacketLoss:   ploss,
+						Name:          name,
+						Mnc:           mnc,
+						Mcc:           mcc,
+						CellId:        cellId,
+						NrCellId:      nrcellId,
+						ErabIdValid:   erabIdValid,
+						AppNames:      appNames,
+						Latency:       latency,
+						ThroughputUL:  throughputUL,
+						ThroughputDL:  throughputDL,
+						PacketLoss:    ploss,
+						ParentPoaName: poa.Name,
+						InRangePoas:   poaNamesInRange,
+						InRangeRsrps:  rsrpsInRange,
+						InRangeRsrqs:  rsrqsInRange,
 					}
 					sbi.updateUeDataCB(ueDataSbi)
 				}
@@ -483,10 +495,12 @@ func processActiveScenarioUpdate() {
 }
 
 func refreshMeasurements() {
+
 	// Update UE measurements
 	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+
 		// Ignore disconnected UEs
 		if !isUeConnected(name) {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
@@ -501,6 +515,7 @@ func refreshMeasurements() {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
 		}
 	}
+
 }
 
 func getMeas(ue string, poaName string, ueMeasMap map[string]*gc.UeMeasurement) ([]string, []int32, []int32) {
