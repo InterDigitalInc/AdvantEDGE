@@ -39,6 +39,7 @@ import (
 const serviceName = "GIS Engine"
 const moduleName = "meep-gis-engine"
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const influxAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
@@ -93,6 +94,7 @@ type GisEngine struct {
 	automation       map[string]bool
 	automationTicker *time.Ticker
 	updateTime       time.Time
+	snapshotTicker   *time.Ticker
 	mutex            sync.Mutex
 }
 
@@ -260,6 +262,23 @@ func processScenarioActivate() {
 
 	// Update Gis cache
 	updateCache()
+
+	// Start snapshot thread
+	if ge.activeModel.GetScenarioName() != "" {
+		err := ge.StartSnapshotThread()
+		if err != nil {
+			log.Error("Failed to start snapshot thread: " + err.Error())
+			return
+		} else {
+			// Connect to GIS cache
+			err = ge.gisCache.UpdateGisCacheInflux(ge.sandboxName, ge.activeModel.GetScenarioName(), influxAddr)
+			if err != nil {
+				log.Error("Failed to GIS Cache: ", err.Error())
+			} else {
+				log.Info("Connected to GIS Cache")
+			}
+		}
+	}
 }
 
 func processScenarioUpdate() {
@@ -292,6 +311,9 @@ func processScenarioUpdate() {
 func processScenarioTerminate() {
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
+
+	// Stop snapshot thread
+	ge.StopSnapshotThread()
 
 	// Stop automation
 	resetAutomation()
@@ -797,7 +819,8 @@ func updateCache() {
 				measurement.Rssi = ueMeas.Rssi
 				measurement.Rsrp = ueMeas.Rsrp
 				measurement.Rsrq = ueMeas.Rsrq
-				_ = ge.gisCache.SetMeasurement(ue.Name, ueMeas.Poa, measurement)
+				measurement.Distance = ueMeas.Distance
+				_ = ge.gisCache.SetMeasurement(ue.Name, ueMeas.SubType, ueMeas.Poa, measurement)
 			}
 		}
 	}
@@ -1296,4 +1319,31 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (ge *GisEngine) StartSnapshotThread() error {
+	// Make sure ticker is not already running
+	if ge.snapshotTicker != nil {
+		return errors.New("ticker already running")
+	}
+
+	// Create new ticker and start snapshot thread
+	ge.snapshotTicker = time.NewTicker(time.Second)
+	go func() {
+		for range ge.snapshotTicker.C {
+			if ge.gisCache != nil {
+
+				ge.gisCache.TakeUeMetricSnapshot()
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (ge *GisEngine) StopSnapshotThread() {
+	if ge.snapshotTicker != nil {
+		ge.snapshotTicker.Stop()
+		ge.snapshotTicker = nil
+	}
 }
