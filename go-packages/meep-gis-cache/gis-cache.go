@@ -39,15 +39,16 @@ const (
 )
 
 const (
-	fieldDistance = "distance"
+	fieldDistance  = "dist"
 	fieldLatitude  = "lat"
 	fieldLongitude = "long"
-	fieldPoa = "poa"
-	fieldPoaType = "poatype"
+	fieldDest      = "dest"
+	fieldDestType  = "destType"
 	fieldRssi      = "rssi"
 	fieldRsrp      = "rsrp"
 	fieldRsrq      = "rsrq"
-        fieldSrc = "src"
+	fieldSrc       = "src"
+	fieldSrcType   = "srcType"
 )
 
 const (
@@ -66,9 +67,9 @@ type UeMeasurement struct {
 }
 
 type Measurement struct {
-	Rssi float32
-	Rsrp float32
-	Rsrq float32
+	Rssi     float32
+	Rsrp     float32
+	Rsrq     float32
 	Distance float32
 }
 
@@ -101,26 +102,26 @@ func NewGisCache(sandboxName string, redisAddr string) (gc *GisCache, err error)
 
 // UpdateGisCacheInflux - Creates and initialize an Influx DB for a GIS Cache instance
 func (gc *GisCache) UpdateGisCacheInflux(sandboxName string, scenarioName string, influxAddr string) (err error) {
-        // Connect to Influx DB
-        for retry := 0; gc.influxClient == nil && retry <= dbMaxRetryCount; retry++ {
-                gc.influxClient, err = gc.connectInfluxDB(influxAddr)
-                if err != nil {
-                        log.Warn("Failed to connect to InfluxDB. Retrying... Error: ", err)
-                }
-        }
-        if err != nil {
-                return err
-        }
-        log.Info("Connected to GIS Cache Influx DB")
+	// Connect to Influx DB
+	for retry := 0; gc.influxClient == nil && retry <= dbMaxRetryCount; retry++ {
+		gc.influxClient, err = gc.connectInfluxDB(influxAddr)
+		if err != nil {
+			log.Warn("Failed to connect to InfluxDB. Retrying... Error: ", err)
+		}
+	}
+	if err != nil {
+		return err
+	}
+	log.Info("Connected to GIS Cache Influx DB")
 
-        influxName := sandboxName
-        if scenarioName != "" {
-                influxName = influxName + "_" + scenarioName
-        }
+	influxName := sandboxName
+	if scenarioName != "" {
+		influxName = influxName + "_" + scenarioName
+	}
 
-        gc.influxName = strings.Replace(influxName, "-", "_", -1)
+	gc.influxName = strings.Replace(influxName, "-", "_", -1)
 
-        err = gc.CreateInfluxDb()
+	err = gc.CreateInfluxDb()
 	if err != nil {
 		log.Info("Error in creating influx db")
 	}
@@ -217,19 +218,19 @@ func (gc *GisCache) DelPosition(typ string, name string) {
 }
 
 // SetMeasurement - Create or update entry in DB
-func (gc *GisCache) SetMeasurement(ue string, poaType string, poa string, meas *Measurement) error {
-	key := gc.baseKey + measKey + ue + ":" + poa
+func (gc *GisCache) SetMeasurement(src string, srcType string, dest string, destType string, meas *Measurement) error {
+	key := gc.baseKey + measKey + src + ":" + dest
 
 	// Prepare data
 	fields := make(map[string]interface{})
-        fields[fieldSrc] = fmt.Sprintf("%s", ue)
-        fields[fieldPoa] = fmt.Sprintf("%s", poa)
-        fields[fieldPoaType] = fmt.Sprintf("%s", poaType)
+	fields[fieldSrc] = fmt.Sprintf("%s", src)
+	fields[fieldSrcType] = fmt.Sprintf("%s", srcType)
+	fields[fieldDest] = fmt.Sprintf("%s", dest)
+	fields[fieldDestType] = fmt.Sprintf("%s", destType)
 	fields[fieldRssi] = fmt.Sprintf("%f", meas.Rssi)
 	fields[fieldRsrp] = fmt.Sprintf("%f", meas.Rsrp)
 	fields[fieldRsrq] = fmt.Sprintf("%f", meas.Rsrq)
-        fields[fieldDistance] = fmt.Sprintf("%f", meas.Distance)
-
+	fields[fieldDistance] = fmt.Sprintf("%f", meas.Distance)
 
 	// Update entry in DB
 	err := gc.rc.SetEntry(key, fields)
@@ -284,10 +285,9 @@ func getMeasurement(key string, fields map[string]string, userData interface{}) 
 	if rsrq, err := strconv.ParseFloat(fields[fieldRsrq], 32); err == nil {
 		meas.Rsrq = float32(rsrq)
 	}
-        if distance, err := strconv.ParseFloat(fields[fieldDistance], 32); err == nil {
-                meas.Distance = float32(distance)
-        }
-
+	if distance, err := strconv.ParseFloat(fields[fieldDistance], 32); err == nil {
+		meas.Distance = float32(distance)
+	}
 
 	// Add measurement to map
 	ueMeas, found := measurementMap[ueName]

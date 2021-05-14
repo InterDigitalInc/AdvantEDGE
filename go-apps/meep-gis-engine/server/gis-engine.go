@@ -809,7 +809,7 @@ func updateCache() {
 				updateRequired = true
 			} else {
 				cachedMeas, found := cachedUeMeas.Measurements[ueMeas.Poa]
-				if !found || cachedMeas.Rssi != ueMeas.Rssi || cachedMeas.Rsrp != ueMeas.Rsrp || cachedMeas.Rsrq != ueMeas.Rsrq {
+				if !found || cachedMeas.Distance != ueMeas.Distance || cachedMeas.Rssi != ueMeas.Rssi || cachedMeas.Rsrp != ueMeas.Rsrp || cachedMeas.Rsrq != ueMeas.Rsrq {
 					updateRequired = true
 				}
 			}
@@ -820,7 +820,7 @@ func updateCache() {
 				measurement.Rsrp = ueMeas.Rsrp
 				measurement.Rsrq = ueMeas.Rsrq
 				measurement.Distance = ueMeas.Distance
-				_ = ge.gisCache.SetMeasurement(ue.Name, ueMeas.SubType, ueMeas.Poa, measurement)
+				_ = ge.gisCache.SetMeasurement(ue.Name, AssetTypeUe, ueMeas.Poa, ueMeas.SubType, measurement)
 			}
 		}
 	}

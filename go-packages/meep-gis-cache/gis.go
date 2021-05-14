@@ -28,12 +28,16 @@ import (
 const UeMetName = "meas"
 const UeMetNameInflux = "gis"
 const UeMetSrc = "src"
-const UeMetPoa = "poa"
-const UeMetPoaType = "poatype"
+const UeMetSrcType = "srcType"
+const UeMetDest = "dest"
+const UeMetDestType = "destType"
+const UeMetMeasType = "measType"
+const UeMetMeasTypeDistance = "distance"
+const UeMetMeasTypeSignal = "signal"
 const UeMetRssi = "rssi"
 const UeMetRsrp = "rsrp"
 const UeMetRsrq = "rsrq"
-const UeMetDistance = "distance"
+const UeMetDistance = "dist"
 const UeMetTime = "time"
 
 type Metric struct {
@@ -44,8 +48,9 @@ type Metric struct {
 
 type UeMetric struct {
 	Src      string
-	Poa      string
-	PoaType  string
+	SrcType  string
+	Dest     string
+	DestType string
 	Time     interface{}
 	Rssi     int32
 	Rsrp     int32
@@ -173,15 +178,20 @@ func (gc *GisCache) formatCachedUeMetric(values map[string]interface{}) (metric 
 	}
 	metric.Src = val.(string)
 
-	if val, ok = values[UeMetPoa]; !ok {
+	if val, ok = values[UeMetSrcType]; !ok {
 		val = ""
 	}
-	metric.Poa = val.(string)
+	metric.SrcType = val.(string)
 
-	if val, ok = values[UeMetPoaType]; !ok {
+	if val, ok = values[UeMetDest]; !ok {
 		val = ""
 	}
-	metric.PoaType = val.(string)
+	metric.Dest = val.(string)
+
+	if val, ok = values[UeMetDestType]; !ok {
+		val = ""
+	}
+	metric.DestType = val.(string)
 
 	if val, ok = values[UeMetRssi]; !ok {
 		val = ""
@@ -253,7 +263,8 @@ func (gc *GisCache) TakeUeMetricSnapshot() {
 	// logTimeLapse("GetRedisMetric wildcard")
 
 	// Prepare ue metrics list
-	metricList := make([]Metric, len(valuesArray))
+	metricSignalList := make([]Metric, len(valuesArray))
+	metricDistanceList := make([]Metric, len(valuesArray))
 	for index, values := range valuesArray {
 		// Format network metric
 		nm, err := gc.formatCachedUeMetric(values)
@@ -262,19 +273,30 @@ func (gc *GisCache) TakeUeMetricSnapshot() {
 		}
 
 		// Add metric to list
-		metric := &metricList[index]
-		metric.Name = UeMetNameInflux
-		metric.Tags = map[string]string{UeMetSrc: nm.Src, UeMetPoa: nm.Poa, UeMetPoaType: nm.PoaType}
-		metric.Fields = map[string]interface{}{
-			UeMetRssi:     nm.Rssi,
-			UeMetRsrp:     nm.Rsrp,
-			UeMetRsrq:     nm.Rsrq,
+		metricSignal := &metricSignalList[index]
+		metricSignal.Name = UeMetNameInflux
+		metricSignal.Tags = map[string]string{UeMetSrc: nm.Src, UeMetSrcType: nm.SrcType, UeMetDest: nm.Dest, UeMetDestType: nm.DestType, UeMetMeasType: UeMetMeasTypeSignal}
+		metricSignal.Fields = map[string]interface{}{
+			UeMetRssi: nm.Rssi,
+			UeMetRsrp: nm.Rsrp,
+			UeMetRsrq: nm.Rsrq,
+		}
+		metricDistance := &metricDistanceList[index]
+		metricDistance.Name = UeMetNameInflux
+		metricDistance.Tags = map[string]string{UeMetSrc: nm.Src, UeMetSrcType: nm.SrcType, UeMetDest: nm.Dest, UeMetDestType: nm.DestType, UeMetMeasType: UeMetMeasTypeDistance}
+		metricDistance.Fields = map[string]interface{}{
 			UeMetDistance: nm.Distance,
 		}
+
 	}
 
 	// Store metrics in influx
-	err = gc.SetInfluxMetric(metricList)
+	err = gc.SetInfluxMetric(metricSignalList)
+	if err != nil {
+		log.Error("Fail to write influx metrics with error: ", err.Error())
+	}
+	// Store metrics in influx
+	err = gc.SetInfluxMetric(metricDistanceList)
 	if err != nil {
 		log.Error("Fail to write influx metrics with error: ", err.Error())
 	}
@@ -285,35 +307,35 @@ func (gc *GisCache) TakeUeMetricSnapshot() {
 // CreateInfluxDb -
 func (gc *GisCache) CreateInfluxDb() error {
 
-        if gc.influxName != "" {
+	if gc.influxName != "" {
 
-                // Create new DB if necessary
-                if gc.influxClient != nil {
-                        q := influx.NewQuery("CREATE DATABASE "+ gc.influxName, "", "")
-                        _, err := (*gc.influxClient).Query(q)
-                        if err != nil {
-                                log.Error("Query failed with error: ", err.Error())
-                                return err
-                        }
-                }
-        } else {
+		// Create new DB if necessary
+		if gc.influxClient != nil {
+			q := influx.NewQuery("CREATE DATABASE "+gc.influxName, "", "")
+			_, err := (*gc.influxClient).Query(q)
+			if err != nil {
+				log.Error("Query failed with error: ", err.Error())
+				return err
+			}
+		}
+	} else {
 		log.Error("Nil influxDbName")
 	}
 
 	log.Info("Influx database ", gc.influxName, " created")
 
-        return nil
+	return nil
 }
 
 // FlushInfluxDb -
 func (gc *GisCache) FlushInfluxDb() {
-        // Flush Influx DB
-        if gc.influxClient != nil {
-                q := influx.NewQuery("DROP SERIES FROM /.*/", gc.influxName, "")
-                response, err := (*gc.influxClient).Query(q)
-                if err != nil {
-                        log.Error("Query failed with error: ", err.Error())
-                }
-                log.Info(response.Results)
-        }
+	// Flush Influx DB
+	if gc.influxClient != nil {
+		q := influx.NewQuery("DROP SERIES FROM /.*/", gc.influxName, "")
+		response, err := (*gc.influxClient).Query(q)
+		if err != nil {
+			log.Error("Query failed with error: ", err.Error())
+		}
+		log.Info(response.Results)
+	}
 }
