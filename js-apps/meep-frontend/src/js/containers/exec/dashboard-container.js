@@ -29,7 +29,7 @@ import IDCMap from '../idc-map';
 import IDCVis from '../idc-vis';
 import Iframe from 'react-iframe';
 
-import { getScenarioNodeChildren, isApp } from '../../util/scenario-utils';
+import { getScenarioNodeChildren, isApp, isUe, isPoa } from '../../util/scenario-utils';
 
 import {
   uiExecChangeDashboardView1,
@@ -93,7 +93,7 @@ const ConfigurationView = props => {
           <IDSelect
             label={'Source Node'}
             outlined
-            options={props.nodeIds}
+            options={props.srcIds}
             onChange={e => {
               props.changeSourceNodeSelected(e.target.value);
             }}
@@ -104,7 +104,7 @@ const ConfigurationView = props => {
           <IDSelect
             label={'Destination Node'}
             outlined
-            options={props.nodeIds}
+            options={props.destIds}
             onChange={e => {
               props.changeDestNodeSelected(e.target.value);
             }}
@@ -228,7 +228,8 @@ const DashboardConfiguration = props => {
       view2Name={props.view2Name}
       changeView1={props.changeView1}
       changeView2={props.changeView2}
-      nodeIds={props.nodeIds}
+      srcIds={props.srcIds}
+      destIds={props.destIds}
       sourceNodeSelected={props.sourceNodeSelected}
       destNodeSelected={props.destNodeSelected}
       changeSourceNodeSelected={props.changeSourceNodeSelected}
@@ -356,10 +357,19 @@ class DashboardContainer extends Component {
     const nodes = root.descendants();
     const apps = nodes.filter(isApp);
     const appIds = apps.map(a => a.data.name);
-    appIds.unshift('None');
+    const ues = nodes.filter(isUe);
+    const ueIds = ues.map(a => a.data.name);
+    const poas = nodes.filter(isPoa);
+    const poaIds = poas.map(a => a.data.name);
+    const srcIds = appIds.concat(ueIds).sort();
+    const destIds = appIds.concat(poaIds).sort();
 
-    const selectedSource = appIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None';
-    const selectedDest = appIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None';
+    appIds.unshift('None');
+    srcIds.unshift('None');
+    destIds.unshift('None');
+
+    const selectedSource = srcIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None';
+    const selectedDest = destIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None';
     const view1Name = this.getView1();
     const view2Name = this.getView2();
     const view1Present = view1Name !== VIEW_NAME_NONE;
@@ -411,7 +421,8 @@ class DashboardContainer extends Component {
         <DashboardConfiguration
           dashCfgMode={this.props.dashCfgMode}
           onCloseDashCfg={this.props.onCloseDashCfg}
-          nodeIds={appIds}
+          srcIds={srcIds}
+          destIds={destIds}
           view1Name={view1Name}
           view2Name={view2Name}
           sourceNodeSelected={selectedSource}

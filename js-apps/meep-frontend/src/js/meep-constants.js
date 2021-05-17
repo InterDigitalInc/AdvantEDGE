@@ -400,6 +400,14 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
     value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light'
   },
   {
+    label: 'Wireless Metrics Point-to-Point',
+    value: HOST_PATH + '/grafana/d/5/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Wireless Metrics Aggregation',
+    value: HOST_PATH + '/grafana/d/6/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
     label: 'Platform Metrics',
     value: HOST_PATH + '/grafana/d/platform-advantedge/platform-advantedge?orgId=1&refresh=15s&kiosk=tv&theme=light'
   },
