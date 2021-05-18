@@ -1,37 +1,64 @@
-## Welcome to GitHub Pages
+---
+layout: default
+title: Home
+nav_order: 1
+description: "Just the Docs is a responsive Jekyll theme with built-in search that is easily customizable and hosted on GitHub Pages."
+permalink: /
+---
 
-You can use the [editor on GitHub](https://github.com/InterDigitalInc/AdvantEDGE/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+![AdvantEDGE-logo]({{site.baseurl}}/assets/images/AdvantEDGE-logo_Blue-01.png)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+------
 
-### Markdown
+**_What's New!_**
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+:zap: **v1.7.0 cool features :sunglasses: :point_right: [process lifecycle API]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#process-lifecyle) and [cellular connectivity API]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#cellular-connectivity-control) - open-up new edge experiments**
 
-```markdown
-Syntax highlighted code block
+:zap:  **Wiki refresh was overdue :shamrock: Hope the :sparkles: new structure & [Sitemap]({{site.baseurl}}{% link docs/project/project-sitemap.md %}) :sparkles: make it easier to navigate**
 
-# Header 1
-## Header 2
-### Header 3
+:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [:octocat: Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions)**
 
-- Bulleted
-- List
+------
 
-1. Numbered
-2. List
+## What is AdvantEDGE?
+AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes.
 
-**Bold** and _Italic_ and `Code` text
+AdvantEDGE provides an emulation environment, enabling experimentation with Edge Computing Technologies, Applications, and Services.  The platform facilitates exploring edge / fog deployment models and their impact on applications and services in short and agile iterations.
 
-[Link](url) and ![Image](src)
-```
+#### Motivation
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+- [x] **Accelerate Mobile Edge Computing adoption**
+- [x] **Help Discover new edge application use cases & services**
+- [x] **Help answer questions such as:**
+<ul><ul>
+<li>Where should my application components be located in the edge network?</li>
+<li>How do network characteristics (such as latency, jitter, and packet loss) impact my application or service?</li>
+<li>How will my application behave when the user moves within and across access networks?</li>
+</ul></ul><br>
 
-### Jekyll Themes
+#### Intended Users
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/InterDigitalInc/AdvantEDGE/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+- [x] **Edge Application Developers**
+- [x] **Edge Network and Service Designers**
+- [x] **Edge Researchers**
+- [x] **Technologists that are simply interested learning how the Edge works**
 
-### Support or Contact
+## Getting started
+[:one: :heavy_minus_sign: **Familiarize with Architecture and Features**]({{site.baseurl}}{% link docs/overview/overview-architecture.md %})
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+[:two: :heavy_minus_sign: **Setup environment**]({{site.baseurl}}{% link docs/setup/env-hw.md %})
+
+[:three: :heavy_minus_sign: **Deploy platform**]({{site.baseurl}}{% link docs/platform-mgmt/mgmt-workflow.md %})
+
+[:four: :heavy_minus_sign: **Start using AdvantEDGE**]({{site.baseurl}}{% link docs/usage/usage-workflow.md %})
+
+## How to Contribute
+If you like this project and would like to participate in its evolution, you can find information on contributing [**here**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md)
+
+We welcome questions, feedback and improvement suggestions via [:octocat:**Discussion**](https://github.com/InterDigitalInc/AdvantEDGE/discussions) and bugs reporting via [:octocat: **Issues**](https://github.com/InterDigitalInc/AdvantEDGE/issues)
+
+Hope to hear from you...
+
+## Licensing
+
+AdvantEDGE is licensed under under the [**Apache License, Version 2.0**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE)
