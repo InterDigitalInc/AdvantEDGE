@@ -3,10 +3,9 @@
 .bak
 node_modules/
 pkg/
-vendor/
 dist/
 bin
 examples/demo1/bin
 _site
 .sass-cache
-
+Gemfile.lock
