@@ -240,7 +240,7 @@ npm run cy:open
 AdvantEDGE core micro-services can be instrumented with code coverage instrumentation; when used in conjunction with Cypress or other system tests (manual or proprietary), it will provide an overview of the code coverage.
 
 The following is a summary of the steps to enable code coverage measurement in AdvantEDGE:
-- Build for code coverage: `meepctl build core --codecov`
+- Build for code coverage: `meepctl build all --codecov`
 - Dockerize: `meepctl dockerize all`
 - Deploy for code coverage: `meepctl deploy core --codecov`
 - Execute testing - use Cypress, manual or any desired system test
