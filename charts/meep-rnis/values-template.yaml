@@ -53,5 +53,6 @@ prometheus:
     
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-rnis"
 
 meepOrigin: core

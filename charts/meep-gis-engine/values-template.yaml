@@ -50,6 +50,7 @@ prometheus:
     
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-gis-engine"
 
 meepOrigin: core
 

@@ -72,5 +72,6 @@ user:
     servepath: "/user-swagger-sandbox"
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-sandbox-ctrl"
 
 meepOrigin: core

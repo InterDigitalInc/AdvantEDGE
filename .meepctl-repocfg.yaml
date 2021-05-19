@@ -393,7 +393,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -417,7 +417,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -441,7 +441,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -462,7 +462,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -486,7 +486,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -510,7 +510,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -531,7 +531,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
@@ -555,7 +555,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
       meep-tc-sidecar:
