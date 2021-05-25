@@ -26,11 +26,15 @@ const EvMetName = "events"
 const EvMetType = "type"
 const EvMetEvent = "event"
 const EvMetDescription = "description"
+const EvMetSrc = "src"
+const EvMetDest = "dest"
 
 type EventMetric struct {
 	Time        interface{}
 	Event       string
 	Description string
+	Src         string
+	Dest        string
 }
 
 // SetEventMetric
@@ -38,7 +42,11 @@ func (ms *MetricStore) SetEventMetric(eventType string, em EventMetric) error {
 	metricList := make([]Metric, 1)
 	metric := &metricList[0]
 	metric.Name = EvMetName
-	metric.Tags = map[string]string{EvMetType: eventType}
+	metric.Tags = map[string]string{
+		EvMetType: eventType,
+		EvMetSrc:  em.Src,
+		EvMetDest: em.Dest,
+	}
 	metric.Fields = map[string]interface{}{
 		EvMetEvent:       em.Event,
 		EvMetDescription: em.Description,
@@ -77,6 +85,12 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 		}
 		if val, ok := values[EvMetDescription].(string); ok {
 			metrics[index].Description = val
+		}
+		if val, ok := values[EvMetSrc].(string); ok {
+			metrics[index].Src = val
+		}
+		if val, ok := values[EvMetDest].(string); ok {
+			metrics[index].Dest = val
 		}
 	}
 	return

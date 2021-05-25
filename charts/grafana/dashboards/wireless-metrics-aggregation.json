@@ -59,8 +59,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 23,
-  "iteration": 1621267088775,
+  "iteration": 1621447328946,
   "links": [],
   "panels": [
     {
@@ -106,6 +105,8 @@
       "legend": {
         "avg": false,
         "current": false,
+        "hideEmpty": false,
+        "hideZero": true,
         "max": false,
         "min": false,
         "show": true,
@@ -115,7 +116,7 @@
       "lines": true,
       "linewidth": 2,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -149,7 +150,7 @@
           "measurement": "/^$scenario$/",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT rsrp FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest",
+          "query": "SELECT mean(\"rsrp\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest, time(1s)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -186,7 +187,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "RSRPs",
+      "title": "RSRPs (4G / 5G)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -252,6 +253,7 @@
       "legend": {
         "avg": false,
         "current": false,
+        "hideZero": true,
         "max": false,
         "min": false,
         "show": true,
@@ -261,7 +263,7 @@
       "lines": true,
       "linewidth": 2,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -295,7 +297,7 @@
           "measurement": "/^$scenario$/",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT rsrq FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest",
+          "query": "SELECT mean(\"rsrq\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest, time(1s)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -332,7 +334,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "RSRQs",
+      "title": "RSRQs (4G / 5G)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -398,6 +400,7 @@
       "legend": {
         "avg": false,
         "current": false,
+        "hideZero": true,
         "max": false,
         "min": false,
         "show": true,
@@ -407,7 +410,7 @@
       "lines": true,
       "linewidth": 2,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -441,7 +444,7 @@
           "measurement": "/^$scenario$/",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT rssi FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest",
+          "query": "SELECT mean(\"rssi\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest, time(1s)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -478,7 +481,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "RSSIs",
+      "title": "RSSIs (WIFI)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -558,6 +561,7 @@
       "legend": {
         "avg": false,
         "current": false,
+        "hideZero": false,
         "max": false,
         "min": false,
         "show": true,
@@ -567,7 +571,7 @@
       "lines": true,
       "linewidth": 2,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -601,7 +605,7 @@
           "measurement": "/^$scenario$/",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT dist FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest",
+          "query": "SELECT mean(\"dist\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/) AND $timeFilter GROUP BY dest, time(1s)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -783,7 +787,7 @@
           "measurement": "events",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT type,description FROM $database.autogen.events WHERE $timeFilter ORDER BY time desc LIMIT 100",
+          "query": "SELECT type,description FROM $database.autogen.events WHERE $timeFilter AND (\"src\" =~ /^$src$/) ORDER BY time desc LIMIT 100",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -797,7 +801,19 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "src",
+              "operator": "=~",
+              "value": "/^$src$/"
+            },
+            {
+              "condition": "AND",
+              "key": "dest",
+              "operator": "=~",
+              "value": "/^$dest$/"
+            }
+          ]
         }
       ],
       "timeFrom": null,
@@ -807,7 +823,7 @@
       "type": "table-old"
     }
   ],
-  "refresh": "",
+  "refresh": "1s",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -836,8 +852,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "may14_4g_5g_wifi_macro",
-          "value": "may14_4g_5g_wifi_macro"
+          "text": "_internal",
+          "value": "_internal"
         },
         "datasource": "$datasource",
         "definition": "show databases",
@@ -862,9 +878,10 @@
       {
         "allValue": null,
         "current": {
+          "isNone": true,
           "selected": false,
-          "text": "10.100.0.4",
-          "value": "10.100.0.4"
+          "text": "None",
+          "value": ""
         },
         "datasource": "$datasource",
         "definition": "",
@@ -911,5 +928,6 @@
   "timezone": "",
   "title": "Wireless Metrics Aggregation",
   "uid": "6",
-  "version": 4
+  "version": 6
 }
+

@@ -95,6 +95,8 @@ repo:
     dashboards:
       network-metrics-point-to-point: dashboards/network-metrics-point-to-point.json
       network-metrics-aggregation: dashboards/network-metrics-aggregation.json
+      wireless-metrics-point-to-point: dashboards/wireless-metrics-point-to-point.json
+      wireless-metrics-aggregation: dashboards/wireless-metrics-aggregation.json
       http-single-log: dashboards/http-log-byId.json
       http-logs-aggregation: dashboards/http-loggers.json
       platform-advantedge: dashboards/platform-advantedge.json

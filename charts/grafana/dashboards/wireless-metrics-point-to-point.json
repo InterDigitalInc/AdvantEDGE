@@ -30,8 +30,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 21,
-  "iteration": 1621266422427,
+  "iteration": 1621449565579,
   "links": [],
   "panels": [
     {
@@ -145,7 +144,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "network",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT \"dist\" FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
@@ -278,7 +277,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "network",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT \"rsrp\" FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
@@ -313,7 +312,7 @@
       "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
-      "title": "RSRP",
+      "title": "RSRP (4G / 5G)",
       "type": "singlestat",
       "valueFontSize": "100%",
       "valueMaps": [
@@ -411,7 +410,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "network",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT \"rsrq\" FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
@@ -446,7 +445,7 @@
       "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
-      "title": "RSRQ",
+      "title": "RSRQ (4G / 5G)",
       "type": "singlestat",
       "valueFontSize": "100%",
       "valueMaps": [
@@ -544,7 +543,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "network",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT \"rssi\" FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
@@ -579,7 +578,7 @@
       "thresholds": "",
       "timeFrom": null,
       "timeShift": null,
-      "title": "RSSI",
+      "title": "RSSI (WIFI)",
       "type": "singlestat",
       "valueFontSize": "100%",
       "valueMaps": [
@@ -620,6 +619,7 @@
       "legend": {
         "avg": false,
         "current": false,
+        "hideZero": true,
         "max": false,
         "min": false,
         "show": true,
@@ -629,7 +629,7 @@
       "lines": true,
       "linewidth": 2,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -659,7 +659,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "/^$scenario$/",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT mean(\"rsrp\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter GROUP BY time(1s)",
@@ -710,7 +710,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "network",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT mean(\"rsrq\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter GROUP BY time(1s)",
@@ -761,7 +761,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "network",
+          "measurement": "gis",
           "orderByTime": "ASC",
           "policy": "default",
           "query": "SELECT mean(\"rssi\") FROM $database.autogen.gis WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter GROUP BY time(1s)",
@@ -832,7 +832,19 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "src",
+              "operator": "=~",
+              "value": "/^$src$/"
+            },
+            {
+              "condition": "AND",
+              "key": "dest",
+              "operator": "=~",
+              "value": "/^$dest$/"
+            }
+          ]
         }
       ],
       "thresholds": [],
@@ -962,7 +974,7 @@
           "measurement": "events",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT type,description FROM $database.autogen.events WHERE $timeFilter ORDER BY time desc LIMIT 100",
+          "query": "SELECT type,description FROM $database.autogen.events WHERE (\"src\" =~ /^$src$/ AND (\"dest\" =~ /^$dest$/ OR \"dest\" = \'\')) AND $timeFilter ORDER BY time desc LIMIT 100",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -976,7 +988,19 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "src",
+              "operator": "=~",
+              "value": "/^$src$/"
+            },
+            {
+              "condition": "AND",
+              "key": "dest",
+              "operator": "=~",
+              "value": "/^$dest$/"
+            }
+          ]
         }
       ],
       "timeFrom": null,
@@ -986,7 +1010,7 @@
       "type": "table-old"
     }
   ],
-  "refresh": "5s",
+  "refresh": "1s",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -1119,5 +1143,6 @@
   "timezone": "",
   "title": "Wireless Metrics Point-to-Point",
   "uid": "5",
-  "version": 6
+  "version": 7
 }
+
