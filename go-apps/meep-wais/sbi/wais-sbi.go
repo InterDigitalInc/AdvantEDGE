@@ -34,7 +34,7 @@ type SbiCfg struct {
 	RedisAddr      string
 	PostgisHost    string
 	PostgisPort    string
-	StaInfoCb      func(string, string, string, *int32)
+	StaInfoCb      func(string, string, string, *int32, []string)
 	ApInfoCb       func(string, string, *float32, *float32, []string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -47,7 +47,7 @@ type WaisSbi struct {
 	activeModel             *mod.Model
 	gisCache                *gc.GisCache
 	refreshTicker           *time.Ticker
-	updateStaInfoCB         func(string, string, string, *int32)
+	updateStaInfoCB         func(string, string, string, *int32, []string)
 	updateAccessPointInfoCB func(string, string, *float32, *float32, []string)
 	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
@@ -222,7 +222,16 @@ func processActiveScenarioUpdate() {
 				rssi = getRssi(name, poa.Name, ueMeasMap)
 			}
 			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
-			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi)
+
+			//get all appNames under the UE
+			apps := (sbi.activeModel.GetNodeChild(name)).(*[]dataModel.Process)
+
+			var appNames []string
+			for _, process := range *apps {
+				appNames = append(appNames, process.Name)
+			}
+
+			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi, appNames)
 		}
 	}
 
@@ -236,7 +245,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateStaInfoCB(prevUeName, "", "", nil)
+			sbi.updateStaInfoCB(prevUeName, "", "", nil, nil)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -325,7 +334,14 @@ func refreshMeasurements() {
 				rssi = getRssi(name, poa.Name, ueMeasMap)
 			}
 			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
-			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi)
+			apps := (sbi.activeModel.GetNodeChild(name)).(*[]dataModel.Process)
+
+			var appNames []string
+			for _, process := range *apps {
+				appNames = append(appNames, process.Name)
+			}
+
+			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi, appNames)
 		}
 	}
 }
