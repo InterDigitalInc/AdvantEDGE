@@ -1,0 +1,104 @@
+# Copyright (c) 2019  InterDigital Communications, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: 1.7.1
+repo:
+  name: AdvantEDGE
+
+  #------------------------------
+  #  Deployment
+  #------------------------------
+  deployment:
+    # permissions
+    permissions:
+      # user id
+      uid: 1000
+      # group id
+      gid: 1000
+
+    # platform ingress configuration
+    ingress:
+      # host name
+      host: my-platform-fqdn
+      # enable https only (redirect http requests to https port)
+      https-only: true
+      # bind to host ports (true) or node ports (false)
+      host-ports: true
+      # http port number
+      http-port: 80
+      # https config
+      https-port: 443
+      # certificate authority (none|self-signed|lets-encrypt) default: none
+      ca: self-signed
+      # lets-encrypt production server (true) or staging server (false)
+      le-server-prod: false
+
+  #------------------------------
+  #  Core Subsystem
+  #------------------------------
+  core:
+
+    # Go Applications
+    go-apps:
+      meep-ingress-certs:
+        # enable meepctl build
+        build: false
+        # location of deployment chart
+        chart: charts/meep-ingress-certs
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-ingress-certs.yaml
+        # enable meepctl dockerize
+        dockerize: false
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports linting
+        lint: false
+
+  #------------------------------
+  #  Dependencies
+  #------------------------------
+  dep:
+    meep-cert-manager:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
+      chart: charts/cert-manager
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-cert-manager.yaml
+    meep-ingress:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
+      chart: charts/ingress-nginx
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-ingress.yaml
+    meep-minio:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
+      chart: charts/minio
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-minio.yaml
