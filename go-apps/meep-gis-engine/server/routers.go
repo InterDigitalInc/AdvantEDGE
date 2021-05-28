@@ -107,10 +107,24 @@ var routes = Routes{
 	},
 
 	Route{
+		"GetDistanceGeoDataByName",
+		strings.ToUpper("Get"),
+		"/gis/v1/geodata/{assetName}/distanceTo",
+		GetDistanceGeoDataByName,
+	},
+
+	Route{
 		"GetGeoDataByName",
 		strings.ToUpper("Get"),
 		"/gis/v1/geodata/{assetName}",
 		GetGeoDataByName,
+	},
+
+	Route{
+		"GetWithinRangeByName",
+		strings.ToUpper("Get"),
+		"/gis/v1/geodata/{assetName}/withinRange",
+		GetWithinRangeByName,
 	},
 
 	Route{

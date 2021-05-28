@@ -140,6 +140,33 @@
           done();
         });
       });
+      describe('getDistanceGeoDataByName', function() {
+        it('should call getDistanceGeoDataByName successfully', function(done) {
+          // TODO: uncomment, update parameter values for getDistanceGeoDataByName call and complete the assertions
+          /*
+          var assetName = "assetName_example";
+          var distanceParameters = new AdvantEdgeGisEngineRestApi.DistanceParameters();
+          distanceParameters.assetName = "";
+          distanceParameters.latitude = 0.0;
+          distanceParameters.longitude = 0.0;
+
+          instance.getDistanceGeoDataByName(assetName, distanceParameters, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.DistanceResponse);
+            expect(data.distance).to.be.a('number');
+            expect(data.distance).to.be(0.0);
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('getGeoDataByName', function() {
         it('should call getGeoDataByName successfully', function(done) {
           // TODO: uncomment, update parameter values for getGeoDataByName call and complete the assertions
@@ -193,6 +220,39 @@
             expect(data.assetType).to.be("UE");
             expect(data.subType).to.be.a('string');
             expect(data.subType).to.be("UE");
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getWithinRangeByName', function() {
+        it('should call getWithinRangeByName successfully', function(done) {
+          // TODO: uncomment, update parameter values for getWithinRangeByName call and complete the assertions
+          /*
+          var assetName = "assetName_example";
+          var withinRangeParameters = new AdvantEdgeGisEngineRestApi.WithinRangeParameters();
+          withinRangeParameters.assetName = "";
+          withinRangeParameters.latitude = 0.0;
+          withinRangeParameters.longitude = 0.0;
+          withinRangeParameters.radius = 0.0;
+          withinRangeParameters.accuracy = 0.0;
+
+          instance.getWithinRangeByName(assetName, withinRangeParameters, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.WithinRangeResponse);
+            expect(data.latitude).to.be.a('number');
+            expect(data.latitude).to.be(0.0);
+            expect(data.lontitude).to.be.a('number');
+            expect(data.lontitude).to.be(0.0);
+            expect(data.within).to.be.a('boolean');
+            expect(data.within).to.be(false);
 
             done();
           });

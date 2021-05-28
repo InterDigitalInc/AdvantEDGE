@@ -1106,6 +1106,120 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
+func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
+	// Get asset name from request path parameters
+	vars := mux.Vars(r)
+	assetName := vars["assetName"]
+	log.Debug("Get GeoData for asset: ", assetName)
+
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Find asset in active scenario model
+	node := ge.activeModel.GetNode(assetName)
+	if node == nil {
+		err := errors.New("Asset not found in active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Retrieve Distance parameters from request body
+	var distanceParam DistanceParameters
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&distanceParam)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if distanceParam.AssetName != "" {
+
+		// Find second asset in active scenario model
+		node := ge.activeModel.GetNode(assetName)
+		if node == nil {
+			err := errors.New("Asset not found in active scenario")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+	}
+
+	// Create Response to return
+	var resp DistanceResponse
+
+	// Format response
+	jsonResponse, err := json.Marshal(&resp)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
+	/*
+	   // Get asset name from request path parameters
+	   vars := mux.Vars(r)
+	   assetName := vars["assetName"]
+	   log.Debug("Get GeoData for asset: ", assetName)
+
+	   // Retrieve query parameters
+	   query := r.URL.Query()
+	   excludePath := query.Get("excludePath")
+
+	   // Make sure scenario is active
+	   if ge.activeModel.GetScenarioName() == "" {
+	           err := errors.New("No active scenario")
+	           log.Error(err.Error())
+	           http.Error(w, err.Error(), http.StatusNotFound)
+	           return
+	   }
+
+	   // Find asset in active scenario model
+	   node := ge.activeModel.GetNode(assetName)
+	   if node == nil {
+	           err := errors.New("Asset not found in active scenario")
+	           log.Error(err.Error())
+	           http.Error(w, err.Error(), http.StatusNotFound)
+	           return
+	   }
+
+	   // Create GeoData Asset to return
+	   var asset GeoDataAsset
+
+	   // Format response
+	   jsonResponse, err := json.Marshal(&asset)
+	   if err != nil {
+	           log.Error(err.Error())
+	           http.Error(w, err.Error(), http.StatusInternalServerError)
+	           return
+	   }
+
+	   // Send response
+	   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	   w.WriteHeader(http.StatusOK)
+	   fmt.Fprint(w, string(jsonResponse))
+	*/
+}
+
 func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)

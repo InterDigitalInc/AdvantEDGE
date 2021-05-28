@@ -6,7 +6,9 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**DeleteGeoDataByName**](GeospatialDataApi.md#DeleteGeoDataByName) | **Delete** /geodata/{assetName} | Delete geospatial data
 [**GetAssetData**](GeospatialDataApi.md#GetAssetData) | **Get** /geodata | Get geospatial data
+[**GetDistanceGeoDataByName**](GeospatialDataApi.md#GetDistanceGeoDataByName) | **Get** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 [**GetGeoDataByName**](GeospatialDataApi.md#GetGeoDataByName) | **Get** /geodata/{assetName} | Get geospatial data
+[**GetWithinRangeByName**](GeospatialDataApi.md#GetWithinRangeByName) | **Get** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 [**UpdateGeoDataByName**](GeospatialDataApi.md#UpdateGeoDataByName) | **Post** /geodata/{assetName} | Create/Update geospatial data
 
 
@@ -75,6 +77,35 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **GetDistanceGeoDataByName**
+> DistanceResponse GetDistanceGeoDataByName(ctx, assetName, distanceParameters)
+Get distance between geospatial data points
+
+Get distance between geospatial data for the given asset and another asset or geospatial coordinates
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **assetName** | **string**| Name of geospatial asset | 
+  **distanceParameters** | [**DistanceParameters**](DistanceParameters.md)| Parameters of geospatial assets | 
+
+### Return type
+
+[**DistanceResponse**](DistanceResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **GetGeoDataByName**
 > GeoDataAsset GetGeoDataByName(ctx, assetName, optional)
 Get geospatial data
@@ -100,6 +131,35 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**GeoDataAsset**](GeoDataAsset.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetWithinRangeByName**
+> WithinRangeResponse GetWithinRangeByName(ctx, assetName, withinRangeParameters)
+Returns if a geospatial data points is within a specified distance from a location
+
+Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **assetName** | **string**| Name of geospatial asset | 
+  **withinRangeParameters** | [**WithinRangeParameters**](WithinRangeParameters.md)| Parameters of geospatial assets | 
+
+### Return type
+
+[**WithinRangeResponse**](WithinRangeResponse.md)
 
 ### Authorization
 
