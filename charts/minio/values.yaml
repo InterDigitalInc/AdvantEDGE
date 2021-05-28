@@ -122,7 +122,7 @@ trustedCertsSecret: ""
 persistence:
   enabled: true
   reclaimPolicy: Retain
-  location: '/home/englab/.meep/minio/'
+  location: "<WORKDIR>/minio"
 
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
@@ -140,7 +140,7 @@ persistence:
   ## Storage class of PV to bind. By default it looks for standard storage class.
   ## If the PV uses a different storage class, specify that here.
   # storageClass: '-'
-  storageClass: 'fullname'
+  storageClass: "fullname"
   VolumeName: ""
   accessMode: ReadWriteOnce
   size: 250Gi
@@ -182,7 +182,7 @@ imagePullSecrets: []
 ingress:
   enabled: true
   hosts:
-    - name: ''
+    - name: ""
       paths:
         - /
   annotations:

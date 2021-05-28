@@ -159,6 +159,7 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/docker-registry")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/grafana")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/minio")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine/user-charts")
@@ -295,6 +296,8 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
+	case "meep-minio":
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/minio/")
 	case "meep-open-map-tiles":
 		deploySetOmtConfig(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
