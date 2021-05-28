@@ -1,8 +1,12 @@
 type: s3
 config:
   bucket: thanos
-  endpoint: 10.190.114.148:9000
+  endpoint: advantedge.testfqdn.dev
   access_key: admin
   secret_key: password
+  insecure: false
+  signature_version2: false
   http_config:
-    insecure_skip_verify: true
+    idle_conn_timeout: 1m30s
+    response_header_timeout: 2m
+    insecure_skip_verify: false

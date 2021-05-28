@@ -1374,7 +1374,7 @@ prometheus:
   # Thanos sidecar on prometheus nodes
   # (Please remember to change ${kube-prometheus-stack.fullname} and ${namespace}. Not just copy and paste!)
   thanosService:
-    enabled: true
+    enabled: false
     annotations: {}
     labels: {}
     portName: grpc
@@ -1660,11 +1660,11 @@ prometheus:
 
     ## External labels to add to any time series or alerts when communicating with external systems
     ##
-    externalLabels:
-      region: mtl
-      monitor: platform
-      promenv: dev
-      replica: kev-dev
+    # externalLabels:
+    #   region:
+    #   monitor: 
+    #   promenv:
+    #   replica:
 
     ## Name of the external label used to denote replica name
     ##
@@ -2099,12 +2099,12 @@ prometheus:
     ## This is experimental and may change significantly without backward compatibility in any release.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#thanosspec
     ##
-    thanos:
-      # image: quay.io/thanos/thanos
-      # version: v0.8.1
-      objectStorageConfig:
-        key: thanos.yaml
-        name: thanos-objstore-config
+    # thanos:
+    #   # image: quay.io/thanos/thanos
+    #   # version: v0.8.1
+    #   objectStorageConfig:
+    #     key: objstore.yml
+    #     name: meep-objstore-config
 
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
     ##  if using proxy extraContainer  update targetPort with proxy container port

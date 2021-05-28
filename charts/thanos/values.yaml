@@ -44,15 +44,7 @@ clusterDomain: cluster.local
 ## Objstore Configuration
 ## Specify content for objstore.yml
 ##
-objstoreConfig:
-  type: s3
-  config:
-    bucket: thanos
-    endpoint: 10.190.114.148:9000
-    access_key: admin
-    secret_key: password
-    http_config:
-      insecure_skip_verify: true
+# objstoreConfig:
 
 ## Index cache Configuration
 ## Specify content for index-cache.yml
@@ -67,7 +59,8 @@ objstoreConfig:
 ## Secret with Objstore Configuration
 ## Note: This will override objstoreConfig
 ##
-# existingObjstoreSecret:
+existingObjstoreSecret: thanos-objstore-config
+
 ##  optional item list for specifying a custom Secret key. If so, path should be objstore.yml
 # existingObjstoreSecretItems: []
 
@@ -124,7 +117,7 @@ query:
   stores:
     - "dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local"
     # - "dnssrv+_grpc._tcp.meep-thanos-archive-storegateway.default.svc.cluster.local"
-    - "dnssrv+_grpc._tcp.meep-thanos-archive-query.default.svc.cluster.local"
+    # - "dnssrv+_grpc._tcp.meep-thanos-archive-query.default.svc.cluster.local"
 
   ## Query Service Discovery Configuration
   ## Specify content for servicediscovery.yml
@@ -325,7 +318,7 @@ query:
       ## Specify the nodePort value for the LoadBalancer and NodePort service types.
       ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
       ##
-      nodePort: 30090
+      nodePort: 30091
     ## GRPC Port
     ##
     grpc:
@@ -682,7 +675,7 @@ queryFrontend:
       ## Specify the nodePort value for the LoadBalancer and NodePort service types.
       ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
       ##
-      nodePort: 30091
+      nodePort: 30092
     ##
     ## Set the LoadBalancer service type to internal only.
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
@@ -1070,7 +1063,7 @@ bucketweb:
 compactor:
   ## Set to true to enable Thanos Compactor component
   ##
-  enabled: true
+  enabled: false
 
   ## Log level
   ##
