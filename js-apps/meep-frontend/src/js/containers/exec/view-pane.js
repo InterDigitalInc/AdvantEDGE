@@ -247,11 +247,6 @@ class ViewPane extends Component {
     ueIds.unshift('None');
     poaIds.unshift('None');
 
-    const selectedSourceView1 = appIds.includes(this.props.sourceNodeSelectedView1) ? this.props.sourceNodeSelectedView1 : 'None';
-    const selectedDestView1 = appIds.includes(this.props.destNodeSelectedView1) ? this.props.destNodeSelectedView1 : 'None';
-    const selectedSourceView2 = appIds.includes(this.props.sourceNodeSelectedView2) ? this.props.sourceNodeSelectedView2 : 'None';
-    const selectedDestView2 = appIds.includes(this.props.destNodeSelectedView2) ? this.props.destNodeSelectedView2 : 'None';
-
     // Populate Dashboard view list using links from monitoring tab
     var dashboardViewsList = [
       VIEW_NAME_NONE,
@@ -284,10 +279,10 @@ class ViewPane extends Component {
           poaIds={poaIds}
           view1Name={view1Name}
           view2Name={view2Name}
-          sourceNodeSelectedView1={selectedSourceView1}
-          destNodeSelectedView1={selectedDestView1}
-          sourceNodeSelectedView2={selectedSourceView2}
-          destNodeSelectedView2={selectedDestView2}
+          sourceNodeSelectedView1={this.props.sourceNodeSelectedView1}
+          destNodeSelectedView1={this.props.destNodeSelectedView1}
+          sourceNodeSelectedView2={this.props.sourceNodeSelectedView2}
+          destNodeSelectedView2={this.props.destNodeSelectedView2}
           changeView1={this.changeView1}
           changeView2={this.changeView2}
           changeSourceNodeSelectedView1={this.props.changeSourceNodeSelectedView1}

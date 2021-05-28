@@ -123,7 +123,7 @@ class ViewSpecificPane extends Component {
                   onChange={e => {
                     this.props.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={this.props.sourceNodeSelected}
+                  value={netSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
                 />
               </GridCell>
               <GridCell span={12}>
@@ -134,7 +134,7 @@ class ViewSpecificPane extends Component {
                   onChange={e => {
                     this.props.changeDestNodeSelected(e.target.value);
                   }}
-                  value={this.props.destNodeSelected}
+                  value={netDstNodeIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
@@ -150,7 +150,7 @@ class ViewSpecificPane extends Component {
                   onChange={e => {
                     this.props.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={this.props.sourceNodeSelected}
+                  value={netSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
@@ -166,7 +166,7 @@ class ViewSpecificPane extends Component {
                   onChange={e => {
                     this.props.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={this.props.sourceNodeSelected}
+                  value={wirelessSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
                 />
               </GridCell>
               <GridCell span={12}>
@@ -177,7 +177,7 @@ class ViewSpecificPane extends Component {
                   onChange={e => {
                     this.props.changeDestNodeSelected(e.target.value);
                   }}
-                  value={this.props.destNodeSelected}
+                  value={wirelessDstNodeIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
@@ -193,7 +193,7 @@ class ViewSpecificPane extends Component {
                   onChange={e => {
                     this.props.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={this.props.sourceNodeSelected}
+                  value={wirelessSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
