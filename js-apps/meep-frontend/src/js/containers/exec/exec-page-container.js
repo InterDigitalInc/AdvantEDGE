@@ -30,6 +30,7 @@ import HeadlineBar from '../../components/headline-bar';
 import EventCreationPane from './event-creation-pane';
 import EventAutomationPane from './event-automation-pane';
 import EventReplayPane from './event-replay-pane';
+import ViewPane from './view-pane';
 
 import ExecTable from './exec-table';
 
@@ -46,6 +47,7 @@ import { execChangeScenarioList} from '../../state/exec';
 import {
   uiChangeCurrentDialog,
   uiExecChangeEventCreationMode,
+  uiExecChangeViewMode,
   uiExecChangeEventAutomationMode,
   uiExecChangeEventReplayMode,
   uiExecChangeDashCfgMode,
@@ -74,6 +76,8 @@ import {
   NETWORK_CHARACTERISTICS_EVENT,
   SCENARIO_UPDATE_EVENT,
   PDU_SESSION_EVENT,
+  VIEW_1,
+  VIEW_2,
   EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
@@ -212,6 +216,7 @@ class ExecPageContainer extends Component {
     this.props.eventCreationMode ? this.onQuitEventCreationMode() : '';
     this.props.eventAutomationMode ? this.onQuitEventAutomationMode() : '';
     this.props.eventReplayMode ? this.onQuitEventReplayMode() : '';
+    this.props.viewMode ? this.onQuitViewMode() : '';
 
     // Retrieve list of available scenarios
     this.props.cfgApi.getScenarioList((error, data, response) => {
@@ -255,6 +260,11 @@ class ExecPageContainer extends Component {
     this.props.changeEventCreationMode(false);
   }
 
+  // CLOSE VIEW PANE
+  onQuitViewMode() {
+    this.props.changeViewMode(false);
+  }
+
   // CLOSE EVENT AUTOMATION PANE
   onQuitEventAutomationMode() {
     this.props.changeEventAutomationMode(false);
@@ -266,6 +276,14 @@ class ExecPageContainer extends Component {
   }
 
   // CONFIGURE DASHBOARD
+  onOpenViewMode() {
+    this.props.changeViewMode(true);
+    this.props.changeEventCreationMode(false);
+    this.props.changeEventAutomationMode(false);
+    this.props.changeEventReplayMode(false);
+  }
+
+  // CONFIGURE DASHBOARD
   onOpenDashCfg() {
     this.props.changeDashCfgMode(true);
   }
@@ -273,6 +291,11 @@ class ExecPageContainer extends Component {
   // STOP CONFIGURE DASHBOARD
   onCloseDashCfg() {
     this.props.changeDashCfgMode(false);
+  }
+
+  // STOP CONFIGURE DASHBOARD
+  onCloseViewMode() {
+    this.props.changeViewMode(false);
   }
 
   // CONFIGURE EVENTS
@@ -366,7 +389,7 @@ class ExecPageContainer extends Component {
       (this.props.scenarioState !== EXEC_STATE_IDLE) ? this.props.execScenarioName : 'None' :
       this.props.cfgScenarioName;
 
-    const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode;
+    const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode || this.props.viewMode;
     const spanLeft = eventPaneOpen ? 8 : 12;
     const spanRight = eventPaneOpen ? 4 : 0;
     return (
@@ -417,6 +440,7 @@ class ExecPageContainer extends Component {
                         onTerminate={this.onTerminateScenario}
                         onOpenDashCfg={this.onOpenDashCfg}
                         onOpenEventCfg={this.onOpenEventCfg}
+                        onOpenViewMode={this.onOpenViewMode}
                       />
                     </GridCell>
                   </GridInner>
@@ -477,6 +501,16 @@ class ExecPageContainer extends Component {
                   onClose={this.onQuitEventAutomationMode}
                 />
               </Elevation>
+              <Elevation className='idcc-elevation' z={2}>
+                <ViewPane
+                  viewOptions={[VIEW_1, VIEW_2]}
+                  hide={!this.props.viewMode}
+                  onClose={this.onQuitViewMode}
+                  sandbox={this.props.sandbox}
+                  scenarioName={this.props.execScenarioName}
+                  showApps={this.props.showApps}
+                />
+              </Elevation>
             </GridCell>
           </Grid>
         )}
@@ -513,6 +547,7 @@ const mapStateToProps = state => {
     scenarioState: state.exec.state.scenario,
     scenarios: state.exec.apiResults.scenarios,
     eventCreationMode: state.ui.eventCreationMode,
+    viewMode: state.ui.viewMode,
     eventAutomationMode: state.ui.eventAutomationMode,
     eventReplayMode: state.ui.eventReplayMode,
     dashCfgMode: state.ui.dashCfgMode,
@@ -534,6 +569,7 @@ const mapDispatchToProps = dispatch => {
     changeEventReplayMode: val => dispatch(uiExecChangeEventReplayMode(val)), // (true or false)
     changeDashCfgMode: val => dispatch(uiExecChangeDashCfgMode(val)), // (true or false)
     changeEventCfgMode: val => dispatch(uiExecChangeEventCfgMode(val)), // (true or false)
+    changeViewMode: val => dispatch(uiExecChangeViewMode(val)), // (true or false)
     changeCurrentEvent: e => dispatch(uiExecChangeCurrentEvent(e)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
     changeShowApps: show => dispatch(uiExecChangeShowApps(show)),

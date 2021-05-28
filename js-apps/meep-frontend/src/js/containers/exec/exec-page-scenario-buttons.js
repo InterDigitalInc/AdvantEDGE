@@ -65,7 +65,7 @@ class ExecPageScenarioButtons extends Component {
     );
   }
 
-  canOpenDashCfg() {
+  canOpenViewMode() {
     return (
       this.props.sandbox &&
       !this.props.podsPending &&
@@ -125,8 +125,8 @@ class ExecPageScenarioButtons extends Component {
         <Button
           raised
           style={styles.button}
-          onClick={this.props.onOpenDashCfg}
-          disabled={!this.canOpenDashCfg()}
+          onClick={this.props.onOpenViewMode}
+          disabled={!this.canOpenViewMode()}
           data-cy={EXEC_BTN_DASHBOARD}
         >
           DASHBOARD
