@@ -26,9 +26,9 @@ package server
 type NrMeasRepUeNotificationEutraNeighCellMeasInfo struct {
 	Ecgi *Ecgi `json:"ecgi,omitempty"`
 	// Reference Signal Received Power as defined in ETSI TS 138 331 [i.13].
-	Rsrp int32 `json:"rsrp,omitempty"`
+	Rsrp int32 `json:"rsrp"`
 	// Reference Signal Received Quality as defined in ETSI TS 138 331 [i.13].
-	Rsrq int32 `json:"rsrq,omitempty"`
+	Rsrq int32 `json:"rsrq"`
 	// Reference Signal plus Interference Noise Ratio as defined in ETSI TS 138 331 [i.13].
 	Sinr int32 `json:"sinr,omitempty"`
 }
