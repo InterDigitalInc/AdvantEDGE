@@ -312,19 +312,19 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")
 		regionLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.region")
 		if regionLabel != "" {
-			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabel.region="+regionLabel)
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.region="+regionLabel)
 		}
 		monitorLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.monitor")
 		if monitorLabel != "" {
-			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabel.monitor="+monitorLabel)
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.monitor="+monitorLabel)
 		}
 		promenvLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.promenv")
 		if promenvLabel != "" {
-			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabel.promenv="+promenvLabel)
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.promenv="+promenvLabel)
 		}
 		replicaLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.replica")
 		if replicaLabel != "" {
-			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabel.replica="+replicaLabel)
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.replica="+replicaLabel)
 		}
 		thanosEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.enabled")
 		if thanosEnabled {
@@ -344,9 +344,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			if queryEnabled {
 				thanosArchiveEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos-archive.enabled")
 				if thanosArchiveEnabled {
-					flags = utils.HelmFlags(flags, "--set", "query.stores={"+
-						"\"dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local\","+
-						"\"dnssrv+_grpc._tcp.meep-thanos-archive-storegateway.default.svc.cluster.local\"}")
+					flags = utils.HelmFlags(flags, "--set", "query.stores={dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local,dnssrv+_grpc._tcp.meep-thanos-archive-storegateway.default.svc.cluster.local}")
 				}
 			}
 			// Query Frontend
