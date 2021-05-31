@@ -768,7 +768,7 @@ repo:
       # enable meepctl dockerize -> deps are never dockerized
       dockerize: false
       # enable meepctl deploy/delete
-      deploy: false
+      deploy: true
       # location of deployment chart
       chart: charts/thanos
       # user supplied value file located @ .meep/user/values (use below file name)
