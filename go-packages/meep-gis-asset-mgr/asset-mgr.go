@@ -2035,8 +2035,6 @@ func (am *AssetMgr) GetDistanceBetweenPoints(srcCoordinates string, dstCoordinat
                         log.Error(err.Error())
                         return dist, err
                 }
-
-                log.Info("SIMON dist: ", dist)
                 return dist, nil
         }
         err = rows.Err()
@@ -2071,7 +2069,6 @@ func (am *AssetMgr) GetWithinRangeBetweenPoints(srcCoordinates string, dstCoordi
                         log.Error(err.Error())
                         return within, err
                 }
-
                 return within, nil
         }
         err = rows.Err()
