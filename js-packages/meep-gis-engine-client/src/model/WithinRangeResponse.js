@@ -56,8 +56,10 @@
    * Within range response
    * @alias module:model/WithinRangeResponse
    * @class
+   * @param within {Boolean} Within range result (e.g. true = within range, false = beyond range)
    */
-  var exports = function() {
+  var exports = function(within) {
+    this.within = within;
   };
 
   /**
@@ -72,8 +74,8 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('latitude'))
         obj.latitude = ApiClient.convertToType(data['latitude'], 'Number');
-      if (data.hasOwnProperty('lontitude'))
-        obj.lontitude = ApiClient.convertToType(data['lontitude'], 'Number');
+      if (data.hasOwnProperty('longitude'))
+        obj.longitude = ApiClient.convertToType(data['longitude'], 'Number');
       if (data.hasOwnProperty('within'))
         obj.within = ApiClient.convertToType(data['within'], 'Boolean');
     }
@@ -81,16 +83,16 @@
   }
 
   /**
-   * Asset latitude
+   * Destination asset latitude
    * @member {Number} latitude
    */
   exports.prototype.latitude = undefined;
 
   /**
-   * Asset longitude
-   * @member {Number} lontitude
+   * Destination asset longitude
+   * @member {Number} longitude
    */
-  exports.prototype.lontitude = undefined;
+  exports.prototype.longitude = undefined;
 
   /**
    * Within range result (e.g. true = within range, false = beyond range)

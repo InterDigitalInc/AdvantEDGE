@@ -27,5 +27,9 @@ package client
 // Distance response
 type DistanceResponse struct {
 	// Distance between two points (in meters)
-	Distance float32 `json:"distance,omitempty"`
+	Distance float32 `json:"distance"`
+	// Destination asset latitude
+	Latitude float32 `json:"latitude,omitempty"`
+	// Destination asset longitude
+	Longitude float32 `json:"longitude,omitempty"`
 }

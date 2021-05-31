@@ -229,7 +229,7 @@ Get distance between geospatial data for the given asset and another asset or ge
 */
 func (a *GeospatialDataApiService) GetDistanceGeoDataByName(ctx context.Context, assetName string, distanceParameters DistanceParameters) (DistanceResponse, *http.Response, error) {
 	var (
-		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
@@ -420,7 +420,7 @@ Get geospatial data for the given asset and if it is within range of another ass
 */
 func (a *GeospatialDataApiService) GetWithinRangeByName(ctx context.Context, assetName string, withinRangeParameters WithinRangeParameters) (WithinRangeResponse, *http.Response, error) {
 	var (
-		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte

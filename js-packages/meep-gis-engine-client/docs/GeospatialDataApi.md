@@ -6,9 +6,9 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deleteGeoDataByName**](GeospatialDataApi.md#deleteGeoDataByName) | **DELETE** /geodata/{assetName} | Delete geospatial data
 [**getAssetData**](GeospatialDataApi.md#getAssetData) | **GET** /geodata | Get geospatial data
-[**getDistanceGeoDataByName**](GeospatialDataApi.md#getDistanceGeoDataByName) | **GET** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
+[**getDistanceGeoDataByName**](GeospatialDataApi.md#getDistanceGeoDataByName) | **POST** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 [**getGeoDataByName**](GeospatialDataApi.md#getGeoDataByName) | **GET** /geodata/{assetName} | Get geospatial data
-[**getWithinRangeByName**](GeospatialDataApi.md#getWithinRangeByName) | **GET** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
+[**getWithinRangeByName**](GeospatialDataApi.md#getWithinRangeByName) | **POST** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 [**updateGeoDataByName**](GeospatialDataApi.md#updateGeoDataByName) | **POST** /geodata/{assetName} | Create/Update geospatial data
 
 

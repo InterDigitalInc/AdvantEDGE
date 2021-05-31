@@ -26,10 +26,10 @@ package client
 
 // Within range response
 type WithinRangeResponse struct {
-	// Asset latitude
+	// Destination asset latitude
 	Latitude float32 `json:"latitude,omitempty"`
-	// Asset longitude
-	Lontitude float32 `json:"lontitude,omitempty"`
+	// Destination asset longitude
+	Longitude float32 `json:"longitude,omitempty"`
 	// Within range result (e.g. true = within range, false = beyond range)
-	Within bool `json:"within,omitempty"`
+	Within bool `json:"within"`
 }

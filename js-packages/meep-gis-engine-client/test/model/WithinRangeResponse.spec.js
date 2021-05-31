@@ -61,10 +61,10 @@
         // expect(instance.latitude).to.be(expectedValueLiteral);
       });
 
-      it('should have the property lontitude (base name: "lontitude")', function() {
-        // TODO: update the code to test the property lontitude
-        expect(instance).to.have.property('lontitude');
-        // expect(instance.lontitude).to.be(expectedValueLiteral);
+      it('should have the property longitude (base name: "longitude")', function() {
+        // TODO: update the code to test the property longitude
+        expect(instance).to.have.property('longitude');
+        // expect(instance.longitude).to.be(expectedValueLiteral);
       });
 
       it('should have the property within (base name: "within")', function() {

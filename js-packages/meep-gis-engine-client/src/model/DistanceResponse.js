@@ -56,8 +56,10 @@
    * Distance response
    * @alias module:model/DistanceResponse
    * @class
+   * @param distance {Number} Distance between two points (in meters)
    */
-  var exports = function() {
+  var exports = function(distance) {
+    this.distance = distance;
   };
 
   /**
@@ -72,6 +74,10 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('distance'))
         obj.distance = ApiClient.convertToType(data['distance'], 'Number');
+      if (data.hasOwnProperty('latitude'))
+        obj.latitude = ApiClient.convertToType(data['latitude'], 'Number');
+      if (data.hasOwnProperty('longitude'))
+        obj.longitude = ApiClient.convertToType(data['longitude'], 'Number');
     }
     return obj;
   }
@@ -81,6 +87,18 @@
    * @member {Number} distance
    */
   exports.prototype.distance = undefined;
+
+  /**
+   * Destination asset latitude
+   * @member {Number} latitude
+   */
+  exports.prototype.latitude = undefined;
+
+  /**
+   * Destination asset longitude
+   * @member {Number} longitude
+   */
+  exports.prototype.longitude = undefined;
 
   return exports;
 

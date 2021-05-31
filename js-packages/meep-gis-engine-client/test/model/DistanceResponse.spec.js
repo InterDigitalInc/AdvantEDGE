@@ -61,6 +61,18 @@
         // expect(instance.distance).to.be(expectedValueLiteral);
       });
 
+      it('should have the property latitude (base name: "latitude")', function() {
+        // TODO: update the code to test the property latitude
+        expect(instance).to.have.property('latitude');
+        // expect(instance.latitude).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property longitude (base name: "longitude")', function() {
+        // TODO: update the code to test the property longitude
+        expect(instance).to.have.property('longitude');
+        // expect(instance.longitude).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

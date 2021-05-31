@@ -159,6 +159,10 @@
             expect(data).to.be.a(AdvantEdgeGisEngineRestApi.DistanceResponse);
             expect(data.distance).to.be.a('number');
             expect(data.distance).to.be(0.0);
+            expect(data.latitude).to.be.a('number');
+            expect(data.latitude).to.be(0.0);
+            expect(data.longitude).to.be.a('number');
+            expect(data.longitude).to.be(0.0);
 
             done();
           });
@@ -249,8 +253,8 @@
             expect(data).to.be.a(AdvantEdgeGisEngineRestApi.WithinRangeResponse);
             expect(data.latitude).to.be.a('number');
             expect(data.latitude).to.be(0.0);
-            expect(data.lontitude).to.be.a('number');
-            expect(data.lontitude).to.be(0.0);
+            expect(data.longitude).to.be.a('number');
+            expect(data.longitude).to.be(0.0);
             expect(data.within).to.be.a('boolean');
             expect(data.within).to.be(false);
 

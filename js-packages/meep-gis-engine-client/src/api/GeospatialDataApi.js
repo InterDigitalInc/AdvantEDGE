@@ -206,7 +206,7 @@
       var returnType = DistanceResponse;
 
       return this.apiClient.callApi(
-        '/geodata/{assetName}/distanceTo', 'GET',
+        '/geodata/{assetName}/distanceTo', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
@@ -312,7 +312,7 @@
       var returnType = WithinRangeResponse;
 
       return this.apiClient.callApi(
-        '/geodata/{assetName}/withinRange', 'GET',
+        '/geodata/{assetName}/withinRange', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
