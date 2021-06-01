@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package giscache
+package metrics
 
 import (
 	"errors"
-	"strconv"
-	"strings"
+//	"strconv"
+//	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	influx "github.com/influxdata/influxdb1-client/v2"
+//	influx "github.com/influxdata/influxdb1-client/v2"
 )
 
 const UeMetName = "meas"
@@ -40,12 +40,12 @@ const UeMetRsrq = "rsrq"
 const UeMetDistance = "dist"
 const UeMetTime = "time"
 
-type Metric struct {
+/*type Metric struct {
 	Name   string
 	Tags   map[string]string
 	Fields map[string]interface{}
 }
-
+*/
 type UeMetric struct {
 	Src      string
 	SrcType  string
@@ -57,7 +57,7 @@ type UeMetric struct {
 	Rsrq     int32
 	Distance float64
 }
-
+/*
 // SetInfluxMetric - Generic metric setter
 func (gc *GisCache) SetInfluxMetric(metricList []Metric) error {
 	if gc.influxClient == nil {
@@ -167,8 +167,8 @@ func (gc *GisCache) GetInfluxMetric(metric string, tags map[string]string, field
 
 	return values, nil
 }
-
-func (gc *GisCache) formatCachedUeMetric(values map[string]interface{}) (metric UeMetric, err error) {
+*/
+func (ms *MetricStore) formatCachedUeMetric(values map[string]interface{}) (metric UeMetric, err error) {
 	var ok bool
 	var val interface{}
 
@@ -220,23 +220,29 @@ func (gc *GisCache) formatCachedUeMetric(values map[string]interface{}) (metric 
 }
 
 // GetRedisMetric - Generic metric getter
-func (gc *GisCache) GetRedisMetric(metric string, tagStr string) (values []map[string]interface{}, err error) {
-	if gc.rc == nil {
-		err = errors.New("Redis metrics DB not accessible")
-		return values, err
-	}
+func (ms *MetricStore) getGisCacheRedisMetric(metric string, tagStr string) (values []map[string]interface{}, err error) {
+
+        if ms.name == "" {
+                err := errors.New("Store name not specified")
+                return values, err
+        }
+        if ms.redisClient == nil {
+                err = errors.New("Redis metrics DB disabled")
+                return values, err
+        }
 
 	// Get latest metrics
-	key := gc.baseKey + metric + ":" + tagStr
+	//key := gc.baseKey + metric + ":" + tagStr
+	key := ms.baseKeyRef + "gis-cache:" + metric + ":" + tagStr
 
-	err = gc.rc.ForEachEntry(key, gc.getMetricsEntryHandler, &values)
+	err = ms.redisClient.ForEachEntry(key, ms.getMetricsEntryHandler, &values)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)
 		return nil, err
 	}
 	return values, nil
 }
-
+/*
 func (gc *GisCache) getMetricsEntryHandler(key string, fields map[string]string, userData interface{}) error {
 	// Retrieve field values
 	values := make(map[string]interface{})
@@ -249,25 +255,23 @@ func (gc *GisCache) getMetricsEntryHandler(key string, fields map[string]string,
 
 	return nil
 }
-
-func (gc *GisCache) TakeUeMetricSnapshot() {
+*/
+func (ms *MetricStore) TakeUeMetricSnapshot() {
 	// start = time.Now()
 
 	// Get all cached metrics
-	valuesArray, err := gc.GetRedisMetric(UeMetName, "*")
+	valuesArray, err := ms.getGisCacheRedisMetric(UeMetName, "*")
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
 	}
-
-	// logTimeLapse("GetRedisMetric wildcard")
 
 	// Prepare ue metrics list
 	metricSignalList := make([]Metric, len(valuesArray))
 	metricDistanceList := make([]Metric, len(valuesArray))
 	for index, values := range valuesArray {
 		// Format network metric
-		nm, err := gc.formatCachedUeMetric(values)
+		nm, err := ms.formatCachedUeMetric(values)
 		if err != nil {
 			continue
 		}
@@ -291,19 +295,19 @@ func (gc *GisCache) TakeUeMetricSnapshot() {
 	}
 
 	// Store metrics in influx
-	err = gc.SetInfluxMetric(metricSignalList)
+	err = ms.SetInfluxMetric(metricSignalList)
 	if err != nil {
 		log.Error("Fail to write influx metrics with error: ", err.Error())
 	}
 	// Store metrics in influx
-	err = gc.SetInfluxMetric(metricDistanceList)
+	err = ms.SetInfluxMetric(metricDistanceList)
 	if err != nil {
 		log.Error("Fail to write influx metrics with error: ", err.Error())
 	}
 
 	// logTimeLapse("Write to Influx")
 }
-
+/*
 // CreateInfluxDb -
 func (gc *GisCache) CreateInfluxDb() error {
 
@@ -326,16 +330,17 @@ func (gc *GisCache) CreateInfluxDb() error {
 
 	return nil
 }
-
+*/
 // FlushInfluxDb -
-func (gc *GisCache) FlushInfluxDb() {
-	// Flush Influx DB
-	if gc.influxClient != nil {
-		q := influx.NewQuery("DROP SERIES FROM /.*/", gc.influxName, "")
-		response, err := (*gc.influxClient).Query(q)
-		if err != nil {
-			log.Error("Query failed with error: ", err.Error())
-		}
-		log.Info(response.Results)
-	}
-}
+//func (gc *GisCache) FlushInfluxDb() {
+//	// Flush Influx DB
+//	if gc.influxClient != nil {
+//		q := influx.NewQuery("DROP SERIES FROM /.*/", gc.influxName, "")
+//		response, err := (*gc.influxClient).Query(q)
+//		if err != nil {
+//			log.Error("Query failed with error: ", err.Error())
+//		}
+//		log.Info(response.Results)
+//	}
+//}
+

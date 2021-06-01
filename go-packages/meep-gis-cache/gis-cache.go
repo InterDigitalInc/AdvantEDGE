@@ -20,16 +20,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
+//	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	influx "github.com/influxdata/influxdb1-client/v2"
 )
 
-const defaultInfluxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
-const dbMaxRetryCount = 2
 const redisTable = 0
 
 const (
@@ -75,8 +72,6 @@ type Measurement struct {
 
 type GisCache struct {
 	rc           *redis.Connector
-	influxName   string
-	influxClient *influx.Client
 	baseKey      string
 }
 
@@ -99,7 +94,7 @@ func NewGisCache(sandboxName string, redisAddr string) (gc *GisCache, err error)
 	log.Info("Created GIS Cache")
 	return gc, nil
 }
-
+/*
 // UpdateGisCacheInflux - Creates and initialize an Influx DB for a GIS Cache instance
 func (gc *GisCache) UpdateGisCacheInflux(sandboxName string, scenarioName string, influxAddr string) (err error) {
 	// Connect to Influx DB
@@ -152,7 +147,7 @@ func (gc *GisCache) connectInfluxDB(addr string) (*influx.Client, error) {
 	log.Info("InfluxDB Connector connected to ", addr, " version: ", version)
 	return &client, nil
 }
-
+*/
 // SetPosition - Create or update entry in DB
 func (gc *GisCache) SetPosition(typ string, name string, position *Position) error {
 	key := gc.baseKey + posKey + typ + ":" + name
@@ -313,5 +308,5 @@ func (gc *GisCache) DelMeasurement(ue string, poa string) {
 func (gc *GisCache) Flush() {
 	gc.rc.DBFlush(gc.baseKey)
 
-	gc.FlushInfluxDb()
+//	gc.FlushInfluxDb()
 }

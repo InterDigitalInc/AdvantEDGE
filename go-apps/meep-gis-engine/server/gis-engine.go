@@ -30,6 +30,7 @@ import (
 	am "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-asset-mgr"
 	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
@@ -88,6 +89,8 @@ type GisEngine struct {
 	sboxCtrlClient   *sbox.APIClient
 	activeModel      *mod.Model
 	gisCache         *gc.GisCache
+	metricStore      *met.MetricStore
+	storeName        string
 	assetMgr         *am.AssetMgr
 	assets           map[string]*Asset
 	ueInfo           map[string]*UeInfo
@@ -264,19 +267,34 @@ func processScenarioActivate() {
 	updateCache()
 
 	// Start snapshot thread
-	if ge.activeModel.GetScenarioName() != "" {
+	scenarioName := ge.activeModel.GetScenarioName()
+	if scenarioName != "" {
 		err := ge.StartSnapshotThread()
-		if err != nil {
-			log.Error("Failed to start snapshot thread: " + err.Error())
-			return
-		} else {
-			// Connect to GIS cache
-			err = ge.gisCache.UpdateGisCacheInflux(ge.sandboxName, ge.activeModel.GetScenarioName(), influxAddr)
+
+		if ge.storeName != scenarioName {
+			ge.storeName = scenarioName
+			// Connect to Metric Store
+			ge.metricStore, err = met.NewMetricStore(ge.storeName, ge.sandboxName, influxAddr, redisAddr)
 			if err != nil {
-				log.Error("Failed to GIS Cache: ", err.Error())
-			} else {
-				log.Info("Connected to GIS Cache")
+				log.Error("Failed connection to metric-store: ", err)
+				return
 			}
+		} else {
+			if err != nil {
+				log.Error("Failed to start snapshot thread: " + err.Error())
+				return
+			}
+			/*else {
+
+				// Connect to GIS cache
+				err = ge.gisCache.UpdateGisCacheInflux(ge.sandboxName, ge.activeModel.GetScenarioName(), influxAddr)
+				if err != nil {
+					log.Error("Failed to GIS Cache: ", err.Error())
+				} else {
+					log.Info("Connected to GIS Cache")
+				}
+			}
+			*/
 		}
 	}
 }
@@ -1331,9 +1349,8 @@ func (ge *GisEngine) StartSnapshotThread() error {
 	ge.snapshotTicker = time.NewTicker(time.Second)
 	go func() {
 		for range ge.snapshotTicker.C {
-			if ge.gisCache != nil {
-
-				ge.gisCache.TakeUeMetricSnapshot()
+			if ge.metricStore != nil {
+				ge.metricStore.TakeUeMetricSnapshot()
 			}
 		}
 	}()
