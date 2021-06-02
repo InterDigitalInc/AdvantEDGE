@@ -129,14 +129,14 @@ Class | Method | HTTP request | Description
 
  - [AdvantEdgeGisEngineRestApi.AutomationState](docs/AutomationState.md)
  - [AdvantEdgeGisEngineRestApi.AutomationStateList](docs/AutomationStateList.md)
- - [AdvantEdgeGisEngineRestApi.DistanceParameters](docs/DistanceParameters.md)
- - [AdvantEdgeGisEngineRestApi.DistanceResponse](docs/DistanceResponse.md)
+ - [AdvantEdgeGisEngineRestApi.Distance](docs/Distance.md)
  - [AdvantEdgeGisEngineRestApi.GeoData](docs/GeoData.md)
  - [AdvantEdgeGisEngineRestApi.GeoDataAssetList](docs/GeoDataAssetList.md)
  - [AdvantEdgeGisEngineRestApi.LineString](docs/LineString.md)
  - [AdvantEdgeGisEngineRestApi.Point](docs/Point.md)
- - [AdvantEdgeGisEngineRestApi.WithinRangeParameters](docs/WithinRangeParameters.md)
- - [AdvantEdgeGisEngineRestApi.WithinRangeResponse](docs/WithinRangeResponse.md)
+ - [AdvantEdgeGisEngineRestApi.TargetPoint](docs/TargetPoint.md)
+ - [AdvantEdgeGisEngineRestApi.TargetRange](docs/TargetRange.md)
+ - [AdvantEdgeGisEngineRestApi.WithinRange](docs/WithinRange.md)
  - [AdvantEdgeGisEngineRestApi.GeoDataAsset](docs/GeoDataAsset.md)
 
 

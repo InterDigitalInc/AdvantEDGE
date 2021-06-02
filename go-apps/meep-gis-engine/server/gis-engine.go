@@ -1142,20 +1142,19 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 
 	srcLongStr := ""
 	srcLatStr := ""
-	if srcAsset.geoData != nil {
-		srcPosition := srcAsset.geoData.position
-		srcPoint := convertJsonToPoint(srcPosition)
-		srcLongStr = strconv.FormatFloat(float64(srcPoint.Coordinates[0]), 'f', -1, 32)
-		srcLatStr = strconv.FormatFloat(float64(srcPoint.Coordinates[1]), 'f', -1, 32)
-	} else {
+	position, err := ge.gisCache.GetPosition("*", assetName)
+	if err != nil {
 		err := errors.New("Asset has no geo location")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	srcLongStr = strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+	srcLatStr = strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
 	// Retrieve Distance parameters from request body
-	var distanceParam DistanceParameters
+	var distanceParam TargetPoint
 	if r.Body == nil {
 		err := errors.New("Request body is missing")
 		log.Error(err.Error())
@@ -1163,7 +1162,7 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&distanceParam)
+	err = decoder.Decode(&distanceParam)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1174,9 +1173,9 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	dstLat := float32(0.0)
 	dstLongStr := ""
 	dstLatStr := ""
+
 	if distanceParam.AssetName != "" {
 
-		// Find second asset in active scenario model
 		dstAsset := ge.assets[distanceParam.AssetName]
 		if dstAsset == nil {
 			err := errors.New("Destination asset not in scenario")
@@ -1184,19 +1183,21 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if dstAsset.geoData != nil {
-			dstPosition := dstAsset.geoData.position
-			dstPoint := convertJsonToPoint(dstPosition)
-			dstLong = dstPoint.Coordinates[0]
-			dstLat = dstPoint.Coordinates[1]
-			dstLongStr = strconv.FormatFloat(float64(dstPoint.Coordinates[0]), 'f', -1, 32)
-			dstLatStr = strconv.FormatFloat(float64(dstPoint.Coordinates[1]), 'f', -1, 32)
-		} else {
+		// Find second asset in active scenario model
+		position, err = ge.gisCache.GetPosition("*", distanceParam.AssetName)
+
+		if err != nil {
 			err := errors.New("Destination asset has no geo location")
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		dstLong = position.Longitude
+		dstLat = position.Latitude
+
+		dstLongStr = strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
 	} else {
 		dstLong = distanceParam.Longitude
 		dstLat = distanceParam.Latitude
@@ -1215,7 +1216,7 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create Response to return
-	var resp DistanceResponse
+	var resp Distance
 	resp.Distance = distance
 	resp.Longitude = dstLong
 	resp.Latitude = dstLat
@@ -1272,7 +1273,7 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve Within Range parameters from request body
-	var withinRangeParam WithinRangeParameters
+	var withinRangeParam TargetRange
 	if r.Body == nil {
 		err := errors.New("Request body is missing")
 		log.Error(err.Error())
@@ -1334,7 +1335,7 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create Response to return
-	var resp WithinRangeResponse
+	var resp WithinRange
 	resp.Within = withinRange
 	resp.Longitude = dstLong
 	resp.Latitude = dstLat

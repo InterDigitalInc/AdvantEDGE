@@ -2012,69 +2012,68 @@ func calculateWifiPower(radius float32, distance float32) (rssi float32) {
 
 // Get distance between 2 coordinates
 func (am *AssetMgr) GetDistanceBetweenPoints(srcCoordinates string, dstCoordinates string) (float32, error) {
-        if profiling {
-                profilingTimers["distance - query"] = time.Now()
-        }
+	if profiling {
+		profilingTimers["distance - query"] = time.Now()
+	}
 
 	dbQuery := "SELECT ST_Distance(" + "'SRID=4326;POINT" + srcCoordinates + "'::geography, 'SRID=4326;POINT" + dstCoordinates + "'::geography);"
 
-        var rows *sql.Rows
-        rows, err := am.db.Query(dbQuery)
-        if err != nil {
-                log.Error(err.Error())
-                return 0, err
-        }
-        defer rows.Close()
+	var rows *sql.Rows
+	rows, err := am.db.Query(dbQuery)
+	if err != nil {
+		log.Error(err.Error())
+		return 0, err
+	}
+	defer rows.Close()
 
-        dist := float32(0)
+	dist := float32(0)
 
-        for rows.Next() {
+	for rows.Next() {
 
-                err = rows.Scan(&dist)
-                if err != nil {
-                        log.Error(err.Error())
-                        return dist, err
-                }
-                return dist, nil
-        }
-        err = rows.Err()
-        if err != nil {
-                log.Error(err)
-        }
+		err = rows.Scan(&dist)
+		if err != nil {
+			log.Error(err.Error())
+			return dist, err
+		}
+		return dist, nil
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
 	return dist, err
 }
 
 // Get within range between 2 coordinates and a radius
 func (am *AssetMgr) GetWithinRangeBetweenPoints(srcCoordinates string, dstCoordinates string, radius string) (bool, error) {
-        if profiling {
-                profilingTimers["distance - query"] = time.Now()
-        }
+	if profiling {
+		profilingTimers["distance - query"] = time.Now()
+	}
 
-        dbQuery := "SELECT ST_DWithin(" + "'SRID=4326;POINT" + srcCoordinates + "'::geography, 'SRID=4326;POINT" + dstCoordinates + "'::geography, " + radius + ");"
+	dbQuery := "SELECT ST_DWithin(" + "'SRID=4326;POINT" + srcCoordinates + "'::geography, 'SRID=4326;POINT" + dstCoordinates + "'::geography, " + radius + ");"
 
-        var rows *sql.Rows
-        rows, err := am.db.Query(dbQuery)
-        if err != nil {
-                log.Error(err.Error())
-                return false, err
-        }
-        defer rows.Close()
+	var rows *sql.Rows
+	rows, err := am.db.Query(dbQuery)
+	if err != nil {
+		log.Error(err.Error())
+		return false, err
+	}
+	defer rows.Close()
 
-        within := false
+	within := false
 
-        for rows.Next() {
+	for rows.Next() {
 
-                err = rows.Scan(&within)
-                if err != nil {
-                        log.Error(err.Error())
-                        return within, err
-                }
-                return within, nil
-        }
-        err = rows.Err()
-        if err != nil {
-                log.Error(err)
-        }
-        return within, err
+		err = rows.Scan(&within)
+		if err != nil {
+			log.Error(err.Error())
+			return within, err
+		}
+		return within, nil
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+	return within, err
 }
-

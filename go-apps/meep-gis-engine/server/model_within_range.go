@@ -24,21 +24,15 @@
 
 package server
 
-// Parameters for within range query purpose.
-type WithinRangeParameters struct {
+// Within range response
+type WithinRange struct {
 
-	// Asset name of a second element for query purpose. If present, latitude and longitude are ignored.
-	AssetName string `json:"assetName,omitempty"`
-
-	// Latitude of a second element for query purpose. Taken into account only if AssetName is not present.
+	// Destination asset latitude
 	Latitude float32 `json:"latitude,omitempty"`
 
-	// Longitude of a second element for query purpose. Taken into account only if AssetName is not present.
+	// Destination asset longitude
 	Longitude float32 `json:"longitude,omitempty"`
 
-	// Radius (in meters) around the location.
-	Radius float32 `json:"radius"`
-
-	// Accuracy of the location (in meters).
-	Accuracy float32 `json:"accuracy,omitempty"`
+	// Within range result (e.g. true = within range, false = beyond range)
+	Within bool `json:"within"`
 }

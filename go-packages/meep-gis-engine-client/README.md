@@ -36,14 +36,14 @@ Class | Method | HTTP request | Description
 
  - [AutomationState](docs/AutomationState.md)
  - [AutomationStateList](docs/AutomationStateList.md)
- - [DistanceParameters](docs/DistanceParameters.md)
- - [DistanceResponse](docs/DistanceResponse.md)
+ - [Distance](docs/Distance.md)
  - [GeoData](docs/GeoData.md)
  - [GeoDataAssetList](docs/GeoDataAssetList.md)
  - [LineString](docs/LineString.md)
  - [Point](docs/Point.md)
- - [WithinRangeParameters](docs/WithinRangeParameters.md)
- - [WithinRangeResponse](docs/WithinRangeResponse.md)
+ - [TargetPoint](docs/TargetPoint.md)
+ - [TargetRange](docs/TargetRange.md)
+ - [WithinRange](docs/WithinRange.md)
  - [GeoDataAsset](docs/GeoDataAsset.md)
 
 

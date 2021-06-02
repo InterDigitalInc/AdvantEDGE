@@ -25,7 +25,7 @@
 package server
 
 // Parameters for distance query purpose.
-type DistanceParameters struct {
+type TargetPoint struct {
 
 	// Asset name of a second element for query purpose. If present, latitude and longitude are ignored.
 	AssetName string `json:"assetName,omitempty"`

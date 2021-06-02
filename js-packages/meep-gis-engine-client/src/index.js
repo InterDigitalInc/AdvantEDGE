@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AutomationState', 'model/AutomationStateList', 'model/DistanceParameters', 'model/DistanceResponse', 'model/GeoData', 'model/GeoDataAssetList', 'model/LineString', 'model/Point', 'model/WithinRangeParameters', 'model/WithinRangeResponse', 'model/GeoDataAsset', 'api/AutomationApi', 'api/GeospatialDataApi'], factory);
+    define(['ApiClient', 'model/AutomationState', 'model/AutomationStateList', 'model/Distance', 'model/GeoData', 'model/GeoDataAssetList', 'model/LineString', 'model/Point', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange', 'model/GeoDataAsset', 'api/AutomationApi', 'api/GeospatialDataApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/AutomationState'), require('./model/AutomationStateList'), require('./model/DistanceParameters'), require('./model/DistanceResponse'), require('./model/GeoData'), require('./model/GeoDataAssetList'), require('./model/LineString'), require('./model/Point'), require('./model/WithinRangeParameters'), require('./model/WithinRangeResponse'), require('./model/GeoDataAsset'), require('./api/AutomationApi'), require('./api/GeospatialDataApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/AutomationState'), require('./model/AutomationStateList'), require('./model/Distance'), require('./model/GeoData'), require('./model/GeoDataAssetList'), require('./model/LineString'), require('./model/Point'), require('./model/TargetPoint'), require('./model/TargetRange'), require('./model/WithinRange'), require('./model/GeoDataAsset'), require('./api/AutomationApi'), require('./api/GeospatialDataApi'));
   }
-}(function(ApiClient, AutomationState, AutomationStateList, DistanceParameters, DistanceResponse, GeoData, GeoDataAssetList, LineString, Point, WithinRangeParameters, WithinRangeResponse, GeoDataAsset, AutomationApi, GeospatialDataApi) {
+}(function(ApiClient, AutomationState, AutomationStateList, Distance, GeoData, GeoDataAssetList, LineString, Point, TargetPoint, TargetRange, WithinRange, GeoDataAsset, AutomationApi, GeospatialDataApi) {
   'use strict';
 
   /**
@@ -87,15 +87,10 @@
      */
     AutomationStateList: AutomationStateList,
     /**
-     * The DistanceParameters model constructor.
-     * @property {module:model/DistanceParameters}
+     * The Distance model constructor.
+     * @property {module:model/Distance}
      */
-    DistanceParameters: DistanceParameters,
-    /**
-     * The DistanceResponse model constructor.
-     * @property {module:model/DistanceResponse}
-     */
-    DistanceResponse: DistanceResponse,
+    Distance: Distance,
     /**
      * The GeoData model constructor.
      * @property {module:model/GeoData}
@@ -117,15 +112,20 @@
      */
     Point: Point,
     /**
-     * The WithinRangeParameters model constructor.
-     * @property {module:model/WithinRangeParameters}
+     * The TargetPoint model constructor.
+     * @property {module:model/TargetPoint}
      */
-    WithinRangeParameters: WithinRangeParameters,
+    TargetPoint: TargetPoint,
     /**
-     * The WithinRangeResponse model constructor.
-     * @property {module:model/WithinRangeResponse}
+     * The TargetRange model constructor.
+     * @property {module:model/TargetRange}
      */
-    WithinRangeResponse: WithinRangeResponse,
+    TargetRange: TargetRange,
+    /**
+     * The WithinRange model constructor.
+     * @property {module:model/WithinRange}
+     */
+    WithinRange: WithinRange,
     /**
      * The GeoDataAsset model constructor.
      * @property {module:model/GeoDataAsset}

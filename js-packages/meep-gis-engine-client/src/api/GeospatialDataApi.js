@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/DistanceParameters', 'model/DistanceResponse', 'model/GeoDataAsset', 'model/GeoDataAssetList', 'model/WithinRangeParameters', 'model/WithinRangeResponse'], factory);
+    define(['ApiClient', 'model/Distance', 'model/GeoDataAsset', 'model/GeoDataAssetList', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/DistanceParameters'), require('../model/DistanceResponse'), require('../model/GeoDataAsset'), require('../model/GeoDataAssetList'), require('../model/WithinRangeParameters'), require('../model/WithinRangeResponse'));
+    module.exports = factory(require('../ApiClient'), require('../model/Distance'), require('../model/GeoDataAsset'), require('../model/GeoDataAssetList'), require('../model/TargetPoint'), require('../model/TargetRange'), require('../model/WithinRange'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeGisEngineRestApi) {
       root.AdvantEdgeGisEngineRestApi = {};
     }
-    root.AdvantEdgeGisEngineRestApi.GeospatialDataApi = factory(root.AdvantEdgeGisEngineRestApi.ApiClient, root.AdvantEdgeGisEngineRestApi.DistanceParameters, root.AdvantEdgeGisEngineRestApi.DistanceResponse, root.AdvantEdgeGisEngineRestApi.GeoDataAsset, root.AdvantEdgeGisEngineRestApi.GeoDataAssetList, root.AdvantEdgeGisEngineRestApi.WithinRangeParameters, root.AdvantEdgeGisEngineRestApi.WithinRangeResponse);
+    root.AdvantEdgeGisEngineRestApi.GeospatialDataApi = factory(root.AdvantEdgeGisEngineRestApi.ApiClient, root.AdvantEdgeGisEngineRestApi.Distance, root.AdvantEdgeGisEngineRestApi.GeoDataAsset, root.AdvantEdgeGisEngineRestApi.GeoDataAssetList, root.AdvantEdgeGisEngineRestApi.TargetPoint, root.AdvantEdgeGisEngineRestApi.TargetRange, root.AdvantEdgeGisEngineRestApi.WithinRange);
   }
-}(this, function(ApiClient, DistanceParameters, DistanceResponse, GeoDataAsset, GeoDataAssetList, WithinRangeParameters, WithinRangeResponse) {
+}(this, function(ApiClient, Distance, GeoDataAsset, GeoDataAssetList, TargetPoint, TargetRange, WithinRange) {
   'use strict';
 
   /**
@@ -162,7 +162,7 @@
      * Callback function to receive the result of the getDistanceGeoDataByName operation.
      * @callback module:api/GeospatialDataApi~getDistanceGeoDataByNameCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/DistanceResponse} data The data returned by the service call.
+     * @param {module:model/Distance} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -170,21 +170,21 @@
      * Get distance between geospatial data points
      * Get distance between geospatial data for the given asset and another asset or geospatial coordinates
      * @param {String} assetName Name of geospatial asset
-     * @param {module:model/DistanceParameters} distanceParameters Parameters of geospatial assets
+     * @param {module:model/TargetPoint} targetPoint Parameters of geospatial assets
      * @param {module:api/GeospatialDataApi~getDistanceGeoDataByNameCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/DistanceResponse}
+     * data is of type: {@link module:model/Distance}
      */
-    this.getDistanceGeoDataByName = function(assetName, distanceParameters, callback) {
-      var postBody = distanceParameters;
+    this.getDistanceGeoDataByName = function(assetName, targetPoint, callback) {
+      var postBody = targetPoint;
 
       // verify the required parameter 'assetName' is set
       if (assetName === undefined || assetName === null) {
         throw new Error("Missing the required parameter 'assetName' when calling getDistanceGeoDataByName");
       }
 
-      // verify the required parameter 'distanceParameters' is set
-      if (distanceParameters === undefined || distanceParameters === null) {
-        throw new Error("Missing the required parameter 'distanceParameters' when calling getDistanceGeoDataByName");
+      // verify the required parameter 'targetPoint' is set
+      if (targetPoint === undefined || targetPoint === null) {
+        throw new Error("Missing the required parameter 'targetPoint' when calling getDistanceGeoDataByName");
       }
 
 
@@ -203,7 +203,7 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = DistanceResponse;
+      var returnType = Distance;
 
       return this.apiClient.callApi(
         '/geodata/{assetName}/distanceTo', 'POST',
@@ -268,7 +268,7 @@
      * Callback function to receive the result of the getWithinRangeByName operation.
      * @callback module:api/GeospatialDataApi~getWithinRangeByNameCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/WithinRangeResponse} data The data returned by the service call.
+     * @param {module:model/WithinRange} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -276,21 +276,21 @@
      * Returns if a geospatial data points is within a specified distance from a location
      * Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
      * @param {String} assetName Name of geospatial asset
-     * @param {module:model/WithinRangeParameters} withinRangeParameters Parameters of geospatial assets
+     * @param {module:model/TargetRange} targetRange Parameters of geospatial assets
      * @param {module:api/GeospatialDataApi~getWithinRangeByNameCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/WithinRangeResponse}
+     * data is of type: {@link module:model/WithinRange}
      */
-    this.getWithinRangeByName = function(assetName, withinRangeParameters, callback) {
-      var postBody = withinRangeParameters;
+    this.getWithinRangeByName = function(assetName, targetRange, callback) {
+      var postBody = targetRange;
 
       // verify the required parameter 'assetName' is set
       if (assetName === undefined || assetName === null) {
         throw new Error("Missing the required parameter 'assetName' when calling getWithinRangeByName");
       }
 
-      // verify the required parameter 'withinRangeParameters' is set
-      if (withinRangeParameters === undefined || withinRangeParameters === null) {
-        throw new Error("Missing the required parameter 'withinRangeParameters' when calling getWithinRangeByName");
+      // verify the required parameter 'targetRange' is set
+      if (targetRange === undefined || targetRange === null) {
+        throw new Error("Missing the required parameter 'targetRange' when calling getWithinRangeByName");
       }
 
 
@@ -309,7 +309,7 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = WithinRangeResponse;
+      var returnType = WithinRange;
 
       return this.apiClient.callApi(
         '/geodata/{assetName}/withinRange', 'POST',

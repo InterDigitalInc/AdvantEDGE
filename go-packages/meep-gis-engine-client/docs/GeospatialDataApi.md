@@ -78,7 +78,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetDistanceGeoDataByName**
-> DistanceResponse GetDistanceGeoDataByName(ctx, assetName, distanceParameters)
+> Distance GetDistanceGeoDataByName(ctx, assetName, targetPoint)
 Get distance between geospatial data points
 
 Get distance between geospatial data for the given asset and another asset or geospatial coordinates
@@ -89,11 +89,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **assetName** | **string**| Name of geospatial asset | 
-  **distanceParameters** | [**DistanceParameters**](DistanceParameters.md)| Parameters of geospatial assets | 
+  **targetPoint** | [**TargetPoint**](TargetPoint.md)| Parameters of geospatial assets | 
 
 ### Return type
 
-[**DistanceResponse**](DistanceResponse.md)
+[**Distance**](Distance.md)
 
 ### Authorization
 
@@ -144,7 +144,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetWithinRangeByName**
-> WithinRangeResponse GetWithinRangeByName(ctx, assetName, withinRangeParameters)
+> WithinRange GetWithinRangeByName(ctx, assetName, targetRange)
 Returns if a geospatial data points is within a specified distance from a location
 
 Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
@@ -155,11 +155,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **assetName** | **string**| Name of geospatial asset | 
-  **withinRangeParameters** | [**WithinRangeParameters**](WithinRangeParameters.md)| Parameters of geospatial assets | 
+  **targetRange** | [**TargetRange**](TargetRange.md)| Parameters of geospatial assets | 
 
 ### Return type
 
-[**WithinRangeResponse**](WithinRangeResponse.md)
+[**WithinRange**](WithinRange.md)
 
 ### Authorization
 

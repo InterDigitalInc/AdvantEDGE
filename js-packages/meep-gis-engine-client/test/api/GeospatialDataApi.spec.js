@@ -145,18 +145,18 @@
           // TODO: uncomment, update parameter values for getDistanceGeoDataByName call and complete the assertions
           /*
           var assetName = "assetName_example";
-          var distanceParameters = new AdvantEdgeGisEngineRestApi.DistanceParameters();
-          distanceParameters.assetName = "";
-          distanceParameters.latitude = 0.0;
-          distanceParameters.longitude = 0.0;
+          var targetPoint = new AdvantEdgeGisEngineRestApi.TargetPoint();
+          targetPoint.assetName = "";
+          targetPoint.latitude = 0.0;
+          targetPoint.longitude = 0.0;
 
-          instance.getDistanceGeoDataByName(assetName, distanceParameters, function(error, data, response) {
+          instance.getDistanceGeoDataByName(assetName, targetPoint, function(error, data, response) {
             if (error) {
               done(error);
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.DistanceResponse);
+            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.Distance);
             expect(data.distance).to.be.a('number');
             expect(data.distance).to.be(0.0);
             expect(data.latitude).to.be.a('number');
@@ -237,20 +237,20 @@
           // TODO: uncomment, update parameter values for getWithinRangeByName call and complete the assertions
           /*
           var assetName = "assetName_example";
-          var withinRangeParameters = new AdvantEdgeGisEngineRestApi.WithinRangeParameters();
-          withinRangeParameters.assetName = "";
-          withinRangeParameters.latitude = 0.0;
-          withinRangeParameters.longitude = 0.0;
-          withinRangeParameters.radius = 0.0;
-          withinRangeParameters.accuracy = 0.0;
+          var targetRange = new AdvantEdgeGisEngineRestApi.TargetRange();
+          targetRange.assetName = "";
+          targetRange.latitude = 0.0;
+          targetRange.longitude = 0.0;
+          targetRange.radius = 0.0;
+          targetRange.accuracy = 0.0;
 
-          instance.getWithinRangeByName(assetName, withinRangeParameters, function(error, data, response) {
+          instance.getWithinRangeByName(assetName, targetRange, function(error, data, response) {
             if (error) {
               done(error);
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.WithinRangeResponse);
+            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.WithinRange);
             expect(data.latitude).to.be.a('number');
             expect(data.latitude).to.be(0.0);
             expect(data.longitude).to.be.a('number');

@@ -223,17 +223,17 @@ GeospatialDataApiService Get distance between geospatial data points
 Get distance between geospatial data for the given asset and another asset or geospatial coordinates
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param assetName Name of geospatial asset
- * @param distanceParameters Parameters of geospatial assets
+ * @param targetPoint Parameters of geospatial assets
 
-@return DistanceResponse
+@return Distance
 */
-func (a *GeospatialDataApiService) GetDistanceGeoDataByName(ctx context.Context, assetName string, distanceParameters DistanceParameters) (DistanceResponse, *http.Response, error) {
+func (a *GeospatialDataApiService) GetDistanceGeoDataByName(ctx context.Context, assetName string, targetPoint TargetPoint) (Distance, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue DistanceResponse
+		localVarReturnValue Distance
 	)
 
 	// create path and map variables
@@ -262,7 +262,7 @@ func (a *GeospatialDataApiService) GetDistanceGeoDataByName(ctx context.Context,
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	localVarPostBody = &distanceParameters
+	localVarPostBody = &targetPoint
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -294,7 +294,7 @@ func (a *GeospatialDataApiService) GetDistanceGeoDataByName(ctx context.Context,
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v DistanceResponse
+			var v Distance
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -414,17 +414,17 @@ GeospatialDataApiService Returns if a geospatial data points is within a specifi
 Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param assetName Name of geospatial asset
- * @param withinRangeParameters Parameters of geospatial assets
+ * @param targetRange Parameters of geospatial assets
 
-@return WithinRangeResponse
+@return WithinRange
 */
-func (a *GeospatialDataApiService) GetWithinRangeByName(ctx context.Context, assetName string, withinRangeParameters WithinRangeParameters) (WithinRangeResponse, *http.Response, error) {
+func (a *GeospatialDataApiService) GetWithinRangeByName(ctx context.Context, assetName string, targetRange TargetRange) (WithinRange, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue WithinRangeResponse
+		localVarReturnValue WithinRange
 	)
 
 	// create path and map variables
@@ -453,7 +453,7 @@ func (a *GeospatialDataApiService) GetWithinRangeByName(ctx context.Context, ass
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	localVarPostBody = &withinRangeParameters
+	localVarPostBody = &targetRange
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -485,7 +485,7 @@ func (a *GeospatialDataApiService) GetWithinRangeByName(ctx context.Context, ass
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v WithinRangeResponse
+			var v WithinRange
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

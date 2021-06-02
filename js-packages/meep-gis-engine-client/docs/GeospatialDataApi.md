@@ -111,7 +111,7 @@ No authorization required
 
 <a name="getDistanceGeoDataByName"></a>
 # **getDistanceGeoDataByName**
-> DistanceResponse getDistanceGeoDataByName(assetName, distanceParameters)
+> Distance getDistanceGeoDataByName(assetName, targetPoint)
 
 Get distance between geospatial data points
 
@@ -125,7 +125,7 @@ var apiInstance = new AdvantEdgeGisEngineRestApi.GeospatialDataApi();
 
 var assetName = "assetName_example"; // String | Name of geospatial asset
 
-var distanceParameters = new AdvantEdgeGisEngineRestApi.DistanceParameters(); // DistanceParameters | Parameters of geospatial assets
+var targetPoint = new AdvantEdgeGisEngineRestApi.TargetPoint(); // TargetPoint | Parameters of geospatial assets
 
 
 var callback = function(error, data, response) {
@@ -135,7 +135,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getDistanceGeoDataByName(assetName, distanceParameters, callback);
+apiInstance.getDistanceGeoDataByName(assetName, targetPoint, callback);
 ```
 
 ### Parameters
@@ -143,11 +143,11 @@ apiInstance.getDistanceGeoDataByName(assetName, distanceParameters, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetName** | **String**| Name of geospatial asset | 
- **distanceParameters** | [**DistanceParameters**](DistanceParameters.md)| Parameters of geospatial assets | 
+ **targetPoint** | [**TargetPoint**](TargetPoint.md)| Parameters of geospatial assets | 
 
 ### Return type
 
-[**DistanceResponse**](DistanceResponse.md)
+[**Distance**](Distance.md)
 
 ### Authorization
 
@@ -210,7 +210,7 @@ No authorization required
 
 <a name="getWithinRangeByName"></a>
 # **getWithinRangeByName**
-> WithinRangeResponse getWithinRangeByName(assetName, withinRangeParameters)
+> WithinRange getWithinRangeByName(assetName, targetRange)
 
 Returns if a geospatial data points is within a specified distance from a location
 
@@ -224,7 +224,7 @@ var apiInstance = new AdvantEdgeGisEngineRestApi.GeospatialDataApi();
 
 var assetName = "assetName_example"; // String | Name of geospatial asset
 
-var withinRangeParameters = new AdvantEdgeGisEngineRestApi.WithinRangeParameters(); // WithinRangeParameters | Parameters of geospatial assets
+var targetRange = new AdvantEdgeGisEngineRestApi.TargetRange(); // TargetRange | Parameters of geospatial assets
 
 
 var callback = function(error, data, response) {
@@ -234,7 +234,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getWithinRangeByName(assetName, withinRangeParameters, callback);
+apiInstance.getWithinRangeByName(assetName, targetRange, callback);
 ```
 
 ### Parameters
@@ -242,11 +242,11 @@ apiInstance.getWithinRangeByName(assetName, withinRangeParameters, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetName** | **String**| Name of geospatial asset | 
- **withinRangeParameters** | [**WithinRangeParameters**](WithinRangeParameters.md)| Parameters of geospatial assets | 
+ **targetRange** | [**TargetRange**](TargetRange.md)| Parameters of geospatial assets | 
 
 ### Return type
 
-[**WithinRangeResponse**](WithinRangeResponse.md)
+[**WithinRange**](WithinRange.md)
 
 ### Authorization
 

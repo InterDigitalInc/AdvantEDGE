@@ -267,17 +267,17 @@ paths:
         type: "string"
         x-exportParamName: "AssetName"
       - in: "body"
-        name: "distanceParameters"
+        name: "targetPoint"
         description: "Parameters of geospatial assets"
         required: true
         schema:
-          $ref: "#/definitions/DistanceParameters"
-        x-exportParamName: "DistanceParameters"
+          $ref: "#/definitions/TargetPoint"
+        x-exportParamName: "TargetPoint"
       responses:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/DistanceResponse"
+            $ref: "#/definitions/Distance"
         404:
           description: "Not found"
         500:
@@ -301,17 +301,17 @@ paths:
         type: "string"
         x-exportParamName: "AssetName"
       - in: "body"
-        name: "withinRangeParameters"
+        name: "targetRange"
         description: "Parameters of geospatial assets"
         required: true
         schema:
-          $ref: "#/definitions/WithinRangeParameters"
-        x-exportParamName: "WithinRangeParameters"
+          $ref: "#/definitions/TargetRange"
+        x-exportParamName: "TargetRange"
       responses:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/WithinRangeResponse"
+            $ref: "#/definitions/WithinRange"
         404:
           description: "Not found"
         500:
@@ -350,7 +350,7 @@ definitions:
     example:
       active: true
       type: "MOBILITY"
-  DistanceParameters:
+  TargetPoint:
     type: "object"
     properties:
       assetName:
@@ -372,7 +372,7 @@ definitions:
       latitude: 0.8008282
       assetName: "assetName"
       longitude: 6.0274563
-  DistanceResponse:
+  Distance:
     type: "object"
     required:
     - "distance"
@@ -434,7 +434,7 @@ definitions:
           - "CLOUD"
     - $ref: "#/definitions/GeoData"
     description: "List of geospatial data"
-  WithinRangeParameters:
+  TargetRange:
     type: "object"
     required:
     - "radius"
@@ -468,7 +468,7 @@ definitions:
       accuracy: 5.962134
       radius: 1.4658129
       longitude: 6.0274563
-  WithinRangeResponse:
+  WithinRange:
     type: "object"
     required:
     - "within"
