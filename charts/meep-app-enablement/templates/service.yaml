@@ -1,20 +1,20 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "meep-edge-platform-app-enablement.fullname" . }}
+  name: {{ template "meep-app-enablement.fullname" . }}
   labels:
-    app: {{ template "meep-edge-platform-app-enablement.name" . }}
-    chart: {{ template "meep-edge-platform-app-enablement.chart" . }}
+    app: {{ template "meep-app-enablement.name" . }}
+    chart: {{ template "meep-app-enablement.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     meepOrigin: {{ .Values.meepOrigin }}
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: {{ template "meep-edge-platform-app-enablement.name" . }}
+    app: {{ template "meep-app-enablement.name" . }}
     release: {{ .Release.Name }}
   ports:
-    - name: edge-platform-app-enablement
+    - name: app-enablement
       port: {{ .Values.service.port }}
       targetPort: {{ .Values.deployment.port }}
       {{- if .Values.service.nodePort }}

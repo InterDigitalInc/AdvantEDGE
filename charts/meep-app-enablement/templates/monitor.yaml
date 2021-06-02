@@ -2,11 +2,11 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "meep-edge-platform-app-enablement.fullname" . }}
+  name: {{ template "meep-app-enablement.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "meep-edge-platform-app-enablement.name" . }}
-    chart: {{ template "meep-edge-platform-app-enablement.chart" . }}
+    app: {{ template "meep-app-enablement.name" . }}
+    chart: {{ template "meep-app-enablement.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     meepOrigin: {{ .Values.meepOrigin }}
@@ -16,7 +16,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ template "meep-edge-platform-app-enablement.name" . }}
+      app: {{ template "meep-app-enablement.name" . }}
       release: {{ .Release.Name }}
   endpoints:
     - port: metrics

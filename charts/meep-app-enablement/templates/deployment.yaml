@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "meep-edge-platform-app-enablement.fullname" . }}
+  name: {{ template "meep-app-enablement.fullname" . }}
   labels:
-    app: {{ template "meep-edge-platform-app-enablement.name" . }}
-    chart: {{ template "meep-edge-platform-app-enablement.chart" . }}
+    app: {{ template "meep-app-enablement.name" . }}
+    chart: {{ template "meep-app-enablement.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     meepOrigin: {{ .Values.meepOrigin }}
@@ -12,12 +12,12 @@ spec:
   replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
-      app: {{ template "meep-edge-platform-app-enablement.name" . }}
+      app: {{ template "meep-app-enablement.name" . }}
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "meep-edge-platform-app-enablement.name" . }}
+        app: {{ template "meep-app-enablement.name" . }}
         release: {{ .Release.Name }}
         meepOrigin: {{ .Values.meepOrigin }}
     spec:
@@ -26,14 +26,14 @@ spec:
       volumes:
         - name: codecov-storage
           persistentVolumeClaim:
-            claimName: meep-edge-platform-app-enablement-codecov-pvc
+            claimName: meep-app-enablement-codecov-pvc
       {{- end}}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           {{- if .Values.codecov.enabled}}
-          command: [ "/meep-edge-platform-app-enablement" ]
-          args: [ "-test.coverprofile=/codecov/codecov-meep-edge-platform-app-enablement.out", "__DEVEL--code-cov" ]
+          command: [ "/meep-app-enablement" ]
+          args: [ "-test.coverprofile=/codecov/codecov-meep-app-enablement.out", "__DEVEL--code-cov" ]
           {{- end}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

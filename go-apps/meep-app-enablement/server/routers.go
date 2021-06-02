@@ -31,8 +31,8 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 
-	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-edge-platform-app-enablement/server/app-support"
-	svcMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-edge-platform-app-enablement/server/service-mgmt"
+	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
+	svcMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 
 	"github.com/gorilla/mux"
 )

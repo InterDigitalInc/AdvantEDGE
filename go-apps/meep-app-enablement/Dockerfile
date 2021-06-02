@@ -13,5 +13,5 @@
 # limitations under the License.
 
 FROM debian:9.6-slim
-COPY ./meep-edge-platform-app-enablement /meep-edge-platform-app-enablement
-ENTRYPOINT ["/meep-edge-platform-app-enablement"]
+COPY ./meep-app-enablement /meep-app-enablement
+ENTRYPOINT ["/meep-app-enablement"]

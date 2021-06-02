@@ -2,31 +2,31 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: meep-edge-platform-app-enablement-codecov-pv
+  name: meep-app-enablement-codecov-pv
 spec:
-  storageClassName: meep-edge-platform-app-enablement-codecov-sc
+  storageClassName: meep-app-enablement-codecov-sc
   capacity:
     storage: 100Mi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: "/home/englab/.meep/codecov/meep-edge-platform-app-enablement"
+    path: "/home/englab/.meep/codecov/meep-app-enablement"
 
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: meep-edge-platform-app-enablement-codecov-sc
+  name: meep-app-enablement-codecov-sc
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: meep-edge-platform-app-enablement-codecov-pvc
+  name: meep-app-enablement-codecov-pvc
 spec:
-  storageClassName: meep-edge-platform-app-enablement-codecov-sc
+  storageClassName: meep-app-enablement-codecov-sc
   accessModes:
     - ReadWriteOnce
   resources:

@@ -1,8 +1,8 @@
-# Default values for meep-edge-platform-app-enablement.
+# Default values for meep-app-enablement.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-serviceAccount: meep-edge-platform-app-enablement
+serviceAccount: meep-app-enablement
 
 deployment:
   replicas: 1
@@ -11,7 +11,7 @@ deployment:
   dependency: kube-dns
 
 image:
-  repository: meep-docker-registry:30001/meep-edge-platform-app-enablement
+  repository: meep-docker-registry:30001/meep-app-enablement
   tag: latest
   pullPolicy: Always
   env:
@@ -19,7 +19,7 @@ image:
     MEEP_HOST_URL: {{ .HostUrl }}
 
 service:
-  name: meep-edge-platform-app-enablement
+  name: meep-app-enablement
   type: ClusterIP
   port: 80
 
@@ -37,7 +37,7 @@ ingress:
       rewrite ^/{{ .SandboxName }}/mec_app_support(/|$)(.*)$ /mec_app_support/$2 break;
       rewrite ^/{{ .SandboxName }}/mec_service_mgmt(/|$)(.*)$ /mec_service_mgmt/$2 break;
     {{- if .AuthEnabled }}
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-edge-platform-app-enablement&sbox={{ .SandboxName }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-app-enablement&sbox={{ .SandboxName }}
     {{- end }}
   labels: {}
   tls:

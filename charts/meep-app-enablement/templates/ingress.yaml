@@ -1,13 +1,13 @@
 {{- if .Values.ingress.enabled -}}
-{{- $serviceName := include "meep-edge-platform-app-enablement.fullname" . -}}
+{{- $serviceName := include "meep-app-enablement.fullname" . -}}
 {{- $servicePort := .Values.service.port -}}
 {{- $path := .Values.ingress.path -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ template "meep-edge-platform-app-enablement.fullname" . }}
+  name: {{ template "meep-app-enablement.fullname" . }}
   labels:
-    app: {{ template "meep-edge-platform-app-enablement.name" . }}
+    app: {{ template "meep-app-enablement.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}

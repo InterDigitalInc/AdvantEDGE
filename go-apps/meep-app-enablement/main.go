@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"time"
 
-	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-edge-platform-app-enablement/server"
+	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -32,7 +32,7 @@ import (
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit("meep-edge-platform-app-enablement")
+	log.MeepJSONLogInit("meep-app-enablement")
 }
 
 func main() {

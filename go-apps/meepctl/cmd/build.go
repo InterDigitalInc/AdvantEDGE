@@ -287,47 +287,45 @@ func buildSwaggerUi(targetName string, repo string, cobraCmd *cobra.Command) {
 
 	//find all the apis and copy them at the location above
 	for _, target := range apiBundle {
-		apiSrcFile := utils.RepoCfg.GetString("repo." + target + ".api")
-		if apiSrcFile == "" {
-			continue
-		}
-		apiSrcPath := gitDir + "/" + apiSrcFile
-		if apiSrcPath != "" {
-			name := target[strings.LastIndex(target, ".")+1:]
-			apiDstPath := binDir + "/" + name + "-api.yaml"
-			if verbose {
-				fmt.Println("    Copying: " + apiSrcPath + " --> " + apiDstPath)
-			}
+		apiSrcFiles := utils.RepoCfg.GetStringMapString("repo." + target + ".api")
+		for name, apiSrcFile := range apiSrcFiles {
+			apiSrcPath := gitDir + "/" + apiSrcFile
+			if apiSrcPath != "" {
+				apiDstPath := binDir + "/" + name + "-api.yaml"
+				if verbose {
+					fmt.Println("    Copying: " + apiSrcPath + " --> " + apiDstPath)
+				}
 
-			cmd = exec.Command("cp", apiSrcPath, apiDstPath)
-			_, err = utils.ExecuteCmd(cmd, cobraCmd)
-			if err != nil {
-				fmt.Println("Failed to copy: ", err)
-				return
-			}
+				cmd = exec.Command("cp", apiSrcPath, apiDstPath)
+				_, err = utils.ExecuteCmd(cmd, cobraCmd)
+				if err != nil {
+					fmt.Println("Failed to copy: ", err)
+					return
+				}
 
-			//update the string to update the drop-down menu in the index.html file of /api
-			cmd = exec.Command("grep", "title:", apiDstPath)
-			titles, err := utils.ExecuteCmd(cmd, cobraCmd)
-			if err != nil {
-				fmt.Println("Failed to move: ", err)
-				return
-			}
-			multiTitle := strings.Split(titles, "title:")
-			title := multiTitle[1]
-			title = strings.TrimSpace(title)
-			//title = title[6:]
-			//title = strings.TrimSpace(title)
+				//update the string to update the drop-down menu in the index.html file of /api
+				cmd = exec.Command("grep", "title:", apiDstPath)
+				titles, err := utils.ExecuteCmd(cmd, cobraCmd)
+				if err != nil {
+					fmt.Println("Failed to move: ", err)
+					return
+				}
+				multiTitle := strings.Split(titles, "title:")
+				title := multiTitle[1]
+				title = strings.TrimSpace(title)
+				//title = title[6:]
+				//title = strings.TrimSpace(title)
 
-			if title[0] == '"' {
-				title = title[1:]
-			}
-			if title[len(title)-1] == '"' {
-				title = title[0 : len(title)-1]
-			}
+				if title[0] == '"' {
+					title = title[1:]
+				}
+				if title[len(title)-1] == '"' {
+					title = title[0 : len(title)-1]
+				}
 
-			//update urls for swagger-ui index file
-			urls = urls + `{"name": "` + title + `", "url": rootUrl + "` + name + `-api.yaml"},`
+				//update urls for swagger-ui index file
+				urls = urls + `{"name": "` + title + `", "url": rootUrl + "` + name + `-api.yaml"},`
+			}
 		}
 	}
 

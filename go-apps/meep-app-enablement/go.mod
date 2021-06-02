@@ -1,4 +1,4 @@
-module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-edge-platform-app-enablement
+module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement
 
 go 1.12
 
