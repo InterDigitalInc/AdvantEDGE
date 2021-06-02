@@ -22,7 +22,7 @@ import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
 import { updateObject } from '@/js/util/object-util';
 import * as d3 from 'd3';
-import ViewSpecificPane from './view-specific-pane';
+import DashCfgDetailPane from './dash-cfg-detail-pane';
 
 import {
   getScenarioNodeChildren,
@@ -33,7 +33,6 @@ import {
 
 import {
   uiExecChangeCurrentView,
-  uiExecChangeViewStatus,
   uiExecChangeSourceNodeSelectedView1,
   uiExecChangeDestNodeSelectedView1,
   uiExecChangeSourceNodeSelectedView2,
@@ -42,20 +41,6 @@ import {
   uiExecChangeDashboardView2,
   uiExecChangeSandboxCfg
 } from '@/js/state/ui';
-
-import {
-  execChangeSelectedScenarioElement,
-  execResetSelectedScenarioElement,
-  execUEs,
-  execPOAs,
-  execMobTypes,
-  execEdges,
-  execEdgeApps,
-  execFogs,
-  execFogEdges,
-  execZones,
-  execDNs
-} from '@/js/state/exec';
 
 import {
   EXEC_VIEW_SELECT,
@@ -92,7 +77,7 @@ const ViewSelectFields = props => {
   switch (props.currentView) {
   case VIEW_1:
     return (
-      <ViewSpecificPane
+      <DashCfgDetailPane
         currentView={props.currentView}
         onSuccess={props.onSuccess}
         onClose={props.onClose}
@@ -113,7 +98,7 @@ const ViewSelectFields = props => {
     );
   case VIEW_2:
     return (
-      <ViewSpecificPane
+      <DashCfgDetailPane
         currentView={props.currentView}
         onSuccess={props.onSuccess}
         onClose={props.onClose}
@@ -139,7 +124,7 @@ const ViewSelectFields = props => {
 
 const showInExecStr = '<exec>';
 
-class ViewPane extends Component {
+class DashCfgPane extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -206,21 +191,10 @@ class ViewPane extends Component {
     }
   }
   
-  onViewPaneClose(e) {
+  onDashCfgClose(e) {
     e.preventDefault();
     this.props.changeView('');
-    this.props.changeViewStatus('');
     this.props.onClose(e);
-  }
-
-  updateElement(values) {
-    if (values === null) {
-      this.props.resetSelectedScenarioElement();
-    } else {
-      var element = updateObject({}, this.props.selectedScenarioElement);
-      element = updateObject(element, values);
-      this.props.changeSelectedScenarioElement(element);
-    }
   }
 
   getRoot() {
@@ -265,14 +239,13 @@ class ViewPane extends Component {
           viewOptions={this.props.viewOptions}
           onChange={event => {
             this.props.changeView(event.target.value);
-            this.props.changeViewStatus('');
           }}
           value={this.props.currentView}
         />
         <ViewSelectFields
           currentView={this.props.currentView}
           onSuccess={this.props.onSuccess}
-          onClose={e => this.onViewPaneClose(e)}
+          onClose={e => this.onDashCfgClose(e)}
           sandbox={this.props.sandbox}
           appIds={appIds}
           ueIds={ueIds}
@@ -292,7 +265,6 @@ class ViewPane extends Component {
           dashboardViewsList={dashboardViewsList}
           showApps={this.props.showApps}
         />
-
         <div>
           <Grid style={{ marginTop: 10 }}>
             <GridInner>
@@ -300,7 +272,7 @@ class ViewPane extends Component {
                 <Button
                   outlined
                   style={styles.button}
-                  onClick={e => this.onViewPaneClose(e)}
+                  onClick={e => this.onDashCfgClose(e)}
                   data-cy={EXEC_BTN_DASHBOARD_BTN_CLOSE}
                 >
                   Close
@@ -329,7 +301,6 @@ const styles = {
 const mapStateToProps = state => {
   return {
     currentView: state.ui.execCurrentView,
-    selectedScenarioElement: state.exec.selectedScenarioElement,
     page: state.ui.page,
     displayedScenario: state.exec.displayedScenario,
     sourceNodeSelectedView1: state.ui.sourceNodeSelectedView1,
@@ -342,17 +313,6 @@ const mapStateToProps = state => {
     view2Name: state.ui.dashboardView2,
     sandboxCfg: state.ui.sandboxCfg,
     dashboardOptions: state.monitor.dashboardOptions,
-    UEs: execUEs(state),
-    POAs: execPOAs(state),
-    EDGEs: execEdges(state),
-    FOGs: execFogs(state),
-    ZONEs: execZones(state),
-    DNs: execDNs(state),
-    MobTypes: execMobTypes(state),
-    EdgeApps: execEdgeApps(state),
-    FogEdges: execFogEdges(state),
-    table: state.exec.table,
-    networkElements: state.exec.table.entries,
     showApps: state.ui.execShowApps
   };
 };
@@ -360,10 +320,6 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeView: view => dispatch(uiExecChangeCurrentView(view)),
-    changeSelectedScenarioElement: element =>
-      dispatch(execChangeSelectedScenarioElement(element)),
-    resetSelectedScenarioElement: () => dispatch(execResetSelectedScenarioElement()),
-    changeViewStatus: status => dispatch(uiExecChangeViewStatus(status)),
     changeSourceNodeSelectedView1: src => dispatch(uiExecChangeSourceNodeSelectedView1(src)),
     changeDestNodeSelectedView1: dest => dispatch(uiExecChangeDestNodeSelectedView1(dest)),
     changeSourceNodeSelectedView2: src => dispatch(uiExecChangeSourceNodeSelectedView2(src)),
@@ -374,9 +330,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-const ConnectedViewPane = connect(
+const ConnectedDashCfgPane = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ViewPane);
+)(DashCfgPane);
 
-export default ConnectedViewPane;
+export default ConnectedDashCfgPane;

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-//	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -94,60 +93,7 @@ func NewGisCache(sandboxName string, redisAddr string) (gc *GisCache, err error)
 	log.Info("Created GIS Cache")
 	return gc, nil
 }
-/*
-// UpdateGisCacheInflux - Creates and initialize an Influx DB for a GIS Cache instance
-func (gc *GisCache) UpdateGisCacheInflux(sandboxName string, scenarioName string, influxAddr string) (err error) {
-	// Connect to Influx DB
-	for retry := 0; gc.influxClient == nil && retry <= dbMaxRetryCount; retry++ {
-		gc.influxClient, err = gc.connectInfluxDB(influxAddr)
-		if err != nil {
-			log.Warn("Failed to connect to InfluxDB. Retrying... Error: ", err)
-		}
-	}
-	if err != nil {
-		return err
-	}
-	log.Info("Connected to GIS Cache Influx DB")
 
-	influxName := sandboxName
-	if scenarioName != "" {
-		influxName = influxName + "_" + scenarioName
-	}
-
-	gc.influxName = strings.Replace(influxName, "-", "_", -1)
-
-	err = gc.CreateInfluxDb()
-	if err != nil {
-		log.Info("Error in creating influx db")
-	}
-
-	//nil or not
-	return err
-}
-
-func (gc *GisCache) connectInfluxDB(addr string) (*influx.Client, error) {
-	if addr == "" {
-		addr = defaultInfluxDBAddr
-	}
-	log.Debug("InfluxDB Connector connecting to ", addr)
-
-	client, err := influx.NewHTTPClient(influx.HTTPConfig{Addr: addr, InsecureSkipVerify: true})
-	if err != nil {
-		log.Error("InfluxDB Connector unable to connect ", addr)
-		return nil, err
-	}
-	defer client.Close()
-
-	_, version, err := client.Ping(1000 * time.Millisecond)
-	if err != nil {
-		log.Error("InfluxDB Connector unable to connect ", addr)
-		return nil, err
-	}
-
-	log.Info("InfluxDB Connector connected to ", addr, " version: ", version)
-	return &client, nil
-}
-*/
 // SetPosition - Create or update entry in DB
 func (gc *GisCache) SetPosition(typ string, name string, position *Position) error {
 	key := gc.baseKey + posKey + typ + ":" + name
@@ -307,6 +253,4 @@ func (gc *GisCache) DelMeasurement(ue string, poa string) {
 // Flush - Remove all GIS cache entries
 func (gc *GisCache) Flush() {
 	gc.rc.DBFlush(gc.baseKey)
-
-//	gc.FlushInfluxDb()
 }

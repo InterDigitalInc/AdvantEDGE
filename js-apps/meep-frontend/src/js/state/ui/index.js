@@ -29,7 +29,6 @@ const initialState = {
   cfgView: CFG_VIEW_NETWORK,
   mapCfg: {},
   eventCreationMode: false,
-  viewMode: false,
   eventAutomationMode: false,
   automationMovementMode: false,
   automationMobilityMode: false,
@@ -51,7 +50,6 @@ const initialState = {
   dashCfgMode: false,
   eventCfgMode: false,
   eventStatus: '',
-  viewStatus: '',
   dashboardView1: NET_TOPOLOGY_VIEW,
   dashboardView2: VIEW_NAME_NONE,
   sourceNodeSelectedView1: '',
@@ -202,14 +200,6 @@ export function uiExecChangeEventCreationMode(val) {
   };
 }
 
-const UI_EXEC_CHANGE_VIEW_MODE = 'UI_EXEC_CHANGE_VIEW_MODE';
-export function uiExecChangeViewMode(val) {
-  return {
-    type: UI_EXEC_CHANGE_VIEW_MODE,
-    payload: val
-  };
-}
-
 const UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE = 'UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE';
 export function uiExecChangeEventAutomationMode(val) {
   return {
@@ -278,14 +268,6 @@ const UI_EXEC_CHANGE_EVENT_STATUS = 'UI_EXEC_CHANGE_EVENT_STATUS';
 export function uiExecChangeEventStatus(status) {
   return {
     type: UI_EXEC_CHANGE_EVENT_STATUS,
-    payload: status
-  };
-}
-
-const UI_EXEC_CHANGE_VIEW_STATUS = 'UI_EXEC_CHANGE_VIEW_STATUS';
-export function uiExecChangeViewStatus(status) {
-  return {
-    type: UI_EXEC_CHANGE_VIEW_STATUS,
     payload: status
   };
 }
@@ -473,8 +455,6 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { currentDialog: action.payload });
   case UI_EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
-  case UI_EXEC_CHANGE_VIEW_MODE:
-    return updateObject(state, { viewMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE:
     return updateObject(state, { eventAutomationMode: action.payload });
   case UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE:
@@ -493,8 +473,6 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { eventCfgMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_STATUS:
     return updateObject(state, { eventStatus: action.payload });
-  case UI_EXEC_CHANGE_VIEW_STATUS:
-    return updateObject(state, { viewStatus: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:

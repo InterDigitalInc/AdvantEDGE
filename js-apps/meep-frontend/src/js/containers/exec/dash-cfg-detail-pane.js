@@ -40,7 +40,7 @@ import {
   updateObject
 } from '@/js/util/object-util';
 
-class ViewSpecificPane extends Component {
+class DashCfgDetailPane extends Component {
   constructor(props) {
     super(props);
     autoBind(this);
@@ -207,8 +207,7 @@ class ViewSpecificPane extends Component {
 
 const mapStateToProps = state => {
   return {
-    sandboxCfg: state.ui.sandboxCfg,
-    pduSessionEvent: state.ui.pduSessionEvent
+    sandboxCfg: state.ui.sandboxCfg
   };
 };
 
@@ -219,9 +218,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-const ConnectedViewSpecificPane = connect(
+const ConnectedDashCfgDetailPane = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ViewSpecificPane);
+)(DashCfgDetailPane);
 
-export default ConnectedViewSpecificPane;
+export default ConnectedDashCfgDetailPane;
