@@ -160,7 +160,7 @@ class DashCfgDetailPane extends Component {
             <>
               <GridCell span={12}>
                 <IDSelect
-                  label={'Source Node'}
+                  label={'UE'}
                   outlined
                   options={wirelessSrcNodeIds}
                   onChange={e => {
@@ -171,7 +171,7 @@ class DashCfgDetailPane extends Component {
               </GridCell>
               <GridCell span={12}>
                 <IDSelect
-                  label={'Destination Node'}
+                  label={'POA'}
                   outlined
                   options={wirelessDstNodeIds}
                   onChange={e => {
@@ -187,7 +187,7 @@ class DashCfgDetailPane extends Component {
             <>
               <GridCell span={12}>
                 <IDSelect
-                  label={'Source Node'}
+                  label={'UE'}
                   outlined
                   options={wirelessSrcNodeIds}
                   onChange={e => {

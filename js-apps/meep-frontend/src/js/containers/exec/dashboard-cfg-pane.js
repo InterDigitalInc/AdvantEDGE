@@ -22,7 +22,7 @@ import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
 import { updateObject } from '@/js/util/object-util';
 import * as d3 from 'd3';
-import DashCfgDetailPane from './dash-cfg-detail-pane';
+import DashCfgDetailPane from './dashboard-cfg-detail-pane';
 
 import {
   getScenarioNodeChildren,
