@@ -51,5 +51,6 @@ prometheus:
     
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-metrics-engine"
 
 meepOrigin: core

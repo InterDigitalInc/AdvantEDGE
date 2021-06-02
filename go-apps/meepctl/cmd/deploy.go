@@ -192,6 +192,8 @@ func deployCore(cobraCmd *cobra.Command) {
 		coreFlags := utils.HelmFlags(flags, "--set", "image.repository="+deployData.registry+"/"+app)
 		coreFlags = utils.HelmFlags(coreFlags, "--set", "image.tag="+deployData.tag)
 		if deployData.codecov && codecov {
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV='true'")
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV_LOCATION="+deployData.workdir+"/codecov/")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.location="+deployData.workdir+"/codecov/"+app)
 		}

@@ -51,5 +51,6 @@ prometheus:
 
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-loc-serv"
 
 meepOrigin: core
