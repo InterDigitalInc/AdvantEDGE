@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.7.1
+version: 1.7.2
 repo:
   name: AdvantEDGE
 
@@ -91,6 +91,57 @@ repo:
         # OAuth k8s secret (data: client-id, secret)
         secret: meep-oauth-gitlab
 
+    # Metrics Configuration
+    metrics:
+      # Prometheus configuration
+      prometheus:
+        # external labels added to prometheus metrics
+        external-labels:
+          # geographic region where
+          region: my-city
+          # function being monitored
+          monitor: platform
+          # prometheus environment (dev|prod)
+          promenv: prod
+          # unique deployment identifier
+          replica: my-platform-fqdn
+      # Thanos long-term storage
+      thanos:
+        # enable Thanos
+        enabled: false
+        # object store configuration secret
+        secret: meep-thanos-objstore-config
+        # query component
+        query:
+          # enable querier
+          enabled: true
+        # query frontend component
+        query-frontend:
+          # enable query frontend
+          enabled: true
+        # store gateway component
+        store-gateway:
+          # enable store gateway
+          enabled: true
+        # compactor component
+        compactor:
+          # enable compactor
+          enabled: false
+          # data retention times
+          retention:
+            # raw data retention
+            resolution-raw: 30d
+            # 5m downsampled data retention
+            resolution-5m: 30d
+            # 1h downsampled data retention
+            resolution-1h: 10y
+      # Thanos long-term storage archive
+      thanos-archive:
+        # enable Thanos archive
+        enabled: false
+        # archive object store configuration secret
+        secret: meep-thanos-archive-objstore-config
+
     # Default monitoring dashboards
     dashboards:
       network-metrics-point-to-point: dashboards/network-metrics-point-to-point.json
@@ -98,6 +149,7 @@ repo:
       http-single-log: dashboards/http-log-byId.json
       http-logs-aggregation: dashboards/http-loggers.json
       platform-advantedge: dashboards/platform-advantedge.json
+      # platform-advantedge: dashboards/platform-advantedge-thanos.json
       platform-k8s: dashboards/platform-k8s.json
       runtime-environment-node: dashboards/runtime-environment-node.json
       runtime-environment-k8s-cluster: dashboards/runtime-environment-k8s-cluster.json
@@ -633,17 +685,6 @@ repo:
       chart: charts/influxdb
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-influxdb.yaml
-    meep-kube-state-metrics:
-      # enable meepctl build -> deps are never built
-      build: false
-      # enable meepctl dockerize -> deps are never dockerized
-      dockerize: false
-      # enable meepctl deploy/delete
-      deploy: true
-      # location of deployment chart
-      chart: charts/kube-state-metrics
-      # user supplied value file located @ .meep/user/values (use below file name)
-      chart-user-values: meep-kube-state-metrics.yaml
     meep-ingress:
       # enable meepctl build -> deps are never built
       build: false
@@ -655,7 +696,7 @@ repo:
       chart: charts/ingress-nginx
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-ingress.yaml
-    meep-redis:
+    meep-kube-state-metrics:
       # enable meepctl build -> deps are never built
       build: false
       # enable meepctl dockerize -> deps are never dockerized
@@ -663,9 +704,20 @@ repo:
       # enable meepctl deploy/delete
       deploy: true
       # location of deployment chart
-      chart: charts/redis
+      chart: charts/kube-state-metrics
       # user supplied value file located @ .meep/user/values (use below file name)
-      chart-user-values: meep-redis.yaml
+      chart-user-values: meep-kube-state-metrics.yaml
+    meep-minio:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: false
+      # location of deployment chart
+      chart: charts/minio
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-minio.yaml
     meep-open-map-tiles:
       # enable meepctl build -> deps are never built
       build: false
@@ -699,6 +751,39 @@ repo:
       chart: charts/kube-prometheus-stack
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-prometheus.yaml
+    meep-redis:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
+      chart: charts/redis
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-redis.yaml
+    meep-thanos:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: false
+      # location of deployment chart
+      chart: charts/thanos
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-thanos.yaml
+    meep-thanos-archive:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: false
+      # location of deployment chart
+      chart: charts/thanos
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-thanos-archive.yaml
 
   #------------------------------
   #  Packages

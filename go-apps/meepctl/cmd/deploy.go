@@ -159,6 +159,7 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/docker-registry")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/grafana")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/minio")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine/user-charts")
@@ -295,11 +296,91 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
+	case "meep-minio":
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/minio/")
 	case "meep-open-map-tiles":
 		deploySetOmtConfig(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
 	case "meep-postgis":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/postgis/")
+	case "meep-prometheus":
+		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
+		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.securityContext.runAsUser="+uid)
+		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.securityContext.runAsUser="+uid)
+		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.persistentVolume.location="+deployData.workdir+"/prometheus/server/")
+		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.persistentVolume.location="+deployData.workdir+"/prometheus/alertmanager/")
+		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")
+		regionLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.region")
+		if regionLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.region="+regionLabel)
+		}
+		monitorLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.monitor")
+		if monitorLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.monitor="+monitorLabel)
+		}
+		promenvLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.promenv")
+		if promenvLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.promenv="+promenvLabel)
+		}
+		replicaLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.replica")
+		if replicaLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.replica="+replicaLabel)
+		}
+		thanosEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.enabled")
+		if thanosEnabled {
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.secret")
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.thanos.objectStorageConfig.name="+secret)
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.thanos.objectStorageConfig.key=objstore.yml")
+			flags = utils.HelmFlags(flags, "--set", "prometheus.thanosService.enabled=true")
+		}
+	case "meep-thanos":
+		thanosEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.enabled")
+		if thanosEnabled {
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.secret")
+			flags = utils.HelmFlags(flags, "--set", "existingObjstoreSecret="+secret)
+			// Query
+			queryEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.query.enabled")
+			flags = utils.HelmFlags(flags, "--set", "query.enabled="+strconv.FormatBool(queryEnabled))
+			if queryEnabled {
+				thanosArchiveEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos-archive.enabled")
+				if thanosArchiveEnabled {
+					flags = utils.HelmFlags(flags, "--set", "query.stores={dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local,dnssrv+_grpc._tcp.meep-thanos-archive-storegateway.default.svc.cluster.local}")
+				}
+			}
+			// Query Frontend
+			queryFrontendEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.query-frontend.enabled")
+			flags = utils.HelmFlags(flags, "--set", "queryFrontend.enabled="+strconv.FormatBool(queryFrontendEnabled))
+			// Store Gateway
+			storeGatewayEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.store-gateway.enabled")
+			flags = utils.HelmFlags(flags, "--set", "storegateway.enabled="+strconv.FormatBool(storeGatewayEnabled))
+			// Compactor
+			compactorEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.compactor.enabled")
+			flags = utils.HelmFlags(flags, "--set", "compactor.enabled="+strconv.FormatBool(compactorEnabled))
+			if compactorEnabled {
+				retentionResolutionRaw := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.compactor.retention.resolution-raw")
+				if retentionResolutionRaw != "" {
+					flags = utils.HelmFlags(flags, "--set", "compactor.retentionResolutionRaw="+retentionResolutionRaw)
+				}
+				retentionResolution5m := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.compactor.retention.resolution-5m")
+				if retentionResolutionRaw != "" {
+					flags = utils.HelmFlags(flags, "--set", "compactor.retentionResolution5m="+retentionResolution5m)
+				}
+				retentionResolution1h := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.compactor.retention.resolution-1h")
+				if retentionResolutionRaw != "" {
+					flags = utils.HelmFlags(flags, "--set", "compactor.retentionResolution1h="+retentionResolution1h)
+				}
+			}
+		}
+	case "meep-thanos-archive":
+		thanosArchiveEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos-archive.enabled")
+		if thanosArchiveEnabled {
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.thanos-archive.secret")
+			flags = utils.HelmFlags(flags, "--set", "existingObjstoreSecret="+secret)
+			flags = utils.HelmFlags(flags, "--set", "query.enabled=false")
+			flags = utils.HelmFlags(flags, "--set", "queryFrontend.enabled=false")
+			flags = utils.HelmFlags(flags, "--set", "storegateway.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "compactor.enabled=false")
+		}
 
 	// Core pods
 	case "meep-auth-svc":
@@ -402,13 +483,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 		flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
 		flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
-	case "meep-prometheus":
-		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
-		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.securityContext.runAsUser="+uid)
-		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.securityContext.runAsUser="+uid)
-		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.persistentVolume.location="+deployData.workdir+"/prometheus/server/")
-		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.persistentVolume.location="+deployData.workdir+"/prometheus/alertmanager/")
-		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")
+	default:
 	}
 
 	return flags
