@@ -67,8 +67,8 @@ priorityClassName: ""
 ## AccessKey and secretKey is generated when not set
 ## Distributed Minio ref: https://docs.minio.io/docs/distributed-minio-quickstart-guide
 ##
-accessKey: "admin"
-secretKey: "password"
+accessKey: ""
+secretKey: ""
 certsPath: "/etc/minio/certs/"
 configPathmc: "/etc/minio/mc/"
 mountPath: "/export"
@@ -88,7 +88,7 @@ mountPath: "/export"
 ## All mentioned variables will be ignored in values file.
 ## .data.accesskey and .data.secretkey are mandatory,
 ## others depend on enabled status of corresponding sections.
-existingSecret: ""
+existingSecret: "meep-minio-objstore-config"
 
 ## Override the root directory which the minio server should serve from.
 ## If left empty, it defaults to the value of {{ .Values.mountPath }}

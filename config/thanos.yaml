@@ -1,9 +1,9 @@
 type: s3
 config:
   bucket: thanos
-  endpoint: advantedge.testfqdn.dev
-  access_key: admin
-  secret_key: password
+  endpoint: my-fqdn-or-ip
+  access_key: my-access-key
+  secret_key: my-secret-key
   insecure: false
   signature_version2: false
   http_config:
