@@ -97,14 +97,14 @@ repo:
       prometheus:
         # external labels added to prometheus metrics
         external-labels:
-          # geographic region where
-          region: my-city
+          # deployment region (geographic or logical)
+          region: idcc
           # function being monitored
-          monitor: platform
+          monitor: advantedge
           # prometheus environment (dev|prod)
           promenv: prod
           # unique deployment identifier
-          replica: my-platform-fqdn
+          replica: platform-ip
       # Thanos long-term storage
       thanos:
         # enable Thanos
@@ -162,7 +162,7 @@ repo:
   resource-prerequisites:
     # k8s Custom Resource Definitions
     crds:
-      # servicemonitors.monitoring.coreos.com: charts/kube-prometheus-stack/crds/crd-servicemonitors.yaml
+      servicemonitors.monitoring.coreos.com: charts/kube-prometheus-stack/crds/crd-servicemonitors.yaml
 
   #------------------------------
   #  Core Subsystem
