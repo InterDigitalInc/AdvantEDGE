@@ -297,6 +297,11 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
 	case "meep-minio":
+		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
+		flags = utils.HelmFlags(flags, "--set", "securityContext.runAsUser="+uid)
+		gid := utils.RepoCfg.GetString("repo.deployment.permissions.gid")
+		flags = utils.HelmFlags(flags, "--set", "securityContext.runAsGroup="+gid)
+		flags = utils.HelmFlags(flags, "--set", "securityContext.fsGroup="+gid)
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/minio/")
 	case "meep-open-map-tiles":
 		deploySetOmtConfig(chart, cobraCmd)
