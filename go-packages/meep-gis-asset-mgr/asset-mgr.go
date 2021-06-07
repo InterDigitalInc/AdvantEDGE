@@ -1839,6 +1839,9 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 		for poaName, meas := range ue.Measurements {
 			// Calculate power measurements
 			rssi, rsrp, rsrq := calculatePower(meas.SubType, meas.Radius, meas.Distance)
+			if rsrp == 0 && rsrq == 0 {
+				log.Error("ERROR: Zero Rsrp and RsRq should not happen: ", meas.SubType, "---", meas.Radius, "---", meas.Distance, "---", poaName, "---", ueName)
+			}
 
 			// Add new entry or update existing one
 			id := ueName + "-" + poaName
