@@ -35,11 +35,16 @@ const (
 )
 
 const (
+	fieldDistance  = "dist"
 	fieldLatitude  = "lat"
 	fieldLongitude = "long"
+	fieldDest      = "dest"
+	fieldDestType  = "destType"
 	fieldRssi      = "rssi"
 	fieldRsrp      = "rsrp"
 	fieldRsrq      = "rsrq"
+	fieldSrc       = "src"
+	fieldSrcType   = "srcType"
 )
 
 const (
@@ -58,14 +63,15 @@ type UeMeasurement struct {
 }
 
 type Measurement struct {
-	Rssi float32
-	Rsrp float32
-	Rsrq float32
+	Rssi     float32
+	Rsrp     float32
+	Rsrq     float32
+	Distance float32
 }
 
 type GisCache struct {
-	rc      *redis.Connector
-	baseKey string
+	rc           *redis.Connector
+	baseKey      string
 }
 
 // NewGisCache - Creates and initialize a GIS Cache instance
@@ -153,14 +159,19 @@ func (gc *GisCache) DelPosition(typ string, name string) {
 }
 
 // SetMeasurement - Create or update entry in DB
-func (gc *GisCache) SetMeasurement(ue string, poa string, meas *Measurement) error {
-	key := gc.baseKey + measKey + ue + ":" + poa
+func (gc *GisCache) SetMeasurement(src string, srcType string, dest string, destType string, meas *Measurement) error {
+	key := gc.baseKey + measKey + src + ":" + dest
 
 	// Prepare data
 	fields := make(map[string]interface{})
+	fields[fieldSrc] = fmt.Sprintf("%s", src)
+	fields[fieldSrcType] = fmt.Sprintf("%s", srcType)
+	fields[fieldDest] = fmt.Sprintf("%s", dest)
+	fields[fieldDestType] = fmt.Sprintf("%s", destType)
 	fields[fieldRssi] = fmt.Sprintf("%f", meas.Rssi)
 	fields[fieldRsrp] = fmt.Sprintf("%f", meas.Rsrp)
 	fields[fieldRsrq] = fmt.Sprintf("%f", meas.Rsrq)
+	fields[fieldDistance] = fmt.Sprintf("%f", meas.Distance)
 
 	// Update entry in DB
 	err := gc.rc.SetEntry(key, fields)
@@ -214,6 +225,9 @@ func getMeasurement(key string, fields map[string]string, userData interface{}) 
 	}
 	if rsrq, err := strconv.ParseFloat(fields[fieldRsrq], 32); err == nil {
 		meas.Rsrq = float32(rsrq)
+	}
+	if distance, err := strconv.ParseFloat(fields[fieldDistance], 32); err == nil {
+		meas.Distance = float32(distance)
 	}
 
 	// Add measurement to map

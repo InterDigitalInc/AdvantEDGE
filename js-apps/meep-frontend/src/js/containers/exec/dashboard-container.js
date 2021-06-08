@@ -20,22 +20,14 @@ import autoBind from 'react-autobind';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 // import ReactDOM from 'react-dom';
-import { Button } from '@rmwc/button';
-import { Checkbox } from '@rmwc/checkbox';
-import * as d3 from 'd3';
 
-import IDSelect from '../../components/helper-components/id-select';
 import IDCMap from '../idc-map';
 import IDCVis from '../idc-vis';
 import Iframe from 'react-iframe';
 
-import { getScenarioNodeChildren, isApp } from '../../util/scenario-utils';
-
 import {
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2,
-  uiExecChangeSourceNodeSelected,
-  uiExecChangeDestNodeSelected,
   uiExecChangeSandboxCfg
 } from '../../state/ui';
 
@@ -44,8 +36,7 @@ import {
   VIEW_NAME_NONE,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
-  DEFAULT_DASHBOARD_OPTIONS,
-  EXEC_BTN_DASHBOARD_BTN_CLOSE
+  DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
 import { updateObject } from '../../util/object-util';
@@ -62,67 +53,6 @@ const styles = {
 
 const showInExecStr = '<exec>';
 const passVarsStr = '<vars>';
-
-const ConfigurationView = props => {
-  return (
-    <>
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span={2}>
-          <IDSelect
-            label={'View 1'}
-            outlined
-            options={props.dashboardViewsList}
-            onChange={e => {
-              props.changeView1(e.target.value);
-            }}
-            value={props.view1Name}
-          />
-        </GridCell>
-        <GridCell span={2}>
-          <IDSelect
-            label={'View 2'}
-            outlined
-            options={props.dashboardViewsList}
-            onChange={e => {
-              props.changeView2(e.target.value);
-            }}
-            value={props.view2Name}
-          />
-        </GridCell>
-        <GridCell span={2}>
-          <IDSelect
-            label={'Source Node'}
-            outlined
-            options={props.nodeIds}
-            onChange={e => {
-              props.changeSourceNodeSelected(e.target.value);
-            }}
-            value={props.sourceNodeSelected}
-          />
-        </GridCell>
-        <GridCell span={2}>
-          <IDSelect
-            label={'Destination Node'}
-            outlined
-            options={props.nodeIds}
-            onChange={e => {
-              props.changeDestNodeSelected(e.target.value);
-            }}
-            value={props.destNodeSelected}
-          />
-        </GridCell>
-        <GridCell span={2}>
-          <Checkbox
-            checked={props.showApps}
-            onChange={e => props.changeShowApps(e.target.checked)}
-          >
-            Show Apps
-          </Checkbox>
-        </GridCell>
-      </Grid>
-    </>
-  );
-};
 
 const getUrl = (dashboardName, dashboardOptions) => {
   var url = '';
@@ -214,61 +144,6 @@ const ViewForName = ({
   return null;
 };
 
-const DashboardConfiguration = props => {
-  if (!props.dashCfgMode) {
-    return null;
-  }
-
-  let configurationView = null;
-
-  configurationView = (
-    <ConfigurationView
-      dashboardViewsList={props.dashboardViewsList}
-      view1Name={props.view1Name}
-      view2Name={props.view2Name}
-      changeView1={props.changeView1}
-      changeView2={props.changeView2}
-      nodeIds={props.nodeIds}
-      sourceNodeSelected={props.sourceNodeSelected}
-      destNodeSelected={props.destNodeSelected}
-      changeSourceNodeSelected={props.changeSourceNodeSelected}
-      changeDestNodeSelected={props.changeDestNodeSelected}
-      changeShowApps={props.changeShowApps}
-      showApps={props.showApps}
-    />
-  );
-  return (
-    <Elevation
-      z={2}
-      className='idcc-elevation'
-      style={{ padding: 10, marginBottom: 10 }}
-    >
-      <Grid>
-        <GridCell span={6}>
-          <div style={{ marginBottom: 10 }}>
-            <span className='mdc-typography--headline6'>
-              Dashboard
-            </span>
-          </div>
-        </GridCell>
-        <GridCell span={6}>
-          <div align={'right'}>
-            <Button
-              outlined
-              style={styles.button}
-              onClick={() => props.onCloseDashCfg()}
-              data-cy={EXEC_BTN_DASHBOARD_BTN_CLOSE}
-            >
-            Close
-            </Button>
-          </div>
-        </GridCell>
-      </Grid>
-      {configurationView}
-    </Elevation>
-  );
-};
-
 class DashboardContainer extends Component {
   constructor(props) {
     super(props);
@@ -299,10 +174,6 @@ class DashboardContainer extends Component {
       };
       this.props.changeSandboxCfg(newSandboxCfg);
     }
-  }
-
-  getRoot() {
-    return d3.hierarchy(this.props.displayedScenario, getScenarioNodeChildren);
   }
 
   changeShowApps(checked) {
@@ -352,14 +223,7 @@ class DashboardContainer extends Component {
 
   render() {
     this.keyForSvg++;
-    const root = this.getRoot();
-    const nodes = root.descendants();
-    const apps = nodes.filter(isApp);
-    const appIds = apps.map(a => a.data.name);
-    appIds.unshift('None');
 
-    const selectedSource = appIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None';
-    const selectedDest = appIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None';
     const view1Name = this.getView1();
     const view2Name = this.getView2();
     const view1Present = view1Name !== VIEW_NAME_NONE;
@@ -379,8 +243,8 @@ class DashboardContainer extends Component {
       <ViewForName
         sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
-        selectedSource={selectedSource}
-        selectedDest={selectedDest}
+        selectedSource={this.props.sourceNodeSelectedView1}
+        selectedDest={this.props.destNodeSelectedView1}
         viewName={view1Name}
         dashboardOptions={this.props.dashboardOptions}
       />
@@ -390,8 +254,8 @@ class DashboardContainer extends Component {
       <ViewForName
         sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
-        selectedSource={selectedSource}
-        selectedDest={selectedDest}
+        selectedSource={this.props.sourceNodeSelectedView2}
+        selectedDest={this.props.destNodeSelectedView2}
         viewName={view2Name}
         dashboardOptions={this.props.dashboardOptions}
       />
@@ -408,23 +272,6 @@ class DashboardContainer extends Component {
 
     return (
       <>
-        <DashboardConfiguration
-          dashCfgMode={this.props.dashCfgMode}
-          onCloseDashCfg={this.props.onCloseDashCfg}
-          nodeIds={appIds}
-          view1Name={view1Name}
-          view2Name={view2Name}
-          sourceNodeSelected={selectedSource}
-          destNodeSelected={selectedDest}
-          changeSourceNodeSelected={this.props.changeSourceNodeSelected}
-          changeDestNodeSelected={this.props.changeDestNodeSelected}
-          dashboardViewsList={dashboardViewsList}
-          changeView1={this.changeView1}
-          changeView2={this.changeView2}
-          changeShowApps={this.changeShowApps}
-          showApps={this.props.showApps}
-        />
-
         <Grid>
           {!view1Present ? null : (
             <GridCell span={span1} className='chartContainer'>
@@ -464,6 +311,10 @@ const mapStateToProps = state => {
     displayedScenario: state.exec.displayedScenario,
     sourceNodeSelected: state.ui.sourceNodeSelected,
     destNodeSelected: state.ui.destNodeSelected,
+    sourceNodeSelectedView1: state.ui.sourceNodeSelectedView1,
+    destNodeSelectedView1: state.ui.destNodeSelectedView1,
+    sourceNodeSelectedView2: state.ui.sourceNodeSelectedView2,
+    destNodeSelectedView2: state.ui.destNodeSelectedView2,
     eventCreationMode: state.exec.eventCreationMode,
     scenarioState: state.exec.state.scenario,
     view1Name: state.ui.dashboardView1,
@@ -475,8 +326,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeSourceNodeSelected: src => dispatch(uiExecChangeSourceNodeSelected(src)),
-    changeDestNodeSelected: dest => dispatch(uiExecChangeDestNodeSelected(dest)),
     changeView1: name => dispatch(uiExecChangeDashboardView1(name)),
     changeView2: name => dispatch(uiExecChangeDashboardView2(name)),
     changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))

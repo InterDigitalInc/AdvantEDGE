@@ -212,6 +212,8 @@ export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES = 'exec-btn-event-b
 export const EXEC_BTN_EVENT_BTN_SAVE_REPLAY = 'exec-btn-event-btn-save-replay';
 export const EXEC_BTN_EVENT_BTN_CLOSE = 'exec-btn-event-btn-close';
 
+export const EXEC_VIEW_SELECT = 'exec-view-select';
+
 export const EXEC_EVT_TYPE = 'exec-evt-type';
 export const EXEC_EVT_MOB_TARGET = 'exec-evt-mob-target';
 export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
@@ -361,6 +363,10 @@ export const id = label => {
 export const VIEW_NAME_NONE = 'None';
 export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
+export const NET_METRICS_PTP_VIEW = 'Network Metrics Point-to-Point';
+export const NET_METRICS_AGG_VIEW = 'Network Metrics Aggregation';
+export const WIRELESS_METRICS_PTP_VIEW = 'Wireless Metrics Point-to-Point';
+export const WIRELESS_METRICS_AGG_VIEW = 'Wireless Metrics Aggregation';
 
 export const DEST_DISCONNECTED = 'DISCONNECTED';
 
@@ -368,6 +374,9 @@ export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 export const SCENARIO_UPDATE_EVENT = 'SCENARIO-UPDATE';
 export const PDU_SESSION_EVENT = 'PDU-SESSION';
+
+export const VIEW_1 = 'VIEW #1';
+export const VIEW_2 = 'VIEW #2';
 
 export const SCENARIO_UPDATE_ACTION_NONE = 'NONE';
 export const SCENARIO_UPDATE_ACTION_ADD = 'ADD';
@@ -398,6 +407,14 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   {
     label: 'Http REST API Single Detailed Log',
     value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light'
+  },
+  {
+    label: 'Wireless Metrics Point-to-Point',
+    value: HOST_PATH + '/grafana/d/5/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Wireless Metrics Aggregation',
+    value: HOST_PATH + '/grafana/d/6/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   },
   {
     label: 'Platform Metrics',
