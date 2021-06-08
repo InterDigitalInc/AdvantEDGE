@@ -1181,18 +1181,16 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	srcLongStr := ""
-	srcLatStr := ""
 	position, err := ge.gisCache.GetPosition("*", assetName)
-	if err != nil {
+	if err != nil || position == nil {
 		err := errors.New("Asset has no geo location")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	srcLongStr = strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
-	srcLatStr = strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+	srcLongStr := strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+	srcLatStr := strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
 
 	// Retrieve Distance parameters from request body
 	var distanceParam TargetPoint
@@ -1227,7 +1225,7 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		// Find second asset in active scenario model
 		position, err = ge.gisCache.GetPosition("*", distanceParam.AssetName)
 
-		if err != nil {
+		if err != nil || position == nil {
 			err := errors.New("Destination asset has no geo location")
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -1299,19 +1297,16 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	srcLongStr := ""
-	srcLatStr := ""
-	if srcAsset.geoData != nil {
-		srcPosition := srcAsset.geoData.position
-		srcPoint := convertJsonToPoint(srcPosition)
-		srcLongStr = strconv.FormatFloat(float64(srcPoint.Coordinates[0]), 'f', -1, 32)
-		srcLatStr = strconv.FormatFloat(float64(srcPoint.Coordinates[1]), 'f', -1, 32)
-	} else {
+	position, err := ge.gisCache.GetPosition("*", assetName)
+	if err != nil || position == nil {
 		err := errors.New("Asset has no geo location")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	srcLongStr := strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+	srcLatStr := strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
 
 	// Retrieve Within Range parameters from request body
 	var withinRangeParam TargetRange
@@ -1322,7 +1317,7 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&withinRangeParam)
+	err = decoder.Decode(&withinRangeParam)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

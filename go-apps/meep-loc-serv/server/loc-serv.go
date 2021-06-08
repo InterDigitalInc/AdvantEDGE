@@ -18,6 +18,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,6 +32,7 @@ import (
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
+	gisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-engine-client"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
@@ -50,10 +52,13 @@ const typeUser = "user"
 const typeZonalSubscription = "zonalsubs"
 const typeUserSubscription = "usersubs"
 const typeZoneStatusSubscription = "zonestatus"
+const typeDistanceSubscription = "distance"
+const typeAreaCircleSubscription = "areacircle"
 
 const (
 	notifZonalPresence = "ZonalPresenceNotification"
 	notifZoneStatus    = "ZoneStatusNotification"
+	notifSubscription  = "SubscriptionNotification"
 )
 
 type UeUserData struct {
@@ -68,9 +73,16 @@ type ApUserData struct {
 	apList             *AccessPointList
 }
 
+type Pair struct {
+	addr1 string
+	addr2 string
+}
+
 var nextZonalSubscriptionIdAvailable int
 var nextUserSubscriptionIdAvailable int
 var nextZoneStatusSubscriptionIdAvailable int
+var nextDistanceSubscriptionIdAvailable int
+var nextAreaCircleSubscriptionIdAvailable int
 
 var zonalSubscriptionEnteringMap = map[int]string{}
 var zonalSubscriptionLeavingMap = map[int]string{}
@@ -84,6 +96,12 @@ var userSubscriptionMap = map[int]string{}
 
 var zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
 
+var distanceSubscriptionMap = map[int]*DistanceCheck{}
+
+var distancePeriodicTicker *time.Ticker
+
+var areaCircleSubscriptionMap = map[int]*AreaCircleCheck{}
+
 type ZoneStatusCheck struct {
 	ZoneId                 string
 	Serviceable            bool
@@ -91,6 +109,17 @@ type ZoneStatusCheck struct {
 	Unknown                bool
 	NbUsersInZoneThreshold int32
 	NbUsersInAPThreshold   int32
+}
+
+type DistanceCheck struct {
+	NextTts      int32 //next time to send, derived from frequency
+	Subscription *DistanceNotificationSubscription
+}
+
+type AreaCircleCheck struct {
+	NextTts      int32 //next time to send, derived from frequency
+	AddrInArea   map[string]bool
+	Subscription *CircleNotificationSubscription
 }
 
 var LOC_SERV_DB = 0
@@ -105,6 +134,8 @@ var sandboxName string
 var basePath string
 var baseKey string
 var mutex sync.Mutex
+
+var gisAppClient *gisClient.APIClient
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -151,9 +182,21 @@ func Init() (err error) {
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB, location service table")
 
+	gisAppClientCfg := gisClient.NewConfiguration()
+	gisAppClientCfg.BasePath = hostUrl.String() + "/" + sandboxName + "/gis/v1"
+
+	gisAppClient = gisClient.NewAPIClient(gisAppClientCfg)
+	if gisAppClient == nil {
+		log.Error("Failed to create GIS App REST API client: ", gisAppClientCfg.BasePath)
+		err := errors.New("Failed to create GIS App REST API client")
+		return err
+	}
+
 	userTrackingReInit()
 	zonalTrafficReInit()
 	zoneStatusReInit()
+	distanceReInit()
+	areaCircleReInit()
 
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{
@@ -171,6 +214,13 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("SBI Initialized")
+
+	distancePeriodicTicker = time.NewTicker(time.Second)
+	go func() {
+		for range distancePeriodicTicker.C {
+			checkNotificationDistancePeriodicTrigger()
+		}
+	}()
 
 	return nil
 }
@@ -309,6 +359,287 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 		userSubscriptionTransferringMap[subsId] = userAddress
 	}
 	userSubscriptionMap[subsId] = userAddress
+}
+
+func checkNotificationDistancePeriodicTrigger() {
+
+	//only check if there is at least one subscription
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, distanceCheck := range distanceSubscriptionMap {
+		if distanceCheck != nil && distanceCheck.Subscription != nil {
+			//decrement the next time to send a message
+			distanceCheck.NextTts--
+			if distanceCheck.NextTts > 0 {
+				continue
+			} else { //restart the nextTts and continue processing to send notification or not
+				distanceCheck.NextTts = distanceCheck.Subscription.Frequency
+			}
+			//loop through every reference address
+			returnAddr := make(map[string]*gisClient.Distance)
+			skipThisSubscription := false
+
+			//if reference address is specified, reference addresses are checked agains each monitored address
+			//if reference address is nil, each pair of the monitored address should be checked
+			//creating address pairs to check
+			//e.g. refAddr = A, B ; monitoredAddr = C, D, E ; resultingPairs {A,C - A,D - A,E - B,C - B,D - B-E}
+			//e.g. monitoredAddr = A, B, C ; resultingPairs {A,B - B,A - A,C - C,A - B,C - C,B}
+
+			var addressPairs []Pair
+			if distanceCheck.Subscription.ReferenceAddress != nil {
+				for _, refAddr := range distanceCheck.Subscription.ReferenceAddress {
+					//loop through every monitored address
+					for _, monitoredAddr := range distanceCheck.Subscription.MonitoredAddress {
+						pair := Pair{addr1: refAddr, addr2: monitoredAddr}
+						addressPairs = append(addressPairs, pair)
+					}
+				}
+			} else {
+				nbIndex := len(distanceCheck.Subscription.MonitoredAddress)
+				for i := 0; i < nbIndex-1; i++ {
+					for j := i + 1; j < nbIndex; j++ {
+						pair := Pair{addr1: distanceCheck.Subscription.MonitoredAddress[i], addr2: distanceCheck.Subscription.MonitoredAddress[j]}
+						addressPairs = append(addressPairs, pair)
+						//need pair to be symmetrical so that each is used as reference point and monitored address
+						pair = Pair{addr1: distanceCheck.Subscription.MonitoredAddress[j], addr2: distanceCheck.Subscription.MonitoredAddress[i]}
+						addressPairs = append(addressPairs, pair)
+					}
+				}
+			}
+
+			for _, pair := range addressPairs {
+				refAddr := pair.addr1
+				monitoredAddr := pair.addr2
+
+				var distParam gisClient.TargetPoint
+				distParam.AssetName = monitoredAddr
+
+				distResp, _, err := gisAppClient.GeospatialDataApi.GetDistanceGeoDataByName(context.TODO(), refAddr, distParam)
+				if err != nil {
+					log.Error("Failed to communicate with gis engine: ", err)
+					return
+				}
+
+				distance := int32(distResp.Distance)
+
+				switch *distanceCheck.Subscription.Criteria {
+				case ALL_WITHIN_DISTANCE:
+					if float32(distance) < distanceCheck.Subscription.Distance {
+						returnAddr[monitoredAddr] = &distResp
+					} else {
+						skipThisSubscription = true
+						break
+					}
+				case ALL_BEYOND_DISTANCE:
+					if float32(distance) > distanceCheck.Subscription.Distance {
+						returnAddr[monitoredAddr] = &distResp
+					} else {
+						skipThisSubscription = true
+						break
+					}
+				case ANY_WITHIN_DISTANCE:
+					if float32(distance) < distanceCheck.Subscription.Distance {
+						returnAddr[monitoredAddr] = &distResp
+					}
+				case ANY_BEYOND_DISTANCE:
+					if float32(distance) > distanceCheck.Subscription.Distance {
+						returnAddr[monitoredAddr] = &distResp
+					}
+				default:
+				}
+			}
+			if skipThisSubscription {
+				continue
+			}
+			if len(returnAddr) > 0 {
+				subsIdStr := strconv.Itoa(subsId)
+
+				var distanceNotif SubscriptionNotification
+				distanceNotif.DistanceCriteria = distanceCheck.Subscription.Criteria
+				distanceNotif.IsFinalNotification = false
+				distanceNotif.Link = distanceCheck.Subscription.Link
+				var terminalLocationList []TerminalLocation
+				for terminalAddr, distanceInfo := range returnAddr {
+					var terminalLocation TerminalLocation
+					terminalLocation.Address = terminalAddr
+					var locationInfo LocationInfo
+					locationInfo.Latitude = nil
+					locationInfo.Latitude = append(locationInfo.Latitude, distanceInfo.Latitude)
+					locationInfo.Longitude = nil
+					locationInfo.Longitude = append(locationInfo.Longitude, distanceInfo.Longitude)
+					locationInfo.Shape = 2
+					seconds := time.Now().Unix()
+					var timestamp TimeStamp
+					timestamp.Seconds = int32(seconds)
+					locationInfo.Timestamp = &timestamp
+					terminalLocation.CurrentLocation = &locationInfo
+					retrievalStatus := RETRIEVED
+					terminalLocation.LocationRetrievalStatus = &retrievalStatus
+					terminalLocationList = append(terminalLocationList, terminalLocation)
+				}
+				distanceNotif.TerminalLocation = terminalLocationList
+				distanceNotif.CallbackData = distanceCheck.Subscription.ClientCorrelator
+				var inlineDistanceSubscriptionNotification InlineSubscriptionNotification
+				inlineDistanceSubscriptionNotification.SubscriptionNotification = &distanceNotif
+				sendSubscriptionNotification(distanceCheck.Subscription.CallbackReference.NotifyURL, inlineDistanceSubscriptionNotification)
+				log.Info("Distance Notification"+"("+subsIdStr+") For ", returnAddr)
+			}
+		}
+	}
+}
+
+func checkNotificationAreaCircle(addressToCheck string) {
+
+	//only check if there is at least one subscription
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, areaCircleCheck := range areaCircleSubscriptionMap {
+		if areaCircleCheck != nil && areaCircleCheck.Subscription != nil {
+			//decrement the next time to send a message
+			areaCircleCheck.NextTts--
+			if areaCircleCheck.NextTts > 0 {
+				continue
+			} else { //restart the nextTts and continue processing to send notification or not
+				areaCircleCheck.NextTts = areaCircleCheck.Subscription.Frequency
+			}
+
+			//loop through every reference address
+			for _, addr := range areaCircleCheck.Subscription.Address {
+				if addr != addressToCheck {
+					continue
+				}
+				//check if address is already inside the area or not based on the subscription
+				var withinRangeParam gisClient.TargetRange
+				withinRangeParam.Latitude = areaCircleCheck.Subscription.Latitude
+				withinRangeParam.Longitude = areaCircleCheck.Subscription.Longitude
+				withinRangeParam.Radius = areaCircleCheck.Subscription.Radius
+
+				withinRangeResp, _, err := gisAppClient.GeospatialDataApi.GetWithinRangeByName(context.TODO(), addr, withinRangeParam)
+				if err != nil {
+					log.Error("Failed to communicate with gis engine: ", err)
+					return
+				}
+
+				//check if there is a change
+				var event EnteringLeavingCriteria
+				if withinRangeResp.Within {
+					if areaCircleCheck.AddrInArea[addr] {
+						//no change
+						continue
+					} else {
+						areaCircleCheck.AddrInArea[addr] = true
+						event = ENTERING_CRITERIA
+					}
+				} else {
+					if !areaCircleCheck.AddrInArea[addr] {
+						//no change
+						continue
+					} else {
+						areaCircleCheck.AddrInArea[addr] = false
+						event = LEAVING_CRITERIA
+					}
+				}
+				//no tracking this event, stop looking for this UE
+				if *areaCircleCheck.Subscription.EnteringLeavingCriteria != event {
+					continue
+				}
+				subsIdStr := strconv.Itoa(subsId)
+				var areaCircleNotif SubscriptionNotification
+
+				areaCircleNotif.EnteringLeavingCriteria = areaCircleCheck.Subscription.EnteringLeavingCriteria
+				areaCircleNotif.IsFinalNotification = false
+				areaCircleNotif.Link = areaCircleCheck.Subscription.Link
+				var terminalLocationList []TerminalLocation
+				var terminalLocation TerminalLocation
+				terminalLocation.Address = addr
+				var locationInfo LocationInfo
+				locationInfo.Latitude = nil
+				locationInfo.Latitude = append(locationInfo.Latitude, withinRangeResp.Latitude)
+				locationInfo.Longitude = nil
+				locationInfo.Longitude = append(locationInfo.Longitude, withinRangeResp.Longitude)
+				locationInfo.Shape = 2
+				seconds := time.Now().Unix()
+				var timestamp TimeStamp
+				timestamp.Seconds = int32(seconds)
+				locationInfo.Timestamp = &timestamp
+				terminalLocation.CurrentLocation = &locationInfo
+				retrievalStatus := RETRIEVED
+				terminalLocation.LocationRetrievalStatus = &retrievalStatus
+				terminalLocationList = append(terminalLocationList, terminalLocation)
+
+				areaCircleNotif.TerminalLocation = terminalLocationList
+				areaCircleNotif.CallbackData = areaCircleCheck.Subscription.ClientCorrelator
+				var inlineCircleSubscriptionNotification InlineSubscriptionNotification
+				inlineCircleSubscriptionNotification.SubscriptionNotification = &areaCircleNotif
+				sendSubscriptionNotification(areaCircleCheck.Subscription.CallbackReference.NotifyURL, inlineCircleSubscriptionNotification)
+				log.Info("Area Circle Notification" + "(" + subsIdStr + ") For " + addr + " when " + string(*areaCircleCheck.Subscription.EnteringLeavingCriteria) + " area")
+			}
+
+		}
+	}
+}
+
+func deregisterDistance(subsIdStr string) {
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	distanceSubscriptionMap[subsId] = nil
+}
+
+func registerDistance(distanceSub *DistanceNotificationSubscription, subsIdStr string) {
+
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	var distanceCheck DistanceCheck
+	distanceCheck.Subscription = distanceSub
+	if distanceSub.CheckImmediate {
+		distanceCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
+	} else {
+		distanceCheck.NextTts = distanceSub.Frequency
+	}
+	distanceSubscriptionMap[subsId] = &distanceCheck
+}
+
+func deregisterAreaCircle(subsIdStr string) {
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	areaCircleSubscriptionMap[subsId] = nil
+}
+
+func registerAreaCircle(areaCircleSub *CircleNotificationSubscription, subsIdStr string) {
+
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	var areaCircleCheck AreaCircleCheck
+	areaCircleCheck.Subscription = areaCircleSub
+	areaCircleCheck.AddrInArea = map[string]bool{}
+	if areaCircleSub.CheckImmediate {
+		areaCircleCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
+	} else {
+		areaCircleCheck.NextTts = areaCircleSub.Frequency
+	}
+	areaCircleSubscriptionMap[subsId] = &areaCircleCheck
 }
 
 func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAP int32, nbUsersInZone int32, previousNbUsersInAP int32, previousNbUsersInZone int32) {
@@ -480,6 +811,26 @@ func sendStatusNotification(notifyUrl string, notification InlineZoneStatusNotif
 		return
 	}
 	met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, resp, duration)
+	defer resp.Body.Close()
+}
+
+func sendSubscriptionNotification(notifyUrl string, notification InlineSubscriptionNotification) {
+	startTime := time.Now()
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifSubscription, notifyUrl, nil, duration)
+		return
+	}
+	met.ObserveNotification(sandboxName, serviceName, notifSubscription, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
@@ -898,6 +1249,590 @@ func populateApList(key string, jsonInfo string, userData interface{}) error {
 
 	// Add AP info to list
 	data.apList.AccessPoint = append(data.apList.AccessPoint, apInfo)
+	return nil
+}
+
+func distanceSubDelete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeDistanceSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := rc.JSONDelEntry(baseKey+typeDistanceSubscription+":"+vars["subscriptionId"], ".")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	deregisterDistance(vars["subscriptionId"])
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func distanceSubListGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var response InlineNotificationSubscriptionList
+	var distanceSubList NotificationSubscriptionList
+	distanceSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/distance"
+	response.NotificationSubscriptionList = &distanceSubList
+
+	keyName := baseKey + typeDistanceSubscription + "*"
+	err := rc.ForEachJSONEntry(keyName, populateDistanceList, &distanceSubList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func distanceSubGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	var response InlineDistanceNotificationSubscription
+	var distanceSub DistanceNotificationSubscription
+	response.DistanceNotificationSubscription = &distanceSub
+
+	jsonDistanceSub, _ := rc.JSONGetEntry(baseKey+typeDistanceSubscription+":"+vars["subscriptionId"], ".")
+	if jsonDistanceSub == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := json.Unmarshal([]byte(jsonDistanceSub), &distanceSub)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func distanceSubPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var response InlineDistanceNotificationSubscription
+
+	var body InlineDistanceNotificationSubscription
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	distanceSub := body.DistanceNotificationSubscription
+
+	if distanceSub == nil {
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if distanceSub.CallbackReference == nil || distanceSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if distanceSub.Criteria == nil {
+		log.Error("Mandatory DistanceCriteria parameter not present")
+		http.Error(w, "Mandatory DistanceCriteria parameter not present", http.StatusBadRequest)
+		return
+	}
+	if distanceSub.Frequency == 0 {
+		log.Error("Mandatory Frequency parameter not present")
+		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		return
+	}
+	if distanceSub.MonitoredAddress == nil {
+		log.Error("Mandatory MonitoredAddress parameter not present")
+		http.Error(w, "Mandatory MonitoredAddress parameter not present", http.StatusBadRequest)
+		return
+	}
+	/*
+		if distanceSub.TrackingAccuracy == 0 {
+			log.Error("Mandatory TrackingAccuracy parameter not present")
+			http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+			return
+		}
+	*/
+
+	newSubsId := nextDistanceSubscriptionIdAvailable
+	nextDistanceSubscriptionIdAvailable++
+	subsIdStr := strconv.Itoa(newSubsId)
+
+	distanceSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/distance/" + subsIdStr
+
+	_ = rc.JSONSetEntry(baseKey+typeDistanceSubscription+":"+subsIdStr, ".", convertDistanceSubscriptionToJson(distanceSub))
+
+	registerDistance(distanceSub, subsIdStr)
+
+	response.DistanceNotificationSubscription = distanceSub
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func distanceSubPut(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	var response InlineDistanceNotificationSubscription
+
+	var body InlineDistanceNotificationSubscription
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	distanceSub := body.DistanceNotificationSubscription
+
+	if distanceSub == nil {
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if distanceSub.CallbackReference == nil || distanceSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if distanceSub.Criteria == nil {
+		log.Error("Mandatory DistanceCriteria parameter not present")
+		http.Error(w, "Mandatory DistanceCriteria parameter not present", http.StatusBadRequest)
+		return
+	}
+	if distanceSub.Frequency == 0 {
+		log.Error("Mandatory Frequency parameter not present")
+		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		return
+	}
+	if distanceSub.MonitoredAddress == nil {
+		log.Error("Mandatory MonitoredAddress parameter not present")
+		http.Error(w, "Mandatory MonitoredAddress parameter not present", http.StatusBadRequest)
+		return
+	}
+	/*
+		if distanceSub.TrackingAccuracy == 0 {
+		        log.Error("Mandatory TrackingAccuracy parameter not present")
+		        http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+		        return
+		}
+	*/
+	if distanceSub.ResourceURL == "" {
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		return
+	}
+
+	subsIdParamStr := vars["subscriptionId"]
+
+	selfUrl := strings.Split(distanceSub.ResourceURL, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+
+	//Body content not matching parameters
+	if subsIdStr != subsIdParamStr {
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		return
+	}
+
+	distanceSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/distance/" + subsIdStr
+
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if distanceSubscriptionMap[subsId] == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	_ = rc.JSONSetEntry(baseKey+typeDistanceSubscription+":"+subsIdStr, ".", convertDistanceSubscriptionToJson(distanceSub))
+
+	deregisterDistance(subsIdStr)
+	registerDistance(distanceSub, subsIdStr)
+
+	response.DistanceNotificationSubscription = distanceSub
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func populateDistanceList(key string, jsonInfo string, userData interface{}) error {
+
+	distanceList := userData.(*NotificationSubscriptionList)
+	var distanceInfo DistanceNotificationSubscription
+
+	// Format response
+	err := json.Unmarshal([]byte(jsonInfo), &distanceInfo)
+	if err != nil {
+		return err
+	}
+	distanceList.DistanceNotificationSubscription = append(distanceList.DistanceNotificationSubscription, distanceInfo)
+	return nil
+}
+
+func areaCircleSubDelete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	present, _ := rc.JSONGetEntry(baseKey+typeAreaCircleSubscription+":"+vars["subscriptionId"], ".")
+	if present == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := rc.JSONDelEntry(baseKey+typeAreaCircleSubscription+":"+vars["subscriptionId"], ".")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	deregisterAreaCircle(vars["subscriptionId"])
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func areaCircleSubListGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var response InlineNotificationSubscriptionList
+	var areaCircleSubList NotificationSubscriptionList
+	areaCircleSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/area/circle"
+	response.NotificationSubscriptionList = &areaCircleSubList
+
+	keyName := baseKey + typeAreaCircleSubscription + "*"
+	err := rc.ForEachJSONEntry(keyName, populateAreaCircleList, &areaCircleSubList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func areaCircleSubGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	var response InlineCircleNotificationSubscription
+	var areaCircleSub CircleNotificationSubscription
+	response.CircleNotificationSubscription = &areaCircleSub
+	jsonAreaCircleSub, _ := rc.JSONGetEntry(baseKey+typeAreaCircleSubscription+":"+vars["subscriptionId"], ".")
+	if jsonAreaCircleSub == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := json.Unmarshal([]byte(jsonAreaCircleSub), &areaCircleSub)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	var response InlineCircleNotificationSubscription
+
+	var body InlineCircleNotificationSubscription
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	areaCircleSub := body.CircleNotificationSubscription
+
+	if areaCircleSub == nil {
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if areaCircleSub.CallbackReference == nil || areaCircleSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Address == nil {
+		log.Error("Mandatory Address parameter not present")
+		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Latitude == 0 {
+		log.Error("Mandatory Latitude parameter not present")
+		http.Error(w, "Mandatory Latitude parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Longitude == 0 {
+		log.Error("Mandatory Longitude parameter not present")
+		http.Error(w, "Mandatory Longitude parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Radius == 0 {
+		log.Error("Mandatory Radius parameter not present")
+		http.Error(w, "Mandatory Radius parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.EnteringLeavingCriteria == nil {
+		log.Error("Mandatory EnteringLeavingCriteria parameter not present")
+		http.Error(w, "Mandatory EnteringLeavingCriteria parameter not present", http.StatusBadRequest)
+		return
+	} else {
+		switch *areaCircleSub.EnteringLeavingCriteria {
+		case ENTERING_CRITERIA, LEAVING_CRITERIA:
+		default:
+			log.Error("Invalid Mandatory EnteringLeavingCriteria parameter value")
+			http.Error(w, "Invalid Mandatory EnteringLeavingCriteria parameter value", http.StatusBadRequest)
+			return
+		}
+	}
+	if areaCircleSub.Frequency == 0 {
+		log.Error("Mandatory Frequency parameter not present")
+		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		return
+	}
+	/*
+	   if areaCircleSub.CheckImmediate == nil {
+	           log.Error("Mandatory CheckImmediate parameter not present")
+	           http.Error(w, "Mandatory CheckImmediate parameter not present", http.StatusBadRequest)
+	           return
+	   }
+	*/
+	/*
+		if areaCircleSub.TrackingAccuracy == 0 {
+			log.Error("Mandatory TrackingAccuracy parameter not present")
+			http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+			return
+		}
+	*/
+
+	newSubsId := nextAreaCircleSubscriptionIdAvailable
+	nextAreaCircleSubscriptionIdAvailable++
+	subsIdStr := strconv.Itoa(newSubsId)
+	/*
+		if zonalTrafficSub.Duration > 0 {
+			//TODO start a timer mecanism and expire subscription
+		}
+		//else, lasts forever or until subscription is deleted
+	*/
+	if areaCircleSub.Duration != 0 { //used to be string -> zonalTrafficSub.Duration != "" && zonalTrafficSub.Duration != "0" {
+		//TODO start a timer mecanism and expire subscription
+		log.Info("Non zero duration")
+	}
+	//else, lasts forever or until subscription is deleted
+
+	areaCircleSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/area/circle/" + subsIdStr
+
+	_ = rc.JSONSetEntry(baseKey+typeAreaCircleSubscription+":"+subsIdStr, ".", convertAreaCircleSubscriptionToJson(areaCircleSub))
+
+	registerAreaCircle(areaCircleSub, subsIdStr)
+
+	response.CircleNotificationSubscription = areaCircleSub
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	var response InlineCircleNotificationSubscription
+
+	var body InlineCircleNotificationSubscription
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	areaCircleSub := body.CircleNotificationSubscription
+
+	if areaCircleSub == nil {
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if areaCircleSub.CallbackReference == nil || areaCircleSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Address == nil {
+		log.Error("Mandatory Address parameter not present")
+		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Latitude == 0 {
+		log.Error("Mandatory Latitude parameter not present")
+		http.Error(w, "Mandatory Latitude parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Longitude == 0 {
+		log.Error("Mandatory Longitude parameter not present")
+		http.Error(w, "Mandatory Longitude parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Radius == 0 {
+		log.Error("Mandatory Radius parameter not present")
+		http.Error(w, "Mandatory Radius parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.EnteringLeavingCriteria == nil {
+		log.Error("Mandatory EnteringLeavingCriteria parameter not present")
+		http.Error(w, "Mandatory EnteringLeavingCriteria parameter not present", http.StatusBadRequest)
+		return
+	}
+	if areaCircleSub.Frequency == 0 {
+		log.Error("Mandatory Frequency parameter not present")
+		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		return
+	}
+	/*
+	   if areaCircleSub.CheckImmediate == nil {
+	           log.Error("Mandatory CheckImmediate parameter not present")
+	           http.Error(w, "Mandatory CheckImmediate parameter not present", http.StatusBadRequest)
+	           return
+	   }
+	*/
+	/*
+	   if areaCircleSub.TrackingAccuracy == 0 {
+	           log.Error("Mandatory TrackingAccuracy parameter not present")
+	           http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+	           return
+	   }
+	*/
+	if areaCircleSub.ResourceURL == "" {
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		return
+	}
+
+	subsIdParamStr := vars["subscriptionId"]
+
+	selfUrl := strings.Split(areaCircleSub.ResourceURL, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+
+	//body content not matching parameters
+	if subsIdStr != subsIdParamStr {
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		return
+	}
+
+	areaCircleSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/area/circle/" + subsIdStr
+
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if areaCircleSubscriptionMap[subsId] == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	_ = rc.JSONSetEntry(baseKey+typeAreaCircleSubscription+":"+subsIdStr, ".", convertAreaCircleSubscriptionToJson(areaCircleSub))
+
+	deregisterAreaCircle(subsIdStr)
+	//registerAreaCircle(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
+
+	response.CircleNotificationSubscription = areaCircleSub
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func populateAreaCircleList(key string, jsonInfo string, userData interface{}) error {
+
+	areaCircleList := userData.(*NotificationSubscriptionList)
+	var areaCircleInfo CircleNotificationSubscription
+
+	// Format response
+	err := json.Unmarshal([]byte(jsonInfo), &areaCircleInfo)
+	if err != nil {
+		return err
+	}
+	areaCircleList.CircleNotificationSubscription = append(areaCircleList.CircleNotificationSubscription, areaCircleInfo)
 	return nil
 }
 
@@ -1602,6 +2537,8 @@ func cleanUp() {
 	nextZonalSubscriptionIdAvailable = 1
 	nextUserSubscriptionIdAvailable = 1
 	nextZoneStatusSubscriptionIdAvailable = 1
+	nextDistanceSubscriptionIdAvailable = 1
+	nextAreaCircleSubscriptionIdAvailable = 1
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -1616,6 +2553,8 @@ func cleanUp() {
 	userSubscriptionMap = map[int]string{}
 
 	zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
+	distanceSubscriptionMap = map[int]*DistanceCheck{}
+	areaCircleSubscriptionMap = map[int]*AreaCircleCheck{}
 
 	updateStoreName("")
 }
@@ -1675,7 +2614,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 	_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
 	checkNotificationRegisteredUsers(oldZoneId, zoneId, oldApId, accessPointId, address)
 	checkNotificationRegisteredZones(oldZoneId, zoneId, oldApId, accessPointId, address)
-
+	checkNotificationAreaCircle(address)
 }
 
 func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, nbUsers int) {
@@ -1880,4 +2819,176 @@ func userTrackingReInit() {
 		}
 	}
 	nextUserSubscriptionIdAvailable = maxUserSubscriptionId + 1
+}
+
+func distanceReInit() {
+	//reusing the object response for the get multiple zonalSubscription
+	var distanceList NotificationSubscriptionList
+
+	keyName := baseKey + typeDistanceSubscription + "*"
+	_ = rc.ForEachJSONEntry(keyName, populateDistanceList, &distanceList)
+
+	maxDistanceSubscriptionId := 0
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for _, distanceSub := range distanceList.DistanceNotificationSubscription {
+		resourceUrl := strings.Split(distanceSub.ResourceURL, "/")
+		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
+		if err != nil {
+			log.Error(err)
+		} else {
+			if subscriptionId > maxDistanceSubscriptionId {
+				maxDistanceSubscriptionId = subscriptionId
+			}
+			var distanceCheck DistanceCheck
+			distanceCheck.Subscription = &distanceSub
+			if distanceSub.CheckImmediate {
+				distanceCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
+			} else {
+				distanceCheck.NextTts = distanceSub.Frequency
+			}
+			distanceSubscriptionMap[subscriptionId] = &distanceCheck
+		}
+	}
+	nextDistanceSubscriptionIdAvailable = maxDistanceSubscriptionId + 1
+}
+
+func areaCircleReInit() {
+	//reusing the object response for the get multiple zonalSubscription
+	var areaCircleList NotificationSubscriptionList
+
+	keyName := baseKey + typeAreaCircleSubscription + "*"
+	_ = rc.ForEachJSONEntry(keyName, populateAreaCircleList, &areaCircleList)
+
+	maxAreaCircleSubscriptionId := 0
+	mutex.Lock()
+	defer mutex.Unlock()
+	for _, areaCircleSub := range areaCircleList.CircleNotificationSubscription {
+		resourceUrl := strings.Split(areaCircleSub.ResourceURL, "/")
+		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
+		if err != nil {
+			log.Error(err)
+		} else {
+			if subscriptionId > maxAreaCircleSubscriptionId {
+				maxAreaCircleSubscriptionId = subscriptionId
+			}
+			var areaCircleCheck AreaCircleCheck
+			areaCircleCheck.Subscription = &areaCircleSub
+			areaCircleCheck.AddrInArea = map[string]bool{}
+			if areaCircleSub.CheckImmediate {
+				areaCircleCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
+			} else {
+				areaCircleCheck.NextTts = areaCircleSub.Frequency
+			}
+			areaCircleSubscriptionMap[subscriptionId] = &areaCircleCheck
+
+		}
+	}
+	nextAreaCircleSubscriptionIdAvailable = maxAreaCircleSubscriptionId + 1
+}
+
+func distanceGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// Retrieve query parameters
+	u, _ := url.Parse(r.URL.String())
+	log.Info("url: ", u.RequestURI())
+	q := u.Query()
+	//requester := q.Get("requester")
+	latitudeStr := q.Get("latitude")
+	longitudeStr := q.Get("longitude")
+	address := q["address"]
+
+	if len(address) > 2 {
+		log.Error("Query cannot have more than 2 'address' parameters")
+		http.Error(w, "Query cannot have more than 2 'address' parameters", http.StatusBadRequest)
+	}
+
+	validQueryParams := []string{"requester", "address", "latitude", "longitude"}
+
+	//look for all query parameters to reject if any invalid ones
+	found := false
+	for queryParam := range q {
+		found = false
+		for _, validQueryParam := range validQueryParams {
+			if queryParam == validQueryParam {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Error("Query param not valid: ", queryParam)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	srcAddress := address[0]
+	dstAddress := ""
+	if len(address) > 1 {
+		dstAddress = address[1]
+	}
+
+	var distParam gisClient.TargetPoint
+	distParam.AssetName = dstAddress
+
+	if longitudeStr != "" {
+		longitude, err := strconv.ParseFloat(longitudeStr, 32)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		distParam.Longitude = float32(longitude)
+	}
+
+	if latitudeStr != "" {
+		latitude, err := strconv.ParseFloat(latitudeStr, 32)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		distParam.Latitude = float32(latitude)
+	}
+	distResp, _, err := gisAppClient.GeospatialDataApi.GetDistanceGeoDataByName(context.TODO(), srcAddress, distParam)
+	if err != nil {
+		errCodeStr := strings.Split(err.Error(), " ")
+		if len(errCodeStr) > 0 {
+			errCode, errStr := strconv.Atoi(errCodeStr[0])
+			if errStr == nil {
+				log.Error("Error code from gis-engine API : ", err)
+				http.Error(w, err.Error(), errCode)
+			} else {
+				log.Error("Failed to communicate with gis engine: ", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else {
+			log.Error("Failed to communicate with gis engine: ", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	var response InlineTerminalDistance
+	var terminalDistance TerminalDistance
+	terminalDistance.Distance = int32(distResp.Distance)
+
+	seconds := time.Now().Unix()
+	var timestamp TimeStamp
+	timestamp.Seconds = int32(seconds)
+	terminalDistance.Timestamp = &timestamp
+
+	response.TerminalDistance = &terminalDistance
+
+	// Send response
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
 }
