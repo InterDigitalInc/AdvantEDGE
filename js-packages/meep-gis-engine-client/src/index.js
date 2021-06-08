@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AutomationState', 'model/AutomationStateList', 'model/GeoData', 'model/GeoDataAssetList', 'model/LineString', 'model/Point', 'model/GeoDataAsset', 'api/AutomationApi', 'api/GeospatialDataApi'], factory);
+    define(['ApiClient', 'model/AutomationState', 'model/AutomationStateList', 'model/Distance', 'model/GeoData', 'model/GeoDataAssetList', 'model/LineString', 'model/Point', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange', 'model/GeoDataAsset', 'api/AutomationApi', 'api/GeospatialDataApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/AutomationState'), require('./model/AutomationStateList'), require('./model/GeoData'), require('./model/GeoDataAssetList'), require('./model/LineString'), require('./model/Point'), require('./model/GeoDataAsset'), require('./api/AutomationApi'), require('./api/GeospatialDataApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/AutomationState'), require('./model/AutomationStateList'), require('./model/Distance'), require('./model/GeoData'), require('./model/GeoDataAssetList'), require('./model/LineString'), require('./model/Point'), require('./model/TargetPoint'), require('./model/TargetRange'), require('./model/WithinRange'), require('./model/GeoDataAsset'), require('./api/AutomationApi'), require('./api/GeospatialDataApi'));
   }
-}(function(ApiClient, AutomationState, AutomationStateList, GeoData, GeoDataAssetList, LineString, Point, GeoDataAsset, AutomationApi, GeospatialDataApi) {
+}(function(ApiClient, AutomationState, AutomationStateList, Distance, GeoData, GeoDataAssetList, LineString, Point, TargetPoint, TargetRange, WithinRange, GeoDataAsset, AutomationApi, GeospatialDataApi) {
   'use strict';
 
   /**
@@ -87,6 +87,11 @@
      */
     AutomationStateList: AutomationStateList,
     /**
+     * The Distance model constructor.
+     * @property {module:model/Distance}
+     */
+    Distance: Distance,
+    /**
      * The GeoData model constructor.
      * @property {module:model/GeoData}
      */
@@ -106,6 +111,21 @@
      * @property {module:model/Point}
      */
     Point: Point,
+    /**
+     * The TargetPoint model constructor.
+     * @property {module:model/TargetPoint}
+     */
+    TargetPoint: TargetPoint,
+    /**
+     * The TargetRange model constructor.
+     * @property {module:model/TargetRange}
+     */
+    TargetRange: TargetRange,
+    /**
+     * The WithinRange model constructor.
+     * @property {module:model/WithinRange}
+     */
+    WithinRange: WithinRange,
     /**
      * The GeoDataAsset model constructor.
      * @property {module:model/GeoDataAsset}

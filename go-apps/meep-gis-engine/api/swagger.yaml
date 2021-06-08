@@ -249,6 +249,73 @@ paths:
           description: "Not found"
         500:
           description: "Internal server error"
+  /geodata/{assetName}/distanceTo:
+    post:
+      tags:
+      - "Geospatial Data"
+      summary: "Get distance between geospatial data points"
+      description: "Get distance between geospatial data for the given asset and another\
+        \ asset or geospatial coordinates"
+      operationId: "getDistanceGeoDataByName"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "assetName"
+        in: "path"
+        description: "Name of geospatial asset"
+        required: true
+        type: "string"
+        x-exportParamName: "AssetName"
+      - in: "body"
+        name: "targetPoint"
+        description: "Parameters of geospatial assets"
+        required: true
+        schema:
+          $ref: "#/definitions/TargetPoint"
+        x-exportParamName: "TargetPoint"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Distance"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+  /geodata/{assetName}/withinRange:
+    post:
+      tags:
+      - "Geospatial Data"
+      summary: "Returns if a geospatial data points is within a specified distance\
+        \ from a location"
+      description: "Get geospatial data for the given asset and if it is within range\
+        \ of another asset or geospatial coordinates"
+      operationId: "getWithinRangeByName"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "assetName"
+        in: "path"
+        description: "Name of geospatial asset"
+        required: true
+        type: "string"
+        x-exportParamName: "AssetName"
+      - in: "body"
+        name: "targetRange"
+        description: "Parameters of geospatial assets"
+        required: true
+        schema:
+          $ref: "#/definitions/TargetRange"
+        x-exportParamName: "TargetRange"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/WithinRange"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
 definitions:
   AutomationStateList:
     type: "object"
@@ -283,6 +350,50 @@ definitions:
     example:
       active: true
       type: "MOBILITY"
+  TargetPoint:
+    type: "object"
+    properties:
+      assetName:
+        type: "string"
+        description: "Asset name of a second element for query purpose. If present,\
+          \ latitude and longitude are ignored."
+      latitude:
+        type: "number"
+        format: "float"
+        description: "Latitude of a second element for query purpose. Taken into account\
+          \ only if AssetName is not present."
+      longitude:
+        type: "number"
+        format: "float"
+        description: "Longitude of a second element for query purpose. Taken into\
+          \ account only if AssetName is not present."
+    description: "Parameters for distance query purpose."
+    example:
+      latitude: 0.8008282
+      assetName: "assetName"
+      longitude: 6.0274563
+  Distance:
+    type: "object"
+    required:
+    - "distance"
+    properties:
+      distance:
+        type: "number"
+        format: "float"
+        description: "Distance between two points (in meters)"
+      latitude:
+        type: "number"
+        format: "float"
+        description: "Destination asset latitude"
+      longitude:
+        type: "number"
+        format: "float"
+        description: "Destination asset longitude"
+    description: "Distance response"
+    example:
+      distance: 0.8008282
+      latitude: 6.0274563
+      longitude: 1.4658129
   GeoDataAssetList:
     type: "object"
     properties:
@@ -295,6 +406,9 @@ definitions:
   GeoDataAsset:
     allOf:
     - type: "object"
+      required:
+      - "assetName"
+      - "assetType"
       properties:
         assetName:
           type: "string"
@@ -320,6 +434,62 @@ definitions:
           - "CLOUD"
     - $ref: "#/definitions/GeoData"
     description: "List of geospatial data"
+  TargetRange:
+    type: "object"
+    required:
+    - "radius"
+    properties:
+      assetName:
+        type: "string"
+        description: "Asset name of a second element for query purpose. If present,\
+          \ latitude and longitude are ignored."
+      latitude:
+        type: "number"
+        format: "float"
+        description: "Latitude of a second element for query purpose. Taken into account\
+          \ only if AssetName is not present."
+      longitude:
+        type: "number"
+        format: "float"
+        description: "Longitude of a second element for query purpose. Taken into\
+          \ account only if AssetName is not present."
+      radius:
+        type: "number"
+        format: "float"
+        description: "Radius (in meters) around the location."
+      accuracy:
+        type: "number"
+        format: "float"
+        description: "Accuracy of the location (in meters)."
+    description: "Parameters for within range query purpose."
+    example:
+      latitude: 0.8008282
+      assetName: "assetName"
+      accuracy: 5.962134
+      radius: 1.4658129
+      longitude: 6.0274563
+  WithinRange:
+    type: "object"
+    required:
+    - "within"
+    properties:
+      latitude:
+        type: "number"
+        format: "float"
+        description: "Destination asset latitude"
+      longitude:
+        type: "number"
+        format: "float"
+        description: "Destination asset longitude"
+      within:
+        type: "boolean"
+        description: "Within range result (e.g. true = within range, false = beyond\
+          \ range)"
+    description: "Within range response"
+    example:
+      within: true
+      latitude: 0.8008282
+      longitude: 6.0274563
   GeoData:
     type: "object"
     properties:

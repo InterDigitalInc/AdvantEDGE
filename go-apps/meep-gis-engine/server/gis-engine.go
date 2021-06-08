@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -1135,6 +1136,253 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 
 	// Format response
 	jsonResponse, err := json.Marshal(&assetList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func convertJsonToPoint(jsonData string) *Point {
+
+	var obj Point
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
+	// Get asset name from request path parameters
+	vars := mux.Vars(r)
+	assetName := vars["assetName"]
+	log.Debug("Get Distance GeoData for asset: ", assetName)
+
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	srcAsset := ge.assets[assetName]
+	if srcAsset == nil {
+		err := errors.New("Asset not in scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	srcLongStr := ""
+	srcLatStr := ""
+	position, err := ge.gisCache.GetPosition("*", assetName)
+	if err != nil {
+		err := errors.New("Asset has no geo location")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	srcLongStr = strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+	srcLatStr = strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
+	// Retrieve Distance parameters from request body
+	var distanceParam TargetPoint
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&distanceParam)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dstLong := float32(0.0)
+	dstLat := float32(0.0)
+	dstLongStr := ""
+	dstLatStr := ""
+
+	if distanceParam.AssetName != "" {
+
+		dstAsset := ge.assets[distanceParam.AssetName]
+		if dstAsset == nil {
+			err := errors.New("Destination asset not in scenario")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		// Find second asset in active scenario model
+		position, err = ge.gisCache.GetPosition("*", distanceParam.AssetName)
+
+		if err != nil {
+			err := errors.New("Destination asset has no geo location")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		dstLong = position.Longitude
+		dstLat = position.Latitude
+
+		dstLongStr = strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
+	} else {
+		dstLong = distanceParam.Longitude
+		dstLat = distanceParam.Latitude
+		dstLongStr = strconv.FormatFloat(float64(distanceParam.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(distanceParam.Latitude), 'f', -1, 32)
+	}
+
+	srcCoordinates := "(" + srcLongStr + " " + srcLatStr + ")"
+	dstCoordinates := "(" + dstLongStr + " " + dstLatStr + ")"
+
+	distance, err := ge.assetMgr.GetDistanceBetweenPoints(srcCoordinates, dstCoordinates)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create Response to return
+	var resp Distance
+	resp.Distance = distance
+	resp.Longitude = dstLong
+	resp.Latitude = dstLat
+
+	// Format response
+	jsonResponse, err := json.Marshal(&resp)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
+
+	// Get asset name from request path parameters
+	vars := mux.Vars(r)
+	assetName := vars["assetName"]
+	log.Debug("Get Within Range GeoData for asset: ", assetName)
+
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	srcAsset := ge.assets[assetName]
+	if srcAsset == nil {
+		err := errors.New("Asset not in scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	srcLongStr := ""
+	srcLatStr := ""
+	if srcAsset.geoData != nil {
+		srcPosition := srcAsset.geoData.position
+		srcPoint := convertJsonToPoint(srcPosition)
+		srcLongStr = strconv.FormatFloat(float64(srcPoint.Coordinates[0]), 'f', -1, 32)
+		srcLatStr = strconv.FormatFloat(float64(srcPoint.Coordinates[1]), 'f', -1, 32)
+	} else {
+		err := errors.New("Asset has no geo location")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve Within Range parameters from request body
+	var withinRangeParam TargetRange
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&withinRangeParam)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dstLong := float32(0.0)
+	dstLat := float32(0.0)
+	dstLongStr := ""
+	dstLatStr := ""
+	if withinRangeParam.AssetName != "" {
+
+		// Find second asset in active scenario model
+		dstAsset := ge.assets[withinRangeParam.AssetName]
+		if dstAsset == nil {
+			err := errors.New("Destination asset not in scenario")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if dstAsset.geoData != nil {
+			dstPosition := dstAsset.geoData.position
+			dstPoint := convertJsonToPoint(dstPosition)
+			dstLong = dstPoint.Coordinates[0]
+			dstLat = dstPoint.Coordinates[1]
+			dstLongStr = strconv.FormatFloat(float64(dstPoint.Coordinates[0]), 'f', -1, 32)
+			dstLatStr = strconv.FormatFloat(float64(dstPoint.Coordinates[1]), 'f', -1, 32)
+		} else {
+			err := errors.New("Destination asset has no geo location")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+	} else {
+		dstLong = withinRangeParam.Longitude
+		dstLat = withinRangeParam.Latitude
+		dstLongStr = strconv.FormatFloat(float64(withinRangeParam.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(withinRangeParam.Latitude), 'f', -1, 32)
+	}
+
+	srcCoordinates := "(" + srcLongStr + " " + srcLatStr + ")"
+	dstCoordinates := "(" + dstLongStr + " " + dstLatStr + ")"
+	radius := strconv.FormatFloat(float64(withinRangeParam.Radius), 'f', -1, 32)
+
+	withinRange, err := ge.assetMgr.GetWithinRangeBetweenPoints(srcCoordinates, dstCoordinates, radius)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create Response to return
+	var resp WithinRange
+	resp.Within = withinRange
+	resp.Longitude = dstLong
+	resp.Latitude = dstLat
+
+	// Format response
+	jsonResponse, err := json.Marshal(&resp)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

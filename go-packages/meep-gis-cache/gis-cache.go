@@ -112,6 +112,28 @@ func (gc *GisCache) SetPosition(typ string, name string, position *Position) err
 	return nil
 }
 
+// GetPosition - Get entry in DB
+// supports wildcards
+func (gc *GisCache) GetPosition(typ string, name string) (*Position, error) {
+        key := gc.baseKey + posKey + typ + ":" + name
+
+        // Create position map
+        positionMap := make(map[string]*Position)
+
+        // Get all position entry details
+        err := gc.rc.ForEachEntry(key, getPosition, &positionMap)
+        if err != nil {
+                log.Error("Failed to get all entries with error: ", err.Error())
+                return nil, err
+        }
+
+	// only one result, so return the first one 
+	for _, position := range positionMap {
+		return position, nil
+	}
+	return nil, nil
+}
+
 // GetAllPositions - Return positions with provided type
 func (gc *GisCache) GetAllPositions(typ string) (map[string]*Position, error) {
 	keyMatchStr := gc.baseKey + posKey + typ + ":*"

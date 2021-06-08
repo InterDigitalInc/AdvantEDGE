@@ -24,30 +24,15 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Within range response
+type WithinRange struct {
 
-func DeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geDeleteGeoDataByName(w, r)
-}
+	// Destination asset latitude
+	Latitude float32 `json:"latitude,omitempty"`
 
-func GetAssetData(w http.ResponseWriter, r *http.Request) {
-	geGetAssetData(w, r)
-}
+	// Destination asset longitude
+	Longitude float32 `json:"longitude,omitempty"`
 
-func GetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geGetDistanceGeoDataByName(w, r)
-}
-
-func GetGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geGetGeoDataByName(w, r)
-}
-
-func GetWithinRangeByName(w http.ResponseWriter, r *http.Request) {
-	geGetWithinRangeGeoDataByName(w, r)
-}
-
-func UpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geUpdateGeoDataByName(w, r)
+	// Within range result (e.g. true = within range, false = beyond range)
+	Within bool `json:"within"`
 }

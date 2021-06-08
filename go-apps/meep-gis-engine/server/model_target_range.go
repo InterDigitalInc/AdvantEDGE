@@ -24,30 +24,21 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Parameters for within range query purpose.
+type TargetRange struct {
 
-func DeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geDeleteGeoDataByName(w, r)
-}
+	// Asset name of a second element for query purpose. If present, latitude and longitude are ignored.
+	AssetName string `json:"assetName,omitempty"`
 
-func GetAssetData(w http.ResponseWriter, r *http.Request) {
-	geGetAssetData(w, r)
-}
+	// Latitude of a second element for query purpose. Taken into account only if AssetName is not present.
+	Latitude float32 `json:"latitude,omitempty"`
 
-func GetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geGetDistanceGeoDataByName(w, r)
-}
+	// Longitude of a second element for query purpose. Taken into account only if AssetName is not present.
+	Longitude float32 `json:"longitude,omitempty"`
 
-func GetGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geGetGeoDataByName(w, r)
-}
+	// Radius (in meters) around the location.
+	Radius float32 `json:"radius"`
 
-func GetWithinRangeByName(w http.ResponseWriter, r *http.Request) {
-	geGetWithinRangeGeoDataByName(w, r)
-}
-
-func UpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geUpdateGeoDataByName(w, r)
+	// Accuracy of the location (in meters).
+	Accuracy float32 `json:"accuracy,omitempty"`
 }

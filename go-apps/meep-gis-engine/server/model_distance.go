@@ -24,30 +24,15 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Distance response
+type Distance struct {
 
-func DeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geDeleteGeoDataByName(w, r)
-}
+	// Distance between two points (in meters)
+	Distance float32 `json:"distance"`
 
-func GetAssetData(w http.ResponseWriter, r *http.Request) {
-	geGetAssetData(w, r)
-}
+	// Destination asset latitude
+	Latitude float32 `json:"latitude,omitempty"`
 
-func GetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geGetDistanceGeoDataByName(w, r)
-}
-
-func GetGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geGetGeoDataByName(w, r)
-}
-
-func GetWithinRangeByName(w http.ResponseWriter, r *http.Request) {
-	geGetWithinRangeGeoDataByName(w, r)
-}
-
-func UpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
-	geUpdateGeoDataByName(w, r)
+	// Destination asset longitude
+	Longitude float32 `json:"longitude,omitempty"`
 }
