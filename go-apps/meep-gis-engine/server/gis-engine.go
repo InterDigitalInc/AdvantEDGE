@@ -1350,7 +1350,7 @@ func (ge *GisEngine) StartSnapshotThread() error {
 	go func() {
 		for range ge.snapshotTicker.C {
 			if ge.metricStore != nil {
-				ge.metricStore.TakeUeMetricSnapshot()
+				ge.metricStore.TakeGisMetricSnapshot()
 			}
 		}
 	}()

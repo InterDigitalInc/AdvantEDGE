@@ -50,7 +50,7 @@ type MetricStore struct {
 	name           string
 	namespace      string
 	baseKey        string
-        baseKeyRef     string
+	baseKeyRef     string
 	addr           string
 	influxClient   *influx.Client
 	redisClient    *redis.Connector
@@ -68,7 +68,7 @@ func NewMetricStore(name string, namespace string, influxAddr string, redisAddr 
 	// Create new Metric Store instance
 	ms = new(MetricStore)
 	ms.namespace = namespace
-        ms.baseKeyRef = dkm.GetKeyRoot(namespace)
+	ms.baseKeyRef = dkm.GetKeyRoot(namespace)
 	ms.baseKey = dkm.GetKeyRoot(namespace) + metricsKey
 
 	// Connect to Redis DB
