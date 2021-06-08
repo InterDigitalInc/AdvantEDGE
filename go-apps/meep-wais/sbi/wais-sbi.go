@@ -23,20 +23,25 @@ import (
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
 const moduleName string = "meep-wais-sbi"
 
+var metricStore *met.MetricStore
+var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
 	PostgisHost    string
 	PostgisPort    string
-	StaInfoCb      func(string, string, string, *int32, []string)
+	StaInfoCb      func(string, string, string, *int32, *int32, *int32)
 	ApInfoCb       func(string, string, *float32, *float32, []string)
-	ScenarioNameCb func(string)
+	ScenarioNameCb func(string, *bool)
 	CleanUpCb      func()
 }
 
@@ -47,9 +52,9 @@ type WaisSbi struct {
 	activeModel             *mod.Model
 	gisCache                *gc.GisCache
 	refreshTicker           *time.Ticker
-	updateStaInfoCB         func(string, string, string, *int32, []string)
+	updateStaInfoCB         func(string, string, string, *int32, *int32, *int32)
 	updateAccessPointInfoCB func(string, string, *float32, *float32, []string)
-	updateScenarioNameCB    func(string)
+	updateScenarioNameCB    func(string, *bool)
 	cleanUpCB               func()
 	mutex                   sync.Mutex
 }
@@ -176,6 +181,29 @@ func processActiveScenarioTerminate() {
 	sbi.cleanUpCB()
 }
 
+func getAppSumUlDl(apps []string) (float32, float32) {
+	sumUl := 0.0
+	sumDl := 0.0
+	//var appNames []string
+	for _, appName := range apps {
+		//appNames = append(appNames, process.Name)
+		if metricStore != nil {
+			metricsArray, err := metricStore.GetCachedNetworkMetrics("*", appName)
+			if err != nil {
+				log.Error("Failed to get network metric:", err)
+			}
+
+			//downlink for the app is uplink for the UE, and vice-versa
+			for _, metrics := range metricsArray {
+				sumUl += metrics.DlTput
+				sumDl += metrics.UlTput
+			}
+		}
+	}
+
+	return float32(sumUl), float32(sumDl)
+}
+
 func processActiveScenarioUpdate() {
 
 	sbi.mutex.Lock()
@@ -195,8 +223,17 @@ func processActiveScenarioUpdate() {
 	sbi.activeModel.UpdateScenario()
 
 	scenarioName := sbi.activeModel.GetScenarioName()
-	sbi.updateScenarioNameCB(scenarioName)
+	var update bool
+	sbi.updateScenarioNameCB(scenarioName, &update)
 
+	// Connect to Metric Store
+	if update {
+		var err error
+		metricStore, err = met.NewMetricStore(scenarioName, sbi.sandboxName, influxAddr, redisAddr)
+		if err != nil {
+			log.Error("Failed connection to metric-store: ", err)
+		}
+	}
 	// Get all POA positions & UE measurments
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
 	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
@@ -231,7 +268,10 @@ func processActiveScenarioUpdate() {
 				appNames = append(appNames, process.Name)
 			}
 
-			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi, appNames)
+			sumUl, sumDl := getAppSumUlDl(appNames)
+			sumUlKbps := int32(sumUl * 1000)
+			sumDlKbps := int32(sumDl * 1000)
+			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi, &sumUlKbps, &sumDlKbps)
 		}
 	}
 
@@ -245,7 +285,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateStaInfoCB(prevUeName, "", "", nil, nil)
+			sbi.updateStaInfoCB(prevUeName, "", "", nil, nil, nil)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -341,7 +381,10 @@ func refreshMeasurements() {
 				appNames = append(appNames, process.Name)
 			}
 
-			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi, appNames)
+			sumUl, sumDl := getAppSumUlDl(appNames)
+			sumUlKbps := int32(sumUl * 1000)
+			sumDlKbps := int32(sumDl * 1000)
+			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi, &sumUlKbps, &sumDlKbps)
 		}
 	}
 }

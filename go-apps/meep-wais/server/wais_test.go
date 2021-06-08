@@ -6447,8 +6447,8 @@ func TestSbi(t *testing.T) {
 
 	var expectedStaDataStr [2]string
 	var expectedStaData [2]StaData
-	expectedStaData[INITIAL] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ""}}, StaId: &StaIdentity{MacId: ""}}, nil}
-	expectedStaData[UPDATED] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ueMacId}}, StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{Bssid: apMacId2}}, nil}
+	expectedStaData[INITIAL] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ""}}, StaId: &StaIdentity{MacId: ""}}}
+	expectedStaData[UPDATED] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ueMacId}}, StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{Bssid: apMacId2}}}
 
 	var expectedApInfoApIdMacIdStr [2]string
 	var expectedApInfoNbStas [2]int

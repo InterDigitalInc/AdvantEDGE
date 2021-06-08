@@ -53,8 +53,6 @@ const (
 	notifTest        = "TestNotification"
 )
 
-var metricStore *met.MetricStore
-
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
@@ -93,8 +91,7 @@ type ApInfoComplete struct {
 }
 
 type StaData struct {
-	StaInfo  *StaInfo `json:"staInfo"`
-	AppNames []string `json:"appNames"`
+	StaInfo *StaInfo `json:"staInfo"`
 }
 
 type StaInfoResp struct {
@@ -198,7 +195,7 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32, appNames []string) {
+func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32, sumUl *int32, sumDl *int32) {
 
 	// Get STA Info from DB, if any
 	var staData *StaData
@@ -207,25 +204,13 @@ func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32, ap
 		staData = convertJsonToStaData(jsonStaData)
 	}
 
-	//update data rates
-	sumUl := 0.0
-	sumDl := 0.0
-	for _, appName := range appNames {
-
-		metricsArray, err := metricStore.GetCachedNetworkMetrics("*", appName)
-		if err != nil {
-			log.Error("Failed to get network metric:", err)
-		}
-
-		//downlink for the app is uplink for the UE, and vice-versa
-		for _, metrics := range metricsArray {
-			sumUl += metrics.DlTput
-			sumDl += metrics.UlTput
-		}
-	}
 	var dataRate StaDataRate
-	dataRate.StaLastDataDownlinkRate = int32(sumDl * 1000) //kbps
-	dataRate.StaLastDataUplinkRate = int32(sumUl * 1000)   //kbps
+	if sumDl != nil {
+		dataRate.StaLastDataDownlinkRate = *sumDl //kbps
+	}
+	if sumUl != nil {
+		dataRate.StaLastDataUplinkRate = *sumUl //kbps
+	}
 
 	// Update DB if STA Info does not exist or has changed
 	if staData == nil || isStaInfoUpdateRequired(staData.StaInfo, ownMacId, apMacId, rssi, &dataRate) {
@@ -258,7 +243,6 @@ func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32, ap
 		}
 		dataRate.StaId = staData.StaInfo.StaId
 		staData.StaInfo.StaDataRate = &dataRate
-		staData.AppNames = appNames
 
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertStaDataToJson(staData))
 	}
@@ -1295,21 +1279,15 @@ func cleanUp() {
 	staDataRateSubscriptionMap = map[int]*StaDataRateSubscription{}
 
 	subscriptionExpiryMap = map[int][]int{}
-	updateStoreName("")
+	var update bool
+	updateStoreName("", &update)
 }
 
-func updateStoreName(storeName string) {
+func updateStoreName(storeName string, update *bool) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
 		_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
-
-		// Connect to Metric Store
-		var err error
-		metricStore, err = met.NewMetricStore(storeName, sandboxName, influxAddr, redisAddr)
-		if err != nil {
-			log.Error("Failed connection to metric-store: ", err)
-			return
-		}
-
+		*update = true
 	}
+	*update = false
 }
