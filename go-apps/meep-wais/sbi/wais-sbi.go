@@ -37,16 +37,18 @@ var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
+	InfluxAddr     string
 	PostgisHost    string
 	PostgisPort    string
 	StaInfoCb      func(string, string, string, *int32, *int32, *int32)
 	ApInfoCb       func(string, string, *float32, *float32, []string)
-	ScenarioNameCb func(string, *bool)
+	ScenarioNameCb func(string)
 	CleanUpCb      func()
 }
 
 type WaisSbi struct {
 	sandboxName             string
+	scenarioName            string
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
@@ -54,7 +56,7 @@ type WaisSbi struct {
 	refreshTicker           *time.Ticker
 	updateStaInfoCB         func(string, string, string, *int32, *int32, *int32)
 	updateAccessPointInfoCB func(string, string, *float32, *float32, []string)
-	updateScenarioNameCB    func(string, *bool)
+	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
 	mutex                   sync.Mutex
 }
@@ -70,10 +72,13 @@ func Init(cfg SbiCfg) (err error) {
 	}
 	sbi = new(WaisSbi)
 	sbi.sandboxName = cfg.SandboxName
+	sbi.scenarioName = ""
 	sbi.updateStaInfoCB = cfg.StaInfoCb
 	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
+	redisAddr = cfg.RedisAddr
+	influxAddr = cfg.InfluxAddr
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -223,12 +228,16 @@ func processActiveScenarioUpdate() {
 	sbi.activeModel.UpdateScenario()
 
 	scenarioName := sbi.activeModel.GetScenarioName()
-	var update bool
-	sbi.updateScenarioNameCB(scenarioName, &update)
+
+	sbi.updateScenarioNameCB(scenarioName)
 
 	// Connect to Metric Store
-	if update {
+	if scenarioName != sbi.scenarioName {
+
+		sbi.updateScenarioNameCB(scenarioName)
+		sbi.scenarioName = scenarioName
 		var err error
+
 		metricStore, err = met.NewMetricStore(scenarioName, sbi.sandboxName, influxAddr, redisAddr)
 		if err != nil {
 			log.Error("Failed connection to metric-store: ", err)

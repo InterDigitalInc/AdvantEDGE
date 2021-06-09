@@ -5889,7 +5889,8 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const testScenarioName = "testScenario"
+const testSandboxName = "testScenario"
+const testScenarioName = "4g-5g-wifi-macro"
 
 var m *mod.Model
 var mqLocal *mq.MsgQueue
@@ -6032,7 +6033,7 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	 ******************************/
 	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testScenarioName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
 	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
@@ -6087,7 +6088,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	 ******************************/
 	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testScenarioName + "/wai/v2/subscriptions/" + subscriptionId}
+	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + subscriptionId}
 	expectedExpiry := TimeStamp{0, 1988599770}
 	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
@@ -6280,7 +6281,7 @@ func TestExpiryNotification(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	fmt.Println("Create valid Metric Store to get logs from")
-	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(testScenarioName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create store")
 	}
@@ -6369,7 +6370,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(testScenarioName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -6659,7 +6660,7 @@ func TestStaInfoGet(t *testing.T) {
 func terminateScenario() {
 	if mqLocal != nil {
 		_ = Stop()
-		msg := mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testSandboxName)
 		err := mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6681,7 +6682,7 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testSandboxName)
 		err = mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6696,7 +6697,7 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testSandboxName)
 		err = mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6711,7 +6712,7 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testSandboxName)
 		err = mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6725,7 +6726,7 @@ func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	sandboxName = testSandboxName
 }
 
 func initialiseScenario(testScenario string) {
@@ -6734,7 +6735,7 @@ func initialiseScenario(testScenario string) {
 	cleanUp()
 
 	cfg := mod.ModelCfg{
-		Name:      testScenarioName,
+		Name:      testSandboxName,
 		Namespace: sandboxName,
 		Module:    "test-mod",
 		UpdateCb:  nil,
@@ -6749,7 +6750,7 @@ func initialiseScenario(testScenario string) {
 	}
 
 	// Create message queue
-	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(testScenarioName), "test-mod", testScenarioName, redisAddr)
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(testSandboxName), "test-mod", testSandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return
@@ -6769,7 +6770,7 @@ func initialiseScenario(testScenario string) {
 		return
 	}
 
-	msg := mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, testScenarioName)
+	msg := mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, testSandboxName)
 	err = mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message: ", err)

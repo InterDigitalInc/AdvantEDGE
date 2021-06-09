@@ -69,7 +69,6 @@ var assocStaSubscriptionMap = map[int]*AssocStaSubscription{}
 var staDataRateSubscriptionMap = map[int]*StaDataRateSubscription{}
 
 var subscriptionExpiryMap = map[int][]int{}
-var currentStoreName = ""
 
 var WAIS_DB = 5
 
@@ -159,6 +158,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		InfluxAddr:     influxAddr,
 		StaInfoCb:      updateStaInfo,
 		ApInfoCb:       updateApInfo,
 		ScenarioNameCb: updateStoreName,
@@ -1279,15 +1279,9 @@ func cleanUp() {
 	staDataRateSubscriptionMap = map[int]*StaDataRateSubscription{}
 
 	subscriptionExpiryMap = map[int][]int{}
-	var update bool
-	updateStoreName("", &update)
+	updateStoreName("")
 }
 
-func updateStoreName(storeName string, update *bool) {
-	if currentStoreName != storeName {
-		currentStoreName = storeName
-		_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
-		*update = true
-	}
-	*update = false
+func updateStoreName(storeName string) {
+	_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
 }
