@@ -47,21 +47,28 @@ const logModuleWAIS = "meep-wais"
 const serviceName = "WAI Service"
 
 const (
-	notifAssocSta = "AssocStaNotification"
-	notifExpiry   = "ExpiryNotification"
+	notifAssocSta    = "AssocStaNotification"
+	notifStaDataRate = "StaDataRateNotification"
+	notifExpiry      = "ExpiryNotification"
+	notifTest        = "TestNotification"
 )
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 const assocStaSubscriptionType = "AssocStaSubscription"
+const staDataRateSubscriptionType = "StaDataRateSubscription"
 
 const ASSOC_STA_SUBSCRIPTION = "AssocStaSubscription"
+const STA_DATA_RATE_SUBSCRIPTION = "StaDataRateSubscription"
 const ASSOC_STA_NOTIFICATION = "AssocStaNotification"
+const STA_DATA_RATE_NOTIFICATION = "StaDataRateNotification"
+const TEST_NOTIFICATION = "TestNotification"
 
 var assocStaSubscriptionMap = map[int]*AssocStaSubscription{}
+var staDataRateSubscriptionMap = map[int]*StaDataRateSubscription{}
+
 var subscriptionExpiryMap = map[int][]int{}
-var currentStoreName = ""
 
 var WAIS_DB = 5
 
@@ -82,6 +89,10 @@ type ApInfoComplete struct {
 	StaMacIds  []string
 }
 
+type StaData struct {
+	StaInfo *StaInfo `json:"staInfo"`
+}
+
 type StaInfoResp struct {
 	StaInfoList []StaInfo
 }
@@ -90,6 +101,10 @@ type ApInfoResp struct {
 	ApInfoList []ApInfo
 }
 
+func notImplemented(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusNotImplemented)
+}
 func Init() (err error) {
 
 	// Retrieve Sandbox name from environment variable
@@ -143,6 +158,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		InfluxAddr:     influxAddr,
 		StaInfoCb:      updateStaInfo,
 		ApInfoCb:       updateApInfo,
 		ScenarioNameCb: updateStoreName,
@@ -166,6 +182,7 @@ func reInit() {
 
 	keyName := baseKey + "subscription:" + "*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateAssocStaSubscriptionMap, nil)
+	_ = rc.ForEachJSONEntry(keyName, repopulateStaDataRateSubscriptionMap, nil)
 }
 
 // Run - Start WAIS
@@ -178,49 +195,63 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32) {
+func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32, sumUl *int32, sumDl *int32) {
 
 	// Get STA Info from DB, if any
-	var staInfo *StaInfo
-	jsonStaInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
-	if jsonStaInfo != "" {
-		staInfo = convertJsonToStaInfo(jsonStaInfo)
+	var staData *StaData
+	jsonStaData, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
+	if jsonStaData != "" {
+		staData = convertJsonToStaData(jsonStaData)
+	}
+
+	var dataRate StaDataRate
+	if sumDl != nil {
+		dataRate.StaLastDataDownlinkRate = *sumDl //kbps
+	}
+	if sumUl != nil {
+		dataRate.StaLastDataUplinkRate = *sumUl //kbps
 	}
 
 	// Update DB if STA Info does not exist or has changed
-	if isStaInfoUpdateRequired(staInfo, ownMacId, apMacId, rssi) {
+	if staData == nil || isStaInfoUpdateRequired(staData.StaInfo, ownMacId, apMacId, rssi, &dataRate) {
 
 		// Set STA Mac ID
-		if staInfo == nil {
-			staInfo = new(StaInfo)
-			staInfo.StaId = new(StaIdentity)
+		if staData == nil {
+			staData = new(StaData)
+			staData.StaInfo = new(StaInfo)
+			staData.StaInfo.StaId = new(StaIdentity)
 		}
-		staInfo.StaId.MacId = ownMacId
+		staData.StaInfo.StaId.MacId = ownMacId
 
 		// Set Associated AP, if any
 		if apMacId == "" {
-			staInfo.ApAssociated = nil
+			staData.StaInfo.ApAssociated = nil
 		} else {
-			if staInfo.ApAssociated == nil {
-				staInfo.ApAssociated = new(ApAssociated)
+			if staData.StaInfo.ApAssociated == nil {
+				staData.StaInfo.ApAssociated = new(ApAssociated)
 			}
-			staInfo.ApAssociated.MacId = apMacId
+			staData.StaInfo.ApAssociated.Bssid = apMacId
 		}
 
 		// Set RSSI
 		if rssi != nil {
 			var rssiObj Rssi
 			rssiObj.Rssi = *rssi
-			staInfo.Rssi = &rssiObj
+			staData.StaInfo.Rssi = &rssiObj
 		} else {
-			staInfo.Rssi = nil
+			staData.StaInfo.Rssi = nil
 		}
-		// Update DB
-		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertStaInfoToJson(staInfo))
+		dataRate.StaId = staData.StaInfo.StaId
+		staData.StaInfo.StaDataRate = &dataRate
+
+		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertStaDataToJson(staData))
 	}
+
+	checkStaDataRateNotificationRegisteredSubscriptions(staData.StaInfo.StaId, dataRate.StaLastDataDownlinkRate, dataRate.StaLastDataUplinkRate, false)
+
 }
 
-func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, rssi *int32) bool {
+func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, rssi *int32, dataRate *StaDataRate) bool {
 	// Check if STA Info exists
 	if staInfo == nil {
 		return true
@@ -231,13 +262,17 @@ func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, 
 	}
 	// Compare AP Mac
 	if (apMacId == "" && staInfo.ApAssociated != nil) ||
-		(apMacId != "" && (staInfo.ApAssociated == nil || apMacId != staInfo.ApAssociated.MacId)) {
+		(apMacId != "" && (staInfo.ApAssociated == nil || apMacId != staInfo.ApAssociated.Bssid)) {
 		return true
 	}
 	// Compare RSSI
 	if (rssi == nil && staInfo.Rssi != nil) ||
 		(rssi != nil && staInfo.Rssi == nil) ||
 		(rssi != nil && staInfo.Rssi != nil && *rssi != staInfo.Rssi.Rssi) {
+		return true
+	}
+
+	if dataRate.StaLastDataDownlinkRate != staInfo.StaDataRate.StaLastDataDownlinkRate || dataRate.StaLastDataUplinkRate != staInfo.StaDataRate.StaLastDataUplinkRate {
 		return true
 	}
 	return false
@@ -312,17 +347,17 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 		var apLocation ApLocation
 		var geoLocation GeoLocation
 		var apId ApIdentity
-		geoLocation.Lat = int64(newLat)
-		geoLocation.Long = int64(newLong)
+		geoLocation.Lat = int32(newLat)
+		geoLocation.Long = int32(newLong)
 
 		apLocation.Geolocation = &geoLocation
 		apInfoComplete.ApLocation = apLocation
 
 		apInfoComplete.StaMacIds = staMacIds
-		apId.MacId = apMacId
+		apId.Bssid = apMacId
 		apInfoComplete.ApId = apId
 		_ = rc.JSONSetEntry(baseKey+"AP:"+name, ".", convertApInfoCompleteToJson(&apInfoComplete))
-		checkAssocStaNotificationRegisteredSubscriptions(staMacIds, apMacId)
+		checkAssocStaNotificationRegisteredSubscriptions(staMacIds, apMacId, false)
 	}
 }
 
@@ -341,23 +376,41 @@ func checkForExpiredSubscriptions() {
 
 					var notif ExpiryNotification
 
-					seconds := time.Now().Unix()
-					var timeStamp TimeStamp
-					timeStamp.Seconds = int32(seconds)
+					var expiryTimeStamp TimeStamp
+					expiryTimeStamp.Seconds = int32(expiryTime)
+
+					link := new(ExpiryNotificationLinks)
+					linkType := new(LinkType)
+					linkType.Href = assocStaSubscriptionMap[subsId].CallbackReference
+					link.Subscription = linkType
+					notif.Links = link
+
+					notif.ExpiryDeadline = &expiryTimeStamp
+
+					sendExpiryNotification(link.Subscription.Href, notif)
+					_ = delSubscription(baseKey+"subscriptions", subsIdStr, true)
+				}
+				if staDataRateSubscriptionMap[subsId] != nil {
+
+					subsIdStr := strconv.Itoa(subsId)
+
+					var notif ExpiryNotification
 
 					var expiryTimeStamp TimeStamp
 					expiryTimeStamp.Seconds = int32(expiryTime)
 
 					link := new(ExpiryNotificationLinks)
-					link.Self = assocStaSubscriptionMap[subsId].CallbackReference
+					linkType := new(LinkType)
+					linkType.Href = staDataRateSubscriptionMap[subsId].CallbackReference
+					link.Subscription = linkType
 					notif.Links = link
 
-					notif.TimeStamp = &timeStamp
 					notif.ExpiryDeadline = &expiryTimeStamp
 
-					sendExpiryNotification(link.Self, notif)
+					sendExpiryNotification(link.Subscription.Href, notif)
 					_ = delSubscription(baseKey+"subscriptions", subsIdStr, true)
 				}
+
 			}
 		}
 	}
@@ -381,7 +434,6 @@ func repopulateAssocStaSubscriptionMap(key string, jsonInfo string, userData int
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	//only assocSta subscription for now
 	assocStaSubscriptionMap[subsId] = &subscription
 	if subscription.ExpiryDeadline != nil {
 		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
@@ -397,7 +449,39 @@ func repopulateAssocStaSubscriptionMap(key string, jsonInfo string, userData int
 	return nil
 }
 
-func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacId string) {
+func repopulateStaDataRateSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
+
+	var subscription StaDataRateSubscription
+
+	// Format response
+	err := json.Unmarshal([]byte(jsonInfo), &subscription)
+	if err != nil {
+		return err
+	}
+
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+	subsId, _ := strconv.Atoi(subsIdStr)
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	staDataRateSubscriptionMap[subsId] = &subscription
+	if subscription.ExpiryDeadline != nil {
+		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
+		intList = append(intList, subsId)
+		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
+	}
+
+	//reinitialisation of next available Id for future subscription request
+	if subsId >= nextSubscriptionIdAvailable {
+		nextSubscriptionIdAvailable = subsId + 1
+	}
+
+	return nil
+}
+
+func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacId string, isPeriodicInvoked bool) {
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -406,8 +490,30 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 		match := false
 
 		if sub != nil {
-			if sub.ApId.MacId == apMacId {
+			//if notification is periodic, only trigger on period expiry
+			if sub.NotificationPeriod != 0 && !isPeriodicInvoked {
+				continue
+			}
+
+			if sub.ApId.Bssid == apMacId {
 				match = true
+			}
+
+			if match {
+				if sub.NotificationEvent != nil {
+					match = false
+					switch sub.NotificationEvent.Trigger {
+					case "1":
+						if len(staMacIds) >= int(sub.NotificationEvent.Threshold) {
+							match = true
+						}
+					case "2":
+						if len(staMacIds) <= int(sub.NotificationEvent.Threshold) {
+							match = true
+						}
+					default:
+					}
+				}
 			}
 
 			if match {
@@ -424,7 +530,7 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 				notif.NotificationType = ASSOC_STA_NOTIFICATION
 
 				var apId ApIdentity
-				apId.MacId = apMacId
+				apId.Bssid = apMacId
 				notif.ApId = &apId
 
 				for _, staMacId := range staMacIds {
@@ -438,6 +544,147 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 			}
 		}
 	}
+}
+
+func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dataRateDl int32, dataRateUl int32, isPeriodicInvoked bool) {
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, sub := range staDataRateSubscriptionMap {
+		match := false
+		if sub != nil {
+			//if notification is periodic, only trigger on period expiry
+			if sub.NotificationPeriod != 0 && !isPeriodicInvoked {
+				continue
+			}
+			notifToSend := false
+			var staDataRateList []StaDataRate
+			for _, subStaId := range sub.StaId {
+				//check to match every values and at least one when its an array
+				if staId.MacId != subStaId.MacId {
+					continue
+				}
+				if staId.Aid != subStaId.Aid {
+					continue
+				}
+				match = true
+				for _, ssid := range subStaId.Ssid {
+					match = false
+					//can only have one ssid at a time
+					if ssid == staId.Ssid[0] {
+						match = true
+						break
+					}
+				}
+				if match {
+					for _, ipAddress := range subStaId.IpAddress {
+						match = false
+						//can only have one ip address
+						if ipAddress == staId.IpAddress[0] {
+							match = true
+							break
+						}
+					}
+				}
+				if match {
+					if sub.NotificationEvent != nil {
+
+						match = false
+						switch sub.NotificationEvent.Trigger {
+						case "1":
+							if dataRateDl >= sub.NotificationEvent.DownlinkRateThreshold {
+								match = true
+							}
+						case "2":
+							if dataRateDl <= sub.NotificationEvent.DownlinkRateThreshold {
+								match = true
+							}
+						case "3":
+							if dataRateUl >= sub.NotificationEvent.UplinkRateThreshold {
+								match = true
+							}
+						case "4":
+							if dataRateUl >= sub.NotificationEvent.UplinkRateThreshold {
+								match = true
+							}
+						case "5":
+							if dataRateDl >= sub.NotificationEvent.DownlinkRateThreshold && dataRateUl >= sub.NotificationEvent.UplinkRateThreshold {
+								match = true
+							}
+						case "6":
+							if dataRateDl <= sub.NotificationEvent.DownlinkRateThreshold && dataRateUl <= sub.NotificationEvent.UplinkRateThreshold {
+								match = true
+							}
+						case "7":
+							if dataRateDl >= sub.NotificationEvent.DownlinkRateThreshold || dataRateUl >= sub.NotificationEvent.UplinkRateThreshold {
+								match = true
+							}
+						case "8":
+							if dataRateDl <= sub.NotificationEvent.DownlinkRateThreshold || dataRateUl <= sub.NotificationEvent.UplinkRateThreshold {
+								match = true
+							}
+						default:
+						}
+					}
+				}
+
+				if match {
+					var staDataRate StaDataRate
+					staDataRate.StaId = staId
+					staDataRate.StaLastDataDownlinkRate = dataRateDl
+					staDataRate.StaLastDataUplinkRate = dataRateUl
+					staDataRateList = append(staDataRateList, staDataRate)
+					notifToSend = true
+				}
+			}
+
+			if notifToSend {
+				subsIdStr := strconv.Itoa(subsId)
+				log.Info("Sending WAIS notification ", sub.CallbackReference)
+
+				var notif StaDataRateNotification
+
+				seconds := time.Now().Unix()
+				var timeStamp TimeStamp
+				timeStamp.Seconds = int32(seconds)
+
+				notif.TimeStamp = &timeStamp
+				notif.NotificationType = STA_DATA_RATE_NOTIFICATION
+
+				notif.StaDataRate = staDataRateList
+				sendStaDataRateNotification(sub.CallbackReference, notif)
+				log.Info("Sta Data Rate Notification" + "(" + subsIdStr + ")")
+			}
+		}
+	}
+}
+
+func sendTestNotification(notifyUrl string, linkType *LinkType) {
+
+	var notification TestNotification
+	notification.NotificationType = TEST_NOTIFICATION
+
+	link := new(ExpiryNotificationLinks)
+	link.Subscription = linkType
+	notification.Links = link
+
+	startTime := time.Now()
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifTest, notifyUrl, nil, duration)
+		return
+	}
+	met.ObserveNotification(sandboxName, serviceName, notifTest, notifyUrl, resp, duration)
+	defer resp.Body.Close()
 }
 
 func sendAssocStaNotification(notifyUrl string, notification AssocStaNotification) {
@@ -456,6 +703,25 @@ func sendAssocStaNotification(notifyUrl string, notification AssocStaNotificatio
 		return
 	}
 	met.ObserveNotification(sandboxName, serviceName, notifAssocSta, notifyUrl, resp, duration)
+	defer resp.Body.Close()
+}
+
+func sendStaDataRateNotification(notifyUrl string, notification StaDataRateNotification) {
+	startTime := time.Now()
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notifStaDataRate, notifyUrl, nil, duration)
+		return
+	}
+	met.ObserveNotification(sandboxName, serviceName, notifStaDataRate, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
@@ -510,6 +776,16 @@ func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
 		}
 
 		jsonResponse, err = json.Marshal(subscription)
+	case STA_DATA_RATE_SUBSCRIPTION:
+		var subscription StaDataRateSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
 	default:
 		log.Error("Unknown subscription type")
 		w.WriteHeader(http.StatusBadRequest)
@@ -536,6 +812,17 @@ func isSubscriptionIdRegisteredAssocSta(subsIdStr string) bool {
 	}
 }
 
+func isSubscriptionIdRegisteredStaDataRate(subsIdStr string) bool {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+	if staDataRateSubscriptionMap[subsId] != nil {
+		return true
+	} else {
+		return false
+	}
+}
+
 func registerAssocSta(subscription *AssocStaSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
@@ -550,6 +837,30 @@ func registerAssocSta(subscription *AssocStaSubscription, subsIdStr string) {
 	}
 
 	log.Info("New registration: ", subsId, " type: ", subscription.SubscriptionType)
+	if subscription.RequestTestNotification {
+		sendTestNotification(subscription.CallbackReference, subscription.Links.Self)
+	}
+
+}
+
+func registerStaDataRate(subscription *StaDataRateSubscription, subsIdStr string) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	staDataRateSubscriptionMap[subsId] = subscription
+	if subscription.ExpiryDeadline != nil {
+		//get current list of subscription meant to expire at this time
+		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
+		intList = append(intList, subsId)
+		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
+	}
+
+	log.Info("New registration: ", subsId, " type: ", subscription.SubscriptionType)
+	if subscription.RequestTestNotification {
+		sendTestNotification(subscription.CallbackReference, subscription.Links.Self)
+	}
+
 }
 
 func deregisterAssocSta(subsIdStr string, mutexTaken bool) {
@@ -560,6 +871,16 @@ func deregisterAssocSta(subsIdStr string, mutexTaken bool) {
 	}
 	assocStaSubscriptionMap[subsId] = nil
 	log.Info("Deregistration: ", subsId, " type: ", assocStaSubscriptionType)
+}
+
+func deregisterStaDataRate(subsIdStr string, mutexTaken bool) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+	staDataRateSubscriptionMap[subsId] = nil
+	log.Info("Deregistration: ", subsId, " type: ", staDataRateSubscriptionType)
 }
 
 func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
@@ -610,6 +931,22 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		//registration
 		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertAssocStaSubscriptionToJson(&subscription))
 		registerAssocSta(&subscription, subsIdStr)
+
+		jsonResponse, err = json.Marshal(subscription)
+	case STA_DATA_RATE_SUBSCRIPTION:
+		var subscription StaDataRateSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		subscription.Links = link
+
+		//registration
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertStaDataRateSubscriptionToJson(&subscription))
+		registerStaDataRate(&subscription, subsIdStr)
 
 		jsonResponse, err = json.Marshal(subscription)
 	default:
@@ -689,6 +1026,23 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
+	case STA_DATA_RATE_SUBSCRIPTION:
+		var subscription StaDataRateSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		//only support one subscription
+		if isSubscriptionIdRegisteredStaDataRate(subsIdStr) {
+			registerStaDataRate(&subscription, subsIdStr)
+
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertStaDataRateSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -711,6 +1065,7 @@ func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
 	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
 	deregisterAssocSta(subsId, mutexTaken)
+	deregisterStaDataRate(subsId, mutexTaken)
 	return err
 }
 
@@ -806,22 +1161,22 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func populateStaInfo(key string, jsonInfo string, response interface{}) error {
+func populateStaData(key string, jsonInfo string, response interface{}) error {
 	resp := response.(*StaInfoResp)
 	if resp == nil {
 		return errors.New("Response not defined")
 	}
 
 	// Add STA info to reponse (ignore if not associated to a wifi AP)
-	staInfo := convertJsonToStaInfo(jsonInfo)
-	if staInfo.ApAssociated != nil {
+	staData := convertJsonToStaData(jsonInfo)
+	if staData.StaInfo.ApAssociated != nil {
 		//timeStamp is optional, commenting the code
 		//seconds := time.Now().Unix()
 		//var timeStamp TimeStamp
 		//timeStamp.Seconds = int32(seconds)
 		//staInfo.TimeStamp = &timeStamp
 
-		resp.StaInfoList = append(resp.StaInfoList, *staInfo)
+		resp.StaInfoList = append(resp.StaInfoList, *staData.StaInfo)
 	}
 	return nil
 
@@ -835,7 +1190,7 @@ func staInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	// Loop through each STA
 	keyName := baseKey + "UE:*"
-	err := rc.ForEachJSONEntry(keyName, populateStaInfo, &response)
+	err := rc.ForEachJSONEntry(keyName, populateStaData, &response)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -872,10 +1227,25 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 		//loop through assocSta map
 		for _, assocStaSubscription := range assocStaSubscriptionMap {
 			if assocStaSubscription != nil {
-				subscriptionLinkList.AssocStaSubscription = append(subscriptionLinkList.AssocStaSubscription, *assocStaSubscription)
+				var subscription SubscriptionLinkListSubscription
+				subscription.Href = assocStaSubscription.Links.Self.Href
+				subscription.SubscriptionType = ASSOC_STA_SUBSCRIPTION
+				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
 			}
 		}
 	}
+	if subType == "" || subType == staDataRateSubscriptionType {
+		//loop through assocSta map
+		for _, staDataRateSubscription := range staDataRateSubscriptionMap {
+			if staDataRateSubscription != nil {
+				var subscription SubscriptionLinkListSubscription
+				subscription.Href = staDataRateSubscription.Links.Self.Href
+				subscription.SubscriptionType = STA_DATA_RATE_SUBSCRIPTION
+				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
+			}
+		}
+	}
+
 	//no other maps to go through
 
 	return subscriptionLinkList
@@ -906,14 +1276,12 @@ func cleanUp() {
 	defer mutex.Unlock()
 
 	assocStaSubscriptionMap = map[int]*AssocStaSubscription{}
+	staDataRateSubscriptionMap = map[int]*StaDataRateSubscription{}
 
 	subscriptionExpiryMap = map[int][]int{}
 	updateStoreName("")
 }
 
 func updateStoreName(storeName string) {
-	if currentStoreName != storeName {
-		currentStoreName = storeName
-		_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
-	}
+	_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
 }

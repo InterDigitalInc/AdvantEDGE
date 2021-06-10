@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script executes go test X times
-export MEEP_HOST_TEST_URL="http://10.3.16.150"
+export MEEP_HOST_TEST_URL="http://10.190.115.20"
 
 i="0"
 

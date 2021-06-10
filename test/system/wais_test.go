@@ -1217,7 +1217,7 @@ func Test_WAIS_stopSystemTest(t *testing.T) {
 
 func waisSubscriptionAssocSta(macId string, callbackReference string) error {
 
-	assocStaSubscription := waisClient.InlineSubscription{ApId: &waisClient.ApIdentity{nil, macId, nil}, CallbackReference: callbackReference, SubscriptionType: "AssocStaSubscription"}
+	assocStaSubscription := waisClient.InlineSubscription{ApId: &waisClient.ApIdentity{macId, nil, nil}, CallbackReference: callbackReference, SubscriptionType: "AssocStaSubscription"}
 	// assocStaSubscription2 := waisClient.InlineSubscription{nil, &waisClient.ApIdentity{nil, macId, nil}, callbackReference, nil, nil, "AssocStaSubscription"}
 
 	_, _, err := waisAppClient.WaiApi.SubscriptionsPOST(context.TODO(), assocStaSubscription)
@@ -1246,8 +1246,8 @@ func validateAssocStaNotification(notification *waisClient.AssocStaNotification,
 			return ("StaId of notification is expected")
 		}
 	}
-	if notification.ApId.MacId != expectedApMacId {
-		return ("ApId:MacId of notification not as expected: " + notification.ApId.MacId + " instead of " + expectedApMacId)
+	if notification.ApId.Bssid != expectedApMacId {
+		return ("ApId:MacId of notification not as expected: " + notification.ApId.Bssid + " instead of " + expectedApMacId)
 	}
 	return ""
 }
