@@ -28,8 +28,8 @@ package client
 type AllOfNotificationEvent struct {
 	// Downlink data rate threshold for StaDataRate reporting.
 	DownlinkRateThreshold int32 `json:"downlinkRateThreshold,omitempty"`
-        // Number of connected stations threshold for trigger-based event reporting.
-        Threshold int32 `json:"threshold,omitempty"`
+	// Number of connected stations threshold for trigger-based event reporting.
+	Threshold int32 `json:"threshold,omitempty"`
 	// Trigger event for the notification: 1 = Notification issued when the STA’s downlink data rate is greater than or equal to the downlink threshold 2 = Notification issued when the STA’s downlink data rate is less than or equal to the downlink threshold 3 = Notification issued when the STA’s uplink data rate is greater than or equal to the uplink threshold 4 = Notification issued when the STA’s uplink data rate is less than or equal to the uplink threshold 5 = Notification issued when the STA’s downlink and uplink data rate is greater than or equal to their thresholds 6 = Notification issued when the STA’s downlink and uplink data rate is less than or equal to their thresholds 7 = Notification issued when the STA’s downlink or uplink data rate is greater than or equal to their thresholds 8 = Notification issued when the STA’s downlink or uplink data rate is less than or equal to their thresholds
 	Trigger string `json:"trigger"`
 	// Uplink data rate threshold for StaDataRate reporting.
