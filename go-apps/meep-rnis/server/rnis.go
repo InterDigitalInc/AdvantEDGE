@@ -1982,11 +1982,11 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-                if subscription.FilterCriteriaQci.Qci == 0 {
-                        log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
-                        http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
-                        return
-                }
+		if subscription.FilterCriteriaQci.Qci == 0 {
+			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
@@ -2019,17 +2019,17 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-                if subscription.FilterCriteriaQci.Qci == 0 {
-                        log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
-                        http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
-                        return
-                }
+		if subscription.FilterCriteriaQci.Qci == 0 {
+			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
 
-                if subscription.FilterCriteriaQci.ErabId == 0 {
-                        log.Error("Missing or non valid value of 0 mandatory ErabId parameter in FilterCriteriaQci")
-                        http.Error(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
-                        return
-                }
+		if subscription.FilterCriteriaQci.ErabId == 0 {
+			log.Error("Missing or non valid value of 0 mandatory ErabId parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
