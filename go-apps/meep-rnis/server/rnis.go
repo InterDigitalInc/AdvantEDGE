@@ -1982,6 +1982,12 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+                if subscription.FilterCriteriaQci.Qci == 0 {
+                        log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+                        http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+                        return
+                }
+
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
@@ -2012,6 +2018,18 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
+
+                if subscription.FilterCriteriaQci.Qci == 0 {
+                        log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+                        http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+                        return
+                }
+
+                if subscription.FilterCriteriaQci.ErabId == 0 {
+                        log.Error("Missing or non valid value of 0 mandatory ErabId parameter in FilterCriteriaQci")
+                        http.Error(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
+                        return
+                }
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
