@@ -220,12 +220,12 @@ func Init() (err error) {
 
 // Run - Start Location Service
 func Run() (err error) {
-        distancePeriodicTicker = time.NewTicker(time.Second)
-        go func() {
-                for range distancePeriodicTicker.C {
-                        checkNotificationDistancePeriodicTrigger()
-                }
-        }()
+	distancePeriodicTicker = time.NewTicker(time.Second)
+	go func() {
+		for range distancePeriodicTicker.C {
+			checkNotificationDistancePeriodicTrigger()
+		}
+	}()
 
 	return sbi.Run()
 }
@@ -447,9 +447,10 @@ func checkNotificationDistancePeriodicTrigger() {
 					}
 				default:
 				}
-	                        if skipThisSubscription {
-       		                         break
-                        	}
+				if skipThisSubscription {
+					break
+				}
+			}
 			if skipThisSubscription {
 				continue
 			}
