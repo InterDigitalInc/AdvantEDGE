@@ -452,6 +452,714 @@ const testScenarioName = "testScenario"
 var m *mod.Model
 var mqLocal *mq.MsgQueue
 
+func TestDistanceSuccessSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//post
+	expectedGetResp := testDistanceSubscriptionPost(t)
+
+	//get
+	testDistanceSubscriptionGet(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable-1), expectedGetResp)
+
+	//put
+	expectedGetResp = testDistanceSubscriptionPut(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable-1), true)
+
+	//get
+	testDistanceSubscriptionGet(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable-1), expectedGetResp)
+
+	//delete
+	testDistanceSubscriptionDelete(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable-1), true)
+
+	terminateScenario()
+}
+
+func TestFailDistanceSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testDistanceSubscriptionGet(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable), "")
+
+	//put
+	_ = testDistanceSubscriptionPut(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable), false)
+
+	//delete
+	testDistanceSubscriptionDelete(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable), false)
+
+	terminateScenario()
+}
+
+func TestDistanceSubscriptionsListGet(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//post
+	_ = testDistanceSubscriptionPost(t)
+
+	//get list
+	testDistanceSubscriptionList(t)
+
+	//delete
+	testDistanceSubscriptionDelete(t, strconv.Itoa(nextDistanceSubscriptionIdAvailable-1), true)
+
+	terminateScenario()
+}
+
+func testDistanceSubscriptionList(t *testing.T) {
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedSubscriptionNb := 1
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/distance", nil, nil, nil, http.StatusOK, DistanceSubListGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineNotificationSubscriptionList
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	nb := len(respBody.NotificationSubscriptionList.DistanceNotificationSubscription)
+
+	if nb != expectedSubscriptionNb {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func testDistanceSubscriptionPost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	requestClientCorrelator := "123"
+	requestCallbackReference := "myCallbackRef"
+	requestMonitoredAddress := []string{"ue1"}
+	requestReferenceAddress := []string{"ue2-ext"}
+	requestCriteria := ALL_WITHIN_DISTANCE
+	requestFrequency := int32(1)
+	requestDistance := float32(100.1)
+	requestDuration := int32(0)
+	requestImmediate := false
+	requestTrackingAccuracy := float32(0.1)
+	requestRequester := "requester"
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/distance/" + strconv.Itoa(nextDistanceSubscriptionIdAvailable)
+
+	expectedDistanceSubscription := DistanceNotificationSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestImmediate, requestClientCorrelator, requestDuration, &requestCriteria, requestDistance, requestDuration, requestFrequency, nil, requestMonitoredAddress, requestReferenceAddress, requestRequester, requestResourceURL, requestTrackingAccuracy}
+
+	expectedResponse := InlineDistanceNotificationSubscription{&expectedDistanceSubscription}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+	expectedBody := InlineDistanceNotificationSubscription{&expectedDistanceSubscription}
+	body, err := json.Marshal(expectedBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/distance", bytes.NewBuffer(body), nil, nil, http.StatusCreated, DistanceSubPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineDistanceNotificationSubscription
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if rr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testDistanceSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	requestClientCorrelator := "123"
+	requestCallbackReference := "myCallbackRef"
+	requestMonitoredAddress := []string{"ue1"}
+	requestReferenceAddress := []string{"ue2-ext"}
+	requestCriteria := ALL_WITHIN_DISTANCE
+	requestFrequency := int32(1)
+	requestDistance := float32(100.1)
+	requestDuration := int32(0)
+	requestImmediate := false
+	requestTrackingAccuracy := float32(0.1)
+	requestRequester := "requester"
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/distance/" + subscriptionId
+
+	expectedDistanceSubscription := DistanceNotificationSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestImmediate, requestClientCorrelator, requestDuration, &requestCriteria, requestDistance, requestDuration, requestFrequency, nil, requestMonitoredAddress, requestReferenceAddress, requestRequester, requestResourceURL, requestTrackingAccuracy}
+
+	expectedResponse := InlineDistanceNotificationSubscription{&expectedDistanceSubscription}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+	expectedBody := InlineDistanceNotificationSubscription{&expectedDistanceSubscription}
+	body, err := json.Marshal(expectedBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/distance", bytes.NewBuffer(body), vars, nil, http.StatusOK, DistanceSubPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineDistanceNotificationSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		if rr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions/distance", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, DistanceSubPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func testDistanceSubscriptionGet(t *testing.T, subscriptionId string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	var err error
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/subscriptions/distance", nil, vars, nil, http.StatusNotFound, DistanceSubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/distance", nil, vars, nil, http.StatusOK, DistanceSubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineDistanceNotificationSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != expectedResponse {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testDistanceSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	returnCode := http.StatusNoContent
+	if !expectSuccess {
+		returnCode = http.StatusNotFound
+	}
+
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/distance", nil, vars, nil, returnCode, DistanceSubDELETE)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func TestAreaCircleSuccessSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//post
+	expectedGetResp := testAreaCircleSubscriptionPost(t)
+
+	//get
+	testAreaCircleSubscriptionGet(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable-1), expectedGetResp)
+
+	//put
+	expectedGetResp = testAreaCircleSubscriptionPut(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable-1), true)
+
+	//get
+	testAreaCircleSubscriptionGet(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable-1), expectedGetResp)
+
+	//delete
+	testAreaCircleSubscriptionDelete(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable-1), true)
+
+	terminateScenario()
+}
+
+func TestFailAreaCircleSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testAreaCircleSubscriptionGet(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable), "")
+
+	//put
+	_ = testAreaCircleSubscriptionPut(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable), false)
+
+	//delete
+	testAreaCircleSubscriptionDelete(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable), false)
+
+	terminateScenario()
+}
+
+func TestAreaCircleSubscriptionsListGet(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//post
+	_ = testAreaCircleSubscriptionPost(t)
+
+	//get list
+	testAreaCircleSubscriptionList(t)
+
+	//delete
+	testAreaCircleSubscriptionDelete(t, strconv.Itoa(nextAreaCircleSubscriptionIdAvailable-1), true)
+
+	terminateScenario()
+}
+
+func testAreaCircleSubscriptionList(t *testing.T) {
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedSubscriptionNb := 1
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/area/circle", nil, nil, nil, http.StatusOK, AreaCircleSubListGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineNotificationSubscriptionList
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	nb := len(respBody.NotificationSubscriptionList.CircleNotificationSubscription)
+
+	if nb != expectedSubscriptionNb {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func testAreaCircleSubscriptionPost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	requestAddress := []string{"ue1"}
+	requestClientCorrelator := "123"
+	requestCallbackReference := "myCallbackRef"
+	requestEnteringLeaving := ENTERING_CRITERIA
+	requestFrequency := int32(1)
+	requestLatitude := float32(45.5)
+	requestLongitude := float32(50.1)
+	requestRadius := float32(100.1)
+	requestDuration := int32(0)
+	requestImmediate := false
+	requestTrackingAccuracy := float32(0.1)
+	requestRequester := "requester"
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/area/circle/" + strconv.Itoa(nextAreaCircleSubscriptionIdAvailable)
+
+	expectedAreaCircleSubscription := CircleNotificationSubscription{requestAddress, &CallbackReference{"", nil, requestCallbackReference}, requestImmediate, requestClientCorrelator, 0, requestDuration, &requestEnteringLeaving, requestFrequency, requestLatitude, nil, requestLongitude, requestRadius, requestRequester, requestResourceURL, requestTrackingAccuracy}
+
+	expectedResponse := InlineCircleNotificationSubscription{&expectedAreaCircleSubscription}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+	expectedBody := InlineCircleNotificationSubscription{&expectedAreaCircleSubscription}
+	body, err := json.Marshal(expectedBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/area/circle", bytes.NewBuffer(body), nil, nil, http.StatusCreated, AreaCircleSubPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineCircleNotificationSubscription
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if rr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testAreaCircleSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	requestAddress := []string{"ue1"}
+	requestClientCorrelator := "123"
+	requestCallbackReference := "myCallbackRef"
+	requestEnteringLeaving := ENTERING_CRITERIA
+	requestFrequency := int32(1)
+	requestLatitude := float32(45.5)
+	requestLongitude := float32(50.1)
+	requestRadius := float32(100.1)
+	requestDuration := int32(0)
+	requestImmediate := false
+	requestTrackingAccuracy := float32(0.1)
+	requestRequester := "requester"
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/area/circle/" + subscriptionId
+
+	expectedAreaCircleSubscription := CircleNotificationSubscription{requestAddress, &CallbackReference{"", nil, requestCallbackReference}, requestImmediate, requestClientCorrelator, 0, requestDuration, &requestEnteringLeaving, requestFrequency, requestLatitude, nil, requestLongitude, requestRadius, requestRequester, requestResourceURL, requestTrackingAccuracy}
+
+	expectedResponse := InlineCircleNotificationSubscription{&expectedAreaCircleSubscription}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+	expectedBody := InlineCircleNotificationSubscription{&expectedAreaCircleSubscription}
+	body, err := json.Marshal(expectedBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/area/circle", bytes.NewBuffer(body), vars, nil, http.StatusOK, AreaCircleSubPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineCircleNotificationSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		if rr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions/area/circlez", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, AreaCircleSubPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func testAreaCircleSubscriptionGet(t *testing.T, subscriptionId string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	var err error
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/subscriptions/area/circle", nil, vars, nil, http.StatusNotFound, AreaCircleSubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/area/circle", nil, vars, nil, http.StatusOK, AreaCircleSubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineCircleNotificationSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != expectedResponse {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testAreaCircleSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	returnCode := http.StatusNoContent
+	if !expectSuccess {
+		returnCode = http.StatusNotFound
+	}
+
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/area/circle", nil, vars, nil, returnCode, AreaCircleSubDELETE)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
 func TestZonalSuccessSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
