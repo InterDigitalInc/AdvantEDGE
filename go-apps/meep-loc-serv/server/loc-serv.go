@@ -215,23 +215,24 @@ func Init() (err error) {
 	}
 	log.Info("SBI Initialized")
 
-	distancePeriodicTicker = time.NewTicker(time.Second)
-	go func() {
-		for range distancePeriodicTicker.C {
-			checkNotificationDistancePeriodicTrigger()
-		}
-	}()
-
 	return nil
 }
 
 // Run - Start Location Service
 func Run() (err error) {
+        distancePeriodicTicker = time.NewTicker(time.Second)
+        go func() {
+                for range distancePeriodicTicker.C {
+                        checkNotificationDistancePeriodicTrigger()
+                }
+        }()
+
 	return sbi.Run()
 }
 
 // Stop - Stop RNIS
 func Stop() (err error) {
+	distancePeriodicTicker.Stop()
 	return sbi.Stop()
 }
 
@@ -429,14 +430,12 @@ func checkNotificationDistancePeriodicTrigger() {
 						returnAddr[monitoredAddr] = &distResp
 					} else {
 						skipThisSubscription = true
-						break
 					}
 				case ALL_BEYOND_DISTANCE:
 					if float32(distance) > distanceCheck.Subscription.Distance {
 						returnAddr[monitoredAddr] = &distResp
 					} else {
 						skipThisSubscription = true
-						break
 					}
 				case ANY_WITHIN_DISTANCE:
 					if float32(distance) < distanceCheck.Subscription.Distance {
@@ -448,7 +447,9 @@ func checkNotificationDistancePeriodicTrigger() {
 					}
 				default:
 				}
-			}
+	                        if skipThisSubscription {
+       		                         break
+                        	}
 			if skipThisSubscription {
 				continue
 			}
