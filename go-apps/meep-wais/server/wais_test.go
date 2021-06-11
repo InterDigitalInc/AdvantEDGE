@@ -6035,7 +6035,8 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6050,7 +6051,7 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6090,7 +6091,8 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + subscriptionId}
 	expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6106,7 +6108,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	/******************************
 	 * request body section
 	 ******************************/
-	subscription1 := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	subscription1 := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -6249,6 +6251,7 @@ func TestExpiryNotification(t *testing.T) {
 	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedExpiry := TimeStamp{0, 12321}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
 
 	/******************************
 	 * request vars section
@@ -6258,7 +6261,7 @@ func TestExpiryNotification(t *testing.T) {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6337,6 +6340,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	expectedApId := ApIdentity{"0050C272800A", nil, nil}
 	expectedApIdMacIdStr := "{\"bssid\":\"0050C272800A\"}"
 	expectedStaIdMacIdStr := "[{\"macId\":\"101002000000\"}]"
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
 
 	/******************************
 	 * request vars section
@@ -6346,7 +6350,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, nil, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
