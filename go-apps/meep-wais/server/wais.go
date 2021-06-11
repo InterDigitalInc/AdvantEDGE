@@ -94,15 +94,17 @@ type ApInfoCompleteResp struct {
 }
 
 type StaDataRateSubscriptionInfo struct {
-	NextTts      int32 //next time to send, derived from notificationPeriod
-	Subscription *StaDataRateSubscription
-	Triggered    bool
+	NextTts                int32 //next time to send, derived from notificationPeriod
+	NotificationCheckReady bool
+	Subscription           *StaDataRateSubscription
+	Triggered              bool
 }
 
 type AssocStaSubscriptionInfo struct {
-	NextTts      int32 //next time to send, derived from notificationPeriod
-	Subscription *AssocStaSubscription
-	Triggered    bool
+	NextTts                int32 //next time to send, derived from notificationPeriod
+	NotificationCheckReady bool
+	Subscription           *AssocStaSubscription
+	Triggered              bool
 }
 
 type StaData struct {
@@ -396,9 +398,11 @@ func checkAssocStaPeriodTrigger() {
 			subInfo.NextTts--
 			//if no periodic check is needed, value is negative
 			if subInfo.NextTts != 0 {
+				subInfo.NotificationCheckReady = false
 				continue
 			} else { //restart the nextTts and continue processing to send notification or not
 				subInfo.NextTts = subInfo.Subscription.NotificationPeriod
+				subInfo.NotificationCheckReady = true
 			}
 		}
 	}
@@ -435,9 +439,11 @@ func checkStaDataRatePeriodTrigger() {
 			subInfo.NextTts--
 			//if no periodic check is needed, value is negative
 			if subInfo.NextTts != 0 {
+				subInfo.NotificationCheckReady = false
 				continue
 			} else { //restart the nextTts and continue processing to send notification or not
 				subInfo.NextTts = subInfo.Subscription.NotificationPeriod
+				subInfo.NotificationCheckReady = true
 			}
 		}
 	}
@@ -533,6 +539,7 @@ func repopulateAssocStaSubscriptionMap(key string, jsonInfo string, userData int
 
 	assocStaSubscriptionInfoMap[subsId].Subscription = &subscription
 	assocStaSubscriptionInfoMap[subsId].NextTts = subscription.NotificationPeriod
+	assocStaSubscriptionInfoMap[subsId].NotificationCheckReady = false //do not send right away, immediateCheck flag for that
 	if subscription.ExpiryDeadline != nil {
 		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
 		intList = append(intList, subsId)
@@ -566,6 +573,7 @@ func repopulateStaDataRateSubscriptionMap(key string, jsonInfo string, userData 
 
 	staDataRateSubscriptionInfoMap[subsId].Subscription = &subscription
 	staDataRateSubscriptionInfoMap[subsId].NextTts = subscription.NotificationPeriod
+	staDataRateSubscriptionInfoMap[subsId].NotificationCheckReady = false //do not send right away, immediateCheck flag for that
 	if subscription.ExpiryDeadline != nil {
 		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
 		intList = append(intList, subsId)
@@ -593,14 +601,15 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 		}
 		sub := subInfo.Subscription
 		match := false
+		sendingNotificationAllowed := true
 
 		if sub != nil {
 			//if notification is triggered by events but that periodic notification is registered, skip
 			if sub.NotificationPeriod != 0 && !isPeriodicInvoked {
 				continue
 			}
-			//if notification is periodic, only trigger on period expiry (period expired when notidication period is maxed out)
-			if sub.NotificationPeriod != subInfo.NextTts && isPeriodicInvoked {
+			//if notification is periodic, only trigger on NotificationCheckReady flag false (period not expired)
+			if !subInfo.NotificationCheckReady && isPeriodicInvoked {
 				continue
 			}
 
@@ -629,7 +638,7 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 							if !subInfo.Triggered {
 								assocStaSubscriptionInfoMap[subsId].Triggered = true
 							} else {
-								match = false
+								sendingNotificationAllowed = false
 							}
 						}
 					} else {
@@ -638,7 +647,7 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 				}
 			}
 
-			if match {
+			if match && sendingNotificationAllowed {
 				subsIdStr := strconv.Itoa(subsId)
 				log.Info("Sending WAIS notification ", sub.CallbackReference)
 
@@ -676,7 +685,6 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 	}
 	//check all that applies
 	for subsId, subInfo := range staDataRateSubscriptionInfoMap {
-		log.Info("SIMON check")
 		if subInfo == nil {
 			break
 		}
@@ -687,8 +695,8 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 			if sub.NotificationPeriod != 0 && !isPeriodicInvoked {
 				continue
 			}
-			//if notification is periodic, only trigger on period expiry (period expired when notidication period is maxed out)
-			if sub.NotificationPeriod != subInfo.NextTts && isPeriodicInvoked {
+			//if notification is periodic, only trigger on NotificationCheckReady flag false (period not expired)
+			if !subInfo.NotificationCheckReady && isPeriodicInvoked {
 				continue
 			}
 
@@ -703,6 +711,7 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 					continue
 				}
 				match = true
+				sendingNotificationAllowed := true
 				for _, ssid := range subStaId.Ssid {
 					match = false
 					//can only have one ssid at a time
@@ -723,8 +732,6 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 				}
 				if match {
 					if sub.NotificationEvent != nil {
-						log.Info("SIMON event DL ", dataRateDl, "---", sub.NotificationEvent.DownlinkRateThreshold)
-						log.Info("SIMON event UL ", dataRateUl, "---", sub.NotificationEvent.UplinkRateThreshold)
 
 						match = false
 						switch sub.NotificationEvent.Trigger {
@@ -764,23 +771,21 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 						}
 						//if the notification already triggered, do not send it again unless its a periodic event
 						if match {
-							log.Info("SIMON need to send")
 							if !isPeriodicInvoked {
 								if !subInfo.Triggered {
 									staDataRateSubscriptionInfoMap[subsId].Triggered = true
 								} else {
-									match = false
+									sendingNotificationAllowed = false
 								}
 							}
 						} else {
-							log.Info("SIMON reset trigger")
 							staDataRateSubscriptionInfoMap[subsId].Triggered = false
 						}
 
 					}
 				}
 
-				if match {
+				if match && sendingNotificationAllowed {
 					var staDataRate StaDataRate
 					staDataRate.StaId = staId
 					staDataRate.StaLastDataDownlinkRate = dataRateDl
@@ -979,7 +984,7 @@ func registerAssocSta(subscription *AssocStaSubscription, subsIdStr string) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	assocStaSubscriptionInfo := AssocStaSubscriptionInfo{subscription.NotificationPeriod, subscription, false}
+	assocStaSubscriptionInfo := AssocStaSubscriptionInfo{subscription.NotificationPeriod, false, subscription, false}
 	assocStaSubscriptionInfoMap[subsId] = &assocStaSubscriptionInfo
 	if subscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
@@ -999,7 +1004,7 @@ func registerStaDataRate(subscription *StaDataRateSubscription, subsIdStr string
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	staDataRateSubscriptionInfo := StaDataRateSubscriptionInfo{subscription.NotificationPeriod, subscription, false}
+	staDataRateSubscriptionInfo := StaDataRateSubscriptionInfo{subscription.NotificationPeriod, false, subscription, false}
 	staDataRateSubscriptionInfoMap[subsId] = &staDataRateSubscriptionInfo
 	if subscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
