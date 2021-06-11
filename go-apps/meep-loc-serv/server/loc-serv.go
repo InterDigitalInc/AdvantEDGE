@@ -497,13 +497,13 @@ func checkNotificationAreaCircle(addressToCheck string) {
 	//check all that applies
 	for subsId, areaCircleCheck := range areaCircleSubscriptionMap {
 		if areaCircleCheck != nil && areaCircleCheck.Subscription != nil {
-			//decrement the next time to send a message
-			areaCircleCheck.NextTts--
+			//ignoring the frequency and checkImmediate for this subscription since it is considered event based, not periodic
+			/* //decrement the next time to send a message
 			if areaCircleCheck.NextTts > 0 {
 				continue
 			} else { //restart the nextTts and continue processing to send notification or not
 				areaCircleCheck.NextTts = areaCircleCheck.Subscription.Frequency
-			}
+			}*/
 
 			//loop through every reference address
 			for _, addr := range areaCircleCheck.Subscription.Address {
@@ -634,6 +634,7 @@ func registerAreaCircle(areaCircleSub *CircleNotificationSubscription, subsIdStr
 	var areaCircleCheck AreaCircleCheck
 	areaCircleCheck.Subscription = areaCircleSub
 	areaCircleCheck.AddrInArea = map[string]bool{}
+	//checkImmediate and NextTts apply more to a periodic notification, setting them but ignoring both in notification code because of unclear spec on that matter
 	if areaCircleSub.CheckImmediate {
 		areaCircleCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
 	} else {
