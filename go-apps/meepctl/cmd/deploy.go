@@ -278,6 +278,19 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		}
 	case "meep-influxdb":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
+		backupEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.influx.enabled")
+		if backupEnabled {
+			url := utils.RepoCfg.GetString("repo.deployment.metrics.influx.url")
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.influx.secret")
+			retention := utils.RepoCfg.GetString("repo.deployment.metrics.influx.retention")
+			flags = utils.HelmFlags(flags, "--set", "backup.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "backup.s3.credentialsSecret="+secret)
+			flags = utils.HelmFlags(flags, "--set", "backup.s3.endpointUrl="+url)
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.s3.credentialsSecret="+secret)
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.s3.endpointUrl="+url)
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.s3.daysToRetain="+retention)
+		}
 	case "meep-ingress":
 		// Port configuration
 		hostPorts := utils.RepoCfg.GetBool("repo.deployment.ingress.host-ports")
