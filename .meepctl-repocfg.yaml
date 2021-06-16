@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.7.2
+version: 1.7.3
 repo:
   name: AdvantEDGE
 
@@ -93,6 +93,16 @@ repo:
 
     # Metrics Configuration
     metrics:
+      # Influx configuration
+      influx:
+        # enable influx data backups
+        enabled: false
+        # object store url
+        url: my-object-store-fqdn
+        # object store configuration secret
+        secret: meep-influx-objstore-config
+        # Number of days to retain daily data backups
+        retention: 7
       # Prometheus configuration
       prometheus:
         # external labels added to prometheus metrics
