@@ -96,7 +96,7 @@ repo:
       # Influx configuration
       influx:
         # enable influx data backups
-        enabled: true
+        enabled: false
         # object store url
         url: my-object-store-fqdn
         # object store configuration secret
