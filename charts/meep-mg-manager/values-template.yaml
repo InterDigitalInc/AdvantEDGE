@@ -58,5 +58,6 @@ prometheus:
     
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-mg-manager"
 
 meepOrigin: core

@@ -61,5 +61,6 @@ user:
 
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-virt-engine"
 
 meepOrigin: core

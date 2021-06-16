@@ -32,5 +32,6 @@ service:
 
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-tc-engine"
   
 meepOrigin: core

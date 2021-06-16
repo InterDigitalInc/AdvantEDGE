@@ -1496,7 +1496,6 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
 						default:
 						}
-
 					}
 				}
 
@@ -1594,6 +1593,10 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 				notif.AssociateId = append(notif.AssociateId, *assocId)
 
+				//4G and 5G neighbours information are mutually exclusive
+				//If at least one 5G neighbor exist, only report 5G
+				report5GNeighborOnly := false
+
 				strongestRsrp := int32(0)
 				//adding the data of all reachable cells
 				for _, poa := range ueData.InRangePoas {
@@ -1630,6 +1633,8 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 							}
 
 							notif.NrNeighCellMeasInfo = append(notif.NrNeighCellMeasInfo, neighborCell)
+							report5GNeighborOnly = true
+
 						case poaType4G:
 							var neighborCell NrMeasRepUeNotificationEutraNeighCellMeasInfo
 							neighborCell.Rsrp = poa.Rsrp
@@ -1640,6 +1645,9 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						}
 
 					}
+				}
+				if report5GNeighborOnly {
+					notif.EutraNeighCellMeasInfo = nil
 				}
 
 				go sendNrMrNotification(subscription.CallbackReference, notif)
@@ -2021,6 +2029,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 				supportedTriggerAlreadyPresent = true
 			}
 		}
+
 		if !supportedTriggerAlreadyPresent {
 			subscription.FilterCriteriaAssocTri.Trigger = append(subscription.FilterCriteriaAssocTri.Trigger, TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS)
 		}

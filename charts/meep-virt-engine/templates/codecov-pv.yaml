@@ -11,7 +11,7 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: "/home/englab/.meep/codecov/meep-virt-engine"
+    path: {{ .Values.codecov.location }}
 
 ---
 kind: StorageClass

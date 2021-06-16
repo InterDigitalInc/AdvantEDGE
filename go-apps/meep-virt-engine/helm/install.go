@@ -18,6 +18,7 @@ package helm
 
 import (
 	"errors"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -61,11 +62,14 @@ func install(chart Chart) error {
 	log.Debug("Installing chart: " + chart.ReleaseName)
 	var cmd *exec.Cmd
 	if strings.Trim(chart.ValuesFile, " ") == "" {
+		codecovLocation := strings.TrimSpace(os.Getenv("MEEP_CODECOV_LOCATION")) + chart.ReleaseName
 		cmd = exec.Command("helm", "install", chart.ReleaseName,
 			"--namespace", chart.Namespace, "--create-namespace",
 			"--set", "nameOverride="+chart.Name,
 			"--set", "fullnameOverride="+chart.Name,
-			chart.Location, "--replace", "--disable-openapi-validation")
+			chart.Location, "--replace", "--disable-openapi-validation",
+			"--set", "codecov.enabled="+strings.TrimSpace(os.Getenv("MEEP_CODECOV")),
+			"--set", "codecov.location="+codecovLocation)
 	} else {
 		cmd = exec.Command("helm", "install", chart.ReleaseName,
 			"--namespace", chart.Namespace, "--create-namespace",
