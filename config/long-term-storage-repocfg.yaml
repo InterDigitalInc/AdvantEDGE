@@ -142,7 +142,7 @@ repo:
             # raw data retention
             resolution-raw: 30d
             # 5m downsampled data retention
-            resolution-5m: 30d
+            resolution-5m: 60d
             # 1h downsampled data retention
             resolution-1h: 10y
       # Thanos long-term storage archive
@@ -156,6 +156,8 @@ repo:
     dashboards:
       network-metrics-point-to-point: dashboards/network-metrics-point-to-point.json
       network-metrics-aggregation: dashboards/network-metrics-aggregation.json
+      wireless-metrics-point-to-point: dashboards/wireless-metrics-point-to-point.json
+      wireless-metrics-aggregation: dashboards/wireless-metrics-aggregation.json
       http-single-log: dashboards/http-log-byId.json
       http-logs-aggregation: dashboards/http-loggers.json
       platform-advantedge: dashboards/platform-advantedge.json
@@ -201,7 +203,8 @@ repo:
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-auth-svc/api/swagger.yaml
+        api:
+          meep-auth-svc: go-apps/meep-auth-svc/api/swagger.yaml
         # AdvantEDGE resources included in Docker container image
         docker-data:
           # location of REST API permissions file
@@ -242,7 +245,8 @@ repo:
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-mon-engine/api/swagger.yaml
+        api:
+          meep-mon-engine: go-apps/meep-mon-engine/api/swagger.yaml
         # list of dependencies pods to monitor
         dependency-pods:
           # - meep-cert-manager
@@ -272,6 +276,7 @@ repo:
           - meep-wais
           - meep-sandbox-ctrl
           - meep-tc-engine
+          - meep-app-enablement
       meep-platform-ctrl:
         # location of source code
         src: go-apps/meep-platform-ctrl
@@ -292,7 +297,8 @@ repo:
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-platform-ctrl/api/swagger.yaml
+        api:
+          meep-platform-ctrl: go-apps/meep-platform-ctrl/api/swagger.yaml
         # AdvantEDGE resources included in Docker container image
         docker-data:
           # location of AdvantEDGE swagger files
@@ -331,6 +337,7 @@ repo:
           meep-wais: charts/meep-wais
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
           meep-tc-engine: charts/meep-tc-engine
+          meep-app-enablement: charts/meep-app-enablement
           meep-virt-chart-templates: charts/meep-virt-chart-templates
         # list of sandbox specific pods
         sandbox-pods:
@@ -342,6 +349,7 @@ repo:
           - meep-wais
           - meep-sandbox-ctrl
           - meep-tc-engine
+          - meep-app-enablement
       meep-webhook:
         # location of source code
         src: go-apps/meep-webhook
@@ -427,6 +435,7 @@ repo:
           - sandbox.go-apps.meep-loc-serv
           - sandbox.go-apps.meep-rnis
           - sandbox.go-apps.meep-wais
+          - sandbox.go-apps.meep-app-enablement
           - sandbox.go-apps.meep-metrics-engine
           - packages.go-packages.meep-metrics-engine-notification-client
           - sandbox.go-apps.meep-mg-manager
@@ -455,11 +464,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-gis-engine/api/swagger.yaml
+        api:
+          meep-gis-engine: go-apps/meep-gis-engine/api/swagger.yaml
       meep-loc-serv:
         # location of source code
         src: go-apps/meep-loc-serv
@@ -479,11 +489,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-loc-serv/api/swagger.yaml
+        api:
+          meep-loc-serv: go-apps/meep-loc-serv/api/swagger.yaml
       meep-metrics-engine:
         # location of source code
         src: go-apps/meep-metrics-engine
@@ -503,11 +514,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-metrics-engine/api/v2/swagger.yaml
+        api:
+          meep-metrics-engine: go-apps/meep-metrics-engine/api/v2/swagger.yaml
       meep-mg-manager:
         # location of source code
         src: go-apps/meep-mg-manager
@@ -524,11 +536,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-mg-manager/api/swagger.yaml
+        api:
+          meep-mg-manager: go-apps/meep-mg-manager/api/swagger.yaml
       meep-rnis:
         # location of source code
         src: go-apps/meep-rnis
@@ -548,11 +561,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-rnis/api/swagger.yaml
+        api:
+          meep-rnis: go-apps/meep-rnis/api/swagger.yaml
       meep-wais:
         # location of source code
         src: go-apps/meep-wais
@@ -572,11 +586,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-wais/api/swagger.yaml
+        api:
+          meep-wais: go-apps/meep-wais/api/swagger.yaml
       meep-sandbox-ctrl:
         # location of source code
         src: go-apps/meep-sandbox-ctrl
@@ -593,11 +608,12 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specification
-        api: go-apps/meep-sandbox-ctrl/api/swagger.yaml
+        api:
+          meep-sandbox-ctrl: go-apps/meep-sandbox-ctrl/api/swagger.yaml
         docker-data:
           'entrypoint.sh': go-apps/meep-sandbox-ctrl/entrypoint.sh
           swagger: bin/meep-sandbox-swagger-ui
@@ -617,7 +633,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: false
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
       meep-tc-sidecar:
@@ -635,6 +651,32 @@ repo:
         codecov: false
         # supports linting
         lint: true
+      meep-app-enablement:
+        # location of source code
+        src: go-apps/meep-app-enablement
+        # location of binary
+        bin: bin/meep-app-enablement
+        # location of deployment chart
+        chart: charts/meep-app-enablement
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-app-enablement.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: false
+        # supports code coverage measurement when built in codecov mode
+        codecov: false
+        # supports linting
+        lint: true
+        # location of API specification
+        api:
+          meep-app-support: go-apps/meep-app-enablement/api/app-support/swagger.yaml
+          meep-service-mgmt: go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml
 
   #------------------------------
   #  Dependencies
@@ -853,14 +895,16 @@ repo:
         # supports linting
         lint: false
         # location of API specification
-        api: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
+        api:
+          meep-metrics-engine-notification-client: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
       meep-mg-app-client:
         # location of source code
         src: go-packages/meep-mg-app-client
         # supports linting
         lint: false
         # location of API specification
-        api: go-packages/meep-mg-app-client/api/swagger.yaml
+        api:
+          meep-mg-app-client: go-packages/meep-mg-app-client/api/swagger.yaml
       meep-mg-manager-client:
         # location of source code
         src: go-packages/meep-mg-manager-client

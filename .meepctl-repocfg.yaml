@@ -142,7 +142,7 @@ repo:
             # raw data retention
             resolution-raw: 30d
             # 5m downsampled data retention
-            resolution-5m: 30d
+            resolution-5m: 60d
             # 1h downsampled data retention
             resolution-1h: 10y
       # Thanos long-term storage archive
