@@ -354,6 +354,18 @@ func updateUeData(obj sbi.UeDataSbi) {
 	ueData.ThroughputDL = obj.ThroughputDL
 	ueData.PacketLoss = obj.PacketLoss
 
+	var inRangePoas []InRangePoa
+	for index := range obj.InRangePoas {
+		var inRangePoa InRangePoa
+		inRangePoa.Name = obj.InRangePoas[index]
+		inRangePoa.Rsrp = obj.InRangeRsrps[index]
+		inRangePoa.Rsrq = obj.InRangeRsrqs[index]
+		inRangePoas = append(inRangePoas, inRangePoa)
+	}
+
+	ueData.InRangePoas = inRangePoas
+	ueData.ParentPoaName = obj.ParentPoaName
+
 	oldPlmn := new(Plmn)
 	oldPlmnMnc := ""
 	oldPlmnMcc := ""
@@ -362,6 +374,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 	oldNrPlmnMnc := ""
 	oldNrPlmnMcc := ""
 	oldNrCellId := ""
+	var oldInRangePoas []InRangePoa
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+obj.Name, ".")
@@ -381,9 +394,10 @@ func updateUeData(obj sbi.UeDataSbi) {
 				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
 				oldNrCellId = ueDataObj.Nrcgi.NrcellId
 			}
-
+			oldInRangePoas = ueDataObj.InRangePoas
 		}
 	}
+
 	//updateDB if changes occur (4G section)
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 
@@ -423,6 +437,23 @@ func updateUeData(obj sbi.UeDataSbi) {
 		//5G section
 		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
 			//update because nrcgi changed
+			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
+		}
+		//update if poa in range and signal powers changed
+		//as soon as there is one difference... need an update
+		updateMeas := false
+		if len(oldInRangePoas) != len(inRangePoas) {
+			updateMeas = true
+		} else {
+			for index := range oldInRangePoas {
+				if oldInRangePoas[index].Name != inRangePoas[index].Name || oldInRangePoas[index].Rsrp != inRangePoas[index].Rsrp || oldInRangePoas[index].Rsrq != inRangePoas[index].Rsrq {
+					updateMeas = true
+					break
+				}
+			}
+		}
+		if updateMeas {
+			//update because power signals changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
 		}
 	}
@@ -1951,6 +1982,12 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if subscription.FilterCriteriaQci.Qci == 0 {
+			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
+
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
@@ -1979,6 +2016,18 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
 			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+
+		if subscription.FilterCriteriaQci.Qci == 0 {
+			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
+
+		if subscription.FilterCriteriaQci.ErabId == 0 {
+			log.Error("Missing or non valid value of 0 mandatory ErabId parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
 			return
 		}
 

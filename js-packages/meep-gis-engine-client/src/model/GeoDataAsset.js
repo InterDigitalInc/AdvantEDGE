@@ -57,9 +57,13 @@
    * @alias module:model/GeoDataAsset
    * @class
    * @implements module:model/GeoData
+   * @param assetName {String} Name of geospatial asset
+   * @param assetType {module:model/GeoDataAsset.AssetTypeEnum} Asset type
    */
-  var exports = function() {
+  var exports = function(assetName, assetType) {
     GeoData.call(this);
+    this.assetName = assetName;
+    this.assetType = assetType;
   };
 
   /**

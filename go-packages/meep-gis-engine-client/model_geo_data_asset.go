@@ -35,9 +35,9 @@ type GeoDataAsset struct {
 	// Speed of movement along path in m/s
 	Velocity float32 `json:"velocity,omitempty"`
 	// Name of geospatial asset
-	AssetName string `json:"assetName,omitempty"`
+	AssetName string `json:"assetName"`
 	// Asset type
-	AssetType string `json:"assetType,omitempty"`
+	AssetType string `json:"assetType"`
 	// Asset sub-type
 	SubType string `json:"subType,omitempty"`
 }

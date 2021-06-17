@@ -93,17 +93,17 @@ func Test_RNIS_periodic_4g_5gNei(t *testing.T) {
 	testAddress := "ue2"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
 	testSrcServing4GEcgi := rnisClient.Ecgi{CellId: "4000001", Plmn: &rnisClient.Plmn{"001", "001"}}
-	testSrcServing4GRsrp := int32(97)
-	testSrcServing4GRsrq := int32(46)
+	testSrcServing4GRsrp := int32(69)
+	testSrcServing4GRsrq := int32(28)
 	testTrgServing4GEcgi := testSrcServing4GEcgi
-	testTrgServing4GRsrp := int32(5)
-	testTrgServing4GRsrq := int32(-15)
+	testTrgServing4GRsrp := int32(44)
+	testTrgServing4GRsrq := int32(3)
 	test5GPlmn := rnisClient.Plmn{"001", "001"}
 	test5GPlmnArray := []rnisClient.Plmn{test5GPlmn}
 
 	testTrgNrNCellInfo := rnisClient.MeasRepUeNotificationNrNCellInfo{NrNCellGId: "500000001", NrNCellPlmn: test5GPlmnArray}
 	testTrgNrNCellInfoArray := []rnisClient.MeasRepUeNotificationNrNCellInfo{testTrgNrNCellInfo}
-	testTrgNewRadioMeasNeiInfo := rnisClient.MeasRepUeNotificationNewRadioMeasNeiInfo{NrNCellInfo: testTrgNrNCellInfoArray, NrNCellRsrp: 24, NrNCellRsrq: 24}
+	testTrgNewRadioMeasNeiInfo := rnisClient.MeasRepUeNotificationNewRadioMeasNeiInfo{NrNCellInfo: testTrgNrNCellInfoArray, NrNCellRsrp: 51, NrNCellRsrq: 52}
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
@@ -160,11 +160,11 @@ func Test_RNIS_periodic_4g_4gNei(t *testing.T) {
 	testAddress := "ue2"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
 	testSrcServing4GEcgi := rnisClient.Ecgi{CellId: "4000001", Plmn: &rnisClient.Plmn{"001", "001"}}
-	testSrcServing4GRsrp := int32(97)
-	testSrcServing4GRsrq := int32(46)
+	testSrcServing4GRsrp := int32(69)
+	testSrcServing4GRsrq := int32(28)
 	testTrgServing4GEcgi := testSrcServing4GEcgi
-	testTrgServing4GRsrp := int32(5)
-	testTrgServing4GRsrq := int32(-15)
+	testTrgServing4GRsrp := int32(44)
+	testTrgServing4GRsrq := int32(3)
 
 	testTrgEutranNeighbourCellMeasInfo := rnisClient.MeasRepUeNotificationEutranNeighbourCellMeasInfo{Ecgi: &rnisClient.Ecgi{CellId: "4000002", Plmn: &rnisClient.Plmn{"001", "001"}}, Rsrp: testTrgServing4GRsrp, Rsrq: testTrgServing4GRsrq}
 
@@ -223,21 +223,21 @@ func Test_RNIS_periodic_nr_5g_5gNei(t *testing.T) {
 	testAddress := "ue1"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
 	testSrcServingNrcgi := rnisClient.NRcgi{NrcellId: "500000002", Plmn: &rnisClient.Plmn{"001", "001"}}
-	testSrcServing5GRsrp := int32(127)
-	testSrcServing5GRsrq := int32(127)
+	testSrcServing5GRsrp := int32(92)
+	testSrcServing5GRsrq := int32(77)
 	testSrcSCell := rnisClient.NrMeasRepUeNotificationSCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testSrcServing5GRsrp, Rsrq: testSrcServing5GRsrq}}
 	testSrcServCellMeasInfo := rnisClient.NrMeasRepUeNotificationServCellMeasInfo{Nrcgi: &testSrcServingNrcgi, SCell: &testSrcSCell}
 
 	testTrgServingNrcgi := testSrcServingNrcgi
-	testTrgServing5GRsrp := int32(24)
-	testTrgServing5GRsrq := int32(24)
+	testTrgServing5GRsrp := int32(51)
+	testTrgServing5GRsrq := int32(52)
 	testTrgSCell := rnisClient.NrMeasRepUeNotificationSCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgServing5GRsrp, Rsrq: testTrgServing5GRsrq}}
 	testTrgNCell := rnisClient.NrMeasRepUeNotificationNCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgServing5GRsrp, Rsrq: testTrgServing5GRsrq}}
 	testTrgServCellMeasInfo := rnisClient.NrMeasRepUeNotificationServCellMeasInfo{Nrcgi: &testTrgServingNrcgi, SCell: &testTrgSCell, NCell: &testTrgNCell}
 
 	testTrgNeiNrcgi := "500000003" //not really a nrcgi, its the nrcellid but spec is wrong, so going along
-	testTrgNei5GRsrp := int32(24)
-	testTrgNei5GRsrq := int32(24)
+	testTrgNei5GRsrp := int32(51)
+	testTrgNei5GRsrq := int32(52)
 
 	testNrNeighCellMeasInfo := rnisClient.NrMeasRepUeNotificationNrNeighCellMeasInfo{Nrcgi: testTrgNeiNrcgi, MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgNei5GRsrp, Rsrq: testTrgNei5GRsrq}}
 
@@ -296,20 +296,20 @@ func Test_RNIS_periodic_nr_5g_4gNei(t *testing.T) {
 	testAddress := "ue1"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
 	testSrcServingNrcgi := rnisClient.NRcgi{NrcellId: "500000002", Plmn: &rnisClient.Plmn{"001", "001"}}
-	testSrcServing5GRsrp := int32(127)
-	testSrcServing5GRsrq := int32(127)
+	testSrcServing5GRsrp := int32(92)
+	testSrcServing5GRsrq := int32(77)
 	testSrcSCell := rnisClient.NrMeasRepUeNotificationSCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testSrcServing5GRsrp, Rsrq: testSrcServing5GRsrq}}
 	testSrcServCellMeasInfo := rnisClient.NrMeasRepUeNotificationServCellMeasInfo{Nrcgi: &testSrcServingNrcgi, SCell: &testSrcSCell}
 
 	testTrgServingNrcgi := testSrcServingNrcgi
-	testTrgServing5GRsrp := int32(24)
-	testTrgServing5GRsrq := int32(24)
+	testTrgServing5GRsrp := int32(51)
+	testTrgServing5GRsrq := int32(52)
 	testTrgSCell := rnisClient.NrMeasRepUeNotificationSCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgServing5GRsrp, Rsrq: testTrgServing5GRsrq}}
 	testTrgNCell := rnisClient.NrMeasRepUeNotificationNCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgServing5GRsrp, Rsrq: testTrgServing5GRsrq}}
 	testTrgServCellMeasInfo := rnisClient.NrMeasRepUeNotificationServCellMeasInfo{Nrcgi: &testTrgServingNrcgi, SCell: &testTrgSCell, NCell: &testTrgNCell}
 
-	testTrgServing4GRsrp := int32(5)
-	testTrgServing4GRsrq := int32(-15)
+	testTrgServing4GRsrp := int32(44)
+	testTrgServing4GRsrq := int32(3)
 	testTrgEutraNeighCellMeasInfo := rnisClient.NrMeasRepUeNotificationEutraNeighCellMeasInfo{Ecgi: &rnisClient.Ecgi{CellId: "4000003", Plmn: &rnisClient.Plmn{"001", "001"}}, Rsrp: testTrgServing4GRsrp, Rsrq: testTrgServing4GRsrq}
 
 	//moving to initial position

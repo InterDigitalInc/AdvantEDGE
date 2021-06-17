@@ -29,7 +29,7 @@ paths:
   /queries/distance:
     get:
       tags:
-      - unsupported
+      - location
       summary: UE Distance Lookup of a specific UE
       description: UE Distance Lookup between terminals or a terminal and a location
       operationId: distanceGET
@@ -487,7 +487,7 @@ paths:
   /subscriptions/area/circle:
     get:
       tags:
-      - unsupported
+      - location
       summary: Retrieves all active subscriptions to area change notifications
       description: This operation is used for retrieving all active subscriptions
         to area change notifications.
@@ -506,7 +506,8 @@ paths:
                     callbackReference:
                       callbackData: "1234"
                       notifyURL: http://clientApp.example.com/location_notifications/123456
-                    address: acr:10.0.0.1
+                    address:
+                    - acr:10.0.0.1
                     checkImmediate: true
                     enteringLeavingCriteria: Entering
                     frequency: 10
@@ -518,7 +519,7 @@ paths:
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle
     post:
       tags:
-      - unsupported
+      - location
       summary: Creates a subscription for area change notification
       description: Creates a subscription to the Location Service for an area change
         notification.
@@ -535,7 +536,8 @@ paths:
                 callbackReference:
                   callbackData: "1234"
                   notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:10.0.0.1
+                address:
+                - acr:10.0.0.1
                 checkImmediate: true
                 enteringLeavingCriteria: Entering
                 frequency: 10
@@ -557,7 +559,8 @@ paths:
                   callbackReference:
                     callbackData: "1234"
                     notifyURL: http://clientApp.example.com/location_notifications/123456
-                  address: acr:10.0.0.1
+                  address:
+                  - acr:10.0.0.1
                   checkImmediate: true
                   enteringLeavingCriteria: Entering
                   frequency: 10
@@ -646,7 +649,7 @@ paths:
   /subscriptions/area/circle/{subscriptionId}:
     get:
       tags:
-      - unsupported
+      - location
       summary: Retrieve subscription information
       description: Get subscription information.
       operationId: areaCircleSubGET
@@ -675,7 +678,8 @@ paths:
                   callbackReference:
                     callbackData: "1234"
                     notifyURL: http://clientApp.example.com/location_notifications/123456
-                  address: acr:10.0.0.1
+                  address:
+                  - acr:10.0.0.1
                   checkImmediate: true
                   enteringLeavingCriteria: Entering
                   frequency: 10
@@ -727,7 +731,7 @@ paths:
       x-swagger-router-controller: subscriptions
     put:
       tags:
-      - unsupported
+      - location
       summary: Updates a subscription information
       description: Updates a subscription.
       operationId: areaCircleSubPUT
@@ -755,7 +759,8 @@ paths:
                 callbackReference:
                   callbackData: "1234"
                   notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:10.0.0.1
+                address:
+                - acr:10.0.0.1
                 checkImmediate: true
                 enteringLeavingCriteria: Entering
                 frequency: 10
@@ -778,7 +783,8 @@ paths:
                   callbackReference:
                     callbackData: "1234"
                     notifyURL: http://clientApp.example.com/location_notifications/123456
-                  address: acr:10.0.0.1
+                  address:
+                  - acr:10.0.0.1
                   checkImmediate: true
                   enteringLeavingCriteria: Entering
                   frequency: 10
@@ -858,7 +864,7 @@ paths:
       x-swagger-router-controller: subscriptions
     delete:
       tags:
-      - unsupported
+      - location
       summary: Cancel a subscription
       description: Method to delete a subscription.
       operationId: areaCircleSubDELETE
@@ -907,7 +913,7 @@ paths:
   /subscriptions/distance:
     get:
       tags:
-      - unsupported
+      - location
       summary: Retrieves all active subscriptions to distance change notifications
       description: This operation is used for retrieving all active subscriptions
         to a distance change notifications.
@@ -933,13 +939,14 @@ paths:
                     criteria: AllWithinDistance
                     distance: 100
                     frequency: 10
-                    referenceAddress: acr:10.0.0.3
+                    referenceAddress:
+                    - acr:10.0.0.3
                     trackingAccuracy: 10
                     resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/sub123
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance
     post:
       tags:
-      - unsupported
+      - location
       summary: Creates a subscription for distance change notification
       description: Creates a subscription to the Location Service for a distance change
         notification.
@@ -963,7 +970,8 @@ paths:
                 criteria: AllWithinDistance
                 distance: 100
                 frequency: 10
-                referenceAddress: acr:10.0.0.3
+                referenceAddress:
+                - acr:10.0.0.3
                 trackingAccuracy: 10
         required: true
       responses:
@@ -986,7 +994,8 @@ paths:
                   criteria: AllWithinDistance
                   distance: 100
                   frequency: 10
-                  referenceAddress: acr:10.0.0.3
+                  referenceAddress:
+                  - acr:10.0.0.3
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         "400":
@@ -1079,7 +1088,7 @@ paths:
   /subscriptions/distance/{subscriptionId}:
     get:
       tags:
-      - unsupported
+      - location
       summary: Retrieve subscription information
       description: Get subscription information.
       operationId: distanceSubGET
@@ -1115,7 +1124,8 @@ paths:
                   criteria: AllWithinDistance
                   distance: 100
                   frequency: 10
-                  referenceAddress: acr:10.0.0.3
+                  referenceAddress:
+                  - acr:10.0.0.3
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         "400":
@@ -1161,7 +1171,7 @@ paths:
       x-swagger-router-controller: subscriptions
     put:
       tags:
-      - unsupported
+      - location
       summary: Updates a subscription information
       description: Updates a subscription.
       operationId: distanceSubPUT
@@ -1196,7 +1206,8 @@ paths:
                 criteria: AllWithinDistance
                 distance: 100
                 frequency: 10
-                referenceAddress: acr:10.0.0.3
+                referenceAddress:
+                - acr:10.0.0.3
                 trackingAccuracy: 10
                 resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         required: true
@@ -1220,7 +1231,8 @@ paths:
                   criteria: AllWithinDistance
                   distance: 100
                   frequency: 10
-                  referenceAddress: acr:10.0.0.3
+                  referenceAddress:
+                  - acr:10.0.0.3
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         "400":
@@ -1294,7 +1306,7 @@ paths:
       x-swagger-router-controller: subscriptions
     delete:
       tags:
-      - unsupported
+      - location
       summary: Cancel a subscription
       description: Method to delete a subscription.
       operationId: distanceSubDELETE
@@ -1362,7 +1374,8 @@ paths:
                     callbackReference:
                       callbackData: "1234"
                       notifyURL: http://clientApp.example.com/location_notifications/123456
-                    address: acr:10.0.0.1
+                    address:
+                    - acr:10.0.0.1
                     frequency: 10
                     requestedAccuracy: 10
                     resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
@@ -1385,7 +1398,8 @@ paths:
                 callbackReference:
                   callbackData: "1234"
                   notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:10.0.0.1
+                address:
+                - acr:10.0.0.1
                 frequency: 10
                 requestedAccuracy: 10
         required: true
@@ -1402,7 +1416,8 @@ paths:
                   callbackReference:
                     callbackData: "1234"
                     notifyURL: http://clientApp.example.com/location_notifications/123456
-                  address: acr:10.0.0.1
+                  address:
+                  - acr:10.0.0.1
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
@@ -1514,7 +1529,8 @@ paths:
                   callbackReference:
                     callbackData: "1234"
                     notifyURL: http://clientApp.example.com/location_notifications/123456
-                  address: acr:10.0.0.1
+                  address:
+                  - acr:10.0.0.1
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
@@ -1589,7 +1605,8 @@ paths:
                 callbackReference:
                   callbackData: "1234"
                   notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:10.0.0.1
+                address:
+                - acr:10.0.0.1
                 frequency: 10
                 requestedAccuracy: 10
                 resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
@@ -1607,7 +1624,8 @@ paths:
                   callbackReference:
                     callbackData: "1234"
                     notifyURL: http://clientApp.example.com/location_notifications/123456
-                  address: acr:10.0.0.1
+                  address:
+                  - acr:10.0.0.1
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123

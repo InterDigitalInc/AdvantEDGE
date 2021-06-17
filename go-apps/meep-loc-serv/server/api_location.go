@@ -108,47 +108,47 @@ func ZonesGetById(w http.ResponseWriter, r *http.Request) {
 }
 
 func AreaCircleSubDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	areaCircleSubDelete(w, r)
 }
 
 func AreaCircleSubGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	areaCircleSubGet(w, r)
 }
 
 func AreaCircleSubListGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	areaCircleSubListGet(w, r)
 }
 
 func AreaCircleSubPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	areaCircleSubPost(w, r)
 }
 
 func AreaCircleSubPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	areaCircleSubPut(w, r)
 }
 
 func DistanceGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	distanceGet(w, r)
 }
 
 func DistanceSubDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	distanceSubDelete(w, r)
 }
 
 func DistanceSubGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	distanceSubGet(w, r)
 }
 
 func DistanceSubListGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	distanceSubListGet(w, r)
 }
 
 func DistanceSubPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	distanceSubPost(w, r)
 }
 
 func DistanceSubPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	distanceSubPut(w, r)
 }
 
 func PeriodicSubDELETE(w http.ResponseWriter, r *http.Request) {

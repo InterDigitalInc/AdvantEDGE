@@ -109,7 +109,7 @@ Optional parameters are passed through a pointer to a SubscriptionLinkListSubscr
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **subscriptionType** | **optional.String**| Filter on a specific subscription type. Permitted values: assoc_sta, sta_data_rate. | 
+ **subscriptionType** | **optional.String**| Filter on a specific subscription type. Permitted values: assoc_sta, sta_data_rate, measure_report. | 
 
 ### Return type
 

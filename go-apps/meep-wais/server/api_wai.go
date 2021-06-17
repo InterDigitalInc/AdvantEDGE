@@ -54,3 +54,23 @@ func SubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 func SubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	subscriptionsPUT(w, r)
 }
+
+func MeasurementLinkListMeasurementsGET(w http.ResponseWriter, r *http.Request) {
+	notImplemented(w, r)
+}
+
+func MeasurementsDELETE(w http.ResponseWriter, r *http.Request) {
+	notImplemented(w, r)
+}
+
+func MeasurementsGET(w http.ResponseWriter, r *http.Request) {
+	notImplemented(w, r)
+}
+
+func MeasurementsPOST(w http.ResponseWriter, r *http.Request) {
+	notImplemented(w, r)
+}
+
+func MeasurementsPUT(w http.ResponseWriter, r *http.Request) {
+	notImplemented(w, r)
+}

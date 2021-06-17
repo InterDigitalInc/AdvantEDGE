@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -30,6 +31,7 @@ import (
 	am "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-asset-mgr"
 	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
@@ -39,6 +41,7 @@ import (
 const serviceName = "GIS Engine"
 const moduleName = "meep-gis-engine"
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const influxAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
@@ -87,12 +90,15 @@ type GisEngine struct {
 	sboxCtrlClient   *sbox.APIClient
 	activeModel      *mod.Model
 	gisCache         *gc.GisCache
+	metricStore      *met.MetricStore
+	storeName        string
 	assetMgr         *am.AssetMgr
 	assets           map[string]*Asset
 	ueInfo           map[string]*UeInfo
 	automation       map[string]bool
 	automationTicker *time.Ticker
 	updateTime       time.Time
+	snapshotTicker   *time.Ticker
 	mutex            sync.Mutex
 }
 
@@ -260,6 +266,38 @@ func processScenarioActivate() {
 
 	// Update Gis cache
 	updateCache()
+
+	// Start snapshot thread
+	scenarioName := ge.activeModel.GetScenarioName()
+	if scenarioName != "" {
+		err := ge.StartSnapshotThread()
+
+		if ge.storeName != scenarioName {
+			ge.storeName = scenarioName
+			// Connect to Metric Store
+			ge.metricStore, err = met.NewMetricStore(ge.storeName, ge.sandboxName, influxAddr, redisAddr)
+			if err != nil {
+				log.Error("Failed connection to metric-store: ", err)
+				return
+			}
+		} else {
+			if err != nil {
+				log.Error("Failed to start snapshot thread: " + err.Error())
+				return
+			}
+			/*else {
+
+				// Connect to GIS cache
+				err = ge.gisCache.UpdateGisCacheInflux(ge.sandboxName, ge.activeModel.GetScenarioName(), influxAddr)
+				if err != nil {
+					log.Error("Failed to GIS Cache: ", err.Error())
+				} else {
+					log.Info("Connected to GIS Cache")
+				}
+			}
+			*/
+		}
+	}
 }
 
 func processScenarioUpdate() {
@@ -292,6 +330,9 @@ func processScenarioUpdate() {
 func processScenarioTerminate() {
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
+
+	// Stop snapshot thread
+	ge.StopSnapshotThread()
 
 	// Stop automation
 	resetAutomation()
@@ -787,7 +828,7 @@ func updateCache() {
 				updateRequired = true
 			} else {
 				cachedMeas, found := cachedUeMeas.Measurements[ueMeas.Poa]
-				if !found || cachedMeas.Rssi != ueMeas.Rssi || cachedMeas.Rsrp != ueMeas.Rsrp || cachedMeas.Rsrq != ueMeas.Rsrq {
+				if !found || cachedMeas.Distance != ueMeas.Distance || cachedMeas.Rssi != ueMeas.Rssi || cachedMeas.Rsrp != ueMeas.Rsrp || cachedMeas.Rsrq != ueMeas.Rsrq {
 					updateRequired = true
 				}
 			}
@@ -797,7 +838,8 @@ func updateCache() {
 				measurement.Rssi = ueMeas.Rssi
 				measurement.Rsrp = ueMeas.Rsrp
 				measurement.Rsrq = ueMeas.Rsrq
-				_ = ge.gisCache.SetMeasurement(ue.Name, ueMeas.Poa, measurement)
+				measurement.Distance = ueMeas.Distance
+				_ = ge.gisCache.SetMeasurement(ue.Name, AssetTypeUe, ueMeas.Poa, ueMeas.SubType, measurement)
 			}
 		}
 	}
@@ -1106,6 +1148,248 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
+func convertJsonToPoint(jsonData string) *Point {
+
+	var obj Point
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
+	// Get asset name from request path parameters
+	vars := mux.Vars(r)
+	assetName := vars["assetName"]
+	log.Debug("Get Distance GeoData for asset: ", assetName)
+
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	srcAsset := ge.assets[assetName]
+	if srcAsset == nil {
+		err := errors.New("Asset not in scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	position, err := ge.gisCache.GetPosition("*", assetName)
+	if err != nil || position == nil {
+		err := errors.New("Asset has no geo location")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	srcLongStr := strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+	srcLatStr := strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
+	// Retrieve Distance parameters from request body
+	var distanceParam TargetPoint
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&distanceParam)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dstLong := float32(0.0)
+	dstLat := float32(0.0)
+	dstLongStr := ""
+	dstLatStr := ""
+
+	if distanceParam.AssetName != "" {
+
+		dstAsset := ge.assets[distanceParam.AssetName]
+		if dstAsset == nil {
+			err := errors.New("Destination asset not in scenario")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		// Find second asset in active scenario model
+		position, err = ge.gisCache.GetPosition("*", distanceParam.AssetName)
+
+		if err != nil || position == nil {
+			err := errors.New("Destination asset has no geo location")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		dstLong = position.Longitude
+		dstLat = position.Latitude
+
+		dstLongStr = strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
+	} else {
+		dstLong = distanceParam.Longitude
+		dstLat = distanceParam.Latitude
+		dstLongStr = strconv.FormatFloat(float64(distanceParam.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(distanceParam.Latitude), 'f', -1, 32)
+	}
+
+	srcCoordinates := "(" + srcLongStr + " " + srcLatStr + ")"
+	dstCoordinates := "(" + dstLongStr + " " + dstLatStr + ")"
+
+	distance, err := ge.assetMgr.GetDistanceBetweenPoints(srcCoordinates, dstCoordinates)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create Response to return
+	var resp Distance
+	resp.Distance = distance
+	resp.Longitude = dstLong
+	resp.Latitude = dstLat
+
+	// Format response
+	jsonResponse, err := json.Marshal(&resp)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
+
+	// Get asset name from request path parameters
+	vars := mux.Vars(r)
+	assetName := vars["assetName"]
+	log.Debug("Get Within Range GeoData for asset: ", assetName)
+
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	srcAsset := ge.assets[assetName]
+	if srcAsset == nil {
+		err := errors.New("Asset not in scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	position, err := ge.gisCache.GetPosition("*", assetName)
+	if err != nil || position == nil {
+		err := errors.New("Asset has no geo location")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	srcLongStr := strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
+	srcLatStr := strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
+
+	// Retrieve Within Range parameters from request body
+	var withinRangeParam TargetRange
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&withinRangeParam)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dstLong := float32(0.0)
+	dstLat := float32(0.0)
+	dstLongStr := ""
+	dstLatStr := ""
+	if withinRangeParam.AssetName != "" {
+
+		// Find second asset in active scenario model
+		dstAsset := ge.assets[withinRangeParam.AssetName]
+		if dstAsset == nil {
+			err := errors.New("Destination asset not in scenario")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if dstAsset.geoData != nil {
+			dstPosition := dstAsset.geoData.position
+			dstPoint := convertJsonToPoint(dstPosition)
+			dstLong = dstPoint.Coordinates[0]
+			dstLat = dstPoint.Coordinates[1]
+			dstLongStr = strconv.FormatFloat(float64(dstPoint.Coordinates[0]), 'f', -1, 32)
+			dstLatStr = strconv.FormatFloat(float64(dstPoint.Coordinates[1]), 'f', -1, 32)
+		} else {
+			err := errors.New("Destination asset has no geo location")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+	} else {
+		dstLong = withinRangeParam.Longitude
+		dstLat = withinRangeParam.Latitude
+		dstLongStr = strconv.FormatFloat(float64(withinRangeParam.Longitude), 'f', -1, 32)
+		dstLatStr = strconv.FormatFloat(float64(withinRangeParam.Latitude), 'f', -1, 32)
+	}
+
+	srcCoordinates := "(" + srcLongStr + " " + srcLatStr + ")"
+	dstCoordinates := "(" + dstLongStr + " " + dstLatStr + ")"
+	radius := strconv.FormatFloat(float64(withinRangeParam.Radius), 'f', -1, 32)
+
+	withinRange, err := ge.assetMgr.GetWithinRangeBetweenPoints(srcCoordinates, dstCoordinates, radius)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create Response to return
+	var resp WithinRange
+	resp.Within = withinRange
+	resp.Longitude = dstLong
+	resp.Latitude = dstLat
+
+	// Format response
+	jsonResponse, err := json.Marshal(&resp)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
 func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
@@ -1296,4 +1580,30 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (ge *GisEngine) StartSnapshotThread() error {
+	// Make sure ticker is not already running
+	if ge.snapshotTicker != nil {
+		return errors.New("ticker already running")
+	}
+
+	// Create new ticker and start snapshot thread
+	ge.snapshotTicker = time.NewTicker(time.Second)
+	go func() {
+		for range ge.snapshotTicker.C {
+			if ge.metricStore != nil {
+				ge.metricStore.TakeGisMetricSnapshot()
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (ge *GisEngine) StopSnapshotThread() {
+	if ge.snapshotTicker != nil {
+		ge.snapshotTicker.Stop()
+		ge.snapshotTicker = nil
+	}
 }

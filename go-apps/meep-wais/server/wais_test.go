@@ -5889,7 +5889,8 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const testScenarioName = "testScenario"
+const testSandboxName = "testScenario"
+const testScenarioName = "4g-5g-wifi-macro"
 
 var m *mod.Model
 var mqLocal *mq.MsgQueue
@@ -6017,7 +6018,7 @@ func testSubscriptionListGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 	nb := 0
-	for range respBody.AssocStaSubscription {
+	for range respBody.Subscription {
 		nb++
 	}
 	if nb != expectedSubscriptionNb {
@@ -6030,11 +6031,12 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedApId := ApIdentity{[]string{"myIp"}, "myMacId", []string{"mySSid"}}
+	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testScenarioName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, ASSOC_STA_SUBSCRIPTION}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6049,7 +6051,7 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, ASSOC_STA_SUBSCRIPTION}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6085,11 +6087,12 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedApId := ApIdentity{[]string{"myIp"}, "myMacId", []string{"mySSid"}}
+	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testScenarioName + "/wai/v2/subscriptions/" + subscriptionId}
+	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + subscriptionId}
 	expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6105,7 +6108,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	/******************************
 	 * request body section
 	 ******************************/
-	subscription1 := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
+	subscription1 := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -6245,9 +6248,10 @@ func TestExpiryNotification(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedApId := ApIdentity{[]string{"myIp"}, "myMacId", []string{"mySSid"}}
+	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedExpiry := TimeStamp{0, 12321}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
 
 	/******************************
 	 * request vars section
@@ -6257,7 +6261,7 @@ func TestExpiryNotification(t *testing.T) {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6280,7 +6284,7 @@ func TestExpiryNotification(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	fmt.Println("Create valid Metric Store to get logs from")
-	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(testScenarioName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create store")
 	}
@@ -6333,9 +6337,10 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	//movingUeAddr := "ue1" //based on the scenario change
 	expectedCallBackRef := "myCallbakRef"
 	expectedExpiry := TimeStamp{0, 1988599770}
-	expectedApId := ApIdentity{nil, "0050C272800A", nil}
-	expectedApIdMacIdStr := "{\"macId\":\"0050C272800A\"}"
+	expectedApId := ApIdentity{"0050C272800A", nil, nil}
+	expectedApIdMacIdStr := "{\"bssid\":\"0050C272800A\"}"
 	expectedStaIdMacIdStr := "[{\"macId\":\"101002000000\"}]"
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
 
 	/******************************
 	 * request vars section
@@ -6345,7 +6350,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6369,7 +6374,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(testScenarioName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -6440,10 +6445,15 @@ func TestSbi(t *testing.T) {
 	apName2 := "w10"
 	apMacId2 := "0050C272800A"
 
-	var expectedStaInfoStr [2]string
-	var expectedStaInfo [2]StaInfo
-	expectedStaInfo[INITIAL] = StaInfo{StaId: &StaIdentity{MacId: ""}}
-	expectedStaInfo[UPDATED] = StaInfo{StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{MacId: apMacId2}}
+	//var expectedStaInfoStr [2]string
+	//var expectedStaInfo [2]StaInfo
+	//expectedStaInfo[INITIAL] = StaInfo{StaId: &StaIdentity{MacId: ""}}
+	//expectedStaInfo[UPDATED] = StaInfo{StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{Bssid: apMacId2}}
+
+	var expectedStaDataStr [2]string
+	var expectedStaData [2]StaData
+	expectedStaData[INITIAL] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ""}}, StaId: &StaIdentity{MacId: ""}}}
+	expectedStaData[UPDATED] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ueMacId}}, StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{Bssid: apMacId2}}}
 
 	var expectedApInfoApIdMacIdStr [2]string
 	var expectedApInfoNbStas [2]int
@@ -6452,17 +6462,17 @@ func TestSbi(t *testing.T) {
 	expectedApInfoNbStas[INITIAL] = 0
 	expectedApInfoNbStas[UPDATED] = 1
 
-	j, err := json.Marshal(expectedStaInfo[INITIAL])
+	j, err := json.Marshal(expectedStaData[INITIAL])
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedStaInfoStr[INITIAL] = string(j)
+	expectedStaDataStr[INITIAL] = string(j)
 
-	j, err = json.Marshal(expectedStaInfo[UPDATED])
+	j, err = json.Marshal(expectedStaData[UPDATED])
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedStaInfoStr[UPDATED] = string(j)
+	expectedStaDataStr[UPDATED] = string(j)
 
 	/******************************
 	 * execution section
@@ -6472,7 +6482,7 @@ func TestSbi(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonUeData) != expectedStaInfoStr[INITIAL] {
+	if string(jsonUeData) != expectedStaDataStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -6488,13 +6498,13 @@ func TestSbi(t *testing.T) {
 	updateScenario("mobility1")
 
 	jsonUeData, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonUeData) != expectedStaInfoStr[UPDATED] {
+	if string(jsonUeData) != expectedStaDataStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
 	jsonApInfoComplete, _ = rc.JSONGetEntry(baseKey+"AP:"+apName2, ".")
 	apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
-	if apInfoComplete.ApId.MacId != expectedApInfoApIdMacIdStr[UPDATED] {
+	if apInfoComplete.ApId.Bssid != expectedApInfoApIdMacIdStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 	if len(apInfoComplete.StaMacIds) != expectedApInfoNbStas[UPDATED] {
@@ -6654,7 +6664,7 @@ func TestStaInfoGet(t *testing.T) {
 func terminateScenario() {
 	if mqLocal != nil {
 		_ = Stop()
-		msg := mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testSandboxName)
 		err := mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6676,7 +6686,7 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testSandboxName)
 		err = mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6691,7 +6701,7 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testSandboxName)
 		err = mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6706,7 +6716,7 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testSandboxName)
 		err = mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
@@ -6720,7 +6730,7 @@ func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	sandboxName = testSandboxName
 }
 
 func initialiseScenario(testScenario string) {
@@ -6729,7 +6739,7 @@ func initialiseScenario(testScenario string) {
 	cleanUp()
 
 	cfg := mod.ModelCfg{
-		Name:      testScenarioName,
+		Name:      testSandboxName,
 		Namespace: sandboxName,
 		Module:    "test-mod",
 		UpdateCb:  nil,
@@ -6744,7 +6754,7 @@ func initialiseScenario(testScenario string) {
 	}
 
 	// Create message queue
-	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(testScenarioName), "test-mod", testScenarioName, redisAddr)
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(testSandboxName), "test-mod", testSandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return
@@ -6764,7 +6774,7 @@ func initialiseScenario(testScenario string) {
 		return
 	}
 
-	msg := mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, testScenarioName)
+	msg := mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, testSandboxName)
 	err = mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message: ", err)

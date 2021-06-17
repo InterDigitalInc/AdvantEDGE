@@ -26,14 +26,16 @@ package client
 
 //using as an allOf
 type InlineSubscription struct {
-        Links *AssocStaSubscriptionLinks `json:"_links,omitempty"`
-        // URI selected by the service consumer to receive notifications on the subscribed WLAN Access Information Service. This shall be included both in the request and in response.
-        ApId  *ApIdentity                `json:"apId,omitempty"`
-        CallbackReference string     `json:"callbackReference"`
-        ExpiryDeadline    *TimeStamp `json:"expiryDeadline,omitempty"`
-        // Identifier(s) to uniquely specify the target client station(s) for the subscription
-        StaId []StaIdentity `json:"staId,omitempty"`
-        // Shall be set to \"StaDataRateSubscription\".
-        SubscriptionType string `json:"subscriptionType"`
-
+	Links *AssocStaSubscriptionLinks `json:"_links,omitempty"`
+	// URI selected by the service consumer to receive notifications on the subscribed WLAN Access Information Service. This shall be included both in the request and in response.
+	ApId              *ApIdentity                            `json:"apId,omitempty"`
+	CallbackReference string                                 `json:"callbackReference"`
+	ExpiryDeadline    *TimeStamp                             `json:"expiryDeadline,omitempty"`
+	NotificationEvent *AllOfNotificationEvent `json:"notificationEvent,omitempty"`
+	// Set for periodic notification reporting.   Value indicates the notification period in seconds.
+	NotificationPeriod int32 `json:"notificationPeriod,omitempty"`
+	// Identifier(s) to uniquely specify the target client station(s) for the subscription
+	StaId []StaIdentity `json:"staId,omitempty"`
+	// Shall be set to \"StaDataRateSubscription\".
+	SubscriptionType string `json:"subscriptionType"`
 }

@@ -3,8 +3,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**assetName** | **String** | Name of geospatial asset | [optional] 
-**assetType** | **String** | Asset type | [optional] 
+**assetName** | **String** | Name of geospatial asset | 
+**assetType** | **String** | Asset type | 
 **subType** | **String** | Asset sub-type | [optional] 
 
 

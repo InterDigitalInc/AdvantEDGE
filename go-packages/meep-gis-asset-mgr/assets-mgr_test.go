@@ -1506,3 +1506,70 @@ func validateCompute(compute *Compute, id string, name string, subType string, p
 
 	return true
 }
+
+func TestAssetMgrDistanceTo(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
+	}
+
+	// create coordinates
+	fmt.Println("Coordinates creation")
+
+	coord1 := "(7.421802 43.736515)"
+	coord2 := "(7.4187 43.732403)"
+	expectedDistance1 := float32(0.0)
+	expectedDistance2 := float32(520.75476)
+
+	distance, _ := am.GetDistanceBetweenPoints(coord1, coord1)
+
+	if distance != expectedDistance1 {
+		t.Fatalf("Distance between 2 points calculation error")
+	}
+
+	distance, _ = am.GetDistanceBetweenPoints(coord1, coord2)
+
+	if distance != expectedDistance2 {
+		t.Fatalf("Distance between 2 points calculation error")
+	}
+}
+
+func TestAssetMgrWithinRange(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
+	}
+
+	// create coordinates
+	fmt.Println("Coordinates creation")
+
+	coord1 := "(7.421802 43.736515)"
+	coord2 := "(7.4187 43.732403)"
+	radiusOut := "520.5" //not within this radius
+	radiusIn := "521"
+
+	expectedWithinFalse := false
+	expectedWithinTrue := true
+
+	within, _ := am.GetWithinRangeBetweenPoints(coord1, coord2, radiusOut)
+
+	if within != expectedWithinFalse {
+		t.Fatalf("Not expected within range")
+	}
+
+	within, _ = am.GetWithinRangeBetweenPoints(coord1, coord2, radiusIn)
+
+	if within != expectedWithinTrue {
+		t.Fatalf("Expected within range")
+	}
+}

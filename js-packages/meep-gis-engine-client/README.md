@@ -119,7 +119,9 @@ Class | Method | HTTP request | Description
 *AdvantEdgeGisEngineRestApi.AutomationApi* | [**setAutomationStateByName**](docs/AutomationApi.md#setAutomationStateByName) | **POST** /automation/{type} | Set automation state
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**deleteGeoDataByName**](docs/GeospatialDataApi.md#deleteGeoDataByName) | **DELETE** /geodata/{assetName} | Delete geospatial data
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getAssetData**](docs/GeospatialDataApi.md#getAssetData) | **GET** /geodata | Get geospatial data
+*AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getDistanceGeoDataByName**](docs/GeospatialDataApi.md#getDistanceGeoDataByName) | **POST** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getGeoDataByName**](docs/GeospatialDataApi.md#getGeoDataByName) | **GET** /geodata/{assetName} | Get geospatial data
+*AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getWithinRangeByName**](docs/GeospatialDataApi.md#getWithinRangeByName) | **POST** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**updateGeoDataByName**](docs/GeospatialDataApi.md#updateGeoDataByName) | **POST** /geodata/{assetName} | Create/Update geospatial data
 
 
@@ -127,10 +129,14 @@ Class | Method | HTTP request | Description
 
  - [AdvantEdgeGisEngineRestApi.AutomationState](docs/AutomationState.md)
  - [AdvantEdgeGisEngineRestApi.AutomationStateList](docs/AutomationStateList.md)
+ - [AdvantEdgeGisEngineRestApi.Distance](docs/Distance.md)
  - [AdvantEdgeGisEngineRestApi.GeoData](docs/GeoData.md)
  - [AdvantEdgeGisEngineRestApi.GeoDataAssetList](docs/GeoDataAssetList.md)
  - [AdvantEdgeGisEngineRestApi.LineString](docs/LineString.md)
  - [AdvantEdgeGisEngineRestApi.Point](docs/Point.md)
+ - [AdvantEdgeGisEngineRestApi.TargetPoint](docs/TargetPoint.md)
+ - [AdvantEdgeGisEngineRestApi.TargetRange](docs/TargetRange.md)
+ - [AdvantEdgeGisEngineRestApi.WithinRange](docs/WithinRange.md)
  - [AdvantEdgeGisEngineRestApi.GeoDataAsset](docs/GeoDataAsset.md)
 
 

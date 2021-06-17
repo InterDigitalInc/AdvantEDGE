@@ -52,8 +52,10 @@ const initialState = {
   eventStatus: '',
   dashboardView1: NET_TOPOLOGY_VIEW,
   dashboardView2: VIEW_NAME_NONE,
-  sourceNodeSelected: '',
-  destNodeSelected: '',
+  sourceNodeSelectedView1: '',
+  destNodeSelectedView1: '',
+  sourceNodeSelectedView2: '',
+  destNodeSelectedView2: '',
   eventReplayMode: false,
   eventReplayLoop: false,
   replayFiles: [],
@@ -131,6 +133,14 @@ export function uiExecChangeCurrentEvent(event) {
   return {
     type: UI_EXEC_CHANGE_CURRENT_EVENT,
     payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_CURRENT_VIEW = 'UI_EXEC_CHANGE_CURRENT_VIEW';
+export function uiExecChangeCurrentView(view) {
+  return {
+    type: UI_EXEC_CHANGE_CURRENT_VIEW,
+    payload: view
   };
 }
 
@@ -318,18 +328,34 @@ export function uiExecChangeDashboardView2(name) {
   };
 }
 
-const UI_EXEC_CHANGE_SOURCE_NODE_SELECTED = 'UI_EXEC_CHANGE_SOURCE_NODE_SELECTED';
-export function uiExecChangeSourceNodeSelected(node) {
+const UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1 = 'UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1';
+export function uiExecChangeSourceNodeSelectedView1(node) {
   return {
-    type: UI_EXEC_CHANGE_SOURCE_NODE_SELECTED,
+    type: UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1,
     payload: node
   };
 }
 
-const UI_EXEC_CHANGE_DEST_NODE_SELECTED = 'UI_EXEC_CHANGE_DEST_NODE_SELECTED';
-export function uiExecChangeDestNodeSelected(node) {
+const UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1 = 'UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1';
+export function uiExecChangeDestNodeSelectedView1(node) {
   return {
-    type: UI_EXEC_CHANGE_DEST_NODE_SELECTED,
+    type: UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1,
+    payload: node
+  };
+}
+
+const UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2 = 'UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2';
+export function uiExecChangeSourceNodeSelectedView2(node) {
+  return {
+    type: UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2,
+    payload: node
+  };
+}
+
+const UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2 = 'UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2';
+export function uiExecChangeDestNodeSelectedView2(node) {
+  return {
+    type: UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2,
     payload: node
   };
 }
@@ -409,6 +435,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { sandboxCfg: action.payload });
   case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
+  case UI_EXEC_CHANGE_CURRENT_VIEW:
+    return updateObject(state, { execCurrentView: action.payload });
   case UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET:
     return updateObject(state, { mobilityEventTarget: action.payload });
   case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
@@ -455,10 +483,14 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { dashboardView1: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW2:
     return updateObject(state, { dashboardView2: action.payload });
-  case UI_EXEC_CHANGE_SOURCE_NODE_SELECTED:
-    return updateObject(state, { sourceNodeSelected: action.payload });
-  case UI_EXEC_CHANGE_DEST_NODE_SELECTED:
-    return updateObject(state, { destNodeSelected: action.payload });
+  case UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1:
+    return updateObject(state, { sourceNodeSelectedView1: action.payload });
+  case UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1:
+    return updateObject(state, { destNodeSelectedView1: action.payload });
+  case UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2:
+    return updateObject(state, { sourceNodeSelectedView2: action.payload });
+  case UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2:
+    return updateObject(state, { destNodeSelectedView2: action.payload });
   case UI_EXEC_CHANGE_REPLAY_FILES_LIST:
     return updateObject(state, { replayFiles: action.payload });
   case UI_EXEC_CHANGE_REPLAY_FILE_SELECTED:

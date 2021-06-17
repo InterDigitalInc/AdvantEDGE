@@ -222,6 +222,38 @@ services:
 #         method: 'GET'
 #         mode: 'block'
   #------------------------------
+  #  MEC Application Support (Sbox)
+  #------------------------------
+  - name: 'meep-app-enablement-app-supp'
+    path: '/mec_app_support/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+       admin: 'allow'
+       user: 'allow'
+#    endpoints:
+#      - name: 'Index'
+#        path: '/'
+#        method: 'GET'
+#        mode: 'block'
+  #------------------------------
+  #  MEC Service Management (Sbox)
+  #------------------------------
+  - name: 'meep-app-enablement-srv-mgmt'
+    path: '/mec_service_mgmt/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+  #------------------------------
   #  Metrics Engine (Sbox)
   #------------------------------
   - name: 'meep-metrics-engine'

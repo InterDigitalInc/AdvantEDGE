@@ -2162,6 +2162,23 @@ export const isApp = node => {
   );
 };
 
+export const isUe = node => {
+  return (
+    node.data.type &&
+    node.data.type === 'UE'
+  );
+};
+
+export const isPoa = node => {
+  return (
+    node.data.type &&
+    (node.data.type === 'POA-4G' ||
+      node.data.type === 'POA-5G' ||
+      node.data.type === 'POA-WIFI' ||
+      node.data.type === 'POA')
+  );
+};
+
 export const getElementNames = (neType, scenario) => {
   var elementNames = [];
   for (var dInd in scenario.deployment.domains) {

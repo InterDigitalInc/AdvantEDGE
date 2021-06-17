@@ -29,17 +29,21 @@ import (
 const moduleName string = "meep-rnis-sbi"
 
 type UeDataSbi struct {
-	Name         string
-	Mnc          string
-	Mcc          string
-	CellId       string
-	NrCellId     string
-	ErabIdValid  bool
-	AppNames     []string
-	Latency      int32
-	ThroughputUL int32
-	ThroughputDL int32
-	PacketLoss   float64
+	Name          string
+	Mnc           string
+	Mcc           string
+	CellId        string
+	NrCellId      string
+	ErabIdValid   bool
+	AppNames      []string
+	Latency       int32
+	ThroughputUL  int32
+	ThroughputDL  int32
+	PacketLoss    float64
+	ParentPoaName string
+	InRangePoas   []string
+	InRangeRsrps  []int32
+	InRangeRsrqs  []int32
 }
 
 type PoaInfoSbi struct {
@@ -260,86 +264,100 @@ func processActiveScenarioUpdate() {
 	// Update UE info
 	ueNames := []string{}
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
-	for _, name := range ueNameList {
-		// Ignore disconnected UEs
-		if !isUeConnected(name) {
-			continue
-		}
-		ueNames = append(ueNames, name)
-		ueParent := sbi.activeModel.GetNodeParent(name)
-		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
-			poaParent := sbi.activeModel.GetNodeParent(poa.Name)
-			if zone, ok := poaParent.(*dataModel.Zone); ok {
-				zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
-				if domain, ok := zoneParent.(*dataModel.Domain); ok {
-					mnc := ""
-					mcc := ""
-					cellId := ""
-					nrcellId := ""
-					erabIdValid := false
-					if domain.CellularDomainConfig != nil {
-						mnc = domain.CellularDomainConfig.Mnc
-						mcc = domain.CellularDomainConfig.Mcc
-						cellId = domain.CellularDomainConfig.DefaultCellId
-					}
-					switch poa.Type_ {
-					case mod.NodeTypePoa4G:
-						//using the default cellId if no poa4GConfig is set
-						if poa.Poa4GConfig != nil {
-							if poa.Poa4GConfig.CellId != "" {
-								cellId = poa.Poa4GConfig.CellId
-							}
+
+	//get all measurements to update without waiting for ticker
+	if len(ueNameList) > 0 {
+		//no need to have the map if no ue to update
+		ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+
+		for _, name := range ueNameList {
+			// Ignore disconnected UEs
+			if !isUeConnected(name) {
+				continue
+			}
+			ueNames = append(ueNames, name)
+			ueParent := sbi.activeModel.GetNodeParent(name)
+			if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
+				poaParent := sbi.activeModel.GetNodeParent(poa.Name)
+				if zone, ok := poaParent.(*dataModel.Zone); ok {
+					zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
+					if domain, ok := zoneParent.(*dataModel.Domain); ok {
+						mnc := ""
+						mcc := ""
+						cellId := ""
+						nrcellId := ""
+						erabIdValid := false
+						if domain.CellularDomainConfig != nil {
+							mnc = domain.CellularDomainConfig.Mnc
+							mcc = domain.CellularDomainConfig.Mcc
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
-						erabIdValid = true
-					/*no support for RNIS on 5G elements anymore, but need the info for meas_rep_ue*/
-					case mod.NodeTypePoa5G:
-						//clearing the cellId filled by the domain since it does not apply to 5G elements
-						cellId = ""
-						if poa.Poa5GConfig != nil {
-							if poa.Poa5GConfig.CellId != "" {
-								nrcellId = poa.Poa5GConfig.CellId
+						switch poa.Type_ {
+						case mod.NodeTypePoa4G:
+							//using the default cellId if no poa4GConfig is set
+							if poa.Poa4GConfig != nil {
+								if poa.Poa4GConfig.CellId != "" {
+									cellId = poa.Poa4GConfig.CellId
+								}
 							}
+							erabIdValid = true
+						/*no support for RNIS on 5G elements anymore, but need the info for meas_rep_ue*/
+						case mod.NodeTypePoa5G:
+							//clearing the cellId filled by the domain since it does not apply to 5G elements
+							cellId = ""
+							if poa.Poa5GConfig != nil {
+								if poa.Poa5GConfig.CellId != "" {
+									nrcellId = poa.Poa5GConfig.CellId
+								}
+							}
+						default:
+							//empty cells for POAs not supporting RNIS
+							cellId = ""
 						}
-					default:
-						//empty cells for POAs not supporting RNIS
-						cellId = ""
-					}
 
-					node := sbi.activeModel.GetNode(name)
-					ue := node.(*dataModel.PhysicalLocation)
+						node := sbi.activeModel.GetNode(name)
+						ue := node.(*dataModel.PhysicalLocation)
 
-					node = sbi.activeModel.GetNodeChild(name)
-					apps := node.(*[]dataModel.Process)
+						node = sbi.activeModel.GetNodeChild(name)
+						apps := node.(*[]dataModel.Process)
 
-					var appNames []string
-					for _, process := range *apps {
-						appNames = append(appNames, process.Name)
-					}
-					latency := int32(0)
-					ploss := float64(0.0)
-					throughputDL := int32(0)
-					throughputUL := int32(0)
-					if ue.NetChar != nil {
-						latency = ue.NetChar.Latency
-						ploss = ue.NetChar.PacketLoss
-						throughputDL = ue.NetChar.ThroughputDl
-						throughputUL = ue.NetChar.ThroughputUl
-					}
+						var appNames []string
+						for _, process := range *apps {
+							appNames = append(appNames, process.Name)
+						}
+						latency := int32(0)
+						ploss := float64(0.0)
+						throughputDL := int32(0)
+						throughputUL := int32(0)
+						if ue.NetChar != nil {
+							latency = ue.NetChar.Latency
+							ploss = ue.NetChar.PacketLoss
+							throughputDL = ue.NetChar.ThroughputDl
+							throughputUL = ue.NetChar.ThroughputUl
+						}
 
-					var ueDataSbi = UeDataSbi{
-						Name:         name,
-						Mnc:          mnc,
-						Mcc:          mcc,
-						CellId:       cellId,
-						NrCellId:     nrcellId,
-						ErabIdValid:  erabIdValid,
-						AppNames:     appNames,
-						Latency:      latency,
-						ThroughputUL: throughputUL,
-						ThroughputDL: throughputDL,
-						PacketLoss:   ploss,
+						//update measurements, don't wait for ticker
+						poaNamesInRange, rsrpsInRange, rsrqsInRange := getMeas(name, "", ueMeasMap)
+
+						var ueDataSbi = UeDataSbi{
+							Name:          name,
+							Mnc:           mnc,
+							Mcc:           mcc,
+							CellId:        cellId,
+							NrCellId:      nrcellId,
+							ErabIdValid:   erabIdValid,
+							AppNames:      appNames,
+							Latency:       latency,
+							ThroughputUL:  throughputUL,
+							ThroughputDL:  throughputDL,
+							PacketLoss:    ploss,
+							ParentPoaName: poa.Name,
+							InRangePoas:   poaNamesInRange,
+							InRangeRsrps:  rsrpsInRange,
+							InRangeRsrqs:  rsrqsInRange,
+						}
+						sbi.updateUeDataCB(ueDataSbi)
 					}
-					sbi.updateUeDataCB(ueDataSbi)
 				}
 			}
 		}
@@ -483,10 +501,12 @@ func processActiveScenarioUpdate() {
 }
 
 func refreshMeasurements() {
+
 	// Update UE measurements
 	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+
 		// Ignore disconnected UEs
 		if !isUeConnected(name) {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
@@ -501,6 +521,7 @@ func refreshMeasurements() {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
 		}
 	}
+
 }
 
 func getMeas(ue string, poaName string, ueMeasMap map[string]*gc.UeMeasurement) ([]string, []int32, []int32) {

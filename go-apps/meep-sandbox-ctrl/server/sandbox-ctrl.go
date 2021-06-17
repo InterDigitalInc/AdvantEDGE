@@ -788,14 +788,24 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Process Event
 	var httpStatus int
-	var description string
+	var description, src, dest string
 	switch eventType {
 	case eventTypeMobility:
 		err, httpStatus, description = sendEventMobility(event)
+		if err == nil {
+			src = event.EventMobility.ElementName
+			dest = event.EventMobility.Dest
+		}
 	case eventTypeNetCharUpdate:
 		err, httpStatus, description = sendEventNetworkCharacteristics(event)
+		if err == nil {
+			src = event.EventNetworkCharacteristicsUpdate.ElementName
+		}
 	case eventTypePoasInRange:
 		err, httpStatus, description = sendEventPoasInRange(event)
+		if err == nil {
+			src = event.EventPoasInRange.Ue
+		}
 	case eventTypeScenarioUpdate:
 		err, httpStatus, description = sendEventScenarioUpdate(event)
 	case eventTypePduSession:
@@ -817,6 +827,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		var metric met.EventMetric
 		metric.Event = string(eventJSONStr)
 		metric.Description = description
+		metric.Src = src
+		metric.Dest = dest
 		err = sbxCtrl.metricStore.SetEventMetric(eventType, metric)
 	}
 	if err != nil {
