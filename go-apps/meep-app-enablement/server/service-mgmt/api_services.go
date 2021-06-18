@@ -28,11 +28,9 @@ import (
 )
 
 func ServicesGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	servicesGET(w, r)
 }
 
 func ServicesServiceIdGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	servicesByIdGET(w, r)
 }

@@ -70,8 +70,8 @@ type Measurement struct {
 }
 
 type GisCache struct {
-	rc           *redis.Connector
-	baseKey      string
+	rc      *redis.Connector
+	baseKey string
 }
 
 // NewGisCache - Creates and initialize a GIS Cache instance
@@ -115,19 +115,19 @@ func (gc *GisCache) SetPosition(typ string, name string, position *Position) err
 // GetPosition - Get entry in DB
 // supports wildcards
 func (gc *GisCache) GetPosition(typ string, name string) (*Position, error) {
-        key := gc.baseKey + posKey + typ + ":" + name
+	key := gc.baseKey + posKey + typ + ":" + name
 
-        // Create position map
-        positionMap := make(map[string]*Position)
+	// Create position map
+	positionMap := make(map[string]*Position)
 
-        // Get all position entry details
-        err := gc.rc.ForEachEntry(key, getPosition, &positionMap)
-        if err != nil {
-                log.Error("Failed to get all entries with error: ", err.Error())
-                return nil, err
-        }
+	// Get all position entry details
+	err := gc.rc.ForEachEntry(key, getPosition, &positionMap)
+	if err != nil {
+		log.Error("Failed to get all entries with error: ", err.Error())
+		return nil, err
+	}
 
-	// only one result, so return the first one 
+	// only one result, so return the first one
 	for _, position := range positionMap {
 		return position, nil
 	}
@@ -186,10 +186,10 @@ func (gc *GisCache) SetMeasurement(src string, srcType string, dest string, dest
 
 	// Prepare data
 	fields := make(map[string]interface{})
-	fields[fieldSrc] = fmt.Sprintf("%s", src)
-	fields[fieldSrcType] = fmt.Sprintf("%s", srcType)
-	fields[fieldDest] = fmt.Sprintf("%s", dest)
-	fields[fieldDestType] = fmt.Sprintf("%s", destType)
+	fields[fieldSrc] = src
+	fields[fieldSrcType] = srcType
+	fields[fieldDest] = dest
+	fields[fieldDestType] = destType
 	fields[fieldRssi] = fmt.Sprintf("%f", meas.Rssi)
 	fields[fieldRsrp] = fmt.Sprintf("%f", meas.Rsrp)
 	fields[fieldRsrq] = fmt.Sprintf("%f", meas.Rsrq)

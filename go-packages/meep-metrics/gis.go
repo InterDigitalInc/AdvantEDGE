@@ -103,14 +103,14 @@ func (ms *MetricStore) formatCachedGisMetric(values map[string]interface{}) (met
 // GetRedisMetric - Generic metric getter
 func (ms *MetricStore) getGisCacheRedisMetric(metric string, tagStr string) (values []map[string]interface{}, err error) {
 
-        if ms.name == "" {
-                err := errors.New("Store name not specified")
-                return values, err
-        }
-        if ms.redisClient == nil {
-                err = errors.New("Redis metrics DB disabled")
-                return values, err
-        }
+	if ms.name == "" {
+		err := errors.New("Store name not specified")
+		return values, err
+	}
+	if ms.redisClient == nil {
+		err = errors.New("Redis metrics DB disabled")
+		return values, err
+	}
 
 	// Get latest metrics
 	//key := gc.baseKey + metric + ":" + tagStr
@@ -123,6 +123,7 @@ func (ms *MetricStore) getGisCacheRedisMetric(metric string, tagStr string) (val
 	}
 	return values, nil
 }
+
 /*
 func (gc *GisCache) getMetricsEntryHandler(key string, fields map[string]string, userData interface{}) error {
 	// Retrieve field values
@@ -186,4 +187,3 @@ func (ms *MetricStore) TakeGisMetricSnapshot() {
 
 	// logTimeLapse("Write to Influx")
 }
-
