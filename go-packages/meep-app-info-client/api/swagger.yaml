@@ -1,19 +1,20 @@
 openapi: 3.0.2
 info:
-  title: AdvantEDGE MEC Application Management API
-  description: AdvantEDGE implementation to create a Application Instance information
+  title: AdvantEDGE Application Information API
+  description: AdvantEDGE implementation to create an Application Instance information
     using OpenAPI. Developed as an extension to Application Enablement API.
   contact:
-    email: cti_support@etsi.org
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
   license:
-    name: BSD-3-Clause
-    url: https://forge.etsi.org/legal-matters
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 1.0.0
 externalDocs:
-  description: ETSI GS MEC011 Application Enablement API, V2.1.1
-  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
+  description: GitHub Wiki
+  url: https://github.com/InterDigitalInc/AdvantEDGE/wiki
 servers:
-- url: https://localhost/sandboxname/mec_app_mgmt/v1
+- url: https://localhost/sandboxname/app_info/v1
 tags:
 - name: apps
 paths:

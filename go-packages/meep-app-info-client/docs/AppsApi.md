@@ -1,6 +1,6 @@
 # \AppsApi
 
-All URIs are relative to *https://localhost/sandboxname/mec_app_mgmt/v1*
+All URIs are relative to *https://localhost/sandboxname/app_info/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
