@@ -37,8 +37,8 @@ import (
 const mappsupportBasePath = "/mec_app_support/v1/"
 const mappsupportKey = "mec-app-support"
 const appEnablementKey = "app-enablement"
-const ACTIVE = "active"
-const INACTIVE = "inactive"
+const ACTIVE = "ACTIVE"
+const INACTIVE = "INACTIVE"
 
 //const logModuleMSMgmt = "meep-app-enablement"
 //const serviceName = "MEC Service Management"
@@ -122,7 +122,7 @@ func Init() (err error) {
 	_ = rc.DBFlush(baseKey)
 	_ = rc.DBFlush(appEnablementBaseKey)
 
-	log.Info("Connected to Redis DB, RNI service table")
+	log.Info("Connected to Redis DB")
 
 	reInit()
 
@@ -251,7 +251,6 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 
 	//do nothing if state is STOPPING, spec says : retention of state
 	if *confirmation.OperationAction == TERMINATING {
-		log.Info("SIMON update services")
 		err = updateAllServices(appInstanceId, msmgmt.INACTIVE)
 		if err != nil {
 			log.Error(err.Error())
@@ -286,7 +285,6 @@ func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
 			serviceId := sInfo.SerInstanceId
 			//sInfoList.ServiceInfos[index].State = &state
 			sInfo.State = &state
-			log.Info("SIMON update now")
 			err = rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
 			if err != nil {
 				return err

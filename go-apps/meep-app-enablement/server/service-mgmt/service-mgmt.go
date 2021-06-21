@@ -139,7 +139,7 @@ func Init() (err error) {
 	_ = rc.DBFlush(baseKey)
 	_ = rc.DBFlush(appEnablementBaseKey)
 
-	log.Info("Connected to Redis DB, RNI service table")
+	log.Info("Connected to Redis DB")
 
 	reInit()
 
@@ -226,6 +226,15 @@ func appServicesGETByAppInstanceId(w http.ResponseWriter, r *http.Request, appIn
 		}
 	}
 
+	//if specific appInstanceId is queried ("*" is wildcard)
+	if appInstanceId != "*" {
+		err := validateAppInstanceId(appInstanceId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
 	var sInfoList ServiceInfoList
 	var filterParameters FilterParameters
 	filterParameters.serInstanceId = serInstanceId
@@ -252,6 +261,24 @@ func appServicesGETByAppInstanceId(w http.ResponseWriter, r *http.Request, appIn
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func validateAppInstanceId(appInstanceId string) error {
+	//check if entry exist for the application in the DB
+	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		if err != nil {
+			//problem when reading the DB
+			log.Error(err.Error())
+			return err
+		} else {
+			newError := errors.New("AppInstanceId does not exist, app is not running")
+			log.Error(newError.Error())
+			return newError
+		}
+	}
+	return nil
 }
 
 func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {
@@ -339,11 +366,17 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 
 	//var response InlineCircleNotificationSubscription
 	vars := mux.Vars(r)
-	applicationId := vars["appInstanceId"]
+	appInstanceId := vars["appInstanceId"]
+
+	err := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	var sInfoPost ServiceInfoPost
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&sInfoPost)
+	err = decoder.Decode(&sInfoPost)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -372,7 +405,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sInfo, err := registerService(applicationId, &sInfoPost)
+	sInfo, err := registerService(appInstanceId, &sInfoPost)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -393,7 +426,7 @@ func deregisterService(appInstanceId string, serviceId string) error {
 	return nil
 }
 
-func registerService(applicationId string, sInfoPost *ServiceInfoPost) (*ServiceInfo, error) {
+func registerService(appInstanceId string, sInfoPost *ServiceInfoPost) (*ServiceInfo, error) {
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -402,7 +435,7 @@ func registerService(applicationId string, sInfoPost *ServiceInfoPost) (*Service
 	nextServiceRegistrationIdAvailable++
 	serviceId := strconv.Itoa(newServiceId)
 
-	sInfo, err := updateService(applicationId, sInfoPost, serviceId, false)
+	sInfo, err := updateService(appInstanceId, sInfoPost, serviceId, false)
 	if err != nil {
 		nextServiceRegistrationIdAvailable--
 		return nil, err
@@ -459,13 +492,19 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 	serviceId := vars["serviceId"]
 
+	err := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	present, _ := rc.JSONGetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
 	if present == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	err := rc.JSONDelEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
+	err = rc.JSONDelEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -485,6 +524,12 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 	serviceId := vars["serviceId"]
 	appInstanceId := vars["appInstanceId"]
 
+	err := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	jsonResponse, _ := rc.JSONGetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -496,18 +541,23 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
-	log.Info("servicesByIdGET")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	log.Info("appServicesPOST")
+	log.Info("appServicesPUT")
 
 	//var response InlineCircleNotificationSubscription
 	vars := mux.Vars(r)
-	applicationId := vars["appInstanceId"]
+	appInstanceId := vars["appInstanceId"]
 	serviceId := vars["serviceId"]
+
+	err := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	var sInfoPost ServiceInfoPost
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&sInfoPost)
+	err = decoder.Decode(&sInfoPost)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -546,7 +596,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sInfo, err := updateService(applicationId, &sInfoPost, serviceId, true)
+	sInfo, err := updateService(appInstanceId, &sInfoPost, serviceId, true)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
 	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
 	servMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 
@@ -62,13 +63,16 @@ func Init() (err error) {
 
 	err = servMgmt.Init()
 	if err != nil {
-		log.Info("SIMON1")
 		return err
 	}
 
 	err = appSupport.Init()
 	if err != nil {
-		log.Info("SIMON2")
+		return err
+	}
+
+	err = appInfo.Init()
+	if err != nil {
 		return err
 	}
 
@@ -81,7 +85,7 @@ func Init() (err error) {
 func reInit() {
 }
 
-// Run - Start RNIS
+// Run - Start
 func Run() (err error) {
 	//return sbi.Run()
 	return nil

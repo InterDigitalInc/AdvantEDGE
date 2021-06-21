@@ -254,6 +254,22 @@ services:
 #         method: 'GET'
 #         mode: 'block'
   #------------------------------
+  #  App Information (Sbox)
+  #------------------------------
+  - name: 'meep-app-enablement-app-info'
+    path: '/app_info/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+  #------------------------------
   #  Metrics Engine (Sbox)
   #------------------------------
   - name: 'meep-metrics-engine'

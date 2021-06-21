@@ -256,6 +256,19 @@ default:
 #         method: 'GET'
 #         mode: 'block'
 #   #------------------------------
+#   #  Application Information (Sbox)
+#   #------------------------------
+#   - name: 'meep-app-enablement-app-info'
+#     path: '/app_info/v1'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#   #------------------------------
 #   #  Metrics Engine (Sbox)
 #   #------------------------------
 #   - name: 'meep-metrics-engine'
