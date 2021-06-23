@@ -61,8 +61,6 @@ type APIClient struct {
 	// API Services
 
 	LocationApi *LocationApiService
-
-	UnsupportedApi *UnsupportedApiService
 }
 
 type service struct {
@@ -82,7 +80,6 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 
 	// API Services
 	c.LocationApi = (*LocationApiService)(&c.common)
-	c.UnsupportedApi = (*UnsupportedApiService)(&c.common)
 
 	return c
 }

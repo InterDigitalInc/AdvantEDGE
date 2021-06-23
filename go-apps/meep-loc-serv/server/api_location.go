@@ -152,21 +152,21 @@ func DistanceSubPUT(w http.ResponseWriter, r *http.Request) {
 }
 
 func PeriodicSubDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	periodicSubDelete(w, r)
 }
 
 func PeriodicSubGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	periodicSubGet(w, r)
 }
 
 func PeriodicSubListGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	periodicSubListGet(w, r)
 }
 
 func PeriodicSubPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	periodicSubPost(w, r)
 }
 
 func PeriodicSubPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	periodicSubPut(w, r)
 }

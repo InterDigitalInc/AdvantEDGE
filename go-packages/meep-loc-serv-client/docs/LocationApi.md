@@ -17,6 +17,11 @@ Method | HTTP request | Description
 [**DistanceSubListGET**](LocationApi.md#DistanceSubListGET) | **Get** /subscriptions/distance | Retrieves all active subscriptions to distance change notifications
 [**DistanceSubPOST**](LocationApi.md#DistanceSubPOST) | **Post** /subscriptions/distance | Creates a subscription for distance change notification
 [**DistanceSubPUT**](LocationApi.md#DistanceSubPUT) | **Put** /subscriptions/distance/{subscriptionId} | Updates a subscription information
+[**PeriodicSubDELETE**](LocationApi.md#PeriodicSubDELETE) | **Delete** /subscriptions/periodic/{subscriptionId} | Cancel a subscription
+[**PeriodicSubGET**](LocationApi.md#PeriodicSubGET) | **Get** /subscriptions/periodic/{subscriptionId} | Retrieve subscription information
+[**PeriodicSubListGET**](LocationApi.md#PeriodicSubListGET) | **Get** /subscriptions/periodic | Retrieves all active subscriptions to periodic notifications
+[**PeriodicSubPOST**](LocationApi.md#PeriodicSubPOST) | **Post** /subscriptions/periodic | Creates a subscription for periodic notification
+[**PeriodicSubPUT**](LocationApi.md#PeriodicSubPUT) | **Put** /subscriptions/periodic/{subscriptionId} | Updates a subscription information
 [**UserTrackingSubDELETE**](LocationApi.md#UserTrackingSubDELETE) | **Delete** /subscriptions/userTracking/{subscriptionId} | Cancel a subscription
 [**UserTrackingSubGET**](LocationApi.md#UserTrackingSubGET) | **Get** /subscriptions/userTracking/{subscriptionId} | Retrieve subscription information
 [**UserTrackingSubListGET**](LocationApi.md#UserTrackingSubListGET) | **Get** /subscriptions/userTracking | Retrieves all active subscriptions to user tracking notifications
@@ -404,6 +409,143 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**InlineDistanceNotificationSubscription**](InlineDistanceNotificationSubscription.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PeriodicSubDELETE**
+> PeriodicSubDELETE(ctx, subscriptionId)
+Cancel a subscription
+
+Method to delete a subscription.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PeriodicSubGET**
+> InlinePeriodicNotificationSubscription PeriodicSubGET(ctx, subscriptionId)
+Retrieve subscription information
+
+Get subscription information.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
+
+### Return type
+
+[**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PeriodicSubListGET**
+> InlineNotificationSubscriptionList PeriodicSubListGET(ctx, )
+Retrieves all active subscriptions to periodic notifications
+
+This operation is used for retrieving all active subscriptions to periodic notifications.
+
+### Required Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PeriodicSubPOST**
+> InlinePeriodicNotificationSubscription PeriodicSubPOST(ctx, body)
+Creates a subscription for periodic notification
+
+Creates a subscription to the Location Service for a periodic notification.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)| Subscription to be created | 
+
+### Return type
+
+[**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PeriodicSubPUT**
+> InlinePeriodicNotificationSubscription PeriodicSubPUT(ctx, body, subscriptionId)
+Updates a subscription information
+
+Updates a subscription.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)| Subscription to be modified | 
+  **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
+
+### Return type
+
+[**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)
 
 ### Authorization
 
