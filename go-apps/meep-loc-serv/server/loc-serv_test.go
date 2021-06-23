@@ -1160,6 +1160,351 @@ func testAreaCircleSubscriptionDelete(t *testing.T, subscriptionId string, expec
 	}
 }
 
+func TestPeriodicSuccessSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//post
+	expectedGetResp := testPeriodicSubscriptionPost(t)
+
+	//get
+	testPeriodicSubscriptionGet(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable-1), expectedGetResp)
+
+	//put
+	expectedGetResp = testPeriodicSubscriptionPut(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable-1), true)
+
+	//get
+	testPeriodicSubscriptionGet(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable-1), expectedGetResp)
+
+	//delete
+	testPeriodicSubscriptionDelete(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable-1), true)
+
+	terminateScenario()
+}
+
+func TestFailPeriodicSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testPeriodicSubscriptionGet(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable), "")
+
+	//put
+	_ = testPeriodicSubscriptionPut(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable), false)
+
+	//delete
+	testPeriodicSubscriptionDelete(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable), false)
+
+	terminateScenario()
+}
+
+func TestPeriodicSubscriptionsListGet(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//post
+	_ = testPeriodicSubscriptionPost(t)
+
+	//get list
+	testPeriodicSubscriptionList(t)
+
+	//delete
+	testPeriodicSubscriptionDelete(t, strconv.Itoa(nextPeriodicSubscriptionIdAvailable-1), true)
+
+	terminateScenario()
+}
+
+func testPeriodicSubscriptionList(t *testing.T) {
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedSubscriptionNb := 1
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/periodic", nil, nil, nil, http.StatusOK, PeriodicSubListGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineNotificationSubscriptionList
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	nb := len(respBody.NotificationSubscriptionList.PeriodicNotificationSubscription)
+
+	if nb != expectedSubscriptionNb {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func testPeriodicSubscriptionPost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	requestAddress := []string{"ue1"}
+	requestClientCorrelator := "123"
+	requestCallbackReference := "myCallbackRef"
+	requestFrequency := int32(1)
+	requestDuration := int32(0)
+	requestRequestedAccuracy := int32(1)
+	requestRequester := "requester"
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/periodic/" + strconv.Itoa(nextPeriodicSubscriptionIdAvailable)
+
+	expectedPeriodicSubscription := PeriodicNotificationSubscription{requestAddress, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, requestFrequency, nil, requestRequestedAccuracy, requestRequester, requestResourceURL}
+
+	expectedResponse := InlinePeriodicNotificationSubscription{&expectedPeriodicSubscription}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+	expectedBody := InlinePeriodicNotificationSubscription{&expectedPeriodicSubscription}
+	body, err := json.Marshal(expectedBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/periodic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, PeriodicSubPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlinePeriodicNotificationSubscription
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if rr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testPeriodicSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	requestAddress := []string{"ue1"}
+	requestClientCorrelator := "123"
+	requestCallbackReference := "myCallbackRef"
+	requestFrequency := int32(1)
+	requestDuration := int32(0)
+	requestRequestedAccuracy := int32(1)
+	requestRequester := "requester"
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/periodic/" + subscriptionId
+
+	expectedPeriodicSubscription := PeriodicNotificationSubscription{requestAddress, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, requestFrequency, nil, requestRequestedAccuracy, requestRequester, requestResourceURL}
+
+	expectedResponse := InlinePeriodicNotificationSubscription{&expectedPeriodicSubscription}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+	expectedBody := InlinePeriodicNotificationSubscription{&expectedPeriodicSubscription}
+	body, err := json.Marshal(expectedBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/periodic", bytes.NewBuffer(body), vars, nil, http.StatusOK, PeriodicSubPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlinePeriodicNotificationSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		if rr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions/periodic", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, PeriodicSubPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func testPeriodicSubscriptionGet(t *testing.T, subscriptionId string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	var err error
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/subscriptions/periodic", nil, vars, nil, http.StatusNotFound, PeriodicSubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/periodic", nil, vars, nil, http.StatusOK, PeriodicSubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlinePeriodicNotificationSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != expectedResponse {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testPeriodicSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	returnCode := http.StatusNoContent
+	if !expectSuccess {
+		returnCode = http.StatusNotFound
+	}
+
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/periodic", nil, vars, nil, returnCode, PeriodicSubDELETE)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
 func TestZonalSuccessSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())

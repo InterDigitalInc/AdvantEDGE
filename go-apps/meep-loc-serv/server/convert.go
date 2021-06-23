@@ -178,6 +178,34 @@ func convertJsonToUserSubscription(jsonInfo string) *UserTrackingSubscription {
 	return &user
 }
 
+func convertPeriodicSubscriptionToJson(periodicSubs *PeriodicNotificationSubscription) string {
+
+	jsonInfo, err := json.Marshal(*periodicSubs)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+/*
+func convertJsonToPeriodicSubscription(jsonInfo string) *PeriodicNotificationSubscription {
+
+        if jsonInfo == "" {
+                return nil
+        }
+
+        var periodic PeriodicNotificationSubscription
+        err := json.Unmarshal([]byte(jsonInfo), &periodic)
+        if err != nil {
+                log.Error(err.Error())
+                return nil
+        }
+        return &periodic
+}
+*/
+
 func convertAreaCircleSubscriptionToJson(circleSubs *CircleNotificationSubscription) string {
 
 	jsonInfo, err := json.Marshal(*circleSubs)

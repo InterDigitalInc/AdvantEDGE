@@ -23,7 +23,6 @@ servers:
   - url: 'https://localhost/sandboxname/location/v2'
 tags:
 - name: 'location'
-- name: 'unsupported'
 paths:
   /queries/distance:
     get:
@@ -757,7 +756,7 @@ paths:
   /subscriptions/periodic:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieves all active subscriptions to periodic notifications'
       description: 'This operation is used for retrieving all active subscriptions to periodic notifications.'
       operationId: periodicSubListGET
@@ -783,7 +782,7 @@ paths:
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic'
     post:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Creates a subscription for periodic notification'
       description: 'Creates a subscription to the Location Service for a periodic notification.'
       operationId: periodicSubPOST
@@ -872,7 +871,7 @@ paths:
   /subscriptions/periodic/{subscriptionId}:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: periodicSubGET
@@ -911,7 +910,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: periodicSubPUT
@@ -972,7 +971,7 @@ paths:
       x-swagger-router-controller: "subscriptions"
     delete:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: periodicSubDELETE

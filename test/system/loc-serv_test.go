@@ -83,6 +83,46 @@ func Test_loc_serv_load_scenarios(t *testing.T) {
 	}
 }
 
+func Test_periodic_success(t *testing.T) {
+        fmt.Println("--- ", t.Name())
+        log.MeepTextLogInit(t.Name())
+
+        initialiseLocServTest()
+        defer clearUpLocServTest()
+
+        referenceAddress := []string{"ue1"}
+	frequency := int32(1)
+        //don't care about initial position
+        geMoveAssetCoordinates(referenceAddress[0], 7.413917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+        //subscription to test
+        err := locServSubscriptionPeriodic(referenceAddress, locServServerUrl, frequency)
+        if err != nil {
+                t.Fatal("Subscription failed: ", err)
+        }
+
+        //wait to receive few notifications
+        time.Sleep(2500 * time.Millisecond)
+
+        //only check the first one, the same one is repeated every second
+        if len(httpReqBody) == 3 {
+                var body locServClient.InlineSubscriptionNotification
+                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+                if err != nil {
+                        t.Fatalf("cannot unmarshall response")
+                }
+                errStr := validatePeriodicSubscriptionNotification(body.SubscriptionNotification, referenceAddress[0])
+                if errStr != "" {
+                        printHttpReqBody()
+                        t.Fatalf(errStr)
+                }
+        } else {
+                printHttpReqBody()
+                t.Fatalf("Number of expected notifications not received")
+        }
+}
+
 func Test_all_within_distance_success(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -3916,6 +3956,20 @@ func locServSubscriptionAreaCircle(address []string, criteria *locServClient.Ent
         return nil
 }
 
+func locServSubscriptionPeriodic(referenceAddress []string, callbackReference string, frequency int32) error {
+
+        periodicSubscription := locServClient.PeriodicNotificationSubscription{referenceAddress, &locServClient.CallbackReference{"", nil, callbackReference}, "", 0, frequency, nil, 1, "", ""}
+        inlinePeriodicNotificationSubscription := locServClient.InlinePeriodicNotificationSubscription{&periodicSubscription}
+
+        _, _, err := locServAppClient.LocationApi.PeriodicSubPOST(context.TODO(), inlinePeriodicNotificationSubscription)
+        if err != nil {
+                log.Error("Failed to send subscription: ", err)
+                return err
+        }
+
+        return nil
+}
+
 func validateZonalPresenceNotification(zonalPresenceNotification *locServClient.ZonalPresenceNotification, expectedAddress string, expectedZoneId string, expectedCurrentAccessPointId string, expectedPreviousAccessPointId string, expectedUserEventType locServClient.UserEventType) string {
 
 	if zonalPresenceNotification.Address != expectedAddress {
@@ -3974,5 +4028,14 @@ func validateCircleSubscriptionNotification(subscriptionNotification *locServCli
         }
 
         return ""
+}
+
+func validatePeriodicSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
+
+        if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
+                return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
+        }
+
+	return ""
 }
 
