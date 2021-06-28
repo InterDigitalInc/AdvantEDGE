@@ -38,7 +38,6 @@ import (
 )
 
 const msmgmtBasePath = "/mec_service_mgmt/v2/"
-const msmgmtKey = "msmgmt"
 const appEnablementKey = "app-enablement"
 
 //const logModuleMSMgmt = "meep-app-enablement"
@@ -55,10 +54,9 @@ var hostUrl *url.URL
 var sandboxName string
 var selfName string
 var basePath string
-var baseKey string
 var appEnablementBaseKey string
 
-var mutex sync.Mutex
+var mutex *sync.Mutex
 
 var expiryTicker *time.Ticker
 
@@ -84,7 +82,8 @@ type FilterParameters struct {
         w.WriteHeader(http.StatusNotImplemented)
 }
 */
-func Init() (err error) {
+func Init(globalMutex *sync.Mutex) (err error) {
+	mutex = globalMutex
 	// Retrieve Sandbox name from environment variable
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
 	if sandboxNameEnv != "" {
@@ -126,7 +125,6 @@ func Init() (err error) {
 	// Set base path
 	basePath = "/" + sandboxName + msmgmtBasePath
 	// Get base store key
-	baseKey = dkm.GetKeyRoot(sandboxName) + msmgmtKey
 	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + selfName + ":" + appEnablementKey
 
 	// Connect to Redis DB
@@ -136,7 +134,6 @@ func Init() (err error) {
 		return err
 	}
 
-	_ = rc.DBFlush(baseKey)
 	_ = rc.DBFlush(appEnablementBaseKey)
 
 	log.Info("Connected to Redis DB")
@@ -178,14 +175,14 @@ func reInit() {
 	nextServiceRegistrationIdAvailable = 1
 }
 
-// Run - Start WAIS
+// Run - Start Service Mgmt
 func Run() (err error) {
-	return nil //sbi.Run()
+	return nil
 }
 
-// Stop - Stop WAIS
+// Stop - Stop Service Mgmt
 func Stop() (err error) {
-	return nil //sbi.Stop()
+	return nil
 }
 
 func appServicesGET(w http.ResponseWriter, r *http.Request) {

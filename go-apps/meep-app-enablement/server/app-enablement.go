@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
 	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
@@ -30,6 +31,8 @@ import (
 )
 
 const serviceName = "Edge Platform Application Enablement Service"
+
+var mutex sync.Mutex
 
 var hostUrl *url.URL
 var sandboxName string
@@ -61,12 +64,12 @@ func Init() (err error) {
 	}
 	log.Info("resource URL: ", hostUrl)
 
-	err = servMgmt.Init()
+	err = servMgmt.Init(&mutex)
 	if err != nil {
 		return err
 	}
 
-	err = appSupport.Init()
+	err = appSupport.Init(&mutex)
 	if err != nil {
 		return err
 	}

@@ -34,7 +34,6 @@ import (
 )
 
 const appInfoBasePath = "/app_info/v1/"
-const appInfoKey = "app-info"
 const appEnablementKey = "app-enablement"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
@@ -51,7 +50,6 @@ var hostUrl *url.URL
 var sandboxName string
 var selfName string
 var basePath string
-var baseKey string
 var appEnablementBaseKey string
 
 var expiryTicker *time.Ticker
@@ -115,7 +113,6 @@ func Init() (err error) {
 	// Set base path
 	basePath = "/" + sandboxName + appInfoBasePath
 	// Get base store key
-	baseKey = dkm.GetKeyRoot(sandboxName) + appInfoKey
 	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + selfName + ":" + appEnablementKey
 
 	// Connect to Redis DB
@@ -125,7 +122,6 @@ func Init() (err error) {
 		return err
 	}
 
-	_ = rc.DBFlush(baseKey)
 	_ = rc.DBFlush(appEnablementBaseKey)
 
 	log.Info("Connected to Redis DB")

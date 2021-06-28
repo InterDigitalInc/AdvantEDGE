@@ -17,7 +17,7 @@
 package server
 
 import (
-	"time"
+	//	"time"
 
 	"encoding/json"
 	"errors"
@@ -25,6 +25,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	msmgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -39,6 +40,8 @@ const mappsupportKey = "mec-app-support"
 const appEnablementKey = "app-enablement"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
+
+var mutex *sync.Mutex
 
 //const logModuleMSMgmt = "meep-app-enablement"
 //const serviceName = "MEC Service Management"
@@ -57,7 +60,7 @@ var basePath string
 var baseKey string
 var appEnablementBaseKey string
 
-var expiryTicker *time.Ticker
+//var expiryTicker *time.Ticker
 
 var nextSubscriptionIdAvailable int
 
@@ -66,7 +69,8 @@ var nextSubscriptionIdAvailable int
         w.WriteHeader(http.StatusNotImplemented)
 }
 */
-func Init() (err error) {
+func Init(globalMutex *sync.Mutex) (err error) {
+	mutex = globalMutex
 	// Retrieve Sandbox name from environment variable
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
 	if sandboxNameEnv != "" {
@@ -125,13 +129,14 @@ func Init() (err error) {
 	log.Info("Connected to Redis DB")
 
 	reInit()
-
-	expiryTicker = time.NewTicker(time.Second)
-	go func() {
-		for range expiryTicker.C {
-			//checkForExpiredSubscriptions()
-		}
-	}()
+	/*
+		expiryTicker = time.NewTicker(time.Second)
+		go func() {
+			for range expiryTicker.C {
+				//checkForExpiredSubscriptions()
+			}
+		}()
+	*/
 	return nil
 }
 
@@ -141,12 +146,12 @@ func reInit() {
 	nextSubscriptionIdAvailable = 1
 }
 
-// Run - Start WAIS
+// Run - Start APP support
 func Run() (err error) {
 	return nil
 }
 
-// Stop - Stop WAIS
+// Stop - Stop APP support
 func Stop() (err error) {
 	return nil
 }
@@ -276,21 +281,20 @@ func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
 	var sInfoList msmgmt.ServiceInfoList
 
 	keyName := appEnablementBaseKey + ":apps:" + appInstanceId + ":svcs:*"
+	mutex.Lock()
+	defer mutex.Unlock()
 	err := rc.ForEachJSONEntry(keyName, populateServiceInfoList, &sInfoList)
 	if err != nil {
 		return err
 	}
-	if len(sInfoList.ServiceInfos) > 0 {
-		for _, sInfo := range sInfoList.ServiceInfos {
-			serviceId := sInfo.SerInstanceId
-			//sInfoList.ServiceInfos[index].State = &state
-			sInfo.State = &state
-			err = rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
-			if err != nil {
-				return err
-			}
-
+	for _, sInfo := range sInfoList.ServiceInfos {
+		serviceId := sInfo.SerInstanceId
+		sInfo.State = &state
+		err = rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
+		if err != nil {
+			return err
 		}
+
 	}
 	return nil
 }
