@@ -2,24 +2,37 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+{{- if .IsMepService }}
+serviceAccount: meep-loc-serv-{{.MepName}}
+{{- else }}
 serviceAccount: meep-loc-serv
+{{- end }}
 
 deployment:
   replicas: 1
   port: 80
   protocol: TCP
   dependency: kube-dns
+  {{- if .IsMepService }}
+  kubeDnsInitContainerEnabled: false
+  {{- else }}
+  kubeDnsInitContainerEnabled: true
+  {{- end }}
 
 image:
   repository: meep-docker-registry:30001/meep-loc-serv
   tag: latest
   pullPolicy: Always
   env:
-    MEEP_SANDBOX_NAME: {{ .SandboxName }}
-    MEEP_HOST_URL: {{ .HostUrl }}
+    MEEP_SANDBOX_NAME: {{.SandboxName}}
+    MEEP_HOST_URL: {{.HostUrl}}
 
 service:
+  {{- if .IsMepService }}
+  name: meep-loc-serv-{{.MepName}}
+  {{- else }}
   name: meep-loc-serv
+  {{- end }}
   type: ClusterIP
   port: 80
 
@@ -28,14 +41,23 @@ ingress:
   hosts:
     - name: ''
       paths:
-        - /{{ .SandboxName }}/location
+        {{- if .IsMepService }}
+        - /{{.SandboxName}}/{{.MepName}}/location
+        {{- else }}
+        - /{{.SandboxName}}/location
+        {{- end }}
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
+    {{- if .IsMepService }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/{{ .SandboxName }}/location(/|$)(.*)$ /location/$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/location(/|$)(.*)$ /location/$2 break;
+    {{- else }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/{{.SandboxName}}/location(/|$)(.*)$ /location/$2 break;
+    {{- end }}
     {{- if .AuthEnabled }}
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-loc-serv&sbox={{ .SandboxName }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-loc-serv&sbox={{.SandboxName}}&mep={{.MepName}}
     {{- end }}
   labels: {}
   tls:
