@@ -111,6 +111,7 @@ type EgressServiceTemplate struct {
 
 // ScenarioTemplate -helm values.yaml template
 type ScenarioTemplate struct {
+	Name       string
 	Deployment DeploymentTemplate
 	Service    ServiceTemplate
 	External   ExternalTemplate
@@ -126,6 +127,8 @@ type SandboxTemplate struct {
 	UserSwaggerDir string
 	HttpsOnly      bool
 	AuthEnabled    bool
+	IsMepService   bool
+	MepName        string
 }
 
 // Deploy - Generate charts & deploy single process or entire scenario
@@ -147,6 +150,21 @@ func Deploy(sandboxName string, procName string, model *mod.Model) error {
 	}
 
 	return nil
+}
+
+func getMepService(proc *dataModel.Process) string {
+	// !!! Temporary patch for MEP Service configuration !!!
+	// Use well-known Edge App Environment variable to obtain MEP Service Name
+	if proc != nil && proc.Environment != "" {
+		allVar := strings.Split(proc.Environment, ",")
+		for _, oneVar := range allVar {
+			nameValue := strings.Split(oneVar, "=")
+			if nameValue[0] == "MEEP_MEP_SERVICE" {
+				return nameValue[1]
+			}
+		}
+	}
+	return ""
 }
 
 func generateScenarioCharts(sandboxName string, procName string, model *mod.Model) (charts []helm.Chart, err error) {
@@ -172,6 +190,11 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 			err = errors.New("Error casting process: " + name)
 			return nil, err
 		}
+		ctx := model.GetNodeContext(name)
+		if ctx == nil {
+			err = errors.New("Error finding context for process: " + name)
+			return nil, err
+		}
 
 		scenarioName := model.GetScenarioName()
 
@@ -183,7 +206,8 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 		setScenarioDefaults(&scenarioTemplate)
 
 		// Fill general scenario template information
-		scenarioTemplate.Namespace = scenarioName
+		scenarioTemplate.Name = scenarioName
+		scenarioTemplate.Namespace = sandboxName
 		deploymentTemplate.Name = proc.Name
 
 		// Create charts
@@ -220,6 +244,47 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 					}
 				}
 			}
+		} else if mepService := getMepService(proc); mepService != "" {
+			log.Debug("Processing MEP Service chart for element[", proc.Name, "]")
+
+			// Create Sandbox template
+			var sandboxTemplate SandboxTemplate
+			sandboxTemplate.SandboxName = sandboxName
+			sandboxTemplate.Namespace = sandboxName
+			sandboxTemplate.HostUrl = ve.hostUrl
+			sandboxTemplate.HttpsOnly = ve.httpsOnly
+			sandboxTemplate.AuthEnabled = ve.authEnabled
+			sandboxTemplate.IsMepService = true
+
+			// Get MEP Name
+			mepName := ctx.Parents[mod.PhyLoc]
+			sandboxTemplate.MepName = mepName
+
+			// Create chart
+			chartName := proc.Name
+			chartLocation, _, err := createChart(chartName, sandboxName, scenarioName, mepService, sandboxTemplate)
+			if err != nil {
+				log.Debug("yaml creation file process: ", err)
+				return nil, err
+			}
+
+			// validate if there is user value override
+			userValueFile := "/user-values/" + mepName + "/" + mepService + ".yaml"
+			if _, err := os.Stat(userValueFile); err != nil {
+				// path/to/file does not exists
+				// Note: according to https://helm.sh/docs/chart_template_guide/values_files/
+				//       the order of precedence is: (lowest) default values.yaml
+				//                                            then user value file
+				//                                            then individual --set params (highest)
+				//       Therefore, --set flags may interfere with user overrides
+				userValueFile = ""
+			}
+
+			// Add chart to list
+			c := newChart(chartName, sandboxName, scenarioName, chartLocation, userValueFile)
+			charts = append(charts, c)
+			log.Debug("chart added ", len(charts))
+
 		} else {
 			log.Debug("Processing virt-engine chart for element[", proc.Name, "]")
 
@@ -352,7 +417,7 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 
 			// Create virt-engine chart
 			chartName := proc.Name
-			chartLocation, _, err := createChart(chartName, sandboxName, scenarioName, scenarioTemplate)
+			chartLocation, _, err := createChart(chartName, sandboxName, scenarioName, "", scenarioTemplate)
 			if err != nil {
 				log.Debug("yaml creation file process: ", err)
 				return nil, err
@@ -387,7 +452,7 @@ func createMeSvcChart(sandboxName string, scenarioName string, meSvcName string,
 
 	// Create virt-engine chart for new group service
 	chartName := "me-svc-" + meSvcName
-	chartLocation, isNew, err := createChart(chartName, sandboxName, scenarioName, scenarioTemplate)
+	chartLocation, isNew, err := createChart(chartName, sandboxName, scenarioName, "", scenarioTemplate)
 	if err != nil {
 		log.Debug("yaml creation file process: ", err)
 		return nil, err
@@ -408,17 +473,25 @@ func deployCharts(charts []helm.Chart, sandboxName string) error {
 	return nil
 }
 
-func createChart(chartName string, sandboxName string, scenarioName string, templateData interface{}) (outChart string, isNew bool, err error) {
+func createChart(chartName, sandboxName, scenarioName, serviceName string, templateData interface{}) (outChart string, isNew bool, err error) {
 	isNew = true
 
 	// Determine source templates & destination chart location
 	var templateChart string
-	if scenarioName == "" {
+	if scenarioName == "" && serviceName == "" {
+		// Sandbox chart
 		templateChart = "/templates/sandbox/" + chartName
 		outChart = "/charts/" + sandboxName + "/sandbox/" + chartName
-	} else {
+	} else if scenarioName != "" && serviceName == "" {
+		// Scenario Chart
 		templateChart = "/templates/scenario/meep-virt-chart-templates"
 		outChart = "/charts/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
+	} else if scenarioName != "" && serviceName != "" {
+		// Service Chart
+		templateChart = "/templates/sandbox/" + serviceName
+		outChart = "/charts/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
+	} else {
+		return "", isNew, errors.New("Unsupported chart type")
 	}
 	templateValues := templateChart + "/values-template.yaml"
 	outValues := outChart + "/values.yaml"
@@ -577,11 +650,12 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.UserSwaggerDir = ve.userSwaggerDir
 	sandboxTemplate.HttpsOnly = ve.httpsOnly
 	sandboxTemplate.AuthEnabled = ve.authEnabled
+	sandboxTemplate.IsMepService = false
 
 	// Create sandbox charts
 	for pod := range ve.sboxPods {
 		var chartLocation string
-		chartLocation, _, err = createChart(pod, sandboxName, "", sandboxTemplate)
+		chartLocation, _, err = createChart(pod, sandboxName, "", "", sandboxTemplate)
 		if err != nil {
 			return
 		}

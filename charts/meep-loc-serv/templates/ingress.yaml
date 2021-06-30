@@ -1,5 +1,5 @@
 {{- if .Values.ingress.enabled -}}
-{{- $serviceName := include "meep-loc-serv.fullname" . -}}
+{{- $serviceName := .Values.service.name -}}
 {{- $servicePort := .Values.service.port -}}
 {{- $path := .Values.ingress.path -}}
 apiVersion: extensions/v1beta1
