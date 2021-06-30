@@ -38,7 +38,7 @@ import (
 )
 
 const mappsupportBasePath = "/mec_app_support/v1/"
-const mappsupportKey = "mec-app-support"
+const mappsupportKey = "as-sub"
 const appEnablementKey = "app-enablement"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
@@ -60,7 +60,6 @@ var hostUrl *url.URL
 var sandboxName string
 var selfName string
 var basePath string
-var baseKey string
 var appEnablementBaseKey string
 
 //var expiryTicker *time.Ticker
@@ -119,8 +118,7 @@ func Init(globalMutex *sync.Mutex) (err error) {
 	// Set base path
 	basePath = "/" + sandboxName + mappsupportBasePath
 	// Get base store key
-	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":meep:" + selfName
-	baseKey = appEnablementBaseKey + ":" + mappsupportKey
+	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + selfName
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, APP_ENABLEMENT_DB)
@@ -129,7 +127,6 @@ func Init(globalMutex *sync.Mutex) (err error) {
 		return err
 	}
 
-	_ = rc.DBFlush(baseKey)
 	_ = rc.DBFlush(appEnablementBaseKey)
 
 	log.Info("Connected to Redis DB")
@@ -151,6 +148,8 @@ func Init(globalMutex *sync.Mutex) (err error) {
 func reInit() {
 	//next available subsId will be overrriden if subscriptions already existed
 	nextSubscriptionIdAvailable = 1
+
+	baseKey := appEnablementBaseKey + ":apps:*:" + mappsupportKey
 	keyName := baseKey + ":subscriptions:" + "*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateAppTerminationNotificationSubscriptionMap, nil)
 
@@ -433,6 +432,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 	//registration
 	registerAppTerm(&subscription, newSubsId)
+	baseKey := key + ":" + mappsupportKey
 	_ = rc.JSONSetEntry(baseKey+":subscriptions:"+subsIdStr, ".", convertAppTerminationNotificationSubscriptionToJson(&subscription))
 
 	jsonResponse, err := json.Marshal(subscription)
@@ -480,7 +480,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
 		return
 	}
-
+	baseKey := key + ":" + mappsupportKey
 	jsonResponse, _ := rc.JSONGetEntry(baseKey+":subscriptions:"+subIdParamStr, ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -506,6 +506,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	baseKey := key + ":" + mappsupportKey
 	jsonResponse, _ := rc.JSONGetEntry(baseKey+":subscriptions:"+subIdParamStr, ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
