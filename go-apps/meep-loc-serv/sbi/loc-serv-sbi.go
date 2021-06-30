@@ -300,13 +300,8 @@ func getNetworkLocation(name string) (zone string, netLoc string, err error) {
 		err = errors.New("Error getting context for: " + name)
 		return
 	}
-	nodeCtx, ok := ctx.(*mod.NodeContext)
-	if !ok {
-		err = errors.New("Error casting context for: " + name)
-		return
-	}
-	zone = nodeCtx.Parents[mod.Zone]
-	netLoc = nodeCtx.Parents[mod.NetLoc]
+	zone = ctx.Parents[mod.Zone]
+	netLoc = ctx.Parents[mod.NetLoc]
 	return zone, netLoc, nil
 }
 

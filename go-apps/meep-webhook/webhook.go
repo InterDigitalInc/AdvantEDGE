@@ -111,17 +111,10 @@ func isScenarioResource(name string, scenarioName string) bool {
 	return name != "" && strings.HasPrefix(name, "meep-"+scenarioName+"-")
 }
 
-func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
+func getPlatformPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
+	var patchOps []patchOperation
 
-	// Apply labels
-	newLabels := make(map[string]string)
-	newLabels["meepApp"] = meepAppName
-	newLabels["meepOrigin"] = meepOrigin
-	newLabels["meepSandbox"] = sandboxName
-	newLabels["meepScenario"] = activeScenarioNames[sandboxName]
-	newLabels["processId"] = meepAppName
-
-	// Add environment variables to sidecar containers
+	// Add env vars to sidecar containers
 	var envVars []corev1.EnvVar
 	var envVar corev1.EnvVar
 	envVar.Name = "MEEP_POD_NAME"
@@ -140,13 +133,25 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 		sidecarContainers = append(sidecarContainers, container)
 	}
 
-	// Create patch operations
-	var patchOps []patchOperation
+	// Add env vars to scenario containers
+	for idx, container := range template.Spec.Containers {
+		patchOps = append(patchOps, addEnvVar(container.Env, envVars, fmt.Sprintf("/spec/template/spec/containers/%d/env", idx))...)
+	}
+
+	// Add sidecar containers
 	patchOps = append(patchOps, addContainer(template.Spec.Containers, sidecarContainers, "/spec/template/spec/containers")...)
 	patchOps = append(patchOps, addVolume(template.Spec.Volumes, sidecarConfig.Volumes, "/spec/template/spec/volumes")...)
+
+	// Add labels
+	newLabels := make(map[string]string)
+	newLabels["meepApp"] = meepAppName
+	newLabels["meepOrigin"] = meepOrigin
+	newLabels["meepSandbox"] = sandboxName
+	newLabels["meepScenario"] = activeScenarioNames[sandboxName]
+	newLabels["processId"] = meepAppName
 	patchOps = append(patchOps, updateLabels(template.ObjectMeta.Labels, newLabels, "/spec/template/metadata/labels")...)
 
-	// Init Cointainer for dependency check
+	// Init Container for dependency check
 	var initContainers []corev1.Container
 	initContainers = append(initContainers, sidecarConfig.InitContainers...)
 	patchOps = append(patchOps, addContainer(template.Spec.InitContainers, initContainers, "/spec/template/spec/initContainers")...)
@@ -212,6 +217,27 @@ func updateLabels(target map[string]string, added map[string]string, basePath st
 		}
 		patch = append(patch, patchOperation{
 			Op:    op,
+			Path:  path,
+			Value: value,
+		})
+	}
+	return patch
+}
+
+func addEnvVar(target, added []corev1.EnvVar, basePath string) (patch []patchOperation) {
+	first := len(target) == 0
+	var value interface{}
+	for _, add := range added {
+		value = add
+		path := basePath
+		if first {
+			first = false
+			value = []corev1.EnvVar{add}
+		} else {
+			path = path + "/-"
+		}
+		patch = append(patch, patchOperation{
+			Op:    "add",
 			Path:  path,
 			Value: value,
 		})
@@ -285,8 +311,8 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 		}
 	}
 
-	// Get sidecar patch
-	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, resourceName, req.Namespace)
+	// Get platform patch
+	patch, err := getPlatformPatch(template, whsvr.sidecarConfig, resourceName, req.Namespace)
 	if err != nil {
 		return &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{
