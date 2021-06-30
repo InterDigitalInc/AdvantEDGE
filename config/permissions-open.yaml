@@ -188,9 +188,23 @@ default:
 #         roles:
 #           admin: 'allow'
 #           user: 'allow'
+#       - name: 'GetDistanceGeoDataByName'
+#         path: '/geodata/{assetName}/distanceTo'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
 #       - name: 'GetGeoDataByName'
 #         path: '/geodata/{assetName}'
 #         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetWithinRangeByName'
+#         path: '/geodata/{assetName}/withinRange'
+#         method: 'POST'
 #         mode: 'verify'
 #         roles:
 #           admin: 'allow'
@@ -233,6 +247,19 @@ default:
 #   #------------------------------
 #   - name: 'meep-app-enablement-srv-mgmt'
 #     path: '/mec_service_mgmt/v1'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#   #------------------------------
+#   #  Application Information (Sbox)
+#   #------------------------------
+#   - name: 'meep-app-enablement-app-info'
+#     path: '/app_info/v1'
 #     sbox: true
 #     default:
 #       mode: 'allow'

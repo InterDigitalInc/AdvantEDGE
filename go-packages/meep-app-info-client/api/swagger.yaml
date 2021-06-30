@@ -1,0 +1,567 @@
+openapi: 3.0.2
+info:
+  title: AdvantEDGE Application Information API
+  description: AdvantEDGE implementation to create an Application Instance information
+    using OpenAPI. Developed as an extension to Application Enablement API.
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
+  license:
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
+  version: 1.0.0
+externalDocs:
+  description: GitHub Wiki
+  url: https://github.com/InterDigitalInc/AdvantEDGE/wiki
+servers:
+- url: https://localhost/sandboxname/app_info/v1
+tags:
+- name: apps
+paths:
+  /applications:
+    get:
+      tags:
+      - apps
+      description: This method retrieves information about a list of mec application
+        resources.
+      operationId: Applications_GET
+      parameters:
+      - name: app_name
+        in: query
+        description: A MEC application manager may use app_name as an input parameter
+          to query the existence of a list of MEC application instances with the same
+          name.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: app_state
+        in: query
+        description: A MEC application manager may use app_state as an input parameter
+          to query the state of a list of MEC application instances with the same
+          state.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                minItems: 0
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApplicationInfo'
+                x-content-type: application/json
+              examples:
+                ApplicationInfoList:
+                  $ref: '#/components/examples/ApplicationInfoList'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "414":
+          description: It is used to indicate that the server is refusing to process
+            the request because the request URI is longer than the server is willing
+            or able to process.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    post:
+      tags:
+      - apps
+      description: This method is used to create a mec application resource.
+      operationId: Applications_POST
+      requestBody:
+        $ref: '#/components/requestBodies/ApplicationInfo'
+      responses:
+        "201":
+          description: Upon success, the HTTP response shall include a Location HTTP
+            header that contains the resource URI of the created resource.
+          headers:
+            location:
+              description: The resource URI of the created resource
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ApplicationInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+  /applications/{appInstanceId}:
+    get:
+      tags:
+      - apps
+      description: This method retrieves information about a mec application resource.
+      operationId: ApplicationsAppInstanceId_GET
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC application manager POST method.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ApplicationInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    put:
+      tags:
+      - apps
+      description: This method updates the information about a mec application resource.
+      operationId: ApplicationsAppInstanceId_PUT
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC application manager POST method.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/ApplicationInfo'
+      responses:
+        "200":
+          description: It is used to indicate nonspecific success. The response body
+            contains a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInfo'
+              examples:
+                ServiceInfo:
+                  $ref: '#/components/examples/ApplicationInfo'
+        "400":
+          description: Bad Request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        "412":
+          description: Precondition Failed. It is used when a condition has failed
+            during conditional requests,  e.g. when using ETags to avoid write conflicts.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+    delete:
+      tags:
+      - apps
+      description: This method deletes a mec application resource.
+      operationId: ApplicationsAppInstanceId_DELETE
+      parameters:
+      - name: appInstanceId
+        in: path
+        description: Represents a MEC application instance. Note that the appInstanceId
+          is allocated by the MEC application manager POST method.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: 'Forbidden. The operation is not allowed given the current
+            status of the resource. '
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not Found. It is used when a client provided a URI that cannot
+            be mapped  to a valid resource URI.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Empty'
+components:
+  schemas:
+    Empty:
+      description: Empty schema
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Problem.type'
+        title:
+          $ref: '#/components/schemas/Problem.title'
+        status:
+          $ref: '#/components/schemas/Problem.status'
+        detail:
+          $ref: '#/components/schemas/Problem.detail'
+        instance:
+          $ref: '#/components/schemas/Problem.instance'
+    Problem.detail:
+      type: string
+      description: A human-readable explanation specific to this occurrence of the
+        problem
+    Problem.instance:
+      type: string
+      description: A URI reference that identifies the specific occurrence of the
+        problem
+      format: uri
+    Problem.status:
+      type: integer
+      description: The HTTP status code for this occurrence of the problem
+      format: uint32
+    Problem.title:
+      type: string
+      description: A short, human-readable summary of the problem type
+    Problem.type:
+      type: string
+      description: A URI reference according to IETF RFC 3986 that identifies the
+        problem type
+      format: uri
+    LocalityType:
+      type: string
+      description: The scope of locality as expressed by "consumedLocalOnly" and "isLocal".
+        If absent, defaults to MEC_HOST
+      example: MEC_SYSTEM
+      enum:
+      - MEC_SYSTEM
+      - MEC_HOST
+      - NFVI_POP
+      - ZONE
+      - ZONE_GROUP
+      - NFVI_NODE
+    ApplicationState:
+      type: string
+      description: This enumeration defines the possible states of an application.
+      example: ACTIVE
+      enum:
+      - ACTIVE
+      - INACTIVE
+    ApplicationInfo:
+      required:
+      - appInstanceId
+      - state
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Application Instance Id
+        appName:
+          type: string
+          description: Application Name
+        version:
+          type: string
+          description: Application Version
+        state:
+          $ref: '#/components/schemas/ApplicationState'
+      description: This type represents the general information of a MEC application.
+      example:
+        appInstanceId: appInstanceId
+        appName: appName
+        state: ACTIVE
+        version: version
+  responses:
+    Applications.200:
+      description: It is used to indicate nonspecific success. The response body contains
+        a representation of the resource.
+      content:
+        application/json:
+          schema:
+            minItems: 0
+            type: array
+            items:
+              $ref: '#/components/schemas/ApplicationInfo'
+            x-content-type: application/json
+          examples:
+            ApplicationInfoList:
+              $ref: '#/components/examples/ApplicationInfoList'
+    Application.201:
+      description: Upon success, the HTTP response shall include a Location HTTP header
+        that contains the resource URI of the created resource.
+      headers:
+        location:
+          description: The resource URI of the created resource
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uri
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicationInfo'
+          examples:
+            ServiceInfo:
+              $ref: '#/components/examples/ApplicationInfo'
+    ApplicationAppInstanceId.200:
+      description: It is used to indicate nonspecific success. The response body contains
+        a representation of the resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicationInfo'
+          examples:
+            ServiceInfo:
+              $ref: '#/components/examples/ApplicationInfo'
+    Error.400:
+      description: Bad Request. It is used to indicate that incorrect parameters were
+        passed to the request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.401:
+      description: Unauthorized. It is used when the client did not submit the appropriate
+        credentials.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.403:
+      description: 'Forbidden. The operation is not allowed given the current status
+        of the resource. '
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Error.404:
+      description: Not Found. It is used when a client provided a URI that cannot
+        be mapped  to a valid resource URI.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.409:
+      description: Conflict. The operation cannot be executed currently, due to a
+        conflict with  the state of the resource. Typically, this is because the application  instance
+        resource is in NOT_INSTANTIATED state.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.412:
+      description: Precondition Failed. It is used when a condition has failed during
+        conditional requests,  e.g. when using ETags to avoid write conflicts.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.414:
+      description: It is used to indicate that the server is refusing to process the
+        request because the request URI is longer than the server is willing or able
+        to process.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+    Error.429:
+      description: Too Many Requests. It is used when a rate limiter has triggered.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/Empty'
+  parameters:
+    Path.AppInstanceId:
+      name: appInstanceId
+      in: path
+      description: Represents a MEC application instance. Note that the appInstanceId
+        is allocated by the MEC application manager POST method.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Query.App_name:
+      name: app_name
+      in: query
+      description: A MEC application manager may use app_name as an input parameter
+        to query the existence of a list of MEC application instances with the same
+        name.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    Query.App_state:
+      name: app_state
+      in: query
+      description: A MEC application manager may use app_state as an input parameter
+        to query the state of a list of MEC application instances with the same state.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+  examples:
+    ApplicationInfo:
+      value:
+        appInstanceId: ApplicationInstance123
+        appName: MyAppName
+        version: ApplicationVersion1
+        state: ACTIVE
+    ApplicationInfoList:
+      value:
+      - appInstanceId: ApplicationInstance123
+        appName: MyAppName
+        version: ApplicationVersion1
+        state: ACTIVE
+      - appInstanceId: ApplicationInstance456
+        appName: MyAppName
+        version: ApplicationVersion2
+        state: INACTIVE
+  requestBodies:
+    ApplicationInfo:
+      description: New ApplicationInfo with updated "state" is included as entity
+        body of the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicationInfo'
+      required: true

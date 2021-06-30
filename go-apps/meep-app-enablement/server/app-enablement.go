@@ -21,15 +21,23 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
+
+	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
+	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
+	servMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const serviceName = "Edge Platform Application Enablement Service"
 
+var mutex sync.Mutex
+
 var hostUrl *url.URL
 var sandboxName string
 
+//var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 // Init - EPAE Service initialization
 func Init() (err error) {
 
@@ -56,6 +64,21 @@ func Init() (err error) {
 	}
 	log.Info("resource URL: ", hostUrl)
 
+	err = servMgmt.Init(&mutex)
+	if err != nil {
+		return err
+	}
+
+	err = appSupport.Init(&mutex)
+	if err != nil {
+		return err
+	}
+
+	err = appInfo.Init()
+	if err != nil {
+		return err
+	}
+
 	reInit()
 
 	return nil
@@ -65,7 +88,7 @@ func Init() (err error) {
 func reInit() {
 }
 
-// Run - Start RNIS
+// Run - Start
 func Run() (err error) {
 	//return sbi.Run()
 	return nil

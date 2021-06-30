@@ -1725,7 +1725,7 @@ func rnisSubscriptionRabEst(callbackReference string) error {
 
 func rnisSubscriptionRabRel(erabId int32, callbackReference string) error {
 
-	rabRelSubscription := rnisClient.InlineSubscription{FilterCriteriaQci: &rnisClient.RabModSubscriptionFilterCriteriaQci{ErabId: erabId}, CallbackReference: callbackReference, SubscriptionType: "RabRelSubscription"}
+	rabRelSubscription := rnisClient.InlineSubscription{FilterCriteriaQci: &rnisClient.RabModSubscriptionFilterCriteriaQci{ErabId: erabId, Qci: 80}, CallbackReference: callbackReference, SubscriptionType: "RabRelSubscription"}
 
 	_, _, err := rnisAppClient.RniApi.SubscriptionsPOST(context.TODO(), rabRelSubscription)
 	if err != nil {
