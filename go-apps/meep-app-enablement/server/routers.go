@@ -282,7 +282,7 @@ var routes = Routes{
 	Route{
 		"ApplicationsAppInstanceIdGET",
 		strings.ToUpper("Get"),
-		"/mec_info/v1/applications/{appInstanceId}",
+		"/app_info/v1/applications/{appInstanceId}",
 		appInfo.ApplicationsAppInstanceIdGET,
 	},
 

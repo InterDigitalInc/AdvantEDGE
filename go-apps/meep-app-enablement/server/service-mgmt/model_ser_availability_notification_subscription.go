@@ -29,7 +29,8 @@ type SerAvailabilityNotificationSubscription struct {
 
 	CallbackReference string `json:"callbackReference"`
 
-	Links *Self `json:"_links"`
+	//change manually to optional, spec implementation error
+	Links *Self `json:"_links,omitempty"`
 
 	FilteringCriteria *SerAvailabilityNotificationSubscriptionFilteringCriteria `json:"filteringCriteria,omitempty"`
 }
