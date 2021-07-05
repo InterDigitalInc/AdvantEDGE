@@ -38,7 +38,7 @@ import (
 )
 
 const mappsupportBasePath = "/mec_app_support/v1/"
-const mappsupportKey = "as-sub"
+const mappsupportKey = "as"
 const appEnablementKey = "app-enablement"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
@@ -145,14 +145,13 @@ func Init(globalMutex *sync.Mutex) (err error) {
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info
+// NOTE: Init is flushing everything so this is a non-operation code, but if a sbi is added that tracks Activation/Termination of scenarios, then this should become handy, leaving it there for future code updates if needed
 func reInit() {
 	//next available subsId will be overrriden if subscriptions already existed
 	nextSubscriptionIdAvailable = 1
 
-	baseKey := appEnablementBaseKey + ":apps:*:" + mappsupportKey
-	keyName := baseKey + ":subscriptions:" + "*"
+	keyName := appEnablementBaseKey + ":apps:*:" + mappsupportKey + ":subscriptions:" + "*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateAppTerminationNotificationSubscriptionMap, nil)
-
 }
 
 // Run - Start APP support
@@ -165,6 +164,7 @@ func Stop() (err error) {
 	return nil
 }
 
+// see NOTE from ReInit()
 func repopulateAppTerminationNotificationSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
 
 	var subscription AppTerminationNotificationSubscription

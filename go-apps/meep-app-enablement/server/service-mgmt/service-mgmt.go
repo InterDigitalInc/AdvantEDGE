@@ -125,7 +125,7 @@ func Init(globalMutex *sync.Mutex) (err error) {
 	// Set base path
 	basePath = "/" + sandboxName + msmgmtBasePath
 	// Get base store key
-	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":meep:" + selfName
+	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + selfName
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, MSMGMT_DB)
