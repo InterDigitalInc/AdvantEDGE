@@ -113,7 +113,7 @@ func Init() (err error) {
 	// Set base path
 	basePath = "/" + sandboxName + appInfoBasePath
 	// Get base store key
-	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + selfName + ":" + appEnablementKey
+	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + selfName
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, APP_ENABLEMENT_DB)
