@@ -129,6 +129,7 @@ type SandboxTemplate struct {
 	AuthEnabled    bool
 	IsMepService   bool
 	MepName        string
+	Env            []string
 }
 
 // Deploy - Generate charts & deploy single process or entire scenario
@@ -247,6 +248,9 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 		} else if mepService := getMepService(proc); mepService != "" {
 			log.Debug("Processing MEP Service chart for element[", proc.Name, "]")
 
+			// Get MEP Name
+			mepName := ctx.Parents[mod.PhyLoc]
+
 			// Create Sandbox template
 			var sandboxTemplate SandboxTemplate
 			sandboxTemplate.SandboxName = sandboxName
@@ -255,10 +259,16 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 			sandboxTemplate.HttpsOnly = ve.httpsOnly
 			sandboxTemplate.AuthEnabled = ve.authEnabled
 			sandboxTemplate.IsMepService = true
-
-			// Get MEP Name
-			mepName := ctx.Parents[mod.PhyLoc]
 			sandboxTemplate.MepName = mepName
+
+			// Set environment variables in template
+			if proc.Environment != "" {
+				allVar := strings.Split(proc.Environment, ",")
+				for _, oneVar := range allVar {
+					nameValue := strings.Split(oneVar, "=")
+					sandboxTemplate.Env = append(sandboxTemplate.Env, strings.TrimSpace(nameValue[0])+": "+strings.TrimSpace(nameValue[1]))
+				}
+			}
 
 			// Create chart
 			chartName := proc.Name

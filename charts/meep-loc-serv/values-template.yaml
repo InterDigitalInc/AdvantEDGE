@@ -20,6 +20,12 @@ image:
   env:
     MEEP_SANDBOX_NAME: {{.SandboxName}}
     MEEP_HOST_URL: {{.HostUrl}}
+    {{- if .IsMepService }}
+    MEEP_MEP_NAME: {{.MepName}}
+    {{- end }}
+    {{- range .Env}}
+    {{.}}
+    {{- end}}
 
 service:
   {{- if .IsMepService }}
