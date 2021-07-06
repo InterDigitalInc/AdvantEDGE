@@ -44,10 +44,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const LocServBasePath = "/location/v2/"
-const locServKey = "loc-serv:"
+const LocServBasePath = "location/v2/"
+const locServKey = "loc-serv"
 const logModuleLocServ = "meep-loc-serv"
 const serviceName = "Location Service"
+const defaultMepName = "global"
+const defaultScopeOfLocality = "MEC_SYSTEM"
+const defaultConsumedLocalOnly = true
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -149,6 +152,10 @@ var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 var rc *redis.Connector
 var hostUrl *url.URL
 var sandboxName string
+var mepName string = defaultMepName
+var scopeOfLocality string = defaultScopeOfLocality
+var consumedLocalOnly bool = defaultConsumedLocalOnly
+var locality []string = []string{}
 var basePath string
 var baseKey string
 var mutex sync.Mutex
@@ -171,16 +178,10 @@ var retryAppEnablementTicker *time.Ticker
 
 //MEC011 section end
 
-/*
-func notImplemented(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotImplemented)
-}
-*/
-
 // Init - Location Service initialization
 func Init() (err error) {
 
+	// Get Sandbox name
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
 	if sandboxNameEnv != "" {
 		sandboxName = sandboxNameEnv
@@ -203,11 +204,45 @@ func Init() (err error) {
 	}
 	log.Info("resource URL: ", hostUrl)
 
-	// Set base path
-	basePath = "/" + sandboxName + LocServBasePath
+	// Get MEP name
+	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
+	if mepNameEnv != "" {
+		mepName = mepNameEnv
+	}
+	log.Info("MEEP_MEP_NAME: ", mepName)
 
-	// Get base storage key
-	baseKey = dkm.GetKeyRoot(sandboxName) + locServKey
+	// Get scope of locality
+	scopeOfLocalityEnv := strings.TrimSpace(os.Getenv("MEEP_SCOPE_OF_LOCALITY"))
+	if scopeOfLocalityEnv != "" {
+		scopeOfLocality = scopeOfLocalityEnv
+	}
+	log.Info("MEEP_SCOPE_OF_LOCALITY: ", scopeOfLocality)
+
+	// Get local consumption
+	consumedLocalOnlyEnv := strings.TrimSpace(os.Getenv("MEEP_CONSUMED_LOCAL_ONLY"))
+	if consumedLocalOnlyEnv != "" {
+		value, err := strconv.ParseBool("true")
+		if err == nil {
+			consumedLocalOnly = value
+		}
+	}
+	log.Info("MEEP_CONSUMED_LOCAL_ONLY: ", consumedLocalOnly)
+
+	// Get locality
+	localityEnv := strings.TrimSpace(os.Getenv("MEEP_LOCALITY"))
+	if localityEnv != "" {
+		locality = strings.Split(localityEnv, ":")
+	}
+	log.Info("MEEP_LOCALITY: ", locality)
+
+	// Set base path & base storage key
+	if mepName != "" {
+		basePath = "/" + sandboxName + "/" + mepName + "/" + LocServBasePath
+		baseKey = dkm.GetKeyRoot(sandboxName) + locServKey + ":mep:" + mepName + ":"
+	} else {
+		basePath = "/" + sandboxName + "/" + LocServBasePath
+		baseKey = dkm.GetKeyRoot(sandboxName) + locServKey + ":mep-global:"
+	}
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, LOC_SERV_DB)
