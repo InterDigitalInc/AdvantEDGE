@@ -116,14 +116,16 @@ type ZoneStatusCheck struct {
 }
 
 type DistanceCheck struct {
-	NextTts      int32 //next time to send, derived from frequency
-	Subscription *DistanceNotificationSubscription
+	NextTts             int32 //next time to send, derived from frequency
+	NbNotificationsSent int32
+	Subscription        *DistanceNotificationSubscription
 }
 
 type AreaCircleCheck struct {
-	NextTts      int32 //next time to send, derived from frequency
-	AddrInArea   map[string]bool
-	Subscription *CircleNotificationSubscription
+	NextTts             int32 //next time to send, derived from frequency
+	AddrInArea          map[string]bool
+	NbNotificationsSent int32
+	Subscription        *CircleNotificationSubscription
 }
 
 type PeriodicCheck struct {
@@ -384,106 +386,214 @@ func checkNotificationDistancePeriodicTrigger() {
 	//check all that applies
 	for subsId, distanceCheck := range distanceSubscriptionMap {
 		if distanceCheck != nil && distanceCheck.Subscription != nil {
-			//decrement the next time to send a message
-			distanceCheck.NextTts--
-			if distanceCheck.NextTts > 0 {
-				continue
-			} else { //restart the nextTts and continue processing to send notification or not
-				distanceCheck.NextTts = distanceCheck.Subscription.Frequency
-			}
-			//loop through every reference address
-			returnAddr := make(map[string]*gisClient.Distance)
-			skipThisSubscription := false
+			if distanceCheck.Subscription.Count == 0 || (distanceCheck.Subscription.Count != 0 && distanceCheck.NbNotificationsSent < distanceCheck.Subscription.Count) {
+				//decrement the next time to send a message
+				distanceCheck.NextTts--
+				if distanceCheck.NextTts > 0 {
+					continue
+				} else { //restart the nextTts and continue processing to send notification or not
+					distanceCheck.NextTts = distanceCheck.Subscription.Frequency
+				}
+				//loop through every reference address
+				returnAddr := make(map[string]*gisClient.Distance)
+				skipThisSubscription := false
 
-			//if reference address is specified, reference addresses are checked agains each monitored address
-			//if reference address is nil, each pair of the monitored address should be checked
-			//creating address pairs to check
-			//e.g. refAddr = A, B ; monitoredAddr = C, D, E ; resultingPairs {A,C - A,D - A,E - B,C - B,D - B-E}
-			//e.g. monitoredAddr = A, B, C ; resultingPairs {A,B - B,A - A,C - C,A - B,C - C,B}
+				//if reference address is specified, reference addresses are checked agains each monitored address
+				//if reference address is nil, each pair of the monitored address should be checked
+				//creating address pairs to check
+				//e.g. refAddr = A, B ; monitoredAddr = C, D, E ; resultingPairs {A,C - A,D - A,E - B,C - B,D - B-E}
+				//e.g. monitoredAddr = A, B, C ; resultingPairs {A,B - B,A - A,C - C,A - B,C - C,B}
 
-			var addressPairs []Pair
-			if distanceCheck.Subscription.ReferenceAddress != nil {
-				for _, refAddr := range distanceCheck.Subscription.ReferenceAddress {
-					//loop through every monitored address
-					for _, monitoredAddr := range distanceCheck.Subscription.MonitoredAddress {
-						pair := Pair{addr1: refAddr, addr2: monitoredAddr}
-						addressPairs = append(addressPairs, pair)
+				var addressPairs []Pair
+				if distanceCheck.Subscription.ReferenceAddress != nil {
+					for _, refAddr := range distanceCheck.Subscription.ReferenceAddress {
+						//loop through every monitored address
+						for _, monitoredAddr := range distanceCheck.Subscription.MonitoredAddress {
+							pair := Pair{addr1: refAddr, addr2: monitoredAddr}
+							addressPairs = append(addressPairs, pair)
+						}
+					}
+				} else {
+					nbIndex := len(distanceCheck.Subscription.MonitoredAddress)
+					for i := 0; i < nbIndex-1; i++ {
+						for j := i + 1; j < nbIndex; j++ {
+							pair := Pair{addr1: distanceCheck.Subscription.MonitoredAddress[i], addr2: distanceCheck.Subscription.MonitoredAddress[j]}
+							addressPairs = append(addressPairs, pair)
+							//need pair to be symmetrical so that each is used as reference point and monitored address
+							pair = Pair{addr1: distanceCheck.Subscription.MonitoredAddress[j], addr2: distanceCheck.Subscription.MonitoredAddress[i]}
+							addressPairs = append(addressPairs, pair)
+						}
 					}
 				}
-			} else {
-				nbIndex := len(distanceCheck.Subscription.MonitoredAddress)
-				for i := 0; i < nbIndex-1; i++ {
-					for j := i + 1; j < nbIndex; j++ {
-						pair := Pair{addr1: distanceCheck.Subscription.MonitoredAddress[i], addr2: distanceCheck.Subscription.MonitoredAddress[j]}
-						addressPairs = append(addressPairs, pair)
-						//need pair to be symmetrical so that each is used as reference point and monitored address
-						pair = Pair{addr1: distanceCheck.Subscription.MonitoredAddress[j], addr2: distanceCheck.Subscription.MonitoredAddress[i]}
-						addressPairs = append(addressPairs, pair)
-					}
-				}
-			}
 
-			for _, pair := range addressPairs {
-				refAddr := pair.addr1
-				monitoredAddr := pair.addr2
+				for _, pair := range addressPairs {
+					refAddr := pair.addr1
+					monitoredAddr := pair.addr2
 
-				var distParam gisClient.TargetPoint
-				distParam.AssetName = monitoredAddr
+					var distParam gisClient.TargetPoint
+					distParam.AssetName = monitoredAddr
 
-				distResp, _, err := gisAppClient.GeospatialDataApi.GetDistanceGeoDataByName(context.TODO(), refAddr, distParam)
-				if err != nil {
-					log.Error("Failed to communicate with gis engine: ", err)
-					return
-				}
+					distResp, httpResp, err := gisAppClient.GeospatialDataApi.GetDistanceGeoDataByName(context.TODO(), refAddr, distParam)
+					if err != nil {
+						//getting distance of an element that is not in the DB (not in scenario, not connected) returns error code 400 (bad parameters) in the API. Using that error code to track that request made it to GIS but no good result, so ignore that address (monitored or ref)
+						if httpResp.StatusCode == http.StatusBadRequest {
+							//ignore that pair and continue processing
+							continue
+						} else {
+							log.Error("Failed to communicate with gis engine: ", err)
+							return
+						}
+					}
 
-				distance := int32(distResp.Distance)
+					distance := int32(distResp.Distance)
 
-				switch *distanceCheck.Subscription.Criteria {
-				case ALL_WITHIN_DISTANCE:
-					if float32(distance) < distanceCheck.Subscription.Distance {
-						returnAddr[monitoredAddr] = &distResp
-					} else {
-						skipThisSubscription = true
+					switch *distanceCheck.Subscription.Criteria {
+					case ALL_WITHIN_DISTANCE:
+						if float32(distance) < distanceCheck.Subscription.Distance {
+							returnAddr[monitoredAddr] = &distResp
+						} else {
+							skipThisSubscription = true
+						}
+					case ALL_BEYOND_DISTANCE:
+						if float32(distance) > distanceCheck.Subscription.Distance {
+							returnAddr[monitoredAddr] = &distResp
+						} else {
+							skipThisSubscription = true
+						}
+					case ANY_WITHIN_DISTANCE:
+						if float32(distance) < distanceCheck.Subscription.Distance {
+							returnAddr[monitoredAddr] = &distResp
+						}
+					case ANY_BEYOND_DISTANCE:
+						if float32(distance) > distanceCheck.Subscription.Distance {
+							returnAddr[monitoredAddr] = &distResp
+						}
+					default:
 					}
-				case ALL_BEYOND_DISTANCE:
-					if float32(distance) > distanceCheck.Subscription.Distance {
-						returnAddr[monitoredAddr] = &distResp
-					} else {
-						skipThisSubscription = true
+					if skipThisSubscription {
+						break
 					}
-				case ANY_WITHIN_DISTANCE:
-					if float32(distance) < distanceCheck.Subscription.Distance {
-						returnAddr[monitoredAddr] = &distResp
-					}
-				case ANY_BEYOND_DISTANCE:
-					if float32(distance) > distanceCheck.Subscription.Distance {
-						returnAddr[monitoredAddr] = &distResp
-					}
-				default:
 				}
 				if skipThisSubscription {
-					break
+					continue
+				}
+				if len(returnAddr) > 0 {
+					//update nb of notification sent anch check if valid
+					subsIdStr := strconv.Itoa(subsId)
+
+					var distanceNotif SubscriptionNotification
+					distanceNotif.DistanceCriteria = distanceCheck.Subscription.Criteria
+					distanceNotif.IsFinalNotification = false
+					distanceNotif.Link = distanceCheck.Subscription.Link
+					var terminalLocationList []TerminalLocation
+					for terminalAddr, distanceInfo := range returnAddr {
+						var terminalLocation TerminalLocation
+						terminalLocation.Address = terminalAddr
+						var locationInfo LocationInfo
+						locationInfo.Latitude = nil
+						locationInfo.Latitude = append(locationInfo.Latitude, distanceInfo.Latitude)
+						locationInfo.Longitude = nil
+						locationInfo.Longitude = append(locationInfo.Longitude, distanceInfo.Longitude)
+						locationInfo.Shape = 2
+						seconds := time.Now().Unix()
+						var timestamp TimeStamp
+						timestamp.Seconds = int32(seconds)
+						locationInfo.Timestamp = &timestamp
+						terminalLocation.CurrentLocation = &locationInfo
+						retrievalStatus := RETRIEVED
+						terminalLocation.LocationRetrievalStatus = &retrievalStatus
+						terminalLocationList = append(terminalLocationList, terminalLocation)
+					}
+					distanceNotif.TerminalLocation = terminalLocationList
+					distanceNotif.CallbackData = distanceCheck.Subscription.CallbackReference.CallbackData
+					var inlineDistanceSubscriptionNotification InlineSubscriptionNotification
+					inlineDistanceSubscriptionNotification.SubscriptionNotification = &distanceNotif
+					distanceCheck.NbNotificationsSent++
+					sendSubscriptionNotification(distanceCheck.Subscription.CallbackReference.NotifyURL, inlineDistanceSubscriptionNotification)
+					log.Info("Distance Notification"+"("+subsIdStr+") For ", returnAddr)
 				}
 			}
-			if skipThisSubscription {
-				continue
-			}
-			if len(returnAddr) > 0 {
-				subsIdStr := strconv.Itoa(subsId)
+		}
+	}
+}
 
-				var distanceNotif SubscriptionNotification
-				distanceNotif.DistanceCriteria = distanceCheck.Subscription.Criteria
-				distanceNotif.IsFinalNotification = false
-				distanceNotif.Link = distanceCheck.Subscription.Link
-				var terminalLocationList []TerminalLocation
-				for terminalAddr, distanceInfo := range returnAddr {
+func checkNotificationAreaCircle(addressToCheck string) {
+	//only check if there is at least one subscription
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, areaCircleCheck := range areaCircleSubscriptionMap {
+		if areaCircleCheck != nil && areaCircleCheck.Subscription != nil {
+			if areaCircleCheck.Subscription.Count == 0 || (areaCircleCheck.Subscription.Count != 0 && areaCircleCheck.NbNotificationsSent < areaCircleCheck.Subscription.Count) {
+				//ignoring the frequency and checkImmediate for this subscription since it is considered event based, not periodic
+				/* //decrement the next time to send a message
+				if areaCircleCheck.NextTts > 0 {
+					continue
+				} else { //restart the nextTts and continue processing to send notification or not
+					areaCircleCheck.NextTts = areaCircleCheck.Subscription.Frequency
+				}*/
+
+				//loop through every reference address
+				for _, addr := range areaCircleCheck.Subscription.Address {
+					if addr != addressToCheck {
+						continue
+					}
+					//check if address is already inside the area or not based on the subscription
+					var withinRangeParam gisClient.TargetRange
+					withinRangeParam.Latitude = areaCircleCheck.Subscription.Latitude
+					withinRangeParam.Longitude = areaCircleCheck.Subscription.Longitude
+					withinRangeParam.Radius = areaCircleCheck.Subscription.Radius
+
+					withinRangeResp, httpResp, err := gisAppClient.GeospatialDataApi.GetWithinRangeByName(context.TODO(), addr, withinRangeParam)
+					if err != nil {
+						//getting element that is not in the DB (not in scenario, not connected) returns error code 400 (bad parameters) in the API. Using that error code to track that request made it to GIS but no good result, so ignore that address (monitored or ref)
+						if httpResp.StatusCode == http.StatusBadRequest {
+							//if the UE was within the zone, continue processing to send a LEAVING notification, otherwise, go to next subscription
+							if !areaCircleCheck.AddrInArea[addr] {
+								continue
+							}
+						} else {
+							log.Error("Failed to communicate with gis engine: ", err)
+							return
+						}
+					}
+					//check if there is a change
+					var event EnteringLeavingCriteria
+					if withinRangeResp.Within {
+						if areaCircleCheck.AddrInArea[addr] {
+							//no change
+							continue
+						} else {
+							areaCircleCheck.AddrInArea[addr] = true
+							event = ENTERING_CRITERIA
+						}
+					} else {
+						if !areaCircleCheck.AddrInArea[addr] {
+							//no change
+							continue
+						} else {
+							areaCircleCheck.AddrInArea[addr] = false
+							event = LEAVING_CRITERIA
+						}
+					}
+					//no tracking this event, stop looking for this UE
+					if *areaCircleCheck.Subscription.EnteringLeavingCriteria != event {
+						continue
+					}
+					subsIdStr := strconv.Itoa(subsId)
+					var areaCircleNotif SubscriptionNotification
+
+					areaCircleNotif.EnteringLeavingCriteria = areaCircleCheck.Subscription.EnteringLeavingCriteria
+					areaCircleNotif.IsFinalNotification = false
+					areaCircleNotif.Link = areaCircleCheck.Subscription.Link
+					var terminalLocationList []TerminalLocation
 					var terminalLocation TerminalLocation
-					terminalLocation.Address = terminalAddr
+					terminalLocation.Address = addr
 					var locationInfo LocationInfo
 					locationInfo.Latitude = nil
-					locationInfo.Latitude = append(locationInfo.Latitude, distanceInfo.Latitude)
+					locationInfo.Latitude = append(locationInfo.Latitude, withinRangeResp.Latitude)
 					locationInfo.Longitude = nil
-					locationInfo.Longitude = append(locationInfo.Longitude, distanceInfo.Longitude)
+					locationInfo.Longitude = append(locationInfo.Longitude, withinRangeResp.Longitude)
 					locationInfo.Shape = 2
 					seconds := time.Now().Unix()
 					var timestamp TimeStamp
@@ -493,106 +603,16 @@ func checkNotificationDistancePeriodicTrigger() {
 					retrievalStatus := RETRIEVED
 					terminalLocation.LocationRetrievalStatus = &retrievalStatus
 					terminalLocationList = append(terminalLocationList, terminalLocation)
+
+					areaCircleNotif.TerminalLocation = terminalLocationList
+					areaCircleNotif.CallbackData = areaCircleCheck.Subscription.CallbackReference.CallbackData
+					var inlineCircleSubscriptionNotification InlineSubscriptionNotification
+					inlineCircleSubscriptionNotification.SubscriptionNotification = &areaCircleNotif
+					areaCircleCheck.NbNotificationsSent++
+					sendSubscriptionNotification(areaCircleCheck.Subscription.CallbackReference.NotifyURL, inlineCircleSubscriptionNotification)
+					log.Info("Area Circle Notification" + "(" + subsIdStr + ") For " + addr + " when " + string(*areaCircleCheck.Subscription.EnteringLeavingCriteria) + " area")
 				}
-				distanceNotif.TerminalLocation = terminalLocationList
-				distanceNotif.CallbackData = distanceCheck.Subscription.ClientCorrelator
-				var inlineDistanceSubscriptionNotification InlineSubscriptionNotification
-				inlineDistanceSubscriptionNotification.SubscriptionNotification = &distanceNotif
-				sendSubscriptionNotification(distanceCheck.Subscription.CallbackReference.NotifyURL, inlineDistanceSubscriptionNotification)
-				log.Info("Distance Notification"+"("+subsIdStr+") For ", returnAddr)
 			}
-		}
-	}
-}
-
-func checkNotificationAreaCircle(addressToCheck string) {
-
-	//only check if there is at least one subscription
-	mutex.Lock()
-	defer mutex.Unlock()
-	//check all that applies
-	for subsId, areaCircleCheck := range areaCircleSubscriptionMap {
-		if areaCircleCheck != nil && areaCircleCheck.Subscription != nil {
-			//ignoring the frequency and checkImmediate for this subscription since it is considered event based, not periodic
-			/* //decrement the next time to send a message
-			if areaCircleCheck.NextTts > 0 {
-				continue
-			} else { //restart the nextTts and continue processing to send notification or not
-				areaCircleCheck.NextTts = areaCircleCheck.Subscription.Frequency
-			}*/
-
-			//loop through every reference address
-			for _, addr := range areaCircleCheck.Subscription.Address {
-				if addr != addressToCheck {
-					continue
-				}
-				//check if address is already inside the area or not based on the subscription
-				var withinRangeParam gisClient.TargetRange
-				withinRangeParam.Latitude = areaCircleCheck.Subscription.Latitude
-				withinRangeParam.Longitude = areaCircleCheck.Subscription.Longitude
-				withinRangeParam.Radius = areaCircleCheck.Subscription.Radius
-
-				withinRangeResp, _, err := gisAppClient.GeospatialDataApi.GetWithinRangeByName(context.TODO(), addr, withinRangeParam)
-				if err != nil {
-					log.Error("Failed to communicate with gis engine: ", err)
-					return
-				}
-
-				//check if there is a change
-				var event EnteringLeavingCriteria
-				if withinRangeResp.Within {
-					if areaCircleCheck.AddrInArea[addr] {
-						//no change
-						continue
-					} else {
-						areaCircleCheck.AddrInArea[addr] = true
-						event = ENTERING_CRITERIA
-					}
-				} else {
-					if !areaCircleCheck.AddrInArea[addr] {
-						//no change
-						continue
-					} else {
-						areaCircleCheck.AddrInArea[addr] = false
-						event = LEAVING_CRITERIA
-					}
-				}
-				//no tracking this event, stop looking for this UE
-				if *areaCircleCheck.Subscription.EnteringLeavingCriteria != event {
-					continue
-				}
-				subsIdStr := strconv.Itoa(subsId)
-				var areaCircleNotif SubscriptionNotification
-
-				areaCircleNotif.EnteringLeavingCriteria = areaCircleCheck.Subscription.EnteringLeavingCriteria
-				areaCircleNotif.IsFinalNotification = false
-				areaCircleNotif.Link = areaCircleCheck.Subscription.Link
-				var terminalLocationList []TerminalLocation
-				var terminalLocation TerminalLocation
-				terminalLocation.Address = addr
-				var locationInfo LocationInfo
-				locationInfo.Latitude = nil
-				locationInfo.Latitude = append(locationInfo.Latitude, withinRangeResp.Latitude)
-				locationInfo.Longitude = nil
-				locationInfo.Longitude = append(locationInfo.Longitude, withinRangeResp.Longitude)
-				locationInfo.Shape = 2
-				seconds := time.Now().Unix()
-				var timestamp TimeStamp
-				timestamp.Seconds = int32(seconds)
-				locationInfo.Timestamp = &timestamp
-				terminalLocation.CurrentLocation = &locationInfo
-				retrievalStatus := RETRIEVED
-				terminalLocation.LocationRetrievalStatus = &retrievalStatus
-				terminalLocationList = append(terminalLocationList, terminalLocation)
-
-				areaCircleNotif.TerminalLocation = terminalLocationList
-				areaCircleNotif.CallbackData = areaCircleCheck.Subscription.ClientCorrelator
-				var inlineCircleSubscriptionNotification InlineSubscriptionNotification
-				inlineCircleSubscriptionNotification.SubscriptionNotification = &areaCircleNotif
-				sendSubscriptionNotification(areaCircleCheck.Subscription.CallbackReference.NotifyURL, inlineCircleSubscriptionNotification)
-				log.Info("Area Circle Notification" + "(" + subsIdStr + ") For " + addr + " when " + string(*areaCircleCheck.Subscription.EnteringLeavingCriteria) + " area")
-			}
-
 		}
 	}
 }
@@ -647,8 +667,7 @@ func checkNotificationPeriodicTrigger() {
 			periodicNotif.IsFinalNotification = false
 			periodicNotif.Link = periodicCheck.Subscription.Link
 			subsIdStr := strconv.Itoa(subsId)
-			periodicNotif.CallbackData = periodicCheck.Subscription.ClientCorrelator
-
+			periodicNotif.CallbackData = periodicCheck.Subscription.CallbackReference.CallbackData
 			periodicNotif.TerminalLocation = terminalLocationList
 			var inlinePeriodicSubscriptionNotification InlineSubscriptionNotification
 			inlinePeriodicSubscriptionNotification.SubscriptionNotification = &periodicNotif
@@ -680,6 +699,7 @@ func registerDistance(distanceSub *DistanceNotificationSubscription, subsIdStr s
 	defer mutex.Unlock()
 	var distanceCheck DistanceCheck
 	distanceCheck.Subscription = distanceSub
+	distanceCheck.NbNotificationsSent = 0
 	if distanceSub.CheckImmediate {
 		distanceCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
 	} else {
@@ -710,6 +730,7 @@ func registerAreaCircle(areaCircleSub *CircleNotificationSubscription, subsIdStr
 	defer mutex.Unlock()
 	var areaCircleCheck AreaCircleCheck
 	areaCircleCheck.Subscription = areaCircleSub
+	areaCircleCheck.NbNotificationsSent = 0
 	areaCircleCheck.AddrInArea = map[string]bool{}
 	//checkImmediate and NextTts apply more to a periodic notification, setting them but ignoring both in notification code because of unclear spec on that matter
 	if areaCircleSub.CheckImmediate {
@@ -829,7 +850,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 			timestamp.Seconds = int32(seconds)
 			zonal.Timestamp = &timestamp
 
-			zonal.CallbackData = subscription.ClientCorrelator
+			zonal.CallbackData = subscription.CallbackReference.CallbackData
 
 			if newZoneId != oldZoneId {
 				//process LEAVING events prior to entering ones
@@ -968,7 +989,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						var timestamp TimeStamp
 						timestamp.Seconds = int32(seconds)
 						zonal.Timestamp = &timestamp
-						zonal.CallbackData = subscription.ClientCorrelator
+						zonal.CallbackData = subscription.CallbackReference.CallbackData
 						var inlineZonal InlineZonalPresenceNotification
 						inlineZonal.ZonalPresenceNotification = &zonal
 						sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
@@ -996,7 +1017,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 							var timestamp TimeStamp
 							timestamp.Seconds = int32(seconds)
 							zonal.Timestamp = &timestamp
-							zonal.CallbackData = subscription.ClientCorrelator
+							zonal.CallbackData = subscription.CallbackReference.CallbackData
 							var inlineZonal InlineZonalPresenceNotification
 							inlineZonal.ZonalPresenceNotification = &zonal
 							sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
@@ -1026,7 +1047,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						var timestamp TimeStamp
 						timestamp.Seconds = int32(seconds)
 						zonal.Timestamp = &timestamp
-						zonal.CallbackData = subscription.ClientCorrelator
+						zonal.CallbackData = subscription.CallbackReference.CallbackData
 						var inlineZonal InlineZonalPresenceNotification
 						inlineZonal.ZonalPresenceNotification = &zonal
 						sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
@@ -1588,8 +1609,11 @@ func distanceSubPut(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONSetEntry(baseKey+typeDistanceSubscription+":"+subsIdStr, ".", convertDistanceSubscriptionToJson(distanceSub))
 
+	//store the dynamic states of the subscription
+	notifSent := distanceSubscriptionMap[subsId].NbNotificationsSent
 	deregisterDistance(subsIdStr)
 	registerDistance(distanceSub, subsIdStr)
+	distanceSubscriptionMap[subsId].NbNotificationsSent = notifSent
 
 	response.DistanceNotificationSubscription = distanceSub
 
@@ -1911,8 +1935,13 @@ func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONSetEntry(baseKey+typeAreaCircleSubscription+":"+subsIdStr, ".", convertAreaCircleSubscriptionToJson(areaCircleSub))
 
+	//store the dynamic states fo the subscription
+	notifSent := areaCircleSubscriptionMap[subsId].NbNotificationsSent
+	addrInArea := areaCircleSubscriptionMap[subsId].AddrInArea
 	deregisterAreaCircle(subsIdStr)
 	registerAreaCircle(areaCircleSub, subsIdStr)
+	areaCircleSubscriptionMap[subsId].NbNotificationsSent = notifSent
+	areaCircleSubscriptionMap[subsId].AddrInArea = addrInArea
 
 	response.CircleNotificationSubscription = areaCircleSub
 
@@ -3046,10 +3075,11 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 	} else {
 		if apInfo.LocationInfo == nil {
 			apInfo.LocationInfo = new(LocationInfo)
-			apInfo.LocationInfo.Accuracy = 1
 		}
 
 		//we only support shape != 7 in locationInfo
+		//Accuracy supported for shape 4, 5, 6 only, so ignoring it in our case (only support shape == 2)
+		//apInfo.LocationInfo.Accuracy = 1
 		apInfo.LocationInfo.Shape = 2
 		apInfo.LocationInfo.Longitude = nil
 		apInfo.LocationInfo.Longitude = append(apInfo.LocationInfo.Longitude, *longitude)
@@ -3209,6 +3239,7 @@ func distanceReInit() {
 			}
 			var distanceCheck DistanceCheck
 			distanceCheck.Subscription = &distanceSub
+			distanceCheck.NbNotificationsSent = 0
 			if distanceSub.CheckImmediate {
 				distanceCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
 			} else {
@@ -3241,6 +3272,7 @@ func areaCircleReInit() {
 			}
 			var areaCircleCheck AreaCircleCheck
 			areaCircleCheck.Subscription = &areaCircleSub
+			areaCircleCheck.NbNotificationsSent = 0
 			areaCircleCheck.AddrInArea = map[string]bool{}
 			if areaCircleSub.CheckImmediate {
 				areaCircleCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
@@ -3248,7 +3280,6 @@ func areaCircleReInit() {
 				areaCircleCheck.NextTts = areaCircleSub.Frequency
 			}
 			areaCircleSubscriptionMap[subscriptionId] = &areaCircleCheck
-
 		}
 	}
 	nextAreaCircleSubscriptionIdAvailable = maxAreaCircleSubscriptionId + 1
@@ -3295,9 +3326,30 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 	longitudeStr := q.Get("longitude")
 	address := q["address"]
 
+	if len(address) == 0 {
+		log.Error("Query should have at least 1 'address' parameter")
+		http.Error(w, "Query should have at least 1 'address' parameter", http.StatusBadRequest)
+		return
+	}
 	if len(address) > 2 {
 		log.Error("Query cannot have more than 2 'address' parameters")
 		http.Error(w, "Query cannot have more than 2 'address' parameters", http.StatusBadRequest)
+		return
+	}
+	if len(address) == 2 && (latitudeStr != "" || longitudeStr != "") {
+		log.Error("Query cannot have 2 'address' parameters and 'latitude'/'longitude' parameters")
+		http.Error(w, "Query cannot have 2 'address' parameters and 'latitude'/'longitude' parameters", http.StatusBadRequest)
+		return
+	}
+	if (latitudeStr != "" && longitudeStr == "") || (latitudeStr == "" && longitudeStr != "") {
+		log.Error("Query must provide a latitude and a longitude for a point to be valid")
+		http.Error(w, "Query must provide a latitude and a longitude for a point to be valid", http.StatusBadRequest)
+		return
+	}
+	if len(address) == 1 && latitudeStr == "" && longitudeStr == "" {
+		log.Error("Query must provide either 2 'address' parameters or 1 'address' parameter and 'latitude'/'longitude' parameters")
+		http.Error(w, "Query must provide either 2 'address' parameters or 1 'address' parameter and 'latitude'/'longitude' parameters", http.StatusBadRequest)
+		return
 	}
 
 	validQueryParams := []string{"requester", "address", "latitude", "longitude"}
