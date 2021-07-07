@@ -677,6 +677,7 @@ repo:
         api:
           meep-app-support: go-apps/meep-app-enablement/api/app-support/swagger.yaml
           meep-service-mgmt: go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml
+          meep-app-info: go-apps/meep-app-enablement/api/app-info/swagger.yaml
 
   #------------------------------
   #  Dependencies

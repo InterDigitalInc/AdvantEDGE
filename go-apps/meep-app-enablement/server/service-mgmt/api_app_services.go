@@ -28,26 +28,21 @@ import (
 )
 
 func AppServicesGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	appServicesGET(w, r)
 }
 
 func AppServicesPOST(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	appServicesPOST(w, r)
 }
 
 func AppServicesServiceIdDELETE(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	appServicesByIdDELETE(w, r)
 }
 
 func AppServicesServiceIdGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	appServicesByIdGET(w, r)
 }
 
 func AppServicesServiceIdPUT(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	appServicesByIdPUT(w, r)
 }

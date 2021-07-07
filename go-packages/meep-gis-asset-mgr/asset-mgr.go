@@ -1840,7 +1840,7 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 			// Calculate power measurements
 			rssi, rsrp, rsrq := calculatePower(meas.SubType, meas.Radius, meas.Distance)
 			if rsrp == 0 && rsrq == 0 {
-				log.Error("ERROR: Zero Rsrp and RsRq should not happen: ", meas.SubType, "---", meas.Radius, "---", meas.Distance, "---", poaName, "---", ueName)
+				log.Error("ERROR: Zero Rsrp, Rsrq and Rssi should not happen: ", meas.SubType, "---", meas.Radius, "---", meas.Distance, "---", poaName, "---", ueName)
 			}
 
 			// Add new entry or update existing one
@@ -2045,8 +2045,7 @@ func (am *AssetMgr) GetDistanceBetweenPoints(srcCoordinates string, dstCoordinat
 
 	dist := float32(0)
 
-	for rows.Next() {
-
+	if rows.Next() {
 		err = rows.Scan(&dist)
 		if err != nil {
 			log.Error(err.Error())
@@ -2079,8 +2078,7 @@ func (am *AssetMgr) GetWithinRangeBetweenPoints(srcCoordinates string, dstCoordi
 
 	within := false
 
-	for rows.Next() {
-
+	if rows.Next() {
 		err = rows.Scan(&within)
 		if err != nil {
 			log.Error(err.Error())

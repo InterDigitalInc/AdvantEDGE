@@ -3,7 +3,7 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement
 go 1.12
 
 require (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0 // indirect
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger v0.0.0
@@ -11,8 +11,9 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0 // indirect
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0 // indirect
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/antihax/optional v1.0.0 // indirect
+	github.com/google/uuid v1.2.0
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.8.0
 	github.com/prometheus/client_golang v1.9.0
