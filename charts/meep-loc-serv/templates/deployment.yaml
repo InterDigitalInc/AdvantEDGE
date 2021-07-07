@@ -42,7 +42,7 @@ spec:
           env:
             {{- range $key, $value := .Values.image.env }}
             - name: {{ $key }}
-              value: {{ $value }}
+              value: {{ $value | quote }}
             {{- end }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
