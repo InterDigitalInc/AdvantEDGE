@@ -155,7 +155,7 @@ var sandboxName string
 var mepName string = defaultMepName
 var scopeOfLocality string = defaultScopeOfLocality
 var consumedLocalOnly bool = defaultConsumedLocalOnly
-var locality []string = []string{}
+var locality []string
 var basePath string
 var baseKey string
 var mutex sync.Mutex
@@ -221,7 +221,7 @@ func Init() (err error) {
 	// Get local consumption
 	consumedLocalOnlyEnv := strings.TrimSpace(os.Getenv("MEEP_CONSUMED_LOCAL_ONLY"))
 	if consumedLocalOnlyEnv != "" {
-		value, err := strconv.ParseBool("true")
+		value, err := strconv.ParseBool(consumedLocalOnlyEnv)
 		if err == nil {
 			consumedLocalOnly = value
 		}
@@ -274,6 +274,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		Locality:       locality,
 		UserInfoCb:     updateUserInfo,
 		ZoneInfoCb:     updateZoneInfo,
 		ApInfoCb:       updateAccessPointInfo,
