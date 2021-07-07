@@ -149,8 +149,6 @@ var mutex sync.Mutex
 var gisAppClient *gisClient.APIClient
 var gisAppClientUrl string = "http://meep-gis-engine"
 
-const badRequestErrorCodeString = "400"
-
 /*
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -435,11 +433,10 @@ func checkNotificationDistancePeriodicTrigger() {
 					var distParam gisClient.TargetPoint
 					distParam.AssetName = monitoredAddr
 
-					distResp, _, err := gisAppClient.GeospatialDataApi.GetDistanceGeoDataByName(context.TODO(), refAddr, distParam)
+					distResp, httpResp, err := gisAppClient.GeospatialDataApi.GetDistanceGeoDataByName(context.TODO(), refAddr, distParam)
 					if err != nil {
 						//getting distance of an element that is not in the DB (not in scenario, not connected) returns error code 400 (bad parameters) in the API. Using that error code to track that request made it to GIS but no good result, so ignore that address (monitored or ref)
-						errCodeStr := strings.Split(err.Error(), " ")
-						if errCodeStr[0] == badRequestErrorCodeString {
+						if httpResp.StatusCode == http.StatusBadRequest {
 							//ignore that pair and continue processing
 							continue
 						} else {
@@ -547,11 +544,10 @@ func checkNotificationAreaCircle(addressToCheck string) {
 					withinRangeParam.Longitude = areaCircleCheck.Subscription.Longitude
 					withinRangeParam.Radius = areaCircleCheck.Subscription.Radius
 
-					withinRangeResp, _, err := gisAppClient.GeospatialDataApi.GetWithinRangeByName(context.TODO(), addr, withinRangeParam)
+					withinRangeResp, httpResp, err := gisAppClient.GeospatialDataApi.GetWithinRangeByName(context.TODO(), addr, withinRangeParam)
 					if err != nil {
 						//getting element that is not in the DB (not in scenario, not connected) returns error code 400 (bad parameters) in the API. Using that error code to track that request made it to GIS but no good result, so ignore that address (monitored or ref)
-						errCodeStr := strings.Split(err.Error(), " ")
-						if errCodeStr[0] == badRequestErrorCodeString {
+						if httpResp.StatusCode == http.StatusBadRequest {
 							//if the UE was within the zone, continue processing to send a LEAVING notification, otherwise, go to next subscription
 							if !areaCircleCheck.AddrInArea[addr] {
 								continue
