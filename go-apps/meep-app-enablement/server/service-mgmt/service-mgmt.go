@@ -347,8 +347,12 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 
 		if match {
 			if data.filterParameters.serCategoryId != "" {
-				//comparing with either the category name or id, spec is not clear
-				match = (data.filterParameters.serCategoryId == sInfo.SerCategory.Name) || (data.filterParameters.serCategoryId == sInfo.SerCategory.Id)
+				if sInfo.SerCategory != nil {
+					//comparing with either the category name or id, spec is not clear
+					match = (data.filterParameters.serCategoryId == sInfo.SerCategory.Name) || (data.filterParameters.serCategoryId == sInfo.SerCategory.Id)
+				} else {
+					match = false
+				}
 			}
 		}
 

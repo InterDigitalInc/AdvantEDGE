@@ -31,12 +31,14 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
+	appInfoClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-info-client"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	gisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-engine-client"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	srvMgmtClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 
 	"github.com/gorilla/mux"
 )
@@ -149,6 +151,20 @@ var mutex sync.Mutex
 var gisAppClient *gisClient.APIClient
 var gisAppClientUrl string = "http://meep-gis-engine"
 
+//MEC011 section begin
+const serviceAppName = "Location"
+const serviceAppVersion = "2.1.1"
+
+var serviceAppInstanceId string
+
+var appEnablementClientUrl string = "http://meep-app-enablement"
+var appEnablementSupport bool = true
+var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
+
+var retryAppEnablementTicker *time.Ticker
+
+//MEC011 section end
+
 /*
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -230,6 +246,29 @@ func Init() (err error) {
 	}
 	log.Info("SBI Initialized")
 
+	//register using MEC011
+	if appEnablementSupport {
+		//delay startup on purpose to give time for appEnablement pod to come up (if all coming up at the same time)
+		time.Sleep(2 * time.Second)
+
+		retryAppEnablementTicker = time.NewTicker(time.Second)
+		go func() {
+			for range retryAppEnablementTicker.C {
+				if serviceAppInstanceId == "" {
+					serviceAppInstanceId = getAppInstanceId(serviceAppName, serviceAppVersion)
+				}
+				if serviceAppInstanceId != "" {
+					err := appEnablementRegistration(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+					if err != nil {
+						log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
+					} else {
+						retryAppEnablementTicker.Stop()
+					}
+				}
+			}
+		}()
+	}
+
 	return nil
 }
 
@@ -246,10 +285,94 @@ func Run() (err error) {
 	return sbi.Run()
 }
 
-// Stop - Stop RNIS
+// Stop - Stop Location
 func Stop() (err error) {
 	periodicTicker.Stop()
 	return sbi.Stop()
+}
+
+func getAppInstanceId(appName string, appVersion string) string {
+	//var client *appInfoClient.APIClient
+	appInfoClientCfg := appInfoClient.NewConfiguration()
+	appInfoClientCfg.BasePath = appEnablementClientUrl + "/app_info/v1"
+
+	client := appInfoClient.NewAPIClient(appInfoClientCfg)
+	if client == nil {
+		log.Error("Failed to create App Info REST API client: ", appInfoClientCfg.BasePath)
+		return ""
+	}
+	var appInfo appInfoClient.ApplicationInfo
+	appInfo.AppName = appName
+	appInfo.Version = appVersion
+	state := appInfoClient.INACTIVE_ApplicationState
+	appInfo.State = &state
+	appInfoResponse, _, err := client.AppsApi.ApplicationsPOST(context.TODO(), appInfo)
+	if err != nil {
+		log.Error("Failed to communicate with app enablement service: ", err)
+		return ""
+	}
+	return appInfoResponse.AppInstanceId
+}
+
+func appEnablementRegistration(appInstanceId string, appName string, appVersion string) error {
+
+	appEnablementSrvMgmtClientCfg := srvMgmtClient.NewConfiguration()
+	appEnablementSrvMgmtClientCfg.BasePath = appEnablementClientUrl + "/mec_service_mgmt/v1"
+
+	appEnablementSrvMgmtClient = srvMgmtClient.NewAPIClient(appEnablementSrvMgmtClientCfg)
+	if appEnablementSrvMgmtClient == nil {
+		log.Error("Failed to create App Enablement Srv Mgmt REST API client: ", appEnablementSrvMgmtClientCfg.BasePath)
+		err := errors.New("Failed to create App Enablement Srv Mgmt REST API client")
+		return err
+	}
+	var srvInfo srvMgmtClient.ServiceInfoPost
+	//serName
+	srvInfo.SerName = appName
+	//version
+	srvInfo.Version = appVersion
+	//state
+	state := srvMgmtClient.ACTIVE_ServiceState
+	srvInfo.State = &state
+	//serializer
+	serializer := srvMgmtClient.JSON_SerializerType
+	srvInfo.Serializer = &serializer
+
+	//transportInfo
+	var transportInfo srvMgmtClient.TransportInfo
+	transportInfo.Id = "transport"
+	transportInfo.Name = "REST"
+	transportType := srvMgmtClient.REST_HTTP_TransportType
+	transportInfo.Type_ = &transportType
+	transportInfo.Protocol = "HTTP"
+	transportInfo.Version = "2.0"
+	var endpoint srvMgmtClient.OneOfTransportInfoEndpoint
+	endpointPath := hostUrl.String() + basePath
+	endpoint.Uris = append(endpoint.Uris, endpointPath)
+	transportInfo.Endpoint = &endpoint
+	srvInfo.TransportInfo = &transportInfo
+
+	//serCategory
+	var category srvMgmtClient.CategoryRef
+	category.Href = "catalogueHref"
+	category.Id = "locationId"
+	category.Name = "Location"
+	category.Version = "v2"
+	srvInfo.SerCategory = &category
+
+	//scopeOfLocality
+	scopeOfLocality := srvMgmtClient.MEC_SYSTEM_LocalityType
+	srvInfo.ScopeOfLocality = &scopeOfLocality
+
+	//consumedLocalOnly
+	srvInfo.ConsumedLocalOnly = false
+
+	appServicesPostResponse, _, err := appEnablementSrvMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	if err != nil {
+		log.Error("Failed to register the service to app enablement registry: ", err)
+		return err
+	}
+	log.Info("Application Enablement Service instance Id: ", appServicesPostResponse.SerInstanceId)
+	return nil
 }
 
 func deregisterZoneStatus(subsIdStr string) {
