@@ -46,12 +46,7 @@ const APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE = "AppTerminationNotificati
 
 var mutex *sync.Mutex
 
-//const logModuleMSMgmt = "meep-app-enablement"
-//const serviceName = "MEC Service Management"
-
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
-
-//var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 var APP_ENABLEMENT_DB = 5
 

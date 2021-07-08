@@ -28,21 +28,17 @@ import (
 )
 
 func ApplicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	applicationsSubscriptionDELETE(w, r)
 }
 
 func ApplicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	applicationsSubscriptionGET(w, r)
 }
 
 func ApplicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	applicationsSubscriptionsGET(w, r)
 }
 
 func ApplicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	applicationsSubscriptionsPOST(w, r)
 }
