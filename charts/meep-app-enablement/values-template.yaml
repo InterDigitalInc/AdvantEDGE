@@ -2,24 +2,37 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-serviceAccount: meep-app-enablement
-
 deployment:
   replicas: 1
   port: 80
   protocol: TCP
   dependency: kube-dns
+  {{- if .IsMepService }}
+  kubeDnsInitContainerEnabled: false
+  {{- else }}
+  kubeDnsInitContainerEnabled: true
+  {{- end }}
 
 image:
   repository: meep-docker-registry:30001/meep-app-enablement
   tag: latest
   pullPolicy: Always
   env:
-    MEEP_SANDBOX_NAME: {{ .SandboxName }}
-    MEEP_HOST_URL: {{ .HostUrl }}
+    MEEP_SANDBOX_NAME: {{.SandboxName}}
+    MEEP_HOST_URL: {{.HostUrl}}
+    {{- if .IsMepService }}
+    MEEP_MEP_NAME: {{.MepName}}
+    {{- end }}
+    {{- range .Env}}
+    {{.}}
+    {{- end}}
 
 service:
+  {{- if .IsMepService }}
+  name: {{.MepName}}-meep-app-enablement
+  {{- else }}
   name: meep-app-enablement
+  {{- end }}
   type: ClusterIP
   port: 80
 
@@ -28,18 +41,31 @@ ingress:
   hosts:
     - name: ''
       paths:
-        - /{{ .SandboxName }}/mec_app_support
-        - /{{ .SandboxName }}/mec_service_mgmt
-        - /{{ .SandboxName }}/app_info
+        {{- if .IsMepService }}
+        - /{{.SandboxName}}/{{.MepName}}/mec_app_support
+        - /{{.SandboxName}}/{{.MepName}}/mec_service_mgmt
+        - /{{.SandboxName}}/{{.MepName}}/app_info
+        {{- else }}
+        - /{{.SandboxName}}/mec_app_support
+        - /{{.SandboxName}}/mec_service_mgmt
+        - /{{.SandboxName}}/app_info
+        {{- end }}
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
+    {{- if .IsMepService }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/{{ .SandboxName }}/{{.MepName}}/mec_app_support(/|$)(.*)$ /mec_app_support/$2 break;
+      rewrite ^/{{ .SandboxName }}/{{.MepName}}/mec_service_mgmt(/|$)(.*)$ /mec_service_mgmt/$2 break;
+      rewrite ^/{{ .SandboxName }}/{{.MepName}}/app_info(/|$)(.*)$ /app_info/$2 break;
+    {{- else }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/{{ .SandboxName }}/mec_app_support(/|$)(.*)$ /mec_app_support/$2 break;
       rewrite ^/{{ .SandboxName }}/mec_service_mgmt(/|$)(.*)$ /mec_service_mgmt/$2 break;
       rewrite ^/{{ .SandboxName }}/app_info(/|$)(.*)$ /app_info/$2 break;
+    {{- end }}
     {{- if .AuthEnabled }}
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-app-enablement&sbox={{ .SandboxName }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-app-enablement&sbox={{.SandboxName}}&mep={{.MepName}}
     {{- end }}
   labels: {}
   tls:
