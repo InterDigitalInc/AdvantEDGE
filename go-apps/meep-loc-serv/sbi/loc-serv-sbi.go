@@ -44,6 +44,7 @@ type SbiCfg struct {
 
 type LocServSbi struct {
 	sandboxName             string
+	localityEnabled         bool
 	locality                map[string]bool
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
@@ -73,9 +74,14 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.cleanUpCB = cfg.CleanUpCb
 
 	// Fill locality map
-	sbi.locality = make(map[string]bool)
-	for _, locality := range cfg.Locality {
-		sbi.locality[locality] = true
+	if len(cfg.Locality) > 0 {
+		sbi.locality = make(map[string]bool)
+		for _, locality := range cfg.Locality {
+			sbi.locality[locality] = true
+		}
+		sbi.localityEnabled = true
+	} else {
+		sbi.localityEnabled = false
 	}
 
 	// Create message queue
@@ -404,6 +410,10 @@ func isUeConnected(name string) bool {
 }
 
 func isInLocality(zone string) bool {
-	_, found := sbi.locality[zone]
-	return found
+	if sbi.localityEnabled {
+		if _, found := sbi.locality[zone]; !found {
+			return false
+		}
+	}
+	return true
 }
