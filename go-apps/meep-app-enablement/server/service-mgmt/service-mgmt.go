@@ -39,7 +39,7 @@ import (
 )
 
 const msmgmtBasePath = "/mec_service_mgmt/v1/"
-const msmgmtKey = "sm-sub"
+const msmgmtKey = "sm"
 const appEnablementKey = "app-enablement"
 const SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE = "SerAvailabilityNotificationSubscription"
 
