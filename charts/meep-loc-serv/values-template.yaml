@@ -28,11 +28,6 @@ image:
     {{- end}}
 
 service:
-  {{- if .IsMepService }}
-  name: meep-loc-serv-{{.MepName}}
-  {{- else }}
-  name: meep-loc-serv
-  {{- end }}
   type: ClusterIP
   port: 80
 
