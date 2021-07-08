@@ -2,26 +2,39 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-serviceAccount: meep-rnis
-
 deployment:
   replicas: 1
   port: 80
   protocol: TCP
   dependency: kube-dns
+  {{- if .IsMepService }}
+  kubeDnsInitContainerEnabled: false
+  {{- else }}
+  kubeDnsInitContainerEnabled: true
+  {{- end }}
 
 image:
   repository: meep-docker-registry:30001/meep-rnis
   tag: latest
   pullPolicy: Always
   env:
-    MEEP_SANDBOX_NAME: {{ .SandboxName }}
-    MEEP_HOST_URL: {{ .HostUrl }}
     MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: 1s
     NR_MEAS_REP_UE_PERIODIC_TRIGGER_INTERVAL: 1s
+    MEEP_SANDBOX_NAME: {{.SandboxName}}
+    MEEP_HOST_URL: {{.HostUrl}}
+    {{- if .IsMepService }}
+    MEEP_MEP_NAME: {{.MepName}}
+    {{- end }}
+    {{- range .Env}}
+    {{.}}
+    {{- end}}
 
 service:
+  {{- if .IsMepService }}
+  name: {{.MepName}}-meep-rnis
+  {{- else }}
   name: meep-rnis
+  {{- end }}
   type: ClusterIP
   port: 80
 
@@ -30,14 +43,23 @@ ingress:
   hosts:
     - name: ''
       paths:
-        - /{{ .SandboxName }}/rni
+        {{- if .IsMepService }}
+        - /{{.SandboxName}}/{{.MepName}}/rni
+        {{- else }}
+        - /{{.SandboxName}}/rni
+        {{- end }}
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
+    {{- if .IsMepService }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/{{ .SandboxName }}/rni(/|$)(.*)$ /rni/$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/rni(/|$)(.*)$ /rni/$2 break;
+    {{- else }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/{{.SandboxName}}/rni(/|$)(.*)$ /rni/$2 break;
+    {{- end }}
     {{- if .AuthEnabled }}
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-rnis&sbox={{ .SandboxName }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-rnis&sbox={{.SandboxName}}&mep={{.MepName}}
     {{- end }}
   labels: {}
   tls:

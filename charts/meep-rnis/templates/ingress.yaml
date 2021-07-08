@@ -1,11 +1,10 @@
 {{- if .Values.ingress.enabled -}}
-{{- $serviceName := include "meep-rnis.fullname" . -}}
+{{- $serviceName := .Values.service.name -}}
 {{- $servicePort := .Values.service.port -}}
-{{- $path := .Values.ingress.path -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ template "meep-rnis.fullname" . }}
+  name: {{ $serviceName }}
   labels:
     app: {{ template "meep-rnis.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
