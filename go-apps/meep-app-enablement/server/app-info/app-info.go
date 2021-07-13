@@ -353,6 +353,9 @@ func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	// Check if App instance exists
 	fields, err := rc.GetEntry(baseKey + ":app:" + appInstanceId + ":info")
 	if err != nil || len(fields) == 0 {
