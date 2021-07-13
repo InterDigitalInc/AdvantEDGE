@@ -268,7 +268,7 @@ func processActiveScenarioUpdate() {
 		}
 		if !found {
 			sbi.updateUserInfoCB(prevUeName, "", "", nil, nil)
-			log.Info("Ue removed : ", prevUeName)
+			// log.Info("Ue removed : ", prevUeName)
 		}
 	}
 

@@ -18,7 +18,6 @@ package server
 
 import (
 	"errors"
-	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -26,18 +25,14 @@ import (
 	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
 	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
 	servMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
-
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const serviceName = "Edge Platform Application Enablement Service"
 
 var mutex sync.Mutex
-
-var hostUrl *url.URL
 var sandboxName string
 
-//var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 // Init - EPAE Service initialization
 func Init() (err error) {
 
@@ -53,17 +48,6 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
-	// hostUrl is the url of the node serving the resourceURL
-	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
-	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_PUBLIC_URL")))
-	if err != nil || hostUrl == nil || hostUrl.String() == "" {
-		hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
-		if err != nil {
-			hostUrl = new(url.URL)
-		}
-	}
-	log.Info("resource URL: ", hostUrl)
-
 	err = servMgmt.Init(&mutex)
 	if err != nil {
 		return err
@@ -74,22 +58,31 @@ func Init() (err error) {
 		return err
 	}
 
-	err = appInfo.Init()
+	err = appInfo.Init(&mutex)
 	if err != nil {
 		return err
 	}
 
-	reInit()
-
 	return nil
-}
-
-// reInit - finds the value already in the DB to repopulate local stored info
-func reInit() {
 }
 
 // Run - Start
 func Run() (err error) {
-	//return sbi.Run()
+
+	err = servMgmt.Run()
+	if err != nil {
+		return err
+	}
+
+	err = appSupport.Run()
+	if err != nil {
+		return err
+	}
+
+	err = appInfo.Run()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

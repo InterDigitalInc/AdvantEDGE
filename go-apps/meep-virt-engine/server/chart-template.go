@@ -129,6 +129,7 @@ type SandboxTemplate struct {
 	AuthEnabled    bool
 	IsMepService   bool
 	MepName        string
+	AppEnablement  string
 	Env            []string
 }
 
@@ -155,14 +156,24 @@ func Deploy(sandboxName string, procName string, model *mod.Model) error {
 
 func getMepService(proc *dataModel.Process) string {
 	// !!! Temporary patch for MEP Service configuration !!!
-	// Use well-known Edge App Environment variable to obtain MEP Service Name
-	if proc != nil && proc.Environment != "" {
-		allVar := strings.Split(proc.Environment, ",")
-		for _, oneVar := range allVar {
-			nameValue := strings.Split(oneVar, "=")
-			if nameValue[0] == "MEEP_MEP_SERVICE" {
-				return nameValue[1]
-			}
+	// Use image name to determine if process is a MEP service.
+	if proc != nil && proc.Image != "" {
+		image := proc.Image[strings.LastIndex(proc.Image, "/")+1:]
+		if _, found := ve.sboxChartTemplates[image]; found {
+			return image
+		}
+	}
+	return ""
+}
+
+func getAppEnablement(mepName string, model *mod.Model) string {
+	var filter mod.NodeFilter
+	filter.PhysicalLocationName = mepName
+	processes := model.GetProcesses(&filter)
+	for _, proc := range processes.Processes {
+		mepService := getMepService(&proc)
+		if mepService == appEnablementSvcName {
+			return mepService
 		}
 	}
 	return ""
@@ -260,6 +271,14 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 			sandboxTemplate.AuthEnabled = ve.authEnabled
 			sandboxTemplate.IsMepService = true
 			sandboxTemplate.MepName = mepName
+
+			// Check if local app enablement instance exists
+			appEnablement := getAppEnablement(mepName, model)
+			if appEnablement != "" {
+				sandboxTemplate.AppEnablement = "local"
+			} else if ve.globalAppEnablement {
+				sandboxTemplate.AppEnablement = "global"
+			}
 
 			// Set environment variables in template
 			if proc.Environment != "" {
@@ -661,6 +680,9 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.HttpsOnly = ve.httpsOnly
 	sandboxTemplate.AuthEnabled = ve.authEnabled
 	sandboxTemplate.IsMepService = false
+	if ve.globalAppEnablement {
+		sandboxTemplate.AppEnablement = "global"
+	}
 
 	// Create sandbox charts
 	for pod := range ve.sboxPods {
@@ -706,4 +728,16 @@ func deploySandbox(name string) error {
 	}
 
 	return nil
+}
+
+func getSanboxChartTemplates() (templates []string, err error) {
+	file, err := os.Open("/templates/sandbox")
+	if err != nil {
+		log.Error("Failed to get sandbox templates. Error: ", err.Error())
+		return templates, err
+	}
+	defer file.Close()
+
+	templates, _ = file.Readdirnames(0)
+	return templates, nil
 }
