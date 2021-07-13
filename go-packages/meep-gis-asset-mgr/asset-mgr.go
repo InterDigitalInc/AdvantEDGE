@@ -1839,7 +1839,7 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 		for poaName, meas := range ue.Measurements {
 			// Calculate power measurements
 			rssi, rsrp, rsrq := calculatePower(meas.SubType, meas.Radius, meas.Distance)
-			if rsrp == 0 && rsrq == 0 {
+			if rsrp == 0 && rsrq == 0 && rssi == 0 {
 				log.Error("ERROR: Zero Rsrp, Rsrq and Rssi should not happen: ", meas.SubType, "---", meas.Radius, "---", meas.Distance, "---", poaName, "---", ueName)
 			}
 
@@ -1964,12 +1964,12 @@ func calculatePower(subtype string, radius float32, distance float32) (rssi floa
 // Equivalent RSRQ range: -30 to 46
 // IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
 // RSRP power range: -100 dBm to -70 dBm
-// Equivalent RSRP range: 39 to 69
+// Equivalent RSRP range: 40 to 70
 // RSRQ power range: -20 dBm to -5 dBm
 // Equivalent RSRQ range: -2 to 28
 // Algorithm: Linear proportion to distance over radius, if in range
-const minCell4gRsrp = float32(39)
-const maxCell4gRsrp = float32(69)
+const minCell4gRsrp = float32(40)
+const maxCell4gRsrp = float32(70)
 const minCell4gRsrq = float32(-2)
 const maxCell4gRsrq = float32(28)
 

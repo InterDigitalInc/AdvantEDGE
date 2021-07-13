@@ -503,7 +503,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+obj.Name, ".")
-
 	if jsonUeData != "" {
 		ueDataObj := convertJsonToUeData(jsonUeData)
 		if ueDataObj != nil {
@@ -512,7 +511,9 @@ func updateUeData(obj sbi.UeDataSbi) {
 				oldPlmnMnc = ueDataObj.Ecgi.Plmn.Mnc
 				oldPlmnMcc = ueDataObj.Ecgi.Plmn.Mcc
 				oldCellId = ueDataObj.Ecgi.CellId
-				oldErabId = ueDataObj.ErabId
+				if oldCellId != "" {
+					oldErabId = ueDataObj.ErabId
+				}
 			}
 			if ueDataObj.Nrcgi != nil {
 				oldNrPlmnMnc = ueDataObj.Nrcgi.Plmn.Mnc
@@ -522,7 +523,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 			oldInRangePoas = ueDataObj.InRangePoas
 		}
 	}
-
 	//updateDB if changes occur (4G section)
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 
@@ -560,6 +560,9 @@ func updateUeData(obj sbi.UeDataSbi) {
 		}
 	} else {
 		//5G section
+		//keep erabId info that was there
+		ueData.ErabId = oldErabId
+
 		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
 			//update because nrcgi changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
@@ -602,7 +605,6 @@ func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string,
 			}
 			ueDataObj.InRangePoas = inRangePoas
 		}
-
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
 	}
 }
@@ -2969,51 +2971,7 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 		return nil
 	}
 
-	//name of the element is used as the ipv4 address at the moment
-	partOfFilter = true
-	for _, address := range data.queryIpv4Addresses {
-		if address != "" {
-			partOfFilter = false
-			if address == ueData.Name {
-				partOfFilter = true
-				break
-			}
-		}
-	}
-	if !partOfFilter {
-		return nil
-	}
-
 	found := false
-
-	//find if cellUeInfo already exists
-	var cellUeIndex int
-	assocId := new(AssociateId)
-	assocId.Type_ = 1 //UE_IPV4_ADDRESS
-	subKeys := strings.Split(key, ":")
-	assocId.Value = subKeys[len(subKeys)-1]
-
-	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
-		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
-			found = true
-			cellUeIndex = index
-		}
-	}
-	if !found {
-		newCellUeInfo := new(L2MeasCellUeInfo)
-		newEcgi := new(Ecgi)
-		newPlmn := new(Plmn)
-		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
-		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
-		newEcgi.Plmn = newPlmn
-		newEcgi.CellId = ueData.Ecgi.CellId
-
-		newCellUeInfo.Ecgi = newEcgi
-		newCellUeInfo.AssociateId = assocId
-
-		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
-		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
-	}
 
 	//find if cellInfo already exists
 	var cellIndex int
@@ -3100,6 +3058,52 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeUlNongbrCell++
 	data.l2Meas.CellInfo[cellIndex].DlNongbrPdrCell = poaPacketLoss
 	data.l2Meas.CellInfo[cellIndex].UlNongbrPdrCell = poaPacketLoss
+
+	//name of the element is used as the ipv4 address at the moment
+	partOfFilter = true
+	for _, address := range data.queryIpv4Addresses {
+		if address != "" {
+			partOfFilter = false
+			if address == ueData.Name {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	found = false
+
+	//find if cellUeInfo already exists
+	var cellUeIndex int
+	assocId := new(AssociateId)
+	assocId.Type_ = 1 //UE_IPV4_ADDRESS
+	subKeys := strings.Split(key, ":")
+	assocId.Value = subKeys[len(subKeys)-1]
+
+	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
+		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
+			found = true
+			cellUeIndex = index
+		}
+	}
+	if !found {
+		newCellUeInfo := new(L2MeasCellUeInfo)
+		newEcgi := new(Ecgi)
+		newPlmn := new(Plmn)
+		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
+		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
+		newEcgi.Plmn = newPlmn
+		newEcgi.CellId = ueData.Ecgi.CellId
+
+		newCellUeInfo.Ecgi = newEcgi
+		newCellUeInfo.AssociateId = assocId
+
+		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
+		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
+	}
 
 	//update ueInfo delay
 	//delay is the latency between air interface (POA<->UE)

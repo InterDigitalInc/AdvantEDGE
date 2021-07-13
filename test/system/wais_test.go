@@ -99,7 +99,7 @@ func Test_WAIS_wifi_to_wifi_dlgre0_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 0, 0, "1")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -134,7 +134,7 @@ func Test_WAIS_wifi_to_wifi_ulgre0_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 0, 0, "3")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 3)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -169,7 +169,7 @@ func Test_WAIS_wifi_to_wifi_ulanddlgre0_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 0, 0, "5")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 5)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -204,7 +204,7 @@ func Test_WAIS_wifi_to_wifi_ulordlgre0_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 0, 0, "7")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 7)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -239,7 +239,7 @@ func Test_WAIS_wifi_to_wifi_dlle1_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 1, 1, "2")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -274,7 +274,7 @@ func Test_WAIS_wifi_to_wifi_ulle1_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 1, 1, "4")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 4)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -309,7 +309,7 @@ func Test_WAIS_wifi_to_wifi_ulanddlle1_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 1, 1, "6")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 6)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -344,7 +344,7 @@ func Test_WAIS_wifi_to_wifi_ulordlle1_staDataRate(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 0, 1, 1, "8")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 8)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -379,7 +379,7 @@ func Test_WAIS_wifi_to_wifi_period_staDataRate_success(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, "1")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -387,7 +387,7 @@ func Test_WAIS_wifi_to_wifi_period_staDataRate_success(t *testing.T) {
 	//wait to make sure the subscription got registered
 	time.Sleep(7500 * time.Millisecond)
 
-	if len(httpReqBody) == 2 {
+	if len(httpReqBody) == 3 {
 		var body1 waisClient.StaDataRateNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
 		if err != nil {
@@ -410,11 +410,11 @@ func Test_WAIS_wifi_to_wifi_period_staDataRate_fail(t *testing.T) {
 	testStaMacIdTo := "111111111111"
 
 	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+	geMoveAssetCoordinates(testAddress1, 7.425917, 49.733505)
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, "1")
+	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -443,7 +443,7 @@ func Test_WAIS_4g_to_4g_same_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatal("Subscription failed: ", err)
 	}
@@ -476,7 +476,7 @@ func Test_WAIS_4g_to_4g_diff_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -509,7 +509,7 @@ func Test_WAIS_4g_to_5g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -543,7 +543,7 @@ func Test_WAIS_4g_to_wifi_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -587,7 +587,7 @@ func Test_WAIS_4g_to_generic_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -620,7 +620,7 @@ func Test_WAIS_4g_to_none_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -653,7 +653,7 @@ func Test_WAIS_5g_to_5g_same_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -686,7 +686,7 @@ func Test_WAIS_5g_to_5g_diff_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -719,7 +719,7 @@ func Test_WAIS_5g_to_4g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -753,7 +753,7 @@ func Test_WAIS_5g_to_wifi_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -797,7 +797,7 @@ func Test_WAIS_5g_to_generic_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -830,7 +830,7 @@ func Test_WAIS_5g_to_none_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -863,7 +863,7 @@ func Test_WAIS_wifi_to_wifi_period_ap_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 3, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 3, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -906,7 +906,7 @@ func Test_WAIS_wifi_to_wifi_multi_in_ap_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 0, 2, "1")
+	err := waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 5, 2, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -957,7 +957,7 @@ func Test_WAIS_wifi_to_wifi_multi_in_out_in_ap_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 0, 2, "1")
+	err := waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 5, 2, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1019,12 +1019,12 @@ func Test_WAIS_wifi_to_wifi_same_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacIdFrom, waisServerUrl, 0, 0, "2")
+	err := waisSubscriptionAssocSta(testApMacIdFrom, waisServerUrl, 5, 0, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
-	err = waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 0, 1, "1")
+	err = waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1087,12 +1087,12 @@ func Test_WAIS_wifi_to_wifi_diff_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacIdFrom, waisServerUrl, 0, 0, "2")
+	err := waisSubscriptionAssocSta(testApMacIdFrom, waisServerUrl, 5, 0, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
-	err = waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 0, 1, "1")
+	err = waisSubscriptionAssocSta(testApMacIdTo, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1153,7 +1153,7 @@ func Test_WAIS_wifi_to_5g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 0, "2")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 0, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1198,7 +1198,7 @@ func Test_WAIS_wifi_to_4g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 0, "2")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 0, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1243,7 +1243,7 @@ func Test_WAIS_wifi_to_generic_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 0, "2")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 0, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1288,7 +1288,7 @@ func Test_WAIS_wifi_to_none_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 0, "2")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 0, 2)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1332,7 +1332,7 @@ func Test_WAIS_generic_to_generic_same_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1365,7 +1365,7 @@ func Test_WAIS_generic_to_generic_diff_zone_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1399,7 +1399,7 @@ func Test_WAIS_generic_to_wifi_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1443,7 +1443,7 @@ func Test_WAIS_generic_to_4g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1476,7 +1476,7 @@ func Test_WAIS_generic_to_5g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1509,7 +1509,7 @@ func Test_WAIS_generic_to_none_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1542,7 +1542,7 @@ func Test_WAIS_none_to_4g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1575,7 +1575,7 @@ func Test_WAIS_none_to_5g_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1609,7 +1609,7 @@ func Test_WAIS_none_to_wifi_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1653,7 +1653,7 @@ func Test_WAIS_none_to_generic_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1686,7 +1686,7 @@ func Test_WAIS_none_to_none_assocSta(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 0, 1, "1")
+	err := waisSubscriptionAssocSta(testApMacId, waisServerUrl, 5, 1, 1)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -1712,10 +1712,10 @@ func Test_WAIS_stopSystemTest(t *testing.T) {
 	}
 }
 
-func waisSubscriptionAssocSta(macId string, callbackReference string, period int32, threshold int32, trigger string) error {
+func waisSubscriptionAssocSta(macId string, callbackReference string, period int32, threshold int32, trigger int32) error {
 
 	var notificationEvent waisClient.AllOfNotificationEvent
-	if trigger != "NONE" {
+	if trigger != 0 {
 		notificationEvent.Threshold = threshold
 		notificationEvent.Trigger = trigger
 	}
@@ -1753,10 +1753,10 @@ func validateAssocStaNotification(notification *waisClient.AssocStaNotification,
 	return ""
 }
 
-func waisSubscriptionStaDataRate(macId string, callbackReference string, period int32, thresholdDl int32, thresholdUl int32, trigger string) error {
+func waisSubscriptionStaDataRate(macId string, callbackReference string, period int32, thresholdDl int32, thresholdUl int32, trigger int32) error {
 
 	var notificationEvent waisClient.AllOfNotificationEvent
-	if trigger != "NONE" {
+	if trigger != 0 {
 		notificationEvent.DownlinkRateThreshold = thresholdDl
 		notificationEvent.UplinkRateThreshold = thresholdUl
 		notificationEvent.Trigger = trigger
