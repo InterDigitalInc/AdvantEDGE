@@ -339,15 +339,11 @@ paths:
             example:
               subscriptionType: AssocStaSubscription
               callbackReference: http://meAppClient.example.com/wai/v2/notifications/1
-              expiryDeadline:
-                seconds: 1977836800
-                nanoSeconds: 0
               apId:
                 bssid: 005C0A0A0A0A
-                ssid:
-                - myNetworkSsid
-                ipAddress:
-                - 10.10.100.1
+              notificationEvent:
+                threshold: 1
+                trigger: 1
         required: true
       responses:
         "201":
@@ -362,15 +358,11 @@ paths:
                 _links:
                   self:
                     href: http://meAppServer.example.com/wai/v2/subscriptions/sub123
-                expiryDeadline:
-                  seconds: 1977836800
-                  nanoSeconds: 0
                 apId:
                   bssid: 005C0A0A0A0A
-                  ssid:
-                  - myNetworkSsid
-                  ipAddress:
-                  - 10.10.100.1
+                notificationEvent:
+                  threshold: 1
+                  trigger: 1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -457,18 +449,8 @@ paths:
                         nanoseconds: 0
                       apId:
                         bssid: 005C0A0A0A0A
-                        ssid:
-                        - myNetworkSsid
-                        ipAddress:
-                        - 10.10.100.1
                       staId:
                         macId: 005C01111111
-                        ssid:
-                        - myNetworkSsid
-                        - myOtherNetworkSsid
-                        aid: "1122"
-                        ipAddress:
-                        - 10.10.1.255
                 required: true
               responses:
                 "204":
@@ -505,15 +487,11 @@ paths:
                 _links:
                   self:
                     href: http://meAppServer.example.com/wai/v2/subscriptions/sub123
-                expiryDeadline:
-                  seconds: 1977836800
-                  nanoSeconds: 0
                 apId:
                   bssid: 005C0A0A0A0A
-                  ssid:
-                  - myNetworkSsid
-                  ipAddress:
-                  - 10.10.100.1
+                notificationEvent:
+                  threshold: 1
+                  trigger: 1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -584,15 +562,11 @@ paths:
               _links:
                 self:
                   href: http://meAppServer.example.com/wai/v2/subscriptions/sub123
-              expiryDeadline:
-                seconds: 1977836800
-                nanoSeconds: 0
               apId:
                 bssid: 005C0A0A0A0A
-                ssid:
-                - myNetworkSsid
-                ipAddress:
-                - 10.10.100.1
+              notificationEvent:
+                threshold: 1
+                trigger: 1
         required: true
       responses:
         "200":
@@ -608,10 +582,9 @@ paths:
                 callbackReference: http://my.callback.com/wai/some-id
                 apId:
                   bssid: 005C0A0A0A0A
-                  ssid:
-                  - myNetworkSsid
-                  ipAddress:
-                  - 10.10.100.1
+                notificationEvent:
+                  threshold: 1
+                  trigger: 1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -4233,13 +4206,14 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         trigger:
-          type: string
+          type: integer
           description: |-
             Trigger for the notification:
             1 = Notification issued when the number of connected stations is greater than or equal to the threshold
             2 = Notification issued when the number of connected stations is less than or equal to the threshold
           enum:
-          - SEE_DESCRIPTION
+          - 1
+          - 2
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum (inline)
       description: 'Set for trigger-based event notification reporting. '
@@ -4295,7 +4269,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         trigger:
-          type: string
+          type: integer
           description: |-
             Trigger event for the notification:
             1 = Notification issued when the STA’s downlink data rate is greater than or equal to the downlink threshold
@@ -4307,7 +4281,14 @@ components:
             7 = Notification issued when the STA’s downlink or uplink data rate is greater than or equal to their thresholds
             8 = Notification issued when the STA’s downlink or uplink data rate is less than or equal to their thresholds
           enum:
-          - SEE_DESCRIPTION
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum (inline)
         uplinkRateThreshold:

@@ -93,10 +93,10 @@ func Test_RNIS_periodic_4g_5gNei(t *testing.T) {
 	testAddress := "ue2"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
 	testSrcServing4GEcgi := rnisClient.Ecgi{CellId: "4000001", Plmn: &rnisClient.Plmn{"001", "001"}}
-	testSrcServing4GRsrp := int32(69)
+	testSrcServing4GRsrp := int32(70)
 	testSrcServing4GRsrq := int32(28)
 	testTrgServing4GEcgi := testSrcServing4GEcgi
-	testTrgServing4GRsrp := int32(44)
+	testTrgServing4GRsrp := int32(45)
 	testTrgServing4GRsrq := int32(3)
 	test5GPlmn := rnisClient.Plmn{"001", "001"}
 	test5GPlmnArray := []rnisClient.Plmn{test5GPlmn}
@@ -160,10 +160,10 @@ func Test_RNIS_periodic_4g_4gNei(t *testing.T) {
 	testAddress := "ue2"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
 	testSrcServing4GEcgi := rnisClient.Ecgi{CellId: "4000001", Plmn: &rnisClient.Plmn{"001", "001"}}
-	testSrcServing4GRsrp := int32(69)
+	testSrcServing4GRsrp := int32(70)
 	testSrcServing4GRsrq := int32(28)
 	testTrgServing4GEcgi := testSrcServing4GEcgi
-	testTrgServing4GRsrp := int32(44)
+	testTrgServing4GRsrp := int32(45)
 	testTrgServing4GRsrq := int32(3)
 
 	testTrgEutranNeighbourCellMeasInfo := rnisClient.MeasRepUeNotificationEutranNeighbourCellMeasInfo{Ecgi: &rnisClient.Ecgi{CellId: "4000002", Plmn: &rnisClient.Plmn{"001", "001"}}, Rsrp: testTrgServing4GRsrp, Rsrq: testTrgServing4GRsrq}
@@ -308,7 +308,7 @@ func Test_RNIS_periodic_nr_5g_4gNei(t *testing.T) {
 	testTrgNCell := rnisClient.NrMeasRepUeNotificationNCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgServing5GRsrp, Rsrq: testTrgServing5GRsrq}}
 	testTrgServCellMeasInfo := rnisClient.NrMeasRepUeNotificationServCellMeasInfo{Nrcgi: &testTrgServingNrcgi, SCell: &testTrgSCell, NCell: &testTrgNCell}
 
-	testTrgServing4GRsrp := int32(44)
+	testTrgServing4GRsrp := int32(45)
 	testTrgServing4GRsrq := int32(3)
 	testTrgEutraNeighCellMeasInfo := rnisClient.NrMeasRepUeNotificationEutraNeighCellMeasInfo{Ecgi: &rnisClient.Ecgi{CellId: "4000003", Plmn: &rnisClient.Plmn{"001", "001"}}, Rsrp: testTrgServing4GRsrp, Rsrq: testTrgServing4GRsrq}
 

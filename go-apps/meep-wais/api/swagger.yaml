@@ -149,15 +149,11 @@ paths:
             example:
               subscriptionType: AssocStaSubscription
               callbackReference: 'http://meAppClient.example.com/wai/v2/notifications/1'
-              expiryDeadline:
-                seconds: 1977836800
-                nanoSeconds: 0
               apId:
                 bssid: 005C0A0A0A0A
-                ssid:
-                - 'myNetworkSsid'
-                ipAddress:
-                - 10.10.100.1
+              notificationEvent:
+                threshold: 1
+                trigger: 1
       responses:
         '201':
           description: Successful subscription response
@@ -171,15 +167,11 @@ paths:
                 _links:
                   self:
                     href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
-                expiryDeadline:
-                  seconds: 1977836800
-                  nanoSeconds: 0
                 apId:
                   bssid: 005C0A0A0A0A
-                  ssid:
-                  - 'myNetworkSsid'
-                  ipAddress:
-                  - 10.10.100.1
+                notificationEvent:
+                  threshold: 1
+                  trigger: 1
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -217,18 +209,8 @@ paths:
                         nanoseconds: 0
                       apId:
                         bssid: 005C0A0A0A0A
-                        ssid:
-                        - 'myNetworkSsid'
-                        ipAddress:
-                        - 10.10.100.1
                       staId:
                         macId: 005C01111111
-                        ssid:
-                        - 'myNetworkSsid'
-                        - 'myOtherNetworkSsid'
-                        aid: '1122'
-                        ipAddress:
-                        - 10.10.1.255
               responses:
                 '204':
                   $ref: '#/components/responses/204'
@@ -254,15 +236,11 @@ paths:
                 _links:
                   self:
                     href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
-                expiryDeadline:
-                  seconds: 1977836800
-                  nanoSeconds: 0
                 apId:
                   bssid: 005C0A0A0A0A
-                  ssid:
-                  - 'myNetworkSsid'
-                  ipAddress:
-                  - 10.10.100.1
+                notificationEvent:
+                  threshold: 1
+                  trigger: 1
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -294,15 +272,11 @@ paths:
               _links:
                 self:
                   href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
-              expiryDeadline:
-                seconds: 1977836800
-                nanoSeconds: 0
               apId:
                 bssid: 005C0A0A0A0A
-                ssid:
-                - 'myNetworkSsid'
-                ipAddress:
-                - 10.10.100.1
+              notificationEvent:
+                threshold: 1
+                trigger: 1
       parameters:
         - $ref: '#/components/parameters/Path.subscrId'
       responses:
@@ -319,10 +293,9 @@ paths:
                 callbackReference: 'http://my.callback.com/wai/some-id'
                 apId:
                   bssid: 005C0A0A0A0A
-                  ssid:
-                  - 'myNetworkSsid'
-                  ipAddress:
-                  - 10.10.100.1
+                notificationEvent:
+                  threshold: 1
+                  trigger: 1
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -904,8 +877,9 @@ components:
 
                 2 = Notification issued when the number of connected stations is less than or equal to the threshold'
               enum:
-              - SEE_DESCRIPTION
-              type: string
+              - 1
+              - 2
+              type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: Enum (inline)
           required:
@@ -2386,8 +2360,15 @@ components:
             trigger:
               description: "Trigger event for the notification:\n1 = Notification issued when the STA\u2019s downlink data rate is greater than or equal to the downlink threshold\n2 = Notification issued when the STA\u2019s downlink data rate is less than or equal to the downlink threshold\n3 = Notification issued when the STA\u2019s uplink data rate is greater than or equal to the uplink threshold\n4 = Notification issued when the STA\u2019s uplink data rate is less than or equal to the uplink threshold\n5 = Notification issued when the STA\u2019s downlink and uplink data rate is greater than or equal to their thresholds\n6 = Notification issued when the STA\u2019s downlink and uplink data rate is less than or equal to their thresholds\n7 = Notification issued when the STA\u2019s downlink or uplink data rate is greater than or equal to their thresholds\n8 = Notification issued when the STA\u2019s downlink or uplink data rate is less than or equal to their thresholds"
               enum:
-              - SEE_DESCRIPTION
-              type: string
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+              - 7
+              - 8
+              type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: Enum (inline)
             uplinkRateThreshold:

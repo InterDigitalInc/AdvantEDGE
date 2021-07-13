@@ -106,7 +106,8 @@ func Test_periodic_success(t *testing.T) {
         time.Sleep(2500 * time.Millisecond)
 
         //only check the first one, the same one is repeated every second
-        if len(httpReqBody) == 3 {
+	//hard to say if the period should cover 2 or 3 response... based on the timer timing
+        if len(httpReqBody) == 2 || len(httpReqBody) == 3 {
                 var body locServClient.InlineSubscriptionNotification
                 err = json.Unmarshal([]byte(httpReqBody[0]), &body)
                 if err != nil {

@@ -29,5 +29,5 @@ type AssocStaSubscriptionNotificationEvent struct {
 	// Number of connected stations threshold for trigger-based event reporting.
 	Threshold int32 `json:"threshold"`
 	// Trigger for the notification: 1 = Notification issued when the number of connected stations is greater than or equal to the threshold 2 = Notification issued when the number of connected stations is less than or equal to the threshold
-	Trigger string `json:"trigger"`
+	Trigger int32 `json:"trigger"`
 }
