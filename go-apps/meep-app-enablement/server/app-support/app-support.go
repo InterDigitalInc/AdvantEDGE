@@ -37,9 +37,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const mappsupportBasePath = "/mec_app_support/v1/"
+const mappsupportBasePath = "mec_app_support/v1/"
 const mappsupportKey = "as"
 const appEnablementKey = "app-enablement"
+const defaultMepName = "global"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
 const APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE = "AppTerminationNotificationSubscription"
@@ -48,25 +49,19 @@ var mutex *sync.Mutex
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
-var APP_ENABLEMENT_DB = 5
+var APP_ENABLEMENT_DB = 0
 
 var rc *redis.Connector
 var hostUrl *url.URL
 var sandboxName string
-var selfName string
+var mepName string = defaultMepName
 var basePath string
-var appEnablementBaseKey string
+var baseKey string
 
 //var expiryTicker *time.Ticker
 
 var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
 var nextSubscriptionIdAvailable int
-
-/*func notImplemented(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-        w.WriteHeader(http.StatusNotImplemented)
-}
-*/
 
 func Init(globalMutex *sync.Mutex) (err error) {
 	mutex = globalMutex
@@ -92,28 +87,24 @@ func Init(globalMutex *sync.Mutex) (err error) {
 			hostUrl = new(url.URL)
 		}
 	}
-	log.Info("resource URL: ", hostUrl)
+	log.Info("MEEP_HOST_URL: ", hostUrl)
 
-	selfNameEnv := strings.TrimSpace(os.Getenv("MEEP_SELF_NAME"))
-	if selfNameEnv != "" {
-		selfName = selfNameEnv
+	// Get MEP name
+	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
+	if mepNameEnv != "" {
+		mepName = mepNameEnv
 	}
-	//TODO
-	/*
-		if selfName == "" {
-			err = errors.New("MEEP_SELF_NAME env variable not set")
-			log.Error(err.Error())
-			return err
-		}
-	*/
-	//HARDCODE SOMETHING
-	selfName = "mep1"
-	log.Info("MEEP_SELF_NAME: ", selfName)
+	log.Info("MEEP_MEP_NAME: ", mepName)
 
 	// Set base path
-	basePath = "/" + sandboxName + mappsupportBasePath
-	// Get base store key
-	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + selfName
+	if mepName == defaultMepName {
+		basePath = "/" + sandboxName + "/" + mappsupportBasePath
+	} else {
+		basePath = "/" + sandboxName + "/" + mepName + "/" + mappsupportBasePath
+	}
+
+	// Set base storage key
+	baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, APP_ENABLEMENT_DB)
@@ -121,21 +112,11 @@ func Init(globalMutex *sync.Mutex) (err error) {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
-
-	_ = rc.DBFlush(appEnablementBaseKey)
-
+	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB")
 
 	reInit()
 
-	/*
-		expiryTicker = time.NewTicker(time.Second)
-		go func() {
-			for range expiryTicker.C {
-				//checkForExpiredSubscriptions()
-			}
-		}()
-	*/
 	return nil
 }
 
@@ -145,7 +126,7 @@ func reInit() {
 	//next available subsId will be overrriden if subscriptions already existed
 	nextSubscriptionIdAvailable = 1
 
-	keyName := appEnablementBaseKey + ":apps:*:" + mappsupportKey + ":subscriptions:" + "*"
+	keyName := baseKey + ":app:*:" + mappsupportKey + ":sub:*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateAppTerminationNotificationSubscriptionMap, nil)
 }
 
@@ -204,7 +185,7 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + "info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -254,7 +235,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + "info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -327,7 +308,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
 	var sInfoList msmgmt.ServiceInfoList
 
-	keyName := appEnablementBaseKey + ":apps:" + appInstanceId + ":svcs:*"
+	keyName := baseKey + ":app:" + appInstanceId + ":svc:*"
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -339,7 +320,7 @@ func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
 	for _, sInfo := range sInfoList.ServiceInfos {
 		serviceId := sInfo.SerInstanceId
 		sInfo.State = &state
-		err = rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
+		err = rc.JSONSetEntry(baseKey+":app:"+appInstanceId+":svc:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
 		if err != nil {
 			return err
 		}
@@ -373,7 +354,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + "info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -427,8 +408,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 	//registration
 	registerAppTerm(&subscription, newSubsId)
-	baseKey := key + ":" + mappsupportKey
-	_ = rc.JSONSetEntry(baseKey+":subscriptions:"+subsIdStr, ".", convertAppTerminationNotificationSubscriptionToJson(&subscription))
+	_ = rc.JSONSetEntry(key+":"+mappsupportKey+":sub:"+subsIdStr, ".", convertAppTerminationNotificationSubscriptionToJson(&subscription))
 
 	jsonResponse, err := json.Marshal(subscription)
 
@@ -468,15 +448,14 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + "info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
 		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
 		return
 	}
-	baseKey := key + ":" + mappsupportKey
-	jsonResponse, _ := rc.JSONGetEntry(baseKey+":subscriptions:"+subIdParamStr, ".")
+	jsonResponse, _ := rc.JSONGetEntry(key+":"+mappsupportKey+":sub:"+subIdParamStr, ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -493,7 +472,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + "info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -501,14 +480,13 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseKey := key + ":" + mappsupportKey
-	jsonResponse, _ := rc.JSONGetEntry(baseKey+":subscriptions:"+subIdParamStr, ".")
+	jsonResponse, _ := rc.JSONGetEntry(key+":"+mappsupportKey+":sub:"+subIdParamStr, ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	err = rc.JSONDelEntry(baseKey+":subscriptions"+":"+subIdParamStr, ".")
+	err = rc.JSONDelEntry(key+":"+mappsupportKey+":sub:"+subIdParamStr, ".")
 	deregisterAppTermination(subIdParamStr, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -525,7 +503,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + "info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")

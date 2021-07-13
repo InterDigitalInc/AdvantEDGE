@@ -42,7 +42,7 @@ spec:
           env:
             {{- range $key, $value := .Values.image.env }}
             - name: {{ $key }}
-              value: {{ $value }}
+              value: {{ $value | quote }}
             {{- end }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
@@ -51,9 +51,15 @@ spec:
           {{- end}}
       terminationGracePeriodSeconds: 5
       initContainers:
-        {{- if .Values.deployment.kubeDnsInitContainerEnabled }}
-        - name: init-{{ .Values.deployment.dependency }}
+        {{- range $value := .Values.deployment.dependencies.system }}
+        - name: init-system-{{ $value }}
           image: busybox:1.28
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }}.kube-system ; do echo waiting for {{ .Values.deployment.dependency }}; sleep 0.25; done;']
+          command: ['sh', '-c', 'until nslookup {{ $value }}.kube-system ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}
+        {{- range $value := .Values.deployment.dependencies.sandbox }}
+        - name: init-sandbox-{{ $value }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ $value }} ; do echo waiting for {{ $value }}; sleep 0.25; done;']
         {{- end}}

@@ -6,12 +6,12 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
-  {{- if .IsMepService }}
-  kubeDnsInitContainerEnabled: false
-  {{- else }}
-  kubeDnsInitContainerEnabled: true
-  {{- end }}
+  dependencies:
+    system:
+      {{- if not .IsMepService }}
+      - kube-dns
+      {{- end }}
+    sandbox:
 
 image:
   repository: meep-docker-registry:30001/meep-loc-serv
@@ -22,6 +22,11 @@ image:
     MEEP_HOST_URL: {{.HostUrl}}
     {{- if .IsMepService }}
     MEEP_MEP_NAME: {{.MepName}}
+    {{- end }}
+    {{- if eq .AppEnablement "local" }}
+    MEEP_APP_ENABLEMENT: {{.MepName}}-meep-app-enablement
+    {{- else if eq .AppEnablement "global" }}
+    MEEP_APP_ENABLEMENT: meep-app-enablement
     {{- end }}
     {{- range .Env}}
     {{.}}
