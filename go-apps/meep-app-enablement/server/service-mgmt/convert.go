@@ -32,3 +32,25 @@ func ConvertServiceInfoToJson(serviceInfo *ServiceInfo) string {
 
 	return string(jsonInfo)
 }
+
+func convertJsonToServiceInfo(jsonInfo string) *ServiceInfo {
+
+	var obj ServiceInfo
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertSerAvailabilityNotificationSubscriptionToJson(sub *SerAvailabilityNotificationSubscription) string {
+
+	jsonInfo, err := json.Marshal(*sub)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}

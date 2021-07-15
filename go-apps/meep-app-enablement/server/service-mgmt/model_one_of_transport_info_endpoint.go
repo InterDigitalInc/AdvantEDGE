@@ -24,12 +24,12 @@
 package server
 
 type OneOfTransportInfoEndpoint struct {
-	Addresses []EndPointInfoAddress `json:"addresses"`
+	Addresses []EndPointInfoAddress `json:"addresses,omitempty"`
 
-	Host string `json:"host"`
-	Port int32  `json:"port"`
+	Host string `json:"host,omitempty"`
+	Port int32  `json:"port,omitempty"`
 
-	Alternative *interface{} `json:"alternative"`
+	Alternative *interface{} `json:"alternative,omitempty"`
 
-	Uris []string `json:"uris"`
+	Uris []string `json:"uris,omitempty"`
 }

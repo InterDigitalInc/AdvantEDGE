@@ -10,6 +10,6 @@ do
 output_prefix="result"
 output_suffix=".txt"
 output=${output_prefix}${i}${output_suffix}
-go test -timeout 20m > ${output}
+go test -timeout 30m > ${output}
 i=$[$i+1]
 done

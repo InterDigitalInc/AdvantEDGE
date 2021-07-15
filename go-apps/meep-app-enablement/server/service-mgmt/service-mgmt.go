@@ -17,6 +17,7 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,26 +29,28 @@ import (
 	"sync"
 	"time"
 
-	//        sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-wais/sbi"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
-	//httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
 
-const msmgmtBasePath = "/mec_service_mgmt/v2/"
+const msmgmtBasePath = "/mec_service_mgmt/v1/"
+const msmgmtKey = "sm"
 const appEnablementKey = "app-enablement"
+const SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE = "SerAvailabilityNotificationSubscription"
 
-//const logModuleMSMgmt = "meep-app-enablement"
-//const serviceName = "MEC Service Management"
+//const logModuleAppEnablement = "meep-app-enablement"
+const serviceName = "APP-ENABLEMENT Service"
+
+var mutex *sync.Mutex
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
-//var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
-
-var MSMGMT_DB = 5
+var APP_ENABLEMENT_DB = 5
 
 var rc *redis.Connector
 var hostUrl *url.URL
@@ -56,12 +59,16 @@ var selfName string
 var basePath string
 var appEnablementBaseKey string
 
-var mutex *sync.Mutex
-
-var expiryTicker *time.Ticker
+var serAvailabilityNotificationSubscriptionMap = map[int]*SerAvailabilityNotificationSubscription{}
 
 var nextSubscriptionIdAvailable int
 var nextServiceRegistrationIdAvailable int
+
+/*func notImplemented(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+        w.WriteHeader(http.StatusNotImplemented)
+}
+*/
 
 type ServiceInfoList struct {
 	ServiceInfos     []ServiceInfo
@@ -128,7 +135,7 @@ func Init(globalMutex *sync.Mutex) (err error) {
 	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + selfName
 
 	// Connect to Redis DB
-	rc, err = redis.NewConnector(redisAddr, MSMGMT_DB)
+	rc, err = redis.NewConnector(redisAddr, APP_ENABLEMENT_DB)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
@@ -140,30 +147,13 @@ func Init(globalMutex *sync.Mutex) (err error) {
 
 	reInit()
 
-	expiryTicker = time.NewTicker(time.Second)
-	go func() {
-		for range expiryTicker.C {
-			//checkForExpiredSubscriptions()
-		}
-	}()
 	/*
-	   // Initialize SBI
-	   sbiCfg := sbi.SbiCfg{
-	           SandboxName:    sandboxName,
-	           RedisAddr:      redisAddr,
-	           InfluxAddr:     influxAddr,
-	           StaInfoCb:      updateStaInfo,
-	           ApInfoCb:       updateApInfo,
-	           ScenarioNameCb: updateStoreName,
-	           CleanUpCb:      cleanUp,
-	   }
-
-	   err = sbi.Init(sbiCfg)
-	   if err != nil {
-	           log.Error("Failed initialize SBI. Error: ", err)
-	           return err
-	   }
-	   log.Info("SBI Initialized")
+	   expiryTicker = time.NewTicker(time.Second)
+	   go func() {
+	           for range expiryTicker.C {
+	                   //checkForExpiredSubscriptions()
+	           }
+	   }()
 	*/
 	return nil
 }
@@ -173,6 +163,11 @@ func reInit() {
 	//next available subsId will be overrriden if subscriptions already existed
 	nextSubscriptionIdAvailable = 1
 	nextServiceRegistrationIdAvailable = 1
+
+	baseKey := appEnablementBaseKey + ":apps:*:" + msmgmtKey
+	keyName := baseKey + ":subscriptions:" + "*"
+	_ = rc.ForEachJSONEntry(keyName, repopulateSerAvailabilityNotificationSubscriptionMap, nil)
+
 }
 
 // Run - Start Service Mgmt
@@ -182,6 +177,33 @@ func Run() (err error) {
 
 // Stop - Stop Service Mgmt
 func Stop() (err error) {
+	return nil
+}
+
+func repopulateSerAvailabilityNotificationSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
+
+	var subscription SerAvailabilityNotificationSubscription
+
+	// Format response
+	err := json.Unmarshal([]byte(jsonInfo), &subscription)
+	if err != nil {
+		return err
+	}
+
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+	subsId, _ := strconv.Atoi(subsIdStr)
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	serAvailabilityNotificationSubscriptionMap[subsId] = &subscription
+
+	//reinitialisation of next available Id for future subscription request
+	if subsId >= nextSubscriptionIdAvailable {
+		nextSubscriptionIdAvailable = subsId + 1
+	}
+
 	return nil
 }
 
@@ -325,8 +347,12 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 
 		if match {
 			if data.filterParameters.serCategoryId != "" {
-				//comparing with either the category name or id, spec is not clear
-				match = (data.filterParameters.serCategoryId == sInfo.SerCategory.Name) || (data.filterParameters.serCategoryId == sInfo.SerCategory.Id)
+				if sInfo.SerCategory != nil {
+					//comparing with either the category name or id, spec is not clear
+					match = (data.filterParameters.serCategoryId == sInfo.SerCategory.Name) || (data.filterParameters.serCategoryId == sInfo.SerCategory.Id)
+				} else {
+					match = false
+				}
 			}
 		}
 
@@ -432,7 +458,8 @@ func registerService(appInstanceId string, sInfoPost *ServiceInfoPost) (*Service
 	nextServiceRegistrationIdAvailable++
 	serviceId := strconv.Itoa(newServiceId)
 
-	sInfo, err := updateService(appInstanceId, sInfoPost, serviceId, false)
+	changeType := ServiceAvailabilityNotificationChangeType_ADDED
+	sInfo, err := updateServicePost(appInstanceId, sInfoPost, serviceId, false, &changeType)
 	if err != nil {
 		nextServiceRegistrationIdAvailable--
 		return nil, err
@@ -441,7 +468,7 @@ func registerService(appInstanceId string, sInfoPost *ServiceInfoPost) (*Service
 	return sInfo, nil
 }
 
-func updateService(appInstanceId string, sInfoPost *ServiceInfoPost, serviceId string, needMutex bool) (*ServiceInfo, error) {
+func updateServicePost(appInstanceId string, sInfoPost *ServiceInfoPost, serviceId string, needMutex bool, changeType *ServiceAvailabilityNotificationChangeType) (*ServiceInfo, error) {
 
 	if sInfoPost == nil {
 		return nil, errors.New("Service Info is null")
@@ -453,11 +480,42 @@ func updateService(appInstanceId string, sInfoPost *ServiceInfoPost, serviceId s
 	}
 
 	sInfo, err := createSInfoFromSInfoPost(sInfoPost, serviceId)
-	if err == nil {
-		err = rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", ConvertServiceInfoToJson(sInfo))
+	if err != nil {
+		return nil, err
 	}
 
+	err = rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", ConvertServiceInfoToJson(sInfo))
+	if err != nil {
+		return nil, err
+	}
+
+	checkSerAvailabilityNotification(sInfo, changeType, false)
 	return sInfo, err
+}
+
+func updateServicePut(appInstanceId string, sInfoPut *ServiceInfo, serviceId string, needMutex bool, changeType *ServiceAvailabilityNotificationChangeType) (*ServiceInfo, error) {
+
+	if sInfoPut == nil {
+		return nil, errors.New("Service Info is null")
+	}
+
+	//no changes, no really an error.. just don't do anything and return success
+	if *changeType == "" {
+		return sInfoPut, nil
+	}
+
+	if needMutex {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+
+	err := rc.JSONSetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".", ConvertServiceInfoToJson(sInfoPut))
+	if err != nil {
+		return nil, err
+	}
+
+	checkSerAvailabilityNotification(sInfoPut, changeType, false)
+	return sInfoPut, err
 }
 
 func createSInfoFromSInfoPost(sInfoPost *ServiceInfoPost, serviceId string) (*ServiceInfo, error) {
@@ -482,6 +540,128 @@ func createSInfoFromSInfoPost(sInfoPost *ServiceInfoPost, serviceId string) (*Se
 	return &sInfo, nil
 }
 
+func checkSerAvailabilityNotification(sInfo *ServiceInfo, notificationChangeType *ServiceAvailabilityNotificationChangeType, needMutex bool) {
+
+	if needMutex {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+	//check all that applies
+	for subsId, sub := range serAvailabilityNotificationSubscriptionMap {
+
+		if sub != nil {
+			//find matching criteria
+			var match bool
+			if sub.FilteringCriteria != nil {
+				//go through the mutually exclusive attributes
+				if sub.FilteringCriteria.SerInstanceIds != nil && len(*sub.FilteringCriteria.SerInstanceIds) > 0 {
+					match = false
+					for _, serInstanceId := range *sub.FilteringCriteria.SerInstanceIds {
+						if serInstanceId == sInfo.SerInstanceId {
+							match = true
+							break
+						}
+					}
+				} else {
+					if sub.FilteringCriteria.SerNames != nil && len(*sub.FilteringCriteria.SerNames) > 0 {
+						match = false
+						for _, serName := range *sub.FilteringCriteria.SerNames {
+							if serName == sInfo.SerName {
+								match = true
+								break
+							}
+						}
+					} else {
+						if sub.FilteringCriteria.SerCategories != nil && len(*sub.FilteringCriteria.SerCategories) > 0 {
+							match = false
+							for _, serCategory := range *sub.FilteringCriteria.SerCategories {
+								if serCategory.Href == sInfo.SerCategory.Href &&
+									serCategory.Id == sInfo.SerCategory.Id &&
+									serCategory.Name == sInfo.SerCategory.Name &&
+									serCategory.Version == sInfo.SerCategory.Version {
+									match = true
+									break
+								}
+							}
+						} else {
+							match = true
+						}
+					}
+				}
+
+				//if still valid, look at the other attributes
+				if match {
+					if sub.FilteringCriteria.States != nil && len(*sub.FilteringCriteria.States) > 0 {
+						match = false
+						for _, serState := range *sub.FilteringCriteria.States {
+							if serState == *sInfo.State {
+								match = true
+								break
+							}
+						}
+					} else {
+						match = true
+					}
+				}
+
+				if match {
+					match = false
+					if sub.FilteringCriteria.IsLocal == sInfo.IsLocal {
+						match = true
+					}
+				}
+			} else {
+				match = true
+			}
+
+			if match {
+				subsIdStr := strconv.Itoa(subsId)
+
+				var notif ServiceAvailabilityNotification
+				notif.NotificationType = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
+				links := new(Subscription)
+				linkType := new(LinkType)
+				linkType.Href = sub.Links.Self.Href
+				links.Subscription = linkType
+				notif.Links = links
+				var serAvailabilityRefList []ServiceAvailabilityNotificationServiceReferences
+				var serAvailabilityRef ServiceAvailabilityNotificationServiceReferences
+				refLink := new(LinkType)
+				refLink.Href = hostUrl.String() + basePath + "applications/" + sInfo.SerInstanceId
+				serAvailabilityRef.Link = refLink
+				serAvailabilityRef.SerName = sInfo.SerName
+				serAvailabilityRef.SerInstanceId = sInfo.SerInstanceId
+				serAvailabilityRef.State = sInfo.State
+				serAvailabilityRef.ChangeType = notificationChangeType
+				serAvailabilityRefList = append(serAvailabilityRefList, serAvailabilityRef)
+				notif.ServiceReferences = serAvailabilityRefList
+
+				sendSerAvailNotification(sub.CallbackReference, notif)
+				log.Info("Service Availability Notification" + "(" + subsIdStr + ") for " + string(*notificationChangeType))
+			}
+		}
+	}
+}
+
+func sendSerAvailNotification(notifyUrl string, notification ServiceAvailabilityNotification) {
+	startTime := time.Now()
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notification.NotificationType, notifyUrl, nil, duration)
+		return
+	}
+	met.ObserveNotification(sandboxName, serviceName, notification.NotificationType, notifyUrl, resp, duration)
+	defer resp.Body.Close()
+}
+
 func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	log.Info("appServicesByIdDELETE")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -495,8 +675,8 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	present, _ := rc.JSONGetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
-	if present == "" {
+	jsonResponse, _ := rc.JSONGetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
+	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -508,6 +688,9 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = deregisterService(appInstanceId, serviceId)
+	sInfo := convertJsonToServiceInfo(jsonResponse)
+	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+	checkSerAvailabilityNotification(sInfo, &changeType, true)
 
 	w.WriteHeader(http.StatusNoContent)
 
@@ -552,54 +735,74 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var sInfoPost ServiceInfoPost
+	//find previous values
+	sInfoJson, _ := rc.JSONGetEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+serviceId, ".")
+	if sInfoJson == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	sInfo := convertJsonToServiceInfo(sInfoJson)
+
+	var sInfoPut ServiceInfo
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&sInfoPost)
+	err = decoder.Decode(&sInfoPut)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	//checking for mandatory properties
-	if sInfoPost.SerInstanceId == "" {
-		log.Error("Mandatory Service Instance Id parameter not present")
-		http.Error(w, "Mandatory Service Instance Id parameter not present", http.StatusBadRequest)
+	//checking for mandatory properties or conditional requirements
+	if sInfoPut.SerInstanceId != "" && sInfoPut.SerInstanceId != serviceId {
+		log.Error("Service Instance Id parameter and body content not matching")
+		http.Error(w, "Service Instance Id parameter and body content not matching", http.StatusBadRequest)
 		return
 	}
-	if sInfoPost.SerInstanceId != serviceId {
-		log.Error("Mandatory Service Instance Id parameter and body content not matching")
-		http.Error(w, "Mandatory Service Instance Id parameter and body content not matching", http.StatusBadRequest)
-		return
-	}
-	if sInfoPost.SerName == "" {
+	if sInfoPut.SerName == "" {
 		log.Error("Mandatory Service Name parameter not present")
 		http.Error(w, "Mandatory Service Name parameter not present", http.StatusBadRequest)
 		return
 	}
-	if sInfoPost.Version == "" {
+	if sInfoPut.Version == "" {
 		log.Error("Mandatory Service Version parameter not present")
 		http.Error(w, "Mandatory Service Version parameter not present", http.StatusBadRequest)
 		return
 	}
-	if sInfoPost.State == nil {
+	if sInfoPut.State == nil {
 		log.Error("Mandatory Service State parameter not present")
 		http.Error(w, "Mandatory Service State parameter not present", http.StatusBadRequest)
 		return
 	}
-	if sInfoPost.Serializer == nil {
+	if sInfoPut.Serializer == nil {
 		log.Error("Mandatory Serializer parameter not present")
 		http.Error(w, "Mandatory Serializer parameter not present", http.StatusBadRequest)
 		return
 	}
 
-	sInfo, err := updateService(appInstanceId, &sInfoPost, serviceId, true)
+	var changeType ServiceAvailabilityNotificationChangeType
+
+	//if only state changed, use specific type
+	if *sInfo.State != *sInfoPut.State {
+		changeType = ServiceAvailabilityNotificationChangeType_STATE_CHANGED
+	}
+
+	//equalize the state from the json and compare the json string rather than each parameter individually, if there is a difference, use generic type
+	backupsInfoPutState := *sInfoPut.State
+	*sInfoPut.State = *sInfo.State
+	sInfoPutJson := ConvertServiceInfoToJson(&sInfoPut)
+	if string(sInfoPutJson) != string(sInfoJson) {
+		changeType = ServiceAvailabilityNotificationChangeType_ATTRIBUTES_CHANGED
+	}
+	//put back the new state value
+	*sInfoPut.State = backupsInfoPutState
+
+	sInfoResponse, err := updateServicePut(appInstanceId, &sInfoPut, serviceId, true, &changeType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	jsonResponse, err := json.Marshal(sInfo)
+	jsonResponse, err := json.Marshal(sInfoResponse)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -648,4 +851,219 @@ func servicesGET(w http.ResponseWriter, r *http.Request) {
 
 	//use appInstanceId wildcard
 	appServicesGETByAppInstanceId(w, r, "*")
+}
+
+func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	vars := mux.Vars(r)
+	appInstanceId := vars["appInstanceId"]
+
+	//check if entry exist for the application in the DB
+	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		log.Error("AppInstanceId does not exist, app is not running")
+		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+		return
+	}
+
+	var subscription SerAvailabilityNotificationSubscription
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&subscription)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//checking for mandatory properties
+	if subscription.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
+	if subscription.SubscriptionType != SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE {
+		log.Error("SubscriptionType shall be SerAvailabilityNotificationSubscription")
+		http.Error(w, "SubscriptionType shall be SerAvailabilityNotificationSubscription", http.StatusBadRequest)
+		return
+	}
+
+	if subscription.FilteringCriteria != nil {
+		nbMutuallyExclusiveParams := 0
+		if subscription.FilteringCriteria.SerInstanceIds != nil {
+			if len(*subscription.FilteringCriteria.SerInstanceIds) > 0 {
+				nbMutuallyExclusiveParams++
+			}
+		}
+		if subscription.FilteringCriteria.SerNames != nil {
+			if len(*subscription.FilteringCriteria.SerNames) > 0 {
+				nbMutuallyExclusiveParams++
+			}
+		}
+		if subscription.FilteringCriteria.SerCategories != nil {
+			if len(*subscription.FilteringCriteria.SerCategories) > 0 {
+				nbMutuallyExclusiveParams++
+			}
+		}
+		if nbMutuallyExclusiveParams > 1 {
+			log.Error("FilteringCriteria attributes serInstanceIds, serNames, serCategories are mutually-exclusive")
+			http.Error(w, "FilteringCriteria attributes serInstanceIds, serNames, serCategories are mutually-exclusive", http.StatusBadRequest)
+			return
+		}
+	}
+
+	newSubsId := nextSubscriptionIdAvailable
+	nextSubscriptionIdAvailable++
+	subsIdStr := strconv.Itoa(newSubsId)
+
+	link := new(Self)
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions/" + subsIdStr
+	link.Self = self
+	subscription.Links = link
+
+	//registration
+	registerSerAvailability(&subscription, newSubsId)
+	baseKey := key + ":" + msmgmtKey
+	_ = rc.JSONSetEntry(baseKey+":subscriptions:"+subsIdStr, ".", convertSerAvailabilityNotificationSubscriptionToJson(&subscription))
+
+	jsonResponse, err := json.Marshal(subscription)
+
+	//processing the error of the jsonResponse
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func registerSerAvailability(subscription *SerAvailabilityNotificationSubscription, subsId int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	serAvailabilityNotificationSubscriptionMap[subsId] = subscription
+	log.Info("New registration: ", subsId, " type: ", SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE)
+}
+
+func deregisterSerAvailability(subsIdStr string, mutexTaken bool) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+
+	serAvailabilityNotificationSubscriptionMap[subsId] = nil
+	log.Info("Deregistration: ", subsId, " type: ", SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE)
+}
+
+func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	subIdParamStr := vars["subscriptionId"]
+	appInstanceId := vars["appInstanceId"]
+
+	//check if entry exist for the application in the DB
+	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		log.Error("AppInstanceId does not exist, app is not running")
+		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+		return
+	}
+	baseKey := key + ":" + msmgmtKey
+	jsonResponse, _ := rc.JSONGetEntry(baseKey+":subscriptions:"+subIdParamStr, ".")
+	if jsonResponse == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	subIdParamStr := vars["subscriptionId"]
+	appInstanceId := vars["appInstanceId"]
+
+	//check if entry exist for the application in the DB
+	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		log.Error("AppInstanceId does not exist, app is not running")
+		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+		return
+	}
+
+	baseKey := key + ":" + msmgmtKey
+	jsonResponse, _ := rc.JSONGetEntry(baseKey+":subscriptions:"+subIdParamStr, ".")
+	if jsonResponse == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err = rc.JSONDelEntry(baseKey+":subscriptions"+":"+subIdParamStr, ".")
+	deregisterSerAvailability(subIdParamStr, false)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	vars := mux.Vars(r)
+	appInstanceId := vars["appInstanceId"]
+
+	//check if entry exist for the application in the DB
+	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		log.Error("AppInstanceId does not exist, app is not running")
+		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+		return
+	}
+
+	subscriptionLinkList := new(MecServiceMgmtApiSubscriptionLinkList)
+
+	link := new(MecServiceMgmtApiSubscriptionLinkListLinks)
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions"
+
+	link.Self = self
+	subscriptionLinkList.Links = link
+
+	//loop through all different types of subscription
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	//loop through appTerm map
+	for _, serAvailSubscription := range serAvailabilityNotificationSubscriptionMap {
+		if serAvailSubscription != nil {
+			var subscription MecServiceMgmtApiSubscriptionLinkListSubscription
+			subscription.Href = serAvailSubscription.Links.Self.Href
+			//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
+			subscription.Rel = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
+			subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
+		}
+	}
+
+	jsonResponse, err := json.Marshal(subscriptionLinkList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
 }

@@ -18,6 +18,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,11 +32,13 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
+	appInfoClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-info-client"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	srvMgmtClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 
 	"github.com/gorilla/mux"
 )
@@ -186,6 +189,20 @@ type PlmnInfoResp struct {
 	PlmnInfoList []PlmnInfo
 }
 
+//MEC011 section begin
+const serviceAppName = "RNI"
+const serviceAppVersion = "2.1.1"
+
+var serviceAppInstanceId string
+
+var appEnablementClientUrl string = "http://meep-app-enablement"
+var appEnablementSupport bool = true
+var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
+
+var retryAppEnablementTicker *time.Ticker
+
+//MEC011 section end
+
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusNotImplemented)
@@ -302,6 +319,29 @@ func Init() (err error) {
 	}
 	log.Info("SBI Initialized")
 
+	//register using MEC011
+	if appEnablementSupport {
+		//delay startup on purpose to give time for appEnablement pod to come up (if all coming up at the same time)
+		time.Sleep(2 * time.Second)
+
+		retryAppEnablementTicker = time.NewTicker(time.Second)
+		go func() {
+			for range retryAppEnablementTicker.C {
+				if serviceAppInstanceId == "" {
+					serviceAppInstanceId = getAppInstanceId(serviceAppName, serviceAppVersion)
+				}
+				if serviceAppInstanceId != "" {
+					err := appEnablementRegistration(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+					if err != nil {
+						log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
+					} else {
+						retryAppEnablementTicker.Stop()
+					}
+				}
+			}
+		}()
+	}
+
 	return nil
 }
 
@@ -327,7 +367,92 @@ func Run() (err error) {
 
 // Stop - Stop RNIS
 func Stop() (err error) {
+	retryAppEnablementTicker.Stop()
 	return sbi.Stop()
+}
+
+func getAppInstanceId(appName string, appVersion string) string {
+	//var client *appInfoClient.APIClient
+	appInfoClientCfg := appInfoClient.NewConfiguration()
+	appInfoClientCfg.BasePath = appEnablementClientUrl + "/app_info/v1"
+
+	client := appInfoClient.NewAPIClient(appInfoClientCfg)
+	if client == nil {
+		log.Error("Failed to create App Info REST API client: ", appInfoClientCfg.BasePath)
+		return ""
+	}
+	var appInfo appInfoClient.ApplicationInfo
+	appInfo.AppName = appName
+	appInfo.Version = appVersion
+	state := appInfoClient.INACTIVE_ApplicationState
+	appInfo.State = &state
+	appInfoResponse, _, err := client.AppsApi.ApplicationsPOST(context.TODO(), appInfo)
+	if err != nil {
+		log.Error("Failed to communicate with app enablement service: ", err)
+		return ""
+	}
+	return appInfoResponse.AppInstanceId
+}
+
+func appEnablementRegistration(appInstanceId string, appName string, appVersion string) error {
+
+	appEnablementSrvMgmtClientCfg := srvMgmtClient.NewConfiguration()
+	appEnablementSrvMgmtClientCfg.BasePath = appEnablementClientUrl + "/mec_service_mgmt/v1"
+
+	appEnablementSrvMgmtClient = srvMgmtClient.NewAPIClient(appEnablementSrvMgmtClientCfg)
+	if appEnablementSrvMgmtClient == nil {
+		log.Error("Failed to create App Enablement Srv Mgmt REST API client: ", appEnablementSrvMgmtClientCfg.BasePath)
+		err := errors.New("Failed to create App Enablement Srv Mgmt REST API client")
+		return err
+	}
+	var srvInfo srvMgmtClient.ServiceInfoPost
+	//serName
+	srvInfo.SerName = appName
+	//version
+	srvInfo.Version = appVersion
+	//state
+	state := srvMgmtClient.ACTIVE_ServiceState
+	srvInfo.State = &state
+	//serializer
+	serializer := srvMgmtClient.JSON_SerializerType
+	srvInfo.Serializer = &serializer
+
+	//transportInfo
+	var transportInfo srvMgmtClient.TransportInfo
+	transportInfo.Id = "transport"
+	transportInfo.Name = "REST"
+	transportType := srvMgmtClient.REST_HTTP_TransportType
+	transportInfo.Type_ = &transportType
+	transportInfo.Protocol = "HTTP"
+	transportInfo.Version = "2.0"
+	var endpoint srvMgmtClient.OneOfTransportInfoEndpoint
+	endpointPath := hostUrl.String() + basePath
+	endpoint.Uris = append(endpoint.Uris, endpointPath)
+	transportInfo.Endpoint = &endpoint
+	srvInfo.TransportInfo = &transportInfo
+
+	//serCategory
+	var category srvMgmtClient.CategoryRef
+	category.Href = "catalogueHref"
+	category.Id = "rniId"
+	category.Name = "RNI"
+	category.Version = "v2"
+	srvInfo.SerCategory = &category
+
+	//scopeOfLocality
+	scopeOfLocality := srvMgmtClient.MEC_SYSTEM_LocalityType
+	srvInfo.ScopeOfLocality = &scopeOfLocality
+
+	//consumedLocalOnly
+	srvInfo.ConsumedLocalOnly = false
+
+	appServicesPostResponse, _, err := appEnablementSrvMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	if err != nil {
+		log.Error("Failed to register the service to app enablement registry: ", err)
+		return err
+	}
+	log.Info("Application Enablement Service instance Id: ", appServicesPostResponse.SerInstanceId)
+	return nil
 }
 
 func updateUeData(obj sbi.UeDataSbi) {
@@ -353,17 +478,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 	ueData.ThroughputUL = obj.ThroughputUL
 	ueData.ThroughputDL = obj.ThroughputDL
 	ueData.PacketLoss = obj.PacketLoss
-
-	var inRangePoas []InRangePoa
-	for index := range obj.InRangePoas {
-		var inRangePoa InRangePoa
-		inRangePoa.Name = obj.InRangePoas[index]
-		inRangePoa.Rsrp = obj.InRangeRsrps[index]
-		inRangePoa.Rsrq = obj.InRangeRsrqs[index]
-		inRangePoas = append(inRangePoas, inRangePoa)
-	}
-
-	ueData.InRangePoas = inRangePoas
 	ueData.ParentPoaName = obj.ParentPoaName
 
 	oldPlmn := new(Plmn)
@@ -374,11 +488,9 @@ func updateUeData(obj sbi.UeDataSbi) {
 	oldNrPlmnMnc := ""
 	oldNrPlmnMcc := ""
 	oldNrCellId := ""
-	var oldInRangePoas []InRangePoa
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+obj.Name, ".")
-
 	if jsonUeData != "" {
 		ueDataObj := convertJsonToUeData(jsonUeData)
 		if ueDataObj != nil {
@@ -387,17 +499,19 @@ func updateUeData(obj sbi.UeDataSbi) {
 				oldPlmnMnc = ueDataObj.Ecgi.Plmn.Mnc
 				oldPlmnMcc = ueDataObj.Ecgi.Plmn.Mcc
 				oldCellId = ueDataObj.Ecgi.CellId
-				oldErabId = ueDataObj.ErabId
+				if oldCellId != "" {
+					oldErabId = ueDataObj.ErabId
+				}
 			}
 			if ueDataObj.Nrcgi != nil {
 				oldNrPlmnMnc = ueDataObj.Nrcgi.Plmn.Mnc
 				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
 				oldNrCellId = ueDataObj.Nrcgi.NrcellId
 			}
-			oldInRangePoas = ueDataObj.InRangePoas
+			// Keep previous measurements
+			ueData.InRangePoas = ueDataObj.InRangePoas
 		}
 	}
-
 	//updateDB if changes occur (4G section)
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 
@@ -435,25 +549,11 @@ func updateUeData(obj sbi.UeDataSbi) {
 		}
 	} else {
 		//5G section
+		//keep erabId info that was there
+		ueData.ErabId = oldErabId
+
 		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
 			//update because nrcgi changed
-			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
-		}
-		//update if poa in range and signal powers changed
-		//as soon as there is one difference... need an update
-		updateMeas := false
-		if len(oldInRangePoas) != len(inRangePoas) {
-			updateMeas = true
-		} else {
-			for index := range oldInRangePoas {
-				if oldInRangePoas[index].Name != inRangePoas[index].Name || oldInRangePoas[index].Rsrp != inRangePoas[index].Rsrp || oldInRangePoas[index].Rsrq != inRangePoas[index].Rsrq {
-					updateMeas = true
-					break
-				}
-			}
-		}
-		if updateMeas {
-			//update because power signals changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
 		}
 	}
@@ -477,7 +577,6 @@ func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string,
 			}
 			ueDataObj.InRangePoas = inRangePoas
 		}
-
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
 	}
 }
@@ -1478,7 +1577,6 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 				}
 
 				subscription := convertJsonToMeasRepUeSubscription(jsonInfo)
-				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
 				var notif MeasRepUeNotification
 				notif.NotificationType = MEAS_REP_UE_NOTIFICATION
@@ -1495,10 +1593,12 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 				notif.AssociateId = append(notif.AssociateId, *assocId)
 
 				//adding the data of all reachable cells
+				parentMeasExists := false
 				for _, poa := range ueData.InRangePoas {
 					if poa.Name == ueData.ParentPoaName {
 						notif.Rsrp = poa.Rsrp
 						notif.Rsrq = poa.Rsrq
+						parentMeasExists = true
 					} else {
 						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
@@ -1530,8 +1630,11 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 					}
 				}
 
-				go sendMrNotification(subscription.CallbackReference, notif)
-				log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				if parentMeasExists {
+					log.Info("Sending RNIS notification ", subscription.CallbackReference)
+					go sendMrNotification(subscription.CallbackReference, notif)
+					log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				}
 			}
 		}
 	}
@@ -1583,7 +1686,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			match := isMatchFilterCriteriaAssociateId(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, assocId)
 
 			if match {
-
 				if ueData.Nrcgi != nil {
 					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrcellId, "")
 				} else {
@@ -1596,7 +1698,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			}
 
 			if match {
-
 				subsIdStr := strconv.Itoa(subsId)
 				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
@@ -1604,7 +1705,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 				}
 
 				subscription := convertJsonToNrMeasRepUeSubscription(jsonInfo)
-				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
 				var notif NrMeasRepUeNotification
 				notif.NotificationType = NR_MEAS_REP_UE_NOTIFICATION
@@ -1630,6 +1730,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 				strongestRsrp := int32(0)
 				//adding the data of all reachable cells
+				parentMeasExists := false
 				for _, poa := range ueData.InRangePoas {
 					if poa.Name == ueData.ParentPoaName {
 						var measQuantityResultsNr MeasQuantityResultsNr
@@ -1638,6 +1739,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						var nrMeasRepUeNotificationSCell NrMeasRepUeNotificationSCell
 						nrMeasRepUeNotificationSCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
 						notif.ServCellMeasInfo[0].SCell = &nrMeasRepUeNotificationSCell
+						parentMeasExists = true
 					} else {
 						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
@@ -1681,8 +1783,11 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 					notif.EutraNeighCellMeasInfo = nil
 				}
 
-				go sendNrMrNotification(subscription.CallbackReference, notif)
-				log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				if parentMeasExists {
+					log.Info("Sending RNIS notification ", subscription.CallbackReference)
+					go sendNrMrNotification(subscription.CallbackReference, notif)
+					log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				}
 			}
 		}
 	}
@@ -2844,51 +2949,7 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 		return nil
 	}
 
-	//name of the element is used as the ipv4 address at the moment
-	partOfFilter = true
-	for _, address := range data.queryIpv4Addresses {
-		if address != "" {
-			partOfFilter = false
-			if address == ueData.Name {
-				partOfFilter = true
-				break
-			}
-		}
-	}
-	if !partOfFilter {
-		return nil
-	}
-
 	found := false
-
-	//find if cellUeInfo already exists
-	var cellUeIndex int
-	assocId := new(AssociateId)
-	assocId.Type_ = 1 //UE_IPV4_ADDRESS
-	subKeys := strings.Split(key, ":")
-	assocId.Value = subKeys[len(subKeys)-1]
-
-	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
-		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
-			found = true
-			cellUeIndex = index
-		}
-	}
-	if !found {
-		newCellUeInfo := new(L2MeasCellUeInfo)
-		newEcgi := new(Ecgi)
-		newPlmn := new(Plmn)
-		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
-		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
-		newEcgi.Plmn = newPlmn
-		newEcgi.CellId = ueData.Ecgi.CellId
-
-		newCellUeInfo.Ecgi = newEcgi
-		newCellUeInfo.AssociateId = assocId
-
-		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
-		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
-	}
 
 	//find if cellInfo already exists
 	var cellIndex int
@@ -2975,6 +3036,52 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeUlNongbrCell++
 	data.l2Meas.CellInfo[cellIndex].DlNongbrPdrCell = poaPacketLoss
 	data.l2Meas.CellInfo[cellIndex].UlNongbrPdrCell = poaPacketLoss
+
+	//name of the element is used as the ipv4 address at the moment
+	partOfFilter = true
+	for _, address := range data.queryIpv4Addresses {
+		if address != "" {
+			partOfFilter = false
+			if address == ueData.Name {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	found = false
+
+	//find if cellUeInfo already exists
+	var cellUeIndex int
+	assocId := new(AssociateId)
+	assocId.Type_ = 1 //UE_IPV4_ADDRESS
+	subKeys := strings.Split(key, ":")
+	assocId.Value = subKeys[len(subKeys)-1]
+
+	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
+		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
+			found = true
+			cellUeIndex = index
+		}
+	}
+	if !found {
+		newCellUeInfo := new(L2MeasCellUeInfo)
+		newEcgi := new(Ecgi)
+		newPlmn := new(Plmn)
+		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
+		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
+		newEcgi.Plmn = newPlmn
+		newEcgi.CellId = ueData.Ecgi.CellId
+
+		newCellUeInfo.Ecgi = newEcgi
+		newCellUeInfo.AssociateId = assocId
+
+		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
+		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
+	}
 
 	//update ueInfo delay
 	//delay is the latency between air interface (POA<->UE)

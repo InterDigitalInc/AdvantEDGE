@@ -6035,7 +6035,7 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, 1}
 	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -6091,7 +6091,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + subscriptionId}
 	expectedExpiry := TimeStamp{0, 1988599770}
-	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, 1}
 	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -6226,6 +6226,7 @@ func testSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess b
 	}
 }
 
+/*
 func TestExpiryNotification(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())
@@ -6245,21 +6246,21 @@ func TestExpiryNotification(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 
-	/******************************
-	 * expected response section
-	 ******************************/
+	// ******************************
+	// * expected response section
+	// ******************************
 	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedExpiry := TimeStamp{0, 12321}
-	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, 1}
 
-	/******************************
-	 * request vars section
-	 ******************************/
+	// ******************************
+	// * request vars section
+	// ******************************
 
-	/******************************
-	 * request body section
-	 ******************************/
+	// ******************************
+	// * request body section
+	// ******************************
 
 	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
@@ -6268,13 +6269,13 @@ func TestExpiryNotification(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	/******************************
-	 * request queries section
-	 ******************************/
+	// ******************************
+	// * request queries section
+	// ******************************
 
-	/******************************
-	 * request execution section
-	 ******************************/
+	// ******************************
+	// * request execution section
+	// ******************************
 
 	_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
 	if err != nil {
@@ -6305,12 +6306,13 @@ func TestExpiryNotification(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	/******************************
-	 * back to initial state section
-	 ******************************/
+	// ******************************
+	// * back to initial state section
+	// ******************************
 	terminateScenario()
 
 }
+*/
 
 func TestSubscriptionAssocStaNotification(t *testing.T) {
 
@@ -6340,7 +6342,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	expectedApId := ApIdentity{"0050C272800A", nil, nil}
 	expectedApIdMacIdStr := "{\"bssid\":\"0050C272800A\"}"
 	expectedStaIdMacIdStr := "[{\"macId\":\"101002000000\"}]"
-	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, "1"}
+	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, 1}
 
 	/******************************
 	 * request vars section
@@ -6452,8 +6454,8 @@ func TestSbi(t *testing.T) {
 
 	var expectedStaDataStr [2]string
 	var expectedStaData [2]StaData
-	expectedStaData[INITIAL] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ""}}, StaId: &StaIdentity{MacId: ""}}}
-	expectedStaData[UPDATED] = StaData{&StaInfo{StaDataRate: &StaDataRate{StaId: &StaIdentity{MacId: ueMacId}}, StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{Bssid: apMacId2}}}
+	expectedStaData[INITIAL] = StaData{&StaInfo{StaDataRate: &StaDataRate{}, StaId: &StaIdentity{MacId: ""}}}
+	expectedStaData[UPDATED] = StaData{&StaInfo{StaDataRate: &StaDataRate{}, StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{Bssid: apMacId2}}}
 
 	var expectedApInfoApIdMacIdStr [2]string
 	var expectedApInfoNbStas [2]int
