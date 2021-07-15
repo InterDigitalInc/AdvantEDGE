@@ -6,12 +6,12 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
-  {{- if .IsMepService }}
-  kubeDnsInitContainerEnabled: false
-  {{- else }}
-  kubeDnsInitContainerEnabled: true
-  {{- end }}
+  dependencies:
+    system:
+      {{- if not .IsMepService }}
+      - kube-dns
+      {{- end }}
+    sandbox:
 
 image:
   repository: meep-docker-registry:30001/meep-app-enablement
