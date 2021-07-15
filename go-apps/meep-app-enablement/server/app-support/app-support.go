@@ -191,7 +191,7 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + "info"
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -238,7 +238,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + "info"
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -381,7 +381,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + "info"
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -475,7 +475,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + "info"
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -499,7 +499,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + "info"
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
@@ -530,7 +530,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	appInstanceId := vars["appInstanceId"]
 
 	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + "info"
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not exist, app is not running")
