@@ -504,6 +504,9 @@ func refreshMeasurements() {
 
 	// Update UE measurements
 	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+
+	log.Error("KEV: SBI get all measurements from GIS cache")
+
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 
