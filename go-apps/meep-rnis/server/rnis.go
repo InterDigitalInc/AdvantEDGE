@@ -478,17 +478,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 	ueData.ThroughputUL = obj.ThroughputUL
 	ueData.ThroughputDL = obj.ThroughputDL
 	ueData.PacketLoss = obj.PacketLoss
-
-	var inRangePoas []InRangePoa
-	for index := range obj.InRangePoas {
-		var inRangePoa InRangePoa
-		inRangePoa.Name = obj.InRangePoas[index]
-		inRangePoa.Rsrp = obj.InRangeRsrps[index]
-		inRangePoa.Rsrq = obj.InRangeRsrqs[index]
-		inRangePoas = append(inRangePoas, inRangePoa)
-	}
-
-	ueData.InRangePoas = inRangePoas
 	ueData.ParentPoaName = obj.ParentPoaName
 
 	oldPlmn := new(Plmn)
@@ -499,7 +488,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 	oldNrPlmnMnc := ""
 	oldNrPlmnMcc := ""
 	oldNrCellId := ""
-	var oldInRangePoas []InRangePoa
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+obj.Name, ".")
@@ -520,7 +508,8 @@ func updateUeData(obj sbi.UeDataSbi) {
 				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
 				oldNrCellId = ueDataObj.Nrcgi.NrcellId
 			}
-			oldInRangePoas = ueDataObj.InRangePoas
+			// Keep previous measurements
+			ueData.InRangePoas = ueDataObj.InRangePoas
 		}
 	}
 	//updateDB if changes occur (4G section)
@@ -567,23 +556,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 			//update because nrcgi changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
 		}
-		//update if poa in range and signal powers changed
-		//as soon as there is one difference... need an update
-		updateMeas := false
-		if len(oldInRangePoas) != len(inRangePoas) {
-			updateMeas = true
-		} else {
-			for index := range oldInRangePoas {
-				if oldInRangePoas[index].Name != inRangePoas[index].Name || oldInRangePoas[index].Rsrp != inRangePoas[index].Rsrp || oldInRangePoas[index].Rsrq != inRangePoas[index].Rsrq {
-					updateMeas = true
-					break
-				}
-			}
-		}
-		if updateMeas {
-			//update because power signals changed
-			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
-		}
 	}
 }
 
@@ -605,8 +577,6 @@ func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string,
 			}
 			ueDataObj.InRangePoas = inRangePoas
 		}
-		InRangePoasStr := fmt.Sprintf("%+v", ueDataObj.InRangePoas)
-		log.Error("KEV: RNIS DB update UE: ", name, " POAs in range: ", InRangePoasStr)
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
 	}
 }
@@ -1607,7 +1577,6 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 				}
 
 				subscription := convertJsonToMeasRepUeSubscription(jsonInfo)
-				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
 				var notif MeasRepUeNotification
 				notif.NotificationType = MEAS_REP_UE_NOTIFICATION
@@ -1624,10 +1593,12 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 				notif.AssociateId = append(notif.AssociateId, *assocId)
 
 				//adding the data of all reachable cells
+				parentMeasExists := false
 				for _, poa := range ueData.InRangePoas {
 					if poa.Name == ueData.ParentPoaName {
 						notif.Rsrp = poa.Rsrp
 						notif.Rsrq = poa.Rsrq
+						parentMeasExists = true
 					} else {
 						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
@@ -1659,8 +1630,11 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 					}
 				}
 
-				go sendMrNotification(subscription.CallbackReference, notif)
-				log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				if parentMeasExists {
+					log.Info("Sending RNIS notification ", subscription.CallbackReference)
+					go sendMrNotification(subscription.CallbackReference, notif)
+					log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				}
 			}
 		}
 	}
@@ -1671,7 +1645,6 @@ func checkNrMrPeriodicTrigger(trigger int32) {
 
 	//only check if there is at least one subscription
 	if len(nrMrSubscriptionMap) >= 1 {
-		log.Error("KEV: RNIS DB get UEs")
 		keyName := baseKey + "UE:*"
 		err := rc.ForEachJSONEntry(keyName, checkNrMrNotificationRegisteredSubscriptions, int32(trigger))
 		if err != nil {
@@ -1713,7 +1686,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			match := isMatchFilterCriteriaAssociateId(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, assocId)
 
 			if match {
-
 				if ueData.Nrcgi != nil {
 					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrcellId, "")
 				} else {
@@ -1726,7 +1698,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			}
 
 			if match {
-
 				subsIdStr := strconv.Itoa(subsId)
 				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
@@ -1734,7 +1705,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 				}
 
 				subscription := convertJsonToNrMeasRepUeSubscription(jsonInfo)
-				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
 				var notif NrMeasRepUeNotification
 				notif.NotificationType = NR_MEAS_REP_UE_NOTIFICATION
@@ -1760,6 +1730,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 				strongestRsrp := int32(0)
 				//adding the data of all reachable cells
+				parentMeasExists := false
 				for _, poa := range ueData.InRangePoas {
 					if poa.Name == ueData.ParentPoaName {
 						var measQuantityResultsNr MeasQuantityResultsNr
@@ -1768,8 +1739,8 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						var nrMeasRepUeNotificationSCell NrMeasRepUeNotificationSCell
 						nrMeasRepUeNotificationSCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
 						notif.ServCellMeasInfo[0].SCell = &nrMeasRepUeNotificationSCell
+						parentMeasExists = true
 					} else {
-						log.Error("KEV: RNIS DB get POA: ", poa.Name)
 						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
 							log.Info("POA cannot be found in: ", baseKey+"POA:"+poa.Name)
@@ -1812,10 +1783,11 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 					notif.EutraNeighCellMeasInfo = nil
 				}
 
-				notifStr := fmt.Sprintf("%+v", notif)
-				log.Error("KEV: RNIS send notif for UE: ", ueData.Name, " Notif: ", notifStr)
-				go sendNrMrNotification(subscription.CallbackReference, notif)
-				log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				if parentMeasExists {
+					log.Info("Sending RNIS notification ", subscription.CallbackReference)
+					go sendNrMrNotification(subscription.CallbackReference, notif)
+					log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				}
 			}
 		}
 	}

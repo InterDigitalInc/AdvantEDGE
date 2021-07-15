@@ -267,9 +267,6 @@ func processActiveScenarioUpdate() {
 
 	//get all measurements to update without waiting for ticker
 	if len(ueNameList) > 0 {
-		//no need to have the map if no ue to update
-		ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
-
 		for _, name := range ueNameList {
 			// Ignore disconnected UEs
 			if !isUeConnected(name) {
@@ -336,9 +333,6 @@ func processActiveScenarioUpdate() {
 							throughputUL = ue.NetChar.ThroughputUl
 						}
 
-						//update measurements, don't wait for ticker
-						poaNamesInRange, rsrpsInRange, rsrqsInRange := getMeas(name, "", ueMeasMap)
-
 						var ueDataSbi = UeDataSbi{
 							Name:          name,
 							Mnc:           mnc,
@@ -352,9 +346,6 @@ func processActiveScenarioUpdate() {
 							ThroughputDL:  throughputDL,
 							PacketLoss:    ploss,
 							ParentPoaName: poa.Name,
-							InRangePoas:   poaNamesInRange,
-							InRangeRsrps:  rsrpsInRange,
-							InRangeRsrqs:  rsrqsInRange,
 						}
 						sbi.updateUeDataCB(ueDataSbi)
 					}
@@ -501,12 +492,8 @@ func processActiveScenarioUpdate() {
 }
 
 func refreshMeasurements() {
-
 	// Update UE measurements
 	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
-
-	log.Error("KEV: SBI get all measurements from GIS cache")
-
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 
@@ -524,7 +511,6 @@ func refreshMeasurements() {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
 		}
 	}
-
 }
 
 func getMeas(ue string, poaName string, ueMeasMap map[string]*gc.UeMeasurement) ([]string, []int32, []int32) {
