@@ -44,18 +44,12 @@ type AppConfirmReadyApiService service
 AppConfirmReadyApiService
 This method may be used by the MEC application instance to notify the MEC platform that it is up and running.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param body
  * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param optional nil or *ApplicationsConfirmReadyPOSTOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of AppReadyConfirmation) -
 
 
 */
-
-type ApplicationsConfirmReadyPOSTOpts struct {
-	Body optional.Interface
-}
-
-func (a *AppConfirmReadyApiService) ApplicationsConfirmReadyPOST(ctx context.Context, appInstanceId string, localVarOptionals *ApplicationsConfirmReadyPOSTOpts) (*http.Response, error) {
+func (a *AppConfirmReadyApiService) ApplicationsConfirmReadyPOST(ctx context.Context, body AppReadyConfirmation, appInstanceId string) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -89,14 +83,7 @@ func (a *AppConfirmReadyApiService) ApplicationsConfirmReadyPOST(ctx context.Con
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
-
-		localVarOptionalBody, localVarOptionalBodyok := localVarOptionals.Body.Value().(AppReadyConfirmation)
-		if !localVarOptionalBodyok {
-			return nil, reportError("body should be AppReadyConfirmation")
-		}
-		localVarPostBody = &localVarOptionalBody
-	}
+	localVarPostBody = &body
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return nil, err

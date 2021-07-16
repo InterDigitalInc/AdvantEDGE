@@ -29,7 +29,7 @@ type AppTerminationNotificationSubscription struct {
 
 	CallbackReference string `json:"callbackReference"`
 
-	Links *Self `json:"_links"`
+	Links *Self `json:"_links,omitempty"`
 
 	AppInstanceId string `json:"appInstanceId"`
 }

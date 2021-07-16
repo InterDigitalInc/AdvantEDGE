@@ -42,6 +42,7 @@ const msmgmtBasePath = "/mec_service_mgmt/v1/"
 const msmgmtKey = "sm"
 const appEnablementKey = "app-enablement"
 const SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE = "SerAvailabilityNotificationSubscription"
+const SER_AVAILABILITY_NOTIFICATION_TYPE = "SerAvailabilityNotification"
 
 //const logModuleAppEnablement = "meep-app-enablement"
 const serviceName = "APP-ENABLEMENT Service"
@@ -548,7 +549,6 @@ func checkSerAvailabilityNotification(sInfo *ServiceInfo, notificationChangeType
 	}
 	//check all that applies
 	for subsId, sub := range serAvailabilityNotificationSubscriptionMap {
-
 		if sub != nil {
 			//find matching criteria
 			var match bool
@@ -584,6 +584,7 @@ func checkSerAvailabilityNotification(sInfo *ServiceInfo, notificationChangeType
 								}
 							}
 						} else {
+
 							match = true
 						}
 					}
@@ -591,6 +592,7 @@ func checkSerAvailabilityNotification(sInfo *ServiceInfo, notificationChangeType
 
 				//if still valid, look at the other attributes
 				if match {
+
 					if sub.FilteringCriteria.States != nil && len(*sub.FilteringCriteria.States) > 0 {
 						match = false
 						for _, serState := range *sub.FilteringCriteria.States {
@@ -618,7 +620,7 @@ func checkSerAvailabilityNotification(sInfo *ServiceInfo, notificationChangeType
 				subsIdStr := strconv.Itoa(subsId)
 
 				var notif ServiceAvailabilityNotification
-				notif.NotificationType = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
+				notif.NotificationType = SER_AVAILABILITY_NOTIFICATION_TYPE
 				links := new(Subscription)
 				linkType := new(LinkType)
 				linkType.Href = sub.Links.Self.Href
@@ -694,6 +696,33 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func AppServicesDELETE(appInstanceId string) error {
+	log.Info("AppServicesDELETE")
+
+	var sInfoList ServiceInfoList
+
+	keyName := appEnablementBaseKey + ":apps:" + appInstanceId + ":svcs:*"
+
+	err := rc.ForEachJSONEntry(keyName, populateServiceInfoList, &sInfoList)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	for _, sInfo := range sInfoList.ServiceInfos {
+		err = rc.JSONDelEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+sInfo.SerInstanceId, ".")
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		_ = deregisterService(appInstanceId, sInfo.SerInstanceId)
+		changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+		checkSerAvailabilityNotification(&sInfo, &changeType, true)
+	}
+	return nil
 }
 
 func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {

@@ -513,7 +513,6 @@ components:
       required:
         - subscriptionType
         - callbackReference
-        - _links
       properties:
         subscriptionType:
           $ref: >-
