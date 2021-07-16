@@ -28,6 +28,6 @@ package client
 type SerAvailabilityNotificationSubscription struct {
 	SubscriptionType  string                                                    `json:"subscriptionType"`
 	CallbackReference string                                                    `json:"callbackReference"`
-	Links             *Self                                                     `json:"_links"`
+	Links             *Self                                                     `json:"_links,omitempty"`
 	FilteringCriteria *SerAvailabilityNotificationSubscriptionFilteringCriteria `json:"filteringCriteria,omitempty"`
 }

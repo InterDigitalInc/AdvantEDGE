@@ -5890,7 +5890,6 @@ const testScenario string = `
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
 const testSandboxName = "testScenario"
-const testScenarioName = "4g-5g-wifi-macro"
 
 var m *mod.Model
 var mqLocal *mq.MsgQueue
@@ -6285,7 +6284,7 @@ func TestExpiryNotification(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	fmt.Println("Create valid Metric Store to get logs from")
-	metricStore, err := met.NewMetricStore(testScenarioName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create store")
 	}
@@ -6376,7 +6375,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := met.NewMetricStore(testScenarioName, sandboxName, influxTestAddr, redisTestAddr)
+	metricStore, err := met.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}

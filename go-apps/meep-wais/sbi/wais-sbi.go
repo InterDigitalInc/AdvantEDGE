@@ -230,9 +230,9 @@ func processActiveScenarioUpdate() {
 	scenarioName := sbi.activeModel.GetScenarioName()
 
 	// Connect to Metric Store
-	if scenarioName != sbi.scenarioName {
+	sbi.updateScenarioNameCB(scenarioName)
 
-		sbi.updateScenarioNameCB(scenarioName)
+	if scenarioName != sbi.scenarioName {
 		sbi.scenarioName = scenarioName
 		var err error
 
