@@ -74,10 +74,14 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('distance'))
         obj.distance = ApiClient.convertToType(data['distance'], 'Number');
-      if (data.hasOwnProperty('latitude'))
-        obj.latitude = ApiClient.convertToType(data['latitude'], 'Number');
-      if (data.hasOwnProperty('longitude'))
-        obj.longitude = ApiClient.convertToType(data['longitude'], 'Number');
+      if (data.hasOwnProperty('srcLatitude'))
+        obj.srcLatitude = ApiClient.convertToType(data['srcLatitude'], 'Number');
+      if (data.hasOwnProperty('srcLongitude'))
+        obj.srcLongitude = ApiClient.convertToType(data['srcLongitude'], 'Number');
+      if (data.hasOwnProperty('dstLatitude'))
+        obj.dstLatitude = ApiClient.convertToType(data['dstLatitude'], 'Number');
+      if (data.hasOwnProperty('dstLongitude'))
+        obj.dstLongitude = ApiClient.convertToType(data['dstLongitude'], 'Number');
     }
     return obj;
   }
@@ -89,16 +93,28 @@
   exports.prototype.distance = undefined;
 
   /**
-   * Destination asset latitude
-   * @member {Number} latitude
+   * Source asset latitude
+   * @member {Number} srcLatitude
    */
-  exports.prototype.latitude = undefined;
+  exports.prototype.srcLatitude = undefined;
+
+  /**
+   * Source asset longitude
+   * @member {Number} srcLongitude
+   */
+  exports.prototype.srcLongitude = undefined;
+
+  /**
+   * Destination asset latitude
+   * @member {Number} dstLatitude
+   */
+  exports.prototype.dstLatitude = undefined;
 
   /**
    * Destination asset longitude
-   * @member {Number} longitude
+   * @member {Number} dstLongitude
    */
-  exports.prototype.longitude = undefined;
+  exports.prototype.dstLongitude = undefined;
 
   return exports;
 

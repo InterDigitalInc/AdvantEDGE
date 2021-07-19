@@ -27,11 +27,17 @@ package server
 // Within range response
 type WithinRange struct {
 
+	// Source asset latitude
+	SrcLatitude float32 `json:"srcLatitude,omitempty"`
+
+	// Source asset longitude
+	SrcLongitude float32 `json:"srcLongitude,omitempty"`
+
 	// Destination asset latitude
-	Latitude float32 `json:"latitude,omitempty"`
+	DstLatitude float32 `json:"dstLatitude,omitempty"`
 
 	// Destination asset longitude
-	Longitude float32 `json:"longitude,omitempty"`
+	DstLongitude float32 `json:"dstLongitude,omitempty"`
 
 	// Within range result (e.g. true = within range, false = beyond range)
 	Within bool `json:"within"`

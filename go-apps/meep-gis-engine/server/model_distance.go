@@ -30,9 +30,15 @@ type Distance struct {
 	// Distance between two points (in meters)
 	Distance float32 `json:"distance"`
 
+	// Source asset latitude
+	SrcLatitude float32 `json:"srcLatitude,omitempty"`
+
+	// Source asset longitude
+	SrcLongitude float32 `json:"srcLongitude,omitempty"`
+
 	// Destination asset latitude
-	Latitude float32 `json:"latitude,omitempty"`
+	DstLatitude float32 `json:"dstLatitude,omitempty"`
 
 	// Destination asset longitude
-	Longitude float32 `json:"longitude,omitempty"`
+	DstLongitude float32 `json:"dstLongitude,omitempty"`
 }
