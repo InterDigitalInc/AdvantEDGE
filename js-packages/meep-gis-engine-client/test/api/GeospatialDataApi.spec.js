@@ -159,10 +159,14 @@
             expect(data).to.be.a(AdvantEdgeGisEngineRestApi.Distance);
             expect(data.distance).to.be.a('number');
             expect(data.distance).to.be(0.0);
-            expect(data.latitude).to.be.a('number');
-            expect(data.latitude).to.be(0.0);
-            expect(data.longitude).to.be.a('number');
-            expect(data.longitude).to.be(0.0);
+            expect(data.srcLatitude).to.be.a('number');
+            expect(data.srcLatitude).to.be(0.0);
+            expect(data.srcLongitude).to.be.a('number');
+            expect(data.srcLongitude).to.be(0.0);
+            expect(data.dstLatitude).to.be.a('number');
+            expect(data.dstLatitude).to.be(0.0);
+            expect(data.dstLongitude).to.be.a('number');
+            expect(data.dstLongitude).to.be(0.0);
 
             done();
           });
@@ -251,10 +255,14 @@
             }
             // TODO: update response assertions
             expect(data).to.be.a(AdvantEdgeGisEngineRestApi.WithinRange);
-            expect(data.latitude).to.be.a('number');
-            expect(data.latitude).to.be(0.0);
-            expect(data.longitude).to.be.a('number');
-            expect(data.longitude).to.be(0.0);
+            expect(data.srcLatitude).to.be.a('number');
+            expect(data.srcLatitude).to.be(0.0);
+            expect(data.srcLongitude).to.be.a('number');
+            expect(data.srcLongitude).to.be(0.0);
+            expect(data.dstLatitude).to.be.a('number');
+            expect(data.dstLatitude).to.be(0.0);
+            expect(data.dstLongitude).to.be.a('number');
+            expect(data.dstLongitude).to.be(0.0);
             expect(data.within).to.be.a('boolean');
             expect(data.within).to.be(false);
 

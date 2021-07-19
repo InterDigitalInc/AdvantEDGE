@@ -727,6 +727,7 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 		}
 		sub := subInfo.Subscription
 		match := false
+		sendingNotificationAllowed := true
 
 		if sub != nil {
 			if !subInfo.NotificationCheckReady {
@@ -751,10 +752,24 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 						}
 					default:
 					}
+					//if the notification already triggered, do not send it again unless its a periodic event
+					if match {
+						if sub.NotificationPeriod == 0 {
+							if subInfo.Triggered {
+								sendingNotificationAllowed = false
+							}
+						}
+					} else {
+						// no match found for threshold, reste trigger
+						assocStaSubscriptionInfoMap[subsId].Triggered = false
+					}
 				}
 			}
 
-			if match {
+			if match && sendingNotificationAllowed {
+
+				assocStaSubscriptionInfoMap[subsId].Triggered = true
+
 				subsIdStr := strconv.Itoa(subsId)
 				log.Info("Sending WAIS notification ", sub.CallbackReference)
 
@@ -816,6 +831,7 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 				}
 
 				match = true
+				sendingNotificationAllowed := true
 				for _, ssid := range subStaId.Ssid {
 					match = false
 					//can only have one ssid at a time
@@ -872,10 +888,21 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 							}
 						default:
 						}
+						//if the notification already triggered, do not send it again unless its a periodic event
+						if match {
+							if sub.NotificationPeriod == 0 {
+								if subInfo.Triggered {
+									sendingNotificationAllowed = false
+								}
+							}
+						} else {
+							// no match found for threshold, reste trigger
+							staDataRateSubscriptionInfoMap[subsId].Triggered = false
+						}
 					}
 				}
 
-				if match {
+				if match && sendingNotificationAllowed {
 					var staDataRate StaDataRate
 					staDataRate.StaId = staId
 					staDataRate.StaLastDataDownlinkRate = dataRateDl
@@ -886,6 +913,8 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 			}
 
 			if notifToSend {
+
+				staDataRateSubscriptionInfoMap[subsId].Triggered = true
 
 				subsIdStr := strconv.Itoa(subsId)
 				log.Info("Sending WAIS notification ", sub.CallbackReference)
@@ -899,7 +928,9 @@ func checkStaDataRateNotificationRegisteredSubscriptions(staId *StaIdentity, dat
 				notif.TimeStamp = &timeStamp
 				notif.NotificationType = STA_DATA_RATE_NOTIFICATION
 
-				notif.StaDataRate = staDataRateList
+				if len(staDataRateList) > 0 {
+					notif.StaDataRate = staDataRateList
+				}
 				sendStaDataRateNotification(sub.CallbackReference, notif)
 				log.Info("Sta Data Rate Notification" + "(" + subsIdStr + ")")
 				staDataRateSubscriptionInfoMap[subsId].NextTts = subInfo.Subscription.NotificationPeriod
@@ -1064,6 +1095,7 @@ func isSubscriptionIdRegisteredAssocSta(subsIdStr string) bool {
 	}
 }
 
+/*
 func isSubscriptionIdRegisteredStaDataRate(subsIdStr string) bool {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
@@ -1074,7 +1106,7 @@ func isSubscriptionIdRegisteredStaDataRate(subsIdStr string) bool {
 		return false
 	}
 }
-
+*/
 func registerAssocSta(subscription *AssocStaSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
@@ -1096,13 +1128,14 @@ func registerAssocSta(subscription *AssocStaSubscription, subsIdStr string) {
 	}
 }
 
+/*
 func registerStaDataRate(subscription *StaDataRateSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	//immediate trigger of the subscription
-	staDataRateSubscriptionInfo := StaDataRateSubscriptionInfo{0 /*subscription.NotificationPeriod*/, false, subscription, false}
+	staDataRateSubscriptionInfo := StaDataRateSubscriptionInfo{0, false, subscription, false}
 	staDataRateSubscriptionInfoMap[subsId] = &staDataRateSubscriptionInfo
 	if subscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
@@ -1116,7 +1149,7 @@ func registerStaDataRate(subscription *StaDataRateSubscription, subsIdStr string
 		sendTestNotification(subscription.CallbackReference, subscription.Links.Self)
 	}
 }
-
+*/
 func deregisterAssocSta(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	if !mutexTaken {
@@ -1183,7 +1216,6 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		subscription.Links = link
 
 		//make sure subscription is valid for mandatory parameters
-		//make sure subscription is valid for mandatory parameters
 		if subscription.NotificationPeriod == 0 && subscription.NotificationEvent == nil {
 			log.Error("Either or Both NotificationPeriod or NotificationEvent shall be present")
 			http.Error(w, "Either or Both NotificationPeriod or NotificationEvent shall be present", http.StatusBadRequest)
@@ -1201,6 +1233,12 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 			log.Error("Mandatory ApId missing")
 			http.Error(w, "Mandatory ApId missing", http.StatusBadRequest)
 			return
+		} else {
+			if subscription.ApId.Bssid == "" {
+				log.Error("Mandatory ApId Bssid missing")
+				http.Error(w, "Mandatory ApId Bssid missing", http.StatusBadRequest)
+				return
+			}
 		}
 		//registration
 		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertAssocStaSubscriptionToJson(&subscription))
@@ -1208,6 +1246,10 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 		jsonResponse, err = json.Marshal(subscription)
 	case STA_DATA_RATE_SUBSCRIPTION:
+		nextSubscriptionIdAvailable--
+		w.WriteHeader(http.StatusNotImplemented)
+		return
+		/* TBD when traffic is available
 		var subscription StaDataRateSubscription
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
@@ -1218,7 +1260,6 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 		subscription.Links = link
 
-		//make sure subscription is valid for mandatory parameters
 		//make sure subscription is valid for mandatory parameters
 		if subscription.NotificationPeriod == 0 && subscription.NotificationEvent == nil {
 			log.Error("Either or Both NotificationPeriod or NotificationEvent shall be present")
@@ -1237,12 +1278,21 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 			log.Error("Mandatory StaId missing")
 			http.Error(w, "Mandatory StaId missing", http.StatusBadRequest)
 			return
+		} else {
+			for _, staId := range subscription.StaId {
+				if staId.MacId == "" {
+					log.Error("Mandatory StaId MacId missing")
+					http.Error(w, "Mandatory StaId MacId missing", http.StatusBadRequest)
+					return
+				}
+			}
 		}
 		//registration
 		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertStaDataRateSubscriptionToJson(&subscription))
 		registerStaDataRate(&subscription, subsIdStr)
 
 		jsonResponse, err = json.Marshal(subscription)
+		*/
 	case MEASUREMENT_REPORT_SUBSCRIPTION:
 		nextSubscriptionIdAvailable--
 		w.WriteHeader(http.StatusNotImplemented)
@@ -1316,6 +1366,32 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//make sure subscription is valid for mandatory parameters
+		if subscription.NotificationPeriod == 0 && subscription.NotificationEvent == nil {
+			log.Error("Either or Both NotificationPeriod or NotificationEvent shall be present")
+			http.Error(w, "Either or Both NotificationPeriod or NotificationEvent shall be present", http.StatusBadRequest)
+			return
+		}
+
+		if subscription.NotificationEvent != nil {
+			if subscription.NotificationEvent.Trigger <= 0 && subscription.NotificationEvent.Trigger > 8 {
+				log.Error("Mandatory Notification Event Trigger not valid")
+				http.Error(w, "Mandatory Notification Event Trigger not valid", http.StatusBadRequest)
+				return
+			}
+		}
+		if subscription.ApId == nil {
+			log.Error("Mandatory ApId missing")
+			http.Error(w, "Mandatory ApId missing", http.StatusBadRequest)
+			return
+		} else {
+			if subscription.ApId.Bssid == "" {
+				log.Error("Mandatory ApId Bssid missing")
+				http.Error(w, "Mandatory ApId Bssid missing", http.StatusBadRequest)
+				return
+			}
+		}
+
 		//only support one subscription
 		if isSubscriptionIdRegisteredAssocSta(subsIdStr) {
 			registerAssocSta(&subscription, subsIdStr)
@@ -1325,12 +1401,44 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 			jsonResponse, err = json.Marshal(subscription)
 		}
 	case STA_DATA_RATE_SUBSCRIPTION:
+		w.WriteHeader(http.StatusNotImplemented)
+		return
+		/* TBD when traffic is available
+
 		var subscription StaDataRateSubscription
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		//make sure subscription is valid for mandatory parameters
+		if subscription.NotificationPeriod == 0 && subscription.NotificationEvent == nil {
+			log.Error("Either or Both NotificationPeriod or NotificationEvent shall be present")
+			http.Error(w, "Either or Both NotificationPeriod or NotificationEvent shall be present", http.StatusBadRequest)
+			return
+		}
+
+		if subscription.NotificationEvent != nil {
+			if subscription.NotificationEvent.Trigger <= 0 && subscription.NotificationEvent.Trigger > 8 {
+				log.Error("Mandatory Notification Event Trigger not valid")
+				http.Error(w, "Mandatory Notification Event Trigger not valid", http.StatusBadRequest)
+				return
+			}
+		}
+		if subscription.StaId == nil {
+			log.Error("Mandatory StaId missing")
+			http.Error(w, "Mandatory StaId missing", http.StatusBadRequest)
+			return
+		} else {
+			for _, staId := range subscription.StaId {
+				if staId.MacId == "" {
+					log.Error("Mandatory StaId MacId missing")
+					http.Error(w, "Mandatory StaId MacId missing", http.StatusBadRequest)
+					return
+				}
+			}
 		}
 
 		//only support one subscription
@@ -1341,6 +1449,7 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
+		*/
 	case MEASUREMENT_REPORT_SUBSCRIPTION:
 		w.WriteHeader(http.StatusNotImplemented)
 		return

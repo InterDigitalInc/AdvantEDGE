@@ -61,16 +61,28 @@
         // expect(instance.distance).to.be(expectedValueLiteral);
       });
 
-      it('should have the property latitude (base name: "latitude")', function() {
-        // TODO: update the code to test the property latitude
-        expect(instance).to.have.property('latitude');
-        // expect(instance.latitude).to.be(expectedValueLiteral);
+      it('should have the property srcLatitude (base name: "srcLatitude")', function() {
+        // TODO: update the code to test the property srcLatitude
+        expect(instance).to.have.property('srcLatitude');
+        // expect(instance.srcLatitude).to.be(expectedValueLiteral);
       });
 
-      it('should have the property longitude (base name: "longitude")', function() {
-        // TODO: update the code to test the property longitude
-        expect(instance).to.have.property('longitude');
-        // expect(instance.longitude).to.be(expectedValueLiteral);
+      it('should have the property srcLongitude (base name: "srcLongitude")', function() {
+        // TODO: update the code to test the property srcLongitude
+        expect(instance).to.have.property('srcLongitude');
+        // expect(instance.srcLongitude).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property dstLatitude (base name: "dstLatitude")', function() {
+        // TODO: update the code to test the property dstLatitude
+        expect(instance).to.have.property('dstLatitude');
+        // expect(instance.dstLatitude).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property dstLongitude (base name: "dstLongitude")', function() {
+        // TODO: update the code to test the property dstLongitude
+        expect(instance).to.have.property('dstLongitude');
+        // expect(instance.dstLongitude).to.be(expectedValueLiteral);
       });
 
     });

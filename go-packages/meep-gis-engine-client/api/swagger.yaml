@@ -381,19 +381,29 @@ definitions:
         type: "number"
         format: "float"
         description: "Distance between two points (in meters)"
-      latitude:
+      srcLatitude:
+        type: "number"
+        format: "float"
+        description: "Source asset latitude"
+      srcLongitude:
+        type: "number"
+        format: "float"
+        description: "Source asset longitude"
+      dstLatitude:
         type: "number"
         format: "float"
         description: "Destination asset latitude"
-      longitude:
+      dstLongitude:
         type: "number"
         format: "float"
         description: "Destination asset longitude"
     description: "Distance response"
     example:
+      dstLongitude: 5.637377
       distance: 0.8008282
-      latitude: 6.0274563
-      longitude: 1.4658129
+      srcLongitude: 1.4658129
+      srcLatitude: 6.0274563
+      dstLatitude: 5.962134
   GeoDataAssetList:
     type: "object"
     properties:
@@ -473,11 +483,19 @@ definitions:
     required:
     - "within"
     properties:
-      latitude:
+      srcLatitude:
+        type: "number"
+        format: "float"
+        description: "Source asset latitude"
+      srcLongitude:
+        type: "number"
+        format: "float"
+        description: "Source asset longitude"
+      dstLatitude:
         type: "number"
         format: "float"
         description: "Destination asset latitude"
-      longitude:
+      dstLongitude:
         type: "number"
         format: "float"
         description: "Destination asset longitude"
@@ -487,9 +505,11 @@ definitions:
           \ range)"
     description: "Within range response"
     example:
+      dstLongitude: 5.962134
       within: true
-      latitude: 0.8008282
-      longitude: 6.0274563
+      srcLongitude: 6.0274563
+      srcLatitude: 0.8008282
+      dstLatitude: 1.4658129
   GeoData:
     type: "object"
     properties:

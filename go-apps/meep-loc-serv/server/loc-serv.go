@@ -108,6 +108,8 @@ var areaCircleSubscriptionMap = map[int]*AreaCircleCheck{}
 
 var periodicSubscriptionMap = map[int]*PeriodicCheck{}
 
+var addressConnectedMap = map[string]bool{}
+
 type ZoneStatusCheck struct {
 	ZoneId                 string
 	Serviceable            bool
@@ -553,6 +555,12 @@ func checkNotificationDistancePeriodicTrigger() {
 					refAddr := pair.addr1
 					monitoredAddr := pair.addr2
 
+					//check if one of the address if both addresses are connected, if not, disregard this pair
+					if !addressConnectedMap[refAddr] || !addressConnectedMap[monitoredAddr] {
+						//ignore that pair and continue processing
+						continue
+					}
+
 					var distParam gisClient.TargetPoint
 					distParam.AssetName = monitoredAddr
 
@@ -614,9 +622,9 @@ func checkNotificationDistancePeriodicTrigger() {
 						terminalLocation.Address = terminalAddr
 						var locationInfo LocationInfo
 						locationInfo.Latitude = nil
-						locationInfo.Latitude = append(locationInfo.Latitude, distanceInfo.Latitude)
+						locationInfo.Latitude = append(locationInfo.Latitude, distanceInfo.DstLatitude)
 						locationInfo.Longitude = nil
-						locationInfo.Longitude = append(locationInfo.Longitude, distanceInfo.Longitude)
+						locationInfo.Longitude = append(locationInfo.Longitude, distanceInfo.DstLongitude)
 						locationInfo.Shape = 2
 						seconds := time.Now().Unix()
 						var timestamp TimeStamp
@@ -659,6 +667,9 @@ func checkNotificationAreaCircle(addressToCheck string) {
 				//loop through every reference address
 				for _, addr := range areaCircleCheck.Subscription.Address {
 					if addr != addressToCheck {
+						continue
+					}
+					if !addressConnectedMap[addr] {
 						continue
 					}
 					//check if address is already inside the area or not based on the subscription
@@ -714,9 +725,9 @@ func checkNotificationAreaCircle(addressToCheck string) {
 					terminalLocation.Address = addr
 					var locationInfo LocationInfo
 					locationInfo.Latitude = nil
-					locationInfo.Latitude = append(locationInfo.Latitude, withinRangeResp.Latitude)
+					locationInfo.Latitude = append(locationInfo.Latitude, withinRangeResp.SrcLatitude)
 					locationInfo.Longitude = nil
-					locationInfo.Longitude = append(locationInfo.Longitude, withinRangeResp.Longitude)
+					locationInfo.Longitude = append(locationInfo.Longitude, withinRangeResp.SrcLongitude)
 					locationInfo.Shape = 2
 					seconds := time.Now().Unix()
 					var timestamp TimeStamp
@@ -762,6 +773,10 @@ func checkNotificationPeriodicTrigger() {
 			var periodicNotif SubscriptionNotification
 
 			for _, addr := range periodicCheck.Subscription.Address {
+
+				if !addressConnectedMap[addr] {
+					continue
+				}
 
 				geoDataInfo, _, err := gisAppClient.GeospatialDataApi.GetGeoDataByName(context.TODO(), addr, nil)
 				if err != nil {
@@ -3074,6 +3089,8 @@ func cleanUp() {
 	areaCircleSubscriptionMap = map[int]*AreaCircleCheck{}
 	periodicSubscriptionMap = map[int]*PeriodicCheck{}
 
+	addressConnectedMap = map[string]bool{}
+
 	updateStoreName("")
 }
 
@@ -3104,6 +3121,13 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 	}
 	userInfo.ZoneId = zoneId
 	userInfo.AccessPointId = accessPointId
+
+	//dtermine if ue is connected or not based on POA connectivity
+	if accessPointId != "" {
+		addressConnectedMap[address] = true
+	} else {
+		addressConnectedMap[address] = false
+	}
 
 	seconds := time.Now().Unix()
 	var timeStamp TimeStamp
