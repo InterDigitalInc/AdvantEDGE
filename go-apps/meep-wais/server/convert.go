@@ -69,6 +69,7 @@ func convertAssocStaSubscriptionToJson(obj *AssocStaSubscription) string {
 	return string(jsonInfo)
 }
 
+/*
 func convertStaDataRateSubscriptionToJson(obj *StaDataRateSubscription) string {
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
@@ -77,3 +78,4 @@ func convertStaDataRateSubscriptionToJson(obj *StaDataRateSubscription) string {
 	}
 	return string(jsonInfo)
 }
+*/

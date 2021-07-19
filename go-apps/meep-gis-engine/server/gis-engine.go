@@ -1189,6 +1189,8 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	srcLong := position.Longitude
+	srcLat := position.Latitude
 	srcLongStr := strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
 	srcLatStr := strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
 
@@ -1257,8 +1259,10 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Create Response to return
 	var resp Distance
 	resp.Distance = distance
-	resp.Longitude = dstLong
-	resp.Latitude = dstLat
+	resp.SrcLongitude = srcLong
+	resp.SrcLatitude = srcLat
+	resp.DstLongitude = dstLong
+	resp.DstLatitude = dstLat
 
 	// Format response
 	jsonResponse, err := json.Marshal(&resp)
@@ -1304,7 +1308,8 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	srcLong := position.Longitude
+	srcLat := position.Latitude
 	srcLongStr := strconv.FormatFloat(float64(position.Longitude), 'f', -1, 32)
 	srcLatStr := strconv.FormatFloat(float64(position.Latitude), 'f', -1, 32)
 
@@ -1373,8 +1378,10 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Create Response to return
 	var resp WithinRange
 	resp.Within = withinRange
-	resp.Longitude = dstLong
-	resp.Latitude = dstLat
+	resp.SrcLongitude = srcLong
+	resp.SrcLatitude = srcLat
+	resp.DstLongitude = dstLong
+	resp.DstLatitude = dstLat
 
 	// Format response
 	jsonResponse, err := json.Marshal(&resp)
