@@ -1599,6 +1599,12 @@ func populateStaData(key string, jsonInfo string, response interface{}) error {
 		//timeStamp.Seconds = int32(seconds)
 		//staInfo.TimeStamp = &timeStamp
 
+		//do not show an empty object in the response since 0 do not show up in the json
+		if staData.StaInfo.StaDataRate != nil {
+			if staData.StaInfo.StaDataRate.StaId == nil && staData.StaInfo.StaDataRate.StaLastDataDownlinkRate == 0 && staData.StaInfo.StaDataRate.StaLastDataUplinkRate == 0 {
+				staData.StaInfo.StaDataRate = nil
+			}
+		}
 		resp.StaInfoList = append(resp.StaInfoList, *staData.StaInfo)
 	}
 	return nil
