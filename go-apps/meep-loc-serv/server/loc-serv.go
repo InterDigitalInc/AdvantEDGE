@@ -120,16 +120,18 @@ type ZoneStatusCheck struct {
 }
 
 type DistanceCheck struct {
-	NextTts             int32 //next time to send, derived from frequency
-	NbNotificationsSent int32
-	Subscription        *DistanceNotificationSubscription
+	NextTts                int32 //next time to send, derived from frequency
+	NbNotificationsSent    int32
+	NotificationCheckReady bool
+	Subscription           *DistanceNotificationSubscription
 }
 
 type AreaCircleCheck struct {
-	NextTts             int32 //next time to send, derived from frequency
-	AddrInArea          map[string]bool
-	NbNotificationsSent int32
-	Subscription        *CircleNotificationSubscription
+	NextTts                int32 //next time to send, derived from frequency
+	AddrInArea             map[string]bool
+	NbNotificationsSent    int32
+	NotificationCheckReady bool
+	Subscription           *CircleNotificationSubscription
 }
 
 type PeriodicCheck struct {
@@ -280,6 +282,7 @@ func Run() (err error) {
 	go func() {
 		for range periodicTicker.C {
 			checkNotificationDistancePeriodicTrigger()
+			updateNotificationAreaCirclePeriodicTrigger()
 			checkNotificationPeriodicTrigger()
 		}
 	}()
@@ -503,6 +506,25 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 	userSubscriptionMap[subsId] = userAddress
 }
 
+func updateNotificationAreaCirclePeriodicTrigger() {
+	//only check if there is at least one subscription
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for _, areaCircleCheck := range areaCircleSubscriptionMap {
+		if areaCircleCheck != nil {
+			if areaCircleCheck.NextTts != 0 {
+				areaCircleCheck.NextTts--
+			}
+			if areaCircleCheck.NextTts == 0 {
+				areaCircleCheck.NotificationCheckReady = true
+			} else {
+				areaCircleCheck.NotificationCheckReady = false
+			}
+		}
+	}
+}
+
 func checkNotificationDistancePeriodicTrigger() {
 
 	//only check if there is at least one subscription
@@ -512,13 +534,19 @@ func checkNotificationDistancePeriodicTrigger() {
 	for subsId, distanceCheck := range distanceSubscriptionMap {
 		if distanceCheck != nil && distanceCheck.Subscription != nil {
 			if distanceCheck.Subscription.Count == 0 || (distanceCheck.Subscription.Count != 0 && distanceCheck.NbNotificationsSent < distanceCheck.Subscription.Count) {
-				//decrement the next time to send a message
-				distanceCheck.NextTts--
-				if distanceCheck.NextTts > 0 {
-					continue
-				} else { //restart the nextTts and continue processing to send notification or not
-					distanceCheck.NextTts = distanceCheck.Subscription.Frequency
+				if distanceCheck.NextTts != 0 {
+					distanceCheck.NextTts--
 				}
+				if distanceCheck.NextTts == 0 {
+					distanceCheck.NotificationCheckReady = true
+				} else {
+					distanceCheck.NotificationCheckReady = false
+				}
+
+				if !distanceCheck.NotificationCheckReady {
+					continue
+				}
+
 				//loop through every reference address
 				returnAddr := make(map[string]*gisClient.Distance)
 				skipThisSubscription := false
@@ -642,6 +670,8 @@ func checkNotificationDistancePeriodicTrigger() {
 					distanceCheck.NbNotificationsSent++
 					sendSubscriptionNotification(distanceCheck.Subscription.CallbackReference.NotifyURL, inlineDistanceSubscriptionNotification)
 					log.Info("Distance Notification"+"("+subsIdStr+") For ", returnAddr)
+					distanceSubscriptionMap[subsId].NextTts = distanceCheck.Subscription.Frequency
+					distanceSubscriptionMap[subsId].NotificationCheckReady = false
 				}
 			}
 		}
@@ -656,13 +686,9 @@ func checkNotificationAreaCircle(addressToCheck string) {
 	for subsId, areaCircleCheck := range areaCircleSubscriptionMap {
 		if areaCircleCheck != nil && areaCircleCheck.Subscription != nil {
 			if areaCircleCheck.Subscription.Count == 0 || (areaCircleCheck.Subscription.Count != 0 && areaCircleCheck.NbNotificationsSent < areaCircleCheck.Subscription.Count) {
-				//ignoring the frequency and checkImmediate for this subscription since it is considered event based, not periodic
-				/* //decrement the next time to send a message
-				if areaCircleCheck.NextTts > 0 {
+				if !areaCircleCheck.NotificationCheckReady {
 					continue
-				} else { //restart the nextTts and continue processing to send notification or not
-					areaCircleCheck.NextTts = areaCircleCheck.Subscription.Frequency
-				}*/
+				}
 
 				//loop through every reference address
 				for _, addr := range areaCircleCheck.Subscription.Address {
@@ -745,6 +771,8 @@ func checkNotificationAreaCircle(addressToCheck string) {
 					areaCircleCheck.NbNotificationsSent++
 					sendSubscriptionNotification(areaCircleCheck.Subscription.CallbackReference.NotifyURL, inlineCircleSubscriptionNotification)
 					log.Info("Area Circle Notification" + "(" + subsIdStr + ") For " + addr + " when " + string(*areaCircleCheck.Subscription.EnteringLeavingCriteria) + " area")
+					areaCircleSubscriptionMap[subsId].NextTts = areaCircleCheck.Subscription.Frequency
+					areaCircleSubscriptionMap[subsId].NotificationCheckReady = false
 				}
 			}
 		}
@@ -838,11 +866,12 @@ func registerDistance(distanceSub *DistanceNotificationSubscription, subsIdStr s
 	var distanceCheck DistanceCheck
 	distanceCheck.Subscription = distanceSub
 	distanceCheck.NbNotificationsSent = 0
-	if distanceSub.CheckImmediate {
-		distanceCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
-	} else {
-		distanceCheck.NextTts = distanceSub.Frequency
-	}
+	//checkImmediate ignored, will be hit on next check anyway
+	//if distanceSub.CheckImmediate {
+	distanceCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
+	//} else {
+	//		distanceCheck.NextTts = distanceSub.Frequency
+	//	}
 	distanceSubscriptionMap[subsId] = &distanceCheck
 }
 
@@ -870,12 +899,12 @@ func registerAreaCircle(areaCircleSub *CircleNotificationSubscription, subsIdStr
 	areaCircleCheck.Subscription = areaCircleSub
 	areaCircleCheck.NbNotificationsSent = 0
 	areaCircleCheck.AddrInArea = map[string]bool{}
-	//checkImmediate and NextTts apply more to a periodic notification, setting them but ignoring both in notification code because of unclear spec on that matter
-	if areaCircleSub.CheckImmediate {
-		areaCircleCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
-	} else {
-		areaCircleCheck.NextTts = areaCircleSub.Frequency
-	}
+	//checkImmediate ignored, will be hit on next check anyway
+	//if areaCircleSub.CheckImmediate {
+	areaCircleCheck.NextTts = 0 //next time periodic trigger hits, will be forced to trigger
+	//} else {
+	//		areaCircleCheck.NextTts = areaCircleSub.Frequency
+	//	}
 	areaCircleSubscriptionMap[subsId] = &areaCircleCheck
 }
 
