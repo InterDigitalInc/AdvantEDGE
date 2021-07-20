@@ -393,15 +393,19 @@ func Run() (err error) {
 
 // Stop - Stop RNIS
 func Stop() (err error) {
-	retryAppEnablementTicker.Stop()
 	err = sbi.Stop()
 	if err != nil {
 		return err
 	}
-	if sendAppTerminationWhenDone {
-		err = appEnablementMecAppTermination(serviceAppInstanceId)
-		if err != nil {
-			return err
+
+	if appEnablementSupport {
+		retryAppEnablementTicker.Stop()
+
+		if sendAppTerminationWhenDone {
+			err = appEnablementMecAppTermination(serviceAppInstanceId)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
