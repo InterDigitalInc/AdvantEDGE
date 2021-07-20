@@ -400,18 +400,13 @@ func processScenario(model *mod.Model) error {
 			err := errors.New("Error getting context for process: " + name)
 			return err
 		}
-		nodeCtx, ok := ctx.(*mod.NodeContext)
-		if !ok {
-			err := errors.New("Error casting context for process: " + name)
-			return err
-		}
 
 		// Get network element from list or create new one if it does not exist
 		netElem := getNetElem(proc.Name)
 
 		// Set current physical & network location and network locations in range
-		netElem.phyLoc = nodeCtx.Parents[mod.PhyLoc]
-		netElem.netLoc = nodeCtx.Parents[mod.NetLoc]
+		netElem.phyLoc = ctx.Parents[mod.PhyLoc]
+		netElem.netLoc = ctx.Parents[mod.NetLoc]
 		phyLocNode := model.GetNode(netElem.phyLoc)
 		if phyLocNode == nil {
 			err := errors.New("Error finding physical location: " + netElem.phyLoc)

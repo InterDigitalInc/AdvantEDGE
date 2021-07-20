@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -33,24 +34,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const appInfoBasePath = "/app_info/v1/"
+const appInfoBasePath = "app_info/v1/"
 const appEnablementKey = "app-enablement"
+const defaultMepName = "global"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
 
-//const logModuleMSMgmt = "meep-app-enablement"
-//const serviceName = "MEC Service Management"
-
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
-var APP_ENABLEMENT_DB = 5
+var APP_ENABLEMENT_DB = 0
 
+var mutex *sync.Mutex
 var rc *redis.Connector
 var hostUrl *url.URL
 var sandboxName string
-var selfName string
+var mepName string = defaultMepName
 var basePath string
-var appEnablementBaseKey string
+var baseKey string
 
 var expiryTicker *time.Ticker
 
@@ -66,12 +66,9 @@ type FilterParameters struct {
 	appState string
 }
 
-/*func notImplemented(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-        w.WriteHeader(http.StatusNotImplemented)
-}
-*/
-func Init() (err error) {
+func Init(globalMutex *sync.Mutex) (err error) {
+	mutex = globalMutex
+
 	// Retrieve Sandbox name from environment variable
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
 	if sandboxNameEnv != "" {
@@ -92,28 +89,24 @@ func Init() (err error) {
 			hostUrl = new(url.URL)
 		}
 	}
-	log.Info("resource URL: ", hostUrl)
+	log.Info("MEEP_HOST_URL: ", hostUrl)
 
-	selfNameEnv := strings.TrimSpace(os.Getenv("MEEP_SELF_NAME"))
-	if selfNameEnv != "" {
-		selfName = selfNameEnv
+	// Get MEP name
+	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
+	if mepNameEnv != "" {
+		mepName = mepNameEnv
 	}
-	//TODO
-	/*
-		if selfName == "" {
-			err = errors.New("MEEP_SELF_NAME env variable not set")
-			log.Error(err.Error())
-			return err
-		}
-	*/
-	//HARDCODE SOMETHING
-	selfName = "mep1"
-	log.Info("MEEP_SELF_NAME: ", selfName)
+	log.Info("MEEP_MEP_NAME: ", mepName)
 
 	// Set base path
-	basePath = "/" + sandboxName + appInfoBasePath
-	// Get base store key
-	appEnablementBaseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + selfName
+	if mepName == defaultMepName {
+		basePath = "/" + sandboxName + "/" + appInfoBasePath
+	} else {
+		basePath = "/" + sandboxName + "/" + mepName + "/" + appInfoBasePath
+	}
+
+	// Set base storage key
+	baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, APP_ENABLEMENT_DB)
@@ -121,9 +114,7 @@ func Init() (err error) {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
-
-	_ = rc.DBFlush(appEnablementBaseKey)
-
+	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB")
 
 	reInit()
@@ -173,7 +164,7 @@ func getNewInstanceId() (string, error) {
 
 func validateAppInstanceId(appInstanceId string) error {
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		if err != nil {
@@ -212,7 +203,7 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 	appInfo.AppInstanceId = appInstanceId
 
 	//check if entry exist for the application in the DB
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err == nil && len(fields) > 0 {
 		log.Error("AppInstanceId already exists")
@@ -274,7 +265,7 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := appEnablementBaseKey + ":apps:" + appInstanceId
+	key := baseKey + ":app:" + appInstanceId + ":info"
 	fields, err := rc.GetEntry(key)
 	if err != nil || len(fields) == 0 {
 		log.Error("AppInstanceId does not already exist")
@@ -333,7 +324,7 @@ func applicationsAppInstanceIdGET(w http.ResponseWriter, r *http.Request) {
 
 	appInstanceId := vars["appInstanceId"]
 
-	fields, err := rc.GetEntry(appEnablementBaseKey + ":apps:" + appInstanceId)
+	fields, err := rc.GetEntry(baseKey + ":app:" + appInstanceId + ":info")
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -360,18 +351,18 @@ func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 
-	fields, err := rc.GetEntry(appEnablementBaseKey + ":apps:" + appInstanceId)
-	if err == nil && len(fields) > 0 {
-		err := rc.DelEntry(appEnablementBaseKey + ":apps:" + appInstanceId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Check if App instance exists
+	fields, err := rc.GetEntry(baseKey + ":app:" + appInstanceId + ":info")
+	if err != nil || len(fields) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	// Flush App instance
+	_ = rc.DBFlush(baseKey + ":app:" + appInstanceId)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -408,7 +399,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	filterParameters.appState = appState
 	applicationInfoList.filterParameters = &filterParameters
 
-	keyName := appEnablementBaseKey + ":apps:*"
+	keyName := baseKey + ":app:*:info"
 
 	err := rc.ForEachEntry(keyName, populateApplicationInfoList, &applicationInfoList)
 	if err != nil {

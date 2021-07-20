@@ -42,6 +42,8 @@ const fieldSandboxName = "sandbox-name"
 const fieldEventType = "event-type"
 const fieldNodeName = "node-name"
 
+const appEnablementSvcName = "meep-app-enablement"
+
 type VirtEngine struct {
 	wdPinger            *wd.Pinger
 	mqGlobal            *mq.MsgQueue
@@ -54,6 +56,8 @@ type VirtEngine struct {
 	authEnabled         bool
 	handlerId           int
 	sboxPods            map[string]string
+	sboxChartTemplates  map[string]bool
+	globalAppEnablement bool
 }
 
 var ve *VirtEngine
@@ -65,6 +69,17 @@ func Init() (err error) {
 	ve.activeModels = make(map[string]*mod.Model)
 	ve.activeScenarioNames = make(map[string]string)
 
+	// Retrieve list of available sandbox chart templates
+	templates, err := getSanboxChartTemplates()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	ve.sboxChartTemplates = make(map[string]bool)
+	for _, t := range templates {
+		ve.sboxChartTemplates[t] = true
+	}
+
 	// Retrieve sandbox pods list from environment variable
 	ve.sboxPods = make(map[string]string)
 	sboxPodsStr := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_PODS"))
@@ -73,6 +88,11 @@ func Init() (err error) {
 		sboxPodsList := strings.Split(sboxPodsStr, ",")
 		for _, pod := range sboxPodsList {
 			ve.sboxPods[pod] = pod
+
+			// Check if App Enablement global service is present
+			if pod == appEnablementSvcName {
+				ve.globalAppEnablement = true
+			}
 		}
 	}
 	if len(ve.sboxPods) == 0 {

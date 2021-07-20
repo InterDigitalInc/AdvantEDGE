@@ -942,16 +942,19 @@ func (m *Model) GetNodeChild(name string) (child interface{}) {
 }
 
 // GetNodeContext - Get a node context
-// 		Returned value is of type interface{}
-//    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
-func (m *Model) GetNodeContext(name string) (ctx interface{}) {
+func (m *Model) GetNodeContext(name string) (ctx *NodeContext) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
 	ctx = nil
 	n := m.nodeMap.nameMap[name]
 	if n != nil {
-		ctx = n.context
+		nodeCtx := n.context
+		var ok bool
+		if ctx, ok = nodeCtx.(*NodeContext); !ok {
+			log.Error("Error casting node context for node: " + name)
+			return nil
+		}
 	}
 	return ctx
 }

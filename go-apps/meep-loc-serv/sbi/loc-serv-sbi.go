@@ -34,6 +34,7 @@ const moduleName string = "meep-loc-serv-sbi"
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
+	Locality       []string
 	UserInfoCb     func(string, string, string, *float32, *float32)
 	ZoneInfoCb     func(string, int, int, int)
 	ApInfoCb       func(string, string, string, string, int, *float32, *float32)
@@ -43,6 +44,8 @@ type SbiCfg struct {
 
 type LocServSbi struct {
 	sandboxName             string
+	localityEnabled         bool
+	locality                map[string]bool
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
@@ -69,6 +72,17 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
+
+	// Fill locality map
+	if len(cfg.Locality) > 0 {
+		sbi.locality = make(map[string]bool)
+		for _, locality := range cfg.Locality {
+			sbi.locality[locality] = true
+		}
+		sbi.localityEnabled = true
+	} else {
+		sbi.localityEnabled = false
+	}
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -215,13 +229,21 @@ func processActiveScenarioUpdate() {
 		if !isUeConnected(name) {
 			continue
 		}
-		ueNames = append(ueNames, name)
 
+		// Get UE locality
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
 			log.Error(err.Error())
 			continue
 		}
+
+		// Ignore UEs in zones outside locality
+		if !isInLocality(zone) {
+			continue
+		}
+
+		// Add UE to list of valid UEs
+		ueNames = append(ueNames, name)
 
 		var longitude *float32
 		var latitude *float32
@@ -235,7 +257,7 @@ func processActiveScenarioUpdate() {
 		uePerNetLocMap[netLoc]++
 	}
 
-	// Update UEs that were removed
+	// Update UEs that were removed (no longer in locality)
 	for _, prevUeName := range prevUeNames {
 		found := false
 		for _, ueName := range ueNames {
@@ -246,7 +268,7 @@ func processActiveScenarioUpdate() {
 		}
 		if !found {
 			sbi.updateUserInfoCB(prevUeName, "", "", nil, nil)
-			log.Info("Ue removed : ", prevUeName)
+			// log.Info("Ue removed : ", prevUeName)
 		}
 	}
 
@@ -257,9 +279,15 @@ func processActiveScenarioUpdate() {
 
 		poaNameList := sbi.activeModel.GetNodeNames(poaType)
 		for _, name := range poaNameList {
+			// Get POA locality
 			zone, netLoc, err := getNetworkLocation(name)
 			if err != nil {
 				log.Error(err.Error())
+				continue
+			}
+
+			// Ignore POAs in zones outside locality
+			if !isInLocality(zone) {
 				continue
 			}
 
@@ -285,10 +313,10 @@ func processActiveScenarioUpdate() {
 		}
 	}
 
-	// Update Zone info
+	// Update Zone info (must be in locality)
 	zoneNameList := sbi.activeModel.GetNodeNames("ZONE")
 	for _, name := range zoneNameList {
-		if name != "" && !strings.Contains(name, "-COMMON") {
+		if name != "" && !strings.Contains(name, "-COMMON") && isInLocality(name) {
 			sbi.updateZoneInfoCB(name, poaPerZoneMap[name], 0, uePerZoneMap[name])
 		}
 	}
@@ -300,13 +328,8 @@ func getNetworkLocation(name string) (zone string, netLoc string, err error) {
 		err = errors.New("Error getting context for: " + name)
 		return
 	}
-	nodeCtx, ok := ctx.(*mod.NodeContext)
-	if !ok {
-		err = errors.New("Error casting context for: " + name)
-		return
-	}
-	zone = nodeCtx.Parents[mod.Zone]
-	netLoc = nodeCtx.Parents[mod.NetLoc]
+	zone = ctx.Parents[mod.Zone]
+	netLoc = ctx.Parents[mod.NetLoc]
 	return zone, netLoc, nil
 }
 
@@ -324,11 +347,16 @@ func refreshPositions() {
 			continue
 		}
 
-		// Get network location
+		// Get UE locality
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
 			log.Error(err.Error())
 			return
+		}
+
+		// Ignore UEs in zones outside locality
+		if !isInLocality(zone) {
+			continue
 		}
 
 		// Get position
@@ -346,11 +374,16 @@ func refreshPositions() {
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
 	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa)
 	for _, name := range poaNameList {
-		// Get network location
+		// Get POA locality
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
 			log.Error(err.Error())
 			return
+		}
+
+		// Ignore POAs in zones outside locality
+		if !isInLocality(zone) {
+			continue
 		}
 
 		// Get position
@@ -374,4 +407,13 @@ func isUeConnected(name string) bool {
 		}
 	}
 	return false
+}
+
+func isInLocality(zone string) bool {
+	if sbi.localityEnabled {
+		if _, found := sbi.locality[zone]; !found {
+			return false
+		}
+	}
+	return true
 }
