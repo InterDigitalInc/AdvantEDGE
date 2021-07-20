@@ -163,7 +163,7 @@ const serviceAppVersion = "2.1.1"
 var serviceAppInstanceId string
 
 var appEnablementClientUrl string = "http://meep-app-enablement"
-var appEnablementSupport bool = true
+var appEnablementSupport bool = false
 var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
 var appEnablementAppSupportClient *appSupportClient.APIClient
 var sendAppTerminationWhenDone bool = false
@@ -323,10 +323,14 @@ func Stop() (err error) {
 	if err != nil {
 		return err
 	}
-	if sendAppTerminationWhenDone {
-		err = appEnablementMecAppTermination(serviceAppInstanceId)
-		if err != nil {
-			return err
+	if appEnablementSupport {
+		retryAppEnablementTicker.Stop()
+
+		if sendAppTerminationWhenDone {
+			err = appEnablementMecAppTermination(serviceAppInstanceId)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

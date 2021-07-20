@@ -285,10 +285,13 @@ func Stop() (err error) {
 	if err != nil {
 		return err
 	}
-	if sendAppTerminationWhenDone {
-		err = appEnablementMecAppTermination(serviceAppInstanceId)
-		if err != nil {
-			return err
+	if appEnablementSupport {
+		retryAppEnablementTicker.Stop()
+		if sendAppTerminationWhenDone {
+			err = appEnablementMecAppTermination(serviceAppInstanceId)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

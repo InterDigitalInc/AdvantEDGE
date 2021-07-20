@@ -672,3 +672,44 @@ func sendAppTermNotification(notifyUrl string, notification AppTerminationNotifi
 	met.ObserveNotification(sandboxName, serviceName, notification.NotificationType, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
+
+func timingCapsGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Info("timingCapsGET")
+
+	seconds := time.Now().Unix()
+	var timeStamp TimingCapsTimeStamp
+	timeStamp.Seconds = int32(seconds)
+
+	var timingCaps TimingCaps
+	timingCaps.TimeStamp = &timeStamp
+
+	jsonResponse, err := json.Marshal(timingCaps)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func timingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Info("timingCurrentTimeGET")
+
+	seconds := time.Now().Unix()
+	var currentTime CurrentTime
+	currentTime.Seconds = int32(seconds)
+
+	currentTime.TimeSourceStatus = "TRACEABLE"
+
+	jsonResponse, err := json.Marshal(currentTime)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
