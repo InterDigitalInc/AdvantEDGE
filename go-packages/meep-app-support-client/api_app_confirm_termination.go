@@ -44,18 +44,12 @@ type AppConfirmTerminationApiService service
 AppConfirmTerminationApiService
 This method is used to confirm the application level termination  of an application instance.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param body
  * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param optional nil or *ApplicationsConfirmTerminationPOSTOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of AppTerminationConfirmation) -
 
 
 */
-
-type ApplicationsConfirmTerminationPOSTOpts struct {
-	Body optional.Interface
-}
-
-func (a *AppConfirmTerminationApiService) ApplicationsConfirmTerminationPOST(ctx context.Context, appInstanceId string, localVarOptionals *ApplicationsConfirmTerminationPOSTOpts) (*http.Response, error) {
+func (a *AppConfirmTerminationApiService) ApplicationsConfirmTerminationPOST(ctx context.Context, body AppTerminationConfirmation, appInstanceId string) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -89,14 +83,7 @@ func (a *AppConfirmTerminationApiService) ApplicationsConfirmTerminationPOST(ctx
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
-
-		localVarOptionalBody, localVarOptionalBodyok := localVarOptionals.Body.Value().(AppTerminationConfirmation)
-		if !localVarOptionalBodyok {
-			return nil, reportError("body should be AppTerminationConfirmation")
-		}
-		localVarPostBody = &localVarOptionalBody
-	}
+	localVarPostBody = &body
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return nil, err

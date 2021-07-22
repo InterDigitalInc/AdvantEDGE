@@ -1168,7 +1168,6 @@ components:
       format: uri
     SerAvailabilityNotificationSubscription:
       required:
-      - _links
       - callbackReference
       - subscriptionType
       type: object

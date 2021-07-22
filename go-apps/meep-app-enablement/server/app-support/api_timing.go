@@ -28,11 +28,9 @@ import (
 )
 
 func TimingCapsGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	timingCapsGET(w, r)
 }
 
 func TimingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	timingCurrentTimeGET(w, r)
 }
