@@ -416,17 +416,21 @@ datasources:
       url: http://meep-prometheus-prometheus:9090
       access: proxy
       isDefault: true
+    - name: Thanos
+      type: prometheus
+      url: http://meep-thanos-query:9090
+      access: proxy
+      jsonData:
+        customQueryParameters: "max_source_resolution=1h"
+        disableMetricsLookup: true
     - name: meep-influxdb
       type: influxdb
       access: proxy
       database: _internal
-      # user: grafana
       url: "http://meep-influxdb:8086"
       jsonData:
         timeInterval: "10s"
-      # secureJsonData:
-      #   password: grafana
-
+ 
 ## Configure notifiers
 ## ref: http://docs.grafana.org/administration/provisioning/#alert-notification-channels
 ##

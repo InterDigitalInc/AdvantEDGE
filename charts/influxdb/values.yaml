@@ -441,11 +441,11 @@ backup:
   ## Please look at https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where
   ## for the credentials format.
   ## The bucket should already exist.
-  # s3:
-  #   credentialsSecret: aws-credentials-secret
-  #   destination: s3://bucket/path
-  #   ## Optional. Specify if you're using an alternate S3 endpoint.
-  #   # endpointUrl: ""
+  s3:
+    credentialsSecret: meep-influx-objstore-config
+    destination: s3://influx
+    ## Optional. Specify if you're using an alternate S3 endpoint.
+    endpointUrl: ""
 
 backupRetention:
   enabled: false
@@ -461,8 +461,8 @@ backupRetention:
   annotations: {}
   podAnnotations: {}
   daysToRetain: 7
-  # s3:
-  #   credentialsSecret: aws-credentials-secret
-  #   bucketName: bucket
-  #   ## Optional. Specify if you're using an alternate S3 endpoint.
-  #   # endpointUrl: ""
+  s3:
+    credentialsSecret: meep-influx-objstore-config
+    bucketName: influx
+    ## Optional. Specify if you're using an alternate S3 endpoint.
+    endpointUrl: ""

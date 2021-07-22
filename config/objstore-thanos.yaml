@@ -1,0 +1,12 @@
+type: s3
+config:
+  bucket: thanos
+  endpoint: my-fqdn-or-ip
+  access_key: my-access-key
+  secret_key: my-secret-key
+  insecure: false
+  signature_version2: false
+  http_config:
+    idle_conn_timeout: 1m30s
+    response_header_timeout: 2m
+    insecure_skip_verify: false

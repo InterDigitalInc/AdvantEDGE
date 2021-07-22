@@ -1,0 +1,22 @@
+{{- if eq .Values.mode "standalone" }}
+{{- if .Values.persistence.enabled}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ template "minio.fullname" . }}
+  labels:
+    app: {{ template "minio.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.size }}
+  accessModes:
+    - {{ .Values.persistence.accessMode | quote }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.reclaimPolicy }}
+  hostPath:
+    path: "{{.Values.persistence.location}}"
+  storageClassName: {{ template "minio.fullname" . }}
+{{- end }}
+{{- end }}
