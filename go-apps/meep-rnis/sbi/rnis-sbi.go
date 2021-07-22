@@ -71,6 +71,7 @@ type AppInfoSbi struct {
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
+	Locality       []string
 	UeDataCb       func(UeDataSbi)
 	MeasInfoCb     func(string, string, []string, []int32, []int32)
 	PoaInfoCb      func(PoaInfoSbi)
@@ -82,6 +83,8 @@ type SbiCfg struct {
 
 type RnisSbi struct {
 	sandboxName          string
+	localityEnabled      bool
+	locality             map[string]bool
 	mqLocal              *mq.MsgQueue
 	handlerId            int
 	activeModel          *mod.Model
@@ -114,6 +117,17 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.updateDomainDataCB = cfg.DomainDataCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
+
+	// Fill locality map
+	if len(cfg.Locality) > 0 {
+		sbi.locality = make(map[string]bool)
+		for _, locality := range cfg.Locality {
+			sbi.locality[locality] = true
+		}
+		sbi.localityEnabled = true
+	} else {
+		sbi.localityEnabled = false
+	}
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -227,14 +241,16 @@ func processActiveScenarioUpdate() {
 	prevUeNames := []string{}
 	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range prevUeNameList {
-		if isUeConnected(name) {
+		// Make sure UE is in Locality
+		if isUeConnected(name) && isInLocality(name) {
 			prevUeNames = append(prevUeNames, name)
 		}
 	}
 	prevApps := []string{}
 	prevAppList := sbi.activeModel.GetNodeNames("UE-APP", "EDGE-APP")
 	for _, app := range prevAppList {
-		if isAppConnected(app) {
+		// Make sure App is in Locality
+		if isAppConnected(app) && isInLocality(app) {
 			prevApps = append(prevApps, app)
 		}
 	}
@@ -269,7 +285,7 @@ func processActiveScenarioUpdate() {
 	if len(ueNameList) > 0 {
 		for _, name := range ueNameList {
 			// Ignore disconnected UEs
-			if !isUeConnected(name) {
+			if !isUeConnected(name) || !isInLocality(name) {
 				continue
 			}
 			ueNames = append(ueNames, name)
@@ -385,8 +401,8 @@ func processActiveScenarioUpdate() {
 	for _, appName := range appNameList {
 		meAppParent := sbi.activeModel.GetNodeParent(appName)
 		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {
-			// Ignore disconnected apps
-			if !pl.Connected {
+			// Ignore disconnected UEs
+			if !isUeConnected(pl.Name) || !isInLocality(appName) {
 				continue
 			}
 			appNames = append(appNames, appName)
@@ -436,6 +452,11 @@ func processActiveScenarioUpdate() {
 	// Update POA Cellular and Wifi info
 	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa)
 	for _, name := range poaNameList {
+		// Ignore POAs not in locality
+		if !isInLocality(name) {
+			continue
+		}
+
 		node := sbi.activeModel.GetNode(name)
 		if node != nil {
 			nl := node.(*dataModel.NetworkLocation)
@@ -498,7 +519,7 @@ func refreshMeasurements() {
 	for _, name := range ueNameList {
 
 		// Ignore disconnected UEs
-		if !isUeConnected(name) {
+		if !isUeConnected(name) || !isInLocality(name) {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
 			continue
 		}
@@ -552,4 +573,18 @@ func isAppConnected(app string) bool {
 		return pl.Connected
 	}
 	return false
+}
+
+func isInLocality(name string) bool {
+	if sbi.localityEnabled {
+		ctx := sbi.activeModel.GetNodeContext(name)
+		if ctx == nil {
+			log.Error("Error getting context for: " + name)
+			return false
+		}
+		if _, found := sbi.locality[ctx.Parents[mod.Zone]]; !found {
+			return false
+		}
+	}
+	return true
 }

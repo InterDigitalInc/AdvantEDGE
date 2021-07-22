@@ -355,6 +355,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		Locality:       locality,
 		UeDataCb:       updateUeData,
 		MeasInfoCb:     updateMeasInfo,
 		PoaInfoCb:      updatePoaInfo,

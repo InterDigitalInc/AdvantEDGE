@@ -251,6 +251,7 @@ func Init() (err error) {
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
 		InfluxAddr:     influxAddr,
+		Locality:       locality,
 		StaInfoCb:      updateStaInfo,
 		ApInfoCb:       updateApInfo,
 		ScenarioNameCb: updateStoreName,

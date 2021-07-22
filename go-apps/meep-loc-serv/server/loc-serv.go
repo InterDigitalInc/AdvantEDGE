@@ -3715,6 +3715,13 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 		dstAddress = address[1]
 	}
 
+	// Verify address validity
+	if !addressConnectedMap[srcAddress] || (dstAddress != "" && !addressConnectedMap[dstAddress]) {
+		log.Error("Invalid address")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	var distParam gisClient.TargetPoint
 	distParam.AssetName = dstAddress
 

@@ -40,6 +40,7 @@ type SbiCfg struct {
 	InfluxAddr     string
 	PostgisHost    string
 	PostgisPort    string
+	Locality       []string
 	StaInfoCb      func(string, string, string, *int32, *int32, *int32)
 	ApInfoCb       func(string, string, *float32, *float32, []string)
 	ScenarioNameCb func(string)
@@ -49,6 +50,8 @@ type SbiCfg struct {
 type WaisSbi struct {
 	sandboxName             string
 	scenarioName            string
+	localityEnabled         bool
+	locality                map[string]bool
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
@@ -79,6 +82,17 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.cleanUpCB = cfg.CleanUpCb
 	redisAddr = cfg.RedisAddr
 	influxAddr = cfg.InfluxAddr
+
+	// Fill locality map
+	if len(cfg.Locality) > 0 {
+		sbi.locality = make(map[string]bool)
+		for _, locality := range cfg.Locality {
+			sbi.locality[locality] = true
+		}
+		sbi.localityEnabled = true
+	} else {
+		sbi.localityEnabled = false
+	}
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -220,7 +234,7 @@ func processActiveScenarioUpdate() {
 	prevUeNames := []string{}
 	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range prevUeNameList {
-		if isUeConnected(name) {
+		if isUeConnected(name) && isInLocality(name) {
 			prevUeNames = append(prevUeNames, name)
 		}
 	}
@@ -250,7 +264,7 @@ func processActiveScenarioUpdate() {
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 		// Ignore disconnected UEs
-		if !isUeConnected(name) {
+		if !isUeConnected(name) || !isInLocality(name) {
 			continue
 		}
 		ueNames = append(ueNames, name)
@@ -300,6 +314,11 @@ func processActiveScenarioUpdate() {
 	// Update POA Wifi info
 	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaWifi)
 	for _, name := range poaNameList {
+		// Ignore POAs not in locality
+		if !isInLocality(name) {
+			continue
+		}
+
 		poa := (sbi.activeModel.GetNode(name)).(*dataModel.NetworkLocation)
 		if poa == nil {
 			log.Error("Can't find poa named " + name)
@@ -333,6 +352,10 @@ func refreshPositions() {
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
 	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaWifi)
 	for _, name := range poaNameList {
+		// Ignore POAs not in locality
+		if !isInLocality(name) {
+			continue
+		}
 		// Get Network Location
 		poa := (sbi.activeModel.GetNode(name)).(*dataModel.NetworkLocation)
 		if poa == nil {
@@ -366,7 +389,7 @@ func refreshMeasurements() {
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 		// Ignore disconnected UEs
-		if !isUeConnected(name) {
+		if !isUeConnected(name) || !isInLocality(name) {
 			continue
 		}
 
@@ -415,4 +438,18 @@ func isUeConnected(name string) bool {
 		}
 	}
 	return false
+}
+
+func isInLocality(name string) bool {
+	if sbi.localityEnabled {
+		ctx := sbi.activeModel.GetNodeContext(name)
+		if ctx == nil {
+			log.Error("Error getting context for: " + name)
+			return false
+		}
+		if _, found := sbi.locality[ctx.Parents[mod.Zone]]; !found {
+			return false
+		}
+	}
+	return true
 }
