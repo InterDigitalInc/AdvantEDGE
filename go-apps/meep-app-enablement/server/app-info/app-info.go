@@ -443,9 +443,7 @@ func populateApplicationInfoList(key string, fields map[string]string, applicati
 	// Get query params & userlist from user data
 	data := applicationInfoList.(*ApplicationInfoList)
 
-	log.Info("SIMON key:", key)
 	if data == nil {
-		log.Info("SIMON err1")
 		return errors.New("ApplicationInfos not found in applicationInfoList")
 	}
 

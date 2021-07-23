@@ -289,10 +289,8 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	} else {
 		//stoping the ticker for graceful termination
-		log.Info("SIMON stopping tiker", appTerminationGracefulTimeoutMap)
 		ticker := appTerminationGracefulTimeoutMap[appInstanceId]
 		if ticker != nil {
-			log.Info("SIMON ticker not nil")
 			ticker.Stop()
 		}
 		appTerminationGracefulTimeoutMap[appInstanceId] = nil
