@@ -955,7 +955,6 @@ components:
       format: uri
     AppTerminationNotificationSubscription:
       required:
-      - _links
       - appInstanceId
       - callbackReference
       - subscriptionType
@@ -2031,11 +2030,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AppReadyConfirmation'
+      required: true
     ApplicationsConfirmTermination:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AppTerminationConfirmation'
+      required: true
     ApplicationsDnsRule:
       description: The updated state is included in the entity body of the request.
       content:

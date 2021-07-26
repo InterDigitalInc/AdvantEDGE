@@ -1007,8 +1007,7 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Fatalf("Node context should exist")
 	}
-	nodeCtx, ok := ctx.(*NodeContext)
-	if !ok || !validateNodeContext(nodeCtx, "demo1", "", "", "", "") {
+	if !validateNodeContext(ctx, "demo1", "", "", "", "") {
 		t.Fatalf("Invalid Deployment context")
 	}
 	fmt.Println("Get Operator context")
@@ -1016,8 +1015,7 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Fatalf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(*NodeContext)
-	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "", "", "") {
+	if !validateNodeContext(ctx, "demo1", "operator1", "", "", "") {
 		t.Fatalf("Invalid Operator context")
 	}
 	fmt.Println("Get Zone context")
@@ -1025,8 +1023,7 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Fatalf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(*NodeContext)
-	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "", "") {
+	if !validateNodeContext(ctx, "demo1", "operator1", "zone1", "", "") {
 		t.Fatalf("Invalid Operator context")
 	}
 	fmt.Println("Get Net Location context")
@@ -1034,8 +1031,7 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Fatalf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(*NodeContext)
-	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "zone1-poa1", "") {
+	if !validateNodeContext(ctx, "demo1", "operator1", "zone1", "zone1-poa1", "") {
 		t.Fatalf("Invalid Operator context")
 	}
 	fmt.Println("Get Phy Location context")
@@ -1043,8 +1039,7 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Fatalf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(*NodeContext)
-	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "zone1-poa1", "zone1-fog1") {
+	if !validateNodeContext(ctx, "demo1", "operator1", "zone1", "zone1-poa1", "zone1-fog1") {
 		t.Fatalf("Invalid Operator context")
 	}
 	fmt.Println("Get App context")
@@ -1052,8 +1047,7 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Fatalf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(*NodeContext)
-	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "zone1-poa1", "ue1") {
+	if !validateNodeContext(ctx, "demo1", "operator1", "zone1", "zone1-poa1", "ue1") {
 		t.Fatalf("Invalid Operator context")
 	}
 

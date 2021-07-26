@@ -193,25 +193,20 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 			err := errors.New("Error getting context for process: " + name)
 			return err
 		}
-		nodeCtx, ok := ctx.(*mod.NodeContext)
-		if !ok {
-			err := errors.New("Error casting context for process: " + name)
-			return err
-		}
 
 		// Create & populate new element
 		element := new(SegAlgoNetElem)
 		element.Name = proc.Name
-		element.PhyLocName = nodeCtx.Parents[mod.PhyLoc]
-		element.DomainName = nodeCtx.Parents[mod.Domain]
+		element.PhyLocName = ctx.Parents[mod.PhyLoc]
+		element.DomainName = ctx.Parents[mod.Domain]
 
 		// Type-specific values
 		element.Type = model.GetNodeType(element.PhyLocName)
 		if element.Type == "UE" || element.Type == "FOG" {
-			element.PoaName = nodeCtx.Parents[mod.NetLoc]
+			element.PoaName = ctx.Parents[mod.NetLoc]
 		}
 		if element.Type != "DC" {
-			element.ZoneName = nodeCtx.Parents[mod.Zone]
+			element.ZoneName = ctx.Parents[mod.Zone]
 		}
 
 		deployment := model.GetNodeParent(element.DomainName).(*dataModel.Deployment)
