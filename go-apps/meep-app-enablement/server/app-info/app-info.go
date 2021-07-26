@@ -26,6 +26,8 @@ import (
 	"strings"
 	"time"
 
+	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
+	msmgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -362,6 +364,17 @@ func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
 
 	fields, err := rc.GetEntry(appEnablementBaseKey + ":apps:" + appInstanceId)
 	if err == nil && len(fields) > 0 {
+
+		//deletes all the services related to that app instance ID
+		err = msmgmt.AppServicesDELETE(appInstanceId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		//sends notification for a termination of the application if subscribed for it, send default graceful timeout
+		appSupport.SendAppTerminationNotification(appInstanceId, 0)
+		//sleep to test when sending a termination confirm taht it is processed correctly
+		//time.Sleep(10 * time.Second)
 		err := rc.DelEntry(appEnablementBaseKey + ":apps:" + appInstanceId)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

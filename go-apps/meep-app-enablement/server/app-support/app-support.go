@@ -17,8 +17,7 @@
 package server
 
 import (
-	//	"time"
-
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,10 +27,13 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	msmgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
@@ -43,6 +45,10 @@ const appEnablementKey = "app-enablement"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
 const APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE = "AppTerminationNotificationSubscription"
+const APP_TERMINATION_NOTIFICATION_TYPE = "AppTerminationNotification"
+const DEFAULT_GRACEFUL_TIMEOUT = 10
+
+const serviceName = "APP-ENABLEMENT Service"
 
 var mutex *sync.Mutex
 
@@ -58,7 +64,7 @@ var basePath string
 var appEnablementBaseKey string
 
 //var expiryTicker *time.Ticker
-
+var appTerminationGracefulTimeoutMap = map[string]*time.Ticker{}
 var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
 var nextSubscriptionIdAvailable int
 
@@ -232,11 +238,8 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	// Update entry in DB
-	updatedFields := make(map[string]interface{})
-	updatedFields["state"] = ACTIVE
-	err = rc.SetEntry(key, updatedFields)
+	err = updateDB(key, ACTIVE)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -265,17 +268,32 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	//look if subscription exist to process the Termination POST
 	found := false
 	//loop through appTerm map
+	mutex.Lock()
+
 	for _, appTermSubscription := range appTerminationNotificationSubscriptionMap {
 		if appTermSubscription != nil && appTermSubscription.AppInstanceId == appInstanceId {
 			found = true
 			break
 		}
 	}
+	mutex.Unlock()
 
 	if !found {
-		log.Error("AppInstanceId not subscribed for graceful termination")
 		http.Error(w, "AppInstanceId not subscribed for graceful termination", http.StatusBadRequest)
 		return
+	}
+
+	//Not expecting a termination confirmation notification
+	if appTerminationGracefulTimeoutMap[appInstanceId] == nil {
+		http.Error(w, "Not expected an App Confirmation Termination Notification", http.StatusBadRequest)
+		return
+	} else {
+		//stoping the ticker for graceful termination
+		ticker := appTerminationGracefulTimeoutMap[appInstanceId]
+		if ticker != nil {
+			ticker.Stop()
+		}
+		appTerminationGracefulTimeoutMap[appInstanceId] = nil
 	}
 
 	var confirmation AppTerminationConfirmation
@@ -312,9 +330,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Update entry in DB
-	updatedFields := make(map[string]interface{})
-	updatedFields["state"] = INACTIVE
-	err = rc.SetEntry(key, updatedFields)
+	err = updateDB(key, INACTIVE)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -322,6 +338,17 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func updateDB(key string, state string) error {
+	updatedFields := make(map[string]interface{})
+	updatedFields["state"] = state
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		//no update necessary, entry does not exist
+		return nil
+	}
+	return rc.SetEntry(key, updatedFields)
 }
 
 func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
@@ -559,6 +586,123 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse, err := json.Marshal(subscriptionLinkList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func SendAppTerminationNotification(appInstanceId string, gracefulTimeout int32) {
+	if gracefulTimeout == 0 {
+		gracefulTimeout = DEFAULT_GRACEFUL_TIMEOUT
+	}
+	checkAppTermNotification(appInstanceId, gracefulTimeout, true)
+}
+
+func checkAppTermNotification(appInstanceId string, gracefulTimeout int32, needMutex bool) {
+	if needMutex {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+	//check all that applies
+	for subsId, sub := range appTerminationNotificationSubscriptionMap {
+		if sub != nil {
+			//find matching criteria
+			match := false
+			if sub.AppInstanceId == appInstanceId {
+				match = true
+			}
+
+			if match {
+				subsIdStr := strconv.Itoa(subsId)
+
+				var notif AppTerminationNotification
+				notif.NotificationType = APP_TERMINATION_NOTIFICATION_TYPE
+				links := new(AppTerminationNotificationLinks)
+				linkType := new(LinkType)
+				linkType.Href = sub.Links.Self.Href
+				links.Subscription = linkType
+				confirmTermination := new(LinkTypeConfirmTermination)
+				confirmTermination.Href = hostUrl.String() + basePath + "confirm_termination"
+				links.ConfirmTermination = confirmTermination
+				notif.Links = links
+				operationAction := TERMINATING
+				notif.OperationAction = &operationAction
+				notif.MaxGracefulTimeout = gracefulTimeout
+
+				sendAppTermNotification(sub.CallbackReference, notif)
+				log.Info("App Termination Notification" + "(" + subsIdStr + ") for " + appInstanceId)
+				//start graceful shutdown timer
+				gracefulTimeoutTicker := time.NewTicker(time.Duration(gracefulTimeout) * time.Second)
+				appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
+				key := appEnablementBaseKey + ":apps:" + appInstanceId
+				go func() {
+					for range gracefulTimeoutTicker.C {
+						log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])
+						_ = updateDB(key, "Graceful TIMEOUT")
+						gracefulTimeoutTicker.Stop()
+						appTerminationGracefulTimeoutMap[appInstanceId] = nil
+					}
+				}()
+			}
+		}
+	}
+}
+
+func sendAppTermNotification(notifyUrl string, notification AppTerminationNotification) {
+	startTime := time.Now()
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, notification.NotificationType, notifyUrl, nil, duration)
+		return
+	}
+	met.ObserveNotification(sandboxName, serviceName, notification.NotificationType, notifyUrl, resp, duration)
+	defer resp.Body.Close()
+}
+
+func timingCapsGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Info("timingCapsGET")
+
+	seconds := time.Now().Unix()
+	var timeStamp TimingCapsTimeStamp
+	timeStamp.Seconds = int32(seconds)
+
+	var timingCaps TimingCaps
+	timingCaps.TimeStamp = &timeStamp
+
+	jsonResponse, err := json.Marshal(timingCaps)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func timingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Info("timingCurrentTimeGET")
+
+	seconds := time.Now().Unix()
+	var currentTime CurrentTime
+	currentTime.Seconds = int32(seconds)
+
+	currentTime.TimeSourceStatus = "TRACEABLE"
+
+	jsonResponse, err := json.Marshal(currentTime)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

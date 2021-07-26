@@ -386,7 +386,6 @@ components:
       required:
         - subscriptionType
         - callbackReference
-        - _links
         - appInstanceId
       properties:
         subscriptionType:
@@ -1208,11 +1207,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AppReadyConfirmation'
+      required: true
     ApplicationsConfirmTermination:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AppTerminationConfirmation'
+      required: true
     ApplicationsDnsRule:
       content:
         application/json:

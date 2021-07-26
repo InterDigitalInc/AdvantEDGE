@@ -34,6 +34,7 @@ import (
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-wais/sbi"
 	appInfoClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-info-client"
+	appSupportClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -58,6 +59,7 @@ const (
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+var currentStoreName = ""
 
 const assocStaSubscriptionType = "AssocStaSubscription"
 const staDataRateSubscriptionType = "StaDataRateSubscription"
@@ -132,7 +134,8 @@ var serviceAppInstanceId string
 var appEnablementClientUrl string = "http://meep-app-enablement"
 var appEnablementSupport bool = true
 var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
-
+var appEnablementAppSupportClient *appSupportClient.APIClient
+var sendAppTerminationWhenDone bool = false
 var retryAppEnablementTicker *time.Ticker
 
 //MEC011 section end
@@ -217,15 +220,40 @@ func Init() (err error) {
 
 		retryAppEnablementTicker = time.NewTicker(time.Second)
 		go func() {
+			mecAppReadySent := false
+			registrationSent := false
 			for range retryAppEnablementTicker.C {
 				if serviceAppInstanceId == "" {
 					serviceAppInstanceId = getAppInstanceId(serviceAppName, serviceAppVersion)
 				}
 				if serviceAppInstanceId != "" {
-					err := appEnablementRegistration(serviceAppInstanceId, serviceAppName, serviceAppVersion)
-					if err != nil {
-						log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
-					} else {
+					//sending app is ready
+					if !mecAppReadySent {
+						err := appEnablementMecAppReady(serviceAppInstanceId)
+						if err != nil {
+							log.Error("Failure when sending the MecAppReady message, keep trying. Error: ", err)
+							continue
+						} else {
+							mecAppReadySent = true
+						}
+					}
+					if !registrationSent {
+						err := appEnablementRegistration(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+						if err != nil {
+							log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
+							continue
+						} else {
+							registrationSent = true
+						}
+						/*
+							err = appEnablementAppSupportSubscribe(serviceAppInstanceId)
+							if err != nil {
+								log.Error("Failed to subscribe to graceful termination. Error: ", err)
+							}
+							sendAppTerminationWhenDone = true
+						*/
+					}
+					if mecAppReadySent && registrationSent {
 						retryAppEnablementTicker.Stop()
 					}
 				}
@@ -253,7 +281,61 @@ func Run() (err error) {
 
 // Stop - Stop WAIS
 func Stop() (err error) {
-	return sbi.Stop()
+	err = sbi.Stop()
+	if err != nil {
+		return err
+	}
+	if appEnablementSupport {
+		retryAppEnablementTicker.Stop()
+		if sendAppTerminationWhenDone {
+			err = appEnablementMecAppTermination(serviceAppInstanceId)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func appEnablementMecAppReady(appInstanceId string) error {
+	appEnablementAppSupportClientCfg := appSupportClient.NewConfiguration()
+	appEnablementAppSupportClientCfg.BasePath = appEnablementClientUrl + "/mec_app_support/v1"
+
+	appEnablementAppSupportClient = appSupportClient.NewAPIClient(appEnablementAppSupportClientCfg)
+	if appEnablementAppSupportClient == nil {
+		log.Error("Failed to create App Enablement App Support REST API client: ", appEnablementAppSupportClientCfg.BasePath)
+		err := errors.New("Failed to create App Enablement AppSupport REST API client")
+		return err
+	}
+	var appReady appSupportClient.AppReadyConfirmation
+	//indication
+	indication := appSupportClient.READY_ReadyIndicationType
+	appReady.Indication = &indication
+	_, err := appEnablementAppSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send a ready confirm acknowlegement: ", err)
+		return err
+	}
+	return nil
+}
+
+func appEnablementMecAppTermination(appInstanceId string) error {
+
+	if appEnablementAppSupportClient == nil {
+		log.Error("App Enablement App Support REST API client should already exist")
+		err := errors.New("App Enablement App Support REST API client should already exist")
+		return err
+	}
+	var appTermination appSupportClient.AppTerminationConfirmation
+	//operation action
+	operationAction := appSupportClient.TERMINATING_OperationActionType
+	appTermination.OperationAction = &operationAction
+	_, err := appEnablementAppSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send a confirm termination acknowlegement: ", err)
+		return err
+	}
+	return nil
 }
 
 func getAppInstanceId(appName string, appVersion string) string {
@@ -340,6 +422,28 @@ func appEnablementRegistration(appInstanceId string, appName string, appVersion 
 	return nil
 }
 
+/*
+func appEnablementAppSupportSubscribe(appInstanceId string) error {
+
+	if appEnablementAppSupportClient == nil {
+		log.Error("App Enablement App Support REST API client should already exist")
+		err := errors.New("App Enablement App Support REST API client should already exist")
+		return err
+	}
+	var appTerminationNotificationSubscription appSupportClient.AppTerminationNotificationSubscription
+	//operation action
+	appTerminationNotificationSubscription.SubscriptionType = "AppTerminationNotificationSubscription"
+	appTerminationNotificationSubscription.AppInstanceId = appInstanceId
+	appTerminationNotificationSubscription.CallbackReference = hostUrl.String() + basePath
+
+	_, _, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationNotificationSubscription, appInstanceId)
+	if err != nil {
+		log.Error("Failed to register to App Support subscription: ", err)
+		return err
+	}
+	return nil
+}
+*/
 func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32, sumUl *int32, sumDl *int32) {
 
 	// Get STA Info from DB, if any
@@ -1766,5 +1870,8 @@ func cleanUp() {
 }
 
 func updateStoreName(storeName string) {
-	_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
+	if currentStoreName != storeName {
+		currentStoreName = storeName
+		_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
+	}
 }

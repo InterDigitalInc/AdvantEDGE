@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 
 # **ApplicationsConfirmReadyPOST**
-> ApplicationsConfirmReadyPOST(ctx, appInstanceId, optional)
+> ApplicationsConfirmReadyPOST(ctx, body, appInstanceId)
 
 
 This method may be used by the MEC application instance to notify the MEC platform that it is up and running. 
@@ -18,16 +18,8 @@ This method may be used by the MEC application instance to notify the MEC platfo
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**AppReadyConfirmation**](AppReadyConfirmation.md)|  | 
   **appInstanceId** | **string**| Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager. | 
- **optional** | ***ApplicationsConfirmReadyPOSTOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a ApplicationsConfirmReadyPOSTOpts struct
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
- **body** | [**optional.Interface of AppReadyConfirmation**](AppReadyConfirmation.md)|  | 
 
 ### Return type
 
