@@ -1934,8 +1934,9 @@ func cleanUp() {
 }
 
 func updateStoreName(storeName string) {
-	if currentStoreName != storeName {
-		currentStoreName = storeName
-		_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
+	logComponent := logModuleWAIS
+	if mepName != defaultMepName {
+		logComponent = logModuleWAIS + "-" + mepName
 	}
+	_ = httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 }

@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -69,38 +68,11 @@ var appTerminationGracefulTimeoutMap = map[string]*time.Ticker{}
 var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
 var nextSubscriptionIdAvailable int
 
-func Init(globalMutex *sync.Mutex) (err error) {
+func Init(sandbox string, mep string, host *url.URL, globalMutex *sync.Mutex) (err error) {
+	sandboxName = sandbox
+	mepName = mep
+	hostUrl = host
 	mutex = globalMutex
-
-	// Retrieve Sandbox name from environment variable
-	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-	if sandboxNameEnv != "" {
-		sandboxName = sandboxNameEnv
-	}
-	if sandboxName == "" {
-		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
-
-	// hostUrl is the url of the node serving the resourceURL
-	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
-	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_PUBLIC_URL")))
-	if err != nil || hostUrl == nil || hostUrl.String() == "" {
-		hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
-		if err != nil {
-			hostUrl = new(url.URL)
-		}
-	}
-	log.Info("MEEP_HOST_URL: ", hostUrl)
-
-	// Get MEP name
-	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
-	if mepNameEnv != "" {
-		mepName = mepNameEnv
-	}
-	log.Info("MEEP_MEP_NAME: ", mepName)
 
 	// Set base path
 	if mepName == defaultMepName {
@@ -121,19 +93,14 @@ func Init(globalMutex *sync.Mutex) (err error) {
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB")
 
-	reInit()
-
-	return nil
-}
-
-// reInit - finds the value already in the DB to repopulate local stored info
-// NOTE: Init is flushing everything so this is a non-operation code, but if a sbi is added that tracks Activation/Termination of scenarios, then this should become handy, leaving it there for future code updates if needed
-func reInit() {
-	//next available subsId will be overrriden if subscriptions already existed
+	// Initialize subscription ID count
 	nextSubscriptionIdAvailable = 1
 
-	keyName := baseKey + ":app:*:" + mappsupportKey + ":sub:*"
-	_ = rc.ForEachJSONEntry(keyName, repopulateAppTerminationNotificationSubscriptionMap, nil)
+	// Initialize local termination notification subscription map from DB
+	key := baseKey + ":app:*:" + mappsupportKey + ":sub:*"
+	_ = rc.ForEachJSONEntry(key, repopulateAppTerminationNotificationSubscriptionMap, nil)
+
+	return nil
 }
 
 // Run - Start APP support
@@ -344,7 +311,7 @@ func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
 	if err != nil {
 		return err
 	}
-	for _, sInfo := range sInfoList.ServiceInfos {
+	for _, sInfo := range sInfoList.Services {
 		serviceId := sInfo.SerInstanceId
 		sInfo.State = &state
 		err = rc.JSONSetEntry(baseKey+":app:"+appInstanceId+":svc:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
@@ -369,7 +336,7 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 	if err != nil {
 		return err
 	}
-	data.ServiceInfos = append(data.ServiceInfos, sInfo)
+	data.Services = append(data.Services, sInfo)
 	return nil
 }
 

@@ -22,8 +22,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -56,8 +54,6 @@ var baseKey string
 
 var expiryTicker *time.Ticker
 
-var nextAppInstanceIdAvailable int
-
 type ApplicationInfoList struct {
 	ApplicationInfos []ApplicationInfo
 	filterParameters *FilterParameters
@@ -68,37 +64,11 @@ type FilterParameters struct {
 	appState string
 }
 
-func Init(globalMutex *sync.Mutex) (err error) {
+func Init(sandbox string, mep string, host *url.URL, globalMutex *sync.Mutex) (err error) {
+	sandboxName = sandbox
+	mepName = mep
+	hostUrl = host
 	mutex = globalMutex
-
-	// Retrieve Sandbox name from environment variable
-	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-	if sandboxNameEnv != "" {
-		sandboxName = sandboxNameEnv
-	}
-	if sandboxName == "" {
-		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
-		log.Error(err.Error())
-		return err
-	}
-
-	// hostUrl is the url of the node serving the resourceURL
-	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
-	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_PUBLIC_URL")))
-	if err != nil || hostUrl == nil || hostUrl.String() == "" {
-		hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
-		if err != nil {
-			hostUrl = new(url.URL)
-		}
-	}
-	log.Info("MEEP_HOST_URL: ", hostUrl)
-
-	// Get MEP name
-	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
-	if mepNameEnv != "" {
-		mepName = mepNameEnv
-	}
-	log.Info("MEEP_MEP_NAME: ", mepName)
 
 	// Set base path
 	if mepName == defaultMepName {
@@ -119,8 +89,6 @@ func Init(globalMutex *sync.Mutex) (err error) {
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB")
 
-	reInit()
-
 	expiryTicker = time.NewTicker(time.Second)
 	go func() {
 		for range expiryTicker.C {
@@ -128,11 +96,6 @@ func Init(globalMutex *sync.Mutex) (err error) {
 		}
 	}()
 	return nil
-}
-
-// reInit - finds the value already in the DB to repopulate local stored info
-func reInit() {
-	nextAppInstanceIdAvailable = 1
 }
 
 // Run - Start
@@ -146,10 +109,6 @@ func Stop() (err error) {
 }
 
 func getNewInstanceId() (string, error) {
-	/*	appInstanceId := strconv.Itoa(nextAppInstanceIdAvailable)
-		nextAppInstanceIdAvailable++
-		return appInstanceId
-	*/
 	//allow 3 tries, if not return an error
 	maxNbRetries := 3
 	for try := maxNbRetries; try > 0; try-- {

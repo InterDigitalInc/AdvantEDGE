@@ -77,6 +77,9 @@ const (
 	// GIS Engine
 	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
 
+	// App Enablement
+	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
+
 	// Watchdog
 	MsgPing Message = "PING"
 	MsgPong Message = "PONG"

@@ -18,6 +18,7 @@ package server
 
 import (
 	"errors"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -25,13 +26,27 @@ import (
 	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
 	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
 	servMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
 const serviceName = "Edge Platform Application Enablement Service"
+const moduleName = "meep-app-enablement"
+const defaultMepName = "global"
+
+var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 var mutex sync.Mutex
+var hostUrl *url.URL
 var sandboxName string
+var mepName string = defaultMepName
+var handlerId int
+var mqLocal *mq.MsgQueue
+var activeModel *mod.Model
+var currentStoreName = ""
 
 // Init - EPAE Service initialization
 func Init() (err error) {
@@ -48,25 +63,66 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
-	err = servMgmt.Init(&mutex)
+	// Get MEP name
+	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
+	if mepNameEnv != "" {
+		mepName = mepNameEnv
+	}
+	log.Info("MEEP_MEP_NAME: ", mepName)
+
+	// hostUrl is the url of the node serving the resourceURL
+	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
+	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_PUBLIC_URL")))
+	if err != nil || hostUrl == nil || hostUrl.String() == "" {
+		hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
+		if err != nil {
+			hostUrl = new(url.URL)
+		}
+	}
+	log.Info("MEEP_HOST_URL: ", hostUrl)
+
+	// Create new active scenario model
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: sandboxName,
+		Module:    moduleName,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
+	activeModel, err = mod.NewModel(modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+	log.Info("Active Scenario Model created")
+
+	err = servMgmt.Init(sandboxName, mepName, hostUrl, &mutex)
 	if err != nil {
 		return err
 	}
 
-	err = appSupport.Init(&mutex)
+	err = appSupport.Init(sandboxName, mepName, hostUrl, &mutex)
 	if err != nil {
 		return err
 	}
 
-	err = appInfo.Init(&mutex)
+	err = appInfo.Init(sandboxName, mepName, hostUrl, &mutex)
 	if err != nil {
 		return err
 	}
+
+	// Create message queue
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
 
 	return nil
 }
 
-// Run - Start
+// Run - Start App Enablement
 func Run() (err error) {
 
 	err = servMgmt.Run()
@@ -84,5 +140,55 @@ func Run() (err error) {
 		return err
 	}
 
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to register local Msg Queue listener: ", err.Error())
+		return err
+	}
+	log.Info("Registered local Msg Queue listener")
+
+	// Initalize metric store
+	updateStoreName()
+
 	return nil
+}
+
+// Stop - Stop App Enablement
+func Stop() {
+	mqLocal.UnregisterHandler(handlerId)
+}
+
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		updateStoreName()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		updateStoreName()
+	default:
+	}
+}
+
+func updateStoreName() {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
+	// Update store names
+	storeName := activeModel.GetScenarioName()
+	if currentStoreName != storeName {
+		currentStoreName = storeName
+
+		logComponent := moduleName
+		if mepName != defaultMepName {
+			logComponent = moduleName + "-" + mepName
+		}
+		_ = httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
+	}
 }
