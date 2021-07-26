@@ -10,6 +10,8 @@ metadata:
     {{- toYaml .Values.backupRetention.annotations | nindent 4 }}
 spec:
   schedule: {{ .Values.backupRetention.schedule | quote }}
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
   startingDeadlineSeconds: {{ .Values.backupRetention.startingDeadlineSeconds }}
   concurrencyPolicy: Forbid
   jobTemplate:
