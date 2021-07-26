@@ -138,7 +138,7 @@ const serviceAppVersion = "2.1.1"
 var serviceAppInstanceId string
 
 var appEnablementUrl string
-var appEnablementEnabled bool = false
+var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
 var appEnablementAppSupportClient *appSupportClient.APIClient
 var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
@@ -184,6 +184,7 @@ func Init() (err error) {
 	log.Info("MEEP_MEP_NAME: ", mepName)
 
 	// Get App Enablement URL
+	appEnablementEnabled = false
 	appEnablementEnv := strings.TrimSpace(os.Getenv("MEEP_APP_ENABLEMENT"))
 	if appEnablementEnv != "" {
 		appEnablementUrl = "http://" + appEnablementEnv

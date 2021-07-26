@@ -616,7 +616,8 @@ func checkAppTermNotification(appInstanceId string, gracefulTimeout int32, needM
 				//start graceful shutdown timer
 				gracefulTimeoutTicker := time.NewTicker(time.Duration(gracefulTimeout) * time.Second)
 				appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
-				key := appEnablementBaseKey + ":apps:" + appInstanceId
+
+				key := baseKey + ":app:" + appInstanceId + ":info"
 				go func() {
 					for range gracefulTimeoutTicker.C {
 						log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])

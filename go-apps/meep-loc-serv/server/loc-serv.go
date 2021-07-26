@@ -207,6 +207,7 @@ func Init() (err error) {
 	log.Info("MEEP_MEP_NAME: ", mepName)
 
 	// Get App Enablement URL
+	appEnablementEnabled = false
 	appEnablementEnv := strings.TrimSpace(os.Getenv("MEEP_APP_ENABLEMENT"))
 	if appEnablementEnv != "" {
 		appEnablementUrl = "http://" + appEnablementEnv

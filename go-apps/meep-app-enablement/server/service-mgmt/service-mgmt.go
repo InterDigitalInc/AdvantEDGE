@@ -672,21 +672,21 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Delete all services
 func AppServicesDELETE(appInstanceId string) error {
 	log.Info("AppServicesDELETE")
 
 	var sInfoList ServiceInfoList
 
-	keyName := appEnablementBaseKey + ":apps:" + appInstanceId + ":svcs:*"
-
-	err := rc.ForEachJSONEntry(keyName, populateServiceInfoList, &sInfoList)
+	key := baseKey + ":app:" + appInstanceId + ":svc:*"
+	err := rc.ForEachJSONEntry(key, populateServiceInfoList, &sInfoList)
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
 
 	for _, sInfo := range sInfoList.ServiceInfos {
-		err = rc.JSONDelEntry(appEnablementBaseKey+":apps:"+appInstanceId+":svcs:"+sInfo.SerInstanceId, ".")
+		err = rc.JSONDelEntry(baseKey+":app:"+appInstanceId+":svc:"+sInfo.SerInstanceId, ".")
 		if err != nil {
 			log.Error(err.Error())
 			return err
