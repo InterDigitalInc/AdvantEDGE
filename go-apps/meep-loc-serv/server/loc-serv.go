@@ -44,10 +44,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const LocServBasePath = "/location/v2/"
-const locServKey = "loc-serv:"
+const LocServBasePath = "location/v2/"
+const locServKey = "loc-serv"
 const logModuleLocServ = "meep-loc-serv"
 const serviceName = "Location Service"
+const defaultMepName = "global"
+const defaultScopeOfLocality = "MEC_SYSTEM"
+const defaultConsumedLocalOnly = true
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -100,13 +103,9 @@ var userSubscriptionTransferringMap = map[int]string{}
 var userSubscriptionMap = map[int]string{}
 
 var zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
-
 var distanceSubscriptionMap = map[int]*DistanceCheck{}
-
 var periodicTicker *time.Ticker
-
 var areaCircleSubscriptionMap = map[int]*AreaCircleCheck{}
-
 var periodicSubscriptionMap = map[int]*PeriodicCheck{}
 
 var addressConnectedMap = map[string]bool{}
@@ -149,6 +148,10 @@ var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 var rc *redis.Connector
 var hostUrl *url.URL
 var sandboxName string
+var mepName string = defaultMepName
+var scopeOfLocality string = defaultScopeOfLocality
+var consumedLocalOnly bool = defaultConsumedLocalOnly
+var locality []string
 var basePath string
 var baseKey string
 var mutex sync.Mutex
@@ -156,31 +159,24 @@ var mutex sync.Mutex
 var gisAppClient *gisClient.APIClient
 var gisAppClientUrl string = "http://meep-gis-engine"
 
-//MEC011 section begin
 const serviceAppName = "Location"
 const serviceAppVersion = "2.1.1"
 
 var serviceAppInstanceId string
 
-var appEnablementClientUrl string = "http://meep-app-enablement"
-var appEnablementSupport bool = false
-var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
-var appEnablementAppSupportClient *appSupportClient.APIClient
+var appEnablementUrl string
+var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
-var retryAppEnablementTicker *time.Ticker
+var appEnablementAppSupportClient *appSupportClient.APIClient
+var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
+var appEnablementAppInfoClient *appInfoClient.APIClient
 
-//MEC011 section end
-
-/*
-func notImplemented(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotImplemented)
-}
-*/
+var registrationTicker *time.Ticker
 
 // Init - Location Service initialization
 func Init() (err error) {
 
+	// Get Sandbox name
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
 	if sandboxNameEnv != "" {
 		sandboxName = sandboxNameEnv
@@ -201,13 +197,57 @@ func Init() (err error) {
 			hostUrl = new(url.URL)
 		}
 	}
-	log.Info("resource URL: ", hostUrl)
+	log.Info("MEEP_HOST_URL: ", hostUrl)
+
+	// Get MEP name
+	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
+	if mepNameEnv != "" {
+		mepName = mepNameEnv
+	}
+	log.Info("MEEP_MEP_NAME: ", mepName)
+
+	// Get App Enablement URL
+	appEnablementEnabled = false
+	appEnablementEnv := strings.TrimSpace(os.Getenv("MEEP_APP_ENABLEMENT"))
+	if appEnablementEnv != "" {
+		appEnablementUrl = "http://" + appEnablementEnv
+		appEnablementEnabled = true
+	}
+	log.Info("MEEP_APP_ENABLEMENT: ", appEnablementUrl)
+
+	// Get scope of locality
+	scopeOfLocalityEnv := strings.TrimSpace(os.Getenv("MEEP_SCOPE_OF_LOCALITY"))
+	if scopeOfLocalityEnv != "" {
+		scopeOfLocality = scopeOfLocalityEnv
+	}
+	log.Info("MEEP_SCOPE_OF_LOCALITY: ", scopeOfLocality)
+
+	// Get local consumption
+	consumedLocalOnlyEnv := strings.TrimSpace(os.Getenv("MEEP_CONSUMED_LOCAL_ONLY"))
+	if consumedLocalOnlyEnv != "" {
+		value, err := strconv.ParseBool(consumedLocalOnlyEnv)
+		if err == nil {
+			consumedLocalOnly = value
+		}
+	}
+	log.Info("MEEP_CONSUMED_LOCAL_ONLY: ", consumedLocalOnly)
+
+	// Get locality
+	localityEnv := strings.TrimSpace(os.Getenv("MEEP_LOCALITY"))
+	if localityEnv != "" {
+		locality = strings.Split(localityEnv, ":")
+	}
+	log.Info("MEEP_LOCALITY: ", locality)
 
 	// Set base path
-	basePath = "/" + sandboxName + LocServBasePath
+	if mepName == defaultMepName {
+		basePath = "/" + sandboxName + "/" + LocServBasePath
+	} else {
+		basePath = "/" + sandboxName + "/" + mepName + "/" + LocServBasePath
+	}
 
-	// Get base storage key
-	baseKey = dkm.GetKeyRoot(sandboxName) + locServKey
+	// Set base storage key
+	baseKey = dkm.GetKeyRoot(sandboxName) + locServKey + ":mep:" + mepName + ":"
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, LOC_SERV_DB)
@@ -239,6 +279,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		Locality:       locality,
 		UserInfoCb:     updateUserInfo,
 		ZoneInfoCb:     updateZoneInfo,
 		ApInfoCb:       updateAccessPointInfo,
@@ -252,58 +293,45 @@ func Init() (err error) {
 	}
 	log.Info("SBI Initialized")
 
-	//register using MEC011
-	if appEnablementSupport {
-		//delay startup on purpose to give time for appEnablement pod to come up (if all coming up at the same time)
-		time.Sleep(2 * time.Second)
+	// Create App Enablement REST clients
+	if appEnablementEnabled {
+		// Create App Info client
+		appInfoClientCfg := appInfoClient.NewConfiguration()
+		appInfoClientCfg.BasePath = appEnablementUrl + "/app_info/v1"
+		appEnablementAppInfoClient = appInfoClient.NewAPIClient(appInfoClientCfg)
+		if appEnablementAppInfoClient == nil {
+			return errors.New("Failed to create App Info REST API client")
+		}
 
-		retryAppEnablementTicker = time.NewTicker(time.Second)
-		go func() {
-			mecAppReadySent := false
-			registrationSent := false
-			for range retryAppEnablementTicker.C {
-				if serviceAppInstanceId == "" {
-					serviceAppInstanceId = getAppInstanceId(serviceAppName, serviceAppVersion)
-				}
-				if serviceAppInstanceId != "" {
-					//sending app is ready
-					if !mecAppReadySent {
-						err := appEnablementMecAppReady(serviceAppInstanceId)
-						if err != nil {
-							log.Error("Failure when sending the MecAppReady message, keep trying. Error: ", err)
-							continue
-						} else {
-							mecAppReadySent = true
-						}
-					}
-					if !registrationSent {
-						err := appEnablementRegistration(serviceAppInstanceId, serviceAppName, serviceAppVersion)
-						if err != nil {
-							log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
-							continue
-						} else {
-							registrationSent = true
-						}
-						/*						err = appEnablementAppSupportSubscribe(serviceAppInstanceId)
-												if err != nil {
-													log.Error("Failed to subscribe to graceful termination. Error: ", err)
-												}
-												sendAppTerminationWhenDone = true
-						*/
-					}
-					if mecAppReadySent && registrationSent {
-						retryAppEnablementTicker.Stop()
-					}
-				}
-			}
-		}()
+		// Create App Support client
+		appSupportClientCfg := appSupportClient.NewConfiguration()
+		appSupportClientCfg.BasePath = appEnablementUrl + "/mec_app_support/v1"
+		appEnablementAppSupportClient = appSupportClient.NewAPIClient(appSupportClientCfg)
+		if appEnablementAppSupportClient == nil {
+			return errors.New("Failed to create App Enablement App Support REST API client")
+		}
+
+		// Create Service Management client
+		srvMgmtClientCfg := srvMgmtClient.NewConfiguration()
+		srvMgmtClientCfg.BasePath = appEnablementUrl + "/mec_service_mgmt/v1"
+		appEnablementSrvMgmtClient = srvMgmtClient.NewAPIClient(srvMgmtClientCfg)
+		if appEnablementSrvMgmtClient == nil {
+			return errors.New("Failed to create App Enablement Service Management REST API client")
+		}
 	}
 
+	log.Info("Location Service successfully initialized")
 	return nil
 }
 
 // Run - Start Location Service
 func Run() (err error) {
+
+	// Start MEC Service registration ticker
+	if appEnablementEnabled {
+		startRegistrationTicker()
+	}
+
 	periodicTicker = time.NewTicker(time.Second)
 	go func() {
 		for range periodicTicker.C {
@@ -318,99 +346,115 @@ func Run() (err error) {
 
 // Stop - Stop Location
 func Stop() (err error) {
-	periodicTicker.Stop()
-	err = sbi.Stop()
-	if err != nil {
-		return err
-	}
-	if appEnablementSupport {
-		retryAppEnablementTicker.Stop()
-
+	// Stop MEC Service registration ticker
+	if appEnablementEnabled {
+		stopRegistrationTicker()
 		if sendAppTerminationWhenDone {
-			err = appEnablementMecAppTermination(serviceAppInstanceId)
+			err = sendTerminationConfirmation(serviceAppInstanceId)
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return nil
-}
 
-func appEnablementMecAppReady(appInstanceId string) error {
-	appEnablementAppSupportClientCfg := appSupportClient.NewConfiguration()
-	appEnablementAppSupportClientCfg.BasePath = appEnablementClientUrl + "/mec_app_support/v1"
-
-	appEnablementAppSupportClient = appSupportClient.NewAPIClient(appEnablementAppSupportClientCfg)
-	if appEnablementAppSupportClient == nil {
-		log.Error("Failed to create App Enablement App Support REST API client: ", appEnablementAppSupportClientCfg.BasePath)
-		err := errors.New("Failed to create App Enablement AppSupport REST API client")
-		return err
-	}
-	var appReady appSupportClient.AppReadyConfirmation
-	//indication
-	indication := appSupportClient.READY_ReadyIndicationType
-	appReady.Indication = &indication
-	_, err := appEnablementAppSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
+	periodicTicker.Stop()
+	err = sbi.Stop()
 	if err != nil {
-		log.Error("Failed to send a ready confirm acknowlegement: ", err)
 		return err
 	}
 	return nil
 }
 
-func appEnablementMecAppTermination(appInstanceId string) error {
+func startRegistrationTicker() {
+	// Make sure ticker is not running
+	if registrationTicker != nil {
+		log.Warn("Registration ticker already running")
+		return
+	}
 
-	if appEnablementAppSupportClient == nil {
-		log.Error("App Enablement App Support REST API client should already exist")
-		err := errors.New("App Enablement App Support REST API client should already exist")
-		return err
-	}
-	var appTermination appSupportClient.AppTerminationConfirmation
-	//operation action
-	operationAction := appSupportClient.TERMINATING_OperationActionType
-	appTermination.OperationAction = &operationAction
-	_, err := appEnablementAppSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
-	if err != nil {
-		log.Error("Failed to send a confirm termination acknowlegement: ", err)
-		return err
-	}
-	return nil
+	// Wait a few seconds to allow App Enablement Service to start.
+	// This is done to avoid the default 20 second TCP socket connect timeout
+	// if the App Enablement Service is not yet running.
+	log.Info("Waiting for App Enablement Service to start")
+	time.Sleep(5 * time.Second)
+
+	// Start registration ticker
+	registrationTicker = time.NewTicker(5 * time.Second)
+	go func() {
+		mecAppReadySent := false
+		// registrationSent := false
+		for range registrationTicker.C {
+			// Get Application instance ID if not already available
+			if serviceAppInstanceId == "" {
+				var err error
+				serviceAppInstanceId, err = getAppInstanceId(serviceAppName, serviceAppVersion)
+				if err != nil || serviceAppInstanceId == "" {
+					continue
+				}
+			}
+
+			// Send App Ready message
+			if !mecAppReadySent {
+				err := sendReadyConfirmation(serviceAppInstanceId)
+				if err != nil {
+					log.Error("Failure when sending the MecAppReady message. Error: ", err)
+					continue
+				}
+				mecAppReadySent = true
+			}
+
+			// Register service instance
+			// if !registrationSent {
+			err := registerService(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+			if err != nil {
+				log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
+				continue
+			}
+			// 	registrationSent = true
+			// }
+
+			// // Register for graceful termination
+			// if !subscriptionSent {
+			// 	err = subscribeAppTermination(serviceAppInstanceId)
+			// 	if err != nil {
+			// 		log.Error("Failed to subscribe to graceful termination. Error: ", err)
+			// 		continue
+			// 	}
+			// 	sendAppTerminationWhenDone = true
+			// 	subscriptionSent = true
+			// }
+
+			// Registration complete
+			log.Info("Successfully registered with App Enablement Service")
+			stopRegistrationTicker()
+			return
+		}
+	}()
 }
 
-func getAppInstanceId(appName string, appVersion string) string {
-	//var client *appInfoClient.APIClient
-	appInfoClientCfg := appInfoClient.NewConfiguration()
-	appInfoClientCfg.BasePath = appEnablementClientUrl + "/app_info/v1"
-
-	client := appInfoClient.NewAPIClient(appInfoClientCfg)
-	if client == nil {
-		log.Error("Failed to create App Info REST API client: ", appInfoClientCfg.BasePath)
-		return ""
+func stopRegistrationTicker() {
+	if registrationTicker != nil {
+		log.Info("Stopping App Enablement registration ticker")
+		registrationTicker.Stop()
+		registrationTicker = nil
 	}
+}
+
+func getAppInstanceId(appName string, appVersion string) (id string, err error) {
 	var appInfo appInfoClient.ApplicationInfo
 	appInfo.AppName = appName
 	appInfo.Version = appVersion
 	state := appInfoClient.INACTIVE_ApplicationState
 	appInfo.State = &state
-	appInfoResponse, _, err := client.AppsApi.ApplicationsPOST(context.TODO(), appInfo)
+	appInfoResponse, _, err := appEnablementAppInfoClient.AppsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
-		log.Error("Failed to communicate with app enablement service: ", err)
-		return ""
+		log.Error("Failed to get App Instance ID with error: ", err)
+		return "", err
 	}
-	return appInfoResponse.AppInstanceId
+	return appInfoResponse.AppInstanceId, nil
 }
 
-func appEnablementRegistration(appInstanceId string, appName string, appVersion string) error {
-
-	appEnablementSrvMgmtClientCfg := srvMgmtClient.NewConfiguration()
-	appEnablementSrvMgmtClientCfg.BasePath = appEnablementClientUrl + "/mec_service_mgmt/v1"
-
-	appEnablementSrvMgmtClient = srvMgmtClient.NewAPIClient(appEnablementSrvMgmtClientCfg)
-	if appEnablementSrvMgmtClient == nil {
-		log.Error("Failed to create App Enablement Srv Mgmt REST API client: ", appEnablementSrvMgmtClientCfg.BasePath)
-		err := errors.New("Failed to create App Enablement Srv Mgmt REST API client")
-		return err
-	}
+func registerService(appInstanceId string, appName string, appVersion string) error {
 	var srvInfo srvMgmtClient.ServiceInfoPost
 	//serName
 	srvInfo.SerName = appName
@@ -446,11 +490,11 @@ func appEnablementRegistration(appInstanceId string, appName string, appVersion 
 	srvInfo.SerCategory = &category
 
 	//scopeOfLocality
-	scopeOfLocality := srvMgmtClient.MEC_SYSTEM_LocalityType
-	srvInfo.ScopeOfLocality = &scopeOfLocality
+	localityType := srvMgmtClient.LocalityType(scopeOfLocality)
+	srvInfo.ScopeOfLocality = &localityType
 
 	//consumedLocalOnly
-	srvInfo.ConsumedLocalOnly = false
+	srvInfo.ConsumedLocalOnly = consumedLocalOnly
 
 	appServicesPostResponse, _, err := appEnablementSrvMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
@@ -461,28 +505,42 @@ func appEnablementRegistration(appInstanceId string, appName string, appVersion 
 	return nil
 }
 
-/*
-func appEnablementAppSupportSubscribe(appInstanceId string) error {
-
-	if appEnablementAppSupportClient == nil {
-		log.Error("App Enablement App Support REST API client should already exist")
-		err := errors.New("App Enablement App Support REST API client should already exist")
-		return err
-	}
-	var appTerminationNotificationSubscription appSupportClient.AppTerminationNotificationSubscription
-	//operation action
-	appTerminationNotificationSubscription.SubscriptionType = "AppTerminationNotificationSubscription"
-	appTerminationNotificationSubscription.AppInstanceId = appInstanceId
-	appTerminationNotificationSubscription.CallbackReference = hostUrl.String() + basePath
-
-	_, _, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationNotificationSubscription, appInstanceId)
+func sendReadyConfirmation(appInstanceId string) error {
+	var appReady appSupportClient.AppReadyConfirmation
+	indication := appSupportClient.READY_ReadyIndicationType
+	appReady.Indication = &indication
+	_, err := appEnablementAppSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
 	if err != nil {
-		log.Error("Failed to register to App Support subscription: ", err)
+		log.Error("Failed to send a ready confirm acknowlegement: ", err)
 		return err
 	}
 	return nil
 }
-*/
+
+func sendTerminationConfirmation(appInstanceId string) error {
+	var appTermination appSupportClient.AppTerminationConfirmation
+	operationAction := appSupportClient.TERMINATING_OperationActionType
+	appTermination.OperationAction = &operationAction
+	_, err := appEnablementAppSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send a confirm termination acknowlegement: ", err)
+		return err
+	}
+	return nil
+}
+
+// func subscribeAppTermination(appInstanceId string) error {
+// 	var subscription appSupportClient.AppTerminationNotificationSubscription
+// 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
+// 	subscription.AppInstanceId = appInstanceId
+// 	subscription.CallbackReference = hostUrl.String() + basePath
+// 	_, _, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+// 	if err != nil {
+// 		log.Error("Failed to register to App Support subscription: ", err)
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, err := strconv.Atoi(subsIdStr)
