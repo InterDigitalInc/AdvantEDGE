@@ -331,12 +331,20 @@ func Stop() (err error) {
 }
 
 func startRegistrationTicker() {
+	// Make sure ticker is not running
+	if registrationTicker != nil {
+		log.Warn("Registration ticker already running")
+		return
+	}
+
 	// Wait a few seconds to allow App Enablement Service to start.
 	// This is done to avoid the default 20 second TCP socket connect timeout
 	// if the App Enablement Service is not yet running.
 	log.Info("Waiting for App Enablement Service to start")
 	time.Sleep(5 * time.Second)
 
+	// Start registration ticker
+	registrationTicker = time.NewTicker(5 * time.Second)
 	go func() {
 		mecAppReadySent := false
 		// registrationSent := false
