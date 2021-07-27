@@ -544,57 +544,45 @@ func SendAppTerminationNotification(appInstanceId string, gracefulTimeout int32)
 	if gracefulTimeout == 0 {
 		gracefulTimeout = DEFAULT_GRACEFUL_TIMEOUT
 	}
-	checkAppTermNotification(appInstanceId, gracefulTimeout, true)
-}
 
-func checkAppTermNotification(appInstanceId string, gracefulTimeout int32, needMutex bool) {
-	if needMutex {
-		mutex.Lock()
-		defer mutex.Unlock()
-	}
-	//check all that applies
+	// Filter subscriptions
 	for subsId, sub := range appTerminationNotificationSubscriptionMap {
-		if sub != nil {
-			//find matching criteria
-			match := false
-			if sub.AppInstanceId == appInstanceId {
-				match = true
-			}
-
-			if match {
-				subsIdStr := strconv.Itoa(subsId)
-
-				var notif AppTerminationNotification
-				notif.NotificationType = APP_TERMINATION_NOTIFICATION_TYPE
-				links := new(AppTerminationNotificationLinks)
-				linkType := new(LinkType)
-				linkType.Href = sub.Links.Self.Href
-				links.Subscription = linkType
-				confirmTermination := new(LinkTypeConfirmTermination)
-				confirmTermination.Href = hostUrl.String() + basePath + "confirm_termination"
-				links.ConfirmTermination = confirmTermination
-				notif.Links = links
-				operationAction := TERMINATING
-				notif.OperationAction = &operationAction
-				notif.MaxGracefulTimeout = gracefulTimeout
-
-				sendAppTermNotification(sub.CallbackReference, notif)
-				log.Info("App Termination Notification" + "(" + subsIdStr + ") for " + appInstanceId)
-				//start graceful shutdown timer
-				gracefulTimeoutTicker := time.NewTicker(time.Duration(gracefulTimeout) * time.Second)
-				appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
-
-				key := baseKey + ":app:" + appInstanceId + ":info"
-				go func() {
-					for range gracefulTimeoutTicker.C {
-						log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])
-						_ = updateDB(key, "Graceful TIMEOUT")
-						gracefulTimeoutTicker.Stop()
-						appTerminationGracefulTimeoutMap[appInstanceId] = nil
-					}
-				}()
-			}
+		// Filter subscriptions
+		if sub == nil || sub.AppInstanceId != appInstanceId {
+			continue
 		}
+
+		subsIdStr := strconv.Itoa(subsId)
+
+		var notif AppTerminationNotification
+		notif.NotificationType = APP_TERMINATION_NOTIFICATION_TYPE
+		links := new(AppTerminationNotificationLinks)
+		linkType := new(LinkType)
+		linkType.Href = sub.Links.Self.Href
+		links.Subscription = linkType
+		confirmTermination := new(LinkTypeConfirmTermination)
+		confirmTermination.Href = hostUrl.String() + basePath + "confirm_termination"
+		links.ConfirmTermination = confirmTermination
+		notif.Links = links
+		operationAction := TERMINATING
+		notif.OperationAction = &operationAction
+		notif.MaxGracefulTimeout = gracefulTimeout
+
+		sendAppTermNotification(sub.CallbackReference, notif)
+		log.Info("App Termination Notification" + "(" + subsIdStr + ") for " + appInstanceId)
+		//start graceful shutdown timer
+		gracefulTimeoutTicker := time.NewTicker(time.Duration(gracefulTimeout) * time.Second)
+		appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
+
+		key := baseKey + ":app:" + appInstanceId + ":info"
+		go func() {
+			for range gracefulTimeoutTicker.C {
+				log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])
+				_ = updateDB(key, "Graceful TIMEOUT")
+				gracefulTimeoutTicker.Stop()
+				appTerminationGracefulTimeoutMap[appInstanceId] = nil
+			}
+		}()
 	}
 }
 
