@@ -3688,5 +3688,13 @@ func updateStoreName(storeName string) {
 			log.Error("Failed to initialise httpLog: ", err)
 			return
 		}
+
+		// Connect to Metric Store
+		metricStore, err = met.NewMetricStore(storeName, sandboxName, influxAddr, redisAddr)
+		if err != nil {
+			log.Error("Failed connection to metric-store: ", err)
+			return
+		}
+
 	}
 }
