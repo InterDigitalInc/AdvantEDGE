@@ -19,6 +19,7 @@ package systemTest
 import (
 	"encoding/json"
 	"fmt"
+
 	//"strconv"
 	"testing"
 
@@ -84,349 +85,349 @@ func Test_WAIS_load_scenarios(t *testing.T) {
 	}
 }
 
-func Test_WAIS_wifi_to_wifi_dlgre0_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 1)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_ulgre0_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 3)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_ulanddlgre0_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 5)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_ulordlgre0_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 7)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_dlle1_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 2)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_ulle1_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 4)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_ulanddlle1_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 6)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_ulordlle1_staDataRate(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 8)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) == 1 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_period_staDataRate_success(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, 1)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(7500 * time.Millisecond)
-
-	if len(httpReqBody) == 3 {
-		var body1 waisClient.StaDataRateNotification
-		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
-		if err != nil {
-			t.Fatalf("cannot unmarshall response")
-		}
-	} else {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
-
-func Test_WAIS_wifi_to_wifi_period_staDataRate_fail(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	initialiseWaisTest()
-	defer clearUpWaisTest()
-
-	testAddress1 := "ue1"
-	testStaMacIdTo := "111111111111"
-
-	//moving to initial position
-	geMoveAssetCoordinates(testAddress1, 7.425917, 49.733505)
-	time.Sleep(2000 * time.Millisecond)
-
-	//subscription to test
-	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, 1)
-	if err != nil {
-		t.Fatalf("Subscription failed")
-	}
-
-	//wait to make sure the subscription got registered
-	time.Sleep(1500 * time.Millisecond)
-
-	if len(httpReqBody) >= 1 {
-		printHttpReqBody()
-		t.Fatalf("Number of expected notifications not received")
-	}
-}
+// func Test_WAIS_wifi_to_wifi_dlgre0_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 1)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_ulgre0_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 3)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_ulanddlgre0_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 5)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_ulordlgre0_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 0, 0, 7)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_dlle1_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 2)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_ulle1_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 4)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_ulanddlle1_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 6)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_ulordlle1_staDataRate(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 5, 1, 1, 8)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 1 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_period_staDataRate_success(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 43.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, 1)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(7500 * time.Millisecond)
+
+// 	if len(httpReqBody) == 3 {
+// 		var body1 waisClient.StaDataRateNotification
+// 		err = json.Unmarshal([]byte(httpReqBody[0]), &body1)
+// 		if err != nil {
+// 			t.Fatalf("cannot unmarshall response")
+// 		}
+// 	} else {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
+
+// func Test_WAIS_wifi_to_wifi_period_staDataRate_fail(t *testing.T) {
+// 	fmt.Println("--- ", t.Name())
+// 	log.MeepTextLogInit(t.Name())
+
+// 	initialiseWaisTest()
+// 	defer clearUpWaisTest()
+
+// 	testAddress1 := "ue1"
+// 	testStaMacIdTo := "111111111111"
+
+// 	//moving to initial position
+// 	geMoveAssetCoordinates(testAddress1, 7.425917, 49.733505)
+// 	time.Sleep(2000 * time.Millisecond)
+
+// 	//subscription to test
+// 	err := waisSubscriptionStaDataRate(testStaMacIdTo, waisServerUrl, 3, 0, 0, 1)
+// 	if err != nil {
+// 		t.Fatalf("Subscription failed")
+// 	}
+
+// 	//wait to make sure the subscription got registered
+// 	time.Sleep(1500 * time.Millisecond)
+
+// 	if len(httpReqBody) >= 1 {
+// 		printHttpReqBody()
+// 		t.Fatalf("Number of expected notifications not received")
+// 	}
+// }
 
 func Test_WAIS_4g_to_4g_same_zone_assocSta(t *testing.T) {
 	fmt.Println("--- ", t.Name())
