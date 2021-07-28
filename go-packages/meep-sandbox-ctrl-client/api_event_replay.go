@@ -44,7 +44,7 @@ type EventReplayApiService service
 EventReplayApiService Add a replay file
 Add a replay file to the platform store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Replay file name
+ * @param name replay file name
  * @param replayFile Replay-file
 
 
@@ -116,7 +116,7 @@ func (a *EventReplayApiService) CreateReplayFile(ctx context.Context, name strin
 EventReplayApiService Generate a replay file from Active Scenario events
 Generate a replay file using events from the latest execution of a scenario
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Replay file name
+ * @param name replay file name
  * @param replayInfo Replay information
 
 
@@ -324,7 +324,7 @@ func (a *EventReplayApiService) DeleteReplayFileList(ctx context.Context) (*http
 EventReplayApiService Get a specific replay file
 Get a replay file by name from the platform store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Replay file name
+ * @param name replay file name
 
 @return Replay
 */
@@ -587,7 +587,7 @@ func (a *EventReplayApiService) GetReplayStatus(ctx context.Context) (ReplayStat
 EventReplayApiService Loop-Execute a replay file present in the platform store
 Loop-Execute a replay file present in the platform store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Replay file name
+ * @param name replay file name
 
 
 */
@@ -656,7 +656,7 @@ func (a *EventReplayApiService) LoopReplay(ctx context.Context, name string) (*h
 EventReplayApiService Execute a replay file present in the platform store
 Execute a replay file present in the platform store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Replay file name
+ * @param name replay file name
 
 
 */
@@ -725,7 +725,7 @@ func (a *EventReplayApiService) PlayReplayFile(ctx context.Context, name string)
 EventReplayApiService Stop execution of a replay file
 Stop execution a replay file
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Replay file name
+ * @param name replay file name
 
 
 */

@@ -39,10 +39,6 @@ func RabInfoGET(w http.ResponseWriter, r *http.Request) {
 	rabInfoGet(w, r)
 }
 
-func S1BearerInfoGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
 func SubscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	subscriptionLinkListSubscriptionsGet(w, r)
 }

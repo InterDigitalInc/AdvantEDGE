@@ -73,7 +73,7 @@
     /**
      * Add a replay file
      * Add a replay file to the platform store
-     * @param {String} name Replay file name
+     * @param {String} name replay file name
      * @param {module:model/Replay} replayFile Replay-file
      * @param {module:api/EventReplayApi~createReplayFileCallback} callback The callback function, accepting three arguments: error, data, response
      */
@@ -126,7 +126,7 @@
     /**
      * Generate a replay file from Active Scenario events
      * Generate a replay file using events from the latest execution of a scenario
-     * @param {String} name Replay file name
+     * @param {String} name replay file name
      * @param {module:model/ReplayInfo} replayInfo Replay information
      * @param {module:api/EventReplayApi~createReplayFileFromScenarioExecCallback} callback The callback function, accepting three arguments: error, data, response
      */
@@ -266,7 +266,7 @@
     /**
      * Get a specific replay file
      * Get a replay file by name from the platform store
-     * @param {String} name Replay file name
+     * @param {String} name replay file name
      * @param {module:api/EventReplayApi~getReplayFileCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Replay}
      */
@@ -396,7 +396,7 @@
     /**
      * Loop-Execute a replay file present in the platform store
      * Loop-Execute a replay file present in the platform store
-     * @param {String} name Replay file name
+     * @param {String} name replay file name
      * @param {module:api/EventReplayApi~loopReplayCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.loopReplay = function(name, callback) {
@@ -443,7 +443,7 @@
     /**
      * Execute a replay file present in the platform store
      * Execute a replay file present in the platform store
-     * @param {String} name Replay file name
+     * @param {String} name replay file name
      * @param {module:api/EventReplayApi~playReplayFileCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.playReplayFile = function(name, callback) {
@@ -490,7 +490,7 @@
     /**
      * Stop execution of a replay file
      * Stop execution a replay file
-     * @param {String} name Replay file name
+     * @param {String} name replay file name
      * @param {module:api/EventReplayApi~stopReplayFileCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.stopReplayFile = function(name, callback) {

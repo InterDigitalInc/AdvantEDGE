@@ -18,7 +18,7 @@ Method | HTTP request | Description
 
 <a name="createReplayFile"></a>
 # **createReplayFile**
-> createReplayFile(name, replayFile)
+> createReplayFile(namereplayFile)
 
 Add a replay file
 
@@ -30,7 +30,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.EventReplayApi();
 
-var name = "name_example"; // String | Replay file name
+var name = "name_example"; // String | replay file name
 
 var replayFile = new AdvantEdgeSandboxControllerRestApi.Replay(); // Replay | Replay-file
 
@@ -42,14 +42,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.createReplayFile(name, replayFile, callback);
+apiInstance.createReplayFile(namereplayFile, callback);
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | 
+ **name** | **String**| replay file name | 
  **replayFile** | [**Replay**](Replay.md)| Replay-file | 
 
 ### Return type
@@ -67,7 +67,7 @@ No authorization required
 
 <a name="createReplayFileFromScenarioExec"></a>
 # **createReplayFileFromScenarioExec**
-> createReplayFileFromScenarioExec(name, replayInfo)
+> createReplayFileFromScenarioExec(namereplayInfo)
 
 Generate a replay file from Active Scenario events
 
@@ -79,7 +79,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.EventReplayApi();
 
-var name = "name_example"; // String | Replay file name
+var name = "name_example"; // String | replay file name
 
 var replayInfo = new AdvantEdgeSandboxControllerRestApi.ReplayInfo(); // ReplayInfo | Replay information
 
@@ -91,14 +91,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.createReplayFileFromScenarioExec(name, replayInfo, callback);
+apiInstance.createReplayFileFromScenarioExec(namereplayInfo, callback);
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | 
+ **name** | **String**| replay file name | 
  **replayInfo** | [**ReplayInfo**](ReplayInfo.md)| Replay information | 
 
 ### Return type
@@ -214,7 +214,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.EventReplayApi();
 
-var name = "name_example"; // String | Replay file name
+var name = "name_example"; // String | replay file name
 
 
 var callback = function(error, data, response) {
@@ -231,7 +231,7 @@ apiInstance.getReplayFile(name, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | 
+ **name** | **String**| replay file name | 
 
 ### Return type
 
@@ -340,7 +340,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.EventReplayApi();
 
-var name = "name_example"; // String | Replay file name
+var name = "name_example"; // String | replay file name
 
 
 var callback = function(error, data, response) {
@@ -357,7 +357,7 @@ apiInstance.loopReplay(name, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | 
+ **name** | **String**| replay file name | 
 
 ### Return type
 
@@ -386,7 +386,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.EventReplayApi();
 
-var name = "name_example"; // String | Replay file name
+var name = "name_example"; // String | replay file name
 
 
 var callback = function(error, data, response) {
@@ -403,7 +403,7 @@ apiInstance.playReplayFile(name, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | 
+ **name** | **String**| replay file name | 
 
 ### Return type
 
@@ -432,7 +432,7 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.EventReplayApi();
 
-var name = "name_example"; // String | Replay file name
+var name = "name_example"; // String | replay file name
 
 
 var callback = function(error, data, response) {
@@ -449,7 +449,7 @@ apiInstance.stopReplayFile(name, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | 
+ **name** | **String**| replay file name | 
 
 ### Return type
 

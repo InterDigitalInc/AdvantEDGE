@@ -117,7 +117,7 @@ func getPlatformPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, me
 	// Add env vars to sidecar containers
 	var envVars []corev1.EnvVar
 	var envVar corev1.EnvVar
-	envVar.Name = "MEEP_POD_NAME"
+	envVar.Name = "MEEP_APP_NAME"
 	envVar.Value = meepAppName
 	envVars = append(envVars, envVar)
 	envVar.Name = "MEEP_SANDBOX_NAME"

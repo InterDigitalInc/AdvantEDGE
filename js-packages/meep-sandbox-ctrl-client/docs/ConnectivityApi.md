@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 <a name="createPduSession"></a>
 # **createPduSession**
-> createPduSession(ueName, pduSessionId, pduSessionInfo)
+> createPduSession(ueName, pduSessionIdpduSessionInfo)
 
 Create a PDU Session
 
@@ -37,7 +37,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.createPduSession(ueName, pduSessionId, pduSessionInfo, callback);
+apiInstance.createPduSession(ueName, pduSessionIdpduSessionInfo, callback);
 ```
 
 ### Parameters

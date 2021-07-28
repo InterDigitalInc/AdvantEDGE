@@ -151,6 +151,41 @@ var routes = Routes{
 	},
 
 	Route{
+		"ApplicationsAppInstanceIdDELETE",
+		strings.ToUpper("Delete"),
+		"/sandbox-ctrl/v1/applications/{appInstanceId}",
+		ApplicationsAppInstanceIdDELETE,
+	},
+
+	Route{
+		"ApplicationsAppInstanceIdGET",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/applications/{appInstanceId}",
+		ApplicationsAppInstanceIdGET,
+	},
+
+	Route{
+		"ApplicationsAppInstanceIdPUT",
+		strings.ToUpper("Put"),
+		"/sandbox-ctrl/v1/applications/{appInstanceId}",
+		ApplicationsAppInstanceIdPUT,
+	},
+
+	Route{
+		"ApplicationsGET",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/applications",
+		ApplicationsGET,
+	},
+
+	Route{
+		"ApplicationsPOST",
+		strings.ToUpper("Post"),
+		"/sandbox-ctrl/v1/applications",
+		ApplicationsPOST,
+	},
+
+	Route{
 		"CreatePduSession",
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/connectivity/pdu-session/{ueName}/{pduSessionId}",

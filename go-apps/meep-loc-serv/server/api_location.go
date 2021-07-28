@@ -35,6 +35,70 @@ func ApGET(w http.ResponseWriter, r *http.Request) {
 	apGet(w, r)
 }
 
+func AreaCircleSubDELETE(w http.ResponseWriter, r *http.Request) {
+	areaCircleSubDelete(w, r)
+}
+
+func AreaCircleSubGET(w http.ResponseWriter, r *http.Request) {
+	areaCircleSubGet(w, r)
+}
+
+func AreaCircleSubListGET(w http.ResponseWriter, r *http.Request) {
+	areaCircleSubListGet(w, r)
+}
+
+func AreaCircleSubPOST(w http.ResponseWriter, r *http.Request) {
+	areaCircleSubPost(w, r)
+}
+
+func AreaCircleSubPUT(w http.ResponseWriter, r *http.Request) {
+	areaCircleSubPut(w, r)
+}
+
+func DistanceGET(w http.ResponseWriter, r *http.Request) {
+	distanceGet(w, r)
+}
+
+func DistanceSubDELETE(w http.ResponseWriter, r *http.Request) {
+	distanceSubDelete(w, r)
+}
+
+func DistanceSubGET(w http.ResponseWriter, r *http.Request) {
+	distanceSubGet(w, r)
+}
+
+func DistanceSubListGET(w http.ResponseWriter, r *http.Request) {
+	distanceSubListGet(w, r)
+}
+
+func DistanceSubPOST(w http.ResponseWriter, r *http.Request) {
+	distanceSubPost(w, r)
+}
+
+func DistanceSubPUT(w http.ResponseWriter, r *http.Request) {
+	distanceSubPut(w, r)
+}
+
+func PeriodicSubDELETE(w http.ResponseWriter, r *http.Request) {
+	periodicSubDelete(w, r)
+}
+
+func PeriodicSubGET(w http.ResponseWriter, r *http.Request) {
+	periodicSubGet(w, r)
+}
+
+func PeriodicSubListGET(w http.ResponseWriter, r *http.Request) {
+	periodicSubListGet(w, r)
+}
+
+func PeriodicSubPOST(w http.ResponseWriter, r *http.Request) {
+	periodicSubPost(w, r)
+}
+
+func PeriodicSubPUT(w http.ResponseWriter, r *http.Request) {
+	periodicSubPut(w, r)
+}
+
 func UserTrackingSubDELETE(w http.ResponseWriter, r *http.Request) {
 	userTrackingSubDelete(w, r)
 }
@@ -105,68 +169,4 @@ func ZonesGET(w http.ResponseWriter, r *http.Request) {
 
 func ZonesGetById(w http.ResponseWriter, r *http.Request) {
 	zonesByIdGet(w, r)
-}
-
-func AreaCircleSubDELETE(w http.ResponseWriter, r *http.Request) {
-	areaCircleSubDelete(w, r)
-}
-
-func AreaCircleSubGET(w http.ResponseWriter, r *http.Request) {
-	areaCircleSubGet(w, r)
-}
-
-func AreaCircleSubListGET(w http.ResponseWriter, r *http.Request) {
-	areaCircleSubListGet(w, r)
-}
-
-func AreaCircleSubPOST(w http.ResponseWriter, r *http.Request) {
-	areaCircleSubPost(w, r)
-}
-
-func AreaCircleSubPUT(w http.ResponseWriter, r *http.Request) {
-	areaCircleSubPut(w, r)
-}
-
-func DistanceGET(w http.ResponseWriter, r *http.Request) {
-	distanceGet(w, r)
-}
-
-func DistanceSubDELETE(w http.ResponseWriter, r *http.Request) {
-	distanceSubDelete(w, r)
-}
-
-func DistanceSubGET(w http.ResponseWriter, r *http.Request) {
-	distanceSubGet(w, r)
-}
-
-func DistanceSubListGET(w http.ResponseWriter, r *http.Request) {
-	distanceSubListGet(w, r)
-}
-
-func DistanceSubPOST(w http.ResponseWriter, r *http.Request) {
-	distanceSubPost(w, r)
-}
-
-func DistanceSubPUT(w http.ResponseWriter, r *http.Request) {
-	distanceSubPut(w, r)
-}
-
-func PeriodicSubDELETE(w http.ResponseWriter, r *http.Request) {
-	periodicSubDelete(w, r)
-}
-
-func PeriodicSubGET(w http.ResponseWriter, r *http.Request) {
-	periodicSubGet(w, r)
-}
-
-func PeriodicSubListGET(w http.ResponseWriter, r *http.Request) {
-	periodicSubListGet(w, r)
-}
-
-func PeriodicSubPOST(w http.ResponseWriter, r *http.Request) {
-	periodicSubPost(w, r)
-}
-
-func PeriodicSubPUT(w http.ResponseWriter, r *http.Request) {
-	periodicSubPut(w, r)
 }

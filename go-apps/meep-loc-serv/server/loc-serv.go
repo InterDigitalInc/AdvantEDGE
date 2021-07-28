@@ -31,15 +31,15 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
-	appInfoClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-info-client"
-	appSupportClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
+	asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	gisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-engine-client"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	srvMgmtClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
+	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
+	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 
 	"github.com/gorilla/mux"
 )
@@ -144,9 +144,12 @@ var currentStoreName = ""
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+var sbxCtrlUrl string = "http://meep-sandbox-ctrl"
 
 var rc *redis.Connector
 var hostUrl *url.URL
+var instanceId string
+var instanceName string
 var sandboxName string
 var mepName string = defaultMepName
 var scopeOfLocality string = defaultScopeOfLocality
@@ -159,7 +162,6 @@ var mutex sync.Mutex
 var gisAppClient *gisClient.APIClient
 var gisAppClientUrl string = "http://meep-gis-engine"
 
-const serviceAppName = "Location"
 const serviceAppVersion = "2.1.1"
 
 var serviceAppInstanceId string
@@ -167,14 +169,28 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
-var appEnablementAppSupportClient *appSupportClient.APIClient
-var appEnablementSrvMgmtClient *srvMgmtClient.APIClient
-var appEnablementAppInfoClient *appInfoClient.APIClient
+var appSupportClient *asc.APIClient
+var svcMgmtClient *smc.APIClient
+var sbxCtrlClient *scc.APIClient
 
 var registrationTicker *time.Ticker
 
 // Init - Location Service initialization
 func Init() (err error) {
+
+	// Retrieve Instance ID from environment variable if present
+	instanceIdEnv := strings.TrimSpace(os.Getenv("MEEP_INSTANCE_ID"))
+	if instanceIdEnv != "" {
+		instanceId = instanceIdEnv
+	}
+	log.Info("MEEP_INSTANCE_ID: ", instanceId)
+
+	// Retrieve Instance Name from environment variable
+	instanceNameEnv := strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
+	if instanceNameEnv != "" {
+		instanceName = instanceNameEnv
+	}
+	log.Info("MEEP_POD_NAME: ", instanceName)
 
 	// Get Sandbox name
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
@@ -296,26 +312,26 @@ func Init() (err error) {
 	// Create App Enablement REST clients
 	if appEnablementEnabled {
 		// Create App Info client
-		appInfoClientCfg := appInfoClient.NewConfiguration()
-		appInfoClientCfg.BasePath = appEnablementUrl + "/app_info/v1"
-		appEnablementAppInfoClient = appInfoClient.NewAPIClient(appInfoClientCfg)
-		if appEnablementAppInfoClient == nil {
+		sbxCtrlClientCfg := scc.NewConfiguration()
+		sbxCtrlClientCfg.BasePath = sbxCtrlUrl + "/sandbox-ctrl/v1"
+		sbxCtrlClient = scc.NewAPIClient(sbxCtrlClientCfg)
+		if sbxCtrlClient == nil {
 			return errors.New("Failed to create App Info REST API client")
 		}
 
 		// Create App Support client
-		appSupportClientCfg := appSupportClient.NewConfiguration()
+		appSupportClientCfg := asc.NewConfiguration()
 		appSupportClientCfg.BasePath = appEnablementUrl + "/mec_app_support/v1"
-		appEnablementAppSupportClient = appSupportClient.NewAPIClient(appSupportClientCfg)
-		if appEnablementAppSupportClient == nil {
+		appSupportClient = asc.NewAPIClient(appSupportClientCfg)
+		if appSupportClient == nil {
 			return errors.New("Failed to create App Enablement App Support REST API client")
 		}
 
 		// Create Service Management client
-		srvMgmtClientCfg := srvMgmtClient.NewConfiguration()
+		srvMgmtClientCfg := smc.NewConfiguration()
 		srvMgmtClientCfg.BasePath = appEnablementUrl + "/mec_service_mgmt/v1"
-		appEnablementSrvMgmtClient = srvMgmtClient.NewAPIClient(srvMgmtClientCfg)
-		if appEnablementSrvMgmtClient == nil {
+		svcMgmtClient = smc.NewAPIClient(srvMgmtClientCfg)
+		if svcMgmtClient == nil {
 			return errors.New("Failed to create App Enablement Service Management REST API client")
 		}
 	}
@@ -387,7 +403,7 @@ func startRegistrationTicker() {
 			// Get Application instance ID if not already available
 			if serviceAppInstanceId == "" {
 				var err error
-				serviceAppInstanceId, err = getAppInstanceId(serviceAppName, serviceAppVersion)
+				serviceAppInstanceId, err = getAppInstanceId()
 				if err != nil || serviceAppInstanceId == "" {
 					continue
 				}
@@ -405,7 +421,7 @@ func startRegistrationTicker() {
 
 			// Register service instance
 			// if !registrationSent {
-			err := registerService(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+			err := registerService(serviceAppInstanceId)
 			if err != nil {
 				log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
 				continue
@@ -440,49 +456,51 @@ func stopRegistrationTicker() {
 	}
 }
 
-func getAppInstanceId(appName string, appVersion string) (id string, err error) {
-	var appInfo appInfoClient.ApplicationInfo
-	appInfo.AppName = appName
-	appInfo.Version = appVersion
-	state := appInfoClient.INACTIVE_ApplicationState
+func getAppInstanceId() (id string, err error) {
+	var appInfo scc.ApplicationInfo
+	appInfo.Id = instanceId
+	appInfo.Name = instanceName
+	appInfo.Version = serviceAppVersion
+	state := scc.INACTIVE_ApplicationState
 	appInfo.State = &state
-	appInfoResponse, _, err := appEnablementAppInfoClient.AppsApi.ApplicationsPOST(context.TODO(), appInfo)
+	appInfo.MepName = mepName
+	response, _, err := sbxCtrlClient.AppInfoApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
 		return "", err
 	}
-	return appInfoResponse.AppInstanceId, nil
+	return response.Id, nil
 }
 
-func registerService(appInstanceId string, appName string, appVersion string) error {
-	var srvInfo srvMgmtClient.ServiceInfoPost
+func registerService(appInstanceId string) error {
+	var srvInfo smc.ServiceInfoPost
 	//serName
-	srvInfo.SerName = appName
+	srvInfo.SerName = instanceName
 	//version
-	srvInfo.Version = appVersion
+	srvInfo.Version = serviceAppVersion
 	//state
-	state := srvMgmtClient.ACTIVE_ServiceState
+	state := smc.ACTIVE_ServiceState
 	srvInfo.State = &state
 	//serializer
-	serializer := srvMgmtClient.JSON_SerializerType
+	serializer := smc.JSON_SerializerType
 	srvInfo.Serializer = &serializer
 
 	//transportInfo
-	var transportInfo srvMgmtClient.TransportInfo
+	var transportInfo smc.TransportInfo
 	transportInfo.Id = "transport"
 	transportInfo.Name = "REST"
-	transportType := srvMgmtClient.REST_HTTP_TransportType
+	transportType := smc.REST_HTTP_TransportType
 	transportInfo.Type_ = &transportType
 	transportInfo.Protocol = "HTTP"
 	transportInfo.Version = "2.0"
-	var endpoint srvMgmtClient.OneOfTransportInfoEndpoint
+	var endpoint smc.OneOfTransportInfoEndpoint
 	endpointPath := hostUrl.String() + basePath
 	endpoint.Uris = append(endpoint.Uris, endpointPath)
 	transportInfo.Endpoint = &endpoint
 	srvInfo.TransportInfo = &transportInfo
 
 	//serCategory
-	var category srvMgmtClient.CategoryRef
+	var category smc.CategoryRef
 	category.Href = "catalogueHref"
 	category.Id = "locationId"
 	category.Name = "Location"
@@ -490,13 +508,13 @@ func registerService(appInstanceId string, appName string, appVersion string) er
 	srvInfo.SerCategory = &category
 
 	//scopeOfLocality
-	localityType := srvMgmtClient.LocalityType(scopeOfLocality)
+	localityType := smc.LocalityType(scopeOfLocality)
 	srvInfo.ScopeOfLocality = &localityType
 
 	//consumedLocalOnly
 	srvInfo.ConsumedLocalOnly = consumedLocalOnly
 
-	appServicesPostResponse, _, err := appEnablementSrvMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	appServicesPostResponse, _, err := svcMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register the service to app enablement registry: ", err)
 		return err
@@ -506,10 +524,10 @@ func registerService(appInstanceId string, appName string, appVersion string) er
 }
 
 func sendReadyConfirmation(appInstanceId string) error {
-	var appReady appSupportClient.AppReadyConfirmation
-	indication := appSupportClient.READY_ReadyIndicationType
+	var appReady asc.AppReadyConfirmation
+	indication := asc.READY_ReadyIndicationType
 	appReady.Indication = &indication
-	_, err := appEnablementAppSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
+	_, err := appSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send a ready confirm acknowlegement: ", err)
 		return err
@@ -518,10 +536,10 @@ func sendReadyConfirmation(appInstanceId string) error {
 }
 
 func sendTerminationConfirmation(appInstanceId string) error {
-	var appTermination appSupportClient.AppTerminationConfirmation
-	operationAction := appSupportClient.TERMINATING_OperationActionType
+	var appTermination asc.AppTerminationConfirmation
+	operationAction := asc.TERMINATING_OperationActionType
 	appTermination.OperationAction = &operationAction
-	_, err := appEnablementAppSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
+	_, err := appSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send a confirm termination acknowlegement: ", err)
 		return err
@@ -530,11 +548,11 @@ func sendTerminationConfirmation(appInstanceId string) error {
 }
 
 // func subscribeAppTermination(appInstanceId string) error {
-// 	var subscription appSupportClient.AppTerminationNotificationSubscription
+// 	var subscription asc.AppTerminationNotificationSubscription
 // 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
 // 	subscription.AppInstanceId = appInstanceId
 // 	subscription.CallbackReference = hostUrl.String() + basePath
-// 	_, _, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+// 	_, _, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 // 	if err != nil {
 // 		log.Error("Failed to register to App Support subscription: ", err)
 // 		return err
