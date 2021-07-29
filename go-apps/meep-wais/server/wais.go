@@ -427,7 +427,7 @@ func getAppInstanceId() (id string, err error) {
 	appInfo.Id = instanceId
 	appInfo.Name = instanceName
 	appInfo.Version = serviceAppVersion
-	state := scc.INACTIVE_ApplicationState
+	state := scc.INITIALIZED_ApplicationState
 	appInfo.State = &state
 	appInfo.MepName = mepName
 	response, _, err := sbxCtrlClient.AppInfoApi.ApplicationsPOST(context.TODO(), appInfo)

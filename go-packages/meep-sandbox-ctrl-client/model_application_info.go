@@ -31,7 +31,7 @@ type ApplicationInfo struct {
 	// Application name
 	Name  string            `json:"name"`
 	Type_ *ApplicationType  `json:"type,omitempty"`
-	State *ApplicationState `json:"state"`
+	State *ApplicationState `json:"state,omitempty"`
 	// MEP Name where application instance is running
 	MepName string `json:"mepName"`
 	// Application Version

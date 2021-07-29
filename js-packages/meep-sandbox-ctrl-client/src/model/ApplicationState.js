@@ -52,16 +52,16 @@
    */
   var exports = {
     /**
-     * value: "ACTIVE"
+     * value: "READY"
      * @const
      */
-    ACTIVE: "ACTIVE",
+    READY: "READY",
 
     /**
-     * value: "INACTIVE"
+     * value: "INITIALIZED"
      * @const
      */
-    INACTIVE: "INACTIVE"
+    INITIALIZED: "INITIALIZED"
   };
 
   /**

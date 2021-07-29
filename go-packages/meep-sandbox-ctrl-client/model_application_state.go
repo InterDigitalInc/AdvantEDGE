@@ -29,6 +29,6 @@ type ApplicationState string
 
 // List of ApplicationState
 const (
-	ACTIVE_ApplicationState   ApplicationState = "ACTIVE"
-	INACTIVE_ApplicationState ApplicationState = "INACTIVE"
+	READY_ApplicationState       ApplicationState = "READY"
+	INITIALIZED_ApplicationState ApplicationState = "INITIALIZED"
 )

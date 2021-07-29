@@ -31,7 +31,6 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 
-	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
 	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
 	svcMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 
@@ -270,40 +269,5 @@ var routes = Routes{
 		"GET",
 		"/app_info/v1/",
 		Index,
-	},
-
-	Route{
-		"ApplicationsAppInstanceIdDELETE",
-		strings.ToUpper("Delete"),
-		"/app_info/v1/applications/{appInstanceId}",
-		appInfo.ApplicationsAppInstanceIdDELETE,
-	},
-
-	Route{
-		"ApplicationsAppInstanceIdGET",
-		strings.ToUpper("Get"),
-		"/app_info/v1/applications/{appInstanceId}",
-		appInfo.ApplicationsAppInstanceIdGET,
-	},
-
-	Route{
-		"ApplicationsAppInstanceIdPUT",
-		strings.ToUpper("Put"),
-		"/app_info/v1/applications/{appInstanceId}",
-		appInfo.ApplicationsAppInstanceIdPUT,
-	},
-
-	Route{
-		"ApplicationsGET",
-		strings.ToUpper("Get"),
-		"/app_info/v1/applications",
-		appInfo.ApplicationsGET,
-	},
-
-	Route{
-		"ApplicationsPOST",
-		strings.ToUpper("Post"),
-		"/app_info/v1/applications",
-		appInfo.ApplicationsPOST,
 	},
 }

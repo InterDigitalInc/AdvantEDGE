@@ -297,17 +297,19 @@ AppInfoApiService
 This method retrieves information about a list of mec application resources.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *ApplicationsGETOpts - Optional Parameters:
-     * @param "AppName" (optional.String) -  Filter by application name
-     * @param "AppState" (optional.String) -  Filter by application state
-     * @param "AppType" (optional.String) -  Filter by application type
+     * @param "App" (optional.String) -  Filter by application name
+     * @param "State" (optional.String) -  Filter by application state
+     * @param "Type_" (optional.String) -  Filter by application type
+     * @param "Mep" (optional.String) -  Filter by MEP name
 
 @return []ApplicationInfo
 */
 
 type ApplicationsGETOpts struct {
-	AppName  optional.String
-	AppState optional.String
-	AppType  optional.String
+	App   optional.String
+	State optional.String
+	Type_ optional.String
+	Mep   optional.String
 }
 
 func (a *AppInfoApiService) ApplicationsGET(ctx context.Context, localVarOptionals *ApplicationsGETOpts) ([]ApplicationInfo, *http.Response, error) {
@@ -326,14 +328,17 @@ func (a *AppInfoApiService) ApplicationsGET(ctx context.Context, localVarOptiona
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if localVarOptionals != nil && localVarOptionals.AppName.IsSet() {
-		localVarQueryParams.Add("app_name", parameterToString(localVarOptionals.AppName.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.App.IsSet() {
+		localVarQueryParams.Add("app", parameterToString(localVarOptionals.App.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.AppState.IsSet() {
-		localVarQueryParams.Add("app_state", parameterToString(localVarOptionals.AppState.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.State.IsSet() {
+		localVarQueryParams.Add("state", parameterToString(localVarOptionals.State.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.AppType.IsSet() {
-		localVarQueryParams.Add("app_type", parameterToString(localVarOptionals.AppType.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Type_.IsSet() {
+		localVarQueryParams.Add("type", parameterToString(localVarOptionals.Type_.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.Mep.IsSet() {
+		localVarQueryParams.Add("mep", parameterToString(localVarOptionals.Mep.Value(), ""))
 	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{"application/json"}

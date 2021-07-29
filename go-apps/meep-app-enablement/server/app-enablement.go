@@ -23,9 +23,8 @@ import (
 	"strings"
 	"sync"
 
-	appInfo "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-info"
-	appSupport "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
-	servMgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
+	as "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/app-support"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -96,21 +95,6 @@ func Init() (err error) {
 	}
 	log.Info("Active Scenario Model created")
 
-	err = servMgmt.Init(sandboxName, mepName, hostUrl, &mutex)
-	if err != nil {
-		return err
-	}
-
-	err = appSupport.Init(sandboxName, mepName, hostUrl, &mutex)
-	if err != nil {
-		return err
-	}
-
-	err = appInfo.Init(sandboxName, mepName, hostUrl, &mutex)
-	if err != nil {
-		return err
-	}
-
 	// Create message queue
 	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
@@ -119,23 +103,30 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
+	// Initialize Service Management
+	err = sm.Init(sandboxName, mepName, hostUrl, mqLocal, &mutex)
+	if err != nil {
+		return err
+	}
+
+	// Initialize App Support
+	err = as.Init(sandboxName, mepName, hostUrl, mqLocal, &mutex)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Run - Start App Enablement
 func Run() (err error) {
 
-	err = servMgmt.Run()
+	err = sm.Run()
 	if err != nil {
 		return err
 	}
 
-	err = appSupport.Run()
-	if err != nil {
-		return err
-	}
-
-	err = appInfo.Run()
+	err = as.Run()
 	if err != nil {
 		return err
 	}

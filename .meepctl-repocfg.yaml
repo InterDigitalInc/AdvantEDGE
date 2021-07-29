@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.7.4
+version: 1.7.5
 repo:
   name: AdvantEDGE
 
@@ -677,7 +677,6 @@ repo:
         api:
           meep-app-support: go-apps/meep-app-enablement/api/app-support/swagger.yaml
           meep-service-mgmt: go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml
-          meep-app-info: go-apps/meep-app-enablement/api/app-info/swagger.yaml
 
   #------------------------------
   #  Dependencies

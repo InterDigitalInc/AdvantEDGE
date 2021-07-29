@@ -19,7 +19,6 @@ definitions:
     type: object
     required:
       - name
-      - state
       - mepName
     properties:
       id:
@@ -42,16 +41,16 @@ definitions:
       appInstanceId: '00afec52-f0b6-464e-a660-33568c0975b9'
       appName: 'MyAppName'
       type: 'user'
-      state: 'ACTIVE'
+      state: 'INITIALIZED'
       mepName: 'mep1'
       version: 'v1.0.0'
   ApplicationState:
     description: Application State
     type: string
     enum:
-      - ACTIVE
-      - INACTIVE
-    example: 'ACTIVE'
+      - READY
+      - INITIALIZED
+    example: 'INITIALIZED'
   ApplicationType:
     description: Application Type
     type: string

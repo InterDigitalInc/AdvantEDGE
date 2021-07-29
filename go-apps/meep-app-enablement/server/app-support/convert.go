@@ -23,12 +23,19 @@ import (
 )
 
 func convertAppTerminationNotificationSubscriptionToJson(appTerm *AppTerminationNotificationSubscription) string {
-
 	jsonInfo, err := json.Marshal(*appTerm)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
+	return string(jsonInfo)
+}
 
+func convertProblemDetailsToJson(problemDetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*problemDetails)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
 	return string(jsonInfo)
 }

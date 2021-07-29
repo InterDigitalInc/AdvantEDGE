@@ -28,11 +28,12 @@ import (
 	"sync"
 	"time"
 
-	msmgmt "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
@@ -42,13 +43,19 @@ const mappsupportBasePath = "mec_app_support/v1/"
 const mappsupportKey = "as"
 const appEnablementKey = "app-enablement"
 const defaultMepName = "global"
-const ACTIVE = "ACTIVE"
-const INACTIVE = "INACTIVE"
+const APP_STATE_READY = "READY"
 const APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE = "AppTerminationNotificationSubscription"
 const APP_TERMINATION_NOTIFICATION_TYPE = "AppTerminationNotification"
 const DEFAULT_GRACEFUL_TIMEOUT = 10
 
 const serviceName = "APP-ENABLEMENT Service"
+
+// App Info fields
+const fieldState = "state"
+
+// MQ payload fields
+const mqFieldAppInstanceId = "id"
+const mqFieldMepName = "mep"
 
 var mutex *sync.Mutex
 
@@ -57,6 +64,8 @@ var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var APP_ENABLEMENT_DB = 0
 
 var rc *redis.Connector
+var mqLocal *mq.MsgQueue
+var handlerId int
 var hostUrl *url.URL
 var sandboxName string
 var mepName string = defaultMepName
@@ -68,10 +77,11 @@ var appTerminationGracefulTimeoutMap = map[string]*time.Ticker{}
 var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
 var nextSubscriptionIdAvailable int
 
-func Init(sandbox string, mep string, host *url.URL, globalMutex *sync.Mutex) (err error) {
+func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, globalMutex *sync.Mutex) (err error) {
 	sandboxName = sandbox
 	mepName = mep
 	hostUrl = host
+	mqLocal = msgQueue
 	mutex = globalMutex
 
 	// Set base path
@@ -105,12 +115,33 @@ func Init(sandbox string, mep string, host *url.URL, globalMutex *sync.Mutex) (e
 
 // Run - Start APP support
 func Run() (err error) {
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
+
 	return nil
 }
 
 // Stop - Stop APP support
 func Stop() (err error) {
 	return nil
+}
+
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgAppTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		appId := msg.Payload[mqFieldAppInstanceId]
+		mep := msg.Payload[mqFieldMepName]
+		processAppTerminate(appId, mep)
+	default:
+	}
 }
 
 // see NOTE from ReInit()
@@ -125,17 +156,17 @@ func repopulateAppTerminationNotificationSubscriptionMap(key string, jsonInfo st
 	}
 
 	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subIdStr := selfUrl[len(selfUrl)-1]
+	subId, _ := strconv.Atoi(subIdStr)
 
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	appTerminationNotificationSubscriptionMap[subsId] = &subscription
+	appTerminationNotificationSubscriptionMap[subId] = &subscription
 
 	//reinitialisation of next available Id for future subscription request
-	if subsId >= nextSubscriptionIdAvailable {
-		nextSubscriptionIdAvailable = subsId + 1
+	if subId >= nextSubscriptionIdAvailable {
+		nextSubscriptionIdAvailable = subId + 1
 	}
 
 	return nil
@@ -144,29 +175,30 @@ func repopulateAppTerminationNotificationSubscriptionMap(key string, jsonInfo st
 func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("applicationsConfirmReadyPOST")
-
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, _ := validateAppInstanceId(appInstanceId)
+	if err != nil && code != http.StatusForbidden {
+		http.Error(w, err.Error(), code)
+		return
+	}
+
+	// Retrieve App Ready information from request
 	var confirmation AppReadyConfirmation
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&confirmation)
+	err = decoder.Decode(&confirmation)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		log.Error("AppInstanceId does not exist, app is not running")
-		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
-		return
-	}
-
-	//checking for mandatory properties
+	// Validate App Ready params
 	if confirmation.Indication == nil {
 		log.Error("Mandatory Indication not present")
 		http.Error(w, "Mandatory Indication not present", http.StatusBadRequest)
@@ -180,70 +212,67 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = updateAllServices(appInstanceId, msmgmt.ACTIVE)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	// Update entry in DB
-	err = updateDB(key, ACTIVE)
+	// Update App state
+	err = setAppState(appInstanceId, APP_STATE_READY)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Send response
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("applicationsConfirmTerminationPOST")
-
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 
-	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		log.Error("AppInstanceId does not exist, app is not running")
-		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
-	//look if subscription exist to process the Termination POST
+	// Find matching subscription
 	found := false
-	//loop through appTerm map
-	mutex.Lock()
-
-	for _, appTermSubscription := range appTerminationNotificationSubscriptionMap {
-		if appTermSubscription != nil && appTermSubscription.AppInstanceId == appInstanceId {
+	for _, subscription := range appTerminationNotificationSubscriptionMap {
+		if subscription != nil && subscription.AppInstanceId == appInstanceId {
 			found = true
 			break
 		}
 	}
-	mutex.Unlock()
-
 	if !found {
 		http.Error(w, "AppInstanceId not subscribed for graceful termination", http.StatusBadRequest)
 		return
 	}
 
-	//Not expecting a termination confirmation notification
+	// Check if Confirm Termination was expected
 	if appTerminationGracefulTimeoutMap[appInstanceId] == nil {
-		http.Error(w, "Not expected an App Confirmation Termination Notification", http.StatusBadRequest)
+		http.Error(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
 		return
-	} else {
-		//stoping the ticker for graceful termination
-		ticker := appTerminationGracefulTimeoutMap[appInstanceId]
-		if ticker != nil {
-			ticker.Stop()
-		}
-		appTerminationGracefulTimeoutMap[appInstanceId] = nil
 	}
 
+	// Stop graceful termination ticker
+	ticker := appTerminationGracefulTimeoutMap[appInstanceId]
+	if ticker != nil {
+		ticker.Stop()
+	}
+	appTerminationGracefulTimeoutMap[appInstanceId] = nil
+
+	// Retrieve Termination Confirmation data
 	var confirmation AppTerminationConfirmation
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&confirmation)
@@ -253,7 +282,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	//checking for mandatory properties
+	// Validate Termination Confirmation params
 	if confirmation.OperationAction == nil {
 		log.Error("Mandatory OperationAction not present")
 		http.Error(w, "Mandatory OperationAction not present", http.StatusBadRequest)
@@ -267,95 +296,35 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	//do nothing if state is STOPPING, spec says : retention of state
-	if *confirmation.OperationAction == TERMINATING {
-		err = updateAllServices(appInstanceId, msmgmt.INACTIVE)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+	// Delete App Instance
+	deleteAppInstance(appInstanceId)
 
-	// Update entry in DB
-	err = updateDB(key, INACTIVE)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	// Send response
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func updateDB(key string, state string) error {
-	updatedFields := make(map[string]interface{})
-	updatedFields["state"] = state
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		//no update necessary, entry does not exist
-		return nil
-	}
-	return rc.SetEntry(key, updatedFields)
-}
-
-func updateAllServices(appInstanceId string, state msmgmt.ServiceState) error {
-	var sInfoList msmgmt.ServiceInfoList
-
-	keyName := baseKey + ":app:" + appInstanceId + ":svc:*"
+func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	appInstanceId := vars["appInstanceId"]
 
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	err := rc.ForEachJSONEntry(keyName, populateServiceInfoList, &sInfoList)
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		return err
-	}
-	for _, sInfo := range sInfoList.Services {
-		serviceId := sInfo.SerInstanceId
-		sInfo.State = &state
-		err = rc.JSONSetEntry(baseKey+":app:"+appInstanceId+":svc:"+serviceId, ".", msmgmt.ConvertServiceInfoToJson(&sInfo))
-		if err != nil {
-			return err
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
 		}
-	}
-	return nil
-}
-
-func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {
-	// Get query params & userlist from user data
-	data := sInfoList.(*msmgmt.ServiceInfoList)
-
-	if data == nil {
-		return errors.New("ServiceInfos not found in serviceInfoList")
-	}
-
-	// Retrieve user info from DB
-	var sInfo msmgmt.ServiceInfo
-	err := json.Unmarshal([]byte(jsonInfo), &sInfo)
-	if err != nil {
-		return err
-	}
-	data.Services = append(data.Services, sInfo)
-	return nil
-}
-
-func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	vars := mux.Vars(r)
-	appInstanceId := vars["appInstanceId"]
-
-	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		log.Error("AppInstanceId does not exist, app is not running")
-		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
 		return
 	}
 
+	// Create subscription
 	var subscription AppTerminationNotificationSubscription
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&subscription)
@@ -371,19 +340,16 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
-
 	if subscription.SubscriptionType != APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE {
 		log.Error("SubscriptionType shall be AppTerminationNotificationSubscription")
 		http.Error(w, "SubscriptionType shall be AppTerminationNotificationSubscription", http.StatusBadRequest)
 		return
 	}
-
 	if subscription.AppInstanceId == "" {
 		log.Error("Mandatory AppInstanceId parameter not present")
 		http.Error(w, "Mandatory AppInstanceId parameter not present", http.StatusBadRequest)
 		return
 	}
-
 	if subscription.AppInstanceId != appInstanceId {
 		log.Error("AppInstanceId in endpoint and in body not matching")
 		http.Error(w, "AppInstanceId in endpoint and in body not matching", http.StatusBadRequest)
@@ -392,21 +358,21 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
-	subsIdStr := strconv.Itoa(newSubsId)
+	subIdStr := strconv.Itoa(newSubsId)
 
 	link := new(Self)
 	self := new(LinkType)
-	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions/" + subsIdStr
+	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions/" + subIdStr
 	link.Self = self
 	subscription.Links = link
 
 	//registration
-	registerAppTerm(&subscription, newSubsId)
-	_ = rc.JSONSetEntry(key+":"+mappsupportKey+":sub:"+subsIdStr, ".", convertAppTerminationNotificationSubscriptionToJson(&subscription))
+	registerAppTermination(&subscription, newSubsId)
+	key := baseKey + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdStr
+	_ = rc.JSONSetEntry(key, ".", convertAppTerminationNotificationSubscriptionToJson(&subscription))
 
+	// Send response
 	jsonResponse, err := json.Marshal(subscription)
-
-	//processing the error of the jsonResponse
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -416,45 +382,37 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func registerAppTerm(subscription *AppTerminationNotificationSubscription, subsId int) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	appTerminationNotificationSubscriptionMap[subsId] = subscription
-	log.Info("New registration: ", subsId, " type: ", APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE)
-}
-
-func deregisterAppTermination(subsIdStr string, mutexTaken bool) {
-	subsId, _ := strconv.Atoi(subsIdStr)
-	if !mutexTaken {
-		mutex.Lock()
-		defer mutex.Unlock()
-	}
-
-	appTerminationNotificationSubscriptionMap[subsId] = nil
-	log.Info("Deregistration: ", subsId, " type: ", APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE)
-}
-
 func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 	appInstanceId := vars["appInstanceId"]
 
-	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		log.Error("AppInstanceId does not exist, app is not running")
-		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
-	jsonResponse, _ := rc.JSONGetEntry(key+":"+mappsupportKey+":sub:"+subIdParamStr, ".")
+
+	// Get Subscription
+	key := baseKey + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdParamStr
+	jsonResponse, _ := rc.JSONGetEntry(key, ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	// Send response
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
 }
@@ -465,43 +423,59 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	subIdParamStr := vars["subscriptionId"]
 	appInstanceId := vars["appInstanceId"]
 
-	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		log.Error("AppInstanceId does not exist, app is not running")
-		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
-	jsonResponse, _ := rc.JSONGetEntry(key+":"+mappsupportKey+":sub:"+subIdParamStr, ".")
-	if jsonResponse == "" {
+	// Validate Subscription
+	key := baseKey + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdParamStr
+	if !rc.EntryExists(key) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	err = rc.JSONDelEntry(key+":"+mappsupportKey+":sub:"+subIdParamStr, ".")
-	deregisterAppTermination(subIdParamStr, false)
+	// Delete Subscription
+	err = rc.JSONDelEntry(key, ".")
+	deregisterAppTermination(subIdParamStr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Send response
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 
-	//check if entry exist for the application in the DB
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		log.Error("AppInstanceId does not exist, app is not running")
-		http.Error(w, "AppInstanceId does not exist, app is not running", http.StatusBadRequest)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -516,9 +490,6 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	//loop through all different types of subscription
 
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	//loop through appTerm map
 	for _, appTermSubscription := range appTerminationNotificationSubscriptionMap {
 		if appTermSubscription != nil {
@@ -530,6 +501,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Send response
 	jsonResponse, err := json.Marshal(subscriptionLinkList)
 	if err != nil {
 		log.Error(err.Error())
@@ -540,19 +512,85 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func SendAppTerminationNotification(appInstanceId string, gracefulTimeout int32) {
-	if gracefulTimeout == 0 {
-		gracefulTimeout = DEFAULT_GRACEFUL_TIMEOUT
+func registerAppTermination(subscription *AppTerminationNotificationSubscription, subId int) {
+	appTerminationNotificationSubscriptionMap[subId] = subscription
+	log.Info("New registration: ", subId, " type: ", APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE)
+}
+
+func deregisterAppTermination(subIdStr string) {
+	subId, _ := strconv.Atoi(subIdStr)
+	appTerminationNotificationSubscriptionMap[subId] = nil
+	log.Info("Deregistration: ", subId, " type: ", APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE)
+}
+
+func deleteAppSubscriptions(appInstanceId string) {
+	for id, sub := range appTerminationNotificationSubscriptionMap {
+		if sub.AppInstanceId == appInstanceId {
+			subIdStr := strconv.Itoa(id)
+			key := baseKey + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdStr
+			_ = rc.JSONDelEntry(key, ".")
+			deregisterAppTermination(subIdStr)
+		}
+	}
+}
+
+func deleteAppInstance(appInstanceId string) {
+	// Clear App instance subscriptions
+	deleteAppSubscriptions(appInstanceId)
+
+	// Clear App instance service subscriptions
+	_ = sm.DeleteServiceSubscriptions(appInstanceId)
+
+	// Clear App services
+	_ = sm.DeleteServices(appInstanceId)
+
+	// Flush App instance data
+	key := baseKey + ":app:" + appInstanceId
+	_ = rc.DBFlush(key)
+}
+
+func validateAppInstanceId(appInstanceId string) (error, int, string) {
+	// Get application instance
+	key := baseKey + ":app:" + appInstanceId + ":info"
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		return errors.New("App Instance not found"), http.StatusNotFound, ""
+	}
+
+	// Make sure App is in ready state
+	if fields[fieldState] != APP_STATE_READY {
+		var problemDetails ProblemDetails
+		problemDetails.Status = http.StatusForbidden
+		problemDetails.Detail = "App Instance not ready. Waiting for AppReadyConfirmation."
+		return errors.New("App Instance not ready"), http.StatusForbidden, convertProblemDetailsToJson(&problemDetails)
+	}
+	return nil, http.StatusOK, ""
+}
+
+func setAppState(appInstanceId string, state string) error {
+	key := baseKey + ":app:" + appInstanceId + ":info"
+	fields := make(map[string]interface{})
+	fields[fieldState] = state
+	return rc.SetEntry(key, fields)
+}
+
+func processAppTerminate(appInstanceId string, mep string) {
+	// Ignore if not for this MEP
+	if mep != mepName {
+		return
 	}
 
 	// Filter subscriptions
-	for subsId, sub := range appTerminationNotificationSubscriptionMap {
+	gracefulTermination := false
+
+	for subId, sub := range appTerminationNotificationSubscriptionMap {
 		// Filter subscriptions
 		if sub == nil || sub.AppInstanceId != appInstanceId {
 			continue
 		}
 
-		subsIdStr := strconv.Itoa(subsId)
+		gracefulTermination = true
+		subIdStr := strconv.Itoa(subId)
 
 		var notif AppTerminationNotification
 		notif.NotificationType = APP_TERMINATION_NOTIFICATION_TYPE
@@ -566,23 +604,29 @@ func SendAppTerminationNotification(appInstanceId string, gracefulTimeout int32)
 		notif.Links = links
 		operationAction := TERMINATING
 		notif.OperationAction = &operationAction
-		notif.MaxGracefulTimeout = gracefulTimeout
+		notif.MaxGracefulTimeout = DEFAULT_GRACEFUL_TIMEOUT
 
 		sendAppTermNotification(sub.CallbackReference, notif)
-		log.Info("App Termination Notification" + "(" + subsIdStr + ") for " + appInstanceId)
-		//start graceful shutdown timer
-		gracefulTimeoutTicker := time.NewTicker(time.Duration(gracefulTimeout) * time.Second)
-		appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
+		log.Info("App Termination Notification" + "(" + subIdStr + ") for " + appInstanceId)
 
-		key := baseKey + ":app:" + appInstanceId + ":info"
+		// Start graceful timeout
+		gracefulTimeoutTicker := time.NewTicker(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second)
+		appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
 		go func() {
 			for range gracefulTimeoutTicker.C {
 				log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])
-				_ = updateDB(key, "Graceful TIMEOUT")
 				gracefulTimeoutTicker.Stop()
 				appTerminationGracefulTimeoutMap[appInstanceId] = nil
+
+				// Delete App instance if timer expires before receiving a termination confirmation
+				deleteAppInstance(appInstanceId)
 			}
 		}()
+	}
+
+	// Delete App instance immediately if no graceful termination subscription
+	if !gracefulTermination {
+		deleteAppInstance(appInstanceId)
 	}
 }
 

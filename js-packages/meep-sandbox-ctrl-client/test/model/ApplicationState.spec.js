@@ -55,14 +55,14 @@
         expect(instance).to.be.a('object');
       });
 
-      it('should have the property ACTIVE', function() {
-        expect(instance).to.have.property('ACTIVE');
-        expect(instance.ACTIVE).to.be("ACTIVE");
+      it('should have the property READY', function() {
+        expect(instance).to.have.property('READY');
+        expect(instance.READY).to.be("READY");
       });
 
-      it('should have the property INACTIVE', function() {
-        expect(instance).to.have.property('INACTIVE');
-        expect(instance.INACTIVE).to.be("INACTIVE");
+      it('should have the property INITIALIZED', function() {
+        expect(instance).to.have.property('INITIALIZED');
+        expect(instance.INITIALIZED).to.be("INITIALIZED");
       });
 
     });

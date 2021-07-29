@@ -186,10 +186,18 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
+	// Initialize App Controller
+	err = appCtrlInit(sbxCtrl.sandboxName, sbxCtrl.mqLocal)
+	if err != nil {
+		log.Error("Failed to initialize App Info: ", err.Error())
+		return err
+	}
+	log.Info("App Info initialized")
+
 	return nil
 }
 
-// Run Starts the Sandbox Controller
+// Start Sandbox Controller
 func Run() (err error) {
 
 	// Activate scenario on sandbox startup if required, otherwise wait for activation request
@@ -203,6 +211,26 @@ func Run() (err error) {
 				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, sbox.ScenarioName, redisDBAddr, influxDBAddr)
 			}
 		}
+	}
+
+	// Start App Controller
+	err = appCtrlRun()
+	if err != nil {
+		log.Error("Failed to start App Controller: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// Stop Sandbox Controller
+func Stop() (err error) {
+
+	// Stop App Controller
+	err = appCtrlStop()
+	if err != nil {
+		log.Error("Failed to stop App Controller: ", err.Error())
+		return err
 	}
 
 	return nil

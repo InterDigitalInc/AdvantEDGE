@@ -78,6 +78,7 @@ const (
 	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
 
 	// App Enablement
+	MsgAppTerminate Message = "APP-TERMINATE"
 	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
 
 	// Watchdog

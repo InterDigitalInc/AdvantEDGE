@@ -114,9 +114,10 @@ Optional parameters are passed through a pointer to a ApplicationsGETOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **appName** | **optional.String**| Filter by application name | 
- **appState** | **optional.String**| Filter by application state | 
- **appType** | **optional.String**| Filter by application type | 
+ **app** | **optional.String**| Filter by application name | 
+ **state** | **optional.String**| Filter by application state | 
+ **type_** | **optional.String**| Filter by application type | 
+ **mep** | **optional.String**| Filter by MEP name | 
 
 ### Return type
 

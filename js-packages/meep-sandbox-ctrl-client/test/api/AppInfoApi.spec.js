@@ -143,9 +143,10 @@
           // TODO: uncomment, update parameter values for applicationsGET call and complete the assertions
           /*
           var opts = {};
-          opts.appName = "appName_example";
-          opts.appState = "appState_example";
-          opts.appType = "appType_example";
+          opts.app = "app_example";
+          opts.state = "state_example";
+          opts.type = "type_example";
+          opts.mep = "mep_example";
 
           instance.applicationsGET(opts, function(error, data, response) {
             if (error) {

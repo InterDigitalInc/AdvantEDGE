@@ -57,12 +57,10 @@
    * @alias module:model/ApplicationInfo
    * @class
    * @param name {String} Application name
-   * @param state {module:model/ApplicationState} 
    * @param mepName {String} MEP Name where application instance is running
    */
-  var exports = function(name, state, mepName) {
+  var exports = function(name, mepName) {
     this.name = name;
-    this.state = state;
     this.mepName = mepName;
   };
 

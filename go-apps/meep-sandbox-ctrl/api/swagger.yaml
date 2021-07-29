@@ -1113,24 +1113,24 @@ paths:
         \ resources."
       operationId: "Applications_GET"
       parameters:
-      - name: "app_name"
+      - name: "app"
         in: "query"
         description: "Filter by application name"
         required: false
         type: "string"
-        x-exportParamName: "AppName"
+        x-exportParamName: "App"
         x-optionalDataType: "String"
-      - name: "app_state"
+      - name: "state"
         in: "query"
         description: "Filter by application state"
         required: false
         type: "string"
         enum:
-        - "ACTIVE"
-        - "INACTIVE"
-        x-exportParamName: "AppState"
+        - "READY"
+        - "INITIALIZED"
+        x-exportParamName: "State"
         x-optionalDataType: "String"
-      - name: "app_type"
+      - name: "type"
         in: "query"
         description: "Filter by application type"
         required: false
@@ -1138,7 +1138,14 @@ paths:
         enum:
         - "USER"
         - "SYSTEM"
-        x-exportParamName: "AppType"
+        x-exportParamName: "Type_"
+        x-optionalDataType: "String"
+      - name: "mep"
+        in: "query"
+        description: "Filter by MEP name"
+        required: false
+        type: "string"
+        x-exportParamName: "Mep"
         x-optionalDataType: "String"
       responses:
         200:
@@ -2312,7 +2319,6 @@ definitions:
     required:
     - "mepName"
     - "name"
-    - "state"
     properties:
       id:
         type: "string"
@@ -2335,7 +2341,7 @@ definitions:
       appInstanceId: "00afec52-f0b6-464e-a660-33568c0975b9"
       appName: "MyAppName"
       type: "user"
-      state: "ACTIVE"
+      state: "INITIALIZED"
       mepName: "mep1"
       version: "v1.0.0"
   ApplicationType:
@@ -2348,10 +2354,10 @@ definitions:
   ApplicationState:
     type: "string"
     description: "Application State"
-    example: "ACTIVE"
+    example: "INITIALIZED"
     enum:
-    - "ACTIVE"
-    - "INACTIVE"
+    - "READY"
+    - "INITIALIZED"
 parameters:
   Body.ActivationInfo:
     in: "body"
@@ -2438,26 +2444,26 @@ parameters:
     type: "string"
     x-exportParamName: "UeName"
   Query.AppName:
-    name: "app_name"
+    name: "app"
     in: "query"
     description: "Filter by application name"
     required: false
     type: "string"
-    x-exportParamName: "AppName"
+    x-exportParamName: "App"
     x-optionalDataType: "String"
   Query.AppState:
-    name: "app_state"
+    name: "state"
     in: "query"
     description: "Filter by application state"
     required: false
     type: "string"
     enum:
-    - "ACTIVE"
-    - "INACTIVE"
-    x-exportParamName: "AppState"
+    - "READY"
+    - "INITIALIZED"
+    x-exportParamName: "State"
     x-optionalDataType: "String"
   Query.AppType:
-    name: "app_type"
+    name: "type"
     in: "query"
     description: "Filter by application type"
     required: false
@@ -2465,7 +2471,7 @@ parameters:
     enum:
     - "USER"
     - "SYSTEM"
-    x-exportParamName: "AppType"
+    x-exportParamName: "Type_"
     x-optionalDataType: "String"
   Query.Domain:
     name: "domain"
@@ -2494,6 +2500,14 @@ parameters:
     type: "boolean"
     x-exportParamName: "ExcludeChildren"
     x-optionalDataType: "Bool"
+  Query.MepName:
+    name: "mep"
+    in: "query"
+    description: "Filter by MEP name"
+    required: false
+    type: "string"
+    x-exportParamName: "Mep"
+    x-optionalDataType: "String"
   Query.Minimize:
     name: "minimize"
     in: "query"

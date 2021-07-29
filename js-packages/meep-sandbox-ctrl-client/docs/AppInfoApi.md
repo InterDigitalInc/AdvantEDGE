@@ -167,9 +167,10 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
 
 var opts = { 
-  'appName': "appName_example", // String | Filter by application name
-  'appState': "appState_example", // String | Filter by application state
-  'appType': "appType_example" // String | Filter by application type
+  'app': "app_example", // String | Filter by application name
+  'state': "state_example", // String | Filter by application state
+  'type': "type_example", // String | Filter by application type
+  'mep': "mep_example" // String | Filter by MEP name
 };
 
 var callback = function(error, data, response) {
@@ -186,9 +187,10 @@ apiInstance.applicationsGET(opts, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **appName** | **String**| Filter by application name | [optional] 
- **appState** | **String**| Filter by application state | [optional] 
- **appType** | **String**| Filter by application type | [optional] 
+ **app** | **String**| Filter by application name | [optional] 
+ **state** | **String**| Filter by application state | [optional] 
+ **type** | **String**| Filter by application type | [optional] 
+ **mep** | **String**| Filter by MEP name | [optional] 
 
 ### Return type
 

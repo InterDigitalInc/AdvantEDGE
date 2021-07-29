@@ -3,8 +3,8 @@
 ## Enum
 
 
-* `ACTIVE` (value: `"ACTIVE"`)
+* `READY` (value: `"READY"`)
 
-* `INACTIVE` (value: `"INACTIVE"`)
+* `INITIALIZED` (value: `"INITIALIZED"`)
 
 
