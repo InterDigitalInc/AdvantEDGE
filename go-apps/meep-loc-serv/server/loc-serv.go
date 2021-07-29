@@ -3288,7 +3288,12 @@ func cleanUp() {
 func updateStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
-		_ = httpLog.ReInit(logModuleLocServ, sandboxName, storeName, redisAddr, influxAddr)
+
+		logComponent := logModuleLocServ
+		if mepName != defaultMepName {
+			logComponent = logModuleLocServ + "-" + mepName
+		}
+		_ = httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 	}
 }
 
@@ -3713,6 +3718,13 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 	dstAddress := ""
 	if len(address) > 1 {
 		dstAddress = address[1]
+	}
+
+	// Verify address validity
+	if !addressConnectedMap[srcAddress] || (dstAddress != "" && !addressConnectedMap[dstAddress]) {
+		log.Error("Invalid address")
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	var distParam gisClient.TargetPoint

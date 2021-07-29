@@ -251,6 +251,7 @@ func Init() (err error) {
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
 		InfluxAddr:     influxAddr,
+		Locality:       locality,
 		StaInfoCb:      updateStaInfo,
 		ApInfoCb:       updateApInfo,
 		ScenarioNameCb: updateStoreName,
@@ -753,7 +754,9 @@ func checkStaDataRatePeriodTrigger() {
 	//loop through the response for each AP and check subscription with no need for mutex (already used)
 	for _, staInfo := range staInfoResp.StaInfoList {
 		dataRate := staInfo.StaDataRate
-		checkStaDataRateNotificationRegisteredSubscriptions(staInfo.StaId, dataRate.StaLastDataDownlinkRate, dataRate.StaLastDataDownlinkRate, false)
+		if dataRate != nil {
+			checkStaDataRateNotificationRegisteredSubscriptions(staInfo.StaId, dataRate.StaLastDataDownlinkRate, dataRate.StaLastDataDownlinkRate, false)
+		}
 	}
 }
 
@@ -1935,6 +1938,15 @@ func cleanUp() {
 func updateStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
-		_ = httpLog.ReInit(logModuleWAIS, sandboxName, storeName, redisAddr, influxAddr)
+
+		logComponent := logModuleWAIS
+		if mepName != defaultMepName {
+			logComponent = logModuleWAIS + "-" + mepName
+		}
+		err := httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
+		if err != nil {
+			log.Error("Failed to initialise httpLog: ", err)
+			return
+		}
 	}
 }

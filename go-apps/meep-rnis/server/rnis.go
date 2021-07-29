@@ -355,6 +355,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		Locality:       locality,
 		UeDataCb:       updateUeData,
 		MeasInfoCb:     updateMeasInfo,
 		PoaInfoCb:      updatePoaInfo,
@@ -3678,7 +3679,11 @@ func updateStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
 
-		err := httpLog.ReInit(logModuleRNIS, sandboxName, storeName, redisAddr, influxAddr)
+		logComponent := logModuleRNIS
+		if mepName != defaultMepName {
+			logComponent = logModuleRNIS + "-" + mepName
+		}
+		err := httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 		if err != nil {
 			log.Error("Failed to initialise httpLog: ", err)
 			return
