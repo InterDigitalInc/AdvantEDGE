@@ -44,9 +44,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const moduleName = "meep-loc-serv"
 const LocServBasePath = "location/v2/"
 const locServKey = "loc-serv"
-const logModuleLocServ = "meep-loc-serv"
 const serviceName = "Location Service"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
@@ -186,6 +186,7 @@ func Init() (err error) {
 	log.Info("MEEP_INSTANCE_ID: ", instanceId)
 
 	// Retrieve Instance Name from environment variable
+	instanceName = moduleName
 	instanceNameEnv := strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
 	if instanceNameEnv != "" {
 		instanceName = instanceNameEnv
@@ -3307,9 +3308,9 @@ func updateStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
 
-		logComponent := logModuleLocServ
+		logComponent := moduleName
 		if mepName != defaultMepName {
-			logComponent = logModuleLocServ + "-" + mepName
+			logComponent = moduleName + "-" + mepName
 		}
 		_ = httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 	}

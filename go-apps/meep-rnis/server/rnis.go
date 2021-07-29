@@ -44,9 +44,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const moduleName = "meep-rnis"
 const rnisBasePath = "rni/v2/"
 const rnisKey = "rnis"
-const logModuleRNIS = "meep-rnis"
 const serviceName = "RNI Service"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
@@ -229,6 +229,7 @@ func Init() (err error) {
 	log.Info("MEEP_INSTANCE_ID: ", instanceId)
 
 	// Retrieve Instance Name from environment variable
+	instanceName = moduleName
 	instanceNameEnv := strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
 	if instanceNameEnv != "" {
 		instanceName = instanceNameEnv
@@ -3700,9 +3701,9 @@ func updateStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
 
-		logComponent := logModuleRNIS
+		logComponent := moduleName
 		if mepName != defaultMepName {
-			logComponent = logModuleRNIS + "-" + mepName
+			logComponent = moduleName + "-" + mepName
 		}
 		err := httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 		if err != nil {
