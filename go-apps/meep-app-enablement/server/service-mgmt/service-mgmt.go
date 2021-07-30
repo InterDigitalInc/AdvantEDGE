@@ -39,16 +39,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const moduleName = "app-enablement"
 const msmgmtBasePath = "mec_service_mgmt/v1/"
 const msmgmtKey = "sm"
 const appEnablementKey = "app-enablement"
 const defaultMepName = "global"
 const SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE = "SerAvailabilityNotificationSubscription"
 const SER_AVAILABILITY_NOTIFICATION_TYPE = "SerAvailabilityNotification"
+const APP_STATE_READY = "READY"
 
 //const logModuleAppEnablement = "meep-app-enablement"
 const serviceName = "APP-ENABLEMENT Service"
+
+// App Info fields
+const fieldState = "state"
 
 // MQ payload fields
 const fieldSvcInfo = "svc-info"
@@ -86,10 +89,16 @@ type FilterParameters struct {
 	scopeOfLocality   string
 }
 
-func Init(sandbox string, mep string, host *url.URL, globalMutex *sync.Mutex) (err error) {
+type StateData struct {
+	State ServiceState
+	AppId string
+}
+
+func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, globalMutex *sync.Mutex) (err error) {
 	sandboxName = sandbox
 	mepName = mep
 	hostUrl = host
+	mqLocal = msgQueue
 	mutex = globalMutex
 
 	// Set base path
@@ -111,14 +120,6 @@ func Init(sandbox string, mep string, host *url.URL, globalMutex *sync.Mutex) (e
 	}
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB")
-
-	// Create Local message queue
-	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
-	if err != nil {
-		log.Error("Failed to create Message Queue with error: ", err)
-		return err
-	}
-	log.Info("Local Message Queue created")
 
 	// Initialize subscription ID count
 	nextSubscriptionIdAvailable = 1
@@ -173,8 +174,8 @@ func populateSerAvailabilitySubscriptionMap(key string, jsonInfo string, userDat
 	}
 
 	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subIdStr := selfUrl[len(selfUrl)-1]
+	subsId, _ := strconv.Atoi(subIdStr)
 
 	serAvailabilitySubscriptionMap[subsId] = &subscription
 
@@ -198,6 +199,22 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
+		return
+	}
+
 	getServices(w, r, appInstanceId)
 }
 
@@ -211,9 +228,15 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -290,9 +313,15 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -320,41 +349,6 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Delete all services
-func AppServicesDELETE(appInstanceId string) error {
-	log.Info("AppServicesDELETE")
-	key := baseKey + ":app:" + appInstanceId + ":svc:*"
-	err := rc.ForEachJSONEntry(key, deleteService, appInstanceId)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-	return nil
-}
-
-func deleteService(key string, sInfoJson string, data interface{}) error {
-	// Get App instance ID from user data
-	appInstanceId := data.(string)
-	if appInstanceId == "" {
-		return errors.New("appInstanceId not found")
-	}
-
-	// Delete entry
-	err := rc.JSONDelEntry(key, ".")
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	// Notify local & remote listeners
-	sInfo := convertJsonToServiceInfo(sInfoJson)
-	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
-	sendSvcUpdateMsg(sInfoJson, appInstanceId, mepName, string(changeType))
-	checkSerAvailNotification(sInfo, mepName, changeType)
-
-	return nil
-}
-
 func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 	log.Info("appServicesByIdGET")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -367,6 +361,23 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Validate App Instance ID
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
+		return
+	}
+
 	getService(w, r, appInstanceId, serviceId)
 }
 
@@ -381,9 +392,15 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -442,7 +459,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	// Compare other params
 	state := *sInfo.State
 	*sInfo.State = *sInfoPrev.State
-	sInfoJson := ConvertServiceInfoToJson(&sInfo)
+	sInfoJson := convertServiceInfoToJson(&sInfo)
 	if sInfoJson != sInfoPrevJson {
 		changeType = ServiceAvailabilityNotificationChangeType_ATTRIBUTES_CHANGED
 	}
@@ -474,12 +491,20 @@ func servicesByIdGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	serviceId := vars["serviceId"]
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	getService(w, r, "", serviceId)
 }
 
 func servicesGET(w http.ResponseWriter, r *http.Request) {
 	log.Info("servicesGET")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	getServices(w, r, "")
 }
 
@@ -492,9 +517,15 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -549,17 +580,17 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	// Create new subscription
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
-	subsIdStr := strconv.Itoa(newSubsId)
+	subIdStr := strconv.Itoa(newSubsId)
 
 	link := new(Self)
 	self := new(LinkType)
-	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions/" + subsIdStr
+	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions/" + subIdStr
 	link.Self = self
 	subscription.Links = link
 
 	registerSerAvailability(&subscription, newSubsId)
 
-	key := baseKey + ":app:" + appInstanceId + ":" + msmgmtKey + ":sub:" + subsIdStr
+	key := baseKey + ":app:" + appInstanceId + ":" + msmgmtKey + ":sub:" + subIdStr
 	_ = rc.JSONSetEntry(key, ".", convertSerAvailabilityNotificationSubscriptionToJson(&subscription))
 
 	// Send response
@@ -583,9 +614,15 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -612,9 +649,15 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
@@ -645,27 +688,32 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error(err.Error())
+		if problemDetails != "" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, problemDetails)
+		} else {
+			http.Error(w, err.Error(), code)
+		}
 		return
 	}
 
 	// Retrieve subscription list
-	subscriptionLinkList := new(MecServiceMgmtApiSubscriptionLinkList)
+	var subscriptionLinkList MecServiceMgmtApiSubscriptionLinkList
 	link := new(MecServiceMgmtApiSubscriptionLinkListLinks)
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions"
 	link.Self = self
 	subscriptionLinkList.Links = link
-	for _, serAvailSubscription := range serAvailabilitySubscriptionMap {
-		if serAvailSubscription != nil {
-			var subscription MecServiceMgmtApiSubscriptionLinkListSubscription
-			subscription.Href = serAvailSubscription.Links.Self.Href
-			//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
-			subscription.Rel = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
-			subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
-		}
+
+	key := baseKey + ":app:" + appInstanceId + ":" + msmgmtKey + ":sub:*"
+	err = rc.ForEachJSONEntry(key, populateSubscriptionsList, &subscriptionLinkList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// Send response
@@ -679,9 +727,70 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
+// Delete App services subscriptions
+func DeleteServiceSubscriptions(appInstanceId string) error {
+	log.Info("DeleteServiceSubscriptions")
+	key := baseKey + ":app:" + appInstanceId + ":" + msmgmtKey + ":sub:*"
+	err := rc.ForEachJSONEntry(key, deleteServiceSubscription, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func deleteServiceSubscription(key string, sInfoJson string, data interface{}) error {
+	// Get Subscription ID from key
+	subId := getSubIdFromKey(key)
+
+	// Delete subscription
+	err := rc.JSONDelEntry(key, ".")
+	deregisterSerAvailability(subId)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+// Delete App services
+func DeleteServices(appInstanceId string) error {
+	log.Info("DeleteServices")
+	key := baseKey + ":app:" + appInstanceId + ":svc:*"
+	err := rc.ForEachJSONEntry(key, deleteService, appInstanceId)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func deleteService(key string, sInfoJson string, data interface{}) error {
+	// Get App instance ID from user data
+	appInstanceId := data.(string)
+	if appInstanceId == "" {
+		return errors.New("appInstanceId not found")
+	}
+
+	// Delete entry
+	err := rc.JSONDelEntry(key, ".")
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Notify local & remote listeners
+	sInfo := convertJsonToServiceInfo(sInfoJson)
+	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+	sendSvcUpdateMsg(sInfoJson, appInstanceId, mepName, string(changeType))
+	checkSerAvailNotification(sInfo, mepName, changeType)
+
+	return nil
+}
+
 func setService(appInstanceId string, sInfo *ServiceInfo, changeType ServiceAvailabilityNotificationChangeType) (err error, retCode int) {
 	// Create/update service
-	sInfoJson := ConvertServiceInfoToJson(sInfo)
+	sInfoJson := convertServiceInfoToJson(sInfo)
 	key := baseKey + ":app:" + appInstanceId + ":svc:" + sInfo.SerInstanceId
 	err = rc.JSONSetEntry(key, ".", sInfoJson)
 	if err != nil {
@@ -740,18 +849,6 @@ func getServices(w http.ResponseWriter, r *http.Request, appInstanceId string) {
 		return
 	}
 
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	// Validate App Instance ID
-	if appInstanceId != "" {
-		err = validateAppInstanceId(appInstanceId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-
 	// Retrieve all matching services
 	var sInfoList ServiceInfoList
 	var filterParameters FilterParameters
@@ -795,18 +892,6 @@ func getService(w http.ResponseWriter, r *http.Request, appInstanceId string, se
 		log.Error(errStr)
 		http.Error(w, errStr, http.StatusInternalServerError)
 		return
-	}
-
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	// Validate App Instance ID
-	if appInstanceId != "" {
-		err := validateAppInstanceId(appInstanceId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
 	}
 
 	// Retrieve all matching services
@@ -938,6 +1023,31 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 
 	// Add service to list
 	data.Services = append(data.Services, sInfo)
+	return nil
+}
+
+func populateSubscriptionsList(key string, jsonInfo string, data interface{}) error {
+	// Get query params & userlist from user data
+	subscriptionLinkList := data.(*MecServiceMgmtApiSubscriptionLinkList)
+	if data == nil {
+		return errors.New("subscriptionLinkList not found")
+	}
+
+	// Retrieve service availability subscription
+	var serAvailSubscription SerAvailabilityNotificationSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &serAvailSubscription)
+	if err != nil {
+		return err
+	}
+
+	// Populate subscription to return
+	var subscription MecServiceMgmtApiSubscriptionLinkListSubscription
+	subscription.Href = serAvailSubscription.Links.Self.Href
+	//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
+	subscription.Rel = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
+
+	// Add subscription to list
+	subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
 	return nil
 }
 
@@ -1079,7 +1189,7 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 		notif.ServiceReferences = serAvailabilityRefList
 
 		sendSerAvailNotification(sub.CallbackReference, notif)
-		log.Info("Service Availability Notification" + "(" + idStr + ") for " + string(changeType))
+		log.Info("Service Availability Notification (" + idStr + ") for " + string(changeType))
 	}
 }
 
@@ -1107,10 +1217,12 @@ func registerSerAvailability(subscription *SerAvailabilityNotificationSubscripti
 	log.Info("New registration: ", subsId, " type: ", SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE)
 }
 
-func deregisterSerAvailability(subsIdStr string) {
-	subsId, _ := strconv.Atoi(subsIdStr)
-	serAvailabilitySubscriptionMap[subsId] = nil
-	log.Info("Deregistration: ", subsId, " type: ", SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE)
+func deregisterSerAvailability(subIdStr string) {
+	if subIdStr != "" {
+		subsId, _ := strconv.Atoi(subIdStr)
+		serAvailabilitySubscriptionMap[subsId] = nil
+		log.Info("Deregistration: ", subsId, " type: ", SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE)
+	}
 }
 
 func validateQueryParams(params url.Values, validParams []string) error {
@@ -1150,19 +1262,36 @@ func validateServiceQueryParams(serInstanceId []string, serName []string, serCat
 	return nil
 }
 
-func validateAppInstanceId(appInstanceId string) error {
-	// Check if entry exist for the application in the DB
+func validateAppInstanceId(appInstanceId string) (error, int, string) {
+	// Get application instance
 	key := baseKey + ":app:" + appInstanceId + ":info"
-	if !rc.EntryExists(key) {
-		return errors.New("Invalid App Instance ID")
+	fields, err := rc.GetEntry(key)
+	if err != nil || len(fields) == 0 {
+		return errors.New("App Instance not found"), http.StatusNotFound, ""
 	}
-	return nil
+
+	// Make sure App is in ready state
+	if fields[fieldState] != APP_STATE_READY {
+		var problemDetails ProblemDetails
+		problemDetails.Status = http.StatusForbidden
+		problemDetails.Detail = "App Instance not ready. Waiting for AppReadyConfirmation."
+		return errors.New("App Instance not ready"), http.StatusForbidden, convertProblemDetailsToJson(&problemDetails)
+	}
+	return nil, http.StatusOK, ""
 }
 
 func getMepNameFromKey(key string) string {
 	fields := strings.Split(strings.TrimPrefix(key, dkm.GetKeyRoot(sandboxName)+appEnablementKey+":mep:"), ":")
 	if len(fields) > 0 {
 		return fields[0]
+	}
+	return ""
+}
+
+func getSubIdFromKey(key string) string {
+	fields := strings.Split(key, ":")
+	if len(fields) > 0 {
+		return fields[len(fields)-1]
 	}
 	return ""
 }

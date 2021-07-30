@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
@@ -11,8 +12,10 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
+	github.com/google/uuid v1.2.0
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.8.0
 	github.com/prometheus/client_golang v1.9.0

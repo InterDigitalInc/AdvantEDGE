@@ -87,6 +87,118 @@ var routes = Routes{
 	},
 
 	Route{
+		"AreaCircleSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubDELETE,
+	},
+
+	Route{
+		"AreaCircleSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubGET,
+	},
+
+	Route{
+		"AreaCircleSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/area/circle",
+		AreaCircleSubListGET,
+	},
+
+	Route{
+		"AreaCircleSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/area/circle",
+		AreaCircleSubPOST,
+	},
+
+	Route{
+		"AreaCircleSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubPUT,
+	},
+
+	Route{
+		"DistanceGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/distance",
+		DistanceGET,
+	},
+
+	Route{
+		"DistanceSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubDELETE,
+	},
+
+	Route{
+		"DistanceSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubGET,
+	},
+
+	Route{
+		"DistanceSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/distance",
+		DistanceSubListGET,
+	},
+
+	Route{
+		"DistanceSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/distance",
+		DistanceSubPOST,
+	},
+
+	Route{
+		"DistanceSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubPUT,
+	},
+
+	Route{
+		"PeriodicSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubDELETE,
+	},
+
+	Route{
+		"PeriodicSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubGET,
+	},
+
+	Route{
+		"PeriodicSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/periodic",
+		PeriodicSubListGET,
+	},
+
+	Route{
+		"PeriodicSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/periodic",
+		PeriodicSubPOST,
+	},
+
+	Route{
+		"PeriodicSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubPUT,
+	},
+
+	Route{
 		"UserTrackingSubDELETE",
 		strings.ToUpper("Delete"),
 		"/location/v2/subscriptions/userTracking/{subscriptionId}",
@@ -210,117 +322,5 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v2/queries/zones/{zoneId}",
 		ZonesGetById,
-	},
-
-	Route{
-		"AreaCircleSubDELETE",
-		strings.ToUpper("Delete"),
-		"/location/v2/subscriptions/area/circle/{subscriptionId}",
-		AreaCircleSubDELETE,
-	},
-
-	Route{
-		"AreaCircleSubGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/area/circle/{subscriptionId}",
-		AreaCircleSubGET,
-	},
-
-	Route{
-		"AreaCircleSubListGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/area/circle",
-		AreaCircleSubListGET,
-	},
-
-	Route{
-		"AreaCircleSubPOST",
-		strings.ToUpper("Post"),
-		"/location/v2/subscriptions/area/circle",
-		AreaCircleSubPOST,
-	},
-
-	Route{
-		"AreaCircleSubPUT",
-		strings.ToUpper("Put"),
-		"/location/v2/subscriptions/area/circle/{subscriptionId}",
-		AreaCircleSubPUT,
-	},
-
-	Route{
-		"DistanceGET",
-		strings.ToUpper("Get"),
-		"/location/v2/queries/distance",
-		DistanceGET,
-	},
-
-	Route{
-		"DistanceSubDELETE",
-		strings.ToUpper("Delete"),
-		"/location/v2/subscriptions/distance/{subscriptionId}",
-		DistanceSubDELETE,
-	},
-
-	Route{
-		"DistanceSubGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/distance/{subscriptionId}",
-		DistanceSubGET,
-	},
-
-	Route{
-		"DistanceSubListGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/distance",
-		DistanceSubListGET,
-	},
-
-	Route{
-		"DistanceSubPOST",
-		strings.ToUpper("Post"),
-		"/location/v2/subscriptions/distance",
-		DistanceSubPOST,
-	},
-
-	Route{
-		"DistanceSubPUT",
-		strings.ToUpper("Put"),
-		"/location/v2/subscriptions/distance/{subscriptionId}",
-		DistanceSubPUT,
-	},
-
-	Route{
-		"PeriodicSubDELETE",
-		strings.ToUpper("Delete"),
-		"/location/v2/subscriptions/periodic/{subscriptionId}",
-		PeriodicSubDELETE,
-	},
-
-	Route{
-		"PeriodicSubGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/periodic/{subscriptionId}",
-		PeriodicSubGET,
-	},
-
-	Route{
-		"PeriodicSubListGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/periodic",
-		PeriodicSubListGET,
-	},
-
-	Route{
-		"PeriodicSubPOST",
-		strings.ToUpper("Post"),
-		"/location/v2/subscriptions/periodic",
-		PeriodicSubPOST,
-	},
-
-	Route{
-		"PeriodicSubPUT",
-		strings.ToUpper("Put"),
-		"/location/v2/subscriptions/periodic/{subscriptionId}",
-		PeriodicSubPUT,
 	},
 }

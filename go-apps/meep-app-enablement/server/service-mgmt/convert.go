@@ -22,19 +22,16 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func ConvertServiceInfoToJson(serviceInfo *ServiceInfo) string {
-
+func convertServiceInfoToJson(serviceInfo *ServiceInfo) string {
 	jsonInfo, err := json.Marshal(*serviceInfo)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonInfo)
 }
 
 func convertJsonToServiceInfo(jsonInfo string) *ServiceInfo {
-
 	var obj ServiceInfo
 	err := json.Unmarshal([]byte(jsonInfo), &obj)
 	if err != nil {
@@ -45,12 +42,19 @@ func convertJsonToServiceInfo(jsonInfo string) *ServiceInfo {
 }
 
 func convertSerAvailabilityNotificationSubscriptionToJson(sub *SerAvailabilityNotificationSubscription) string {
-
 	jsonInfo, err := json.Marshal(*sub)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
+	return string(jsonInfo)
+}
 
+func convertProblemDetailsToJson(problemDetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*problemDetails)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
 	return string(jsonInfo)
 }

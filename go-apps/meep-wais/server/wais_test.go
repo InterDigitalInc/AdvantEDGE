@@ -6289,7 +6289,7 @@ func TestExpiryNotification(t *testing.T) {
 		t.Fatalf("Failed to create store")
 	}
 
-	httpLog, err := metricStore.GetHttpMetric(logModuleWAIS, "TX", "", 1)
+	httpLog, err := metricStore.GetHttpMetric(moduleName, "TX", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
@@ -6380,7 +6380,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 		t.Fatalf("Failed to create a store")
 	}
 
-	httpLog, err := metricStore.GetHttpMetric(logModuleWAIS, "TX", "", 1)
+	httpLog, err := metricStore.GetHttpMetric(moduleName, "TX", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}

@@ -120,6 +120,7 @@ type ScenarioTemplate struct {
 
 // SandboxTemplate -helm values.yaml template
 type SandboxTemplate struct {
+	InstanceId     string
 	SandboxName    string
 	Namespace      string
 	HostUrl        string
@@ -264,6 +265,7 @@ func generateScenarioCharts(sandboxName string, procName string, model *mod.Mode
 
 			// Create Sandbox template
 			var sandboxTemplate SandboxTemplate
+			sandboxTemplate.InstanceId = proc.Id
 			sandboxTemplate.SandboxName = sandboxName
 			sandboxTemplate.Namespace = sandboxName
 			sandboxTemplate.HostUrl = ve.hostUrl

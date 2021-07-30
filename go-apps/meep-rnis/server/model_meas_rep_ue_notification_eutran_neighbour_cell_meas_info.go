@@ -26,10 +26,12 @@ package server
 type MeasRepUeNotificationEutranNeighbourCellMeasInfo struct {
 	Ecgi *Ecgi `json:"ecgi,omitempty"`
 	// Reference Signal Received Power as defined in ETSI TS 136 214 [i.5].
+	// Server patch: 'omitempty' has been removed for this field to properly store value '0'
 	Rsrp int32 `json:"rsrp"`
 	// Extended Reference Signal Received Power, with value mapping defined in ETSI TS 136 133 [i.16].
 	RsrpEx int32 `json:"rsrpEx,omitempty"`
 	// Reference Signal Received Quality as defined in ETSI TS 136 214 [i.5].
+	// Server patch: 'omitempty' has been removed for this field to properly store value '0'
 	Rsrq int32 `json:"rsrq"`
 	// Extended Reference Signal Received Quality, with value mapping defined in ETSI TS 136 133 [i.16].
 	RsrqEx int32 `json:"rsrqEx,omitempty"`

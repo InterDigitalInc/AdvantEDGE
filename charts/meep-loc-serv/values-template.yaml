@@ -18,6 +18,7 @@ image:
   tag: latest
   pullPolicy: Always
   env:
+    MEEP_INSTANCE_ID: {{.InstanceId}}
     MEEP_SANDBOX_NAME: {{.SandboxName}}
     MEEP_HOST_URL: {{.HostUrl}}
     {{- if .IsMepService }}
