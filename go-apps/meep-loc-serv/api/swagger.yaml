@@ -1674,7 +1674,7 @@ paths:
                   subscription:
                     href: 'http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123'
                   confirmTermination:
-                    href: 'http://mec011Server.example.com/mec_app_support/v1/confirm_termination' 
+                    href: 'http://mec011Server.example.com/mec_app_support/v1/confirm_termination'
       responses:
         '204':
           description: No Content

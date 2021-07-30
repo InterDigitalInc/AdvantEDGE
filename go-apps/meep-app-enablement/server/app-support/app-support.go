@@ -255,12 +255,14 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	if !found {
+		log.Error("AppInstanceId not subscribed for graceful termination")
 		http.Error(w, "AppInstanceId not subscribed for graceful termination", http.StatusBadRequest)
 		return
 	}
 
 	// Check if Confirm Termination was expected
 	if appTerminationGracefulTimeoutMap[appInstanceId] == nil {
+		log.Error("Unexpected App Confirmation Termination Notification")
 		http.Error(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
 		return
 	}
@@ -525,7 +527,7 @@ func deregisterAppTermination(subIdStr string) {
 
 func deleteAppSubscriptions(appInstanceId string) {
 	for id, sub := range appTerminationNotificationSubscriptionMap {
-		if sub.AppInstanceId == appInstanceId {
+		if sub != nil && sub.AppInstanceId == appInstanceId {
 			subIdStr := strconv.Itoa(id)
 			key := baseKey + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdStr
 			_ = rc.JSONDelEntry(key, ".")
@@ -606,10 +608,7 @@ func processAppTerminate(appInstanceId string, mep string) {
 		notif.OperationAction = &operationAction
 		notif.MaxGracefulTimeout = DEFAULT_GRACEFUL_TIMEOUT
 
-		sendAppTermNotification(sub.CallbackReference, notif)
-		log.Info("App Termination Notification" + "(" + subIdStr + ") for " + appInstanceId)
-
-		// Start graceful timeout
+		// Start graceful timeout prior to sending the app termination notification, or the answer could be received before the timer is started
 		gracefulTimeoutTicker := time.NewTicker(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second)
 		appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
 		go func() {
@@ -622,6 +621,9 @@ func processAppTerminate(appInstanceId string, mep string) {
 				deleteAppInstance(appInstanceId)
 			}
 		}()
+		sendAppTermNotification(sub.CallbackReference, notif)
+		log.Info("App Termination Notification" + "(" + subIdStr + ") for " + appInstanceId)
+
 	}
 
 	// Delete App instance immediately if no graceful termination subscription

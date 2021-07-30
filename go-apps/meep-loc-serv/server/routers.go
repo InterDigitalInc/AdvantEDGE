@@ -164,11 +164,11 @@ var routes = Routes{
 	},
 
 	Route{
-                "Mec011AppTerminationPOST",
-                strings.ToUpper("Post"),
-                "/location/v2/notifications/mec011/appTermination",
-                Mec011AppTerminationPOST,
-        },
+		"Mec011AppTerminationPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/notifications/mec011/appTermination",
+		Mec011AppTerminationPOST,
+	},
 
 	Route{
 		"PeriodicSubDELETE",

@@ -432,7 +432,7 @@ func startRegistrationTicker() {
 
 			// Register service instance
 			if !registrationSent {
-				err := registerService(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+				err := registerService(serviceAppInstanceId)
 				if err != nil {
 					log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
 					continue
@@ -489,7 +489,7 @@ func getAppInstanceId() (id string, err error) {
 }
 
 func deregisterService(appInstanceId string, serviceId string) error {
-	_, err := appEnablementSrvMgmtClient.AppServicesApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
+	_, err := svcMgmtClient.AppServicesApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
 	if err != nil {
 		log.Error("Failed to unregister the service to app enablement registry: ", err)
 		return err
@@ -497,7 +497,7 @@ func deregisterService(appInstanceId string, serviceId string) error {
 	return nil
 }
 
-func registerService(appInstanceId string, appName string, appVersion string) error {
+func registerService(appInstanceId string) error {
 	var srvInfo smc.ServiceInfoPost
 	//serName
 	srvInfo.SerName = instanceName
@@ -574,11 +574,11 @@ func sendTerminationConfirmation(appInstanceId string) error {
 }
 
 func subscribeAppTermination(appInstanceId string) error {
-	var subscription appSupportClient.AppTerminationNotificationSubscription
+	var subscription asc.AppTerminationNotificationSubscription
 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
 	subscription.AppInstanceId = appInstanceId
 	subscription.CallbackReference = hostUrl.String() + basePath + appTerminationPath
-	_, _, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	_, _, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err
@@ -586,16 +586,17 @@ func subscribeAppTermination(appInstanceId string) error {
 	return nil
 }
 
+/*
 func unsubscribeAppTermination(appInstanceId string) error {
 	//only subscribe to one subscription, so we force number to be one, couldn't be anything else
-	_, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
+	_, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
 	if err != nil {
 		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
 	}
 	return nil
 }
-
+*/
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, err := strconv.Atoi(subsIdStr)
 	if err != nil {
@@ -3865,32 +3866,24 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	stopRegistrationTicker()
 
 	//delete any registration it made
-	_ = unsubscribeAppTermination(serviceAppInstanceId)
+	// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
+	//_ = unsubscribeAppTermination(serviceAppInstanceId)
 	_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
-
-	if sendAppTerminationWhenDone {
-		err = sendTerminationConfirmation(serviceAppInstanceId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-
-			return
-		}
-	}
 
 	//send scenario update with a deletion
 	var event scc.Event
 	var eventScenarioUpdate scc.EventScenarioUpdate
-	var physicalLocation scc.PhysicalLocation
+	var process scc.Process
 	var nodeDataUnion scc.NodeDataUnion
 	var node scc.ScenarioNode
 
-	physicalLocation.Name = "elementName"
-	physicalLocation.Type_ = "EDGE-APP"
+	process.Name = instanceName
+	process.Type_ = "EDGE-APP"
 
-	nodeDataUnion.PhysicalLocation = &physicalLocation
+	nodeDataUnion.Process = &process
 
 	node.Type_ = "EDGE-APP"
-	node.Parent = "parentName"
+	node.Parent = mepName
 	node.NodeDataUnion = &nodeDataUnion
 
 	eventScenarioUpdate.Node = &node
@@ -3905,6 +3898,13 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 			log.Error(err)
 		}
 	}()
+
+	if sendAppTerminationWhenDone {
+		go func() {
+			//ignore any error and delete yourself anyway
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}()
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
