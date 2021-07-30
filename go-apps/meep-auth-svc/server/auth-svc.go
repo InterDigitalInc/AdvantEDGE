@@ -67,6 +67,7 @@ const postgisUser = "postgres"
 const postgisPwd = "pwd"
 const pfmCtrlBasepath = "http://meep-platform-ctrl/platform-ctrl/v1"
 const providerModeSecure = "secure"
+const mepPrefix = "MEP-"
 
 // Permission Configuration types
 type Permission struct {
@@ -371,26 +372,43 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 
 		// Service Endpoints
 		for _, ep := range svc.Endpoints {
-			// Cache service endpoint permissions
+			// Create service endpoint permissions
 			permission := new(Permission)
 			permission.Mode = ep.Mode
 			permission.Roles = make(map[string]string)
 			for role, access := range ep.Roles {
 				permission.Roles[role] = access
 			}
-			svcMap[ep.Name] = permission
 
-			// Add auth service route
-			route := new(AuthRoute)
-			route.Name = ep.Name
-			route.Prefix = false
-			route.Method = ep.Method
+			// Add auth service routes + cache service endpoint permissions
 			if svc.Sbox {
+				// Mep-specific sandbox service endpoint
+				route := new(AuthRoute)
+				route.Prefix = false
+				route.Method = ep.Method
+				route.Name = mepPrefix + ep.Name
+				route.Pattern = "/{sbox}/{mep}" + svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+
+				// Sandbox service endpoint
+				route = new(AuthRoute)
+				route.Prefix = false
+				route.Method = ep.Method
+				route.Name = ep.Name
 				route.Pattern = "/{sbox}" + svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
 			} else {
+				// Global service endpoint
+				route := new(AuthRoute)
+				route.Prefix = false
+				route.Method = ep.Method
+				route.Name = ep.Name
 				route.Pattern = svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
 			}
-			routes = append(routes, route)
 		}
 
 		// Default service permissions
@@ -407,18 +425,33 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 			// Use cache default permission if service-specific default is not found
 			permission = authSvc.cache.Default
 		}
-		svcMap[svc.Name] = permission
 
-		// Add auth service default route
-		route := new(AuthRoute)
-		route.Name = svc.Name
-		route.Prefix = true
+		// Add auth service routes + cache service permissions
 		if svc.Sbox {
+			// Mep-specific sandbox service
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = mepPrefix + svc.Name
+			route.Pattern = "/{sbox}/{mep}" + svc.Path
+			routes = append(routes, route)
+			svcMap[route.Name] = permission
+
+			// Sandbox service
+			route = new(AuthRoute)
+			route.Prefix = true
+			route.Name = svc.Name
 			route.Pattern = "/{sbox}" + svc.Path
+			routes = append(routes, route)
+			svcMap[route.Name] = permission
 		} else {
+			// Global service
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = svc.Name
 			route.Pattern = svc.Path
+			routes = append(routes, route)
+			svcMap[route.Name] = permission
 		}
-		routes = append(routes, route)
 	}
 
 	// Add routes to router
@@ -432,25 +465,40 @@ func cacheFileserverPermissions(cfg *PermissionsConfig) {
 	authSvc.cache.Fileservers = make(map[string]*Permission)
 
 	for _, fs := range cfg.Fileservers {
-		// Cache fileserver permissions
+		// Create fileserver permissions
 		permission := new(Permission)
 		permission.Mode = fs.Mode
 		permission.Roles = make(map[string]string)
 		for role, access := range fs.Roles {
 			permission.Roles[role] = access
 		}
-		authSvc.cache.Fileservers[fs.Name] = permission
 
-		// Add auth service route
-		route := new(AuthRoute)
-		route.Name = fs.Name
-		route.Prefix = true
+		// Add auth service routes + cache filserver permissions
 		if fs.Sbox {
+			// Mep-specific sandbox fileservers
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = mepPrefix + fs.Name
+			route.Pattern = "/{sbox}/{mep}" + fs.Path
+			routes = append(routes, route)
+			authSvc.cache.Fileservers[route.Name] = permission
+
+			// Sandbox fileserver
+			route = new(AuthRoute)
+			route.Prefix = true
+			route.Name = fs.Name
 			route.Pattern = "/{sbox}" + fs.Path
+			routes = append(routes, route)
+			authSvc.cache.Fileservers[route.Name] = permission
 		} else {
+			// Global fileserver
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = fs.Name
 			route.Pattern = fs.Path
+			routes = append(routes, route)
+			authSvc.cache.Fileservers[route.Name] = permission
 		}
-		routes = append(routes, route)
 	}
 
 	// Add routes to router
@@ -559,7 +607,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	// Get service & sandbox name from request query parameters
 	query := r.URL.Query()
 	svcName := query.Get("svc")
-	// sboxName := query.Get("sbox")
 	var sboxName string
 
 	// Get original request URL & method
@@ -585,7 +632,8 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	if authSvc.router.Match(r, &match) {
 		routeName := match.Route.GetName()
 		sboxName = match.Vars["sbox"]
-		log.Debug("routeName: ", routeName, " sboxName: ", sboxName)
+		mepName := match.Vars["mep"]
+		log.Debug("routeName: ", routeName, " sboxName: ", sboxName, " mepName: ", mepName)
 
 		// Check service-specific routes
 		if svcName != "" {
