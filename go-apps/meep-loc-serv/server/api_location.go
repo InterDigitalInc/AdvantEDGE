@@ -79,6 +79,10 @@ func DistanceSubPUT(w http.ResponseWriter, r *http.Request) {
 	distanceSubPut(w, r)
 }
 
+func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
+        mec011AppTerminationPost(w, r)
+}
+
 func PeriodicSubDELETE(w http.ResponseWriter, r *http.Request) {
 	periodicSubDelete(w, r)
 }
@@ -170,3 +174,4 @@ func ZonesGET(w http.ResponseWriter, r *http.Request) {
 func ZonesGetById(w http.ResponseWriter, r *http.Request) {
 	zonesByIdGet(w, r)
 }
+

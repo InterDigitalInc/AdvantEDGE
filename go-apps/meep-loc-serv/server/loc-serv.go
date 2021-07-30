@@ -51,6 +51,9 @@ const serviceName = "Location Service"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
+const appTerminationPath = "notifications/mec011/appTermination"
+
+const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -169,11 +172,14 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
+var appEnablementServiceId string
 var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
 var sbxCtrlClient *scc.APIClient
 
 var registrationTicker *time.Ticker
+
+var sandboxCtrlClient *scc.APIClient
 
 // Init - Location Service initialization
 func Init() (err error) {
@@ -335,6 +341,14 @@ func Init() (err error) {
 		if svcMgmtClient == nil {
 			return errors.New("Failed to create App Enablement Service Management REST API client")
 		}
+
+		// Create Sandbox Ctrl client
+		sandboxCtrlClientCfg := scc.NewConfiguration()
+		sandboxCtrlClientCfg.BasePath = sboxCtrlBasepath
+		sandboxCtrlClient = scc.NewAPIClient(sandboxCtrlClientCfg)
+		if sandboxCtrlClient == nil {
+			return errors.New("Failed to create Sandbox Ctrl REST API client")
+		}
 	}
 
 	log.Info("Location Service successfully initialized")
@@ -366,12 +380,6 @@ func Stop() (err error) {
 	// Stop MEC Service registration ticker
 	if appEnablementEnabled {
 		stopRegistrationTicker()
-		if sendAppTerminationWhenDone {
-			err = sendTerminationConfirmation(serviceAppInstanceId)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	periodicTicker.Stop()
@@ -399,7 +407,9 @@ func startRegistrationTicker() {
 	registrationTicker = time.NewTicker(5 * time.Second)
 	go func() {
 		mecAppReadySent := false
-		// registrationSent := false
+		registrationSent := false
+		subscriptionSent := false
+
 		for range registrationTicker.C {
 			// Get Application instance ID if not already available
 			if serviceAppInstanceId == "" {
@@ -421,30 +431,33 @@ func startRegistrationTicker() {
 			}
 
 			// Register service instance
-			// if !registrationSent {
-			err := registerService(serviceAppInstanceId)
-			if err != nil {
-				log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
-				continue
+			if !registrationSent {
+				err := registerService(serviceAppInstanceId, serviceAppName, serviceAppVersion)
+				if err != nil {
+					log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
+					continue
+				}
+				registrationSent = true
 			}
-			// 	registrationSent = true
-			// }
 
-			// // Register for graceful termination
-			// if !subscriptionSent {
-			// 	err = subscribeAppTermination(serviceAppInstanceId)
-			// 	if err != nil {
-			// 		log.Error("Failed to subscribe to graceful termination. Error: ", err)
-			// 		continue
-			// 	}
-			// 	sendAppTerminationWhenDone = true
-			// 	subscriptionSent = true
-			// }
+			// Register for graceful termination
+			if !subscriptionSent {
+				err := subscribeAppTermination(serviceAppInstanceId)
+				if err != nil {
+					log.Error("Failed to subscribe to graceful termination. Error: ", err)
+					continue
+				}
+				sendAppTerminationWhenDone = true
+				subscriptionSent = true
+			}
 
-			// Registration complete
-			log.Info("Successfully registered with App Enablement Service")
-			stopRegistrationTicker()
-			return
+			if mecAppReadySent && registrationSent && subscriptionSent {
+
+				// Registration complete
+				log.Info("Successfully registered with App Enablement Service")
+				stopRegistrationTicker()
+				return
+			}
 		}
 	}()
 }
@@ -475,7 +488,16 @@ func getAppInstanceId() (id string, err error) {
 	return response.Id, nil
 }
 
-func registerService(appInstanceId string) error {
+func deregisterService(appInstanceId string, serviceId string) error {
+	_, err := appEnablementSrvMgmtClient.AppServicesApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
+	if err != nil {
+		log.Error("Failed to unregister the service to app enablement registry: ", err)
+		return err
+	}
+	return nil
+}
+
+func registerService(appInstanceId string, appName string, appVersion string) error {
 	var srvInfo smc.ServiceInfoPost
 	//serName
 	srvInfo.SerName = instanceName
@@ -523,6 +545,7 @@ func registerService(appInstanceId string) error {
 		return err
 	}
 	log.Info("Application Enablement Service instance Id: ", appServicesPostResponse.SerInstanceId)
+	appEnablementServiceId = appServicesPostResponse.SerInstanceId
 	return nil
 }
 
@@ -550,18 +573,28 @@ func sendTerminationConfirmation(appInstanceId string) error {
 	return nil
 }
 
-// func subscribeAppTermination(appInstanceId string) error {
-// 	var subscription asc.AppTerminationNotificationSubscription
-// 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
-// 	subscription.AppInstanceId = appInstanceId
-// 	subscription.CallbackReference = hostUrl.String() + basePath
-// 	_, _, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
-// 	if err != nil {
-// 		log.Error("Failed to register to App Support subscription: ", err)
-// 		return err
-// 	}
-// 	return nil
-// }
+func subscribeAppTermination(appInstanceId string) error {
+	var subscription appSupportClient.AppTerminationNotificationSubscription
+	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
+	subscription.AppInstanceId = appInstanceId
+	subscription.CallbackReference = hostUrl.String() + basePath + appTerminationPath
+	_, _, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	if err != nil {
+		log.Error("Failed to register to App Support subscription: ", err)
+		return err
+	}
+	return nil
+}
+
+func unsubscribeAppTermination(appInstanceId string) error {
+	//only subscribe to one subscription, so we force number to be one, couldn't be anything else
+	_, err := appEnablementAppSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
+	if err != nil {
+		log.Error("Failed to unregister to App Support subscription: ", err)
+		return err
+	}
+	return nil
+}
 
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, err := strconv.Atoi(subsIdStr)
@@ -3809,4 +3842,69 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var notification AppTerminationNotification
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&notification)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if !appEnablementEnabled {
+		//just ignore the message
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	stopRegistrationTicker()
+
+	//delete any registration it made
+	_ = unsubscribeAppTermination(serviceAppInstanceId)
+	_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
+
+	if sendAppTerminationWhenDone {
+		err = sendTerminationConfirmation(serviceAppInstanceId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+	}
+
+	//send scenario update with a deletion
+	var event scc.Event
+	var eventScenarioUpdate scc.EventScenarioUpdate
+	var physicalLocation scc.PhysicalLocation
+	var nodeDataUnion scc.NodeDataUnion
+	var node scc.ScenarioNode
+
+	physicalLocation.Name = "elementName"
+	physicalLocation.Type_ = "EDGE-APP"
+
+	nodeDataUnion.PhysicalLocation = &physicalLocation
+
+	node.Type_ = "EDGE-APP"
+	node.Parent = "parentName"
+	node.NodeDataUnion = &nodeDataUnion
+
+	eventScenarioUpdate.Node = &node
+	eventScenarioUpdate.Action = "REMOVE"
+
+	event.EventScenarioUpdate = &eventScenarioUpdate
+	event.Type_ = "SCENARIO-UPDATE"
+
+	go func() {
+		_, err := sandboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	w.WriteHeader(http.StatusNoContent)
 }
