@@ -40,17 +40,17 @@ var (
 	_ context.Context
 )
 
-type AppInfoApiService service
+type ApplicationsApiService service
 
 /*
-AppInfoApiService
+ApplicationsApiService
 This method deletes a mec application resource.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 
 
 */
-func (a *AppInfoApiService) ApplicationsAppInstanceIdDELETE(ctx context.Context, appInstanceId string) (*http.Response, error) {
+func (a *ApplicationsApiService) ApplicationsAppInstanceIdDELETE(ctx context.Context, appInstanceId string) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
 		localVarPostBody   interface{}
@@ -112,14 +112,14 @@ func (a *AppInfoApiService) ApplicationsAppInstanceIdDELETE(ctx context.Context,
 }
 
 /*
-AppInfoApiService
+ApplicationsApiService
 This method retrieves information about a mec application resource.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 
 @return ApplicationInfo
 */
-func (a *AppInfoApiService) ApplicationsAppInstanceIdGET(ctx context.Context, appInstanceId string) (ApplicationInfo, *http.Response, error) {
+func (a *ApplicationsApiService) ApplicationsAppInstanceIdGET(ctx context.Context, appInstanceId string) (ApplicationInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -201,7 +201,7 @@ func (a *AppInfoApiService) ApplicationsAppInstanceIdGET(ctx context.Context, ap
 }
 
 /*
-AppInfoApiService
+ApplicationsApiService
 This method updates the information about a mec application resource.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
@@ -209,7 +209,7 @@ This method updates the information about a mec application resource.
 
 @return ApplicationInfo
 */
-func (a *AppInfoApiService) ApplicationsAppInstanceIdPUT(ctx context.Context, appInstanceId string, applicationInfo ApplicationInfo) (ApplicationInfo, *http.Response, error) {
+func (a *ApplicationsApiService) ApplicationsAppInstanceIdPUT(ctx context.Context, appInstanceId string, applicationInfo ApplicationInfo) (ApplicationInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -293,7 +293,7 @@ func (a *AppInfoApiService) ApplicationsAppInstanceIdPUT(ctx context.Context, ap
 }
 
 /*
-AppInfoApiService
+ApplicationsApiService
 This method retrieves information about a list of mec application resources.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *ApplicationsGETOpts - Optional Parameters:
@@ -312,7 +312,7 @@ type ApplicationsGETOpts struct {
 	Mep   optional.String
 }
 
-func (a *AppInfoApiService) ApplicationsGET(ctx context.Context, localVarOptionals *ApplicationsGETOpts) ([]ApplicationInfo, *http.Response, error) {
+func (a *ApplicationsApiService) ApplicationsGET(ctx context.Context, localVarOptionals *ApplicationsGETOpts) ([]ApplicationInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -405,14 +405,14 @@ func (a *AppInfoApiService) ApplicationsGET(ctx context.Context, localVarOptiona
 }
 
 /*
-AppInfoApiService
+ApplicationsApiService
 This method is used to create a mec application resource.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param applicationInfo Application information
 
 @return ApplicationInfo
 */
-func (a *AppInfoApiService) ApplicationsPOST(ctx context.Context, applicationInfo ApplicationInfo) (ApplicationInfo, *http.Response, error) {
+func (a *ApplicationsApiService) ApplicationsPOST(ctx context.Context, applicationInfo ApplicationInfo) (ApplicationInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}

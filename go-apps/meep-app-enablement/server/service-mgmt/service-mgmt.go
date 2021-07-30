@@ -701,7 +701,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve subscription list
-	subscriptionLinkList := new(MecServiceMgmtApiSubscriptionLinkList)
+	var subscriptionLinkList MecServiceMgmtApiSubscriptionLinkList
 	link := new(MecServiceMgmtApiSubscriptionLinkListLinks)
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions"
@@ -1033,12 +1033,18 @@ func populateSubscriptionsList(key string, jsonInfo string, data interface{}) er
 		return errors.New("subscriptionLinkList not found")
 	}
 
-	// Retrieve user info from DB
-	var subscription MecServiceMgmtApiSubscriptionLinkListSubscription
-	err := json.Unmarshal([]byte(jsonInfo), &subscription)
+	// Retrieve service availability subscription
+	var serAvailSubscription SerAvailabilityNotificationSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &serAvailSubscription)
 	if err != nil {
 		return err
 	}
+
+	// Populate subscription to return
+	var subscription MecServiceMgmtApiSubscriptionLinkListSubscription
+	subscription.Href = serAvailSubscription.Links.Self.Href
+	//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
+	subscription.Rel = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
 
 	// Add subscription to list
 	subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)

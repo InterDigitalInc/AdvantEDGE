@@ -20,7 +20,7 @@ tags:
 - name: "Events"
 - name: "Event Replay"
 - name: "Connectivity"
-- name: "App Info"
+- name: "Applications"
 consumes:
 - "application/json"
 produces:
@@ -1108,7 +1108,7 @@ paths:
   /applications:
     get:
       tags:
-      - "App Info"
+      - "Applications"
       description: "This method retrieves information about a list of mec application\
         \ resources."
       operationId: "Applications_GET"
@@ -1162,7 +1162,7 @@ paths:
           description: "Not Found"
     post:
       tags:
-      - "App Info"
+      - "Applications"
       description: "This method is used to create a mec application resource."
       operationId: "Applications_POST"
       parameters:
@@ -1187,7 +1187,7 @@ paths:
   /applications/{appInstanceId}:
     get:
       tags:
-      - "App Info"
+      - "Applications"
       description: "This method retrieves information about a mec application resource."
       operationId: "ApplicationsAppInstanceId_GET"
       parameters:
@@ -1211,7 +1211,7 @@ paths:
           description: "Not Found"
     put:
       tags:
-      - "App Info"
+      - "Applications"
       description: "This method updates the information about a mec application resource."
       operationId: "ApplicationsAppInstanceId_PUT"
       parameters:
@@ -1242,7 +1242,7 @@ paths:
           description: "Not Found"
     delete:
       tags:
-      - "App Info"
+      - "Applications"
       description: "This method deletes a mec application resource."
       operationId: "ApplicationsAppInstanceId_DELETE"
       parameters:
@@ -2340,7 +2340,7 @@ definitions:
     example:
       appInstanceId: "00afec52-f0b6-464e-a660-33568c0975b9"
       appName: "MyAppName"
-      type: "user"
+      type: "USER"
       state: "INITIALIZED"
       mepName: "mep1"
       version: "v1.0.0"

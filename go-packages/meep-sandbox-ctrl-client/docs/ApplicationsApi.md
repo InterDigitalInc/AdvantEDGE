@@ -1,14 +1,14 @@
-# \AppInfoApi
+# \ApplicationsApi
 
 All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**ApplicationsAppInstanceIdDELETE**](AppInfoApi.md#ApplicationsAppInstanceIdDELETE) | **Delete** /applications/{appInstanceId} | 
-[**ApplicationsAppInstanceIdGET**](AppInfoApi.md#ApplicationsAppInstanceIdGET) | **Get** /applications/{appInstanceId} | 
-[**ApplicationsAppInstanceIdPUT**](AppInfoApi.md#ApplicationsAppInstanceIdPUT) | **Put** /applications/{appInstanceId} | 
-[**ApplicationsGET**](AppInfoApi.md#ApplicationsGET) | **Get** /applications | 
-[**ApplicationsPOST**](AppInfoApi.md#ApplicationsPOST) | **Post** /applications | 
+[**ApplicationsAppInstanceIdDELETE**](ApplicationsApi.md#ApplicationsAppInstanceIdDELETE) | **Delete** /applications/{appInstanceId} | 
+[**ApplicationsAppInstanceIdGET**](ApplicationsApi.md#ApplicationsAppInstanceIdGET) | **Get** /applications/{appInstanceId} | 
+[**ApplicationsAppInstanceIdPUT**](ApplicationsApi.md#ApplicationsAppInstanceIdPUT) | **Put** /applications/{appInstanceId} | 
+[**ApplicationsGET**](ApplicationsApi.md#ApplicationsGET) | **Get** /applications | 
+[**ApplicationsPOST**](ApplicationsApi.md#ApplicationsPOST) | **Post** /applications | 
 
 
 # **ApplicationsAppInstanceIdDELETE**

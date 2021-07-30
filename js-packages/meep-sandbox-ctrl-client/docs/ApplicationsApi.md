@@ -1,14 +1,14 @@
-# AdvantEdgeSandboxControllerRestApi.AppInfoApi
+# AdvantEdgeSandboxControllerRestApi.ApplicationsApi
 
 All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**applicationsAppInstanceIdDELETE**](AppInfoApi.md#applicationsAppInstanceIdDELETE) | **DELETE** /applications/{appInstanceId} | 
-[**applicationsAppInstanceIdGET**](AppInfoApi.md#applicationsAppInstanceIdGET) | **GET** /applications/{appInstanceId} | 
-[**applicationsAppInstanceIdPUT**](AppInfoApi.md#applicationsAppInstanceIdPUT) | **PUT** /applications/{appInstanceId} | 
-[**applicationsGET**](AppInfoApi.md#applicationsGET) | **GET** /applications | 
-[**applicationsPOST**](AppInfoApi.md#applicationsPOST) | **POST** /applications | 
+[**applicationsAppInstanceIdDELETE**](ApplicationsApi.md#applicationsAppInstanceIdDELETE) | **DELETE** /applications/{appInstanceId} | 
+[**applicationsAppInstanceIdGET**](ApplicationsApi.md#applicationsAppInstanceIdGET) | **GET** /applications/{appInstanceId} | 
+[**applicationsAppInstanceIdPUT**](ApplicationsApi.md#applicationsAppInstanceIdPUT) | **PUT** /applications/{appInstanceId} | 
+[**applicationsGET**](ApplicationsApi.md#applicationsGET) | **GET** /applications | 
+[**applicationsPOST**](ApplicationsApi.md#applicationsPOST) | **POST** /applications | 
 
 
 <a name="applicationsAppInstanceIdDELETE"></a>
@@ -23,7 +23,7 @@ This method deletes a mec application resource.
 ```javascript
 var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
 
-var apiInstance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ApplicationsApi();
 
 var appInstanceId = "appInstanceId_example"; // String | Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 
@@ -69,7 +69,7 @@ This method retrieves information about a mec application resource.
 ```javascript
 var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
 
-var apiInstance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ApplicationsApi();
 
 var appInstanceId = "appInstanceId_example"; // String | Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 
@@ -115,7 +115,7 @@ This method updates the information about a mec application resource.
 ```javascript
 var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
 
-var apiInstance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ApplicationsApi();
 
 var appInstanceId = "appInstanceId_example"; // String | Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 
@@ -164,7 +164,7 @@ This method retrieves information about a list of mec application resources.
 ```javascript
 var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
 
-var apiInstance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ApplicationsApi();
 
 var opts = { 
   'app': "app_example", // String | Filter by application name
@@ -217,7 +217,7 @@ This method is used to create a mec application resource.
 ```javascript
 var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller_rest_api');
 
-var apiInstance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
+var apiInstance = new AdvantEdgeSandboxControllerRestApi.ApplicationsApi();
 
 var applicationInfo = new AdvantEdgeSandboxControllerRestApi.ApplicationInfo(); // ApplicationInfo | Application information
 

@@ -427,11 +427,13 @@ func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
 	appInfo.Name = instanceName
+	appInfo.MepName = mepName
 	appInfo.Version = serviceAppVersion
+	appType := scc.SYSTEM_ApplicationType
+	appInfo.Type_ = &appType
 	state := scc.INITIALIZED_ApplicationState
 	appInfo.State = &state
-	appInfo.MepName = mepName
-	response, _, err := sbxCtrlClient.AppInfoApi.ApplicationsPOST(context.TODO(), appInfo)
+	response, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
 		return "", err

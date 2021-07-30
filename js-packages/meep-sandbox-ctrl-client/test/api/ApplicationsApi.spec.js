@@ -45,11 +45,11 @@
   var instance;
 
   beforeEach(function() {
-    instance = new AdvantEdgeSandboxControllerRestApi.AppInfoApi();
+    instance = new AdvantEdgeSandboxControllerRestApi.ApplicationsApi();
   });
 
   describe('(package)', function() {
-    describe('AppInfoApi', function() {
+    describe('ApplicationsApi', function() {
       describe('applicationsAppInstanceIdDELETE', function() {
         it('should call applicationsAppInstanceIdDELETE successfully', function(done) {
           // TODO: uncomment, update parameter values for applicationsAppInstanceIdDELETE call

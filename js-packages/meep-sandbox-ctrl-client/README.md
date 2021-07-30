@@ -129,11 +129,11 @@ Class | Method | HTTP request | Description
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveScenarioProcess**](docs/ActiveScenarioApi.md#getActiveScenarioProcess) | **GET** /active/processes | Get process elements from the deployed scenario
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**getActiveScenarioZone**](docs/ActiveScenarioApi.md#getActiveScenarioZone) | **GET** /active/zones | Get zone elements from the deployed scenario
 *AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi* | [**terminateScenario**](docs/ActiveScenarioApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
-*AdvantEdgeSandboxControllerRestApi.AppInfoApi* | [**applicationsAppInstanceIdDELETE**](docs/AppInfoApi.md#applicationsAppInstanceIdDELETE) | **DELETE** /applications/{appInstanceId} | 
-*AdvantEdgeSandboxControllerRestApi.AppInfoApi* | [**applicationsAppInstanceIdGET**](docs/AppInfoApi.md#applicationsAppInstanceIdGET) | **GET** /applications/{appInstanceId} | 
-*AdvantEdgeSandboxControllerRestApi.AppInfoApi* | [**applicationsAppInstanceIdPUT**](docs/AppInfoApi.md#applicationsAppInstanceIdPUT) | **PUT** /applications/{appInstanceId} | 
-*AdvantEdgeSandboxControllerRestApi.AppInfoApi* | [**applicationsGET**](docs/AppInfoApi.md#applicationsGET) | **GET** /applications | 
-*AdvantEdgeSandboxControllerRestApi.AppInfoApi* | [**applicationsPOST**](docs/AppInfoApi.md#applicationsPOST) | **POST** /applications | 
+*AdvantEdgeSandboxControllerRestApi.ApplicationsApi* | [**applicationsAppInstanceIdDELETE**](docs/ApplicationsApi.md#applicationsAppInstanceIdDELETE) | **DELETE** /applications/{appInstanceId} | 
+*AdvantEdgeSandboxControllerRestApi.ApplicationsApi* | [**applicationsAppInstanceIdGET**](docs/ApplicationsApi.md#applicationsAppInstanceIdGET) | **GET** /applications/{appInstanceId} | 
+*AdvantEdgeSandboxControllerRestApi.ApplicationsApi* | [**applicationsAppInstanceIdPUT**](docs/ApplicationsApi.md#applicationsAppInstanceIdPUT) | **PUT** /applications/{appInstanceId} | 
+*AdvantEdgeSandboxControllerRestApi.ApplicationsApi* | [**applicationsGET**](docs/ApplicationsApi.md#applicationsGET) | **GET** /applications | 
+*AdvantEdgeSandboxControllerRestApi.ApplicationsApi* | [**applicationsPOST**](docs/ApplicationsApi.md#applicationsPOST) | **POST** /applications | 
 *AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**createPduSession**](docs/ConnectivityApi.md#createPduSession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
 *AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**getPduSessionList**](docs/ConnectivityApi.md#getPduSessionList) | **GET** /connectivity/pdu-session | Get list of PDU Sessions
 *AdvantEdgeSandboxControllerRestApi.ConnectivityApi* | [**terminatePduSession**](docs/ConnectivityApi.md#terminatePduSession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session

@@ -40,7 +40,7 @@ definitions:
     example:
       appInstanceId: '00afec52-f0b6-464e-a660-33568c0975b9'
       appName: 'MyAppName'
-      type: 'user'
+      type: 'USER'
       state: 'INITIALIZED'
       mepName: 'mep1'
       version: 'v1.0.0'

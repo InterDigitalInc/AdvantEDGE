@@ -40,20 +40,20 @@
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.AppInfoApi = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.ApplicationInfo);
+    root.AdvantEdgeSandboxControllerRestApi.ApplicationsApi = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.ApplicationInfo);
   }
 }(this, function(ApiClient, ApplicationInfo) {
   'use strict';
 
   /**
-   * AppInfo service.
-   * @module api/AppInfoApi
+   * Applications service.
+   * @module api/ApplicationsApi
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new AppInfoApi. 
-   * @alias module:api/AppInfoApi
+   * Constructs a new ApplicationsApi. 
+   * @alias module:api/ApplicationsApi
    * @class
    * @param {module:ApiClient} [apiClient] Optional API client implementation to use,
    * default to {@link module:ApiClient#instance} if unspecified.
@@ -64,7 +64,7 @@
 
     /**
      * Callback function to receive the result of the applicationsAppInstanceIdDELETE operation.
-     * @callback module:api/AppInfoApi~applicationsAppInstanceIdDELETECallback
+     * @callback module:api/ApplicationsApi~applicationsAppInstanceIdDELETECallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -73,7 +73,7 @@
     /**
      * This method deletes a mec application resource.
      * @param {String} appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
-     * @param {module:api/AppInfoApi~applicationsAppInstanceIdDELETECallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/ApplicationsApi~applicationsAppInstanceIdDELETECallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.applicationsAppInstanceIdDELETE = function(appInstanceId, callback) {
       var postBody = null;
@@ -110,7 +110,7 @@
 
     /**
      * Callback function to receive the result of the applicationsAppInstanceIdGET operation.
-     * @callback module:api/AppInfoApi~applicationsAppInstanceIdGETCallback
+     * @callback module:api/ApplicationsApi~applicationsAppInstanceIdGETCallback
      * @param {String} error Error message, if any.
      * @param {module:model/ApplicationInfo} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
@@ -119,7 +119,7 @@
     /**
      * This method retrieves information about a mec application resource.
      * @param {String} appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
-     * @param {module:api/AppInfoApi~applicationsAppInstanceIdGETCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/ApplicationsApi~applicationsAppInstanceIdGETCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/ApplicationInfo}
      */
     this.applicationsAppInstanceIdGET = function(appInstanceId, callback) {
@@ -157,7 +157,7 @@
 
     /**
      * Callback function to receive the result of the applicationsAppInstanceIdPUT operation.
-     * @callback module:api/AppInfoApi~applicationsAppInstanceIdPUTCallback
+     * @callback module:api/ApplicationsApi~applicationsAppInstanceIdPUTCallback
      * @param {String} error Error message, if any.
      * @param {module:model/ApplicationInfo} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
@@ -167,7 +167,7 @@
      * This method updates the information about a mec application resource.
      * @param {String} appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
      * @param {module:model/ApplicationInfo} applicationInfo Application information
-     * @param {module:api/AppInfoApi~applicationsAppInstanceIdPUTCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/ApplicationsApi~applicationsAppInstanceIdPUTCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/ApplicationInfo}
      */
     this.applicationsAppInstanceIdPUT = function(appInstanceId, applicationInfo, callback) {
@@ -210,7 +210,7 @@
 
     /**
      * Callback function to receive the result of the applicationsGET operation.
-     * @callback module:api/AppInfoApi~applicationsGETCallback
+     * @callback module:api/ApplicationsApi~applicationsGETCallback
      * @param {String} error Error message, if any.
      * @param {Array.<module:model/ApplicationInfo>} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
@@ -223,7 +223,7 @@
      * @param {module:model/String} opts.state Filter by application state
      * @param {module:model/String} opts.type Filter by application type
      * @param {String} opts.mep Filter by MEP name
-     * @param {module:api/AppInfoApi~applicationsGETCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/ApplicationsApi~applicationsGETCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link Array.<module:model/ApplicationInfo>}
      */
     this.applicationsGET = function(opts, callback) {
@@ -260,7 +260,7 @@
 
     /**
      * Callback function to receive the result of the applicationsPOST operation.
-     * @callback module:api/AppInfoApi~applicationsPOSTCallback
+     * @callback module:api/ApplicationsApi~applicationsPOSTCallback
      * @param {String} error Error message, if any.
      * @param {module:model/ApplicationInfo} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
@@ -269,7 +269,7 @@
     /**
      * This method is used to create a mec application resource.
      * @param {module:model/ApplicationInfo} applicationInfo Application information
-     * @param {module:api/AppInfoApi~applicationsPOSTCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/ApplicationsApi~applicationsPOSTCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/ApplicationInfo}
      */
     this.applicationsPOST = function(applicationInfo, callback) {

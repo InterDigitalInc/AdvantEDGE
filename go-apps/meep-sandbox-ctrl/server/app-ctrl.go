@@ -32,7 +32,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const appEnablementModule = "app-enablement"
+const appEnablementModule = "meep-app-enablement"
 const appEnablementKey = "app-enablement"
 const ACTIVE = "ACTIVE"
 const INACTIVE = "INACTIVE"
