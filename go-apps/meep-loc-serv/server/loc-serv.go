@@ -53,8 +53,6 @@ const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
 const appTerminationPath = "notifications/mec011/appTermination"
 
-const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
-
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
 const typeUser = "user"
@@ -340,14 +338,6 @@ func Init() (err error) {
 		svcMgmtClient = smc.NewAPIClient(srvMgmtClientCfg)
 		if svcMgmtClient == nil {
 			return errors.New("Failed to create App Enablement Service Management REST API client")
-		}
-
-		// Create Sandbox Ctrl client
-		sandboxCtrlClientCfg := scc.NewConfiguration()
-		sandboxCtrlClientCfg.BasePath = sboxCtrlBasepath
-		sandboxCtrlClient = scc.NewAPIClient(sandboxCtrlClientCfg)
-		if sandboxCtrlClient == nil {
-			return errors.New("Failed to create Sandbox Ctrl REST API client")
 		}
 	}
 

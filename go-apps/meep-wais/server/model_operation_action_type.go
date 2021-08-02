@@ -23,38 +23,11 @@
  */
 package server
 
-import (
-	"net/http"
+// OperationActionType : Operation that is being performed on the MEC application instance.
+type OperationActionType string
+
+// List of OperationActionType
+const (
+	STOPPING    OperationActionType = "STOPPING"
+	TERMINATING OperationActionType = "TERMINATING"
 )
-
-func ApInfoGET(w http.ResponseWriter, r *http.Request) {
-	apInfoGET(w, r)
-}
-
-func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
-	mec011AppTerminationPost(w, r)
-}
-
-func StaInfoGET(w http.ResponseWriter, r *http.Request) {
-	staInfoGET(w, r)
-}
-
-func SubscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	subscriptionLinkListSubscriptionsGET(w, r)
-}
-
-func SubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	subscriptionsDELETE(w, r)
-}
-
-func SubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	subscriptionsGET(w, r)
-}
-
-func SubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	subscriptionsPOST(w, r)
-}
-
-func SubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	subscriptionsPUT(w, r)
-}

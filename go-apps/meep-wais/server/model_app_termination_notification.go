@@ -23,38 +23,13 @@
  */
 package server
 
-import (
-	"net/http"
-)
+// This type represents the information that the MEC platform notifies the subscribed application instance about  the corresponding application instance termination/stop.
+type AppTerminationNotification struct {
+	NotificationType string `json:"notificationType"`
 
-func ApInfoGET(w http.ResponseWriter, r *http.Request) {
-	apInfoGET(w, r)
-}
+	OperationAction *OperationActionType `json:"operationAction"`
 
-func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
-	mec011AppTerminationPost(w, r)
-}
+	MaxGracefulTimeout int32 `json:"maxGracefulTimeout"`
 
-func StaInfoGET(w http.ResponseWriter, r *http.Request) {
-	staInfoGET(w, r)
-}
-
-func SubscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	subscriptionLinkListSubscriptionsGET(w, r)
-}
-
-func SubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	subscriptionsDELETE(w, r)
-}
-
-func SubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	subscriptionsGET(w, r)
-}
-
-func SubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	subscriptionsPOST(w, r)
-}
-
-func SubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	subscriptionsPUT(w, r)
+	Links *AppTerminationNotificationLinks `json:"_links"`
 }

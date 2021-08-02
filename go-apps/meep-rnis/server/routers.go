@@ -80,6 +80,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"Mec011AppTerminationPOST",
+		strings.ToUpper("Post"),
+		"/rni/v2/notifications/mec011/appTermination",
+		Mec011AppTerminationPOST,
+	},
+
+	Route{
 		"PlmnInfoGET",
 		strings.ToUpper("Get"),
 		"/rni/v2/queries/plmn_info",

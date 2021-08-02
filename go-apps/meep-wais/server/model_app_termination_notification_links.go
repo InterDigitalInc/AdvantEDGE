@@ -23,38 +23,9 @@
  */
 package server
 
-import (
-	"net/http"
-)
+// Object containing hyperlinks related to the resource.
+type AppTerminationNotificationLinks struct {
+	Subscription *LinkType `json:"subscription"`
 
-func ApInfoGET(w http.ResponseWriter, r *http.Request) {
-	apInfoGET(w, r)
-}
-
-func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
-	mec011AppTerminationPost(w, r)
-}
-
-func StaInfoGET(w http.ResponseWriter, r *http.Request) {
-	staInfoGET(w, r)
-}
-
-func SubscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	subscriptionLinkListSubscriptionsGET(w, r)
-}
-
-func SubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	subscriptionsDELETE(w, r)
-}
-
-func SubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	subscriptionsGET(w, r)
-}
-
-func SubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	subscriptionsPOST(w, r)
-}
-
-func SubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	subscriptionsPUT(w, r)
+	ConfirmTermination *LinkTypeConfirmTermination `json:"confirmTermination,omitempty"`
 }

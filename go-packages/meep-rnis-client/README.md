@@ -22,6 +22,7 @@ All URIs are relative to *https://localhost/sandboxname/rni/v2*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *RniApi* | [**Layer2MeasInfoGET**](docs/RniApi.md#layer2measinfoget) | **Get** /queries/layer2_meas | Retrieve information on layer 2 measurements
+*RniApi* | [**Mec011AppTerminationPOST**](docs/RniApi.md#mec011appterminationpost) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 *RniApi* | [**PlmnInfoGET**](docs/RniApi.md#plmninfoget) | **Get** /queries/plmn_info | Retrieve information on the underlying Mobile Network that the MEC application is associated to
 *RniApi* | [**RabInfoGET**](docs/RniApi.md#rabinfoget) | **Get** /queries/rab_info | Retrieve information on Radio Access Bearers
 *RniApi* | [**SubscriptionLinkListSubscriptionsGET**](docs/RniApi.md#subscriptionlinklistsubscriptionsget) | **Get** /subscriptions | Retrieve information on subscriptions for notifications
@@ -34,6 +35,8 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [AppTerminationNotification](docs/AppTerminationNotification.md)
+ - [AppTerminationNotificationLinks](docs/AppTerminationNotificationLinks.md)
  - [AssociateId](docs/AssociateId.md)
  - [CaReconfNotification](docs/CaReconfNotification.md)
  - [CaReconfNotificationCarrierAggregationMeasInfo](docs/CaReconfNotificationCarrierAggregationMeasInfo.md)
@@ -54,6 +57,7 @@ Class | Method | HTTP request | Description
  - [L2MeasCellInfo](docs/L2MeasCellInfo.md)
  - [L2MeasCellUeInfo](docs/L2MeasCellUeInfo.md)
  - [LinkType](docs/LinkType.md)
+ - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MeasQuantityResultsNr](docs/MeasQuantityResultsNr.md)
  - [MeasRepUeNotification](docs/MeasRepUeNotification.md)
  - [MeasRepUeNotificationCarrierAggregationMeasInfo](docs/MeasRepUeNotificationCarrierAggregationMeasInfo.md)
@@ -80,6 +84,7 @@ Class | Method | HTTP request | Description
  - [NrMeasRepUeSubscriptionFilterCriteriaNrMrs](docs/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md)
  - [OneOfInlineNotification](docs/OneOfInlineNotification.md)
  - [OneOfInlineSubscription](docs/OneOfInlineSubscription.md)
+ - [OperationActionType](docs/OperationActionType.md)
  - [Plmn](docs/Plmn.md)
  - [PlmnInfo](docs/PlmnInfo.md)
  - [ProblemDetails](docs/ProblemDetails.md)
