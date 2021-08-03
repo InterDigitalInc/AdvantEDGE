@@ -127,6 +127,7 @@ default:
 # #
 # #  FORMAT:
 # #  - name: 'svc-name'                   # service name
+# #    api: 'api-name'                    # API-specific identifier (when service has multiple APIs)
 # #    path: '/svc/base/path'             # service base path
 # #    sbox: true|false                   # sandbox deployment
 # #    default:                           # default service permissions
@@ -144,6 +145,34 @@ default:
 # #          user: 'allow|block'
 # #------------------------------------------------------------------------------
 # services:
+#   #------------------------------
+#   #  MEC Application Support (Sbox)
+#   #------------------------------
+#   - name: 'meep-app-enablement'
+#     api: 'mec_app_support'
+#     path: '/mec_app_support/v1'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#   #------------------------------
+#   #  MEC Service Management (Sbox)
+#   #------------------------------
+#   - name: 'meep-app-enablement'
+#     api: 'mec_service_mgmt'
+#     path: '/mec_service_mgmt/v1'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
 #   #------------------------------
 #   #  GIS Engine (Sbox)
 #   #------------------------------
@@ -221,45 +250,6 @@ default:
 #   #------------------------------
 #   - name: 'meep-loc-serv'
 #     path: '/location/v2'
-#     sbox: true
-#     default:
-#       mode: 'allow'
-#     endpoints:
-#       - name: 'Index'
-#         path: '/'
-#         method: 'GET'
-#         mode: 'block'
-#   #------------------------------
-#   #  MEC Application Support (Sbox)
-#   #------------------------------
-#   - name: 'meep-app-enablement-app-supp'
-#     path: '/mec_app_support/v1'
-#     sbox: true
-#     default:
-#       mode: 'allow'
-#     endpoints:
-#       - name: 'Index'
-#         path: '/'
-#         method: 'GET'
-#         mode: 'block'
-#   #------------------------------
-#   #  MEC Service Management (Sbox)
-#   #------------------------------
-#   - name: 'meep-app-enablement-srv-mgmt'
-#     path: '/mec_service_mgmt/v1'
-#     sbox: true
-#     default:
-#       mode: 'allow'
-#     endpoints:
-#       - name: 'Index'
-#         path: '/'
-#         method: 'GET'
-#         mode: 'block'
-#   #------------------------------
-#   #  Application Information (Sbox)
-#   #------------------------------
-#   - name: 'meep-app-enablement-app-info'
-#     path: '/app_info/v1'
 #     sbox: true
 #     default:
 #       mode: 'allow'
@@ -531,6 +521,41 @@ default:
 #         roles:
 #           admin: 'allow'
 #           user: 'allow'
+#       - name: 'GetActiveScenarioDomain'
+#         path: '/active/domains'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetActiveScenarioNetworkLocation'
+#         path: '/active/networkLocations'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetActiveScenarioPhysicalLocation'
+#         path: '/active/physicalLocations'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetActiveScenarioProcess'
+#         path: '/active/processes'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'GetActiveScenarioZone'
+#         path: '/active/zones'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
 #       - name: 'TerminateScenario'
 #         path: '/active'
 #         method: 'DELETE'
@@ -538,6 +563,62 @@ default:
 #         roles:
 #           admin: 'allow'
 #           user: 'allow'
+#       - name: 'ApplicationsAppInstanceIdDELETE'
+#         path: '/applications/{appInstanceId}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'ApplicationsAppInstanceIdGET'
+#         path: '/applications/{appInstanceId}'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'ApplicationsAppInstanceIdPUT'
+#         path: '/applications/{appInstanceId}'
+#         method: 'PUT'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'ApplicationsGET'
+#         path: '/applications'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'ApplicationsPOST'
+#         path: '/applications'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
+#       - name: 'CreatePduSession'
+#         path: '/connectivity/pdu-session/{ueName}/{pduSessionId}'
+#         method: 'POST'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'GetPduSessionList'
+#         path: '/connectivity/pdu-session'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
+#       - name: 'TerminatePduSession'
+#         path: '/connectivity/pdu-session/{ueName}/{pduSessionId}'
+#         method: 'DELETE'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'block'
 #       - name: 'CreateReplayFile'
 #         path: '/replay/{name}'
 #         method: 'POST'

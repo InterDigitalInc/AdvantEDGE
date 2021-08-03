@@ -67,7 +67,7 @@ const postgisUser = "postgres"
 const postgisPwd = "pwd"
 const pfmCtrlBasepath = "http://meep-platform-ctrl/platform-ctrl/v1"
 const providerModeSecure = "secure"
-const mepPrefix = "MEP-"
+const mepPrefix = "mep--"
 
 // Permission Configuration types
 type Permission struct {
@@ -91,6 +91,7 @@ type Endpoint struct {
 }
 type Service struct {
 	Name      string     `yaml:"name"`
+	Api       string     `yaml:"api"`
 	Path      string     `yaml:"path"`
 	Sbox      bool       `yaml:"sbox"`
 	Default   Permission `yaml:"default"`
@@ -366,9 +367,18 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 	authSvc.cache.Services = make(map[string]map[string]*Permission)
 
 	for _, svc := range cfg.Services {
-		// Create new service + add it to service cache
-		svcMap := make(map[string]*Permission)
-		authSvc.cache.Services[svc.Name] = svcMap
+		// Get/Create service + add it to service cache
+		svcMap, found := authSvc.cache.Services[svc.Name]
+		if !found {
+			svcMap = make(map[string]*Permission)
+			authSvc.cache.Services[svc.Name] = svcMap
+		}
+
+		// Get API-specific prefix if present
+		apiPrefix := ""
+		if svc.Api != "" {
+			apiPrefix = svc.Api + "--"
+		}
 
 		// Service Endpoints
 		for _, ep := range svc.Endpoints {
@@ -386,7 +396,7 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 				route := new(AuthRoute)
 				route.Prefix = false
 				route.Method = ep.Method
-				route.Name = mepPrefix + ep.Name
+				route.Name = mepPrefix + apiPrefix + ep.Name
 				route.Pattern = "/{sbox}/{mep}" + svc.Path + ep.Path
 				routes = append(routes, route)
 				svcMap[route.Name] = permission
@@ -395,7 +405,7 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 				route = new(AuthRoute)
 				route.Prefix = false
 				route.Method = ep.Method
-				route.Name = ep.Name
+				route.Name = apiPrefix + ep.Name
 				route.Pattern = "/{sbox}" + svc.Path + ep.Path
 				routes = append(routes, route)
 				svcMap[route.Name] = permission
@@ -404,7 +414,7 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 				route := new(AuthRoute)
 				route.Prefix = false
 				route.Method = ep.Method
-				route.Name = ep.Name
+				route.Name = apiPrefix + ep.Name
 				route.Pattern = svc.Path + ep.Path
 				routes = append(routes, route)
 				svcMap[route.Name] = permission
@@ -431,7 +441,7 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 			// Mep-specific sandbox service
 			route := new(AuthRoute)
 			route.Prefix = true
-			route.Name = mepPrefix + svc.Name
+			route.Name = mepPrefix + apiPrefix + svc.Name
 			route.Pattern = "/{sbox}/{mep}" + svc.Path
 			routes = append(routes, route)
 			svcMap[route.Name] = permission
@@ -439,7 +449,7 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 			// Sandbox service
 			route = new(AuthRoute)
 			route.Prefix = true
-			route.Name = svc.Name
+			route.Name = apiPrefix + svc.Name
 			route.Pattern = "/{sbox}" + svc.Path
 			routes = append(routes, route)
 			svcMap[route.Name] = permission
@@ -447,7 +457,7 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 			// Global service
 			route := new(AuthRoute)
 			route.Prefix = true
-			route.Name = svc.Name
+			route.Name = apiPrefix + svc.Name
 			route.Pattern = svc.Path
 			routes = append(routes, route)
 			svcMap[route.Name] = permission
