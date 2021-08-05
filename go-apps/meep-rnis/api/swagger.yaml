@@ -513,6 +513,33 @@ paths:
         '429':
           $ref: '#/components/responses/429'
       x-swagger-router-controller: "subscriptions"
+  /notifications/mec011/appTermination:
+    post:
+      tags:
+      - 'rni'
+      summary: 'MEC011 Application Termination notification for self termination'
+      description: 'Terminates itself.'
+      operationId: mec011AppTerminationPOST
+      requestBody:
+        description: 'Termination notification details'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotification'
+            example:
+                notificationType: 'AppTerminationNotification'
+                operationAction: 'TERMINATING'
+                maxGracefulTimeout: 10
+                links:
+                  subscription:
+                    href: 'http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123'
+                  confirmTermination:
+                    href: 'http://mec011Server.example.com/mec_app_support/v1/confirm_termination'
+      responses:
+        '204':
+          description: No Content
+      x-swagger-router-controller: 'notifications'
 components:
   responses:
     204:
@@ -3606,3 +3633,66 @@ components:
       - 30
       - 31
       type: integer
+    AppTerminationNotification.Links:
+      description: >-
+        Object containing hyperlinks related to the resource.
+      type: object
+      required:
+        - subscription
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+        confirmTermination:
+          $ref: '#/components/schemas/LinkType.ConfirmTermination'
+    AppTerminationNotification.MaxGracefulTimeout:
+      description: >-
+        Maximum timeout value in seconds for graceful termination or graceful
+        stop of an application instance.
+      type: integer
+      format: uint32
+      example: 10
+    AppTerminationNotification.NotificationType:
+      description: Shall be set to AppTerminationNotification.
+      type: string
+      example: 'AppTerminationNotification'
+    AppTerminationNotification:
+      description: >-
+        This type represents the information that the MEC platform
+        notifies the subscribed application instance about  the corresponding
+        application instance termination/stop.
+      type: object
+      required:
+        - notificationType
+        - operationAction
+        - maxGracefulTimeout
+        - _links
+      properties:
+        notificationType:
+          $ref: '#/components/schemas/AppTerminationNotification.NotificationType'
+        operationAction:
+          $ref: '#/components/schemas/OperationActionType'
+        maxGracefulTimeout:
+          $ref: '#/components/schemas/AppTerminationNotification.MaxGracefulTimeout'
+        _links:
+          $ref: '#/components/schemas/AppTerminationNotification.Links'
+    LinkType.ConfirmTermination:
+      description: >-
+        Link to the task resource where to confirm termination in case the
+        application is ready to be terminated before expiry of the timeout.
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/Href'
+    Href:
+      description: URI referring to a resource
+      type: string
+      format: uri
+      example: '/mecAppSuptApi/example'
+    OperationActionType:
+      description: Operation that is being performed on the MEC application instance.
+      type: string
+      enum:
+        - STOPPING
+        - TERMINATING
+      example: 'TERMINATING'
+

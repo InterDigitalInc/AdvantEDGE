@@ -31,6 +31,10 @@ func Layer2MeasInfoGET(w http.ResponseWriter, r *http.Request) {
 	layer2MeasInfoGet(w, r)
 }
 
+func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
+	mec011AppTerminationPost(w, r)
+}
+
 func PlmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	plmnInfoGet(w, r)
 }

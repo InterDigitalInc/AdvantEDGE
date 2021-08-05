@@ -34,6 +34,7 @@ Class | Method | HTTP request | Description
 *LocationApi* | [**DistanceSubListGET**](docs/LocationApi.md#distancesublistget) | **Get** /subscriptions/distance | Retrieves all active subscriptions to distance change notifications
 *LocationApi* | [**DistanceSubPOST**](docs/LocationApi.md#distancesubpost) | **Post** /subscriptions/distance | Creates a subscription for distance change notification
 *LocationApi* | [**DistanceSubPUT**](docs/LocationApi.md#distancesubput) | **Put** /subscriptions/distance/{subscriptionId} | Updates a subscription information
+*LocationApi* | [**Mec011AppTerminationPOST**](docs/LocationApi.md#mec011appterminationpost) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 *LocationApi* | [**PeriodicSubDELETE**](docs/LocationApi.md#periodicsubdelete) | **Delete** /subscriptions/periodic/{subscriptionId} | Cancel a subscription
 *LocationApi* | [**PeriodicSubGET**](docs/LocationApi.md#periodicsubget) | **Get** /subscriptions/periodic/{subscriptionId} | Retrieve subscription information
 *LocationApi* | [**PeriodicSubListGET**](docs/LocationApi.md#periodicsublistget) | **Get** /subscriptions/periodic | Retrieves all active subscriptions to periodic notifications
@@ -63,6 +64,8 @@ Class | Method | HTTP request | Description
 
  - [AccessPointInfo](docs/AccessPointInfo.md)
  - [AccessPointList](docs/AccessPointList.md)
+ - [AppTerminationNotification](docs/AppTerminationNotification.md)
+ - [AppTerminationNotificationLinks](docs/AppTerminationNotificationLinks.md)
  - [CallbackReference](docs/CallbackReference.md)
  - [CircleNotificationSubscription](docs/CircleNotificationSubscription.md)
  - [ConnectionType](docs/ConnectionType.md)
@@ -88,10 +91,13 @@ Class | Method | HTTP request | Description
  - [InlineZoneStatusNotification](docs/InlineZoneStatusNotification.md)
  - [InlineZoneStatusSubscription](docs/InlineZoneStatusSubscription.md)
  - [Link](docs/Link.md)
+ - [LinkType](docs/LinkType.md)
+ - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [LocationInfo](docs/LocationInfo.md)
  - [LocationInfoVelocity](docs/LocationInfoVelocity.md)
  - [NotificationFormat](docs/NotificationFormat.md)
  - [NotificationSubscriptionList](docs/NotificationSubscriptionList.md)
+ - [OperationActionType](docs/OperationActionType.md)
  - [OperationStatus](docs/OperationStatus.md)
  - [PeriodicNotificationSubscription](docs/PeriodicNotificationSubscription.md)
  - [ProblemDetails](docs/ProblemDetails.md)

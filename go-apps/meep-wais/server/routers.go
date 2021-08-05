@@ -108,6 +108,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"Mec011AppTerminationPOST",
+		strings.ToUpper("Post"),
+		"/wai/v2/notifications/mec011/appTermination",
+		Mec011AppTerminationPOST,
+	},
+
+	Route{
 		"ApInfoGET",
 		strings.ToUpper("Get"),
 		"/wai/v2/queries/ap/ap_information",

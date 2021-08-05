@@ -5,6 +5,7 @@ All URIs are relative to *https://localhost/sandboxname/wai/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**ApInfoGET**](WaiApi.md#ApInfoGET) | **Get** /queries/ap/ap_information | Retrieve information on existing Access Points
+[**Mec011AppTerminationPOST**](WaiApi.md#Mec011AppTerminationPOST) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 [**StaInfoGET**](WaiApi.md#StaInfoGET) | **Get** /queries/sta/sta_information | Retrieve information on existing Stations
 [**SubscriptionLinkListSubscriptionsGET**](WaiApi.md#SubscriptionLinkListSubscriptionsGET) | **Get** /subscriptions | Retrieve information on subscriptions for notifications
 [**SubscriptionsDELETE**](WaiApi.md#SubscriptionsDELETE) | **Delete** /subscriptions/{subscriptionId} | Cancel an existing subscription
@@ -49,6 +50,34 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **Mec011AppTerminationPOST**
+> Mec011AppTerminationPOST(ctx, body)
+MEC011 Application Termination notification for self termination
+
+Terminates itself.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**AppTerminationNotification**](AppTerminationNotification.md)| Termination notification details | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

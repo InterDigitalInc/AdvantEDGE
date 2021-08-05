@@ -27,6 +27,7 @@ Class | Method | HTTP request | Description
 *UnsupportedApi* | [**MeasurementsPOST**](docs/UnsupportedApi.md#measurementspost) | **Post** /measurements | Create a new measurement configuration
 *UnsupportedApi* | [**MeasurementsPUT**](docs/UnsupportedApi.md#measurementsput) | **Put** /measurements/{measurementConfigId} | Modify an existing measurement configuration
 *WaiApi* | [**ApInfoGET**](docs/WaiApi.md#apinfoget) | **Get** /queries/ap/ap_information | Retrieve information on existing Access Points
+*WaiApi* | [**Mec011AppTerminationPOST**](docs/WaiApi.md#mec011appterminationpost) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 *WaiApi* | [**StaInfoGET**](docs/WaiApi.md#stainfoget) | **Get** /queries/sta/sta_information | Retrieve information on existing Stations
 *WaiApi* | [**SubscriptionLinkListSubscriptionsGET**](docs/WaiApi.md#subscriptionlinklistsubscriptionsget) | **Get** /subscriptions | Retrieve information on subscriptions for notifications
 *WaiApi* | [**SubscriptionsDELETE**](docs/WaiApi.md#subscriptionsdelete) | **Delete** /subscriptions/{subscriptionId} | Cancel an existing subscription
@@ -41,6 +42,8 @@ Class | Method | HTTP request | Description
  - [ApIdentity](docs/ApIdentity.md)
  - [ApInfo](docs/ApInfo.md)
  - [ApLocation](docs/ApLocation.md)
+ - [AppTerminationNotification](docs/AppTerminationNotification.md)
+ - [AppTerminationNotificationLinks](docs/AppTerminationNotificationLinks.md)
  - [AssocStaNotification](docs/AssocStaNotification.md)
  - [AssocStaSubscription](docs/AssocStaSubscription.md)
  - [AssocStaSubscriptionLinks](docs/AssocStaSubscriptionLinks.md)
@@ -65,6 +68,7 @@ Class | Method | HTTP request | Description
  - [InlineNotification](docs/InlineNotification.md)
  - [InlineSubscription](docs/InlineSubscription.md)
  - [LinkType](docs/LinkType.md)
+ - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MeasurementConfig](docs/MeasurementConfig.md)
  - [MeasurementConfigLinkList](docs/MeasurementConfigLinkList.md)
  - [MeasurementConfigLinkListMeasurementConfig](docs/MeasurementConfigLinkListMeasurementConfig.md)
@@ -77,6 +81,7 @@ Class | Method | HTTP request | Description
  - [OBssLoad](docs/OBssLoad.md)
  - [OneOfInlineNotification](docs/OneOfInlineNotification.md)
  - [OneOfInlineSubscription](docs/OneOfInlineSubscription.md)
+ - [OperationActionType](docs/OperationActionType.md)
  - [ProblemDetails](docs/ProblemDetails.md)
  - [ReportedBeaconFrameInfo](docs/ReportedBeaconFrameInfo.md)
  - [ReportingReasonQoSCounters](docs/ReportingReasonQoSCounters.md)

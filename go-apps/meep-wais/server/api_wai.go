@@ -31,6 +31,10 @@ func ApInfoGET(w http.ResponseWriter, r *http.Request) {
 	apInfoGET(w, r)
 }
 
+func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
+	mec011AppTerminationPost(w, r)
+}
+
 func StaInfoGET(w http.ResponseWriter, r *http.Request) {
 	staInfoGET(w, r)
 }
