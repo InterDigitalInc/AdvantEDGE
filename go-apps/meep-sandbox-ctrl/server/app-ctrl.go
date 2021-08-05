@@ -126,6 +126,14 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make sure App name is unique and does not exist
+	if appNameExists(appInfo.Name) {
+		errStr := "App Name already exists"
+		log.Error(errStr)
+		http.Error(w, errStr, http.StatusBadRequest)
+		return
+	}
+
 	// Obtain a new App Instance ID if none provided
 	if appInfo.Id == "" {
 		appInstanceId, err := getNewInstanceId()
@@ -363,6 +371,13 @@ func appInstanceExists(mepName string, appInstanceId string) bool {
 		key := appCtrl.baseKey + ":mep:" + mepName + ":app:" + appInstanceId + ":info"
 		return appCtrl.rc.EntryExists(key)
 	}
+	return false
+}
+
+// Validate that App Name exists
+func appNameExists(name string) bool {
+	//key := appCtrl.baseKey + ":mep:*:app:*:info"
+	//TODO need to check the content of each appInfo to find out
 	return false
 }
 

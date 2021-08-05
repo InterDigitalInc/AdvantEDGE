@@ -177,8 +177,6 @@ var sbxCtrlClient *scc.APIClient
 
 var registrationTicker *time.Ticker
 
-var sandboxCtrlClient *scc.APIClient
-
 // Init - Location Service initialization
 func Init() (err error) {
 
@@ -567,12 +565,13 @@ func subscribeAppTermination(appInstanceId string) error {
 	var subscription asc.AppTerminationNotificationSubscription
 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
 	subscription.AppInstanceId = appInstanceId
-	subscription.CallbackReference = hostUrl.String() + basePath + appTerminationPath
+	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + LocServBasePath + appTerminationPath
 	_, _, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err
 	}
+
 	return nil
 }
 
@@ -3853,37 +3852,36 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stopRegistrationTicker()
-
-	//delete any registration it made
-	// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
-	//_ = unsubscribeAppTermination(serviceAppInstanceId)
-	_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
-
-	//send scenario update with a deletion
-	var event scc.Event
-	var eventScenarioUpdate scc.EventScenarioUpdate
-	var process scc.Process
-	var nodeDataUnion scc.NodeDataUnion
-	var node scc.ScenarioNode
-
-	process.Name = instanceName
-	process.Type_ = "EDGE-APP"
-
-	nodeDataUnion.Process = &process
-
-	node.Type_ = "EDGE-APP"
-	node.Parent = mepName
-	node.NodeDataUnion = &nodeDataUnion
-
-	eventScenarioUpdate.Node = &node
-	eventScenarioUpdate.Action = "REMOVE"
-
-	event.EventScenarioUpdate = &eventScenarioUpdate
-	event.Type_ = "SCENARIO-UPDATE"
-
+	//using a go routine to quickly send the response to the requestor
 	go func() {
-		_, err := sandboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+		//delete any registration it made
+		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
+		//_ = unsubscribeAppTermination(serviceAppInstanceId)
+		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
+
+		//send scenario update with a deletion
+		var event scc.Event
+		var eventScenarioUpdate scc.EventScenarioUpdate
+		var process scc.Process
+		var nodeDataUnion scc.NodeDataUnion
+		var node scc.ScenarioNode
+
+		process.Name = instanceName
+		process.Type_ = "EDGE-APP"
+
+		nodeDataUnion.Process = &process
+
+		node.Type_ = "EDGE-APP"
+		node.Parent = mepName
+		node.NodeDataUnion = &nodeDataUnion
+
+		eventScenarioUpdate.Node = &node
+		eventScenarioUpdate.Action = "REMOVE"
+
+		event.EventScenarioUpdate = &eventScenarioUpdate
+		event.Type_ = "SCENARIO-UPDATE"
+
+		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 		if err != nil {
 			log.Error(err)
 		}
