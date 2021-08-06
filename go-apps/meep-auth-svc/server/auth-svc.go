@@ -46,6 +46,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	pcc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-platform-ctrl-client"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
@@ -90,12 +91,13 @@ type Endpoint struct {
 	Roles  map[string]string `yaml:"roles"`
 }
 type Service struct {
-	Name      string     `yaml:"name"`
-	Api       string     `yaml:"api"`
-	Path      string     `yaml:"path"`
-	Sbox      bool       `yaml:"sbox"`
-	Default   Permission `yaml:"default"`
-	Endpoints []Endpoint `yaml:"endpoints"`
+	Name        string       `yaml:"name"`
+	Api         string       `yaml:"api"`
+	Path        string       `yaml:"path"`
+	Sbox        bool         `yaml:"sbox"`
+	Default     Permission   `yaml:"default"`
+	Endpoints   []Endpoint   `yaml:"endpoints"`
+	Fileservers []Fileserver `yaml:"fileservers"`
 }
 type PermissionsConfig struct {
 	Default     Permission   `yaml:"default"`
@@ -128,6 +130,7 @@ type AuthSvc struct {
 	userStore     *users.Connector
 	metricStore   *met.MetricStore
 	mqGlobal      *mq.MsgQueue
+	apiMgr        *sam.SwaggerApiMgr
 	pfmCtrlClient *pcc.APIClient
 	maxSessions   int
 	uri           string
@@ -192,6 +195,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	authSvc.apiMgr, err = sam.NewSwaggerApiMgr(moduleName, "", "", authSvc.mqGlobal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
 
 	// Create Platform Controller REST API client
 	pfmCtrlClientCfg := pcc.NewConfiguration()
@@ -298,6 +309,14 @@ func Init() (err error) {
 }
 
 func Run() (err error) {
+	// Add module Swagger APIs
+	err = authSvc.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Start Session Watchdog
 	err = authSvc.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
 	if err != nil {
@@ -416,6 +435,44 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 				route.Method = ep.Method
 				route.Name = apiPrefix + ep.Name
 				route.Pattern = svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+			}
+		}
+
+		// Service Fileserver Endpoints
+		for _, fs := range svc.Fileservers {
+			// Create service fileserver permissions
+			permission := new(Permission)
+			permission.Mode = fs.Mode
+			permission.Roles = make(map[string]string)
+			for role, access := range fs.Roles {
+				permission.Roles[role] = access
+			}
+
+			// Add auth service routes + cache filserver permissions
+			if svc.Sbox {
+				// Mep-specific sandbox service fileservers
+				route := new(AuthRoute)
+				route.Prefix = true
+				route.Name = mepPrefix + apiPrefix + fs.Name
+				route.Pattern = "/{sbox}/{mep}" + svc.Path + fs.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+
+				// Sandbox service fileserver
+				route = new(AuthRoute)
+				route.Prefix = true
+				route.Name = apiPrefix + fs.Name
+				route.Pattern = "/{sbox}" + svc.Path + fs.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+			} else {
+				// Global service fileserver
+				route := new(AuthRoute)
+				route.Prefix = true
+				route.Name = apiPrefix + fs.Name
+				route.Pattern = svc.Path + fs.Path
 				routes = append(routes, route)
 				svcMap[route.Name] = permission
 			}

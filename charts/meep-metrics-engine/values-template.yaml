@@ -8,7 +8,11 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
+      - meep-sandbox-ctrl
 
 image:
   repository: meep-docker-registry:30001/meep-metrics-engine
@@ -16,6 +20,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    MEEP_SVC_PATH: /metrics/v2
     MEEP_HOST_URL: {{ .HostUrl }}
 
 service:

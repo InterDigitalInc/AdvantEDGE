@@ -14,4 +14,10 @@
 
 FROM debian:9.6-slim
 COPY ./meep-app-enablement /meep-app-enablement
-ENTRYPOINT ["/meep-app-enablement"]
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -13,5 +13,9 @@
 # limitations under the License.
 
 FROM debian:9.6-slim
-ADD meep-webhook /meep-webhook
+COPY ./meep-webhook /meep-webhook
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
+
 ENTRYPOINT /meep-webhook

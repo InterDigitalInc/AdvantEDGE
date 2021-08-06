@@ -14,4 +14,8 @@
 
 FROM debian:9.6-slim
 COPY ./meep-tc-engine /meep-tc-engine
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
+
 ENTRYPOINT ["/meep-tc-engine"]

@@ -167,39 +167,41 @@ func dockerizeTarget(targetName string, cobraCmd *cobra.Command) {
 }
 
 func dockerize(targetName string, repo string, cobraCmd *cobra.Command) {
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
+	srcdir := dockerizeData.gitdir + "/" + utils.RepoCfg.GetString(repo+targetName+".src")
 	bindir := dockerizeData.gitdir + "/" + utils.RepoCfg.GetString(repo+targetName+".bin")
 	fmt.Println("--", targetName, "--")
 
+	// Copy Dockerfile
+	fmt.Println("   + copy docker file")
+	cmd := exec.Command("cp", "Dockerfile", bindir)
+	cmd.Dir = srcdir
+	out, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+		return
+	}
+
+	// copy service api files locally
+	fmt.Println("   + copy api files")
+	err = dockerizeCopy(repo+targetName+".api", bindir+"/api", cobraCmd)
+	if err != nil {
+		return
+	}
+	err = dockerizeCopy(repo+targetName+".user-api", bindir+"/user-api", cobraCmd)
+	if err != nil {
+		return
+	}
+
 	// copy container data locally
 	fmt.Println("   + copy docker data")
-	data := utils.RepoCfg.GetStringMapString(repo + targetName + ".docker-data")
-	var err error
-	if len(data) != 0 {
-		for k, v := range data {
-			dstDataDir := bindir + "/" + k
-			srcDataDir := dockerizeData.gitdir + "/" + v
-			if _, err = os.Stat(srcDataDir); !os.IsNotExist(err) {
-				if verbose {
-					fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
-				}
-				cmd := exec.Command("rm", "-r", dstDataDir)
-				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-				cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
-				_, err = utils.ExecuteCmd(cmd, cobraCmd)
-				if err != nil {
-					fmt.Println("Error: Failed to copy data: ", srcDataDir, " --> ", dstDataDir)
-					return
-				}
-			} else {
-				fmt.Println("Error: Source data not found: ", srcDataDir, " --> ", dstDataDir)
-				return
-			}
-		}
+	err = dockerizeCopy(repo+targetName+".docker-data", bindir+"/data", cobraCmd)
+	if err != nil {
+		return
 	}
 
 	// Obtain checksum of bin folder contents to add as a label in docker image
-	cmd := exec.Command("/bin/sh", "-c", "find "+bindir+" -type f | xargs sha256sum | sort | sha256sum")
+	cmd = exec.Command("/bin/sh", "-c", "find "+bindir+" -type f | xargs sha256sum | sort | sha256sum")
 	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
 	checksum := strings.Split(output, " ")
 
@@ -223,13 +225,38 @@ func dockerize(targetName string, repo string, cobraCmd *cobra.Command) {
 		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, bindir)
 		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	}
+}
 
-	// cleanup data
-	if len(data) != 0 {
-		for k := range data {
-			dstDataDir := bindir + "/" + k
+func dockerizeCopy(key string, dstDir string, cobraCmd *cobra.Command) (err error) {
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
+
+	// Create dest dir
+	cmd := exec.Command("rm", "-r", dstDir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("mkdir", "-p", dstDir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+
+	// Get key map data
+	data := utils.RepoCfg.GetStringMapString(key)
+	for k, v := range data {
+		dstDataDir := dstDir + "/" + k
+		srcDataDir := dockerizeData.gitdir + "/" + v
+		if _, err = os.Stat(srcDataDir); !os.IsNotExist(err) {
+			if verbose {
+				fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
+			}
 			cmd := exec.Command("rm", "-r", dstDataDir)
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+			cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
+			_, err = utils.ExecuteCmd(cmd, cobraCmd)
+			if err != nil {
+				fmt.Println("Error: Failed to copy data: ", srcDataDir, " --> ", dstDataDir)
+				return err
+			}
+		} else {
+			fmt.Println("Error: Source data not found: ", srcDataDir, " --> ", dstDataDir)
+			return err
 		}
 	}
+	return nil
 }

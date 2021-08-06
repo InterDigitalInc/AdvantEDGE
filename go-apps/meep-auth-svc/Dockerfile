@@ -14,11 +14,15 @@
 
 FROM debian:9.6-slim
 COPY ./meep-auth-svc /meep-auth-svc
-COPY ./permissions.yaml /permissions.yaml
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
+
+RUN chmod +x /entrypoint.sh
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates
 
 RUN update-ca-certificates
 
-ENTRYPOINT ["/meep-auth-svc"]
+ENTRYPOINT ["/entrypoint.sh"]

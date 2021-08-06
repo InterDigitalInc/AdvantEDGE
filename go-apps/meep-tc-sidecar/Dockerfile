@@ -13,6 +13,11 @@
 # limitations under the License.
 
 FROM debian:9.6-slim
-RUN apt-get update && apt-get install -y iputils-ping iproute2 iptables conntrack net-tools
 COPY ./meep-tc-sidecar /meep-tc-sidecar
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
+
+RUN apt-get update && apt-get install -y iputils-ping iproute2 iptables conntrack net-tools
+
 ENTRYPOINT ["/meep-tc-sidecar"]

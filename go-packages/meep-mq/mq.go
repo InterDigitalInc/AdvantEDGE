@@ -81,6 +81,9 @@ const (
 	MsgAppTerminate Message = "APP-TERMINATE"
 	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
 
+	// API
+	MsgApiUpdate Message = "API-UPDATE"
+
 	// Watchdog
 	MsgPing Message = "PING"
 	MsgPong Message = "PONG"

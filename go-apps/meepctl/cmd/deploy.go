@@ -187,6 +187,8 @@ func deployCore(cobraCmd *cobra.Command) {
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
+		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+		httpsOnly := utils.RepoCfg.GetBool("repo.deployment.ingress.https-only")
 		flags := deployRunScriptsAndGetFlags(app, chart, cobraCmd)
 
 		// Set core flags
@@ -205,7 +207,11 @@ func deployCore(cobraCmd *cobra.Command) {
 		if userSwagger {
 			// deployment level flag - not all apps use it
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.enabled=true")
-			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.location="+deployData.workdir+"/user/swagger")
+		}
+		if httpsOnly {
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
+		} else {
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
 		}
 
 		k8sDeploy(app, chart, coreFlags, cobraCmd)
@@ -408,8 +414,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		if sessionKeySecret != "" {
 			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_SESSION_KEY.name="+sessionKeySecret)
 		}
-		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
 		maxSessions := utils.RepoCfg.GetString("repo.deployment.auth.session.max-sessions")
 		if maxSessions != "" {
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_MAX_SESSIONS="+maxSessions)
@@ -483,19 +487,12 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_AUTH_ENABLED=\""+strconv.FormatBool(authEnabled)+"\"")
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
-		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\""+strconv.FormatBool(httpsOnly)+"\"")
-		if httpsOnly {
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
-		} else {
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
-		}
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER_DIR=\""+deployData.workdir+"/user/sandbox-swagger"+"\"")
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")

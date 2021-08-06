@@ -51,7 +51,6 @@ type VirtEngine struct {
 	activeScenarioNames map[string]string
 	hostUrl             string
 	userSwagger         string
-	userSwaggerDir      string
 	httpsOnly           bool
 	authEnabled         bool
 	handlerId           int
@@ -118,15 +117,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("MEEP_USER_SWAGGER: ", ve.userSwagger)
-
-	// Retrieve User Swagger Dir from environment variable
-	ve.userSwaggerDir = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER_DIR"))
-	if ve.userSwaggerDir == "" {
-		err = errors.New("MEEP_USER_SWAGGER_DIR variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
 
 	// Retrieve HTTPS only mode from environment variable
 	httpsOnlyStr := strings.TrimSpace(os.Getenv("MEEP_HTTPS_ONLY"))

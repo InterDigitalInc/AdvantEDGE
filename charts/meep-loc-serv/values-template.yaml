@@ -11,7 +11,8 @@ deployment:
       {{- if not .IsMepService }}
       - kube-dns
       {{- end }}
-    sandbox:
+    namespace:
+      - meep-sandbox-ctrl
 
 image:
   repository: meep-docker-registry:30001/meep-loc-serv
@@ -20,6 +21,7 @@ image:
   env:
     MEEP_INSTANCE_ID: {{.InstanceId}}
     MEEP_SANDBOX_NAME: {{.SandboxName}}
+    MEEP_SVC_PATH: /location/v2
     MEEP_HOST_URL: {{.HostUrl}}
     {{- if .IsMepService }}
     MEEP_MEP_NAME: {{.MepName}}

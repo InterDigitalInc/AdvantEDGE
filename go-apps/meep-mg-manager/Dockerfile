@@ -14,4 +14,10 @@
 
 FROM debian:9.6-slim
 COPY ./meep-mg-manager /meep-mg-manager
-ENTRYPOINT ["/meep-mg-manager"]
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

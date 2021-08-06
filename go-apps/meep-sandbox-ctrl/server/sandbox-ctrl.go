@@ -40,6 +40,7 @@ import (
 	pss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
 type Scenario struct {
@@ -50,6 +51,7 @@ type SandboxCtrl struct {
 	sandboxName     string
 	mqGlobal        *mq.MsgQueue
 	mqLocal         *mq.MsgQueue
+	apiMgr          *sam.SwaggerApiMgr
 	scenarioStore   *couch.Connector
 	replayStore     *couch.Connector
 	modelCfg        mod.ModelCfg
@@ -126,6 +128,14 @@ func Init() (err error) {
 	}
 	log.Info("Local Message Queue created")
 
+	// Create Swagger API Manager
+	sbxCtrl.apiMgr, err = sam.NewSwaggerApiMgr(moduleName, sbxCtrl.sandboxName, "", sbxCtrl.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Create new active scenario model
 	sbxCtrl.modelCfg = mod.ModelCfg{
 		Name:      "activeScenario",
@@ -200,6 +210,22 @@ func Init() (err error) {
 // Start Sandbox Controller
 func Run() (err error) {
 
+	// Start Swagger API Manager
+	err = sbxCtrl.apiMgr.Start()
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = sbxCtrl.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Activate scenario on sandbox startup if required, otherwise wait for activation request
 	if sbox, err := sbxCtrl.sandboxStore.Get(sbxCtrl.sandboxName); err == nil && sbox != nil {
 		if sbox.ScenarioName != "" {
@@ -225,6 +251,9 @@ func Run() (err error) {
 
 // Stop Sandbox Controller
 func Stop() (err error) {
+
+	// Stop Swagger API Manager
+	_ = sbxCtrl.apiMgr.Stop()
 
 	// Stop App Controller
 	err = appCtrlStop()

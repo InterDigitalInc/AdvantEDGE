@@ -27,12 +27,13 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
-const moduleName string = "meep-loc-serv-sbi"
-
 type SbiCfg struct {
+	ModuleName     string
 	SandboxName    string
+	MepName        string
 	RedisAddr      string
 	Locality       []string
 	UserInfoCb     func(string, string, string, *float32, *float32)
@@ -43,10 +44,13 @@ type SbiCfg struct {
 }
 
 type LocServSbi struct {
+	moduleName              string
 	sandboxName             string
+	mepName                 string
 	localityEnabled         bool
 	locality                map[string]bool
 	mqLocal                 *mq.MsgQueue
+	apiMgr                  *sam.SwaggerApiMgr
 	handlerId               int
 	activeModel             *mod.Model
 	gisCache                *gc.GisCache
@@ -66,7 +70,9 @@ func Init(cfg SbiCfg) (err error) {
 
 	// Create new SBI instance
 	sbi = new(LocServSbi)
+	sbi.moduleName = cfg.ModuleName
 	sbi.sandboxName = cfg.SandboxName
+	sbi.mepName = cfg.MepName
 	sbi.updateUserInfoCB = cfg.UserInfoCb
 	sbi.updateZoneInfoCB = cfg.ZoneInfoCb
 	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
@@ -85,18 +91,26 @@ func Init(cfg SbiCfg) (err error) {
 	}
 
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), sbi.moduleName, sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
 	}
 	log.Info("Message Queue created")
 
+	// Create Swagger API Manager
+	sbi.apiMgr, err = sam.NewSwaggerApiMgr(sbi.moduleName, sbi.sandboxName, sbi.mepName, sbi.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
 		Name:      "activeScenario",
 		Namespace: sbi.sandboxName,
-		Module:    moduleName,
+		Module:    sbi.moduleName,
 		UpdateCb:  nil,
 		DbAddr:    cfg.RedisAddr,
 	}
@@ -123,6 +137,14 @@ func Init(cfg SbiCfg) (err error) {
 
 // Run - MEEP Location Service execution
 func Run() (err error) {
+
+	// Add module Swagger APIs
+	err = sbi.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}

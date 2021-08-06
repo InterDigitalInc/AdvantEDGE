@@ -44,9 +44,10 @@ type Route struct {
 type Routes []Route
 
 func NewRouter() *mux.Router {
+	var handler http.Handler
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
+		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		handler = met.MetricsHandler(handler, sandboxName, serviceName)
 		handler = httpLog.LogRx(handler, "")
@@ -56,6 +57,20 @@ func NewRouter() *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
+
+	// Path prefix router order is important
+	// Service Api files
+	handler = http.StripPrefix("/rni/v2/api/", http.FileServer(http.Dir("./api/")))
+	router.
+		PathPrefix("/rni/v2/api/").
+		Name("Api").
+		Handler(handler)
+	// User supplied service API files
+	handler = http.StripPrefix("/rni/v2/user-api/", http.FileServer(http.Dir("./user-api/")))
+	router.
+		PathPrefix("/rni/v2/user-api/").
+		Name("UserApi").
+		Handler(handler)
 
 	return router
 }

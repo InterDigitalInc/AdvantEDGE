@@ -33,11 +33,6 @@ spec:
           persistentVolumeClaim:
             claimName: meep-platform-ctrl-user-frontend-pvc
       {{- end}}
-      {{- if .Values.user.swagger.enabled}}
-        - name: user-swagger-storage
-          persistentVolumeClaim:
-            claimName: meep-platform-ctrl-user-swagger-pvc
-      {{- end}}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -68,7 +63,7 @@ spec:
             {{- end }}
             {{- if .Values.user.swagger.enabled}}
             - name: USER_SWAGGER
-              value: {{ .Values.user.swagger.mountpath }}
+              value: "true"
             {{- end }}
           volumeMounts:
           {{- if .Values.codecov.enabled}}
@@ -79,19 +74,21 @@ spec:
             - name: user-frontend-storage
               mountPath: {{ .Values.user.frontend.mountpath }}
           {{- end}}
-          {{- if .Values.user.swagger.enabled}}
-            - name: user-swagger-storage
-              mountPath: {{ .Values.user.swagger.mountpath }}
-          {{- end}}
       terminationGracePeriodSeconds: 5
       {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
       initContainers:
-        - name: init-{{ .Values.deployment.dependency }}
+        {{- range $value := .Values.deployment.dependencies.system }}
+        - name: init-system-{{ $value }}
           image: busybox:1.28
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }}.kube-system ; do echo waiting for {{ .Values.deployment.dependency }}; sleep 0.25; done;']
-
-
+          command: ['sh', '-c', 'until nslookup {{ $value }}.kube-system ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}
+        {{- range $value := .Values.deployment.dependencies.namespace }}
+        - name: init-{{ $value }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ $value }} ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}

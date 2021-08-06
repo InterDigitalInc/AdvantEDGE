@@ -296,6 +296,7 @@ func Init() (err error) {
 
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{
+		ModuleName:     moduleName,
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
 		Locality:       locality,
@@ -304,6 +305,9 @@ func Init() (err error) {
 		ApInfoCb:       updateAccessPointInfo,
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
+	}
+	if mepName != defaultMepName {
+		sbiCfg.MepName = mepName
 	}
 	err = sbi.Init(sbiCfg)
 	if err != nil {

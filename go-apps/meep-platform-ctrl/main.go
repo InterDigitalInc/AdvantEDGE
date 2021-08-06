@@ -83,7 +83,7 @@ func main() {
 			priSw = "./swagger/"
 			altSw = ""
 		} else {
-			priSw = "." + userSw + "/"
+			priSw = "./user-swagger/"
 			altSw = "./swagger/"
 		}
 
