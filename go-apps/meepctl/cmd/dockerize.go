@@ -184,18 +184,18 @@ func dockerize(targetName string, repo string, cobraCmd *cobra.Command) {
 
 	// copy service api files locally
 	fmt.Println("   + copy api files")
-	err = dockerizeCopy(repo+targetName+".api", bindir+"/api", cobraCmd)
+	err = dockerizeCopyApi(repo+targetName+".api", bindir+"/api", cobraCmd)
 	if err != nil {
 		return
 	}
-	err = dockerizeCopy(repo+targetName+".user-api", bindir+"/user-api", cobraCmd)
+	err = dockerizeCopyApi(repo+targetName+".user-api", bindir+"/user-api", cobraCmd)
 	if err != nil {
 		return
 	}
 
 	// copy container data locally
 	fmt.Println("   + copy docker data")
-	err = dockerizeCopy(repo+targetName+".docker-data", bindir+"/data", cobraCmd)
+	err = dockerizeCopyData(repo+targetName+".docker-data", bindir+"/data", cobraCmd)
 	if err != nil {
 		return
 	}
@@ -227,7 +227,53 @@ func dockerize(targetName string, repo string, cobraCmd *cobra.Command) {
 	}
 }
 
-func dockerizeCopy(key string, dstDir string, cobraCmd *cobra.Command) (err error) {
+type dockerizeApi struct {
+	Name string `json:"name"`
+	File string `json:"file"`
+}
+
+func dockerizeCopyApi(key string, dstDir string, cobraCmd *cobra.Command) (err error) {
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
+
+	// Create dest dir
+	cmd := exec.Command("rm", "-r", dstDir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("mkdir", "-p", dstDir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+
+	// Get key map data
+	var apiList []dockerizeApi
+	err = utils.RepoCfg.UnmarshalKey(key, &apiList)
+	if err != nil {
+		fmt.Println("Error: Failed to unmarshal api @ ", key)
+		return err
+	}
+
+	// Copy API files
+	for _, api := range apiList {
+		dstApi := dstDir + "/" + api.Name
+		srcApi := dockerizeData.gitdir + "/" + api.File
+		if _, err = os.Stat(srcApi); !os.IsNotExist(err) {
+			if verbose {
+				fmt.Println("    Using: " + srcApi + " --> " + dstApi)
+			}
+			cmd := exec.Command("rm", dstApi)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+			cmd = exec.Command("cp", srcApi, dstApi)
+			_, err = utils.ExecuteCmd(cmd, cobraCmd)
+			if err != nil {
+				fmt.Println("Error: Failed to copy data: ", srcApi, " --> ", dstApi)
+				return err
+			}
+		} else {
+			fmt.Println("Error: Source data not found: ", srcApi, " --> ", dstApi)
+			return err
+		}
+	}
+	return nil
+}
+
+func dockerizeCopyData(key string, dstDir string, cobraCmd *cobra.Command) (err error) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
 	// Create dest dir

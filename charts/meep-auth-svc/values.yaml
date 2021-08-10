@@ -13,7 +13,6 @@ deployment:
     system:
       - kube-dns
     namespace:
-      - meep-platform-ctrl
 
 affinity:
   nodeAffinity:

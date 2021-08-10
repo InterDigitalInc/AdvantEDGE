@@ -12,7 +12,6 @@ deployment:
     system:
       - kube-dns
     namespace:
-      - meep-sandbox-ctrl
 
 image:
   repository: meep-docker-registry:30001/meep-metrics-engine

@@ -150,21 +150,13 @@ func Init() (err error) {
 
 // Run Starts the Platform Controller
 func Run() (err error) {
-	// Start Swagger API Manager
-	err = pfmCtrl.apiMgr.Start()
+	// Start Swagger API Manager (provider & aggregator)
+	err = pfmCtrl.apiMgr.Start(true, true)
 	if err != nil {
 		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
 		return err
 	}
 	log.Info("Swagger API Manager started")
-
-	// Add module Swagger APIs
-	err = pfmCtrl.apiMgr.AddApis()
-	if err != nil {
-		log.Error("Failed to add Swagger APIs with error: ", err.Error())
-		return err
-	}
-	log.Info("Swagger APIs successfully added")
 
 	log.Info("Platform Controller started")
 	return nil

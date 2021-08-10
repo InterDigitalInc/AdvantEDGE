@@ -204,7 +204,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-auth-svc.yaml': go-apps/meep-auth-svc/api/swagger.yaml
+          - name: 'AdvantEDGE Auth Service REST API'
+            file: go-apps/meep-auth-svc/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -280,7 +281,8 @@ repo:
           - meep-app-enablement
         # location of API specifications
         api:
-          'meep-mon-engine.yaml': go-apps/meep-mon-engine/api/swagger.yaml
+          - name: 'AdvantEDGE Monitoring Engine REST API'
+            file: go-apps/meep-mon-engine/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -308,7 +310,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-platform-ctrl.yaml': go-apps/meep-platform-ctrl/api/swagger.yaml
+          - name: 'AdvantEDGE Platform Controller REST API'
+            file: go-apps/meep-platform-ctrl/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -443,8 +446,10 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-app-support.yaml': go-apps/meep-app-enablement/api/app-support/swagger.yaml
-          'meep-service-mgmt.yaml': go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml
+          - name: 'AdvantEDGE MEC Application Support REST API'
+            file: go-apps/meep-app-enablement/api/app-support/swagger.yaml
+          - name: 'AdvantEDGE MEC Service Management REST API'
+            file: go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -472,7 +477,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-gis-engine.yaml': go-apps/meep-gis-engine/api/swagger.yaml
+          - name: 'AdvantEDGE GIS Engine REST API'
+            file: go-apps/meep-gis-engine/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -503,7 +509,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-loc-serv.yaml': go-apps/meep-loc-serv/api/swagger.yaml
+          - name: 'AdvantEDGE Location Service REST API'
+            file: go-apps/meep-loc-serv/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -534,8 +541,10 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-metrics-engine.yaml': go-apps/meep-metrics-engine/api/v2/swagger.yaml
-          'meep-metrics-engine-notification-client.yaml': go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
+          - name: 'AdvantEDGE Metrics Service REST API'
+            file: go-apps/meep-metrics-engine/api/v2/swagger.yaml
+          - name: 'AdvantEDGE Metrics Service Notification REST API'
+            file: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -563,8 +572,10 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-mg-manager.yaml': go-apps/meep-mg-manager/api/swagger.yaml
-          'meep-mg-app-client.yaml': go-packages/meep-mg-app-client/api/swagger.yaml
+          - name: 'AdvantEDGE Mobility Group Service REST API'
+            file: go-apps/meep-mg-manager/api/swagger.yaml
+          - name: 'AdvantEDGE Mobility Group Application Client REST API'
+            file: go-packages/meep-mg-app-client/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -595,7 +606,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-rnis.yaml': go-apps/meep-rnis/api/swagger.yaml
+          - name: 'AdvantEDGE Radio Network Information Service REST API'
+            file: go-apps/meep-rnis/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -626,7 +638,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-wais.yaml': go-apps/meep-wais/api/swagger.yaml
+          - name: 'AdvantEDGE WLAN Access Information REST API'
+            file: go-apps/meep-wais/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image
@@ -654,7 +667,8 @@ repo:
         lint: true
         # location of API specifications
         api:
-          'meep-sandbox-ctrl.yaml': go-apps/meep-sandbox-ctrl/api/swagger.yaml
+          - name: 'AdvantEDGE Sandbox Controller REST API'
+            file: go-apps/meep-sandbox-ctrl/api/swagger.yaml
         # location of user supplied API specifications
         user-api:
         # resources available to docker container image

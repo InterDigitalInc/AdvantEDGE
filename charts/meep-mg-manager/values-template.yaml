@@ -12,7 +12,6 @@ deployment:
     system:
       - kube-dns
     namespace:
-      - meep-sandbox-ctrl
 
 affinity:
   nodeAffinity:

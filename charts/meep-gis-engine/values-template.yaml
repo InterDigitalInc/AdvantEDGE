@@ -12,7 +12,6 @@ deployment:
     system:
       - kube-dns
     namespace:
-      - meep-sandbox-ctrl
 
 image:
   repository: meep-docker-registry:30001/meep-gis-engine
@@ -20,7 +19,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
-    MEEP_SVC_PATH: /auth/v1
+    MEEP_SVC_PATH: /gis/v1
 
 service:
   name: meep-gis-engine

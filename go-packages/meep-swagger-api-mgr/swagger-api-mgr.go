@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -35,9 +36,11 @@ const moduleSandboxCtrl = "meep-sandbox-ctrl"
 
 // MQ payload fields
 const mqFieldModule = "module"
+const mqFieldMepName = "mep"
 const mqFieldApiList = "apilist"
 
 type SwaggerApiList struct {
+	isMep    bool
 	Apis     []SwaggerApi
 	UserApis []SwaggerApi
 }
@@ -48,20 +51,27 @@ type SwaggerApi struct {
 }
 
 type SwaggerApiMgr struct {
-	moduleName  string
-	sandboxName string
-	svcUrl      string
-	msgQueue    *mq.MsgQueue
-	handlerId   int
+	moduleName   string
+	sandboxName  string
+	mepName      string
+	isProvider   bool
+	isAggregator bool
+	svcUrl       string
+	msgQueue     *mq.MsgQueue
+	handlerId    int
+	apiMap       map[string]*SwaggerApiList
 }
 
 // NewSwaggerApiMgr - Creates and initialize a Swagger API Manager instance
 func NewSwaggerApiMgr(moduleName string, sandboxName string, mepName string, msgQueue *mq.MsgQueue) (sam *SwaggerApiMgr, err error) {
 	// Create new Swagger API Manager instance
 	sam = new(SwaggerApiMgr)
+	sam.moduleName = moduleName
 	sam.sandboxName = sandboxName
+	sam.mepName = mepName
 	sam.msgQueue = msgQueue
 	sam.handlerId = -1
+	sam.apiMap = make(map[string]*SwaggerApiList)
 
 	// Get Host Url
 	hostUrl, err := url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
@@ -73,13 +83,6 @@ func NewSwaggerApiMgr(moduleName string, sandboxName string, mepName string, msg
 	// Get Service Path
 	svcPath := strings.TrimSpace(os.Getenv("MEEP_SVC_PATH"))
 	log.Info("MEEP_SVC_PATH: ", svcPath)
-
-	// Module name
-	sam.moduleName = moduleName
-	if mepName != "" {
-		sam.moduleName = mepName + "-" + moduleName
-	}
-	log.Info("Module name: ", sam.moduleName)
 
 	// Create full service url
 	sam.svcUrl = hostUrl.String()
@@ -97,8 +100,10 @@ func NewSwaggerApiMgr(moduleName string, sandboxName string, mepName string, msg
 }
 
 // Start - Start Swagger API message Handler
-func (sam *SwaggerApiMgr) Start() error {
+func (sam *SwaggerApiMgr) Start(isProvider bool, isAggregator bool) error {
 	var err error
+	sam.isProvider = isProvider
+	sam.isAggregator = isAggregator
 
 	// Make sure handler is not running
 	if sam.handlerId != -1 {
@@ -111,6 +116,11 @@ func (sam *SwaggerApiMgr) Start() error {
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
+	}
+
+	// If aggregator, send API update Request to providers
+	if sam.isAggregator {
+		_ = sam.sendApiRequest()
 	}
 	return nil
 }
@@ -128,6 +138,22 @@ func (sam *SwaggerApiMgr) Stop() error {
 	return nil
 }
 
+// FlushMepApis - Flush all MEP APIs
+func (sam *SwaggerApiMgr) FlushMepApis() error {
+
+	// Remove MEP APIs from API map
+	for key, apiList := range sam.apiMap {
+		if apiList.isMep {
+			delete(sam.apiMap, key)
+		}
+	}
+
+	// Refresh API lists
+	sam.refreshApiLists()
+
+	return nil
+}
+
 // AddApis - Send message to inform listeners of added APIs
 func (sam *SwaggerApiMgr) AddApis() error {
 	// Get service APIs from filesystem
@@ -142,18 +168,24 @@ func (sam *SwaggerApiMgr) AddApis() error {
 		return err
 	}
 
-	// Populate API list
+	// Get MEP prefix
+	mepPrefix := ""
+	if sam.mepName != "" {
+		mepPrefix = sam.mepName + " - "
+	}
+
+	// Populate API lists
 	var apiList SwaggerApiList
 	for _, file := range apiFiles {
 		var api SwaggerApi
-		api.Name = file.Name()
-		api.Url = sam.svcUrl + "/api/" + api.Name
+		api.Name = mepPrefix + file.Name()
+		api.Url = sam.svcUrl + "/api/" + file.Name()
 		apiList.Apis = append(apiList.Apis, api)
 	}
 	for _, file := range userApiFiles {
 		var api SwaggerApi
-		api.Name = file.Name()
-		api.Url = sam.svcUrl + "/user-api/" + api.Name
+		api.Name = mepPrefix + file.Name()
+		api.Url = sam.svcUrl + "/user-api/" + file.Name()
 		apiList.Apis = append(apiList.Apis, api)
 	}
 
@@ -182,7 +214,24 @@ func (sam *SwaggerApiMgr) publishApiUpdate(apiList *SwaggerApiList) error {
 		msg = sam.msgQueue.CreateMsg(mq.MsgApiUpdate, moduleSandboxCtrl, sam.sandboxName)
 	}
 	msg.Payload[mqFieldModule] = sam.moduleName
+	msg.Payload[mqFieldMepName] = sam.mepName
 	msg.Payload[mqFieldApiList] = apiListStr
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := sam.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (sam *SwaggerApiMgr) sendApiRequest() error {
+	var msg *mq.Msg
+	if sam.sandboxName == "" {
+		msg = sam.msgQueue.CreateMsg(mq.MsgApiRequest, mq.TargetAll, mq.TargetAll)
+	} else {
+		msg = sam.msgQueue.CreateMsg(mq.MsgApiRequest, mq.TargetAll, sam.sandboxName)
+	}
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err := sam.msgQueue.SendMsg(msg)
 	if err != nil {
@@ -196,16 +245,117 @@ func (sam *SwaggerApiMgr) publishApiUpdate(apiList *SwaggerApiList) error {
 func (sam *SwaggerApiMgr) msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
 	case mq.MsgApiUpdate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		moduleName := msg.Payload[mqFieldModule]
-		apiListStr := msg.Payload[mqFieldApiList]
-		sam.processApiUpdate(moduleName, convertJsonToSwaggerApiList(apiListStr))
+		if sam.isAggregator {
+			log.Debug("RX MSG: ", mq.PrintMsg(msg))
+			moduleName := msg.Payload[mqFieldModule]
+			mepName := msg.Payload[mqFieldMepName]
+			apiListStr := msg.Payload[mqFieldApiList]
+			sam.processApiUpdate(moduleName, mepName, convertJsonToSwaggerApiList(apiListStr))
+		}
+	case mq.MsgApiRequest:
+		if sam.isProvider {
+			log.Debug("RX MSG: ", mq.PrintMsg(msg))
+			sam.processApiRequest()
+		}
 	default:
 	}
 }
 
-func (sam *SwaggerApiMgr) processApiUpdate(moduleName string, apiList *SwaggerApiList) {
+func (sam *SwaggerApiMgr) processApiRequest() {
+	// Retieve & send APIs
+	_ = sam.AddApis()
+}
 
+func (sam *SwaggerApiMgr) processApiUpdate(moduleName string, mepName string, apiList *SwaggerApiList) {
+
+	// Validate params
+	if moduleName == "" {
+		log.Error("Invalid module name")
+		return
+	}
+	if apiList == nil {
+		log.Error("apiList == nil")
+		return
+	}
+
+	// Update module API list
+	mepPrefix := ""
+	apiList.isMep = false
+	if mepName != "" {
+		mepPrefix = mepName + "-"
+		apiList.isMep = true
+	}
+	sam.apiMap[mepPrefix+moduleName] = apiList
+
+	// Refresh API lists
+	sam.refreshApiLists()
+}
+
+func (sam *SwaggerApiMgr) refreshApiLists() {
+
+	// Get ordered api lists
+	var orderedApiList []SwaggerApi
+	var orderedUserApiList []SwaggerApi
+	for _, apiList := range sam.apiMap {
+		orderedApiList = append(orderedApiList, apiList.Apis...)
+		orderedUserApiList = append(orderedUserApiList, apiList.UserApis...)
+	}
+	sortApiList(orderedApiList)
+	sortApiList(orderedUserApiList)
+
+	// Update index.html file API lists
+	_ = updateApiListInFile("/swagger/index.html", orderedApiList)
+	_ = updateApiListInFile("/user-swagger/index.html", orderedUserApiList)
+}
+
+func updateApiListInFile(filename string, apiList []SwaggerApi) error {
+	matchPrefix := "        url"
+	apiListNone := "        url: \"\","
+	apiListPrefix := "        urls: ["
+	apiListPostfix := " ],"
+
+	// Generate API list string to replace in file
+	apiListStr := apiListNone
+	if len(apiList) > 0 {
+		apiListStr = apiListPrefix
+		for _, api := range apiList {
+			// Replace http/https prefix from URL with browser location protocol
+			url := strings.TrimPrefix(api.Url, "https:")
+			url = strings.TrimPrefix(url, "http:")
+			apiListStr += "{\"name\": \"" + api.Name + "\", \"url\": location.protocol + \"" + url + "\"},"
+		}
+		apiListStr += apiListPostfix
+	}
+	log.Debug("apiListStr: ", apiListStr)
+
+	// Read input file
+	input, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Error("Failed to read file with err: ", err.Error())
+		return err
+	}
+
+	// Replace API list line
+	lines := strings.Split(string(input), "\n")
+	apiListUpdated := false
+	for i, line := range lines {
+		if strings.HasPrefix(line, matchPrefix) {
+			lines[i] = apiListStr
+			apiListUpdated = true
+			break
+		}
+	}
+
+	// Write file if updated
+	if apiListUpdated {
+		output := strings.Join(lines, "\n")
+		err = ioutil.WriteFile(filename, []byte(output), 0644)
+		if err != nil {
+			log.Error("Failed to write file with err: ", err.Error())
+			return err
+		}
+	}
+	return nil
 }
 
 func convertSwaggerApiListToJson(apiList *SwaggerApiList) string {
@@ -225,4 +375,10 @@ func convertJsonToSwaggerApiList(jsonInfo string) *SwaggerApiList {
 		return nil
 	}
 	return &obj
+}
+
+func sortApiList(apiList []SwaggerApi) {
+	sort.Slice(apiList, func(i, j int) bool {
+		return apiList[i].Name < apiList[j].Name
+	})
 }

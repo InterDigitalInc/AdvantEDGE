@@ -29,6 +29,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
 const serviceName = "Edge Platform Application Enablement Service"
@@ -44,6 +45,7 @@ var sandboxName string
 var mepName string = defaultMepName
 var handlerId int
 var mqLocal *mq.MsgQueue
+var apiMgr *sam.SwaggerApiMgr
 var activeModel *mod.Model
 var currentStoreName = ""
 
@@ -103,6 +105,18 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
+	// Create Swagger API Manager
+	mep := ""
+	if mepName != defaultMepName {
+		mep = mepName
+	}
+	apiMgr, err = sam.NewSwaggerApiMgr(moduleName, sandboxName, mep, mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Initialize Service Management
 	err = sm.Init(sandboxName, mepName, hostUrl, mqLocal, &mutex)
 	if err != nil {
@@ -130,6 +144,22 @@ func Run() (err error) {
 	if err != nil {
 		return err
 	}
+
+	// Start Swagger API Manager (provider)
+	err = apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}

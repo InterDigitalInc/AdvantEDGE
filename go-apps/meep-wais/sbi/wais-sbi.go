@@ -26,6 +26,7 @@ import (
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
 const moduleName string = "meep-wais-sbi"
@@ -35,7 +36,9 @@ var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 type SbiCfg struct {
+	ModuleName     string
 	SandboxName    string
+	MepName        string
 	RedisAddr      string
 	InfluxAddr     string
 	PostgisHost    string
@@ -48,12 +51,15 @@ type SbiCfg struct {
 }
 
 type WaisSbi struct {
+	moduleName              string
 	sandboxName             string
+	mepName                 string
 	scenarioName            string
 	localityEnabled         bool
 	locality                map[string]bool
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
+	apiMgr                  *sam.SwaggerApiMgr
 	activeModel             *mod.Model
 	gisCache                *gc.GisCache
 	refreshTicker           *time.Ticker
@@ -74,7 +80,9 @@ func Init(cfg SbiCfg) (err error) {
 		sbi = nil
 	}
 	sbi = new(WaisSbi)
+	sbi.moduleName = cfg.ModuleName
 	sbi.sandboxName = cfg.SandboxName
+	sbi.mepName = cfg.MepName
 	sbi.scenarioName = ""
 	sbi.updateStaInfoCB = cfg.StaInfoCb
 	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
@@ -101,6 +109,14 @@ func Init(cfg SbiCfg) (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	sbi.apiMgr, err = sam.NewSwaggerApiMgr(sbi.moduleName, sbi.sandboxName, sbi.mepName, sbi.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
 
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
@@ -132,6 +148,22 @@ func Init(cfg SbiCfg) (err error) {
 
 // Run - MEEP WAIS execution
 func Run() (err error) {
+
+	// Start Swagger API Manager (provider)
+	err = sbi.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = sbi.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}

@@ -267,6 +267,7 @@ func Init() (err error) {
 
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{
+		ModuleName:     moduleName,
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
 		InfluxAddr:     influxAddr,
@@ -276,7 +277,9 @@ func Init() (err error) {
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
 	}
-
+	if mepName != defaultMepName {
+		sbiCfg.MepName = mepName
+	}
 	err = sbi.Init(sbiCfg)
 	if err != nil {
 		log.Error("Failed initialize SBI. Error: ", err)

@@ -210,21 +210,13 @@ func Init() (err error) {
 // Start Sandbox Controller
 func Run() (err error) {
 
-	// Start Swagger API Manager
-	err = sbxCtrl.apiMgr.Start()
+	// Start Swagger API Manager (provider & aggregator)
+	err = sbxCtrl.apiMgr.Start(true, true)
 	if err != nil {
 		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
 		return err
 	}
 	log.Info("Swagger API Manager started")
-
-	// Add module Swagger APIs
-	err = sbxCtrl.apiMgr.AddApis()
-	if err != nil {
-		log.Error("Failed to add Swagger APIs with error: ", err.Error())
-		return err
-	}
-	log.Info("Swagger APIs successfully added")
 
 	// Activate scenario on sandbox startup if required, otherwise wait for activation request
 	if sbox, err := sbxCtrl.sandboxStore.Get(sbxCtrl.sandboxName); err == nil && sbox != nil {
@@ -802,10 +794,13 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 	}
 
-	//force stop replay manager
+	// force stop replay manager
 	if sbxCtrl.replayMgr.IsStarted() {
 		_ = sbxCtrl.replayMgr.ForceStop()
 	}
+
+	// Renew APIs
+	_ = sbxCtrl.apiMgr.FlushMepApis()
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

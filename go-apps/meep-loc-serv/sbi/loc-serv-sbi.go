@@ -50,8 +50,8 @@ type LocServSbi struct {
 	localityEnabled         bool
 	locality                map[string]bool
 	mqLocal                 *mq.MsgQueue
-	apiMgr                  *sam.SwaggerApiMgr
 	handlerId               int
+	apiMgr                  *sam.SwaggerApiMgr
 	activeModel             *mod.Model
 	gisCache                *gc.GisCache
 	refreshTicker           *time.Ticker
@@ -137,6 +137,14 @@ func Init(cfg SbiCfg) (err error) {
 
 // Run - MEEP Location Service execution
 func Run() (err error) {
+
+	// Start Swagger API Manager (provider)
+	err = sbi.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
 
 	// Add module Swagger APIs
 	err = sbi.apiMgr.AddApis()

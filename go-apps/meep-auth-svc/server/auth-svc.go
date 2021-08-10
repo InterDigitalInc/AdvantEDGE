@@ -309,6 +309,14 @@ func Init() (err error) {
 }
 
 func Run() (err error) {
+	// Start Swagger API Manager (provider)
+	err = authSvc.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
 	// Add module Swagger APIs
 	err = authSvc.apiMgr.AddApis()
 	if err != nil {

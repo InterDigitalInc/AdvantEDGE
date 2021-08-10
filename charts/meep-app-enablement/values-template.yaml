@@ -12,7 +12,6 @@ deployment:
       - kube-dns
       {{- end }}
     namespace:
-      - meep-sandbox-ctrl
 
 image:
   repository: meep-docker-registry:30001/meep-app-enablement

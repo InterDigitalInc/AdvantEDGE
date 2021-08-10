@@ -31,6 +31,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -104,6 +105,7 @@ var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
 var stopChan = make(chan struct{})
 var mqGlobal *mq.MsgQueue
 var handlerId int
+var apiMgr *sam.SwaggerApiMgr
 var sandboxStore *sbs.SandboxStore
 var metricStore *met.MetricStore
 var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
@@ -170,6 +172,14 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
+	// Create Swagger API Manager
+	apiMgr, err = sam.NewSwaggerApiMgr(moduleName, "", "", mqGlobal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, 0)
 	if err != nil {
@@ -212,6 +222,22 @@ func Run() (err error) {
 			createSandbox(sbox.Name)
 		}
 	}
+
+	// Start Swagger API Manager (provider)
+	err = apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}

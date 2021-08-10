@@ -37,6 +37,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 
 	"github.com/gorilla/mux"
 )
@@ -72,6 +73,7 @@ var eventSubscriptionMap = map[string]*EventRegistration{}
 var SandboxName string
 var mqLocal *mq.MsgQueue
 var handlerId int
+var apiMgr *sam.SwaggerApiMgr
 var activeModel *mod.Model
 var activeScenarioName string
 var metricStore *met.MetricStore
@@ -126,6 +128,14 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
+	// Create Swagger API Manager
+	apiMgr, err = sam.NewSwaggerApiMgr(ModuleName, SandboxName, "", mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
 		Name:      "activeScenario",
@@ -172,6 +182,22 @@ func Init() (err error) {
 
 // Run - Start Metrics Engine execution
 func Run() (err error) {
+
+	// Start Swagger API Manager (provider)
+	err = apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}

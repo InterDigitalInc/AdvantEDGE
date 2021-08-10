@@ -82,7 +82,8 @@ const (
 	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
 
 	// API
-	MsgApiUpdate Message = "API-UPDATE"
+	MsgApiUpdate  Message = "API-UPDATE"
+	MsgApiRequest Message = "API-REQUEST"
 
 	// Watchdog
 	MsgPing Message = "PING"
