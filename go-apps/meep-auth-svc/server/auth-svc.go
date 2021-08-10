@@ -730,6 +730,17 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 		if svcName != "" {
 			if svcPermissions, found := authSvc.cache.Services[svcName]; found {
 				permission = svcPermissions[routeName]
+			} else {
+				// Possibly a multi-API service.
+				// Search for prefix key matches in this case.
+				for key, permissions := range authSvc.cache.Services {
+					if strings.HasPrefix(key, svcName) {
+						permission = permissions[routeName]
+						if permission != nil {
+							break
+						}
+					}
+				}
 			}
 		}
 		// Check file servers if not already found
