@@ -186,7 +186,7 @@ func (sam *SwaggerApiMgr) AddApis() error {
 		var api SwaggerApi
 		api.Name = mepPrefix + file.Name()
 		api.Url = sam.svcUrl + "/user-api/" + file.Name()
-		apiList.Apis = append(apiList.Apis, api)
+		apiList.UserApis = append(apiList.UserApis, api)
 	}
 
 	// Publish new API list
@@ -250,7 +250,11 @@ func (sam *SwaggerApiMgr) msgHandler(msg *mq.Msg, userData interface{}) {
 			moduleName := msg.Payload[mqFieldModule]
 			mepName := msg.Payload[mqFieldMepName]
 			apiListStr := msg.Payload[mqFieldApiList]
-			sam.processApiUpdate(moduleName, mepName, convertJsonToSwaggerApiList(apiListStr))
+			apiList := convertJsonToSwaggerApiList(apiListStr)
+			if apiList == nil {
+				apiList = new(SwaggerApiList)
+			}
+			sam.processApiUpdate(moduleName, mepName, apiList)
 		}
 	case mq.MsgApiRequest:
 		if sam.isProvider {

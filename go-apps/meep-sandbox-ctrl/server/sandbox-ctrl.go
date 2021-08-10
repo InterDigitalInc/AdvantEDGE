@@ -243,9 +243,14 @@ func Run() (err error) {
 
 // Stop Sandbox Controller
 func Stop() (err error) {
+	if sbxCtrl == nil {
+		return
+	}
 
-	// Stop Swagger API Manager
-	_ = sbxCtrl.apiMgr.Stop()
+	if sbxCtrl.apiMgr != nil {
+		// Stop Swagger API Manager
+		_ = sbxCtrl.apiMgr.Stop()
+	}
 
 	// Stop App Controller
 	err = appCtrlStop()

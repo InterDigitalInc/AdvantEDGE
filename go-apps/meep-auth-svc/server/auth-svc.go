@@ -308,6 +308,7 @@ func Init() (err error) {
 	return nil
 }
 
+// Run - Start service execution
 func Run() (err error) {
 	// Start Swagger API Manager (provider)
 	err = authSvc.apiMgr.Start(true, false)
@@ -332,6 +333,21 @@ func Run() (err error) {
 		return err
 	}
 	return nil
+}
+
+// Stop - Shut down the service
+func Stop() {
+	if authSvc == nil {
+		return
+	}
+
+	if authSvc.apiMgr != nil {
+		// Remove APIs
+		err := authSvc.apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+		}
+	}
 }
 
 func getPermissionsConfig() (config *PermissionsConfig, err error) {

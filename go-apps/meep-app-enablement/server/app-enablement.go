@@ -178,7 +178,17 @@ func Run() (err error) {
 
 // Stop - Stop App Enablement
 func Stop() {
-	mqLocal.UnregisterHandler(handlerId)
+	if mqLocal != nil {
+		mqLocal.UnregisterHandler(handlerId)
+	}
+
+	// Remove APIs
+	if apiMgr != nil {
+		err := apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+		}
+	}
 }
 
 // Message Queue handler

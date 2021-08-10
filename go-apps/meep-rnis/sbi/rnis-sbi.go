@@ -215,10 +215,26 @@ func Run() (err error) {
 }
 
 func Stop() (err error) {
+	if sbi == nil {
+		return
+	}
+
 	// Stop refresh loop
 	stopRefreshTicker()
 
-	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	if sbi.mqLocal != nil {
+		sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	}
+
+	if sbi.apiMgr != nil {
+		// Remove APIs
+		err = sbi.apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+			return err
+		}
+	}
+
 	return nil
 }
 

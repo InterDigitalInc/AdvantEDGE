@@ -96,6 +96,10 @@ func Run() (err error) {
 	return nil
 }
 
+func Stop() {
+	v2.Stop()
+}
+
 var routes = Routes{
 	Route{
 		"IndexV2",

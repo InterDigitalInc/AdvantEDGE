@@ -3859,9 +3859,15 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	//using a go routine to quickly send the response to the requestor
 	go func() {
 		//delete any registration it made
-		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
+		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the
+		// confirm_terminate since it believes it never registered
 		//_ = unsubscribeAppTermination(serviceAppInstanceId)
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
+
+		// Send confirm termination when done
+		if sendAppTerminationWhenDone {
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}
 
 		//send scenario update with a deletion
 		var event scc.Event
@@ -3890,13 +3896,6 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 			log.Error(err)
 		}
 	}()
-
-	if sendAppTerminationWhenDone {
-		go func() {
-			//ignore any error and delete yourself anyway
-			_ = sendTerminationConfirmation(serviceAppInstanceId)
-		}()
-	}
 
 	w.WriteHeader(http.StatusNoContent)
 }

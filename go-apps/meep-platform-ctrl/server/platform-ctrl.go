@@ -163,8 +163,14 @@ func Run() (err error) {
 }
 
 func Stop() {
-	// Stop Swagger API Manager
-	_ = pfmCtrl.apiMgr.Stop()
+	if pfmCtrl == nil {
+		return
+	}
+
+	if pfmCtrl.apiMgr != nil {
+		// Stop Swagger API Manager
+		_ = pfmCtrl.apiMgr.Stop()
+	}
 }
 
 // Create a new scenario in the scenario store

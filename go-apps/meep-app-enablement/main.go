@@ -85,6 +85,7 @@ func main() {
 	count := 0
 	for {
 		if !run {
+			server.Stop()
 			log.Info("Ran for ", count, " seconds")
 			break
 		}

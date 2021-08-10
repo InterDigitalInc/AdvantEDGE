@@ -257,8 +257,17 @@ func Run() (err error) {
 	return nil
 }
 
+// Stop - Shut down the service
 func Stop() {
 	close(stopChan)
+
+	if apiMgr != nil {
+		// Remove APIs
+		err := apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+		}
+	}
 }
 
 // Message Queue handler
