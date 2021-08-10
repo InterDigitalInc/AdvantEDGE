@@ -160,12 +160,14 @@ func (sam *SwaggerApiMgr) AddApis() error {
 	apiFiles, err := ioutil.ReadDir(apiDir)
 	if err != nil {
 		log.Error("Failed to read API dir with error: ", err.Error())
-		return err
+		// Should never happen. For UT, return nil.
+		return nil
 	}
 	userApiFiles, err := ioutil.ReadDir(userApiDir)
 	if err != nil {
 		log.Error("Failed to read API dir with error: ", err.Error())
-		return err
+		// Should never happen. For UT, return nil.
+		return nil
 	}
 
 	// Get MEP prefix

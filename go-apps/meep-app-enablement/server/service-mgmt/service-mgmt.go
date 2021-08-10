@@ -423,51 +423,21 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check for mandatory properties or conditional requirements
-	if sInfo.SerInstanceId != "" && sInfo.SerInstanceId != serviceId {
-		log.Error("Service Instance Id parameter and body content not matching")
-		http.Error(w, "Service Instance Id parameter and body content not matching", http.StatusBadRequest)
-		return
-	}
-	if sInfo.SerName == "" {
-		log.Error("Mandatory Service Name parameter not present")
-		http.Error(w, "Mandatory Service Name parameter not present", http.StatusBadRequest)
-		return
-	}
-	if sInfo.Version == "" {
-		log.Error("Mandatory Service Version parameter not present")
-		http.Error(w, "Mandatory Service Version parameter not present", http.StatusBadRequest)
-		return
-	}
-	if sInfo.State == nil {
-		log.Error("Mandatory Service State parameter not present")
-		http.Error(w, "Mandatory Service State parameter not present", http.StatusBadRequest)
-		return
-	}
-	if sInfo.Serializer == nil {
-		log.Error("Mandatory Serializer parameter not present")
-		http.Error(w, "Mandatory Serializer parameter not present", http.StatusBadRequest)
-		return
-	}
-
-	// Identify change type
-	var changeType ServiceAvailabilityNotificationChangeType
-	// Compare state
-	if *sInfo.State != *sInfoPrev.State {
-		changeType = ServiceAvailabilityNotificationChangeType_STATE_CHANGED
-	}
-	// Compare other params
+	// Current implementation only supports state parameter change
 	state := *sInfo.State
 	*sInfo.State = *sInfoPrev.State
 	sInfoJson := convertServiceInfoToJson(&sInfo)
 	if sInfoJson != sInfoPrevJson {
-		changeType = ServiceAvailabilityNotificationChangeType_ATTRIBUTES_CHANGED
+		errStr := "Only the ServiceInfo state property may be changed"
+		log.Error(errStr)
+		http.Error(w, errStr, http.StatusBadRequest)
+		return
 	}
 	*sInfo.State = state
 
 	// Update Service Info if necessary
-	if changeType != "" {
-		err, retCode := setService(appInstanceId, &sInfo, changeType)
+	if *sInfo.State != *sInfoPrev.State {
+		err, retCode := setService(appInstanceId, &sInfo, ServiceAvailabilityNotificationChangeType_STATE_CHANGED)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), retCode)
@@ -1007,18 +977,16 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 		}
 	}
 
-	// Filter out remote services with "consumedLocalOnly" flag set to "true"
-	if sInfo.ConsumedLocalOnly {
-		if mep == "" || mep != mepName {
-			return nil
-		}
-	}
-
 	// Set IsLocal flag
-	if mep != "" && mep == mepName {
+	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
 		sInfo.IsLocal = true
 	} else {
 		sInfo.IsLocal = false
+	}
+
+	// Filter out non-local services with "consumedLocalOnly" flag set to "true"
+	if !sInfo.IsLocal && sInfo.ConsumedLocalOnly {
+		return nil
 	}
 
 	// Add service to list
@@ -1081,16 +1049,16 @@ func processSvcUpdate(sInfoJson, appId, mep, changeType string) {
 
 func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType ServiceAvailabilityNotificationChangeType) {
 
-	// Filter out remote services with "consumedLocalOnly" flag set to "true"
-	if sInfo.ConsumedLocalOnly && mep != mepName {
-		return
-	}
-
-	// Set Service Info IsLocal flag
-	if mep != "" && mep == mepName {
+	// Set IsLocal flag
+	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
 		sInfo.IsLocal = true
 	} else {
 		sInfo.IsLocal = false
+	}
+
+	// Filter out non-local services with "consumedLocalOnly" flag set to "true"
+	if !sInfo.IsLocal && sInfo.ConsumedLocalOnly {
+		return
 	}
 
 	// Find matching subscriptions
