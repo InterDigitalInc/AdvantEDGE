@@ -14,8 +14,9 @@
 
 FROM debian:9.6-slim
 COPY ./meep-sandbox-ctrl /meep-sandbox-ctrl
-COPY ./swagger /swagger
-COPY ./entrypoint.sh /entrypoint.sh
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
 
 RUN chmod +x /entrypoint.sh
 

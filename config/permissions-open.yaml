@@ -143,6 +143,13 @@ default:
 # #        roles:                         # role-specific permissions
 # #          admin: 'allow|block'
 # #          user: 'allow|block'
+# #    fileservers:                       # Service fileserver permissions (overrides default)
+# #      - name 'fs-name'                 # fileserver name
+# #        path: '/fs-endpoint/path'      # fileserver endpoint path
+# #        mode: 'allow|block|verify'     # access authorization mode
+# #        roles:                         # role-specific permissions
+# #          admin: 'allow|block'
+# #          user: 'allow|block'
 # #------------------------------------------------------------------------------
 # services:
 #   #------------------------------
@@ -154,6 +161,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -168,6 +182,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -181,6 +202,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'block'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'GetAutomationState'
 #         path: '/automation'
@@ -253,6 +281,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -266,6 +301,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'block'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'PostEventQuery'
 #         path: '/metrics/query/event'
@@ -352,6 +394,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -365,6 +414,13 @@ default:
 #     sbox: false
 #     default:
 #       mode: 'block'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -385,6 +441,13 @@ default:
 #     sbox: false
 #     default:
 #       mode: 'block'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -482,6 +545,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -495,6 +565,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'block'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'
@@ -701,6 +778,13 @@ default:
 #     sbox: true
 #     default:
 #       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'

@@ -35,6 +35,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 	"github.com/gorilla/mux"
 )
 
@@ -87,6 +88,7 @@ type GisEngine struct {
 	sandboxName      string
 	mqLocal          *mq.MsgQueue
 	handlerId        int
+	apiMgr           *sam.SwaggerApiMgr
 	sboxCtrlClient   *sbox.APIClient
 	activeModel      *mod.Model
 	gisCache         *gc.GisCache
@@ -128,6 +130,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	ge.apiMgr, err = sam.NewSwaggerApiMgr(moduleName, ge.sandboxName, "", ge.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
 
 	// Create Sandbox Controller REST API client
 	sboxCfg := sbox.NewConfiguration()
@@ -220,6 +230,22 @@ func Uninit() (err error) {
 // Run - GIS Engine thread
 func Run() (err error) {
 
+	// Start Swagger API Manager (provider)
+	err = ge.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = ge.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
 	ge.handlerId, err = ge.mqLocal.RegisterHandler(handler)
@@ -229,6 +255,21 @@ func Run() (err error) {
 	}
 
 	return nil
+}
+
+// Stop - Shut down the service
+func Stop() {
+	if ge == nil {
+		return
+	}
+
+	if ge.apiMgr != nil {
+		// Remove APIs
+		err := ge.apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+		}
+	}
 }
 
 // Message Queue handler

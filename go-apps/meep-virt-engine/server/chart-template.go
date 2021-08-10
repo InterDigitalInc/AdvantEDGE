@@ -120,18 +120,17 @@ type ScenarioTemplate struct {
 
 // SandboxTemplate -helm values.yaml template
 type SandboxTemplate struct {
-	InstanceId     string
-	SandboxName    string
-	Namespace      string
-	HostUrl        string
-	UserSwagger    string
-	UserSwaggerDir string
-	HttpsOnly      bool
-	AuthEnabled    bool
-	IsMepService   bool
-	MepName        string
-	AppEnablement  string
-	Env            []string
+	InstanceId    string
+	SandboxName   string
+	Namespace     string
+	HostUrl       string
+	UserSwagger   string
+	HttpsOnly     bool
+	AuthEnabled   bool
+	IsMepService  bool
+	MepName       string
+	AppEnablement string
+	Env           []string
 }
 
 // Deploy - Generate charts & deploy single process or entire scenario
@@ -678,7 +677,6 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.Namespace = sandboxName
 	sandboxTemplate.HostUrl = ve.hostUrl
 	sandboxTemplate.UserSwagger = ve.userSwagger
-	sandboxTemplate.UserSwaggerDir = ve.userSwaggerDir
 	sandboxTemplate.HttpsOnly = ve.httpsOnly
 	sandboxTemplate.AuthEnabled = ve.authEnabled
 	sandboxTemplate.IsMepService = false

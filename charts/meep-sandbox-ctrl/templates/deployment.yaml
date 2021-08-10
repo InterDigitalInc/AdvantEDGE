@@ -28,14 +28,6 @@ spec:
           persistentVolumeClaim:
             claimName: meep-sandbox-ctrl-codecov-pvc
       {{- end}}
-      {{- if .Values.user.swagger.enabled}}
-        - name: user-swagger
-          hostPath:
-            # directory location on host
-            path: {{ .Values.user.swagger.location }}
-            # this field is optional
-            type: DirectoryOrCreate
-      {{- end}}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -54,18 +46,12 @@ spec:
             {{- end }}
             {{- if .Values.user.swagger.enabled}}
             - name: USER_SWAGGER
-              value: {{ .Values.user.swagger.mountpath }}
-            - name: USER_SWAGGER_SANDBOX
-              value: {{ .Values.user.swagger.servepath }}
+              value: "true"
             {{- end }}
           volumeMounts:
           {{- if .Values.codecov.enabled}}
             - name: codecov-storage
               mountPath: /codecov
-          {{- end}}
-          {{- if .Values.user.swagger.enabled}}
-            - name: user-swagger
-              mountPath: {{ .Values.user.swagger.mountpath }}
           {{- end}}
       terminationGracePeriodSeconds: 5
       {{- if .Values.affinity }}
@@ -73,8 +59,15 @@ spec:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
       initContainers:
-        - name: init-{{ .Values.deployment.dependency }}
+        {{- range $value := .Values.deployment.dependencies.system }}
+        - name: init-system-{{ $value }}
           image: busybox:1.28
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }}.kube-system ; do echo waiting for {{ .Values.deployment.dependency }}; sleep 0.25; done;']
-
+          command: ['sh', '-c', 'until nslookup {{ $value }}.kube-system ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}
+        {{- range $value := .Values.deployment.dependencies.namespace }}
+        - name: init-{{ $value }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ $value }} ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}

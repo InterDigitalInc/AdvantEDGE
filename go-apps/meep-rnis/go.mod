@@ -16,6 +16,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr v0.0.0
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.8.0
@@ -36,4 +37,5 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client => ../../go-packages/meep-rnis-client
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client => ../../go-packages/meep-sandbox-ctrl-client
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client => ../../go-packages/meep-service-mgmt-client
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr => ../../go-packages/meep-swagger-api-mgr
 )

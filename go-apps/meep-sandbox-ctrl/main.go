@@ -67,12 +67,12 @@ func main() {
 
 		var priSw string
 		var altSw string
-		userSw := os.Getenv("USER_SWAGGER_SANDBOX")
+		userSw := os.Getenv("USER_SWAGGER")
 		if userSw == "" {
 			priSw = "./swagger/"
 			altSw = ""
 		} else {
-			priSw = "." + userSw + "/"
+			priSw = "./user-swagger/"
 			altSw = "./swagger/"
 		}
 

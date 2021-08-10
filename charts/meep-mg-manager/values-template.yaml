@@ -8,7 +8,10 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
 
 affinity:
   nodeAffinity:
@@ -24,6 +27,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    MEEP_SVC_PATH: /mgm/v1
 
 service:
   name: meep-mg-manager

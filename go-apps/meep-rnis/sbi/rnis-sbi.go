@@ -24,6 +24,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
 const moduleName string = "meep-rnis-sbi"
@@ -69,7 +70,9 @@ type AppInfoSbi struct {
 }
 
 type SbiCfg struct {
+	ModuleName     string
 	SandboxName    string
+	MepName        string
 	RedisAddr      string
 	Locality       []string
 	UeDataCb       func(UeDataSbi)
@@ -82,11 +85,14 @@ type SbiCfg struct {
 }
 
 type RnisSbi struct {
+	moduleName           string
 	sandboxName          string
+	mepName              string
 	localityEnabled      bool
 	locality             map[string]bool
 	mqLocal              *mq.MsgQueue
 	handlerId            int
+	apiMgr               *sam.SwaggerApiMgr
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
@@ -109,7 +115,9 @@ func Init(cfg SbiCfg) (err error) {
 		sbi = nil
 	}
 	sbi = new(RnisSbi)
+	sbi.moduleName = cfg.ModuleName
 	sbi.sandboxName = cfg.SandboxName
+	sbi.mepName = cfg.MepName
 	sbi.updateUeDataCB = cfg.UeDataCb
 	sbi.updateMeasInfoCB = cfg.MeasInfoCb
 	sbi.updatePoaInfoCB = cfg.PoaInfoCb
@@ -130,12 +138,20 @@ func Init(cfg SbiCfg) (err error) {
 	}
 
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), sbi.moduleName, sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	sbi.apiMgr, err = sam.NewSwaggerApiMgr(sbi.moduleName, sbi.sandboxName, sbi.mepName, sbi.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
 
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
@@ -168,6 +184,22 @@ func Init(cfg SbiCfg) (err error) {
 // Run - MEEP RNIS execution
 func Run() (err error) {
 
+	// Start Swagger API Manager (provider)
+	err = sbi.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = sbi.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
 	sbi.handlerId, err = sbi.mqLocal.RegisterHandler(handler)
@@ -183,10 +215,26 @@ func Run() (err error) {
 }
 
 func Stop() (err error) {
+	if sbi == nil {
+		return
+	}
+
 	// Stop refresh loop
 	stopRefreshTicker()
 
-	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	if sbi.mqLocal != nil {
+		sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	}
+
+	if sbi.apiMgr != nil {
+		// Remove APIs
+		err = sbi.apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+			return err
+		}
+	}
+
 	return nil
 }
 

@@ -9,7 +9,10 @@ deployment:
   port: 80
   protocol: TCP
   altPort: 8080
-  dependency: kube-dns
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
 
 affinity:
   nodeAffinity:
@@ -24,6 +27,7 @@ image:
   tag: latest
   pullPolicy: Always
   env:
+    MEEP_SVC_PATH: /auth/v1
     MEEP_MAX_SESSIONS: "10"
     MEEP_OAUTH_GITHUB_ENABLED: "false"
     MEEP_OAUTH_GITHUB_AUTH_URL: ""

@@ -9,8 +9,10 @@ deployment:
   port: 80
   protocol: TCP
   altPort: 8080
-  dependency: kube-dns
-
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
 
 affinity:
   nodeAffinity:
@@ -26,6 +28,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    MEEP_SVC_PATH: /sandbox-ctrl/v1
     MEEP_HOST_URL: {{ .HostUrl }}
 
 service:
@@ -67,9 +70,6 @@ prometheus:
 user:
   swagger:
     enabled: {{ .UserSwagger }}
-    location: {{ .UserSwaggerDir }}
-    mountpath: "/user-swagger"
-    servepath: "/user-swagger-sandbox"
 codecov:
   enabled: false
   location: "<WORKDIR>/codecov/meep-sandbox-ctrl"

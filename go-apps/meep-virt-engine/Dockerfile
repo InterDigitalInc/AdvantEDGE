@@ -13,19 +13,10 @@
 # limitations under the License.
 
 FROM debian:9.6-slim
-
-COPY ./meep-gis-engine /templates/sandbox/meep-gis-engine
-COPY ./meep-loc-serv /templates/sandbox/meep-loc-serv
-COPY ./meep-metrics-engine /templates/sandbox/meep-metrics-engine
-COPY ./meep-mg-manager /templates/sandbox/meep-mg-manager
-COPY ./meep-rnis /templates/sandbox/meep-rnis
-COPY ./meep-app-enablement /templates/sandbox/meep-app-enablement
-COPY ./meep-wais /templates/sandbox/meep-wais
-COPY ./meep-sandbox-ctrl /templates/sandbox/meep-sandbox-ctrl
-COPY ./meep-tc-engine /templates/sandbox/meep-tc-engine
-COPY ./meep-virt-chart-templates /templates/scenario/meep-virt-chart-templates
-COPY ./entrypoint.sh /entrypoint.sh
 COPY ./meep-virt-engine /meep-virt-engine
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
 
 ENV HELM_VERSION="v3.3.1"
 RUN mkdir -p /active \
