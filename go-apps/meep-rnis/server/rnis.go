@@ -1906,7 +1906,8 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 
 				if parentMeasExists {
 					log.Info("Sending RNIS notification ", subscription.CallbackReference)
-					go sendMrNotification(subscription.CallbackReference, notif)
+					callbackReference := subscription.CallbackReference
+					go sendMrNotification(callbackReference, notif)
 					log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
 				}
 			}
@@ -2059,7 +2060,8 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 				if parentMeasExists {
 					log.Info("Sending RNIS notification ", subscription.CallbackReference)
-					go sendNrMrNotification(subscription.CallbackReference, notif)
+					callbackReference := subscription.CallbackReference
+					go sendNrMrNotification(callbackReference, notif)
 					log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
 				}
 			}

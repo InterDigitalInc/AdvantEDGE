@@ -129,6 +129,9 @@ func Run() (err error) {
 
 // Stop - Stop APP support
 func Stop() (err error) {
+	// Flush all app-enablement instance data
+	key := baseKey + "*"
+	_ = rc.DBFlush(key)
 	return nil
 }
 
@@ -494,7 +497,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	//loop through appTerm map
 	for _, appTermSubscription := range appTerminationNotificationSubscriptionMap {
-		if appTermSubscription != nil {
+		if appTermSubscription != nil && appTermSubscription.AppInstanceId == appInstanceId {
 			var subscription MecAppSuptApiSubscriptionLinkListSubscription
 			subscription.Href = appTermSubscription.Links.Self.Href
 			//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
@@ -584,7 +587,6 @@ func processAppTerminate(appInstanceId string, mep string) {
 
 	// Filter subscriptions
 	gracefulTermination := false
-
 	for subId, sub := range appTerminationNotificationSubscriptionMap {
 		// Filter subscriptions
 		if sub == nil || sub.AppInstanceId != appInstanceId {
@@ -611,7 +613,11 @@ func processAppTerminate(appInstanceId string, mep string) {
 		// Start graceful timeout prior to sending the app termination notification, or the answer could be received before the timer is started
 		gracefulTimeoutTicker := time.NewTicker(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second)
 		appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
+		callbackReference := sub.CallbackReference
 		go func() {
+			sendAppTermNotification(callbackReference, notif)
+			log.Info("App Termination Notification" + "(" + subIdStr + ") for " + appInstanceId)
+
 			for range gracefulTimeoutTicker.C {
 				log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])
 				gracefulTimeoutTicker.Stop()
@@ -621,9 +627,6 @@ func processAppTerminate(appInstanceId string, mep string) {
 				deleteAppInstance(appInstanceId)
 			}
 		}()
-		sendAppTermNotification(sub.CallbackReference, notif)
-		log.Info("App Termination Notification" + "(" + subIdStr + ") for " + appInstanceId)
-
 	}
 
 	// Delete App instance immediately if no graceful termination subscription

@@ -147,6 +147,9 @@ func Run() (err error) {
 
 // Stop - Stop Service Mgmt
 func Stop() (err error) {
+	// Flush all app-enablement instance data
+	key := baseKey + "*"
+	_ = rc.DBFlush(key)
 	return nil
 }
 
@@ -308,7 +311,6 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 	serviceId := vars["serviceId"]
-
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -633,7 +635,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 
 	// Validate subscription exists
 	key := baseKey + ":app:" + appInstanceId + ":" + msmgmtKey + ":sub:" + subIdParamStr
-	if rc.EntryExists(key) {
+	if !rc.EntryExists(key) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -1138,7 +1140,7 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 		idStr := strconv.Itoa(id)
 
 		var notif ServiceAvailabilityNotification
-		notif.NotificationType = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
+		notif.NotificationType = SER_AVAILABILITY_NOTIFICATION_TYPE
 		links := new(Subscription)
 		linkType := new(LinkType)
 		linkType.Href = sub.Links.Self.Href
@@ -1262,4 +1264,34 @@ func getSubIdFromKey(key string) string {
 		return fields[len(fields)-1]
 	}
 	return ""
+}
+
+func transportsGET(w http.ResponseWriter, r *http.Request) {
+	log.Info("transportsGET")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	//transportInfo
+	var transportInfo TransportInfo
+	transportInfo.Id = "transport"
+	transportInfo.Name = "REST"
+	transportType := REST_HTTP
+	transportInfo.Type_ = &transportType
+	transportInfo.Protocol = "HTTP"
+	transportInfo.Version = "2.0"
+	var endpoint OneOfTransportInfoEndpoint
+	endpointPath := hostUrl.String() + basePath
+	endpoint.Uris = append(endpoint.Uris, endpointPath)
+	transportInfo.Endpoint = &endpoint
+
+	var transportInfoResp []TransportInfo
+	transportInfoResp = append(transportInfoResp, transportInfo)
+	// Prepare & send response
+	jsonResponse, err := json.Marshal(transportInfoResp)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
 }
