@@ -182,6 +182,9 @@ func Stop() {
 		mqLocal.UnregisterHandler(handlerId)
 	}
 
+	_ = sm.Stop()
+	_ = as.Stop()
+
 	// Remove APIs
 	if apiMgr != nil {
 		err := apiMgr.RemoveApis()
