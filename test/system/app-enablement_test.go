@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2021  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,10 @@ import (
 	"context"
 	"time"
 
+	asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
-        asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
-
+	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 )
 
 var srvMgmtClient *smc.APIClient
@@ -55,29 +54,29 @@ func init() {
 		log.Error("Failed to create Service Management REST API client: ", srvMgmtClientCfg.BasePath)
 	}
 
-        //create client
-        appSupClientCfg := asc.NewConfiguration()
-        if hostUrlStr == "" {
-                hostUrlStr = "http://localhost"
-        }
+	//create client
+	appSupClientCfg := asc.NewConfiguration()
+	if hostUrlStr == "" {
+		hostUrlStr = "http://localhost"
+	}
 
-        appSupClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/mep1/mec_app_support/v1"
+	appSupClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/mep1/mec_app_support/v1"
 
-        appSupClient = asc.NewAPIClient(appSupClientCfg)
-        if appSupClient == nil {
-                log.Error("Failed to create Application Support REST API client: ", appSupClientCfg.BasePath)
-        }
+	appSupClient = asc.NewAPIClient(appSupClientCfg)
+	if appSupClient == nil {
+		log.Error("Failed to create Application Support REST API client: ", appSupClientCfg.BasePath)
+	}
 
-        sandboxCtrlClientCfg := scc.NewConfiguration()
-        if hostUrlStr == "" {
-                hostUrlStr = "http://localhost"
-        }
-        sandboxCtrlClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/sandbox-ctrl/v1"
+	sandboxCtrlClientCfg := scc.NewConfiguration()
+	if hostUrlStr == "" {
+		hostUrlStr = "http://localhost"
+	}
+	sandboxCtrlClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/sandbox-ctrl/v1"
 
-        sccCtrlClient = scc.NewAPIClient(sandboxCtrlClientCfg)
-        if sccCtrlClient == nil {
-                log.Error("Failed to create Sandbox Ctrl REST API client: ", sandboxCtrlClientCfg.BasePath)
-        }
+	sccCtrlClient = scc.NewAPIClient(sandboxCtrlClientCfg)
+	if sccCtrlClient == nil {
+		log.Error("Failed to create Sandbox Ctrl REST API client: ", sandboxCtrlClientCfg.BasePath)
+	}
 
 	//NOTE: if localhost is set as the hostUrl, might not be reachable from the service, export MEEP_HOST_TEST_URL ="http://[yourhost]"
 	serverUrl = hostUrlStr + ":" + httpListenerPort
@@ -114,15 +113,15 @@ func Test_App_Enablement_load_scenarios(t *testing.T) {
 
 func appSupportSubscription(appInstanceId string, callbackReference string) error {
 
-        subscription := asc.AppTerminationNotificationSubscription{"AppTerminationNotificationSubscription", callbackReference, nil, appInstanceId}
+	subscription := asc.AppTerminationNotificationSubscription{"AppTerminationNotificationSubscription", callbackReference, nil, appInstanceId}
 
-        _, _, err := appSupClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
-        if err != nil {
-                log.Error("Failed to send subscription: ", err)
-                return err
-        }
+	_, _, err := appSupClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send subscription: ", err)
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 func servAvailSubscription(appInstanceId string, callbackReference string, serName string) error {
@@ -130,64 +129,64 @@ func servAvailSubscription(appInstanceId string, callbackReference string, serNa
 	var filter smc.SerAvailabilityNotificationSubscriptionFilteringCriteria
 	var serNames []string
 	serNames = append(serNames, serName)
-	filter.SerNames = &serNames 
-        subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
+	filter.SerNames = &serNames
+	subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
 
-        _, _, err := srvMgmtClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
-        if err != nil {
-                log.Error("Failed to send subscription: ", err)
-                return err
-        }
+	_, _, err := srvMgmtClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send subscription: ", err)
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 func terminateApp(instanceId string) error {
 
-	_, err := sccCtrlClient.ApplicationsApi.ApplicationsAppInstanceIdDELETE(context.TODO(), instanceId);
-        if err != nil {
-                log.Error("Failed to Terminate an edge application: ", err)
-                return err
-        }
+	_, err := sccCtrlClient.ApplicationsApi.ApplicationsAppInstanceIdDELETE(context.TODO(), instanceId)
+	if err != nil {
+		log.Error("Failed to Terminate an edge application: ", err)
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 func initialiseApp(instanceName string, mepName string, id string, img string, environment string) error {
 
-                //send scenario update with an add
-                var event scc.Event
-                var eventScenarioUpdate scc.EventScenarioUpdate
-                var process scc.Process
-		var netChar scc.NetworkCharacteristics
-                var nodeDataUnion scc.NodeDataUnion
-                var node scc.ScenarioNode
+	//send scenario update with an add
+	var event scc.Event
+	var eventScenarioUpdate scc.EventScenarioUpdate
+	var process scc.Process
+	var netChar scc.NetworkCharacteristics
+	var nodeDataUnion scc.NodeDataUnion
+	var node scc.ScenarioNode
 
-                process.Name = instanceName
-                process.Type_ = "EDGE-APP"
-		process.Id = id
-		process.Image = img
-		process.Environment = environment
-		process.NetChar = &netChar
-                nodeDataUnion.Process = &process
+	process.Name = instanceName
+	process.Type_ = "EDGE-APP"
+	process.Id = id
+	process.Image = img
+	process.Environment = environment
+	process.NetChar = &netChar
+	nodeDataUnion.Process = &process
 
-                node.Type_ = "EDGE-APP"
-                node.Parent = mepName
-                node.NodeDataUnion = &nodeDataUnion
+	node.Type_ = "EDGE-APP"
+	node.Parent = mepName
+	node.NodeDataUnion = &nodeDataUnion
 
-                eventScenarioUpdate.Node = &node
-                eventScenarioUpdate.Action = "ADD"
+	eventScenarioUpdate.Node = &node
+	eventScenarioUpdate.Action = "ADD"
 
-                event.EventScenarioUpdate = &eventScenarioUpdate
-                event.Type_ = "SCENARIO-UPDATE"
+	event.EventScenarioUpdate = &eventScenarioUpdate
+	event.Type_ = "SCENARIO-UPDATE"
 
-        _, err := sccCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-        if err != nil {
-                log.Error("Failed to Start an edge application: ", err)
-                return err
-        }
+	_, err := sccCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+	if err != nil {
+		log.Error("Failed to Start an edge application: ", err)
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 func Test_App_Enablement_notification_termination(t *testing.T) {
@@ -197,11 +196,11 @@ func Test_App_Enablement_notification_termination(t *testing.T) {
 	initialiseAppEnablementTest()
 	defer clearUpAppEnablementTest()
 
-	const instanceId = "meep-rnis-instanceId" 
+	const instanceId = "meep-rnis-instanceId"
 	//subscription is automatic by the rnis but sending a second one to catch the notification
 	appSupportSubscription(instanceId, serverUrl)
-        //wait to make sure the subscription was processed
-        time.Sleep(2000 * time.Millisecond)
+	//wait to make sure the subscription was processed
+	time.Sleep(2000 * time.Millisecond)
 
 	terminateApp(instanceId)
 
@@ -227,94 +226,94 @@ func Test_App_Enablement_notification_termination(t *testing.T) {
 }
 
 func Test_App_Enablement_notification_get_services(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        const newName = "mec012-1"
-        const newMepName = "mep1"
-        const newId = "new-instance-id"
-        const newImg = "meep-docker-registry:30001/meep-rnis"
-        const newEnv = "MEEP_SCOPE_OF_LOCALITY=MEC_SYSTEM,MEEP_CONSUMED_LOCAL_ONLY=false"
-        const removeInstanceId = "meep-rnis-instanceId"
+	const newName = "mec012-1"
+	const newMepName = "mep1"
+	const newId = "new-instance-id"
+	const newImg = "meep-docker-registry:30001/meep-rnis"
+	const newEnv = "MEEP_SCOPE_OF_LOCALITY=MEC_SYSTEM,MEEP_CONSUMED_LOCAL_ONLY=false"
+	const removeInstanceId = "meep-rnis-instanceId"
 
-        initialiseAppEnablementTest()
-        defer clearUpAppEnablementTest()
+	initialiseAppEnablementTest()
+	defer clearUpAppEnablementTest()
 
-        //wait to make sure the subscription was processed
-        time.Sleep(20000 * time.Millisecond)
+	//wait to make sure the subscription was processed
+	time.Sleep(20000 * time.Millisecond)
 
-        srvInfo, _, err := srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
-        if err != nil {
-t.Fatalf("Failed to get subscriptions")
-        }
-
-        if len(srvInfo) != 3  && len(srvInfo) != 6 {
-                        t.Fatalf("Number of expected services not received")
+	srvInfo, _, err := srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to get subscriptions")
 	}
 
-        terminateApp(removeInstanceId)
+	if len(srvInfo) != 3 && len(srvInfo) != 6 {
+		t.Fatalf("Number of expected services not received")
+	}
 
-        //wait to make sure the periodic timer got triggered
-        time.Sleep(20000 * time.Millisecond)
+	terminateApp(removeInstanceId)
 
-        srvInfo, _, err = srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
-        if err != nil {
-t.Fatalf("Failed to get subscriptions")
-        }
+	//wait to make sure the periodic timer got triggered
+	time.Sleep(20000 * time.Millisecond)
 
-        if len(srvInfo) != 2 && len(srvInfo) != 5 {
-                        t.Fatalf("Number of expected services not received")
-        }
+	srvInfo, _, err = srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to get subscriptions")
+	}
 
-        initialiseApp(newName, newMepName, newId, newImg, newEnv)
-        //wait to make sure the subscription was processed
-        time.Sleep(30000 * time.Millisecond)
+	if len(srvInfo) != 2 && len(srvInfo) != 5 {
+		t.Fatalf("Number of expected services not received")
+	}
 
-        srvInfo, _, err = srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
-        if err != nil {
-t.Fatalf("Failed to get subscriptions")
-        }
+	initialiseApp(newName, newMepName, newId, newImg, newEnv)
+	//wait to make sure the subscription was processed
+	time.Sleep(30000 * time.Millisecond)
 
-        if len(srvInfo) != 3 && len(srvInfo) != 6 {
-                        t.Fatalf("Number of expected services not received")
-        }
+	srvInfo, _, err = srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to get subscriptions")
+	}
+
+	if len(srvInfo) != 3 && len(srvInfo) != 6 {
+		t.Fatalf("Number of expected services not received")
+	}
 }
 
 func Test_App_Enablement_notification_service_availability(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        initialiseAppEnablementTest()
-        defer clearUpAppEnablementTest()
+	initialiseAppEnablementTest()
+	defer clearUpAppEnablementTest()
 
-        const instanceId = "meep-location-instanceId"
- 	const instanceIdToRemove = "meep-rnis-instanceId"
+	const instanceId = "meep-location-instanceId"
+	const instanceIdToRemove = "meep-rnis-instanceId"
 	const serviceNameToTrack = "mec012-1"
-        //subscription is automatic by the location service but sending a second one, should get 2 notifications as a result
-        servAvailSubscription(instanceId, serverUrl, serviceNameToTrack)
-        //wait to make sure the subscription was processed
-        time.Sleep(2000 * time.Millisecond)
+	//subscription is automatic by the location service but sending a second one, should get 2 notifications as a result
+	servAvailSubscription(instanceId, serverUrl, serviceNameToTrack)
+	//wait to make sure the subscription was processed
+	time.Sleep(2000 * time.Millisecond)
 
-        terminateApp(instanceIdToRemove)
+	terminateApp(instanceIdToRemove)
 
-        //wait to make sure the periodic timer got triggered
-        time.Sleep(2000 * time.Millisecond)
+	//wait to make sure the periodic timer got triggered
+	time.Sleep(2000 * time.Millisecond)
 
-        if len(httpReqBody) == 1 {
-                var body smc.ServiceAvailabilityNotification
-                err := json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                errStr := validateSerAvailabilityNotification(&body, "REMOVED")
-                if errStr != "" {
-                        printHttpReqBody()
-                        t.Fatalf(errStr)
-                }
-        } else {
-                printHttpReqBody()
-                t.Fatalf("Number of expected notifications not received")
-        }
+	if len(httpReqBody) == 1 {
+		var body smc.ServiceAvailabilityNotification
+		err := json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateSerAvailabilityNotification(&body, "REMOVED")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
 }
 
 //not a real test, just the last test that stops the system test environment
@@ -338,12 +337,11 @@ func validateAppTerminationNotification(notification *asc.AppTerminationNotifica
 
 func validateSerAvailabilityNotification(notification *smc.ServiceAvailabilityNotification, expectedChangeType string) string {
 
-        if notification.NotificationType != "SerAvailabilityNotification" {
-                return ("NotificationType of notification not as expected: " + notification.NotificationType + " instead of " + "SerAvailabilityNotification")
-        }
-        if string(*notification.ServiceReferences[0].ChangeType) != expectedChangeType {
-                return ("ChangeType of notification not as expected: " + string(*notification.ServiceReferences[0].ChangeType) + " instead of " + expectedChangeType)
-        }
-        return ""
+	if notification.NotificationType != "SerAvailabilityNotification" {
+		return ("NotificationType of notification not as expected: " + notification.NotificationType + " instead of " + "SerAvailabilityNotification")
+	}
+	if string(*notification.ServiceReferences[0].ChangeType) != expectedChangeType {
+		return ("ChangeType of notification not as expected: " + string(*notification.ServiceReferences[0].ChangeType) + " instead of " + expectedChangeType)
+	}
+	return ""
 }
-

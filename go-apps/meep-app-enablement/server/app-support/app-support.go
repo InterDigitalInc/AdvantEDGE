@@ -130,8 +130,10 @@ func Run() (err error) {
 // Stop - Stop APP support
 func Stop() (err error) {
 	// Flush all app-enablement instance data
-	key := baseKey + "*"
-	_ = rc.DBFlush(key)
+	if baseKey != "" {
+		key := baseKey + "*"
+		_ = rc.DBFlush(key)
+	}
 	return nil
 }
 
