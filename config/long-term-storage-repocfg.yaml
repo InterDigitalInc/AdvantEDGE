@@ -274,6 +274,7 @@ repo:
           - meep-mg-manager
           - meep-rnis
           - meep-wais
+          - meep-ams
           - meep-sandbox-ctrl
           - meep-tc-engine
           - meep-app-enablement
@@ -335,6 +336,7 @@ repo:
           meep-mg-manager: charts/meep-mg-manager
           meep-rnis: charts/meep-rnis
           meep-wais: charts/meep-wais
+          meep-ams: charts/meep-ams
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
           meep-tc-engine: charts/meep-tc-engine
           meep-app-enablement: charts/meep-app-enablement
@@ -347,6 +349,7 @@ repo:
           - meep-mg-manager
           - meep-rnis
           - meep-wais
+          - meep-ams
           - meep-sandbox-ctrl
           - meep-tc-engine
           - meep-app-enablement
@@ -435,6 +438,7 @@ repo:
           - sandbox.go-apps.meep-loc-serv
           - sandbox.go-apps.meep-rnis
           - sandbox.go-apps.meep-wais
+          - sandbox.go-apps.meep-ams
           - sandbox.go-apps.meep-app-enablement
           - sandbox.go-apps.meep-metrics-engine
           - packages.go-packages.meep-metrics-engine-notification-client
@@ -592,6 +596,31 @@ repo:
         # location of API specification
         api:
           meep-wais: go-apps/meep-wais/api/swagger.yaml
+      meep-ams:
+        # location of source code
+        src: go-apps/meep-ams
+        # location of binary
+        bin: bin/meep-ams
+        # location of deployment chart
+        chart: charts/meep-ams
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-ams.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: false
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports linting
+        lint: true
+        # location of API specification
+        api:
+          meep-ams: go-apps/meep-ams/api/swagger.yaml
       meep-sandbox-ctrl:
         # location of source code
         src: go-apps/meep-sandbox-ctrl
@@ -968,6 +997,11 @@ repo:
       meep-wais-client:
         # location of source code
         src: go-packages/meep-wais-client
+        # supports linting
+        lint: false
+      meep-ams-client:
+        # location of source code
+        src: go-packages/meep-ams-client
         # supports linting
         lint: false
       meep-watchdog:

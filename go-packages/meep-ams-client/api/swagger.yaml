@@ -1,0 +1,1660 @@
+openapi: 3.0.0
+info:
+  title: ETSI GS MEC 021 Application Mobility Service API
+  description: ETSI GS MEC 021 Application Mobility Service API described using OpenAPI.
+  contact:
+    name: ETSI Forge
+    url: https://forge.etsi.org/rep/mec/gs021-amsi-api
+    email: cti_support@etsi.org
+  license:
+    name: BSD-3-Clause
+    url: https://forge.etsi.org/legal-matters
+  version: 2.1.1
+externalDocs:
+  description: ETSI GS MEC 021 Application Mobility Service API, v2.1.1
+  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.01.01_60/gs_mec021v020101p.pdf
+servers:
+- url: https://localhost/sandboxname/amsi/v1
+tags:
+- name: adj-app-inst
+  description: Adjacent App instances
+- name: app-mob-ser
+  description: Application Mobility Services
+- name: app-mob-ser-der
+  description: Application Mobility Services Deregister task
+- name: subscriptions
+  description: Subscription for Application Mobility Service
+- name: notifications
+  description: Notification for Application Mobility Service
+paths:
+  /app_mobility_services:
+    get:
+      tags:
+      - app-mob-ser
+      summary: ' Retrieve information about the registered application mobility service.'
+      description: ' Retrieve information about the registered application mobility
+        service.'
+      operationId: app_mobility_serviceGET
+      parameters:
+      - name: filter
+        in: query
+        description: Attribute-based filtering parameters according to ETSI GS MEC
+          011
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: all_fields
+        in: query
+        description: Include all complex attributes in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: fields
+        in: query
+        description: Complex attributes to be included into the response. See clause
+          6.18 in ETSI GS MEC 011
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: exclude_fields
+        in: query
+        description: Complex attributes to be excluded from the response.See clause
+          6.18 in ETSI GS MEC 011
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: exclude_default
+        in: query
+        description: Indicates to exclude the following complex attributes from the
+          response  See clause 6.18 in ETSI GS MEC 011 for details.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Contains in an array the representations of zero or more application
+            mobility services.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistrationInfo'
+                x-content-type: application/json
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    post:
+      tags:
+      - app-mob-ser
+      summary: Create a new application mobility service for the service requester.
+      description: Create a new application mobility service for the service requester.
+      operationId: app_mobility_servicePOST
+      requestBody:
+        description: Application mobility service to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationInfo'
+        required: true
+      responses:
+        "201":
+          description: Successful response for application mobility service creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationInfo'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /app_mobility_services/{appMobilityServiceId}:
+    get:
+      tags:
+      - app-mob-ser
+      summary: Retrieve information about this individual application mobility service
+      description: Retrieve information about this individual application mobility
+        service
+      operationId: app_mobility_service_by_idGET
+      parameters:
+      - name: appMobilityServiceId
+        in: path
+        description: It uniquely identifies the created individual application mobility
+          service
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Contains a representation of the application mobility service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationInfo'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    put:
+      tags:
+      - app-mob-ser
+      summary: ' update the existing individual application mobility service'
+      description: ' update the existing individual application mobility service'
+      operationId: app_mobility_service_by_idPUT
+      parameters:
+      - name: appMobilityServiceId
+        in: path
+        description: It uniquely identifies the created individual application mobility
+          service
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationInfo'
+        required: true
+      responses:
+        "200":
+          description: Contains a data type describing the updated application mobility
+            service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationInfo'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "412":
+          description: 'Precondition failed :  used when a condition has failed during
+            conditional requests, e.g. when using ETags to avoid write conflicts when
+            using PUT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "422":
+          description: 'Unprocessable Entity : used to indicate that the server understands
+            the content type of the request entity and that the syntax of the request
+            entity is correct but that the server is unable to process the contained
+            instructions. This error condition can occur if an JSON request body is
+            syntactically correct but semantically incorrect, for example if the target
+            area for the request is considered too large. This error condition can
+            also occur if the capabilities required by the request are not supported.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+      - app-mob-ser
+      summary: ' deregister the individual application mobility service'
+      description: ' deregister the individual application mobility service'
+      operationId: app_mobility_service_by_idDELETE
+      parameters:
+      - name: appMobilityServiceId
+        in: path
+        description: It uniquely identifies the created individual application mobility
+          service
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /app_mobility_services/{appMobilityServiceId}/deregister_task:
+    post:
+      tags:
+      - app-mob-ser-der
+      summary: ' deregister the individual application mobility service'
+      description: ' deregister the individual application mobility service'
+      operationId: app_mobility_service_derPOST
+      parameters:
+      - name: appMobilityServiceId
+        in: path
+        description: It uniquely identifies the created individual application mobility
+          service
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /subscriptions/:
+    get:
+      tags:
+      - subscriptions
+      summary: Retrieve information about the subscriptions for this requestor.
+      description: Retrieve information about the subscriptions for this requestor.
+      operationId: subGET
+      parameters:
+      - name: subscriptionType
+        in: query
+        description: 'Query parameter to filter on a specific subscription type. Permitted
+          values: mobility_proc or adj_app_info'
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Contains  the list of links to requestor subscriptions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionLinkList'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    post:
+      tags:
+      - subscriptions
+      summary: Create a new subscription to Application Mobility Service notifications.
+      description: Create a new subscription to Application Mobility Service notifications.
+      operationId: subPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+        required: true
+      responses:
+        "201":
+          description: Created subscription is described using the appropriate data
+            type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/body'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "415":
+          description: 'Unsupported Media Type :  used to indicate that the server
+            or the client does not support the content type of the entity body.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "422":
+          description: 'Unprocessable Entity : used to indicate that the server understands
+            the content type of the request entity and that the syntax of the request
+            entity is correct but that the server is unable to process the contained
+            instructions. This error condition can occur if an JSON request body is
+            syntactically correct but semantically incorrect, for example if the target
+            area for the request is considered too large. This error condition can
+            also occur if the capabilities required by the request are not supported.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+      callbacks:
+        notification:
+          '{$request.body#/callbackReference}':
+            post:
+              summary: Callback POST used to send a notification
+              description: Notification from AMS with regards to adjacent application
+                instances information or with regards mobility procedure.
+              operationId: notificationPOST
+              requestBody:
+                description: Subscription notification
+                content:
+                  application/json:
+                    schema:
+                      oneOf:
+                      - $ref: '#/components/schemas/MobilityProcedureNotification'
+                      - $ref: '#/components/schemas/AdjacentAppInfoNotification'
+                required: true
+              responses:
+                "204":
+                  description: No Content
+  /subscriptions/{subscriptionId}:
+    get:
+      tags:
+      - subscriptions
+      summary: Retrieve information about this subscription.
+      description: Retrieve information about this subscription.
+      operationId: sub_byIdGET
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Refers to created subscription, where the AMS API allocates a
+          unique resource name for this subscription
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A response body containing data type describing the specific
+            RNI event subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/body'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    put:
+      tags:
+      - subscriptions
+      summary: update the existing individual subscription.
+      description: update the existing individual subscription.
+      operationId: sub_byIdPUT
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Refers to created subscription, where the AMS API allocates a
+          unique resource name for this subscription
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_1'
+        required: true
+      responses:
+        "200":
+          description: ' a response body containing data type describing the updated
+            subscription'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/body_1'
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "412":
+          description: 'Precondition failed :  used when a condition has failed during
+            conditional requests, e.g. when using ETags to avoid write conflicts when
+            using PUT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "422":
+          description: 'Unprocessable Entity : used to indicate that the server understands
+            the content type of the request entity and that the syntax of the request
+            entity is correct but that the server is unable to process the contained
+            instructions. This error condition can occur if an JSON request body is
+            syntactically correct but semantically incorrect, for example if the target
+            area for the request is considered too large. This error condition can
+            also occur if the capabilities required by the request are not supported.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+      - subscriptions
+      summary: cancel the existing individual subscription
+      description: cancel the existing individual subscription
+      operationId: sub_byIdDELETE
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Refers to created subscription, where the AMS API allocates a
+          unique resource name for this subscription
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /notifications/mec011/appTermination:
+    post:
+      tags:
+      - notifications
+      summary: MEC011 Application Termination notification for self termination
+      description: Terminates itself.
+      operationId: mec011AppTerminationPOST
+      requestBody:
+        description: Termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotification'
+            example:
+              notificationType: AppTerminationNotification
+              operationAction: TERMINATING
+              maxGracefulTimeout: 10
+              links:
+                subscription:
+                  href: http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123
+                confirmTermination:
+                  href: http://mec011Server.example.com/mec_app_support/v1/confirm_termination
+        required: true
+      responses:
+        "204":
+          description: No Content
+      x-swagger-router-controller: notifications
+  /queries/adjacent_app_instances:
+    get:
+      tags:
+      - adj-app-inst
+      summary: Retrieve information about this subscription.
+      description: Retrieve information about this subscription.
+      operationId: adj_app_instGET
+      parameters:
+      - name: filter
+        in: query
+        description: Attribute-based filtering parameters according to ETSI GS MEC
+          011
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: all_fields
+        in: query
+        description: Include all complex attributes in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: fields
+        in: query
+        description: Complex attributes to be included into the response. See clause
+          6.18 in ETSI GS MEC 011
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: exclude_fields
+        in: query
+        description: Complex attributes to be excluded from the response.See clause
+          6.18 in ETSI GS MEC 011
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: exclude_default
+        in: query
+        description: Indicates to exclude the following complex attributes from the
+          response  See clause 6.18 in ETSI GS MEC 011 for details.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: 'A response body containing  zero or more adjacent application
+            instances '
+          content:
+            application/json:
+              schema:
+                minItems: 0
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdjacentAppInstanceInfo'
+                x-content-type: application/json
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    AdjacentAppInfoSubscription.links:
+      required:
+      - self
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: Hyperlink related to the resource. This shall be only included
+        in the HTTP responses and in HTTP PUT requests.
+      x-etsi-mec-cardinality: 0..1
+    AdjacentAppInfoSubscription.filterCriteria:
+      properties:
+        appInstanceId:
+          type: string
+      description: List of filtering criteria for the subscription. Any filtering
+        criteria from below, which is included in the request, shall also be included
+        in the response.
+      x-etsi-mec-cardinality: 0..1
+    AdjacentAppInfoSubscription:
+      required:
+      - callbackReference
+      - filterCriteria
+      - subscriptionType
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/AdjacentAppInfoSubscription.links'
+        callbackReference:
+          type: string
+          description: URI selected by the service consumer to receive notifications
+            on the subscribed Application Mobility Service. This shall be included
+            both in the request and in response.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        filterCriteria:
+          $ref: '#/components/schemas/AdjacentAppInfoSubscription.filterCriteria'
+        subscriptionType:
+          type: string
+          description: Shall be set to "AdjacentAppInfoSubscription".
+          enum:
+          - AdjacentAppInfoSubscription
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 7.3.3
+    AdjacentAppInstanceInfo:
+      required:
+      - appDId
+      - appInstanceCommLink
+      - appInstanceId
+      type: object
+      properties:
+        appDId:
+          type: string
+          description: Identifier of the application descriptor.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appInstanceCommLink:
+          minItems: 1
+          type: array
+          description: It specifies the communication interface of application instance.
+          items:
+            $ref: '#/components/schemas/CommunicationInterface'
+        appInstanceId:
+          type: string
+          description: Identifier of the application instance.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        mecHostInformation:
+          $ref: '#/components/schemas/MECHostInformation'
+      example:
+        appInstanceId: appInstanceId
+        appInstanceCommLink:
+        - ipAddresses:
+          - port: 0
+            host: host
+          - port: 0
+            host: host
+        - ipAddresses:
+          - port: 0
+            host: host
+          - port: 0
+            host: host
+        appDId: appDId
+        mecHostInformation:
+          hostName: hostName
+          hostId: {}
+      x-etsi-ref: 7.2.3
+    AppMobilityServiceLevel:
+      type: string
+      description: This attribute provides an option for the application instance
+        (server) to communicate with the application client before relocating this
+        application instance to another MEC host.
+      enum:
+      - APP_MOBILITY_NOT_ALLOWED
+      - APP_MOBILITY_WITH_CONFIRMATION
+      - APP_MOBILITY_WITHOUT_CONFIRMATION
+      x-etsi-notes: 'APP_MOBILITY_NOT_ALLOWED: the current serving application instance
+        continues to deliver the service to the device. The AMS will inform the MEP
+        to perform the traffic steering to the device when the UE moves cross MEC
+        hosts. − APP_MOBILITY_WITH_CONFIRMATION: the serving application instance
+        is allowed to change with the confirmation by the application once the device
+        mobility happens. The AMS then will inform the MEP to update the traffic routing
+        to the target application instance and clean up the previous resource allocated
+        to the application instance serving to the device after the serving application
+        instance has been changed. − APP_MOBILITY_WITHOUT_CONFIRMATION: the serving
+        application instance is allowed to change without confirmation from the application
+        instance when the device mobility happens. The AMS will notify to the MEP
+        to update the traffic routing to the target application instance and clean
+        up the previous resource allocated to the application instance serving to
+        the device after the serving application instance has been changed.'
+    CommunicationInterface.IpAddresses:
+      required:
+      - host
+      - port
+      properties:
+        host:
+          type: string
+        port:
+          type: integer
+      example:
+        port: 0
+        host: host
+    CommunicationInterface:
+      properties:
+        ipAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunicationInterface.IpAddresses'
+      example:
+        ipAddresses:
+        - port: 0
+          host: host
+        - port: 0
+          host: host
+    MobilityProcedureSubscription.links:
+      required:
+      - self
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+    MobilityProcedureSubscription.filterCriteria:
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifier of the application instance that registers the application
+            mobility service.
+          x-etsi-mec-cardinality: 0..1
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+        mobilityStatus:
+          minItems: 0
+          type: array
+          description: In case mobilityStatus is not included in the subscription
+            request, the default value 1 = INTER_HOST_MOBILITY_TRIGGERED shall be
+            used and included in the response.
+          items:
+            $ref: '#/components/schemas/MobilityStatus'
+          x-etsi-mec-cardinality: 0..N
+      description: List of filtering criteria for the subscription. Any filtering
+        criteria from below, which is included in the request, shall also be included
+        in the response.
+      x-etsi-mec-cardinality: "1"
+    MobilityProcedureSubscription:
+      required:
+      - callbackReference
+      - filterCriteria
+      - subscriptionType
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/MobilityProcedureSubscription.links'
+        callbackReference:
+          type: string
+          description: URI selected by the service consumer to receive notifications
+            on the subscribed Application Mobility Service. This shall be included
+            both in the request and in response.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        filterCriteria:
+          $ref: '#/components/schemas/MobilityProcedureSubscription.filterCriteria'
+        subscriptionType:
+          type: string
+          description: Shall be set to "MobilityProcedureSubscription".
+          enum:
+          - MobilityProcedureSubscription
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 7.3.2
+    MobilityStatus:
+      type: string
+      description: Indicate the status of the UE mobility
+      enum:
+      - INTERHOST_MOVEOUT_TRIGGERED
+      - INTERHOST_MOVEOUT_COMPLETED
+      - INTERHOST_MOVEOUT_FAILED
+    RegistrationInfo.deviceInformation:
+      required:
+      - associateId
+      - serviceConsumerId
+      properties:
+        associateId:
+          $ref: '#/components/schemas/AssociateId'
+        appMobilityServiceLevel:
+          $ref: '#/components/schemas/AppMobilityServiceLevel'
+        contextTransferState:
+          $ref: '#/components/schemas/contextTransferState'
+      example:
+        associateId:
+          type: UE_IPv4_ADDRESS
+          value: value
+        appMobilityServiceLevel: APP_MOBILITY_NOT_ALLOWED
+        contextTransferState: NOT_TRANSFERRED
+    RegistrationInfo.serviceConsumerId:
+      properties:
+        appInstanceId:
+          type: string
+          description: If present, it represents the identifier of the application
+            instance registering the application mobility service.
+          x-etsi-mec-cardinality: 0..1
+        mepId:
+          type: string
+          description: If present, it represents the identifier of the MEC platform
+            registering the application mobility service.
+          x-etsi-mec-cardinality: 0..1
+      description: The identifier of service consumer requesting the application mobility
+        service, i.e. either the application instance ID or the MEC platform ID.
+      example:
+        appInstanceId: appInstanceId
+        mepId: mepId
+    RegistrationInfo:
+      required:
+      - serviceConsumerId
+      type: object
+      properties:
+        appMobilityServiceId:
+          type: string
+          description: The identifier of registered application mobility service.
+            Shall be absent in POST requests, and present otherwise.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        deviceInformation:
+          minItems: 0
+          type: array
+          description: If present, it specifies the device served by the application
+            instance which is registering the application mobility service.
+          items:
+            $ref: '#/components/schemas/RegistrationInfo.deviceInformation'
+        expiryTime:
+          type: integer
+          description: If present, it indicates the time of application mobility service
+            expiration from the time of registration accepted.The value "0" means
+            infinite time, i.e. no expiration.The unit of expiry time is one second.
+          format: Uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        serviceConsumerId:
+          $ref: '#/components/schemas/RegistrationInfo.serviceConsumerId'
+      example:
+        appMobilityServiceId: appMobilityServiceId
+        deviceInformation:
+        - associateId:
+            type: UE_IPv4_ADDRESS
+            value: value
+          appMobilityServiceLevel: APP_MOBILITY_NOT_ALLOWED
+          contextTransferState: NOT_TRANSFERRED
+        - associateId:
+            type: UE_IPv4_ADDRESS
+            value: value
+          appMobilityServiceLevel: APP_MOBILITY_NOT_ALLOWED
+          contextTransferState: NOT_TRANSFERRED
+        expiryTime: 0
+        serviceConsumerId:
+          appInstanceId: appInstanceId
+          mepId: mepId
+      x-etsi-notes: "NOTE:\tThe data type of AssociateId is defined in ETSI GS MEC\
+        \ 012 [6]."
+      x-etsi-ref: 7.2.2
+    SubscriptionLinkList.links:
+      required:
+      - self
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: List of hyperlinks related to the resource.
+      example:
+        self:
+          href: http://example.com/aeiou
+    SubscriptionLinkList.subscription:
+      required:
+      - href
+      - subscriptionType
+      properties:
+        href:
+          type: string
+          description: The URI referring to the subscription.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+        subscriptionType:
+          $ref: '#/components/schemas/subscriptionType'
+      example:
+        subscriptionType: 0
+        href: http://example.com/aeiou
+    SubscriptionLinkList:
+      required:
+      - _links
+      properties:
+        _links:
+          $ref: '#/components/schemas/SubscriptionLinkList.links'
+        subscription:
+          minItems: 0
+          type: array
+          description: A link to a subscription.
+          items:
+            $ref: '#/components/schemas/SubscriptionLinkList.subscription'
+          x-etsi-mec-cardinality: 0..N
+      example:
+        _links:
+          self:
+            href: http://example.com/aeiou
+        subscription:
+        - subscriptionType: 0
+          href: http://example.com/aeiou
+        - subscriptionType: 0
+          href: http://example.com/aeiou
+      x-etsi-ref: 7.3.4
+    contextTransferState:
+      type: string
+      description: If present, it represents the state of transferring the user context
+        to another application instance.
+      enum:
+      - NOT_TRANSFERRED
+      - USER_CONTEXT_TRANSFER_COMPLETED
+    subscriptionType:
+      type: integer
+      description: 'Numeric value (0 - 255) corresponding to specified type of subscription
+        as following: 0 = RESERVED. 1 = MOBILITY_PROCEDURE. 2 = ADJACENT_APPINFO. '
+      enum:
+      - 0
+      - 1
+      - 2
+    Seconds:
+      type: integer
+      description: '''The seconds part of the Time. Time is defined as Unix-time since
+        January 1, 1970, 00:00:00 UTC.'''
+      format: uint32
+    NanoSeconds:
+      type: integer
+      description: '''The nanoseconds part of the Time. Time is defined as Unix-time
+        since January 1, 1970, 00:00:00 UTC.'''
+      format: uint32
+    HostName:
+      type: string
+      description: Human-readable name of MEC host.
+    KeyValuePairs:
+      type: object
+      description: '''This data type represents a list of key-value pairs. The order
+        of the pairs in the list is not significant. In JSON, a set of key-value pairs
+        is represented as an object. It shall comply with the provisions defined in
+        clause 4 of IETF RFC 8259'''
+    AssociateId:
+      required:
+      - type
+      - value
+      type: object
+      properties:
+        type:
+          type: string
+          description: Numeric value (0-255) corresponding to specified type of identifier
+          enum:
+          - UE_IPv4_ADDRESS
+          - UE_IPV6_ADDRESS
+          - NATED_IP_ADDRESS
+          - GTP_TEID
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum
+        value:
+          type: string
+          description: Value for the identifier.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        type: UE_IPv4_ADDRESS
+        value: value
+      x-etsi-ref: 6.5.4
+    LinkType:
+      required:
+      - href
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/Href'
+      description: '''This data type represents a type of link'''
+      example:
+        href: http://example.com/aeiou
+    Href:
+      type: string
+      description: The URI referring to the subscription.
+      format: uri
+    TimeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        seconds:
+          $ref: '#/components/schemas/Seconds'
+        nanoSeconds:
+          $ref: '#/components/schemas/NanoSeconds'
+      description: '''This data type represents the time stamp as Unix-time since
+        January 1, 1970, 00:00:00 UTC'''
+    MECHostInformation:
+      required:
+      - hostId
+      type: object
+      properties:
+        hostName:
+          $ref: '#/components/schemas/HostName'
+        hostId:
+          type: object
+          description: '''This data type represents a list of key-value pairs. The
+            order of the pairs in the list is not significant. In JSON, a set of key-value
+            pairs is represented as an object. It shall comply with the provisions
+            defined in clause 4 of IETF RFC 8259'''
+      description: '''The data type represents the parameters of MEC host information.'''
+      example:
+        hostName: hostName
+        hostId: {}
+    ExpiryNotification:
+      required:
+      - _links
+      - expiryDeadline
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/ExpiryNotification__links'
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 7.4.4
+    LocalityTypes:
+      type: string
+    MobilityProcedureNotification:
+      required:
+      - mobilityStatus
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        mobilityStatus:
+          type: integer
+          description: 'Indicate the status of the UE mobility. Values are defined
+            as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3
+            = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.'
+          enum:
+          - 1
+          - 2
+          - 3
+          x-etsi-mec-cardinality: "1"
+        notificationType:
+          type: string
+          description: Shall be set to \"MobilityProcedureNotification\".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        targetAppInfo:
+          $ref: '#/components/schemas/MobilityProcedureNotification_targetAppInfo'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 7.4.2
+    AdjacentAppInfoNotification:
+      required:
+      - mobilityStatus
+      - notificationType
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to \"AdjacentAppInfoNotification\".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        adjacentAppInfo:
+          $ref: '#/components/schemas/AdjacentAppInfoNotification_adjacentAppInfo'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 7.4.2
+    AppTerminationNotification.Links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+        confirmTermination:
+          $ref: '#/components/schemas/LinkType.ConfirmTermination'
+      description: Object containing hyperlinks related to the resource.
+    AppTerminationNotification.MaxGracefulTimeout:
+      type: integer
+      description: Maximum timeout value in seconds for graceful termination or graceful
+        stop of an application instance.
+      format: uint32
+      example: 10
+    AppTerminationNotification.NotificationType:
+      type: string
+      description: Shall be set to AppTerminationNotification.
+      example: AppTerminationNotification
+    AppTerminationNotification:
+      required:
+      - _links
+      - maxGracefulTimeout
+      - notificationType
+      - operationAction
+      type: object
+      properties:
+        notificationType:
+          $ref: '#/components/schemas/AppTerminationNotification.NotificationType'
+        operationAction:
+          $ref: '#/components/schemas/OperationActionType'
+        maxGracefulTimeout:
+          $ref: '#/components/schemas/AppTerminationNotification.MaxGracefulTimeout'
+        _links:
+          $ref: '#/components/schemas/AppTerminationNotification.Links'
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+    LinkType.ConfirmTermination:
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/Href'
+      description: Link to the task resource where to confirm termination in case
+        the application is ready to be terminated before expiry of the timeout.
+    OperationActionType:
+      type: string
+      description: Operation that is being performed on the MEC application instance.
+      example: TERMINATING
+      enum:
+      - STOPPING
+      - TERMINATING
+    ProblemDetails:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of
+            the problem
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        status:
+          type: integer
+          description: The HTTP status code for this occurrence of the problem
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        type:
+          type: string
+          description: A URI reference according to IETF RFC 3986 that identifies
+            the problem type
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+    body:
+      oneOf:
+      - $ref: '#/components/schemas/MobilityProcedureSubscription'
+      - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
+    body_1:
+      oneOf:
+      - $ref: '#/components/schemas/MobilityProcedureSubscription'
+      - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
+    ExpiryNotification__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          type: string
+          description: Self referring URI. This shall be included in the response
+            from the AMS. The URI shall be unique within the AMS API as it acts as
+            an ID for the subscription.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+      description: List of hyperlinks related to the resource.
+    MobilityProcedureNotification_targetAppInfo:
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifiers of the target application instance.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        commInterface:
+          $ref: '#/components/schemas/CommunicationInterface'
+      description: Identifiers to associate the information of target application
+        instance.
+    AdjacentAppInfoNotification_adjacentAppInfo:
+      required:
+      - appInstanceId
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifiers of the target application instance.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        commInterface:
+          $ref: '#/components/schemas/CommunicationInterface'
+      description: Identifiers to associate the information of target application
+        instance.
+  responses:
+    "204":
+      description: No Content
+    "206":
+      description: Partial content
+    "400":
+      description: 'Bad Request : used to indicate that incorrect parameters were
+        passed to the request.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "401":
+      description: 'Unauthorized :  used when the client did not submit credentials.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "403":
+      description: 'Forbidden :  operation is not allowed given the current status
+        of the resource.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "404":
+      description: 'Not Found :  used when a client provided a URI that cannot be
+        mapped to a valid resource URI.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "406":
+      description: 'Not Acceptable : used to indicate that the server cannot provide
+        the any of the content formats supported by the client.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "409":
+      description: 'Conflict : The operation cannot be executed currently, due to
+        a conflict with the state of the resource'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "412":
+      description: 'Precondition failed :  used when a condition has failed during
+        conditional requests, e.g. when using ETags to avoid write conflicts when
+        using PUT'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "415":
+      description: 'Unsupported Media Type :  used to indicate that the server or
+        the client does not support the content type of the entity body.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "422":
+      description: 'Unprocessable Entity : used to indicate that the server understands
+        the content type of the request entity and that the syntax of the request
+        entity is correct but that the server is unable to process the contained instructions.
+        This error condition can occur if an JSON request body is syntactically correct
+        but semantically incorrect, for example if the target area for the request
+        is considered too large. This error condition can also occur if the capabilities
+        required by the request are not supported.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "429":
+      description: 'Too Many Requests : used when a rate limiter has triggered.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
