@@ -3633,28 +3633,6 @@ components:
       - 30
       - 31
       type: integer
-    AppTerminationNotification.Links:
-      description: >-
-        Object containing hyperlinks related to the resource.
-      type: object
-      required:
-        - subscription
-      properties:
-        subscription:
-          $ref: '#/components/schemas/LinkType'
-        confirmTermination:
-          $ref: '#/components/schemas/LinkType.ConfirmTermination'
-    AppTerminationNotification.MaxGracefulTimeout:
-      description: >-
-        Maximum timeout value in seconds for graceful termination or graceful
-        stop of an application instance.
-      type: integer
-      format: uint32
-      example: 10
-    AppTerminationNotification.NotificationType:
-      description: Shall be set to AppTerminationNotification.
-      type: string
-      example: 'AppTerminationNotification'
     AppTerminationNotification:
       description: >-
         This type represents the information that the MEC platform
@@ -3668,31 +3646,30 @@ components:
         - _links
       properties:
         notificationType:
-          $ref: '#/components/schemas/AppTerminationNotification.NotificationType'
+          description: Shall be set to AppTerminationNotification.
+          type: string
         operationAction:
           $ref: '#/components/schemas/OperationActionType'
         maxGracefulTimeout:
-          $ref: '#/components/schemas/AppTerminationNotification.MaxGracefulTimeout'
+          description: >-
+            Maximum timeout value in seconds for graceful termination or graceful
+            stop of an application instance.
+          type: integer
+          format: uint32
         _links:
-          $ref: '#/components/schemas/AppTerminationNotification.Links'
-    LinkType.ConfirmTermination:
-      description: >-
-        Link to the task resource where to confirm termination in case the
-        application is ready to be terminated before expiry of the timeout.
-      type: object
-      properties:
-        href:
-          $ref: '#/components/schemas/Href'
-    Href:
-      description: URI referring to a resource
-      type: string
-      format: uri
-      example: '/mecAppSuptApi/example'
+          description: >-
+            Object containing hyperlinks related to the resource.
+          type: object
+          required:
+            - subscription
+          properties:
+            subscription:
+              $ref: '#/components/schemas/LinkType'
+            confirmTermination:
+              $ref: '#/components/schemas/LinkType'
     OperationActionType:
       description: Operation that is being performed on the MEC application instance.
       type: string
       enum:
         - STOPPING
         - TERMINATING
-      example: 'TERMINATING'
-

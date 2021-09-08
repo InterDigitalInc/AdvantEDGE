@@ -92,7 +92,6 @@ Class | Method | HTTP request | Description
  - [InlineZoneStatusSubscription](docs/InlineZoneStatusSubscription.md)
  - [Link](docs/Link.md)
  - [LinkType](docs/LinkType.md)
- - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [LocationInfo](docs/LocationInfo.md)
  - [LocationInfoVelocity](docs/LocationInfoVelocity.md)
  - [NotificationFormat](docs/NotificationFormat.md)

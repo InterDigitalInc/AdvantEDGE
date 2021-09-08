@@ -2,7 +2,7 @@ openapi: 3.0.2
 servers:
   - url: 'https://localhost/sandboxname/mec_app_support/v1'
 info:
-  title: AdvantEDGE MEC Application Support API
+  title: MEC Application Support API
   version: 2.1.1
   description: The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
   license:
@@ -15,13 +15,8 @@ externalDocs:
   url: >-
     https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
 tags:
-  - name: appTrafficRules
-  - name: appDnsRules
-  - name: appSubscriptions
-  - name: appConfirmTermination
-  - name: appConfirmReady
-  - name: timing
-  - name: callbacks
+  - name: unsupported
+  - name: mec_app_support
 paths:
   '/applications/{appInstanceId}/traffic_rules':
     parameters:
@@ -32,16 +27,16 @@ paths:
         with a MEC application instance.
       operationId: ApplicationsTrafficRules_GET
       tags:
-        - appTrafficRules
+        - unsupported
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsTrafficRules.200'
+          $ref: '#/components/responses/ApplicationsTrafficRules200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
   '/applications/{appInstanceId}/traffic_rules/{trafficRuleId}':
     parameters:
       - $ref: '#/components/parameters/Path.AppInstanceId'
@@ -52,34 +47,34 @@ paths:
         with a MEC application instance.
       operationId: ApplicationsTrafficRule_GET
       tags:
-        - appTrafficRules
+        - unsupported
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsTrafficRule.200'
+          $ref: '#/components/responses/ApplicationsTrafficRule200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
     put:
       description: >-
         This method retrieves information about all the traffic rules associated
         with a MEC application instance.
       operationId: ApplicationsTrafficRule_PUT
       tags:
-        - appTrafficRules
+        - unsupported
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsTrafficRule.200'
+          $ref: '#/components/responses/ApplicationsTrafficRule200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
         '412':
-          $ref: '#/components/responses/Error.412'
+          $ref: '#/components/responses/412'
       requestBody:
         $ref: '#/components/requestBodies/ApplicationsTrafficRule'
   '/applications/{appInstanceId}/dns_rules':
@@ -91,16 +86,16 @@ paths:
         with a MEC application instance.
       operationId: ApplicationsDnsRules_GET
       tags:
-        - appDnsRules
+        - unsupported
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsDnsRules.200'
+          $ref: '#/components/responses/ApplicationsDnsRules200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
   '/applications/{appInstanceId}/dns_rules/{dnsRuleId}':
     parameters:
       - $ref: '#/components/parameters/Path.AppInstanceId'
@@ -111,32 +106,32 @@ paths:
         MEC application instance.
       operationId: ApplicationsDnsRule_GET
       tags:
-        - appDnsRules
+        - unsupported
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsDnsRule.200'
+          $ref: '#/components/responses/ApplicationsDnsRule200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
     put:
       description: 'This method activates, de-activates or updates a traffic rule.'
       operationId: ApplicationsDnsRule_PUT
       tags:
-        - appDnsRules
+        - unsupported
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsDnsRule.200'
+          $ref: '#/components/responses/ApplicationsDnsRule200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
         '412':
-          $ref: '#/components/responses/Error.412'
+          $ref: '#/components/responses/412'
       requestBody:
           $ref: '#/components/requestBodies/ApplicationsDnsRule'
   '/applications/{appInstanceId}/subscriptions':
@@ -149,16 +144,16 @@ paths:
         entity body with all the subscriptions for the requestor.
       operationId: ApplicationsSubscriptions_GET
       tags:
-        - appSubscriptions
+        - mec_app_support
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsSubscriptions.200'
+          $ref: '#/components/responses/ApplicationsSubscriptions200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
     post:
       description: >-
         The POST method may be used to create a new subscription. One example
@@ -167,16 +162,16 @@ paths:
         body describing the created subscription.
       operationId: ApplicationsSubscriptions_POST
       tags:
-        - appSubscriptions
+        - mec_app_support
       responses:
         '201':
-          $ref: '#/components/responses/ApplicationsSubscriptions.201'
+          $ref: '#/components/responses/ApplicationsSubscriptions201'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
       requestBody:
         $ref: '#/components/requestBodies/ApplicationsSubscriptions'
       callbacks:
@@ -193,16 +188,16 @@ paths:
         subscription for the requestor.
       operationId: ApplicationsSubscription_GET
       tags:
-        - appSubscriptions
+        - mec_app_support
       responses:
         '200':
-          $ref: '#/components/responses/ApplicationsSubscription.200'
+          $ref: '#/components/responses/ApplicationsSubscription200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
     delete:
       description: >-
         This method deletes a mecAppSuptApiSubscription. This method is typically used
@@ -210,14 +205,14 @@ paths:
         procedure.
       operationId: ApplicationsSubscription_DELETE
       tags:
-        - appSubscriptions
+        - mec_app_support
       responses:
         '204':
           description: No Content
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
   '/applications/{appInstanceId}/confirm_termination':
     parameters:
       - $ref: '#/components/parameters/Path.AppInstanceId'
@@ -227,20 +222,20 @@ paths:
         of an application instance.
       operationId: ApplicationsConfirmTermination_POST
       tags:
-        - appConfirmTermination
+        - mec_app_support
       responses:
         '204':
           description: No Content
         '401':
-          $ref: '#/components/responses/Error.401'
+          $ref: '#/components/responses/401'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
         '409':
-          $ref: '#/components/responses/Error.409'
+          $ref: '#/components/responses/409'
         '429':
-          $ref: '#/components/responses/Error.429'
+          $ref: '#/components/responses/429'
       requestBody:
         $ref: '#/components/requestBodies/ApplicationsConfirmTermination'
   '/applications/{appInstanceId}/confirm_ready':
@@ -251,20 +246,20 @@ paths:
        This method may be used by the MEC application instance to notify the MEC platform that it is up and running. 
       operationId: ApplicationsConfirmReady_POST
       tags:
-        - appConfirmReady
+        - mec_app_support
       responses:
         '204':
           description: No Content
         '401':
-          $ref: '#/components/responses/Error.401'
+          $ref: '#/components/responses/401'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
         '409':
-          $ref: '#/components/responses/Error.409'
+          $ref: '#/components/responses/409'
         '429':
-          $ref: '#/components/responses/Error.429'
+          $ref: '#/components/responses/429'
       requestBody:
         $ref: '#/components/requestBodies/ApplicationsConfirmReady'
   '/timing/timing_caps':
@@ -274,16 +269,16 @@ paths:
         capabilities which corresponds to the timing capabilities query
       operationId: TimingCaps_GET
       tags:
-        - timing
+        - mec_app_support
       responses:
         '200':
-          $ref: '#/components/responses/TimingCaps.200'
+          $ref: '#/components/responses/TimingCaps200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
   '/timing/current_time':
     get:
       description: >-
@@ -291,20 +286,18 @@ paths:
         which corresponds to the get platform time procedure
       operationId: TimingCurrentTime_GET
       tags:
-        - timing
+        - mec_app_support
       responses:
         '200':
-          $ref: '#/components/responses/TimingCurrentTime.200'
+          $ref: '#/components/responses/TimingCurrentTime200'
         '400':
-          $ref: '#/components/responses/Error.400'
+          $ref: '#/components/responses/400'
         '403':
-          $ref: '#/components/responses/Error.403'
+          $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/Error.404'
+          $ref: '#/components/responses/404'
 components:
   schemas:
-    Empty:
-      description: Empty schema
     AppReadyConfirmation:
       description: >-
         This type represents the information that the MEC application instance indicates to the MEC platform that it is up and running.
@@ -313,7 +306,10 @@ components:
         - indication
       properties:
         indication:
-          $ref: '#/components/schemas/ReadyIndicationType'
+          description: Indication about the MEC application instance.
+          type: string
+          enum:
+            - READY
     AppTerminationConfirmation:
       description: >-
         This type represents the information that the MEC application instance provides to the MEC platform when informing it that the application has completed its application level related terminate/stop actions, e.g. retention of application state in the case of stop.
@@ -323,28 +319,6 @@ components:
       properties:
         operationAction:
           $ref: '#/components/schemas/OperationActionType'
-    AppTerminationNotification.Links:
-      description: >-
-        Object containing hyperlinks related to the resource.
-      type: object
-      required:
-        - subscription
-      properties:
-        subscription:
-          $ref: '#/components/schemas/LinkType'
-        confirmTermination:
-          $ref: '#/components/schemas/LinkType.ConfirmTermination'
-    AppTerminationNotification.MaxGracefulTimeout:
-      description: >-
-        Maximum timeout value in seconds for graceful termination or graceful
-        stop of an application instance.
-      type: integer
-      format: uint32
-      example: 10
-    AppTerminationNotification.NotificationType:
-      description: Shall be set to AppTerminationNotification.
-      type: string
-      example: 'AppTerminationNotification'
     AppTerminationNotification:
       description: >-
         This type represents the information that the MEC platform
@@ -358,25 +332,27 @@ components:
         - _links
       properties:
         notificationType:
-          $ref: '#/components/schemas/AppTerminationNotification.NotificationType'
+          description: Shall be set to AppTerminationNotification.
+          type: string
         operationAction:
           $ref: '#/components/schemas/OperationActionType'
         maxGracefulTimeout:
-          $ref: '#/components/schemas/AppTerminationNotification.MaxGracefulTimeout'
+          description: >-
+            Maximum timeout value in seconds for graceful termination or graceful
+            stop of an application instance.
+          type: integer
+          format: uint32
         _links:
-          $ref: '#/components/schemas/AppTerminationNotification.Links'
-    AppTerminationNotificationSubscription.AppInstanceId:
-      description: It is used as the filtering criterion for the subscribed events.
-      type: string
-      example: 'ID1'
-    AppTerminationNotificationSubscription.CallbackReference:
-      description: >-
-        URI selected by the MEC application instance to receive
-        notifications on the subscribed MEC application instance
-        management information. This shall be included in both the request and
-        the response.
-      type: string
-      format: uri
+          description: >-
+            Object containing hyperlinks related to the resource.
+          type: object
+          required:
+            - subscription
+          properties:
+            subscription:
+              $ref: '#/components/schemas/LinkType'
+            confirmTermination:
+              $ref: '#/components/schemas/LinkType'
     AppTerminationNotificationSubscription:
       description: >-
         This type represents the information that the MEC platform
@@ -389,20 +365,28 @@ components:
         - appInstanceId
       properties:
         subscriptionType:
-          $ref: >-
-            #/components/schemas/AppTerminationNotificationSubscription.SubscriptionType
+          description: Shall be set to AppTerminationNotificationSubscription.
+          type: string
         callbackReference:
-          $ref: >-
-            #/components/schemas/AppTerminationNotificationSubscription.CallbackReference
+          description: >-
+            URI selected by the MEC application instance to receive
+            notifications on the subscribed MEC application instance
+            management information. This shall be included in both the request and
+            the response.
+          type: string
+          format: uri
         _links:
-          $ref: '#/components/schemas/Self'
+          description: Self-referring URI.
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              $ref: '#/components/schemas/LinkType'
+          readOnly: true
         appInstanceId:
-          $ref: >-
-            #/components/schemas/AppTerminationNotificationSubscription.AppInstanceId
-    AppTerminationNotificationSubscription.SubscriptionType:
-      description: Shall be set to AppTerminationNotificationSubscription.
-      type: string
-      example: 'AppTerminationNotificationSubscription'
+          description: It is used as the filtering criterion for the subscribed events.
+          type: string
     CurrentTime:
       description: >-
         This type represents the information provided by the MEC
@@ -419,14 +403,12 @@ components:
           description: >-
             The seconds part of the time. Time is defined as Unix-time since
             January 1, 1970, 00:00:00 UTC
-          example: 1577836800
         nanoSeconds:
           type: integer
           format: uint32
           description: >-
             The nanoseconds part of the time. Time is defined as Unix-time since
             January 1, 1970, 00:00:00 UTC
-          example: 0
         timeSourceStatus:
           type: string
           enum:
@@ -436,23 +418,6 @@ components:
             Platform Time Source status. 1 = TRACEABLE - time source is locked
             to the UTC time source. 2 = NONTRACEABLE - time source is not locked
             to the UTC time source
-          example: 'TRACEABLE'
-    DestinationInterface.InterfaceType:
-      description: Type of the interface
-      type: string
-      enum:
-        - TUNNEL
-        - MAC
-        - IP
-      example: 'TUNNEL'
-    DestinationInterface.IpAddress:
-      description: IP address of the remote destination
-      type: string
-      example: '192.0.2.0'
-    DestinationInterface.MacAddress:
-      description: Source address identifies the MAC address of the interface
-      type: string
-      example: '02-00-00-00-00-00'
     DestinationInterface:
       description: This type represents the destination interface. If the action is FORWARD_DECAPSULATED, FORWARD_ENCAPSULATED or PASSTHROUGH one value shall be provided. If the action is DUPLICATE_DECAPSULATED or DUPLICATE_ENCAPSULATED, two values shall be provided. If the action is DROP, no value shall be provided.
       type: object
@@ -460,46 +425,23 @@ components:
         - interfaceType
       properties:
         interfaceType:
-          $ref: '#/components/schemas/DestinationInterface.InterfaceType'
+          description: Type of the interface
+          type: string
+          enum:
+            - TUNNEL
+            - MAC
+            - IP
         tunnelInfo:
           $ref: '#/components/schemas/TunnelInfo'
         srcMacAddress:
-          $ref: '#/components/schemas/DestinationInterface.MacAddress'
+          description: Source address identifies the MAC address of the interface
+          type: string
         dstMacAddress:
-          $ref: '#/components/schemas/DestinationInterface.MacAddress'
+          description: Destination address identifies the MAC address of the interface
+          type: string
         dstIpAddress:
-          $ref: '#/components/schemas/DestinationInterface.IpAddress'
-    DnsRule.DomainName:
-      description: FQDN resolved by the DNS rule
-      type: string
-      example: 'www.example.com'
-    DnsRule.Id:
-      description: Identifies the DNS Rule
-      type: string
-      example: 'dnsRule1'
-    DnsRule.IpAddress:
-      description: IP address associated with the FQDN resolved by the DNS rule
-      type: string
-      example: '192.0.2.0'
-    DnsRule.IpAddressType:
-      description: IP address type
-      type: string
-      enum:
-        - IP_V6
-        - IP_V4
-      example: 'IP_V6'
-    DnsRule.State:
-      description: DNS rule state. This attribute may be updated using HTTP PUT method
-      type: string
-      enum:
-        - ACTIVE
-        - INACTIVE
-      example: 'ACTIVE'
-    DnsRule.Ttl:
-      description: Time to live value
-      type: integer
-      format: uint32
-      example: '?'
+          description: IP address of the remote destination
+          type: string
     DnsRule:
       description: This type represents the general information of a DNS rule.
       type: object
@@ -511,63 +453,40 @@ components:
         - state
       properties:
         dnsRuleId:
-          $ref: '#/components/schemas/DnsRule.Id'
+          description: Identifies the DNS Rule
+          type: string
         domainName:
-          $ref: '#/components/schemas/DnsRule.DomainName'
+          description: FQDN resolved by the DNS rule
+          type: string
         ipAddressType:
-          $ref: '#/components/schemas/DnsRule.IpAddressType'
+          description: IP address type
+          type: string
+          enum:
+            - IP_V6
+            - IP_V4
         ipAddress:
-          $ref: '#/components/schemas/DnsRule.IpAddress'
+          description: IP address associated with the FQDN resolved by the DNS rule
+          type: string
         ttl:
-          $ref: '#/components/schemas/DnsRule.Ttl'
+          description: Time to live value
+          type: integer
+          format: uint32
         state:
-          $ref: '#/components/schemas/DnsRule.State'
+          description: DNS rule state. This attribute may be updated using HTTP PUT method
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+          example: 'ACTIVE'
     LinkType:
       description: This type represents a type of link and may be referenced from data structures
       type: object
       properties:
         href: 
-          $ref: '#/components/schemas/Href'
-    LinkType.ConfirmTermination:
-      description: >-
-        Link to the task resource where to confirm termination in case the 
-        application is ready to be terminated before expiry of the timeout.
-      type: object
-      properties:
-        href: 
-          $ref: '#/components/schemas/Href'
-    Href:
-      description: URI referring to a resource
-      type: string
-      format: uri
-      example: '/mecAppSuptApi/example'
-    MecAppSuptApiSubscriptionLinkList.Links:
-      description: Self-referring URI.
-      type: object
-      required:
-        - self
-      properties:
-        self:
-          $ref: '#/components/schemas/LinkType'
-        subscriptions:
-          description: The MEC application instance's subscriptions
-          type: array
-          items:
-            $ref: '#/components/schemas/MecAppSuptApiSubscriptionLinkList.Subscription'
-    MecAppSuptApiSubscriptionLinkList.Subscription:
-      description: A link to a subscription.
-      type: object
-      required:
-        - href
-        - rel
-      properties:
-        href:
-          $ref: '#/components/schemas/Href'
-        rel:
-          description: >-
-            The values shall be set to AppTerminationNotificationSubscription.
+          description: URI referring to a resource
           type: string
-    MecAppSuptApiSubscriptionLinkList:
+          format: uri
+    SubscriptionLinkList:
       description: >-
         This type represents a list of links related to currently existing
         subscriptions for a MEC application instance. This information
@@ -577,180 +496,60 @@ components:
         - _links
       properties:
         _links:
-          $ref: '#/components/schemas/MecAppSuptApiSubscriptionLinkList.Links'
+          description: Self-referring URI.
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              $ref: '#/components/schemas/LinkType'
+            subscriptions:
+              description: The MEC application instance's subscriptions
+              type: array
+              items:
+                description: A link to a subscription.
+                type: object
+                required:
+                  - href
+                  - rel
+                properties:
+                  href:
+                    description: URI referring to a resource
+                    type: string
+                    format: uri
+                  rel:
+                    description: >-
+                      The values shall be set to AppTerminationNotificationSubscription.
+                    type: string
     OperationActionType:
       description: Operation that is being performed on the MEC application instance.
       type: string
       enum:
         - STOPPING
         - TERMINATING
-      example: 'TERMINATING'
     ProblemDetails:
       type: object
       properties:
         type:
-          $ref: '#/components/schemas/Problem.type'
+          type: string
+          format: uri
+          description: >-
+            A URI reference according to IETF RFC 3986 that identifies the problem
+            type
         title:
-          $ref: '#/components/schemas/Problem.title'
+          type: string
+          description: 'A short, human-readable summary of the problem type'
         status:
-          $ref: '#/components/schemas/Problem.status'
+          type: integer
+          format: uint32
+          description: The HTTP status code for this occurrence of the problem
         detail:
-          $ref: '#/components/schemas/Problem.detail'
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
         instance:
-          $ref: '#/components/schemas/Problem.instance'
-    Problem.detail:
-      type: string
-      description: A human-readable explanation specific to this occurrence of the problem
-    Problem.instance:
-      type: string
-      format: uri
-      description: A URI reference that identifies the specific occurrence of the problem
-    Problem.status:
-      type: integer
-      format: uint32
-      description: The HTTP status code for this occurrence of the problem
-    Problem.title:
-      type: string
-      description: 'A short, human-readable summary of the problem type'
-    Problem.type:
-      type: string
-      format: uri
-      description: >-
-        A URI reference according to IETF RFC 3986 that identifies the problem
-        type
-    ReadyIndicationType:
-      description: Indication about the MEC application instance.
-      type: string
-      enum:
-        - READY
-      example: 'READY'
-    Self:
-      description: Self-referring URI.
-      type: object
-      required:
-        - self
-      properties:
-        self:
-          $ref: '#/components/schemas/LinkType'
-      readOnly: true
-    TimingCaps.NtpServers.AuthenticationKeyNum:
-      description: Authentication key number
-      type: integer
-      format: uint32
-      example: 1
-    TimingCaps.NtpServers.AuthenticationOption:
-      description: NTP authentication option
-      type: string
-      enum:
-        - NONE
-        - SYMMETRIC_KEY
-        - AUTO_KEY
-      example: 'NONE'
-    TimingCaps.NtpServers.DelayReqMaxRate:
-      description: Acceptable maximum rate of the Delay_Req messages in packets per second
-      type: integer
-      format: uint32
-      example: 10
-    TimingCaps.NtpServers.LocalPriority:
-      description: NTP server local priority
-      type: integer
-      format: uint32
-      example: 1
-    TimingCaps.NtpServers.MaxPollingInterval:
-      description: >-
-        Maximum poll interval for NTP messages, in seconds as a power of two.
-        Range 3...17
-      type: integer
-      format: uint32
-      example: 17
-    TimingCaps.NtpServers.MinPollingInterval:
-      description: >-
-        Minimum poll interval for NTP messages, in seconds as a power of two.
-        Range 3...17
-      type: integer
-      format: uint32
-      example: 3
-    TimingCaps.NtpServers.NtpServerAddr:
-      description: NTP server address
-      type: string
-      example: '192.0.2.0'
-    TimingCaps.NtpServers.NtpServerAddrType:
-      description: Address type of NTP server
-      type: string
-      enum:
-        - IP_ADDRESS
-        - DNS_NAME
-      example: 'IP_ADDRESS'
-    TimingCaps.NtpServers_PtpMasterIpAddress:
-      description: PTP Master IP Address
-      type: string
-      example: '192.0.2.0'
-    TimingCaps.NtpServers_PtpMasterLocalPriority:
-      description: PTP Master local priority
-      type: integer
-      format: uint32
-      example: 1
-    TimingCaps.NtpServers:
-      description: NTP server detail.
-      type: object
-      required:
-        - ntpServerAddrType
-        - ntpServerAddr
-        - minPollingInterval
-        - maxPollingInterval
-        - localPriority
-        - authenticationOption
-        - authenticationKeyNum
-      properties:
-        ntpServerAddrType:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.NtpServerAddrType'
-        ntpServerAddr:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.NtpServerAddr'
-        minPollingInterval:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.MinPollingInterval'
-        maxPollingInterval:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.MaxPollingInterval'
-        localPriority:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.LocalPriority'
-        authenticationOption:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.AuthenticationOption'
-        authenticationKeyNum:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.AuthenticationKeyNum'
-    TimingCaps_PtpMasters:
-      description: NTP server detail.
-      type: object
-      required:
-        - ptpMasterIpAddress
-        - ptpMasterLocalPriority
-        - delayReqMaxRate
-      properties:
-        ptpMasterIpAddress:
-          $ref: '#/components/schemas/TimingCaps.NtpServers_PtpMasterIpAddress'
-        ptpMasterLocalPriority:
-          $ref: '#/components/schemas/TimingCaps.NtpServers_PtpMasterLocalPriority'
-        delayReqMaxRate:
-          $ref: '#/components/schemas/TimingCaps.NtpServers.DelayReqMaxRate'
-    TimingCaps.TimeStamp:
-      description: time
-      type: object
-      required:
-        - nanoSeconds
-        - seconds
-      properties:
-        seconds:
-          type: integer
-          format: uint32
-          description: >-
-            The seconds part of the time. Time is defined as Unix-time since
-            January 1, 1970, 00:00:00 UTC
-          example: 1577836800
-        nanoSeconds:
-          type: integer
-          format: uint32
-          description: >-
-            The nanoseconds part of the time. Time is defined as Unix-time since
-            January 1, 1970, 00:00:00 UTC
-          example: 0
+          type: string
+          format: uri
+          description: A URI reference that identifies the specific occurrence of the problem
     TimingCaps:
       description: >-
         This type represents the information provided by the MEC
@@ -758,60 +557,97 @@ components:
       type: object
       properties:
         timeStamp:
-          $ref: '#/components/schemas/TimingCaps.TimeStamp'
+          description: time
+          type: object
+          required:
+            - nanoSeconds
+            - seconds
+          properties:
+            seconds:
+              type: integer
+              format: uint32
+              description: >-
+                The seconds part of the time. Time is defined as Unix-time since
+                January 1, 1970, 00:00:00 UTC
+            nanoSeconds:
+              type: integer
+              format: uint32
+              description: >-
+                The nanoseconds part of the time. Time is defined as Unix-time since
+                January 1, 1970, 00:00:00 UTC
         ntpServers:
           description: Available NTP servers
           type: array
           items:
-            $ref: '#/components/schemas/TimingCaps.NtpServers'
+            description: NTP server detail.
+            type: object
+            required:
+              - ntpServerAddrType
+              - ntpServerAddr
+              - minPollingInterval
+              - maxPollingInterval
+              - localPriority
+              - authenticationOption
+              - authenticationKeyNum
+            properties:
+              ntpServerAddrType:
+                description: Address type of NTP server
+                type: string
+                enum:
+                  - IP_ADDRESS
+                  - DNS_NAME
+              ntpServerAddr:
+                description: NTP server address
+                type: string
+              minPollingInterval:
+                description: >-
+                  Minimum poll interval for NTP messages, in seconds as a power of two.
+                  Range 3...17
+                type: integer
+                format: uint32
+              maxPollingInterval:
+                description: >-
+                  Maximum poll interval for NTP messages, in seconds as a power of two.
+                  Range 3...17
+                type: integer
+                format: uint32
+              localPriority:
+                description: NTP server local priority
+                type: integer
+                format: uint32
+              authenticationOption:
+                description: NTP authentication option
+                type: string
+                enum:
+                  - NONE
+                  - SYMMETRIC_KEY
+                  - AUTO_KEY
+              authenticationKeyNum:
+                description: Authentication key number
+                type: integer
+                format: uint32
         ptpMasters:
           description: Available PTP Masters
           type: array
           items:
-            $ref: '#/components/schemas/TimingCaps_PtpMasters'
-    TrafficFilter.Address:
-      description: Identify the traffic ip address.
-      type: string
-      example: '192.168.1.1'
-    TrafficFilter.DSCP:
-      description: >-
-        Used to match all IPv4 packets that have the same Differentiated
-        Services Code Point (DSCP)
-      type: integer
-      format: uint32
-      example: 0
-    TrafficFilter.Port:
-      description: A port
-      type: string
-      example: '8080'
-    TrafficFilter.Protocol:
-      description: Protocol of the traffic filter
-      type: string
-      example: '?'
-    TrafficFilter.QCI:
-      description: >-
-        Used to match all packets that have the same Quality Class Indicator
-        (QCI).
-      type: integer
-      format: uint32
-      example: 1
-    TrafficFilter.TC:
-      description: Used to match all IPv6 packets that have the same Traffic Class.
-      type: integer
-      format: uint32
-      example: 1
-    TrafficFilter.Token:
-      description: Used for token based traffic rule
-      type: string
-      example: '?'
-    TrafficFilter.TunnelAddress:
-      description: Used for GTP tunnel based traffic rule
-      type: string
-      example: '?'
-    TrafficFilter.TunnelPort:
-      description: Used for GTP tunnel based traffic rule
-      type: string
-      example: '?'
+            description: NTP server detail.
+            type: object
+            required:
+              - ptpMasterIpAddress
+              - ptpMasterLocalPriority
+              - delayReqMaxRate
+            properties:
+              ptpMasterIpAddress:
+                description: PTP Master IP Address
+                type: string
+              ptpMasterLocalPriority:
+                description: PTP Master local priority
+                type: integer
+                format: uint32
+              delayReqMaxRate:
+                description: Acceptable maximum rate of the Delay_Req messages in packets per second
+                type: integer
+                format: uint32
     TrafficFilter:
       description: This type represents the traffic filter.
       type: object
@@ -824,7 +660,8 @@ components:
             prefix, or a range of IP prefixes.
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.Address'
+            description: Identify the traffic ip address.
+            type: string
         dstAddress:
           description: >-
             An IP address or a range of IP address. For IPv4, the IP address
@@ -833,92 +670,72 @@ components:
             prefix, or a range of IP prefixes.
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.Address'
+            description: Identify the traffic ip address.
+            type: string
         srcPort:
           description: A port or a range of ports
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.Port'
+            description: A port
+            type: string
         dstPort:
           description: A port or a range of ports
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.Port'
+            description: A port
+            type: string
         protocol:
           description: Specify the protocol of the traffic filter
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.Protocol'
+            description: Protocol of the traffic filter
+            type: string
         token:
           description: Used for token based traffic rule
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.Token'
+            description: Used for token based traffic rule
+            type: string
         srcTunnelAddress:
           description: Used for GTP tunnel based traffic rule
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.TunnelAddress'
+            description: Used for GTP tunnel based traffic rule
+            type: string
         tgtTunnelAddress:
           description: Used for GTP tunnel based traffic rule
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.TunnelAddress'
+            description: Used for GTP tunnel based traffic rule
+            type: string
         srcTunnelPort:
           description: Used for GTP tunnel based traffic rule
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.TunnelPort'
+            description: Used for GTP tunnel based traffic rule
+            type: string
         dstTunnelPort:
           description: Used for GTP tunnel based traffic rule
           type: array
           items:
-            $ref: '#/components/schemas/TrafficFilter.TunnelPort'
+            description: Used for GTP tunnel based traffic rule
+            type: string
         qCI:
-          $ref: '#/components/schemas/TrafficFilter.QCI'
+          description: >-
+            Used to match all packets that have the same Quality Class Indicator
+            (QCI).
+          type: integer
+          format: uint32
         dSCP:
-          $ref: '#/components/schemas/TrafficFilter.DSCP'
+          description: >-
+            Used to match all IPv4 packets that have the same Differentiated
+            Services Code Point (DSCP)
+          type: integer
+          format: uint32
         tC:
-          $ref: '#/components/schemas/TrafficFilter.TC'
-    TrafficRule.Action:
-      description: >-
-        The action of the MEC host data plane when a packet matches the trafficFilter
-      type: string
-      enum:
-        - DROP
-        - FORWARD_DECAPSULATED
-        - FORWARD_ENCAPSULATED
-        - PASSTHROUGH
-        - DUPLICATE_DECAPSULATED
-        - DUPLICATE_ENCAPSULATED
-      example: 'DROP'
-    TrafficRule.FilterType:
-      description: >-
-        Definition of filter per FLOW or PACKET. If flow the filter match
-        UE->EPC packet and the reverse packet is handled in the same context
-      type: string
-      enum:
-        - FLOW
-        - PACKET
-      example: FLOW
-    TrafficRule.Id:
-      description: Identify the traffic rule.
-      type: string
-      example: 'TrafficRule1'
-    TrafficRule_Priority:
-      description: >-
-        Priority of this traffic rule. If traffic rule conflicts, the one with
-        higher priority take precedence
-      type: integer
-      format: uint32
-      example: 1
-    TrafficRule.State:
-      description: Contains the traffic rule state. This attribute may be updated using HTTP PUT method
-      type: string
-      enum:
-        - ACTIVE
-        - INACTIVE
-      example: 'ACTIVE'
+          description: Used to match all IPv6 packets that have the same Traffic Class.
+          type: integer
+          format: uint32
     TrafficRule:
       description: This type represents the general information of a traffic rule.
       type: object
@@ -931,36 +748,45 @@ components:
         - state
       properties:
         trafficRuleId:
-          $ref: '#/components/schemas/TrafficRule.Id'
+          description: Identify the traffic rule.
+          type: string
         filterType:
-          $ref: '#/components/schemas/TrafficRule.FilterType'
+          description: >-
+            Definition of filter per FLOW or PACKET. If flow the filter match
+            UE->EPC packet and the reverse packet is handled in the same context
+          type: string
+          enum:
+            - FLOW
+            - PACKET
         priority:
-          $ref: '#/components/schemas/TrafficRule_Priority'
+          description: >-
+            Priority of this traffic rule. If traffic rule conflicts, the one with
+            higher priority take precedence
+          type: integer
+          format: uint32
         trafficFilter:
           type: array
           items:
             $ref: '#/components/schemas/TrafficFilter'
         action:
-          $ref: '#/components/schemas/TrafficRule.Action'
+          description: >-
+            The action of the MEC host data plane when a packet matches the trafficFilter
+          type: string
+          enum:
+            - DROP
+            - FORWARD_DECAPSULATED
+            - FORWARD_ENCAPSULATED
+            - PASSTHROUGH
+            - DUPLICATE_DECAPSULATED
+            - DUPLICATE_ENCAPSULATED
         dstInterface:
           $ref: '#/components/schemas/DestinationInterface'
         state:
-          $ref: '#/components/schemas/TrafficRule.State'
-    TunnelInfo.TunnelDstAddress:
-      description: Destination address of the tunnel
-      type: string
-      example: '?'
-    TunnelInfo.TunnelSrcAddress:
-      description: Source address of the tunnel
-      type: string
-      example: '?'
-    TunnelInfo.TunnelType:
-      description: This type represents the tunnel information.
-      type: string
-      enum:
-        - GTP_U
-        - GRE
-      example: 'GTP_U'
+          description: Contains the traffic rule state. This attribute may be updated using HTTP PUT   method
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
     TunnelInfo:
       description: This type represents the tunnel information.
       type: object
@@ -968,11 +794,17 @@ components:
         - tunnelType
       properties:
         tunnelType:
-          $ref: '#/components/schemas/TunnelInfo.TunnelType'
+          description: This type represents the tunnel information.
+          type: string
+          enum:
+            - GTP_U
+            - GRE
         tunnelDstAddress:
-          $ref: '#/components/schemas/TunnelInfo.TunnelDstAddress'
+          description: Destination address of the tunnel
+          type: string
         tunnelSrcAddress:
-          $ref: '#/components/schemas/TunnelInfo.TunnelSrcAddress'
+          description: Source address of the tunnel
+          type: string
   parameters:
     Path.AppInstanceId:
       name: appInstanceId
@@ -1007,7 +839,7 @@ components:
       schema:
         type: string
   responses:
-    ApplicationsDnsRules.200:
+    ApplicationsDnsRules200:
       description: >-
         It is used to indicate nonspecific success. The response body
         contains a representation of the resource.
@@ -1026,7 +858,7 @@ components:
           $ref: '#/components/links/GetIndividualMeDNSRule'
         putIndividualMeDNSRule:
           $ref: '#/components/links/PutIndividualMeDNSRule'
-    ApplicationsDnsRule.200:
+    ApplicationsDnsRule200:
       description: >-
         It is used to indicate nonspecific success. The response body
         contains a representation of the resource.
@@ -1037,20 +869,20 @@ components:
           examples:
             DnsRule:
               $ref: '#/components/examples/DnsRule'
-    ApplicationsSubscriptions.200:
+    ApplicationsSubscriptions200:
       description: >-
         Upon success, a response body containing the list of links to the
         requested subscriptions is returned.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/MecAppSuptApiSubscriptionLinkList'
+            $ref: '#/components/schemas/SubscriptionLinkList'
       links:
         getIndividualmecAppSuptApiSubscriptionLinkList:
           $ref: '#/components/links/GetIndividualmecAppSuptApiSubscriptionLinkList'
         delIndividualmecAppSuptApiSubscriptionLinkList:
           $ref: '#/components/links/DelIndividualmecAppSuptApiSubscriptionLinkList'
-    ApplicationsSubscriptions.201:
+    ApplicationsSubscriptions201:
       description: >-
         Entity body in the request contains a subscription to the 
         MEC service availability notifications that is to be created.
@@ -1069,7 +901,7 @@ components:
           $ref: '#/components/links/GetIndividualmecAppSuptApiSubscription'
         delIndividualmecAppSuptApiSubscription:
           $ref: '#/components/links/DelIndividualmecAppSuptApiSubscription'
-    ApplicationsSubscription.200:
+    ApplicationsSubscription200:
       description: >-
         Upon success, a response body containing the requested subscription
         is returned.
@@ -1077,7 +909,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AppTerminationNotificationSubscription'
-    ApplicationsTrafficRules.200:
+    ApplicationsTrafficRules200:
       description: >-
         It is used to indicate nonspecific success. The response body
         contains a representation of the resource.
@@ -1096,7 +928,7 @@ components:
           $ref: '#/components/links/GetIndividualMeTrafficRule'
         putIndividualMeTrafficRule:
           $ref: '#/components/links/PutIndividualMeTrafficRule'
-    ApplicationsTrafficRule.200:
+    ApplicationsTrafficRule200:
       description: >-
         It is used to indicate nonspecific success. The response body
         contains a representation of the resource.
@@ -1107,7 +939,7 @@ components:
           examples:
             TrafficRule:
               $ref: '#/components/examples/TrafficRule'
-    TimingCurrentTime.200:
+    TimingCurrentTime200:
       description: >-
         It is used to indicate nonspecific success. The response body
         contains a representation of the resource.
@@ -1115,7 +947,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/CurrentTime'
-    TimingCaps.200:
+    TimingCaps200:
       description: >-
         It is used to indicate nonspecific success. The response body
         contains a representation of the resource.
@@ -1123,7 +955,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/TimingCaps'
-    Error.400:
+    400:
       description: >-
         Bad Request.
         It is used to indicate that incorrect parameters were passed to the request.
@@ -1131,10 +963,7 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-        text/plain:
-          schema:
-            $ref: '#/components/schemas/Empty'
-    Error.401:
+    401:
       description: >-
         Unauthorized.
         It is used when the client did not submit the appropriate credentials.
@@ -1142,10 +971,7 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-        text/plain:
-          schema:
-            $ref: '#/components/schemas/Empty'
-    Error.403:
+    403:
       description: >-
         Forbidden.
         The operation is not allowed given the current status of the resource. 
@@ -1153,7 +979,7 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    Error.404:
+    404:
       description: >-
         Not Found.
         It is used when a client provided a URI that cannot be mapped 
@@ -1162,10 +988,7 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-        text/plain:
-          schema:
-            $ref: '#/components/schemas/Empty'
-    Error.409:
+    409:
       description: >- 
         Conflict.
         The operation cannot be executed currently, due to a conflict with 
@@ -1175,10 +998,7 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-        text/plain:
-          schema:
-            $ref: '#/components/schemas/Empty'
-    Error.412:
+    412:
       description: >-
         Precondition Failed.
         It is used when a condition has failed during conditional requests, 
@@ -1187,10 +1007,7 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-        text/plain:
-          schema:
-            $ref: '#/components/schemas/Empty'
-    Error.429:
+    429:
       description: >-
         Too Many Requests.
         It is used when a rate limiter has triggered.
@@ -1198,21 +1015,22 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-        text/plain:
-          schema:
-            $ref: '#/components/schemas/Empty'
   requestBodies:
     ApplicationsConfirmReady:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AppReadyConfirmation'
+          example:
+            indication: 'READY'
       required: true
     ApplicationsConfirmTermination:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AppTerminationConfirmation'
+          example:
+            operationAction: 'TERMINATING'
       required: true
     ApplicationsDnsRule:
       content:
@@ -1226,6 +1044,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AppTerminationNotificationSubscription'
+          example:
+            subscriptionType: 'AppTerminationNotificationSubscription'
+            callbackReference: 'https://my.callback.com/sandboxname/mep1/rni/v2/'
+            appInstanceId: 'myAppInstanceId'
       description: >-
         Entity body in the request contains a subscription to the MEC
         application termination notifications that is to be created.
@@ -1365,5 +1187,6 @@ components:
             interfaceType: 'IP'
             dstIpAddress: '20.1.1.1'
           state: 'ACTIVE'
+
 
 

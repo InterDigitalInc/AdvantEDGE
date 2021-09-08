@@ -25,7 +25,7 @@
 package client
 
 type OneOfTransportInfoEndpoint struct {
-	Addresses []EndPointInfoAddress `json:"addresses,omitempty"`
+	Addresses []EndPointInfoAddressesAddresses `json:"addresses,omitempty"`
 
 	Host string `json:"host,omitempty"`
 	Port int32  `json:"port,omitempty"`

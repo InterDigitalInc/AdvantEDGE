@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -46,7 +46,10 @@ type TrafficFilter struct {
 	SrcTunnelPort []string `json:"srcTunnelPort,omitempty"`
 	// Used for GTP tunnel based traffic rule
 	DstTunnelPort []string `json:"dstTunnelPort,omitempty"`
-	QCI           int32    `json:"qCI,omitempty"`
-	DSCP          int32    `json:"dSCP,omitempty"`
-	TC            int32    `json:"tC,omitempty"`
+	// Used to match all packets that have the same Quality Class Indicator (QCI).
+	QCI int32 `json:"qCI,omitempty"`
+	// Used to match all IPv4 packets that have the same Differentiated Services Code Point (DSCP)
+	DSCP int32 `json:"dSCP,omitempty"`
+	// Used to match all IPv6 packets that have the same Traffic Class.
+	TC int32 `json:"tC,omitempty"`
 }

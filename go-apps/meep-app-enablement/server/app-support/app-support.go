@@ -77,6 +77,11 @@ var appTerminationGracefulTimeoutMap = map[string]*time.Ticker{}
 var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
 var nextSubscriptionIdAvailable int
 
+func notImplemented(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+        w.WriteHeader(http.StatusNotImplemented)
+}
+
 func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, globalMutex *sync.Mutex) (err error) {
 	sandboxName = sandbox
 	mepName = mep

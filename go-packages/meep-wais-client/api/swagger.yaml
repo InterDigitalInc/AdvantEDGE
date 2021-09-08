@@ -4210,26 +4210,6 @@ components:
           dmgStaBeamTrackTimeLimit: 5
           dmgApOrPcpCapInfo: 6
       x-etsi-ref: 6.5.4
-    AppTerminationNotification.Links:
-      required:
-      - subscription
-      type: object
-      properties:
-        subscription:
-          $ref: '#/components/schemas/LinkType'
-        confirmTermination:
-          $ref: '#/components/schemas/LinkType.ConfirmTermination'
-      description: Object containing hyperlinks related to the resource.
-    AppTerminationNotification.MaxGracefulTimeout:
-      type: integer
-      description: Maximum timeout value in seconds for graceful termination or graceful
-        stop of an application instance.
-      format: uint32
-      example: 10
-    AppTerminationNotification.NotificationType:
-      type: string
-      description: Shall be set to AppTerminationNotification.
-      example: AppTerminationNotification
     AppTerminationNotification:
       required:
       - _links
@@ -4239,32 +4219,23 @@ components:
       type: object
       properties:
         notificationType:
-          $ref: '#/components/schemas/AppTerminationNotification.NotificationType'
+          type: string
+          description: Shall be set to AppTerminationNotification.
         operationAction:
           $ref: '#/components/schemas/OperationActionType'
         maxGracefulTimeout:
-          $ref: '#/components/schemas/AppTerminationNotification.MaxGracefulTimeout'
+          type: integer
+          description: Maximum timeout value in seconds for graceful termination or
+            graceful stop of an application instance.
+          format: uint32
         _links:
-          $ref: '#/components/schemas/AppTerminationNotification.Links'
+          $ref: '#/components/schemas/AppTerminationNotification__links'
       description: This type represents the information that the MEC platform notifies
         the subscribed application instance about  the corresponding application instance
         termination/stop.
-    LinkType.ConfirmTermination:
-      type: object
-      properties:
-        href:
-          $ref: '#/components/schemas/Href'
-      description: Link to the task resource where to confirm termination in case
-        the application is ready to be terminated before expiry of the timeout.
-    Href:
-      type: string
-      description: URI referring to a resource
-      format: uri
-      example: /mecAppSuptApi/example
     OperationActionType:
       type: string
       description: Operation that is being performed on the MEC application instance.
-      example: TERMINATING
       enum:
       - STOPPING
       - TERMINATING
@@ -4418,6 +4389,16 @@ components:
       example:
         subscriptionType: subscriptionType
         href: http://example.com/aeiou
+    AppTerminationNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+        confirmTermination:
+          $ref: '#/components/schemas/LinkType'
+      description: Object containing hyperlinks related to the resource.
   responses:
     "200":
       description: OK

@@ -21,20 +21,20 @@ All URIs are relative to *https://localhost/sandboxname/mec_app_support/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AppConfirmReadyApi* | [**ApplicationsConfirmReadyPOST**](docs/AppConfirmReadyApi.md#applicationsconfirmreadypost) | **Post** /applications/{appInstanceId}/confirm_ready | 
-*AppConfirmTerminationApi* | [**ApplicationsConfirmTerminationPOST**](docs/AppConfirmTerminationApi.md#applicationsconfirmterminationpost) | **Post** /applications/{appInstanceId}/confirm_termination | 
-*AppDnsRulesApi* | [**ApplicationsDnsRuleGET**](docs/AppDnsRulesApi.md#applicationsdnsruleget) | **Get** /applications/{appInstanceId}/dns_rules/{dnsRuleId} | 
-*AppDnsRulesApi* | [**ApplicationsDnsRulePUT**](docs/AppDnsRulesApi.md#applicationsdnsruleput) | **Put** /applications/{appInstanceId}/dns_rules/{dnsRuleId} | 
-*AppDnsRulesApi* | [**ApplicationsDnsRulesGET**](docs/AppDnsRulesApi.md#applicationsdnsrulesget) | **Get** /applications/{appInstanceId}/dns_rules | 
-*AppSubscriptionsApi* | [**ApplicationsSubscriptionDELETE**](docs/AppSubscriptionsApi.md#applicationssubscriptiondelete) | **Delete** /applications/{appInstanceId}/subscriptions/{subscriptionId} | 
-*AppSubscriptionsApi* | [**ApplicationsSubscriptionGET**](docs/AppSubscriptionsApi.md#applicationssubscriptionget) | **Get** /applications/{appInstanceId}/subscriptions/{subscriptionId} | 
-*AppSubscriptionsApi* | [**ApplicationsSubscriptionsGET**](docs/AppSubscriptionsApi.md#applicationssubscriptionsget) | **Get** /applications/{appInstanceId}/subscriptions | 
-*AppSubscriptionsApi* | [**ApplicationsSubscriptionsPOST**](docs/AppSubscriptionsApi.md#applicationssubscriptionspost) | **Post** /applications/{appInstanceId}/subscriptions | 
-*AppTrafficRulesApi* | [**ApplicationsTrafficRuleGET**](docs/AppTrafficRulesApi.md#applicationstrafficruleget) | **Get** /applications/{appInstanceId}/traffic_rules/{trafficRuleId} | 
-*AppTrafficRulesApi* | [**ApplicationsTrafficRulePUT**](docs/AppTrafficRulesApi.md#applicationstrafficruleput) | **Put** /applications/{appInstanceId}/traffic_rules/{trafficRuleId} | 
-*AppTrafficRulesApi* | [**ApplicationsTrafficRulesGET**](docs/AppTrafficRulesApi.md#applicationstrafficrulesget) | **Get** /applications/{appInstanceId}/traffic_rules | 
-*TimingApi* | [**TimingCapsGET**](docs/TimingApi.md#timingcapsget) | **Get** /timing/timing_caps | 
-*TimingApi* | [**TimingCurrentTimeGET**](docs/TimingApi.md#timingcurrenttimeget) | **Get** /timing/current_time | 
+*MecAppSupportApi* | [**ApplicationsConfirmReadyPOST**](docs/MecAppSupportApi.md#applicationsconfirmreadypost) | **Post** /applications/{appInstanceId}/confirm_ready | 
+*MecAppSupportApi* | [**ApplicationsConfirmTerminationPOST**](docs/MecAppSupportApi.md#applicationsconfirmterminationpost) | **Post** /applications/{appInstanceId}/confirm_termination | 
+*MecAppSupportApi* | [**ApplicationsSubscriptionDELETE**](docs/MecAppSupportApi.md#applicationssubscriptiondelete) | **Delete** /applications/{appInstanceId}/subscriptions/{subscriptionId} | 
+*MecAppSupportApi* | [**ApplicationsSubscriptionGET**](docs/MecAppSupportApi.md#applicationssubscriptionget) | **Get** /applications/{appInstanceId}/subscriptions/{subscriptionId} | 
+*MecAppSupportApi* | [**ApplicationsSubscriptionsGET**](docs/MecAppSupportApi.md#applicationssubscriptionsget) | **Get** /applications/{appInstanceId}/subscriptions | 
+*MecAppSupportApi* | [**ApplicationsSubscriptionsPOST**](docs/MecAppSupportApi.md#applicationssubscriptionspost) | **Post** /applications/{appInstanceId}/subscriptions | 
+*MecAppSupportApi* | [**TimingCapsGET**](docs/MecAppSupportApi.md#timingcapsget) | **Get** /timing/timing_caps | 
+*MecAppSupportApi* | [**TimingCurrentTimeGET**](docs/MecAppSupportApi.md#timingcurrenttimeget) | **Get** /timing/current_time | 
+*UnsupportedApi* | [**ApplicationsDnsRuleGET**](docs/UnsupportedApi.md#applicationsdnsruleget) | **Get** /applications/{appInstanceId}/dns_rules/{dnsRuleId} | 
+*UnsupportedApi* | [**ApplicationsDnsRulePUT**](docs/UnsupportedApi.md#applicationsdnsruleput) | **Put** /applications/{appInstanceId}/dns_rules/{dnsRuleId} | 
+*UnsupportedApi* | [**ApplicationsDnsRulesGET**](docs/UnsupportedApi.md#applicationsdnsrulesget) | **Get** /applications/{appInstanceId}/dns_rules | 
+*UnsupportedApi* | [**ApplicationsTrafficRuleGET**](docs/UnsupportedApi.md#applicationstrafficruleget) | **Get** /applications/{appInstanceId}/traffic_rules/{trafficRuleId} | 
+*UnsupportedApi* | [**ApplicationsTrafficRulePUT**](docs/UnsupportedApi.md#applicationstrafficruleput) | **Put** /applications/{appInstanceId}/traffic_rules/{trafficRuleId} | 
+*UnsupportedApi* | [**ApplicationsTrafficRulesGET**](docs/UnsupportedApi.md#applicationstrafficrulesget) | **Get** /applications/{appInstanceId}/traffic_rules | 
 
 
 ## Documentation For Models
@@ -44,34 +44,23 @@ Class | Method | HTTP request | Description
  - [AppTerminationNotification](docs/AppTerminationNotification.md)
  - [AppTerminationNotificationLinks](docs/AppTerminationNotificationLinks.md)
  - [AppTerminationNotificationSubscription](docs/AppTerminationNotificationSubscription.md)
+ - [AppTerminationNotificationSubscriptionLinks](docs/AppTerminationNotificationSubscriptionLinks.md)
  - [CurrentTime](docs/CurrentTime.md)
  - [DestinationInterface](docs/DestinationInterface.md)
- - [DestinationInterfaceInterfaceType](docs/DestinationInterfaceInterfaceType.md)
  - [DnsRule](docs/DnsRule.md)
- - [DnsRuleIpAddressType](docs/DnsRuleIpAddressType.md)
- - [DnsRuleState](docs/DnsRuleState.md)
  - [LinkType](docs/LinkType.md)
- - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
- - [MecAppSuptApiSubscriptionLinkList](docs/MecAppSuptApiSubscriptionLinkList.md)
- - [MecAppSuptApiSubscriptionLinkListLinks](docs/MecAppSuptApiSubscriptionLinkListLinks.md)
- - [MecAppSuptApiSubscriptionLinkListSubscription](docs/MecAppSuptApiSubscriptionLinkListSubscription.md)
  - [OperationActionType](docs/OperationActionType.md)
  - [ProblemDetails](docs/ProblemDetails.md)
- - [ReadyIndicationType](docs/ReadyIndicationType.md)
- - [Self](docs/Self.md)
+ - [SubscriptionLinkList](docs/SubscriptionLinkList.md)
+ - [SubscriptionLinkListLinks](docs/SubscriptionLinkListLinks.md)
+ - [SubscriptionLinkListLinksSubscriptions](docs/SubscriptionLinkListLinksSubscriptions.md)
  - [TimingCaps](docs/TimingCaps.md)
  - [TimingCapsNtpServers](docs/TimingCapsNtpServers.md)
- - [TimingCapsNtpServersAuthenticationOption](docs/TimingCapsNtpServersAuthenticationOption.md)
- - [TimingCapsNtpServersNtpServerAddrType](docs/TimingCapsNtpServersNtpServerAddrType.md)
  - [TimingCapsPtpMasters](docs/TimingCapsPtpMasters.md)
  - [TimingCapsTimeStamp](docs/TimingCapsTimeStamp.md)
  - [TrafficFilter](docs/TrafficFilter.md)
  - [TrafficRule](docs/TrafficRule.md)
- - [TrafficRuleAction](docs/TrafficRuleAction.md)
- - [TrafficRuleFilterType](docs/TrafficRuleFilterType.md)
- - [TrafficRuleState](docs/TrafficRuleState.md)
  - [TunnelInfo](docs/TunnelInfo.md)
- - [TunnelInfoTunnelType](docs/TunnelInfoTunnelType.md)
 
 
 ## Documentation For Authorization

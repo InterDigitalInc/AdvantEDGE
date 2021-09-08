@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -26,8 +26,11 @@ package client
 
 // This type represents the information that the MEC platform notifies the subscribed application instance about  the corresponding application instance termination/stop.
 type AppTerminationNotificationSubscription struct {
-	SubscriptionType  string `json:"subscriptionType"`
-	CallbackReference string `json:"callbackReference"`
-	Links             *Self  `json:"_links,omitempty"`
-	AppInstanceId     string `json:"appInstanceId"`
+	// Shall be set to AppTerminationNotificationSubscription.
+	SubscriptionType string `json:"subscriptionType"`
+	// URI selected by the MEC application instance to receive notifications on the subscribed MEC application instance management information. This shall be included in both the request and the response.
+	CallbackReference string                                       `json:"callbackReference"`
+	Links             *AppTerminationNotificationSubscriptionLinks `json:"_links,omitempty"`
+	// It is used as the filtering criterion for the subscribed events.
+	AppInstanceId string `json:"appInstanceId"`
 }

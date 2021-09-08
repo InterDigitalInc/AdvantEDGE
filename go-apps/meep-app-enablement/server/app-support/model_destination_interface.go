@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,13 +25,14 @@ package server
 
 // This type represents the destination interface. If the action is FORWARD_DECAPSULATED, FORWARD_ENCAPSULATED or PASSTHROUGH one value shall be provided. If the action is DUPLICATE_DECAPSULATED or DUPLICATE_ENCAPSULATED, two values shall be provided. If the action is DROP, no value shall be provided.
 type DestinationInterface struct {
-	InterfaceType *DestinationInterfaceInterfaceType `json:"interfaceType"`
+	// Type of the interface
+	InterfaceType string `json:"interfaceType"`
 
 	TunnelInfo *TunnelInfo `json:"tunnelInfo,omitempty"`
-
+	// Source address identifies the MAC address of the interface
 	SrcMacAddress string `json:"srcMacAddress,omitempty"`
-
+	// Destination address identifies the MAC address of the interface
 	DstMacAddress string `json:"dstMacAddress,omitempty"`
-
+	// IP address of the remote destination
 	DstIpAddress string `json:"dstIpAddress,omitempty"`
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,9 +25,14 @@
 package client
 
 type ProblemDetails struct {
-	Type_    string `json:"type,omitempty"`
-	Title    string `json:"title,omitempty"`
-	Status   int32  `json:"status,omitempty"`
-	Detail   string `json:"detail,omitempty"`
+	// A URI reference according to IETF RFC 3986 that identifies the problem type
+	Type_ string `json:"type,omitempty"`
+	// A short, human-readable summary of the problem type
+	Title string `json:"title,omitempty"`
+	// The HTTP status code for this occurrence of the problem
+	Status int32 `json:"status,omitempty"`
+	// A human-readable explanation specific to this occurrence of the problem
+	Detail string `json:"detail,omitempty"`
+	// A URI reference that identifies the specific occurrence of the problem
 	Instance string `json:"instance,omitempty"`
 }

@@ -26,8 +26,10 @@ package client
 
 // This type represents the information that the MEC platform notifies the subscribed application instance about  the corresponding application instance termination/stop.
 type AppTerminationNotification struct {
-	NotificationType   string                           `json:"notificationType"`
-	OperationAction    *OperationActionType             `json:"operationAction"`
+	// Shall be set to AppTerminationNotification.
+	NotificationType string               `json:"notificationType"`
+	OperationAction  *OperationActionType `json:"operationAction"`
+	// Maximum timeout value in seconds for graceful termination or graceful stop of an application instance.
 	MaxGracefulTimeout int32                            `json:"maxGracefulTimeout"`
 	Links              *AppTerminationNotificationLinks `json:"_links"`
 }

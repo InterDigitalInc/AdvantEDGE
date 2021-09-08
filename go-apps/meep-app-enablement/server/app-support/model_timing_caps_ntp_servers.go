@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,17 +25,18 @@ package server
 
 // NTP server detail.
 type TimingCapsNtpServers struct {
-	NtpServerAddrType *TimingCapsNtpServersNtpServerAddrType `json:"ntpServerAddrType"`
-
+	// Address type of NTP server
+	NtpServerAddrType string `json:"ntpServerAddrType"`
+	// NTP server address
 	NtpServerAddr string `json:"ntpServerAddr"`
-
+	// Minimum poll interval for NTP messages, in seconds as a power of two. Range 3...17
 	MinPollingInterval int32 `json:"minPollingInterval"`
-
+	// Maximum poll interval for NTP messages, in seconds as a power of two. Range 3...17
 	MaxPollingInterval int32 `json:"maxPollingInterval"`
-
+	// NTP server local priority
 	LocalPriority int32 `json:"localPriority"`
-
-	AuthenticationOption *TimingCapsNtpServersAuthenticationOption `json:"authenticationOption"`
-
+	// NTP authentication option
+	AuthenticationOption string `json:"authenticationOption"`
+	// Authentication key number
 	AuthenticationKeyNum int32 `json:"authenticationKeyNum"`
 }

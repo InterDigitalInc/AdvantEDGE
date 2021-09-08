@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,5 +25,6 @@ package server
 
 // This type represents the information that the MEC application instance indicates to the MEC platform that it is up and running.
 type AppReadyConfirmation struct {
-	Indication *ReadyIndicationType `json:"indication"`
+	// Indication about the MEC application instance.
+	Indication string `json:"indication"`
 }

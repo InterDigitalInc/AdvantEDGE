@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,9 +25,10 @@ package server
 
 // This type represents the tunnel information.
 type TunnelInfo struct {
-	TunnelType *TunnelInfoTunnelType `json:"tunnelType"`
-
+	// This type represents the tunnel information.
+	TunnelType string `json:"tunnelType"`
+	// Destination address of the tunnel
 	TunnelDstAddress string `json:"tunnelDstAddress,omitempty"`
-
+	// Source address of the tunnel
 	TunnelSrcAddress string `json:"tunnelSrcAddress,omitempty"`
 }

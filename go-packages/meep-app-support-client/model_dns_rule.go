@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -26,10 +26,16 @@ package client
 
 // This type represents the general information of a DNS rule.
 type DnsRule struct {
-	DnsRuleId     string                `json:"dnsRuleId"`
-	DomainName    string                `json:"domainName"`
-	IpAddressType *DnsRuleIpAddressType `json:"ipAddressType"`
-	IpAddress     string                `json:"ipAddress"`
-	Ttl           int32                 `json:"ttl,omitempty"`
-	State         *DnsRuleState         `json:"state"`
+	// Identifies the DNS Rule
+	DnsRuleId string `json:"dnsRuleId"`
+	// FQDN resolved by the DNS rule
+	DomainName string `json:"domainName"`
+	// IP address type
+	IpAddressType string `json:"ipAddressType"`
+	// IP address associated with the FQDN resolved by the DNS rule
+	IpAddress string `json:"ipAddress"`
+	// Time to live value
+	Ttl int32 `json:"ttl,omitempty"`
+	// DNS rule state. This attribute may be updated using HTTP PUT method
+	State string `json:"state"`
 }

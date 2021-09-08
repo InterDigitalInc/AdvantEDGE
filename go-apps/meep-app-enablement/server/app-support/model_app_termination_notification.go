@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,10 +25,11 @@ package server
 
 // This type represents the information that the MEC platform notifies the subscribed application instance about  the corresponding application instance termination/stop.
 type AppTerminationNotification struct {
+	// Shall be set to AppTerminationNotification.
 	NotificationType string `json:"notificationType"`
 
 	OperationAction *OperationActionType `json:"operationAction"`
-
+	// Maximum timeout value in seconds for graceful termination or graceful stop of an application instance.
 	MaxGracefulTimeout int32 `json:"maxGracefulTimeout"`
 
 	Links *AppTerminationNotificationLinks `json:"_links"`

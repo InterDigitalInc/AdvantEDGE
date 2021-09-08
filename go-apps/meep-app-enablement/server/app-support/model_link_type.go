@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -25,5 +25,6 @@ package server
 
 // This type represents a type of link and may be referenced from data structures
 type LinkType struct {
+	// URI referring to a resource
 	Href string `json:"href,omitempty"`
 }

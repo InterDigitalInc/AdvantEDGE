@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -52,7 +52,7 @@ var (
 	xmlCheck  = regexp.MustCompile("(?i:[application|text]/xml)")
 )
 
-// APIClient manages communication with the AdvantEDGE MEC Application Support API API v2.1.1
+// APIClient manages communication with the MEC Application Support API API v2.1.1
 // In most cases there should be only one, shared, APIClient.
 type APIClient struct {
 	cfg    *Configuration
@@ -60,17 +60,9 @@ type APIClient struct {
 
 	// API Services
 
-	AppConfirmReadyApi *AppConfirmReadyApiService
+	MecAppSupportApi *MecAppSupportApiService
 
-	AppConfirmTerminationApi *AppConfirmTerminationApiService
-
-	AppDnsRulesApi *AppDnsRulesApiService
-
-	AppSubscriptionsApi *AppSubscriptionsApiService
-
-	AppTrafficRulesApi *AppTrafficRulesApiService
-
-	TimingApi *TimingApiService
+	UnsupportedApi *UnsupportedApiService
 }
 
 type service struct {
@@ -89,12 +81,8 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.common.client = c
 
 	// API Services
-	c.AppConfirmReadyApi = (*AppConfirmReadyApiService)(&c.common)
-	c.AppConfirmTerminationApi = (*AppConfirmTerminationApiService)(&c.common)
-	c.AppDnsRulesApi = (*AppDnsRulesApiService)(&c.common)
-	c.AppSubscriptionsApi = (*AppSubscriptionsApiService)(&c.common)
-	c.AppTrafficRulesApi = (*AppTrafficRulesApiService)(&c.common)
-	c.TimingApi = (*TimingApiService)(&c.common)
+	c.MecAppSupportApi = (*MecAppSupportApiService)(&c.common)
+	c.UnsupportedApi = (*UnsupportedApiService)(&c.common)
 
 	return c
 }

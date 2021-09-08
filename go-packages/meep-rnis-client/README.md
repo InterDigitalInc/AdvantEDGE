@@ -57,7 +57,6 @@ Class | Method | HTTP request | Description
  - [L2MeasCellInfo](docs/L2MeasCellInfo.md)
  - [L2MeasCellUeInfo](docs/L2MeasCellUeInfo.md)
  - [LinkType](docs/LinkType.md)
- - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MeasQuantityResultsNr](docs/MeasQuantityResultsNr.md)
  - [MeasRepUeNotification](docs/MeasRepUeNotification.md)
  - [MeasRepUeNotificationCarrierAggregationMeasInfo](docs/MeasRepUeNotificationCarrierAggregationMeasInfo.md)

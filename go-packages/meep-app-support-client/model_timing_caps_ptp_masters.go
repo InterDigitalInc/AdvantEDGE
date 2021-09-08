@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -26,7 +26,10 @@ package client
 
 // NTP server detail.
 type TimingCapsPtpMasters struct {
-	PtpMasterIpAddress     string `json:"ptpMasterIpAddress"`
-	PtpMasterLocalPriority int32  `json:"ptpMasterLocalPriority"`
-	DelayReqMaxRate        int32  `json:"delayReqMaxRate"`
+	// PTP Master IP Address
+	PtpMasterIpAddress string `json:"ptpMasterIpAddress"`
+	// PTP Master local priority
+	PtpMasterLocalPriority int32 `json:"ptpMasterLocalPriority"`
+	// Acceptable maximum rate of the Delay_Req messages in packets per second
+	DelayReqMaxRate int32 `json:"delayReqMaxRate"`
 }

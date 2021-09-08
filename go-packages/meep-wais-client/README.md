@@ -68,7 +68,6 @@ Class | Method | HTTP request | Description
  - [InlineNotification](docs/InlineNotification.md)
  - [InlineSubscription](docs/InlineSubscription.md)
  - [LinkType](docs/LinkType.md)
- - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MeasurementConfig](docs/MeasurementConfig.md)
  - [MeasurementConfigLinkList](docs/MeasurementConfigLinkList.md)
  - [MeasurementConfigLinkListMeasurementConfig](docs/MeasurementConfigLinkListMeasurementConfig.md)

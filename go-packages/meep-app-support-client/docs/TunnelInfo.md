@@ -3,9 +3,9 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**TunnelType** | [***TunnelInfoTunnelType**](TunnelInfo.TunnelType.md) |  | [default to null]
-**TunnelDstAddress** | **string** |  | [optional] [default to null]
-**TunnelSrcAddress** | **string** |  | [optional] [default to null]
+**TunnelType** | **string** | This type represents the tunnel information. | [default to null]
+**TunnelDstAddress** | **string** | Destination address of the tunnel | [optional] [default to null]
+**TunnelSrcAddress** | **string** | Source address of the tunnel | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

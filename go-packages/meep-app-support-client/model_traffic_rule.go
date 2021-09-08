@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
  * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
@@ -26,11 +26,16 @@ package client
 
 // This type represents the general information of a traffic rule.
 type TrafficRule struct {
-	TrafficRuleId string                 `json:"trafficRuleId"`
-	FilterType    *TrafficRuleFilterType `json:"filterType"`
-	Priority      int32                  `json:"priority"`
-	TrafficFilter []TrafficFilter        `json:"trafficFilter"`
-	Action        *TrafficRuleAction     `json:"action"`
-	DstInterface  *DestinationInterface  `json:"dstInterface,omitempty"`
-	State         *TrafficRuleState      `json:"state"`
+	// Identify the traffic rule.
+	TrafficRuleId string `json:"trafficRuleId"`
+	// Definition of filter per FLOW or PACKET. If flow the filter match UE->EPC packet and the reverse packet is handled in the same context
+	FilterType string `json:"filterType"`
+	// Priority of this traffic rule. If traffic rule conflicts, the one with higher priority take precedence
+	Priority      int32           `json:"priority"`
+	TrafficFilter []TrafficFilter `json:"trafficFilter"`
+	// The action of the MEC host data plane when a packet matches the trafficFilter
+	Action       string                `json:"action"`
+	DstInterface *DestinationInterface `json:"dstInterface,omitempty"`
+	// Contains the traffic rule state. This attribute may be updated using HTTP PUT   method
+	State string `json:"state"`
 }

@@ -24,7 +24,7 @@
 
 package client
 
-// This type represents a type of link and may be referenced from data structures
 type LinkType struct {
-	Href string `json:"href,omitempty"`
+	// URI referring to a resource
+	Href string `json:"href"`
 }
