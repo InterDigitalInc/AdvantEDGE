@@ -2,18 +2,19 @@ openapi: 3.0.2
 servers:
   - url: 'https://localhost/sandboxname/mec_app_support/v1'
 info:
-  title: MEC Application Support API
+  title: AdvantEDGE MEC Application Support API
   version: 2.1.1
-  description: The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
+  description: "MEC Application Support API describe is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 MEC Application Support API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)"
   license:
-    name: BSD-3-Clause
-    url: 'https://forge.etsi.org/legal-matters'
+    name: "Apache 2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
   contact:
-    email: cti_support@etsi.org
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
 externalDocs:
   description: 'ETSI GS MEC011 Application Enablement API, V2.1.1'
   url: >-
-    https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
+    https://www.etsi.org/deliver/etsi
 tags:
   - name: unsupported
   - name: mec_app_support
