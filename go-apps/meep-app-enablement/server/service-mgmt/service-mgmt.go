@@ -675,8 +675,8 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve subscription list
-	var subscriptionLinkList MecServiceMgmtApiSubscriptionLinkList
-	link := new(MecServiceMgmtApiSubscriptionLinkListLinks)
+	var subscriptionLinkList SubscriptionLinkList
+	link := new(SubscriptionLinkListLinks)
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions"
 	link.Self = self
@@ -1000,7 +1000,7 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 
 func populateSubscriptionsList(key string, jsonInfo string, data interface{}) error {
 	// Get query params & userlist from user data
-	subscriptionLinkList := data.(*MecServiceMgmtApiSubscriptionLinkList)
+	subscriptionLinkList := data.(*SubscriptionLinkList)
 	if data == nil {
 		return errors.New("subscriptionLinkList not found")
 	}
@@ -1013,7 +1013,7 @@ func populateSubscriptionsList(key string, jsonInfo string, data interface{}) er
 	}
 
 	// Populate subscription to return
-	var subscription MecServiceMgmtApiSubscriptionLinkListSubscription
+	var subscription SubscriptionLinkListLinksSubscriptions
 	subscription.Href = serAvailSubscription.Links.Self.Href
 	//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
 	subscription.Rel = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
@@ -1156,7 +1156,7 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 		serAvailabilityRef.SerName = sInfo.SerName
 		serAvailabilityRef.SerInstanceId = sInfo.SerInstanceId
 		serAvailabilityRef.State = sInfo.State
-		serAvailabilityRef.ChangeType = &changeType
+		serAvailabilityRef.ChangeType = string(changeType)
 		serAvailabilityRefList = append(serAvailabilityRefList, serAvailabilityRef)
 		notif.ServiceReferences = serAvailabilityRefList
 

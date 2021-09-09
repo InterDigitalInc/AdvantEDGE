@@ -115,7 +115,7 @@ func appSupportSubscription(appInstanceId string, callbackReference string) erro
 
 	subscription := asc.AppTerminationNotificationSubscription{"AppTerminationNotificationSubscription", callbackReference, nil, appInstanceId}
 
-	_, _, err := appSupClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	_, _, err := appSupClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send subscription: ", err)
 		return err
@@ -132,7 +132,7 @@ func servAvailSubscription(appInstanceId string, callbackReference string, serNa
 	filter.SerNames = &serNames
 	subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
 
-	_, _, err := srvMgmtClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	_, _, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send subscription: ", err)
 		return err
@@ -235,19 +235,20 @@ func Test_App_Enablement_notification_get_services(t *testing.T) {
 	const newImg = "meep-docker-registry:30001/meep-rnis"
 	const newEnv = "MEEP_SCOPE_OF_LOCALITY=MEC_SYSTEM,MEEP_CONSUMED_LOCAL_ONLY=false"
 	const removeInstanceId = "meep-rnis-instanceId"
-
+	const totalNbOfServices = 7 //including the global services
+	const totalNbOfServicesInScenario = 3
 	initialiseAppEnablementTest()
 	defer clearUpAppEnablementTest()
 
 	//wait to make sure the subscription was processed
 	time.Sleep(20000 * time.Millisecond)
 
-	srvInfo, _, err := srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
+	srvInfo, _, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
 		t.Fatalf("Failed to get subscriptions")
 	}
 
-	if len(srvInfo) != 3 && len(srvInfo) != 6 {
+	if len(srvInfo) != totalNbOfServicesInScenario && len(srvInfo) != totalNbOfServices {
 		t.Fatalf("Number of expected services not received")
 	}
 
@@ -256,12 +257,12 @@ func Test_App_Enablement_notification_get_services(t *testing.T) {
 	//wait to make sure the periodic timer got triggered
 	time.Sleep(20000 * time.Millisecond)
 
-	srvInfo, _, err = srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
+	srvInfo, _, err = srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
 		t.Fatalf("Failed to get subscriptions")
 	}
 
-	if len(srvInfo) != 2 && len(srvInfo) != 5 {
+	if len(srvInfo) != totalNbOfServicesInScenario - 1 && len(srvInfo) != totalNbOfServices - 1 {
 		t.Fatalf("Number of expected services not received")
 	}
 
@@ -269,12 +270,12 @@ func Test_App_Enablement_notification_get_services(t *testing.T) {
 	//wait to make sure the subscription was processed
 	time.Sleep(30000 * time.Millisecond)
 
-	srvInfo, _, err = srvMgmtClient.ServicesApi.ServicesGET(context.TODO(), nil)
+	srvInfo, _, err = srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
 		t.Fatalf("Failed to get subscriptions")
 	}
 
-	if len(srvInfo) != 3 && len(srvInfo) != 6 {
+	if len(srvInfo) != totalNbOfServicesInScenario && len(srvInfo) != totalNbOfServices {
 		t.Fatalf("Number of expected services not received")
 	}
 }
@@ -340,8 +341,8 @@ func validateSerAvailabilityNotification(notification *smc.ServiceAvailabilityNo
 	if notification.NotificationType != "SerAvailabilityNotification" {
 		return ("NotificationType of notification not as expected: " + notification.NotificationType + " instead of " + "SerAvailabilityNotification")
 	}
-	if string(*notification.ServiceReferences[0].ChangeType) != expectedChangeType {
-		return ("ChangeType of notification not as expected: " + string(*notification.ServiceReferences[0].ChangeType) + " instead of " + expectedChangeType)
+	if string(notification.ServiceReferences[0].ChangeType) != expectedChangeType {
+		return ("ChangeType of notification not as expected: " + string(notification.ServiceReferences[0].ChangeType) + " instead of " + expectedChangeType)
 	}
 	return ""
 }

@@ -32,21 +32,21 @@ func ApplicationsDnsRuleGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApplicationsDnsRulePUT(w http.ResponseWriter, r *http.Request) {
-        notImplemented(w, r)
+	notImplemented(w, r)
 }
 
 func ApplicationsDnsRulesGET(w http.ResponseWriter, r *http.Request) {
-        notImplemented(w, r)
+	notImplemented(w, r)
 }
 
 func ApplicationsTrafficRuleGET(w http.ResponseWriter, r *http.Request) {
-        notImplemented(w, r)
+	notImplemented(w, r)
 }
 
 func ApplicationsTrafficRulePUT(w http.ResponseWriter, r *http.Request) {
-        notImplemented(w, r)
+	notImplemented(w, r)
 }
 
 func ApplicationsTrafficRulesGET(w http.ResponseWriter, r *http.Request) {
-        notImplemented(w, r)
+	notImplemented(w, r)
 }
