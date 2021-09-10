@@ -37,9 +37,11 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 
 	"github.com/gorilla/mux"
 )
@@ -116,6 +118,9 @@ var svcMgmtClient *smc.APIClient
 var sbxCtrlClient *scc.APIClient
 
 var registrationTicker *time.Ticker
+
+var amsMqLocal *mq.MsgQueue
+var amsApiMgr *sam.SwaggerApiMgr
 
 /*func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -232,6 +237,26 @@ func Init() (err error) {
 		}
 	}()
 
+	// Create message queue
+	amsMqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	var apiMgrMepName = ""
+	if mepName != defaultMepName {
+		apiMgrMepName = mepName
+	}
+	amsApiMgr, err = sam.NewSwaggerApiMgr(moduleName, sandboxName, apiMgrMepName, amsMqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Initialize SBI
 	/*sbiCfg := sbi.SbiCfg{
 		ModuleName:   moduleName,
@@ -305,6 +330,23 @@ func reInit() {
 
 // Run - Start App Mobility service
 func Run() (err error) {
+
+	// Start Swagger API Manager (provider)
+	err = amsApiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = amsApiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Start MEC Service registration ticker
 	if appEnablementEnabled {
 		startRegistrationTicker()
@@ -318,6 +360,16 @@ func Stop() (err error) {
 	if appEnablementEnabled {
 		stopRegistrationTicker()
 	}
+
+	if amsApiMgr != nil {
+		// Remove APIs
+		err = amsApiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+			return err
+		}
+	}
+
 	return nil //sbi.Stop()
 }
 
@@ -419,7 +471,7 @@ func getAppInstanceId() (id string, err error) {
 }
 
 func deregisterService(appInstanceId string, serviceId string) error {
-	_, err := svcMgmtClient.AppServicesApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
+	_, err := svcMgmtClient.MecServiceMgmtApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
 	if err != nil {
 		log.Error("Failed to unregister the service to app enablement registry: ", err)
 		return err
@@ -469,7 +521,7 @@ func registerService(appInstanceId string) error {
 	//consumedLocalOnly
 	srvInfo.ConsumedLocalOnly = consumedLocalOnly
 
-	appServicesPostResponse, _, err := svcMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	appServicesPostResponse, _, err := svcMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register the service to app enablement registry: ", err)
 		return err
@@ -481,9 +533,8 @@ func registerService(appInstanceId string) error {
 
 func sendReadyConfirmation(appInstanceId string) error {
 	var appReady asc.AppReadyConfirmation
-	indication := asc.READY_ReadyIndicationType
-	appReady.Indication = &indication
-	_, err := appSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
+	appReady.Indication = "READY"
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send a ready confirm acknowlegement: ", err)
 		return err
@@ -495,7 +546,7 @@ func sendTerminationConfirmation(appInstanceId string) error {
 	var appTermination asc.AppTerminationConfirmation
 	operationAction := asc.TERMINATING_OperationActionType
 	appTermination.OperationAction = &operationAction
-	_, err := appSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send a confirm termination acknowlegement: ", err)
 		return err
@@ -508,7 +559,7 @@ func subscribeAppTermination(appInstanceId string) error {
 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
 	subscription.AppInstanceId = appInstanceId
 	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + amsBasePath + appTerminationPath
-	_, _, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err
@@ -519,7 +570,7 @@ func subscribeAppTermination(appInstanceId string) error {
 /*
 func unsubscribeAppTermination(appInstanceId string) error {
 	//only subscribe to one subscription, so we force number to be one, couldn't be anything else
-	_, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
 	if err != nil {
 		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
