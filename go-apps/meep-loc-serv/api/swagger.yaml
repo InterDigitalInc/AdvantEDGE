@@ -11,8 +11,7 @@ info:
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
   <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations
-  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
-  <p>AdvantEDGE supports a selected subset of Location API endpoints (see below)"
+  <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below)."
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"

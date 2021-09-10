@@ -1,20 +1,24 @@
 openapi: 3.0.2
-servers:
-  - url: 'https://localhost/sandboxname/mec_app_support/v1'
 info:
   title: AdvantEDGE MEC Application Support API
-  version: 2.1.1
-  description: "MEC Application Support API describe is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 MEC Application Support API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)"
-  license:
-    name: "Apache 2.0"
-    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+  version: 2.2.1
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
+  description: "MEC Application Support Service is AdvantEDGE's implementation of
+  [ETSI MEC ISG MEC011 Application Enablement API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)
+  <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
+  <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support)
+  <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network
+  <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below)."
+  license:
+    name: "Apache 2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
 externalDocs:
-  description: 'ETSI GS MEC011 Application Enablement API, V2.1.1'
-  url: >-
-    https://www.etsi.org/deliver/etsi
+  description: ETSI GS MEC 011 Application Enablement Information API, V2.2.1
+  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_mec011v020201p.pdf'
+servers:
+  - url: 'https://localhost/sandboxname/mec_app_support/v1'
 tags:
   - name: unsupported
   - name: mec_app_support
