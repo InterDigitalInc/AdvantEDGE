@@ -3488,7 +3488,7 @@ components:
           properties:
             self:
               # description': Self referring URI. The URI shall be unique within the RNI API as it acts as an ID for the subscription.
-              i x-etsi-mec-cardinality': '1'
+              # x-etsi-mec-cardinality': '1'
               # x-etsi-mec-origin-type': LinkType
               $ref: '#/components/schemas/LinkType'
           required:
