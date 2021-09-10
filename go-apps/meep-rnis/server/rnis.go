@@ -558,7 +558,7 @@ func getAppInstanceId() (id string, err error) {
 }
 
 func deregisterService(appInstanceId string, serviceId string) error {
-	_, err := svcMgmtClient.AppServicesApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
+	_, err := svcMgmtClient.MecServiceMgmtApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
 	if err != nil {
 		log.Error("Failed to unregister the service to app enablement registry: ", err)
 		return err
@@ -608,7 +608,7 @@ func registerService(appInstanceId string) error {
 	//consumedLocalOnly
 	srvInfo.ConsumedLocalOnly = consumedLocalOnly
 
-	appServicesPostResponse, _, err := svcMgmtClient.AppServicesApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	appServicesPostResponse, _, err := svcMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register the service to app enablement registry: ", err)
 		return err
@@ -620,9 +620,8 @@ func registerService(appInstanceId string) error {
 
 func sendReadyConfirmation(appInstanceId string) error {
 	var appReady asc.AppReadyConfirmation
-	indication := asc.READY_ReadyIndicationType
-	appReady.Indication = &indication
-	_, err := appSupportClient.AppConfirmReadyApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
+	appReady.Indication = "READY"
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send a ready confirm acknowlegement: ", err)
 		return err
@@ -634,7 +633,7 @@ func sendTerminationConfirmation(appInstanceId string) error {
 	var appTermination asc.AppTerminationConfirmation
 	operationAction := asc.TERMINATING_OperationActionType
 	appTermination.OperationAction = &operationAction
-	_, err := appSupportClient.AppConfirmTerminationApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send a confirm termination acknowlegement: ", err)
 		return err
@@ -647,7 +646,7 @@ func subscribeAppTermination(appInstanceId string) error {
 	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
 	subscription.AppInstanceId = appInstanceId
 	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + rnisBasePath + appTerminationPath
-	_, _, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err

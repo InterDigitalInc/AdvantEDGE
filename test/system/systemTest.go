@@ -46,7 +46,7 @@ var gisAppClient *gisClient.APIClient
 
 var sandboxName = "sandbox-system-test"
 var hostUrlStr = ""
-var httpListenerPort = "3333"
+var httpListenerPort = "3331"
 var run = false
 
 func resetHttpReqBody() {

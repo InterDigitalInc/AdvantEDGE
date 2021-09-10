@@ -11,8 +11,7 @@ info:
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
   <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations
-  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
-  <p>AdvantEDGE supports a selected subset of Location API endpoints (see below)"
+  <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below)."
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
@@ -3015,28 +3014,6 @@ components:
       properties:
         problemDetails:
           $ref: '#/components/schemas/ProblemDetails'
-    AppTerminationNotification.Links:
-      description: >-
-        Object containing hyperlinks related to the resource.
-      type: object
-      required:
-        - subscription
-      properties:
-        subscription:
-          $ref: '#/components/schemas/LinkType'
-        confirmTermination:
-          $ref: '#/components/schemas/LinkType.ConfirmTermination'
-    AppTerminationNotification.MaxGracefulTimeout:
-      description: >-
-        Maximum timeout value in seconds for graceful termination or graceful
-        stop of an application instance.
-      type: integer
-      format: uint32
-      example: 10
-    AppTerminationNotification.NotificationType:
-      description: Shall be set to AppTerminationNotification.
-      type: string
-      example: 'AppTerminationNotification'
     AppTerminationNotification:
       description: >-
         This type represents the information that the MEC platform
@@ -3050,37 +3027,42 @@ components:
         - _links
       properties:
         notificationType:
-          $ref: '#/components/schemas/AppTerminationNotification.NotificationType'
+          description: Shall be set to AppTerminationNotification.
+          type: string
         operationAction:
           $ref: '#/components/schemas/OperationActionType'
         maxGracefulTimeout:
-          $ref: '#/components/schemas/AppTerminationNotification.MaxGracefulTimeout'
+          description: >-
+            Maximum timeout value in seconds for graceful termination or graceful
+            stop of an application instance.
+          type: integer
+          format: uint32
         _links:
-          $ref: '#/components/schemas/AppTerminationNotification.Links'
+          description: >-
+            Object containing hyperlinks related to the resource.
+          type: object
+          required:
+            - subscription
+          properties:
+            subscription:
+              $ref: '#/components/schemas/LinkType'
+            confirmTermination:
+              $ref: '#/components/schemas/LinkType'
     LinkType:
-      description: This type represents a type of link and may be referenced from data structures
-      type: object
       properties:
         href:
-          $ref: '#/components/schemas/Href'
-    LinkType.ConfirmTermination:
-      description: >-
-        Link to the task resource where to confirm termination in case the
-        application is ready to be terminated before expiry of the timeout.
+          description: URI referring to a resource
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: URI
+      required:
+      - href
       type: object
-      properties:
-        href:
-          $ref: '#/components/schemas/Href'
-    Href:
-      description: URI referring to a resource
-      type: string
-      format: uri
-      example: '/mecAppSuptApi/example'
     OperationActionType:
       description: Operation that is being performed on the MEC application instance.
       type: string
       enum:
         - STOPPING
         - TERMINATING
-      example: 'TERMINATING'
 

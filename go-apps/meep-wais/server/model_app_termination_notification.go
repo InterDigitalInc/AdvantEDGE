@@ -15,7 +15,7 @@
  *
  * AdvantEDGE WLAN Access Information API
  *
- * WLAN Access Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_MEC028v020201p.pdf) <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about WLAN access information in the network <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected subset of WAI API subscription types. <p>Supported subscriptions: <p> - AssocStaSubscription <p> - StaDataRateSubscription
+ * WLAN Access Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_MEC028v020201p.pdf) <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about WLAN access information in the network <p>**Note**<br>AdvantEDGE supports a selected subset of WAI API subscription types. <p>Supported subscriptions: <p> - AssocStaSubscription <p> - StaDataRateSubscription
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -25,10 +25,11 @@ package server
 
 // This type represents the information that the MEC platform notifies the subscribed application instance about  the corresponding application instance termination/stop.
 type AppTerminationNotification struct {
+	// Shall be set to AppTerminationNotification.
 	NotificationType string `json:"notificationType"`
 
 	OperationAction *OperationActionType `json:"operationAction"`
-
+	// Maximum timeout value in seconds for graceful termination or graceful stop of an application instance.
 	MaxGracefulTimeout int32 `json:"maxGracefulTimeout"`
 
 	Links *AppTerminationNotificationLinks `json:"_links"`

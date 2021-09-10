@@ -77,6 +77,11 @@ var appTerminationGracefulTimeoutMap = map[string]*time.Ticker{}
 var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
 var nextSubscriptionIdAvailable int
 
+func notImplemented(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, globalMutex *sync.Mutex) (err error) {
 	sandboxName = sandbox
 	mepName = mep
@@ -204,13 +209,13 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate App Ready params
-	if confirmation.Indication == nil {
+	if confirmation.Indication == "" {
 		log.Error("Mandatory Indication not present")
 		http.Error(w, "Mandatory Indication not present", http.StatusBadRequest)
 		return
 	}
-	switch *confirmation.Indication {
-	case READY:
+	switch confirmation.Indication {
+	case "READY":
 	default:
 		log.Error("Mandatory OperationAction value not valid")
 		http.Error(w, "Mandatory OperationAction value not valid", http.StatusBadRequest)
@@ -367,11 +372,11 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	nextSubscriptionIdAvailable++
 	subIdStr := strconv.Itoa(newSubsId)
 
-	link := new(Self)
+	links := new(AppTerminationNotificationSubscriptionLinks)
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions/" + subIdStr
-	link.Self = self
-	subscription.Links = link
+	links.Self = self
+	subscription.Links = links
 
 	//registration
 	registerAppTermination(&subscription, newSubsId)
@@ -486,21 +491,21 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subscriptionLinkList := new(MecAppSuptApiSubscriptionLinkList)
+	subscriptionLinkList := new(SubscriptionLinkList)
 
-	link := new(MecAppSuptApiSubscriptionLinkListLinks)
+	links := new(SubscriptionLinkListLinks)
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "applications/" + appInstanceId + "/subscriptions"
 
-	link.Self = self
-	subscriptionLinkList.Links = link
+	links.Self = self
+	subscriptionLinkList.Links = links
 
 	//loop through all different types of subscription
 
 	//loop through appTerm map
 	for _, appTermSubscription := range appTerminationNotificationSubscriptionMap {
 		if appTermSubscription != nil && appTermSubscription.AppInstanceId == appInstanceId {
-			var subscription MecAppSuptApiSubscriptionLinkListSubscription
+			var subscription SubscriptionLinkListLinksSubscriptions
 			subscription.Href = appTermSubscription.Links.Self.Href
 			//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
 			subscription.Rel = APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE
@@ -604,7 +609,7 @@ func processAppTerminate(appInstanceId string, mep string) {
 		linkType := new(LinkType)
 		linkType.Href = sub.Links.Self.Href
 		links.Subscription = linkType
-		confirmTermination := new(LinkTypeConfirmTermination)
+		confirmTermination := new(LinkType)
 		confirmTermination.Href = hostUrl.String() + basePath + "confirm_termination"
 		links.ConfirmTermination = confirmTermination
 		notif.Links = links
