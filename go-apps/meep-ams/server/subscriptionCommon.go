@@ -24,7 +24,7 @@
 package server
 
 type SubscriptionCommon struct {
-	Links *MobilityProcedureSubscriptionLinks `json:"_links,omitempty"`
+	Links *AdjacentAppInfoSubscriptionLinks `json:"_links,omitempty"`
 	// URI selected by the service consumer, to receive notifications on the subscribed App Mobility information. This shall be included in the request and response.
 	CallbackReference string     `json:"callbackReference"`
 	ExpiryDeadline    *TimeStamp `json:"expiryDeadline,omitempty"`

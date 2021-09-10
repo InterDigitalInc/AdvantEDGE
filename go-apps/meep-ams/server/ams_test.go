@@ -861,9 +861,9 @@ func testServicesPost(t *testing.T) string {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedAssocId1 := AssociateId{"1", "1.1.1.1"}
-	appMobilityServiceLevel := WITH_CONFIRMATION
-	contextTransferState := CONTEXT_TRANSFER_STATE_NOT_TRANSFERRED
+	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
+	appMobilityServiceLevel := AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION
+	contextTransferState := ContextTransferState_NOT_TRANSFERRED
 	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, &appMobilityServiceLevel, &contextTransferState}
 	expectedDeviceInfo := []RegistrationInfoDeviceInformation{expectedDeviceInfo1}
 	expectedRegistrationInfo := RegistrationInfo{strconv.Itoa(nextServiceIdAvailable), expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myapp", ""}}
@@ -920,9 +920,9 @@ func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string 
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedAssocId1 := AssociateId{"1", "1.1.1.1"}
-	appMobilityServiceLevel := WITH_CONFIRMATION
-	contextTransferState := CONTEXT_TRANSFER_STATE_NOT_TRANSFERRED
+	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
+	appMobilityServiceLevel := AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION
+	contextTransferState := ContextTransferState_NOT_TRANSFERRED
 	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, &appMobilityServiceLevel, &contextTransferState}
 	expectedDeviceInfo := []RegistrationInfoDeviceInformation{expectedDeviceInfo1}
 	expectedRegistrationInfo := RegistrationInfo{serviceId, expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myapp", ""}}
@@ -1103,13 +1103,13 @@ func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedAssocId1 := AssociateId{"1", "1.1.1.1"}
+	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
 	expectedAssocId := []AssociateId{expectedAssocId1}
-	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []MobilityStatus{MOBILITY_STATUS_TRIGGERED}}
+	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []MobilityStatus{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := MobilityProcedureSubscription{&MobilityProcedureSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
+	expectedResponse := MobilityProcedureSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1163,13 +1163,13 @@ func testSubscriptionMobilityProcedurePut(t *testing.T, subscriptionId string, e
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedAssocId1 := AssociateId{"1", "2.2.2.2"}
+	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
 	expectedAssocId := []AssociateId{expectedAssocId1}
-	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []MobilityStatus{MOBILITY_STATUS_TRIGGERED}}
+	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []MobilityStatus{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := MobilityProcedureSubscription{&MobilityProcedureSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
+	expectedResponse := MobilityProcedureSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1185,7 +1185,7 @@ func testSubscriptionMobilityProcedurePut(t *testing.T, subscriptionId string, e
 	/******************************
 	 * request body section
 	 ******************************/
-	mobilityProcedureSubscription1 := MobilityProcedureSubscription{&MobilityProcedureSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
+	mobilityProcedureSubscription1 := MobilityProcedureSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
 
 	body, err := json.Marshal(mobilityProcedureSubscription1)
 	if err != nil {

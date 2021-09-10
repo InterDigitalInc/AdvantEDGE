@@ -68,11 +68,11 @@ const (
 	notifExpiry = "ExpiryNotification"
 )
 
-const MOBILITY_PROCEDURE_SUBSCRIPTION_INT = 1
+const MOBILITY_PROCEDURE_SUBSCRIPTION_INT = int32(1)
 const MOBILITY_PROCEDURE_SUBSCRIPTION = "MobilityProcedureSubscription"
 const MOBILITY_PROCEDURE_NOTIFICATION = "MobilityProcedureNotification"
 
-const ADJACENT_APP_INFO_SUBSCRIPTION_INT = 2
+const ADJACENT_APP_INFO_SUBSCRIPTION_INT = int32(2)
 const ADJACENT_APP_INFO_SUBSCRIPTION = "AdjacentAppInfoSubscription"
 const ADJACENT_APP_INFO_NOTIFICATION = "AdjacentAppInfoNotification"
 
@@ -940,7 +940,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		link := new(MobilityProcedureSubscriptionLinks)
+		link := new(AdjacentAppInfoSubscriptionLinks)
 		link.Self = self
 		subscription.Links = link
 
@@ -952,7 +952,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		//populate mobilityStatus
 		if len(subscription.FilterCriteria.MobilityStatus) == 0 {
-			subscription.FilterCriteria.MobilityStatus = append(subscription.FilterCriteria.MobilityStatus, MOBILITY_STATUS_TRIGGERED)
+			subscription.FilterCriteria.MobilityStatus = append(subscription.FilterCriteria.MobilityStatus, MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED)
 		}
 
 		//registration
@@ -1064,7 +1064,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		//populate mobilityStatus
 		if len(subscription.FilterCriteria.MobilityStatus) == 0 {
-			subscription.FilterCriteria.MobilityStatus = append(subscription.FilterCriteria.MobilityStatus, MOBILITY_STATUS_TRIGGERED)
+			subscription.FilterCriteria.MobilityStatus = append(subscription.FilterCriteria.MobilityStatus, MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED)
 		}
 
 		//registration
@@ -1245,8 +1245,8 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 			if mpSubscription != nil {
 				var subscription SubscriptionLinkListSubscription
 				subscription.Href = mpSubscription.Links.Self.Href
-				subType := SUBSCRIPTION_TYPE_MOBILITY_PROCEDURE
-				subscription.SubscriptionType = &subType
+				subType := MOBILITY_PROCEDURE_SUBSCRIPTION_INT
+				subscription.SubscriptionType = subType
 				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
 			}
 		}
@@ -1257,8 +1257,8 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 			if adjSubscription != nil {
 				var subscription SubscriptionLinkListSubscription
 				subscription.Href = adjSubscription.Links.Self.Href
-				subType := SUBSCRIPTION_TYPE_ADJACENT_APPINFO
-				subscription.SubscriptionType = &subType
+				subType := ADJACENT_APP_INFO_SUBSCRIPTION_INT
+				subscription.SubscriptionType = subType
 				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
 			}
 		}

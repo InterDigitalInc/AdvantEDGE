@@ -28,6 +28,6 @@ type ContextTransferState string
 
 // List of contextTransferState
 const (
-	CONTEXT_TRANSFER_STATE_NOT_TRANSFERRED                 ContextTransferState = "NOT_TRANSFERRED"
-	CONTEXT_TRANSFER_STATE_USER_CONTEXT_TRANSFER_COMPLETED ContextTransferState = "USER_CONTEXT_TRANSFER_COMPLETED"
+	ContextTransferState_NOT_TRANSFERRED                 ContextTransferState = "NOT_TRANSFERRED"
+	ContextTransferState_USER_CONTEXT_TRANSFER_COMPLETED ContextTransferState = "USER_CONTEXT_TRANSFER_COMPLETED"
 )
