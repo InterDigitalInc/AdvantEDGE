@@ -23,6 +23,7 @@ meepctl lint <targets> [flags]
 
 Valid Targets:
   * all
+  * meep-ams
   * meep-auth-svc
   * meep-couch
   * meep-data-key-mgr

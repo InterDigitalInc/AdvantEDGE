@@ -23,6 +23,7 @@ meepctl build <targets> [flags]
 
 Valid Targets:
   * all
+  * meep-ams
   * meep-auth-svc
   * meep-frontend
   * meep-gis-engine

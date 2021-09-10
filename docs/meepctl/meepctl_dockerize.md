@@ -26,6 +26,7 @@ meepctl dockerize <targets> [flags]
 
 Valid Targets:
   * all
+  * meep-ams
   * meep-auth-svc
   * meep-gis-engine
   * meep-loc-serv

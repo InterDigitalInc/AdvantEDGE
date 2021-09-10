@@ -790,3 +790,24 @@ default:
 #         path: '/'
 #         method: 'GET'
 #         mode: 'block'
+#   #------------------------------
+#   #  AMSI Service (Sbox)
+#   #------------------------------
+#   - name: 'meep-ams'
+#     path: '/amsi/v1'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+

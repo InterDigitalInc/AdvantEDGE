@@ -10,6 +10,7 @@ mv /meep-mg-manager /templates/sandbox/meep-mg-manager
 mv /meep-rnis /templates/sandbox/meep-rnis
 mv /meep-app-enablement /templates/sandbox/meep-app-enablement
 mv /meep-wais /templates/sandbox/meep-wais
+mv /meep-ams /templates/sandbox/meep-ams
 mv /meep-sandbox-ctrl /templates/sandbox/meep-sandbox-ctrl
 mv /meep-tc-engine /templates/sandbox/meep-tc-engine
 

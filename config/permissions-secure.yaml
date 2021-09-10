@@ -275,3 +275,15 @@ services:
       roles:
         admin: 'allow'
         user: 'allow'
+  #------------------------------
+  #  AMSI Service (Sbox)
+  #------------------------------
+  - name: 'meep-ams'
+    path: '/amsi/v1'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+
