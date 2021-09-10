@@ -68,7 +68,10 @@ import {
   getElemFieldVal,
   getElemFieldErr,
   setElemFieldVal,
-  setElemFieldErr
+  setElemFieldErr,
+  FIELD_DN_NAME,
+  FIELD_DN_ECSP,
+  FIELD_DN_LADN
 } from '../util/elem-utils';
 
 import 'leaflet/dist/images/marker-shadow.png';
@@ -106,7 +109,7 @@ const POA_RANGE_OPACITY = 0.05;
 const POA_RANGE_OPACITY_BACKGROUND = 0.05;
 
 const COMPUTE_ICON = 'ion-android-cloud';
-const COMPUTE_COLOR_DEFAULT = '#696969';
+const COMPUTE_COLOR_DEFAULT = '#0a50f2';
 const COMPUTE_OPACITY = 1.0;
 const COMPUTE_OPACITY_BACKGROUND = 0.35;
 
@@ -469,13 +472,10 @@ class IDCMap extends Component {
   }
 
   getComputeColor(compute) {
-    var color = undefined;
-    if (this.isConnected(compute)) {
-      color = this.getZoneColor(this.getComputeZone(compute));
-    } else {
-      color = DISCONNECTED_COLOR;
+    if (!this.isConnected(compute)) {
+      return DISCONNECTED_COLOR;
     }
-    return color ? color : COMPUTE_COLOR_DEFAULT;
+    return COMPUTE_COLOR_DEFAULT;
   }
 
   // Get connected status
@@ -660,10 +660,36 @@ class IDCMap extends Component {
 
   // UE Marker Event Handler
   updateComputePopup(marker) {
-    var latlng = marker.getLatLng();
-    var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
-    msg += 'location: ' + this.getLocationStr(latlng);
-    marker.getPopup().setContent(msg);
+    if (marker) {
+      var latlng = marker.getLatLng();
+      var table = this.getTable();
+      var services = [];
+      for (var i in table.entries) {
+        if (table.entries[i].parent.val === marker.options.meep.compute.id) {
+          services.push(table.entries[i].name.val);
+        }
+      }
+      const networkName = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_NAME);
+      const edgeProvider = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_ECSP);
+      const ladn = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_LADN);
+      var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
+      if (edgeProvider) {
+        msg += 'service-provider: ' + edgeProvider + '<br>';
+      }
+      if (networkName) {
+        msg += 'data-network: ' + networkName;
+        if (ladn) {
+          msg += ' (LADN)';
+        }
+        msg += '<br>';
+      }
+      if (services) {
+        var serviceString = services.join(', ');
+        msg += 'running-services: ' + serviceString + '<br>';
+      }
+      msg += 'location: ' + this.getLocationStr(latlng);
+      marker.getPopup().setContent(msg);
+    }
   }
 
   setUeMarker(ue) {
