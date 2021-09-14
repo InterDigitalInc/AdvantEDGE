@@ -25,16 +25,15 @@
 package client
 
 type MeasurementReportSubscription struct {
-	Links *AssocStaSubscriptionLinks `json:"_links,omitempty"`
-	// URI selected by the service consumer to receive notifications on the subscribed WLAN Access Information Service. This shall be included both in the request and in response. If not present, the service consumer is requesting the use of a Websocket for notifications. See NOTE 1.
-	CallbackReference string     `json:"callbackReference,omitempty"`
-	ExpiryDeadline    *TimeStamp `json:"expiryDeadline,omitempty"`
+	Links             *AssocStaSubscriptionLinks `json:"_links,omitempty"`
+	CallbackReference string                     `json:"callbackReference,omitempty"`
+	ExpiryDeadline    *TimeStamp                 `json:"expiryDeadline,omitempty"`
 	// Unique identifier allocated by the service consumer to identify measurement reports associated with this measurement subscription.
 	MeasurementId   string           `json:"measurementId"`
 	MeasurementInfo *MeasurementInfo `json:"measurementInfo"`
 	// Set to TRUE by the service consumer to request a test notification on the callbackReference URI to determine if it is reachable by the WAIS for notifications.
 	RequestTestNotification bool `json:"requestTestNotification,omitempty"`
-	// Identifier(s) to uniquely specify the target client station(s) for the subscription
+	// Identifier(s) to uniquely specify the target client station(s) for the subscription.
 	StaId []StaIdentity `json:"staId"`
 	// Shall be set to \"MeasurementReportSubscription\".
 	SubscriptionType   string              `json:"subscriptionType"`

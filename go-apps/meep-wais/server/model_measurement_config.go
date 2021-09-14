@@ -29,6 +29,6 @@ type MeasurementConfig struct {
 	MeasurementId string `json:"measurementId"`
 
 	MeasurementInfo *MeasurementInfo `json:"measurementInfo"`
-	// Identifier(s) to uniquely specify the target client station(s) for the measurement configuration
+	// Identifier(s) to uniquely specify the target client station(s) for the measurement configuration.
 	StaId []StaIdentity `json:"staId"`
 }

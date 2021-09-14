@@ -26,11 +26,11 @@ package server
 type StaStatisticsConfig struct {
 	// As per Table 9-92 of IEEE 802.11-2016 [8].
 	GroupIdentity int32 `json:"groupIdentity"`
-	// Valid if triggeredReport = true.   Specifies the number of MAC service data units or protocol data units to determine if the trigger conditions are met.
+	// Valid if triggeredReport = true. Specifies the number of MAC service data units or protocol data units to determine if the trigger conditions are met.
 	MeasurementCount int32 `json:"measurementCount,omitempty"`
 
 	TriggerCondition *StaCounterTriggerCondition `json:"triggerCondition,omitempty"`
-	// Valid if triggeredReport = true.   The Trigger Timeout field contains a value in units of 100 time-units of 1024 µs during which a measuring STA does not generate further triggered STA Statistics Reports after a trigger condition has been met.
+	// Valid if triggeredReport = true. The Trigger Timeout field contains a value in units of 100 time-units of 1 024 µs during which a measuring STA does not generate further triggered STA Statistics Reports after a trigger condition has been met.
 	TriggerTimeout int32 `json:"triggerTimeout,omitempty"`
 	// True = triggered reporting, otherwise duration.
 	TriggeredReport bool `json:"triggeredReport"`

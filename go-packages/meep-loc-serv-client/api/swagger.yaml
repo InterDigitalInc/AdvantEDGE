@@ -17,7 +17,7 @@ info:
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 2.1.1
 externalDocs:
-  description: ETSI MEC013 V2.1.1 Location Service API
+  description: ETSI MEC013 V2.1.1 Location API
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf
 servers:
 - url: https://localhost/sandboxname/location/v2

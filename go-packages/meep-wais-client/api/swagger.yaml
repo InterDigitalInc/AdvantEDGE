@@ -18,7 +18,7 @@ info:
   version: 2.2.1
 externalDocs:
   description: ETSI MEC028 V2.2.1 WLAN Information API
-  url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_mec028v020201p.pdf
+  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_mec028v020201p.pdf
 servers:
 - url: https://localhost/sandboxname/wai/v2
 tags:
@@ -338,11 +338,15 @@ paths:
             example:
               subscriptionType: AssocStaSubscription
               callbackReference: http://meAppClient.example.com/wai/v2/notifications/1
+              expiryDeadline:
+                seconds: 1977836800
+                nanoSeconds: 0
               apId:
                 bssid: 005C0A0A0A0A
-              notificationEvent:
-                threshold: 1
-                trigger: 1
+                ssid:
+                - myNetworkSsid
+                ipAddress:
+                - 10.10.100.1
         required: true
       responses:
         "201":
@@ -357,11 +361,15 @@ paths:
                 _links:
                   self:
                     href: http://meAppServer.example.com/wai/v2/subscriptions/sub123
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoSeconds: 0
                 apId:
                   bssid: 005C0A0A0A0A
-                notificationEvent:
-                  threshold: 1
-                  trigger: 1
+                  ssid:
+                  - myNetworkSsid
+                  ipAddress:
+                  - 10.10.100.1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -448,8 +456,18 @@ paths:
                         nanoseconds: 0
                       apId:
                         bssid: 005C0A0A0A0A
+                        ssid:
+                        - myNetworkSsid
+                        ipAddress:
+                        - 10.10.100.1
                       staId:
                         macId: 005C01111111
+                        ssid:
+                        - myNetworkSsid
+                        - myOtherNetworkSsid
+                        aid: "1122"
+                        ipAddress:
+                        - 10.10.1.255
                 required: true
               responses:
                 "204":
@@ -486,11 +504,15 @@ paths:
                 _links:
                   self:
                     href: http://meAppServer.example.com/wai/v2/subscriptions/sub123
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoSeconds: 0
                 apId:
                   bssid: 005C0A0A0A0A
-                notificationEvent:
-                  threshold: 1
-                  trigger: 1
+                  ssid:
+                  - myNetworkSsid
+                  ipAddress:
+                  - 10.10.100.1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -561,11 +583,15 @@ paths:
               _links:
                 self:
                   href: http://meAppServer.example.com/wai/v2/subscriptions/sub123
+              expiryDeadline:
+                seconds: 1977836800
+                nanoSeconds: 0
               apId:
                 bssid: 005C0A0A0A0A
-              notificationEvent:
-                threshold: 1
-                trigger: 1
+                ssid:
+                - myNetworkSsid
+                ipAddress:
+                - 10.10.100.1
         required: true
       responses:
         "200":
@@ -581,9 +607,10 @@ paths:
                 callbackReference: http://my.callback.com/wai/some-id
                 apId:
                   bssid: 005C0A0A0A0A
-                notificationEvent:
-                  threshold: 1
-                  trigger: 1
+                  ssid:
+                  - myNetworkSsid
+                  ipAddress:
+                  - 10.10.100.1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -1154,8 +1181,8 @@ components:
           type: string
           description: Basic Service Set Identifier (BSSID) is a unique identifier
             assigned to the Access Point (as network interface controller) for communications
-            at the data link layer of a network segment.  BSSID is typically set to
-            an access point’s MAC address.
+            at the data link layer of a network segment. BSSID is typically set to
+            an access point's MAC address.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         ipAddress:
@@ -1193,8 +1220,8 @@ components:
           type: string
           description: Basic Service Set Identifier (BSSID) is a unique Identifier
             assigned to an Access Point (as network interface controller) for communications
-            at the data link layer of a network segment.  BSSID is typically set to
-            an access point’s MAC address.
+            at the data link layer of a network segment. BSSID is typically set to
+            an access point's MAC address.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         ipAddress:
@@ -1208,8 +1235,8 @@ components:
         ssid:
           minItems: 0
           type: array
-          description: 'Service Set Identifier (SSID) to identify logical WLAN networks
-            available via the Access Point. '
+          description: Service Set Identifier (SSID) to identify logical WLAN networks
+            available via the Access Point.
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
@@ -1445,28 +1472,23 @@ components:
           $ref: '#/components/schemas/ApIdentity'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed WLAN Access Information. This shall be included both
-            in the request and in response. If not present, the service consumer is
-            requesting the use of a Websocket for notifications. See NOTE 1.
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uri
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         notificationEvent:
           $ref: '#/components/schemas/AssocStaSubscription_notificationEvent'
         notificationPeriod:
           type: integer
-          description: "Set for periodic notification reporting.  \nValue indicates\
-            \ the notification period in seconds."
+          description: |-
+            Set for periodic notification reporting.
+            Value indicates the notification period in seconds.
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         requestTestNotification:
           type: boolean
-          description: 'Set to TRUE by the service consumer to request a test notification
+          description: Set to TRUE by the service consumer to request a test notification
             on the callbackReference URI to determine if it is reachable by the WAIS
-            for notifications.     '
+            for notifications.
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         subscriptionType:
@@ -1476,13 +1498,13 @@ components:
           x-etsi-mec-origin-type: String
         websockNotifConfig:
           $ref: '#/components/schemas/WebsockNotifConfig'
-      x-etsi-notes: "NOTE1:    At least one of callbackReference and websockNotifConfig\
-        \ shall be provided by the service consumer.  If both are provided, it is\
-        \ up to WAIS to select the method to be used for notifications and to return\
-        \ only that method in the response.\nNOTE2:    AssocStaSubscription shall\
-        \ include either notificationPeriod or notificationEvent.  \nNOTE3:    If\
-        \ both notificationPeriod and notificationEvent attributes are set, notifications\
-        \ are issued periodically when the trigger threshold is satisfied."
+      x-etsi-notes: "NOTE 1:\tAt least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to WAIS to select the method to be used for notifications and to return\
+        \ only that method in the response.\nNOTE 2:\tAssocStaSubscription shall include\
+        \ either notificationPeriod or notificationEvent.\nNOTE 3:\tIf both notificationPeriod\
+        \ and notificationEvent attributes are set, notifications are issued periodically\
+        \ when the trigger threshold is satisfied."
       x-etsi-ref: 6.3.2
     BeaconReport:
       required:
@@ -1496,7 +1518,7 @@ components:
         antennaId:
           type: integer
           description: The Antenna ID field contains the identifying number for the
-            antenna(s) used for this measurement. Antenna ID is defined in 9.4.2.40
+            antenna(s) used for this measurement. Antenna ID is defined in section 9.4.2.40
             of IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: 0..1
@@ -1521,15 +1543,15 @@ components:
           x-etsi-mec-origin-type: String
         operatingClass:
           type: integer
-          description: 'Operating Class field indicates an operating class value as
-            defined in Annex E within IEEE 802.11-2016 [8]. '
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         parentTsf:
           type: integer
           description: The Parent TSF field contains the lower 4 octets of the measuring
-            STA’s TSF timer value at the start of reception of the first octet of
+            STA's TSF timer value at the start of reception of the first octet of
             the timestamp field of the reported Beacon, Measurement Pilot, or Probe
             Response frame at the time the Beacon, Measurement Pilot, or Probe Response
             frame being reported was received.
@@ -1540,7 +1562,8 @@ components:
           type: integer
           description: RCPI indicates the received channel power of the Beacon, Measurement
             Pilot, or Probe Response frame, which is a logarithmic function of the
-            received signal power, as defined 9.4.2.38 of IEEE 802.11-2016 [8].
+            received signal power, as defined in section 9.4.2.38 of IEEE 802.11-2016
+            [8].
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
@@ -1550,7 +1573,7 @@ components:
           type: integer
           description: RSNI indicates the received signal-to-noise indication for
             the Beacon, Measurement Pilot, or Probe Response frame, as described in
-            9.4.2.41 of IEEE 802.11-2016 [8].
+            section 9.4.2.41 of IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
@@ -1593,34 +1616,32 @@ components:
       properties:
         reportingCondition:
           type: integer
-          description: |
-            Reporting condition for the Beacon Report as per Table 9-89 of IEEE 802.11-2016
-            0 = Report to be issued after each measurement
-            1 = measured RCPI level is greater than the threshold
-            2 = measured RCPI level is less than the threshold
-            3 = measured RSNI level is greater than the threshold
-            4 = measured RSNI level is less than the threshold
-            5 = measured RCPI level is greater than a threshold defined by an offset from the serving AP’s reference RCPI
-            6 = measured RCPI level is less than a threshold defined by an offset from the serving AP’s reference RCPI
-            7 = measured RSNI level is greater than a threshold defined by an offset from the serving AP’s reference RSNI
-            8 = measured RSNI level is less than a threshold defined by an offset from the serving AP’s reference RSNI
-            9 = measured RCPI level is in a range bound by the serving AP’s reference RCPI and an offset from the serving AP’s reference RCPI
-            10 = measured RSNI level is in a range bound by the serving AP’s reference RSNI and an offset from the serving AP’s reference RSNI
+          description: |-
+            Reporting condition for the Beacon Report as per Table 9-89 of IEEE 802.11-2016 [8]:
+            0 = Report to be issued after each measurement.
+            1 = measured RCPI level is greater than the threshold.
+            2 = measured RCPI level is less than the threshold.
+            3 = measured RSNI level is greater than the threshold.
+            4 = measured RSNI level is less than the threshold.
+            5 = measured RCPI level is greater than a threshold defined by an offset from the serving AP's reference RCPI.
+            6 = measured RCPI level is less than a threshold defined by an offset from the serving AP's reference RCPI.
+            7 = measured RSNI level is greater than a threshold defined by an offset from the serving AP's reference RSNI.
+            8 = measured RSNI level is less than a threshold defined by an offset from the serving AP's reference RSNI.
+            9 = measured RCPI level is in a range bound by the serving AP's reference RCPI and an offset from the serving AP's reference RCPI.
+            10 = measured RSNI level is in a range bound by the serving AP's reference RSNI and an offset from the serving AP's reference RSNI.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         threshold:
           type: integer
-          description: "The threshold subfield contains either the threshold value\
-            \ or the offset value to be used for conditional reporting. \n\nFor reportingCondition\
-            \ subfield with values 1 and 2, the threshold value is a logarithmic function\
-            \ of the received signal power, as defined 9.4.2.38 of IEEE 802.11-2016.\
-            \ \n\nFor reportingCondition subfield values 3 and 4, the threshold value\
-            \ is a logarithmic function of the signal-to-noise ratio, as described\
-            \ in 9.4.2.41 of IEEE 802.11-2016. \n\nFor reportingCondition subfield\
-            \ values 5 to 10, the offset value is an 8-bit 2s complement integer in\
-            \ units of 0.5 dBm. The indicated reporting condition applies individually\
-            \ to each measured Beacon, Measurement Pilot, or Probe Response frame.\n"
+          description: |-
+            The threshold subfield contains either the threshold value or the offset value to be used for conditional reporting.
+
+            For reportingCondition subfield with values 1 and 2, the threshold value is a logarithmic function of the received signal power, as defined in section 9.4.2.38 of IEEE 802.11-2016 [8].
+
+            For reportingCondition subfield values 3 and 4, the threshold value is a logarithmic function of the signal-to-noise ratio, as described in section 9.4.2.41 of IEEE 802.11-2016 [8].
+
+            For reportingCondition subfield values 5 to 10, the offset value is an 8-bit 2s complement integer in units of 0,5 dBm. The indicated reporting condition applies individually to each measured Beacon, Measurement Pilot, or Probe Response frame.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -1650,7 +1671,7 @@ components:
           description: Channel number to scan. A Channel Number of 0 indicates a request
             to make iterative measurements for all supported channels in the Operating
             Class where the measurement is permitted on the channel and the channel
-            is valid for the current regulatory domain. A Channel Number of 255 indicates
+            is valid for the current regulatory domain. A Channel Number of 255 indicates
             a request to make iterative measurements for all supported channels in
             the current Operating Class listed in the latest AP Channel Report received
             from the serving AP.
@@ -1668,8 +1689,8 @@ components:
           x-etsi-mec-origin-type: Uint8
         operatingClass:
           type: integer
-          description: 'Operating Class field indicates an operating class value as
-            defined in Annex E within IEEE 802.11-2016 [8]. '
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.112016 [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -1716,7 +1737,7 @@ components:
           x-etsi-mec-origin-type: Boolean
         qos:
           type: boolean
-          description: 'QoS Option implemented '
+          description: QoS Option implemented
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Boolean
         radioMeasurements:
@@ -1726,7 +1747,7 @@ components:
           x-etsi-mec-origin-type: Boolean
         spectrumManagement:
           type: boolean
-          description: 'Spectrum Management required '
+          description: Spectrum Management required
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Boolean
       example:
@@ -1786,11 +1807,11 @@ components:
         apReachability:
           type: integer
           description: |-
-            The apReachability field indicates whether the AP identified by this BSSID is reachable by the STA that requested the neighbor report.  Valid values:
+            The apReachability field indicates whether the AP identified by this BSSID is reachable by the STA that requested the neighbor report. Valid values:
             0 = reserved
             1 = not reachable
             2 = unknown
-            3 = reachable
+            3 = reachable.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -1798,14 +1819,10 @@ components:
           $ref: '#/components/schemas/BssCapabilities'
         ftm:
           type: boolean
-          description: "True indicates the AP represented by this BSSID is an AP that\
-            \ has set the Fine Timing Measurement Responder field of the Extended\
-            \ Capabilities element to 1. \n\nFalse indicates either that the reporting\
-            \ AP has dot11FineTimingMsmtRespActivated equal to false, or the reported\
-            \ AP has not set the Fine Timing Measurement Responder field of the Extended\
-            \ Capabilities element to 1 or that the Fine Timing Measurement Responder\
-            \ field of the reported AP is not available to the reporting AP at this\
-            \ time."
+          description: |-
+            True indicates the AP represented by this BSSID is an AP that has set the Fine Timing Measurement Responder field of the Extended Capabilities element to 1.
+
+            False indicates either that the reporting AP has dot11FineTimingMsmtRespActivated equal to false, or the reported AP has not set the Fine Timing Measurement Responder field of the Extended Capabilities element to 1 or that the Fine Timing Measurement Responder field of the reported AP is not available to the reporting AP at this time.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Boolean
         highThroughput:
@@ -1825,11 +1842,10 @@ components:
           x-etsi-mec-origin-type: Boolean
         security:
           type: boolean
-          description: "True indicates the AP identified by this BSSID supports the\
-            \ same security provisioning as used by the STA in its current association.\
-            \ \n\nFalse indicates either that the AP does not support the same security\
-            \ provisioning or that the security information is not available at this\
-            \ time."
+          description: |-
+            True indicates the AP identified by this BSSID supports the same security provisioning as used by the STA in its current association.
+
+            False indicates either that the AP does not support the same security provisioning or that the security information is not available at this time.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Boolean
         veryHighThroughput:
@@ -1837,7 +1853,7 @@ components:
           description: True indicates that the AP represented by this BSSID is a VHT
             AP and that the VHT Capabilities element, if included as a subelement
             in the report, is identical in content to the VHT Capabilities element
-            included in the AP’s Beacon.
+            included in the AP's Beacon.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Boolean
       example:
@@ -1875,14 +1891,14 @@ components:
           type: integer
           description: Proportion of measurement duration for which the measuring
             STA determined the channel to be busy, as a percentage of time, linearly
-            scaled with 255 representing 100%.
+            scaled with 255 representing 100 %.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         measurementDuration:
           type: integer
           description: Duration over which the Channel Load report was measured, in
-            units of TUs of 1024 µs.
+            units of TUs of 1 024 µs.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -1894,8 +1910,8 @@ components:
           x-etsi-mec-origin-type: String
         operatingClass:
           type: integer
-          description: 'Operating Class field indicates an operating class value as
-            defined in Annex E within IEEE 802.11-2016 [8]. '
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -1922,26 +1938,26 @@ components:
           x-etsi-mec-origin-type: Integer
         operatingClass:
           type: integer
-          description: 'Operating Class field indicates an operating class value as
-            defined in Annex E within IEEE 802.11-2016 [8]. '
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         reportingCondition:
           type: integer
-          description: "Reporting condition for the Beacon Report as per Table 9-153\
-            \ of IEEE 802.11-2016\n0 = Report to be issued after each measurement\n\
-            1 = Report to be issued when Channel Load is greater than or equal to\
-            \ the threshold \n2 = Report to be issued when Channel Load is less than\
-            \ or equal to the threshold\n\nIf this optional field is not provided,\
-            \ channel load report should be issued after each measurement (reportingCondition\
-            \ = 0). "
+          description: |-
+            Reporting condition for the Beacon Report as per Table 9-153 of IEEE 802.11-2016 [8]:
+            0 = Report to be issued after each measurement.
+            1 = Report to be issued when Channel Load is greater than or equal to the threshold.
+            2 = Report to be issued when Channel Load is less than or equal to the threshold.
+
+            If this optional field is not provided, channel load report should be issued after each measurement (reportingCondition = 0).
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         threshold:
           type: integer
-          description: Channel Load reference value for threshold reporting.  This
+          description: Channel Load reference value for threshold reporting. This
             field shall be provided for reportingCondition values 1 and 2.
           format: uint8
           x-etsi-mec-cardinality: 0..1
@@ -1964,7 +1980,7 @@ components:
           x-etsi-mec-origin-type: String
         ca1:
           type: string
-          description: 'National subdivisions (state, canton, region,province, prefecture) '
+          description: 'National subdivisions (state, canton, region, province, prefecture) '
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         ca128:
@@ -2170,28 +2186,28 @@ components:
       properties:
         ExtScMcsCap:
           type: integer
-          description: Extended SC MCS capabilities as defined in IEEE 802.11-2016
+          description: Extended SC MCS capabilities as defined in IEEE 802.11-2016
             [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         dmgApOrPcpCapInfo:
           type: integer
-          description: 'DMG AP or PCP capabilities information as defined in IEEE
-            802.11-2016 [8]. '
+          description: DMG AP or PCP capabilities information as defined in IEEE 802.11-2016
+            [8].
           format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
         dmgStaBeamTrackTimeLimit:
           type: integer
-          description: 'DMG station beam tracking time limit as defined in IEEE 802.11-2016
+          description: 'DMG station beam tracking time limit as defined in IEEE 802.11-2016
             [8]. '
           format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
         dmgStaCapInfo:
           type: integer
-          description: 'DMG station capabilities information as defined in IEEE 802.11-2016
+          description: 'DMG station capabilities information as defined in IEEE 802.11-2016
             [8]. '
           format: uint64
           x-etsi-mec-cardinality: "1"
@@ -2496,9 +2512,6 @@ components:
       properties:
         href:
           type: string
-          description: URI referring to a resource
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Uri
       example:
         href: href
       x-etsi-ref: 6.5.23
@@ -2524,7 +2537,7 @@ components:
           minItems: 1
           type: array
           description: Identifier(s) to uniquely specify the target client station(s)
-            for the measurement configuration
+            for the measurement configuration.
           items:
             $ref: '#/components/schemas/StaIdentity'
           x-etsi-mec-cardinality: 1..N
@@ -2617,10 +2630,10 @@ components:
           $ref: '#/components/schemas/ChannelLoadConfig'
         measurementDuration:
           type: integer
-          description: Duration of the measurement in time units (TUs) of 1024 µs,
-            as defined in section 11.11.4 of IEEE 802.11 [8].  If not provided, the
-            underlying system may utilize a default configuration that will be indicated
-            in resulting measurement reports.
+          description: Duration of the measurement in Time Units (TUs) of 1 024 µs,
+            as defined in section 11.11.4 of IEEE 802.11-2016 [8]. If not provided,
+            the underlying system may utilize a default configuration that will be
+            indicated in resulting measurement reports.
           format: uint16
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint16
@@ -2629,8 +2642,8 @@ components:
         randomInterval:
           type: integer
           description: Random interval to be used for starting the measurement in
-            TUs of 1024 µs, as specified in section 11.11.3 of IEEE 802.11 [8].  If
-            not provided, the underlying system may utilize a default configuration
+            TUs of 1 024 µs, as specified in section 11.11.3 of IEEE 802.11-2016 [8].
+            If not provided, the underlying system may utilize a default configuration
             that will be indicated in resulting measurement reports.
           format: uint16
           x-etsi-mec-cardinality: 0..1
@@ -2670,9 +2683,10 @@ components:
           triggerTimeout: 9
           groupIdentity: 7
           triggeredReport: true
-      x-etsi-notes: |-
-        NOTE1:    Only one of channelLoadConf, beaconRequestConf, staStatisticsConf or neighborReportConf is allowed in a MeasurementInfo instance.
-        NOTE2:    As per IEEE 802.11 [8], measurementDuration and randomInterval apply to channelLoad, beaconRequest, staStatistics, and neighborReport configurations
+      x-etsi-notes: "NOTE 1:\tOnly one of channelLoadConf, beaconRequestConf, staStatisticsConf\
+        \ or neighborReportConf is allowed in a MeasurementInfo instance.\nNOTE 2:\t\
+        As per IEEE 802.11-2016 [8], measurementDuration and randomInterval apply\
+        \ to channelLoad, beaconRequest, staStatistics, and neighborReport configurations."
       x-etsi-ref: 6.5.41
     MeasurementReportNotification:
       required:
@@ -2682,7 +2696,7 @@ components:
         beaconReport:
           minItems: 0
           type: array
-          description: 'Beacon Report as defined in IEEE 802.11-2016 [8]. '
+          description: Beacon Report as defined in IEEE 802.11-2016 [8].
           items:
             $ref: '#/components/schemas/BeaconReport'
           x-etsi-mec-cardinality: 0..N
@@ -2690,8 +2704,8 @@ components:
         channelLoad:
           minItems: 0
           type: array
-          description: 'Channel Load reports as seen by the station as defined IEEE
-            802.11-2016 [8].    '
+          description: Channel Load reports as seen by the station as defined in IEEE
+            802.11-2016 [8].
           items:
             $ref: '#/components/schemas/ChannelLoad'
           x-etsi-mec-cardinality: 0..N
@@ -2700,7 +2714,7 @@ components:
           minItems: 0
           type: array
           description: Neighbor Report providing information about neighbor Access
-            Points seen by the station as defined IEEE 802.11-2016 [8].
+            Points seen by the station as defined in IEEE 802.112016 [8].
           items:
             $ref: '#/components/schemas/NeighborReport'
           x-etsi-mec-cardinality: 0..N
@@ -2713,16 +2727,16 @@ components:
         staStatistics:
           minItems: 0
           type: array
-          description: 'STA Statistics Report as defined in IEEE 802.11-2016 [8].  '
+          description: STA Statistics Report as defined in IEEE 802.11-2016 [8].
           items:
             $ref: '#/components/schemas/StaStatistics'
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: StaStatistics
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
-      x-etsi-notes: "NOTE1:    Each MeasurementReportNotification shall includes a\
-        \ single measurement report type (channelLoad, beaconRequest, etc.), based\
-        \ on the MeasurementReportSubscription.  \nNOTE2:    A single MeasurementReportNotification\
+      x-etsi-notes: "NOTE 1:\tEach MeasurementReportNotification shall include a single\
+        \ measurement report type (channelLoad, beaconRequest, etc.), based on the\
+        \ MeasurementReportSubscription.\nNOTE 2:\tA single MeasurementReportNotification\
         \ may include multiple measurement reports (of the same type), if the MeasurementReportSubscription\
         \ configured the measurement report for several client stations and multiple\
         \ reports are available to WAIS."
@@ -2739,12 +2753,6 @@ components:
           $ref: '#/components/schemas/AssocStaSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed WLAN Access Information Service. This shall be included
-            both in the request and in response. If not present, the service consumer
-            is requesting the use of a Websocket for notifications. See NOTE 1.
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uri
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         measurementId:
@@ -2757,16 +2765,16 @@ components:
           $ref: '#/components/schemas/MeasurementInfo'
         requestTestNotification:
           type: boolean
-          description: 'Set to TRUE by the service consumer to request a test notification
+          description: Set to TRUE by the service consumer to request a test notification
             on the callbackReference URI to determine if it is reachable by the WAIS
-            for notifications.     '
+            for notifications.
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         staId:
           minItems: 1
           type: array
           description: Identifier(s) to uniquely specify the target client station(s)
-            for the subscription
+            for the subscription.
           items:
             $ref: '#/components/schemas/StaIdentity'
           x-etsi-mec-cardinality: 1..N
@@ -2778,10 +2786,10 @@ components:
           x-etsi-mec-origin-type: String
         websockNotifConfig:
           $ref: '#/components/schemas/WebsockNotifConfig'
-      x-etsi-notes: 'NOTE1:    At least one of callbackReference and websockNotifConfig
-        shall be provided by the service consumer.  If both are provided, it is up
-        to WAIS to select the method to be used for notifications and to return only
-        that method in the response.'
+      x-etsi-notes: "NOTE:\tAt least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to WAIS to select the method to be used for notifications and to return\
+        \ only that method in the response."
       x-etsi-ref: 6.3.5
     NeighborReport:
       required:
@@ -2795,10 +2803,10 @@ components:
       properties:
         bssTransitionCandidatePreference:
           type: integer
-          description: 'Relative value indicating the preferred ordering for this
-            BSS as a transition candidate for roaming.  255 indicating the most preferred
+          description: Relative value indicating the preferred ordering for this BSS
+            as a transition candidate for roaming. 255 indicating the most preferred
             candidate and 1 indicating the least preferred candidate, as defined in
-            Table 9-152 within IEEE 802.11-2016 [8]. '
+            Table 9-152 within IEEE 802.112016 [8].
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
@@ -2811,9 +2819,9 @@ components:
           $ref: '#/components/schemas/BssidInfo'
         channel:
           type: integer
-          description: 'Channel field indicates a channel number, which is interpreted
+          description: Channel field indicates a channel number, which is interpreted
             in the context of the indicated operating class. Channel numbers are defined
-            in Annex E within IEEE 802.11-2016 [8].  '
+            in Annex E within IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -2825,15 +2833,15 @@ components:
           x-etsi-mec-origin-type: String
         operatingClass:
           type: integer
-          description: 'Operating Class field indicates an operating class value as
-            defined in Annex E within IEEE 802.11-2016 [8]. '
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         phyType:
           type: integer
           description: |-
-            PHY type of the AP indicated by this BSSID. It is an integer value coded according to the value of the dot11PHYType, Annex C within IEEE 802.11-2016 [8].
+            PHY type of the AP indicated by this BSSID. It is an integer value coded according to the value of the dot11PHYType, Annex C within IEEE 802.11-2016 [8].
             2 = dsss
             4 = ofdm
             5 = hrdsss
@@ -2892,10 +2900,10 @@ components:
       example:
         bssid: bssid
         ssid: ssid
-      x-etsi-notes: 'NOTE:   Both SSID and BSSID are optional configuration parameters.  BSSID
-        is valid when a SSID setting is provided, otherwise ignored.  If SSID is not
-        included, the neighbor report will be generated for the SSID (i.e. current
-        ESS) that the station is associated.'
+      x-etsi-notes: "NOTE:\tBoth SSID and BSSID are optional configuration parameters.\
+        \ BSSID is valid when a SSID setting is provided, otherwise ignored. If SSID\
+        \ is not included, the neighbor report will be generated for the SSID (i.e.\_\
+        current ESS) that the station is associated."
       x-etsi-ref: 6.5.32
     OBssLoad:
       required:
@@ -2905,8 +2913,8 @@ components:
       properties:
         allocatedTrafficSelfMean:
           type: integer
-          description: Mean of allocated traffic from this AP (BSS) in units of 32
-            µs per second.
+          description: Mean of allocated traffic from this AP (BSS) in units of 32 µs
+            per second.
           format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
@@ -2934,7 +2942,7 @@ components:
         overlap:
           type: integer
           description: Indicates the number of other APs that are sharing the same
-            channel as the reporting AP
+            channel as the reporting AP.
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
@@ -2988,14 +2996,14 @@ components:
         frameType:
           type: integer
           description: |-
-            A value of 0 indicates a Beacon or Probe Response
+            A value of 0 indicates a Beacon or Probe Response.
             A value of 1 indicates a Measurement Pilot frame.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         phyType:
           type: integer
-          description: Value between 0 and 127 coded according to dot11PHYType
+          description: Value between 0 and 127 coded according to dot11PHYType.
           format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
@@ -3205,8 +3213,10 @@ components:
         staId: null
         staLastDataDownlinkRate: 5
         staLastDataUplinkRate: 9
-      x-etsi-notes: "NOTE:\t\tStaDataRate shall include at least one instance of either\
-        \ downlink rate or uplink rate and may include both."
+      x-etsi-notes: "NOTE:\tStaDataRate shall include at least one instance of either\
+        \ downlink rate or uplink rate and may include both.\n If this report is contained\
+        \ within a data type that provides the station's identifier, staId field may\
+        \ be omitted"
       x-etsi-ref: 6.5.22
     StaDataRateNotification:
       required:
@@ -3239,35 +3249,30 @@ components:
           $ref: '#/components/schemas/AssocStaSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed WLAN Access Information Service. This shall be included
-            both in the request and in response. If not present, the service consumer
-            is requesting the use of a Websocket for notifications. See NOTE 1.
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uri
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         notificationEvent:
           $ref: '#/components/schemas/StaDataRateSubscription_notificationEvent'
         notificationPeriod:
           type: integer
-          description: "Set for periodic notification reporting.  \nValue indicates\
-            \ the notification period in seconds."
+          description: |-
+            Set for periodic notification reporting.
+            Value indicates the notification period in seconds.
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         requestTestNotification:
           type: boolean
-          description: 'Set to TRUE by the service consumer to request a test notification
+          description: Set to TRUE by the service consumer to request a test notification
             on the callbackReference URI to determine if it is reachable by the WAIS
-            for notifications.     '
+            for notifications.
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         staId:
           minItems: 1
           type: array
           description: Identifier(s) to uniquely specify the target client station(s)
-            for the subscription
+            for the subscription.
           items:
             $ref: '#/components/schemas/StaIdentity'
           x-etsi-mec-cardinality: 1..N
@@ -3279,12 +3284,12 @@ components:
           x-etsi-mec-origin-type: String
         websockNotifConfig:
           $ref: '#/components/schemas/WebsockNotifConfig'
-      x-etsi-notes: "NOTE1:    At least one of callbackReference and websockNotifConfig\
-        \ shall be provided by the service consumer.  If both are provided, it is\
-        \ up to WAIS to select the method to be used for notifications and to return\
-        \ only that method in the response.\nNOTE2:    StaDataRateSubscription shall\
-        \ include either notificationPeriod or notificationEvent.  \nNOTE3:    If\
-        \ both notificationPeriod and notificationEvent attributes are set, notifications\
+      x-etsi-notes: "NOTE 1:\tAt least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to WAIS to select the method to be used for notifications and to return\
+        \ only that method in the response.\nNOTE 2:\tStaDataRateSubscription shall\
+        \ include either notificationPeriod or notificationEvent.\nNOTE 3:\tIf both\
+        \ notificationPeriod and notificationEvent attributes are set, notifications\
         \ are issued periodically when the trigger threshold is satisfied."
       x-etsi-ref: 6.3.3
     StaIdentity:
@@ -3294,8 +3299,8 @@ components:
       properties:
         aid:
           type: string
-          description: 'Number which identifies a particular association between a
-            station and an Access Point '
+          description: Number which identifies a particular association between a
+            station and an Access Point
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         ipAddress:
@@ -3355,9 +3360,9 @@ components:
         channelLoad:
           minItems: 0
           type: array
-          description: 'Channel Load reports as seen by the station as defined IEEE
-            802.11-2016 [8].  Channel Load reports may be configured for any channel,
-            including the station’s current channel for association.  '
+          description: Channel Load reports as seen by the station as defined IEEE 802.11-2016
+            [8]. Channel Load reports may be configured for any channel, including
+            the station's current channel for association.
           items:
             $ref: '#/components/schemas/ChannelLoad'
           x-etsi-mec-cardinality: 0..N
@@ -3622,7 +3627,7 @@ components:
         groupIdentity:
           type: integer
           description: |-
-            Indicates the requested statistics group describing the Statistics Group Data according to Table 9-114 of IEEE 802.11-2016 [8].
+            Indicates the requested statistics group describing the Statistics Group Data according to Table 9-114 of IEEE 802.11-2016 [8].
             Depending on group identity, one and only one of the STA Statistics Group Data will be present.
           format: uint8
           x-etsi-mec-cardinality: "1"
@@ -3634,8 +3639,8 @@ components:
         measurementDuration:
           type: integer
           description: Duration over which the Statistics Group Data was measured
-            in time units of 1024 µs.   Duration equal to zero indicates a report
-            of current values.
+            in time units of 1 024 µs. Duration equal to zero indicates a report of
+            current values.
           format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt16
@@ -3713,9 +3718,9 @@ components:
           x-etsi-mec-origin-type: Uint8
         measurementCount:
           type: integer
-          description: "Valid if triggeredReport = true.  \nSpecifies the number of\
-            \ MAC service data units or protocol data units to determine if the trigger\
-            \ conditions are met."
+          description: |-
+            Valid if triggeredReport = true.
+            Specifies the number of MAC service data units or protocol data units to determine if the trigger conditions are met.
           format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
@@ -3723,10 +3728,9 @@ components:
           $ref: '#/components/schemas/STACounterTriggerCondition'
         triggerTimeout:
           type: integer
-          description: "Valid if triggeredReport = true.  \nThe Trigger Timeout field\
-            \ contains a value in units of 100 time-units of 1024 µs during which\
-            \ a measuring STA does not generate further triggered STA Statistics Reports\
-            \ after a trigger condition has been met."
+          description: |-
+            Valid if triggeredReport = true.
+            The Trigger Timeout field contains a value in units of 100 time-units of 1 024 µs during which a measuring STA does not generate further triggered STA Statistics Reports after a trigger condition has been met.
           format: uint16
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint16
@@ -4028,7 +4032,7 @@ components:
       type: object
       properties:
         _links:
-          $ref: '#/components/schemas/ExpiryNotification__links'
+          $ref: '#/components/schemas/TestNotification__links'
         notificationType:
           type: string
           description: Shall be set to "TestNotification".
@@ -4096,7 +4100,7 @@ components:
           type: integer
           description: 1-octet positive integer representing the current percentage
             loading of the downlink WAN connection, scaled linearly with 255 representing
-            100 %, as measured over an interval the duration of which is reported
+            100 %, as measured over an interval the duration of which is reported
             in Load Measurement Duration. In cases where the downlink load is unknown
             to the AP, the value is set to zero.
           format: uint8
@@ -4125,7 +4129,7 @@ components:
           type: integer
           description: 1-octet positive integer representing the current percentage
             loading of the uplink WAN connection, scaled linearly with 255 representing
-            100 %, as measured over an interval, the duration of which is reported
+            100 %, as measured over an interval, the duration of which is reported
             in Load Measurement Duration. In cases where the uplink load is unknown
             to the AP, the value is set to zero.
           format: uint8
@@ -4166,8 +4170,6 @@ components:
           type: string
           description: Set by WAIS to indicate to the service consumer the Websocket
             URI to be used for delivering notifications.
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uri
       x-etsi-ref: 6.3.6
     WlanCapabilities:
       type: object
@@ -4264,8 +4266,8 @@ components:
           type: integer
           description: |-
             Trigger for the notification:
-            1 = Notification issued when the number of connected stations is greater than or equal to the threshold
-            2 = Notification issued when the number of connected stations is less than or equal to the threshold
+            1 = Notification issued when the number of connected stations is greater than or equal to the threshold.
+            2 = Notification issued when the number of connected stations is less than or equal to the threshold.
           enum:
           - 1
           - 2
@@ -4279,7 +4281,7 @@ components:
       properties:
         subscription:
           $ref: '#/components/schemas/LinkType'
-      description: 'Hyperlink related to the resource. '
+      description: Hyperlink related to the resource.
     MeasurementConfig__links:
       required:
       - self
@@ -4319,7 +4321,7 @@ components:
       properties:
         downlinkRateThreshold:
           type: integer
-          description: 'Downlink data rate threshold for StaDataRate reporting.  '
+          description: Downlink data rate threshold for StaDataRate reporting.
           format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
@@ -4327,14 +4329,14 @@ components:
           type: integer
           description: |-
             Trigger event for the notification:
-            1 = Notification issued when the STA’s downlink data rate is greater than or equal to the downlink threshold
-            2 = Notification issued when the STA’s downlink data rate is less than or equal to the downlink threshold
-            3 = Notification issued when the STA’s uplink data rate is greater than or equal to the uplink threshold
-            4 = Notification issued when the STA’s uplink data rate is less than or equal to the uplink threshold
-            5 = Notification issued when the STA’s downlink and uplink data rate is greater than or equal to their thresholds
-            6 = Notification issued when the STA’s downlink and uplink data rate is less than or equal to their thresholds
-            7 = Notification issued when the STA’s downlink or uplink data rate is greater than or equal to their thresholds
-            8 = Notification issued when the STA’s downlink or uplink data rate is less than or equal to their thresholds
+            1 = Notification issued when the STA's downlink data rate is greater than or equal to the downlink threshold.
+            2 = Notification issued when the STA's downlink data rate is less than or equal to the downlink threshold.
+            3 = Notification issued when the STA's uplink data rate is greater than or equal to the uplink threshold.
+            4 = Notification issued when the STA's uplink data rate is less than or equal to the uplink threshold.
+            5 = Notification issued when the STA's downlink and uplink data rate is greater than or equal to their thresholds.
+            6 = Notification issued when the STA's downlink and uplink data rate is less than or equal to their thresholds.
+            7 = Notification issued when the STA's downlink or uplink data rate is greater than or equal to their thresholds.
+            8 = Notification issued when the STA's downlink or uplink data rate is less than or equal to their thresholds.
           enum:
           - 1
           - 2
@@ -4348,11 +4350,11 @@ components:
           x-etsi-mec-origin-type: Enum (inline)
         uplinkRateThreshold:
           type: integer
-          description: 'Uplink data rate threshold for StaDataRate reporting.  '
+          description: Uplink data rate threshold for StaDataRate reporting.
           format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
-      description: 'Set for trigger-based event notification reporting. '
+      description: Set for trigger-based event notification reporting.
     SubscriptionLinkList__links:
       required:
       - self
@@ -4388,6 +4390,14 @@ components:
       example:
         subscriptionType: subscriptionType
         href: http://example.com/aeiou
+    TestNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: 'Hyperlink related to the resource. '
     AppTerminationNotification__links:
       required:
       - subscription

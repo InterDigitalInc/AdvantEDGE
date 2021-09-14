@@ -26,9 +26,9 @@ package server
 type MeasurementReportNotification struct {
 	// Beacon Report as defined in IEEE 802.11-2016 [8].
 	BeaconReport []BeaconReport `json:"beaconReport,omitempty"`
-	// Channel Load reports as seen by the station as defined IEEE 802.11-2016 [8].
+	// Channel Load reports as seen by the station as defined in IEEE 802.11-2016 [8].
 	ChannelLoad []ChannelLoad `json:"channelLoad,omitempty"`
-	// Neighbor Report providing information about neighbor Access Points seen by the station as defined IEEE 802.11-2016 [8].
+	// Neighbor Report providing information about neighbor Access Points seen by the station as defined in IEEE 802.112016 [8].
 	NeighborReport []NeighborReport `json:"neighborReport,omitempty"`
 	// Shall be set to \"MeasurementReportNotification\".
 	NotificationType string `json:"notificationType"`

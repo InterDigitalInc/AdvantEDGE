@@ -482,15 +482,15 @@ Queries information about the Mobile Network
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param appInsId Comma separated list of Application instance identifiers
 
-@return PlmnInfo
+@return []PlmnInfo
 */
-func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (PlmnInfo, *http.Response, error) {
+func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) ([]PlmnInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue PlmnInfo
+		localVarReturnValue []PlmnInfo
 	)
 
 	// create path and map variables
@@ -549,7 +549,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Plm
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v PlmnInfo
+			var v []PlmnInfo
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

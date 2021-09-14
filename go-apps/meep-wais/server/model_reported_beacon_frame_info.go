@@ -24,8 +24,8 @@
 package server
 
 type ReportedBeaconFrameInfo struct {
-	// A value of 0 indicates a Beacon or Probe Response A value of 1 indicates a Measurement Pilot frame.
+	// A value of 0 indicates a Beacon or Probe Response. A value of 1 indicates a Measurement Pilot frame.
 	FrameType int32 `json:"frameType"`
-	// Value between 0 and 127 coded according to dot11PHYType
+	// Value between 0 and 127 coded according to dot11PHYType.
 	PhyType int32 `json:"phyType"`
 }

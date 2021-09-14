@@ -102,6 +102,7 @@ Class | Method | HTTP request | Description
  - [SubscriptionLinkListLinks](docs/SubscriptionLinkListLinks.md)
  - [SubscriptionLinkListSubscription](docs/SubscriptionLinkListSubscription.md)
  - [TestNotification](docs/TestNotification.md)
+ - [TestNotificationLinks](docs/TestNotificationLinks.md)
  - [TimeStamp](docs/TimeStamp.md)
  - [VhtCapabilities](docs/VhtCapabilities.md)
  - [WanMetrics](docs/WanMetrics.md)

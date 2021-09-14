@@ -27,13 +27,13 @@ type AssocStaSubscription struct {
 	Links *AssocStaSubscriptionLinks `json:"_links,omitempty"`
 
 	ApId *ApIdentity `json:"apId"`
-	// URI selected by the service consumer to receive notifications on the subscribed WLAN Access Information. This shall be included both in the request and in response. If not present, the service consumer is requesting the use of a Websocket for notifications. See NOTE 1.
+
 	CallbackReference string `json:"callbackReference,omitempty"`
 
 	ExpiryDeadline *TimeStamp `json:"expiryDeadline,omitempty"`
 
 	NotificationEvent *AssocStaSubscriptionNotificationEvent `json:"notificationEvent,omitempty"`
-	// Set for periodic notification reporting.   Value indicates the notification period in seconds.
+	// Set for periodic notification reporting. Value indicates the notification period in seconds.
 	NotificationPeriod int32 `json:"notificationPeriod,omitempty"`
 	// Set to TRUE by the service consumer to request a test notification on the callbackReference URI to determine if it is reachable by the WAIS for notifications.
 	RequestTestNotification bool `json:"requestTestNotification,omitempty"`

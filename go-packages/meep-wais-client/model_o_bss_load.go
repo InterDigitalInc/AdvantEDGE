@@ -25,7 +25,7 @@
 package client
 
 type OBssLoad struct {
-	// Mean of allocated traffic from this AP (BSS) in units of 32 µs per second.
+	// Mean of allocated traffic from this AP (BSS) in units of 32 µs per second.
 	AllocatedTrafficSelfMean int32 `json:"allocatedTrafficSelfMean"`
 	// Standard deviation from the mean of allocation traffic from this BSS in units of 32 µs per second.
 	AllocatedTrafficSelfStdDev int32 `json:"allocatedTrafficSelfStdDev,omitempty"`
@@ -33,6 +33,6 @@ type OBssLoad struct {
 	AllocatedTrafficShareMean int32 `json:"allocatedTrafficShareMean"`
 	// Standard deviation from the mean of the sum of allocated traffic from other APs on the overlapping channel in unit of 32 µs per second.
 	AllocatedTrafficShareStdDev int32 `json:"allocatedTrafficShareStdDev,omitempty"`
-	// Indicates the number of other APs that are sharing the same channel as the reporting AP
+	// Indicates the number of other APs that are sharing the same channel as the reporting AP.
 	Overlap int32 `json:"overlap,omitempty"`
 }

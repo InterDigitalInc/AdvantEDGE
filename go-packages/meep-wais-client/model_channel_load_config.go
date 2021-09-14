@@ -29,8 +29,8 @@ type ChannelLoadConfig struct {
 	Channel int32 `json:"channel"`
 	// Operating Class field indicates an operating class value as defined in Annex E within IEEE 802.11-2016 [8].
 	OperatingClass int32 `json:"operatingClass"`
-	// Reporting condition for the Beacon Report as per Table 9-153 of IEEE 802.11-2016 0 = Report to be issued after each measurement 1 = Report to be issued when Channel Load is greater than or equal to the threshold  2 = Report to be issued when Channel Load is less than or equal to the threshold  If this optional field is not provided, channel load report should be issued after each measurement (reportingCondition = 0).
+	// Reporting condition for the Beacon Report as per Table 9-153 of IEEE 802.11-2016 [8]: 0 = Report to be issued after each measurement. 1 = Report to be issued when Channel Load is greater than or equal to the threshold. 2 = Report to be issued when Channel Load is less than or equal to the threshold.  If this optional field is not provided, channel load report should be issued after each measurement (reportingCondition = 0).
 	ReportingCondition int32 `json:"reportingCondition,omitempty"`
-	// Channel Load reference value for threshold reporting.  This field shall be provided for reportingCondition values 1 and 2.
+	// Channel Load reference value for threshold reporting. This field shall be provided for reportingCondition values 1 and 2.
 	Threshold int32 `json:"threshold,omitempty"`
 }

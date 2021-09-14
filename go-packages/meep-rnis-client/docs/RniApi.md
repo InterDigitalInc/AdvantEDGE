@@ -117,7 +117,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PlmnInfoGET**
-> PlmnInfo PlmnInfoGET(ctx, appInsId)
+> []PlmnInfo PlmnInfoGET(ctx, appInsId)
 Retrieve information on the underlying Mobile Network that the MEC application is associated to
 
 Queries information about the Mobile Network
@@ -131,7 +131,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**PlmnInfo**](PlmnInfo.md)
+[**[]PlmnInfo**](PlmnInfo.md)
 
 ### Authorization
 

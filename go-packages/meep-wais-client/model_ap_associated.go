@@ -27,7 +27,7 @@ package client
 type ApAssociated struct {
 	// Unique number which identifies a particular association between the station and Access Point.
 	AssocId string `json:"assocId,omitempty"`
-	// Basic Service Set Identifier (BSSID) is a unique identifier assigned to the Access Point (as network interface controller) for communications at the data link layer of a network segment.  BSSID is typically set to an access point’s MAC address.
+	// Basic Service Set Identifier (BSSID) is a unique identifier assigned to the Access Point (as network interface controller) for communications at the data link layer of a network segment. BSSID is typically set to an access point's MAC address.
 	Bssid string `json:"bssid"`
 	// IPv4 or IPv6 address allocated for the Access Point.
 	IpAddress []string `json:"ipAddress,omitempty"`

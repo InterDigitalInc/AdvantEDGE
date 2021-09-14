@@ -27,11 +27,11 @@ type MeasurementInfo struct {
 	BeaconRequestConf *BeaconRequestConfig `json:"beaconRequestConf,omitempty"`
 
 	ChannelLoadConf *ChannelLoadConfig `json:"channelLoadConf,omitempty"`
-	// Duration of the measurement in time units (TUs) of 1024 µs, as defined in section 11.11.4 of IEEE 802.11 [8].  If not provided, the underlying system may utilize a default configuration that will be indicated in resulting measurement reports.
+	// Duration of the measurement in Time Units (TUs) of 1 024 µs, as defined in section 11.11.4 of IEEE 802.11-2016 [8]. If not provided, the underlying system may utilize a default configuration that will be indicated in resulting measurement reports.
 	MeasurementDuration int32 `json:"measurementDuration,omitempty"`
 
 	NeighborReportConf *NeighborReportConfig `json:"neighborReportConf,omitempty"`
-	// Random interval to be used for starting the measurement in TUs of 1024 µs, as specified in section 11.11.3 of IEEE 802.11 [8].  If not provided, the underlying system may utilize a default configuration that will be indicated in resulting measurement reports.
+	// Random interval to be used for starting the measurement in TUs of 1 024 µs, as specified in section 11.11.3 of IEEE 802.11-2016 [8]. If not provided, the underlying system may utilize a default configuration that will be indicated in resulting measurement reports.
 	RandomInterval int32 `json:"randomInterval,omitempty"`
 
 	StaStatisticsConf *StaStatisticsConfig `json:"staStatisticsConf,omitempty"`

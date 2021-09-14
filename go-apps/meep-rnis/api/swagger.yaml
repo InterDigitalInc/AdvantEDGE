@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
-  title: AdvantEDGE Radio Network Information Service REST API
-  version: 2.1.1
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
+  title: AdvantEDGE Radio Network Information Service REST API
+  version: 2.1.1
   description: "Radio Network Information Service is AdvantEDGE's implementation of
   [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf)
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
@@ -84,7 +84,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlmnInfo'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlmnInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1445,32 +1447,6 @@ components:
       - expiryDeadline
       type: object
       x-etsi-ref: 6.4.9
-    InlineNotification:
-      oneOf:
-      - $ref: '#/components/schemas/CellChangeNotification'
-      - $ref: '#/components/schemas/RabEstNotification'
-      - $ref: '#/components/schemas/RabModNotification'
-      - $ref: '#/components/schemas/RabRelNotification'
-      - $ref: '#/components/schemas/MeasRepUeNotification'
-      - $ref: '#/components/schemas/NrMeasRepUeNotification'
-      - $ref: '#/components/schemas/MeasTaNotification'
-      - $ref: '#/components/schemas/CaReconfNotification'
-      - $ref: '#/components/schemas/S1BearerNotification'
-      discriminator:
-        propertyName: notificationType
-    InlineSubscription:
-      oneOf:
-      - $ref: '#/components/schemas/CellChangeSubscription'
-      - $ref: '#/components/schemas/RabEstSubscription'
-      - $ref: '#/components/schemas/RabModSubscription'
-      - $ref: '#/components/schemas/RabRelSubscription'
-      - $ref: '#/components/schemas/MeasRepUeSubscription'
-      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-      - $ref: '#/components/schemas/MeasTaSubscription'
-      - $ref: '#/components/schemas/CaReconfSubscription'
-      - $ref: '#/components/schemas/S1BearerSubscription'
-      discriminator:
-        propertyName: subscriptionType
     L2Meas:
       properties:
         cellInfo:
@@ -3632,6 +3608,33 @@ components:
       - 30
       - 31
       type: integer
+    InlineSubscription:
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeSubscription'
+      - $ref: '#/components/schemas/RabEstSubscription'
+      - $ref: '#/components/schemas/RabModSubscription'
+      - $ref: '#/components/schemas/RabRelSubscription'
+      - $ref: '#/components/schemas/MeasRepUeSubscription'
+      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
+      - $ref: '#/components/schemas/MeasTaSubscription'
+      - $ref: '#/components/schemas/CaReconfSubscription'
+      - $ref: '#/components/schemas/S1BearerSubscription'
+      discriminator:
+        propertyName: subscriptionType
+    InlineNotification:
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeNotification'
+      - $ref: '#/components/schemas/RabEstNotification'
+      - $ref: '#/components/schemas/RabModNotification'
+      - $ref: '#/components/schemas/RabRelNotification'
+      - $ref: '#/components/schemas/MeasRepUeNotification'
+      - $ref: '#/components/schemas/NrMeasRepUeNotification'
+      - $ref: '#/components/schemas/MeasTaNotification'
+      - $ref: '#/components/schemas/CaReconfNotification'
+      - $ref: '#/components/schemas/S1BearerNotification'
+      discriminator:
+        propertyName: notificationType
+
     AppTerminationNotification:
       description: >-
         This type represents the information that the MEC platform
