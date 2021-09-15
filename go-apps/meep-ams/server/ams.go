@@ -137,11 +137,10 @@ type AppInstanceIdsList struct {
 	AppInstanceIds []string
 }
 
-/*func notImplemented(w http.ResponseWriter, r *http.Request) {
+func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusNotImplemented)
 }
-*/
 
 // Init - App Mobility Service initialization
 func Init() (err error) {
