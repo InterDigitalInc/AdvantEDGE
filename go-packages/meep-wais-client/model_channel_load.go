@@ -27,9 +27,9 @@ package client
 type ChannelLoad struct {
 	// Channel number indicates the channel number for which the measurement report applies.
 	Channel int32 `json:"channel"`
-	// Proportion of measurement duration for which the measuring STA determined the channel to be busy, as a percentage of time, linearly scaled with 255 representing 100%.
+	// Proportion of measurement duration for which the measuring STA determined the channel to be busy, as a percentage of time, linearly scaled with 255 representing 100 %.
 	ChannelLoad int32 `json:"channelLoad"`
-	// Duration over which the Channel Load report was measured, in units of TUs of 1024 µs.
+	// Duration over which the Channel Load report was measured, in units of TUs of 1 024 µs.
 	MeasurementDuration int32 `json:"measurementDuration"`
 	// Measurement ID of the Measurement configuration applied to this Channel Load Report.
 	MeasurementId string `json:"measurementId"`

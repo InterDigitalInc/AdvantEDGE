@@ -382,6 +382,7 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     //no way to check except by executing auto-replay test that gets the file
     click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY);
+    cy.wait(1000);
     select(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES, name);
     cy.wait(500);
     //check that by loading the saved replay event file that the description gets populated to confirm it was stored properly

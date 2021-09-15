@@ -24,7 +24,7 @@
 package server
 
 type BeaconReport struct {
-	// The Antenna ID field contains the identifying number for the antenna(s) used for this measurement. Antenna ID is defined in 9.4.2.40 of IEEE 802.11-2016 [8].
+	// The Antenna ID field contains the identifying number for the antenna(s) used for this measurement. Antenna ID is defined in section 9.4.2.40 of IEEE 802.11-2016 [8].
 	AntennaId int32 `json:"antennaId,omitempty"`
 	// Indicates the BSSID of the BSS for which a beacon report has been received.
 	Bssid string `json:"bssid"`
@@ -34,13 +34,13 @@ type BeaconReport struct {
 	MeasurementId string `json:"measurementId"`
 	// Operating Class field indicates an operating class value as defined in Annex E within IEEE 802.11-2016 [8].
 	OperatingClass int32 `json:"operatingClass"`
-	// The Parent TSF field contains the lower 4 octets of the measuring STA’s TSF timer value at the start of reception of the first octet of the timestamp field of the reported Beacon, Measurement Pilot, or Probe Response frame at the time the Beacon, Measurement Pilot, or Probe Response frame being reported was received.
+	// The Parent TSF field contains the lower 4 octets of the measuring STA's TSF timer value at the start of reception of the first octet of the timestamp field of the reported Beacon, Measurement Pilot, or Probe Response frame at the time the Beacon, Measurement Pilot, or Probe Response frame being reported was received.
 	ParentTsf int32 `json:"parentTsf,omitempty"`
-	// RCPI indicates the received channel power of the Beacon, Measurement Pilot, or Probe Response frame, which is a logarithmic function of the received signal power, as defined 9.4.2.38 of IEEE 802.11-2016 [8].
+	// RCPI indicates the received channel power of the Beacon, Measurement Pilot, or Probe Response frame, which is a logarithmic function of the received signal power, as defined in section 9.4.2.38 of IEEE 802.11-2016 [8].
 	Rcpi int32 `json:"rcpi,omitempty"`
 
 	ReportedFrameInfo *ReportedBeaconFrameInfo `json:"reportedFrameInfo"`
-	// RSNI indicates the received signal-to-noise indication for the Beacon, Measurement Pilot, or Probe Response frame, as described in 9.4.2.41 of IEEE 802.11-2016 [8].
+	// RSNI indicates the received signal-to-noise indication for the Beacon, Measurement Pilot, or Probe Response frame, as described in section 9.4.2.41 of IEEE 802.11-2016 [8].
 	Rsni int32 `json:"rsni,omitempty"`
 	// The SSID subelement indicates the ESS or IBSS for which a beacon report is received.
 	Ssid string `json:"ssid,omitempty"`

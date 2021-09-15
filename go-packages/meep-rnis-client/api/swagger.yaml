@@ -244,7 +244,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlmnInfo'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlmnInfo'
+                x-content-type: application/json
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -1665,32 +1668,6 @@ components:
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
       x-etsi-ref: 6.4.9
-    InlineNotification:
-      discriminator:
-        propertyName: NotificationType
-      oneOf:
-      - $ref: '#/components/schemas/CellChangeNotification'
-      - $ref: '#/components/schemas/RabEstNotification'
-      - $ref: '#/components/schemas/RabModNotification'
-      - $ref: '#/components/schemas/RabRelNotification'
-      - $ref: '#/components/schemas/MeasRepUeNotification'
-      - $ref: '#/components/schemas/NrMeasRepUeNotification'
-      - $ref: '#/components/schemas/MeasTaNotification'
-      - $ref: '#/components/schemas/CaReconfNotification'
-      - $ref: '#/components/schemas/S1BearerNotification'
-    InlineSubscription:
-      discriminator:
-        propertyName: SubscriptionType
-      oneOf:
-      - $ref: '#/components/schemas/CellChangeSubscription'
-      - $ref: '#/components/schemas/RabEstSubscription'
-      - $ref: '#/components/schemas/RabModSubscription'
-      - $ref: '#/components/schemas/RabRelSubscription'
-      - $ref: '#/components/schemas/MeasRepUeSubscription'
-      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-      - $ref: '#/components/schemas/MeasTaSubscription'
-      - $ref: '#/components/schemas/CaReconfSubscription'
-      - $ref: '#/components/schemas/S1BearerSubscription'
     L2Meas:
       type: object
       properties:
@@ -2862,6 +2839,32 @@ components:
       - 21
       - 30
       - 31
+    InlineSubscription:
+      discriminator:
+        propertyName: SubscriptionType
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeSubscription'
+      - $ref: '#/components/schemas/RabEstSubscription'
+      - $ref: '#/components/schemas/RabModSubscription'
+      - $ref: '#/components/schemas/RabRelSubscription'
+      - $ref: '#/components/schemas/MeasRepUeSubscription'
+      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
+      - $ref: '#/components/schemas/MeasTaSubscription'
+      - $ref: '#/components/schemas/CaReconfSubscription'
+      - $ref: '#/components/schemas/S1BearerSubscription'
+    InlineNotification:
+      discriminator:
+        propertyName: NotificationType
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeNotification'
+      - $ref: '#/components/schemas/RabEstNotification'
+      - $ref: '#/components/schemas/RabModNotification'
+      - $ref: '#/components/schemas/RabRelNotification'
+      - $ref: '#/components/schemas/MeasRepUeNotification'
+      - $ref: '#/components/schemas/NrMeasRepUeNotification'
+      - $ref: '#/components/schemas/MeasTaNotification'
+      - $ref: '#/components/schemas/CaReconfNotification'
+      - $ref: '#/components/schemas/S1BearerNotification'
     AppTerminationNotification:
       required:
       - _links

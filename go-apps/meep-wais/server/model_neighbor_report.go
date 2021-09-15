@@ -24,7 +24,7 @@
 package server
 
 type NeighborReport struct {
-	// Relative value indicating the preferred ordering for this BSS as a transition candidate for roaming.  255 indicating the most preferred candidate and 1 indicating the least preferred candidate, as defined in Table 9-152 within IEEE 802.11-2016 [8].
+	// Relative value indicating the preferred ordering for this BSS as a transition candidate for roaming. 255 indicating the most preferred candidate and 1 indicating the least preferred candidate, as defined in Table 9-152 within IEEE 802.112016 [8].
 	BssTransitionCandidatePreference int32 `json:"bssTransitionCandidatePreference,omitempty"`
 	// BSSID (MAC address) of the Access Point that is being reported.
 	Bssid string `json:"bssid"`
@@ -36,7 +36,7 @@ type NeighborReport struct {
 	MeasurementId string `json:"measurementId"`
 	// Operating Class field indicates an operating class value as defined in Annex E within IEEE 802.11-2016 [8].
 	OperatingClass int32 `json:"operatingClass"`
-	// PHY type of the AP indicated by this BSSID. It is an integer value coded according to the value of the dot11PHYType, Annex C within IEEE 802.11-2016 [8]. 2 = dsss 4 = ofdm 5 = hrdsss 6 = erp 7 = ht 8 = dmg 9 = vht 10 = tvht
+	// PHY type of the AP indicated by this BSSID. It is an integer value coded according to the value of the dot11PHYType, Annex C within IEEE 802.11-2016 [8]. 2 = dsss 4 = ofdm 5 = hrdsss 6 = erp 7 = ht 8 = dmg 9 = vht 10 = tvht
 	PhyType int32 `json:"phyType"`
 
 	StaId *StaIdentity `json:"staId,omitempty"`

@@ -26,7 +26,7 @@ package server
 type CivicLocation struct {
 	// Language
 	Ca0 string `json:"ca0,omitempty"`
-	// National subdivisions (state, canton, region,province, prefecture)
+	// National subdivisions (state, canton, region, province, prefecture)
 	Ca1 string `json:"ca1,omitempty"`
 	// Script
 	Ca128 string `json:"ca128,omitempty"`

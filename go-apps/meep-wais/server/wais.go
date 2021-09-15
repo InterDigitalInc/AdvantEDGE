@@ -1222,7 +1222,7 @@ func sendTestNotification(notifyUrl string, linkType *LinkType) {
 	var notification TestNotification
 	notification.NotificationType = TEST_NOTIFICATION
 
-	link := new(ExpiryNotificationLinks)
+	link := new(TestNotificationLinks)
 	link.Subscription = linkType
 	notification.Links = link
 

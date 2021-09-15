@@ -25,6 +25,5 @@
 package client
 
 type LinkType struct {
-	// URI referring to a resource
 	Href string `json:"href"`
 }

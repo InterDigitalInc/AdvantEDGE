@@ -24,13 +24,13 @@
 package server
 
 type DmgCapabilities struct {
-	// Extended SC MCS capabilities as defined in IEEE 802.11-2016 [8].
+	// Extended SC MCS capabilities as defined in IEEE 802.11-2016 [8].
 	ExtScMcsCap int32 `json:"ExtScMcsCap"`
 	// DMG AP or PCP capabilities information as defined in IEEE 802.11-2016 [8].
 	DmgApOrPcpCapInfo int32 `json:"dmgApOrPcpCapInfo"`
-	// DMG station beam tracking time limit as defined in IEEE 802.11-2016 [8].
+	// DMG station beam tracking time limit as defined in IEEE 802.11-2016 [8].
 	DmgStaBeamTrackTimeLimit int32 `json:"dmgStaBeamTrackTimeLimit"`
-	// DMG station capabilities information as defined in IEEE 802.11-2016 [8].
+	// DMG station capabilities information as defined in IEEE 802.11-2016 [8].
 	DmgStaCapInfo int32 `json:"dmgStaCapInfo"`
 	// Number of basic A-MSDU subframes in A-MSDU as defined in IEEE 802.11-2016 [8].
 	MaxNrBasicAmsduSubframes int32 `json:"maxNrBasicAmsduSubframes"`

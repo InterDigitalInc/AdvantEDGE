@@ -29,7 +29,7 @@ type StaInfo struct {
 	BeaconReport []BeaconReport `json:"beaconReport,omitempty"`
 	// Channel currently used by the station to connect with its associated Access Point.
 	Channel int32 `json:"channel,omitempty"`
-	// Channel Load reports as seen by the station as defined IEEE 802.11-2016 [8].  Channel Load reports may be configured for any channel, including the station’s current channel for association.
+	// Channel Load reports as seen by the station as defined IEEE 802.11-2016 [8]. Channel Load reports may be configured for any channel, including the station's current channel for association.
 	ChannelLoad []ChannelLoad `json:"channelLoad,omitempty"`
 	// Information about neighbor Access Points seen by the station as defined IEEE 802.11-2016 [8].
 	NeighborReport []NeighborReport `json:"neighborReport,omitempty"`

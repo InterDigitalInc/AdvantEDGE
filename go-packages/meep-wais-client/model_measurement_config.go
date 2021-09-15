@@ -29,6 +29,6 @@ type MeasurementConfig struct {
 	// Unique identifier allocated by the service consumer to identify measurement reports (within sta_information query), associated with this measurement configuration.
 	MeasurementId   string           `json:"measurementId"`
 	MeasurementInfo *MeasurementInfo `json:"measurementInfo"`
-	// Identifier(s) to uniquely specify the target client station(s) for the measurement configuration
+	// Identifier(s) to uniquely specify the target client station(s) for the measurement configuration.
 	StaId []StaIdentity `json:"staId"`
 }

@@ -28,11 +28,11 @@ type BeaconRequestConfig struct {
 	BeaconReportingConf *BeaconReportingConfig `json:"beaconReportingConf"`
 	// The BSSID field indicates the BSS for which a beacon report is requested. If absent, the requested beacon reports should include all BSSs on the channel.
 	Bssid string `json:"bssid,omitempty"`
-	// Channel number to scan. A Channel Number of 0 indicates a request to make iterative measurements for all supported channels in the Operating Class where the measurement is permitted on the channel and the channel is valid for the current regulatory domain. A Channel Number of 255 indicates a request to make iterative measurements for all supported channels in the current Operating Class listed in the latest AP Channel Report received from the serving AP.
+	// Channel number to scan. A Channel Number of 0 indicates a request to make iterative measurements for all supported channels in the Operating Class where the measurement is permitted on the channel and the channel is valid for the current regulatory domain. A Channel Number of 255 indicates a request to make iterative measurements for all supported channels in the current Operating Class listed in the latest AP Channel Report received from the serving AP.
 	ChannelId int32 `json:"channelId"`
 	// 0 for passive. 1 for active. 2 for beacon table.
 	MeasurementMode int32 `json:"measurementMode"`
-	// Operating Class field indicates an operating class value as defined in Annex E within IEEE 802.11-2016 [8].
+	// Operating Class field indicates an operating class value as defined in Annex E within IEEE 802.112016 [8].
 	OperatingClass int32 `json:"operatingClass"`
 	// The SSID subelement indicates the ESS or IBSS for which a beacon report is requested.
 	Ssid string `json:"ssid,omitempty"`

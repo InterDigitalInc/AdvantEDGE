@@ -24,7 +24,7 @@
 package server
 
 type TestNotification struct {
-	Links *ExpiryNotificationLinks `json:"_links"`
+	Links *TestNotificationLinks `json:"_links"`
 	// Shall be set to \"TestNotification\".
 	NotificationType string `json:"notificationType"`
 }
