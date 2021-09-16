@@ -56,7 +56,7 @@ type AmsSbi struct {
 
 var sbi *AmsSbi
 
-// Init - Location Service SBI initialization
+// Init - AMS SBI initialization
 func Init(cfg SbiCfg) (err error) {
 
 	// Create new SBI instance
