@@ -633,54 +633,6 @@ class MeepContainer extends Component {
     this.props.execChangeMapComputeList(assetMap.computeList? _.sortBy(assetMap.computeList, ['assetName']) : []);
   }
 
-  /**
-   * Callback function to receive the result of the getAssetData operation.
-   * @callback module:api/GeospatialDataApi~getAssetDataCallback
-   * @param {String} error Error message, if any.
-   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
-   * @param {String} response The complete HTTP response.
-   */
-  getUeAssetDataCb(error, data) {
-    if (error !== null) {
-      return;
-    }
-    
-    // Update UE list
-    this.props.execChangeMapUeList(data.geoDataAssets ? _.sortBy(data.geoDataAssets, ['assetName']) : []);
-  }
-
-  /**
-   * Callback function to receive the result of the getAssetData operation.
-   * @callback module:api/GeospatialDataApi~getAssetDataCallback
-   * @param {String} error Error message, if any.
-   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
-   * @param {String} response The complete HTTP response.
-   */
-  getPoaAssetDataCb(error, data) {
-    if (error !== null) {
-      return;
-    }
-
-    // Update POA list
-    this.props.execChangeMapPoaList(data.geoDataAssets ? _.sortBy(data.geoDataAssets, ['assetName']) : []);
-  }
-
-  /**
-   * Callback function to receive the result of the getAssetData operation.
-   * @callback module:api/GeospatialDataApi~getAssetDataCallback
-   * @param {String} error Error message, if any.
-   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
-   * @param {String} response The complete HTTP response.
-   */
-  getComputeAssetDataCb(error, data) {
-    if (error !== null) {
-      return;
-    }
-
-    // Update Compute list
-    this.props.execChangeMapComputeList(data.geoDataAssets ? _.sortBy(data.geoDataAssets, ['assetName']) : []);
-  }
-
   // Refresh Map
   refreshMap() { 
     this.meepGeoDataApi.getAssetData({}, (error, data) =>
