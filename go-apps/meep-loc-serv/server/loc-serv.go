@@ -48,6 +48,7 @@ const moduleName = "meep-loc-serv"
 const LocServBasePath = "location/v2/"
 const locServKey = "loc-serv"
 const serviceName = "Location Service"
+const serviceCategory = "Location"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
@@ -465,7 +466,7 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = instanceName
+	appInfo.Name = serviceCategory
 	appInfo.MepName = mepName
 	appInfo.Version = serviceAppVersion
 	appType := scc.SYSTEM_ApplicationType
@@ -520,7 +521,7 @@ func registerService(appInstanceId string) error {
 	var category smc.CategoryRef
 	category.Href = "catalogueHref"
 	category.Id = "locationId"
-	category.Name = "Location"
+	category.Name = serviceCategory
 	category.Version = "v2"
 	srvInfo.SerCategory = &category
 

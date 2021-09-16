@@ -22,118 +22,6 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-/*
-func convertJsonToAppInfo(jsonInfo string) *AppInfo {
-
-	var obj AppInfo
-	err := json.Unmarshal([]byte(jsonInfo), &obj)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
-	return &obj
-}
-
-func convertAppInfoToJson(obj *AppInfo) string {
-
-	jsonInfo, err := json.Marshal(*obj)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-
-	return string(jsonInfo)
-}
-
-func convertJsonToPoaInfo(jsonInfo string) *PoaInfo {
-
-	var obj PoaInfo
-	err := json.Unmarshal([]byte(jsonInfo), &obj)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
-	return &obj
-}
-
-func convertPoaInfoToJson(obj *PoaInfo) string {
-
-	jsonInfo, err := json.Marshal(*obj)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-
-	return string(jsonInfo)
-}
-
-func convertJsonToUeData(jsonData string) *UeData {
-
-	var obj UeData
-	err := json.Unmarshal([]byte(jsonData), &obj)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
-	return &obj
-}
-
-func convertUeDataToJson(obj *UeData) string {
-
-	jsonData, err := json.Marshal(*obj)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-
-	return string(jsonData)
-}
-
-func convertJsonToDomainData(jsonData string) *DomainData {
-
-	var obj DomainData
-	err := json.Unmarshal([]byte(jsonData), &obj)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
-	return &obj
-}
-
-func convertDomainDataToJson(obj *DomainData) string {
-
-	jsonData, err := json.Marshal(*obj)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-
-	return string(jsonData)
-}
-*/
-/*
-func convertJsonToOneOfNotificationSubscription(jsonInfo string) *OneOfNotificationSubscription {
-
-        var obj OneOfNotificationSubscription
-        err := json.Unmarshal([]byte(jsonInfo), &obj)
-        if err != nil {
-                log.Error(err.Error())
-                return nil
-        }
-        return &obj
-}
-
-func convertOneOfNotificationSubscriptionToJson(obj *OneOfNotificationSubscription) string {
-
-        jsonInfo, err := json.Marshal(*obj)
-        if err != nil {
-                log.Error(err.Error())
-                return ""
-        }
-
-        return string(jsonInfo)
-}
-*/
 func convertJsonToMobilityProcedureSubscription(jsonInfo string) *MobilityProcedureSubscription {
 
 	var obj MobilityProcedureSubscription
@@ -159,15 +47,16 @@ func convertMobilityProcedureSubscriptionToJson(obj *MobilityProcedureSubscripti
 /*
 func convertJsonToAdjacentAppInfoSubscription(jsonInfo string) *AdjacentAppInfoSubscription {
 
-        var obj AdjacentAppInfoSubscription
-        err := json.Unmarshal([]byte(jsonInfo), &obj)
-        if err != nil {
-                log.Error(err.Error())
-                return nil
-        }
-        return &obj
+	var obj AdjacentAppInfoSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
 }
 */
+
 func convertAdjacentAppInfoSubscriptionToJson(obj *AdjacentAppInfoSubscription) string {
 
 	jsonInfo, err := json.Marshal(*obj)

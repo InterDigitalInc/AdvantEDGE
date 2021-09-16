@@ -24,10 +24,10 @@
 package server
 
 // ContextTransferState : If present, it represents the state of transferring the user context to another application instance.
-type ContextTransferState string
+type ContextTransferState int32
 
 // List of contextTransferState
 const (
-	ContextTransferState_NOT_TRANSFERRED                 ContextTransferState = "NOT_TRANSFERRED"
-	ContextTransferState_USER_CONTEXT_TRANSFER_COMPLETED ContextTransferState = "USER_CONTEXT_TRANSFER_COMPLETED"
+	ContextTransferState_NOT_TRANSFERRED                 ContextTransferState = 0
+	ContextTransferState_USER_CONTEXT_TRANSFER_COMPLETED ContextTransferState = 1
 )

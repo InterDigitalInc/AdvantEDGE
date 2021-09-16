@@ -7,7 +7,7 @@ info:
     <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams)
     <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
     information about application mobility in the network <p>**Note**<br>AdvantEDGE
-    supports all of Application Mobility API endpoints (see below).
+    supports a selected subset of Application Mobility API endpoints (see below).
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -22,6 +22,7 @@ servers:
 - url: https://localhost/sandboxname/amsi/v1
 tags:
 - name: amsi
+- name: unsupported
 paths:
   /app_mobility_services:
     get:
@@ -139,6 +140,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegistrationInfo'
+            example:
+              deviceInformation:
+              - appMobilityServiceLevel: 1
+                associateId:
+                  type: 1
+                  value: 10.100.0.3
+                contextTransferState: 0
+              serviceConsumerId:
+                appInstanceId: 9afdbca8-afac-405b-b220-4154828280b8
         required: true
       responses:
         "201":
@@ -273,6 +283,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegistrationInfo'
+            example:
+              appMobilityServiceId: appMobilityServiceId
+              deviceInformation:
+              - appMobilityServiceLevel: 1
+                associateId:
+                  type: 1
+                  value: 10.100.0.3
+                contextTransferState: 0
+              serviceConsumerId:
+                appInstanceId: 9afdbca8-afac-405b-b220-4154828280b8
         required: true
       responses:
         "200":
@@ -515,6 +535,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/body'
+            example:
+              subscriptionType: MobilityProcedureSubscription
+              callbackReference: http://my.callback.com/amsi-mobility-procedure/some-id
+              filterCriteria:
+                appInstanceId: 9afdbca8-afac-405b-b220-4154828280b8
+                associateId:
+                - type: 1
+                  value: 10.100.0.3
+                - type: 1
+                  value: 10.100.0.1
         required: true
       responses:
         "201":
@@ -689,6 +719,19 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/body_1'
+            example:
+              subscriptionType: MobilityProcedureSubscription
+              callbackReference: http://my.callback.com/amsi-mobility-procedure/some-id
+              _links:
+                self:
+                  href: http://meAppServer.example.com/amsi/v1/subscriptions/sub123
+              filterCriteria:
+                appInstanceId: 9afdbca8-afac-405b-b220-4154828280b8
+                associateId:
+                - type: 1
+                  value: 10.100.0.3
+                - type: 1
+                  value: 10.100.0.1
         required: true
       responses:
         "200":
@@ -833,7 +876,7 @@ paths:
   /queries/adjacent_app_instances:
     get:
       tags:
-      - amsi
+      - unsupported
       summary: Retrieve information about this subscription.
       description: Retrieve information about this subscription.
       operationId: adj_app_instGET
@@ -1302,7 +1345,10 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         adjacentAppInfo:
-          $ref: '#/components/schemas/AdjacentAppInfoNotification_adjacentAppInfo'
+          minItems: 0
+          type: array
+          items:
+            $ref: '#/components/schemas/AdjacentAppInfoNotification_adjacentAppInfo'
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
       x-etsi-ref: 7.4.2

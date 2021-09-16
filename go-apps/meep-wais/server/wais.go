@@ -49,6 +49,7 @@ const moduleName = "meep-wais"
 const waisBasePath = "wai/v2/"
 const waisKey = "wais"
 const serviceName = "WAI Service"
+const serviceCategory = "WAI"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
@@ -429,7 +430,7 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = instanceName
+	appInfo.Name = serviceCategory //instanceName
 	appInfo.MepName = mepName
 	appInfo.Version = serviceAppVersion
 	appType := scc.SYSTEM_ApplicationType
@@ -484,7 +485,7 @@ func registerService(appInstanceId string) error {
 	var category smc.CategoryRef
 	category.Href = "catalogueHref"
 	category.Id = "waiId"
-	category.Name = "WAI"
+	category.Name = serviceCategory
 	category.Version = "v2"
 	srvInfo.SerCategory = &category
 
