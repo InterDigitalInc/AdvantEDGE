@@ -23,6 +23,7 @@ import 'mapbox-gl-leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import deepEqual from 'deep-equal';
 import tinycolor from 'tinycolor2';
+import _ from 'lodash';
 import {
   updateObject,
   deepCopy
@@ -661,17 +662,23 @@ class IDCMap extends Component {
   // UE Marker Event Handler
   updateComputePopup(marker) {
     if (marker) {
-      var latlng = marker.getLatLng();
+      // Retrieve state 
       var table = this.getTable();
-      var services = [];
-      for (var i in table.entries) {
-        if (table.entries[i].parent.val === marker.options.meep.compute.id) {
-          services.push(table.entries[i].name.val);
-        }
-      }
       const networkName = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_NAME);
       const edgeProvider = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_ECSP);
       const ladn = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_LADN);
+      var appInstanceTable = this.props.appInstanceTable;
+      var latlng = marker.getLatLng();
+      // Parse mec application state on current popup
+      var appInstances = [];
+      for (var i = 0; i < appInstanceTable.length ; i++) {
+        if (appInstanceTable[i].mepName === marker.options.meep.compute.id) {
+          appInstances.push(appInstanceTable[i]);
+        }
+      }
+      // Sort parsed array of mec app
+      var sortedAppInstances = _.sortBy(appInstances, ['name']);
+      // Modify render message
       var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
       if (edgeProvider) {
         msg += 'service-provider: ' + edgeProvider + '<br>';
@@ -683,9 +690,11 @@ class IDCMap extends Component {
         }
         msg += '<br>';
       }
-      if (services) {
-        var serviceString = services.join(', ');
-        msg += 'running-services: ' + serviceString + '<br>';
+      msg += 'applications: <br>';
+      if (appInstances) {
+        sortedAppInstances.forEach(elem => {
+          msg += '<li>' + elem.name + ' ' + '(id: ' + elem.id.substring(0,6) + '...' + elem.id.substring(elem.id.length - 6,elem.id.length + 1) + ')'   + '<br>';
+        });
       }
       msg += 'location: ' + this.getLocationStr(latlng);
       marker.getPopup().setContent(msg);
@@ -1322,7 +1331,8 @@ const mapStateToProps = state => {
     execTable: state.exec.table,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     cfgView: state.ui.cfgView,
-    cfgScenarioName: state.cfg.scenario.name
+    cfgScenarioName: state.cfg.scenario.name,
+    appInstanceTable: state.exec.appInstanceTable.data
   };
 };
 
