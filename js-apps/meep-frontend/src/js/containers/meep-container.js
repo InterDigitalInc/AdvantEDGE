@@ -99,7 +99,8 @@ import {
   corePodsErrors,
   execVisFilteredData,
   execChangeReplayStatus,
-  execChangeAppInstanceTable
+  execChangeAppInstanceTable,
+  execChangeMap
 } from '../state/exec';
 
 import {
@@ -628,9 +629,7 @@ class MeepContainer extends Component {
     };
 
     //Update UE LIST, COMPUTE LIST, POA list
-    this.props.execChangeMapUeList(assetMap.ueList? _.sortBy(assetMap.ueList, ['assetName']) : []);
-    this.props.execChangeMapPoaList(assetMap.poaList? _.sortBy(assetMap.poaList, ['assetName']) : []);
-    this.props.execChangeMapComputeList(assetMap.computeList? _.sortBy(assetMap.computeList, ['assetName']) : []);
+    this.props.execChangeMap(assetMap);
   }
 
   // Refresh Map
@@ -956,6 +955,7 @@ const mapDispatchToProps = dispatch => {
     execChangeMapUeList: list => dispatch(execChangeMapUeList(list)),
     execChangeMapPoaList: list => dispatch(execChangeMapPoaList(list)),
     execChangeMapComputeList: list => dispatch(execChangeMapComputeList(list)),
+    execChangeMap: list => dispatch(execChangeMap(list)),
     cfgChangeMap: map => dispatch(cfgChangeMap(map)),
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),

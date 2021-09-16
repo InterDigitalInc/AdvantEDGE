@@ -661,9 +661,9 @@ class IDCMap extends Component {
 
   // UE Marker Event Handler
   updateComputePopup(marker) {
-    if (marker) {
+    var table = this.getTable();
+    if (marker && table && table.entries) {
       // Retrieve state 
-      var table = this.getTable();
       const networkName = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_NAME);
       const edgeProvider = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_ECSP);
       const ladn = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_LADN);
