@@ -98,7 +98,8 @@ import {
   corePodsRunning,
   corePodsErrors,
   execVisFilteredData,
-  execChangeReplayStatus
+  execChangeReplayStatus,
+  execChangeAppInstanceTable
 } from '../state/exec';
 
 import {
@@ -140,7 +141,8 @@ class MeepContainer extends Component {
     this.execPageRefreshIntervalTimer = null;
     this.replayStatusRefreshIntervalTimer = null;
     this.meepScenarioConfigurationApi = new meepPlatformCtrlRestApiClient.ScenarioConfigurationApi();
-    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();
+    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();  
+    this.meepAppInfoApi = new meepSandboxCtrlRestApiClient.ApplicationsApi();
     this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
     this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
     this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
@@ -224,7 +226,7 @@ class MeepContainer extends Component {
     }
   }
 
-  // Exec page refresh
+  // Exec page refresh 
   startExecPageRefresh() {
     this.execPageRefreshIntervalTimer = setInterval(
       () => {
@@ -235,6 +237,10 @@ class MeepContainer extends Component {
             this.refreshPduSessions();
             this.refreshScenario();
             this.refreshMap();
+            // Only update while scenario is running
+            if (this.props.execScenarioState === 'DEPLOYED') {
+              this.refreshAppInstancesTable();
+            }
           }
         }
       },
@@ -550,6 +556,84 @@ class MeepContainer extends Component {
   }
 
   /**
+   * Callback function to receive the result of the postHttpQuery operation.
+   * @callback module:api/AppsApi~applicationsGET
+   * @param {String} error Error message, if any.
+   * @param {module:model/ApplicationInfo} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getAppInstancesCb(error, data) {
+    if (error !== null) {
+      this.props.changeAppInstanceTable([]);
+      return;
+    }
+
+    // Update App Instance table only if data is different 
+    var appInstances = data ? data : [];
+    const isArrayEqual = (x, y) => _.isEmpty(_.xorWith(x, y, _.isEqual));
+    if (!isArrayEqual(this.props.appInstanceTable,appInstances)) {
+      this.props.changeAppInstanceTable(appInstances);
+    }
+  }
+
+  // Refresh App Instances
+  refreshAppInstancesTable() {
+    this.meepAppInfoApi.applicationsGET(null, (error, data, response) => {
+      this.getAppInstancesCb(error, data, response);
+    });
+  }
+
+  /**
+   * Callback function to receive the result of the getAssetData operation.
+   * @callback module:api/GeospatialDataApi~getAssetDataCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getAssetDataCb(error, data) {
+
+    if (error !== null) {
+      return;
+    }
+
+    var ueList = [];
+    var poaList = [];
+    var computeList = [];
+
+    // Extract assets by type
+
+    if (data.geoDataAssets) {
+      _.forEach(data.geoDataAssets, asset => {
+        switch (asset.assetType) {
+        case 'UE':
+          ueList.push(asset);
+          break;
+        case 'POA':
+          poaList.push(asset);
+          break;
+        case 'COMPUTE':
+          computeList.push(asset);
+          break;
+        default:
+          break;
+        }
+      });
+    }
+    
+    // Update asset map
+    var assetMap = {
+      ueList: _.sortBy(ueList, ['assetName']),
+      poaList: _.sortBy(poaList, ['assetName']),
+      computeList: _.sortBy(computeList, ['assetName'])
+    };
+
+    //Update UE LIST, COMPUTE LIST, POA list
+    this.props.execChangeMapUeList(assetMap.ueList? _.sortBy(assetMap.ueList, ['assetName']) : []);
+    this.props.execChangeMapPoaList(assetMap.poaList? _.sortBy(assetMap.poaList, ['assetName']) : []);
+    this.props.execChangeMapComputeList(assetMap.computeList? _.sortBy(assetMap.computeList, ['assetName']) : []);
+  }
+
+  /**
    * Callback function to receive the result of the getAssetData operation.
    * @callback module:api/GeospatialDataApi~getAssetDataCallback
    * @param {String} error Error message, if any.
@@ -598,15 +682,9 @@ class MeepContainer extends Component {
   }
 
   // Refresh Map
-  refreshMap() {
-    this.meepGeoDataApi.getAssetData({assetType: 'UE'}, (error, data) =>
-      this.getUeAssetDataCb(error, data)
-    );
-    this.meepGeoDataApi.getAssetData({assetType: 'POA'}, (error, data) =>
-      this.getPoaAssetDataCb(error, data)
-    );
-    this.meepGeoDataApi.getAssetData({assetType: 'COMPUTE'}, (error, data) =>
-      this.getComputeAssetDataCb(error, data)
+  refreshMap() { 
+    this.meepGeoDataApi.getAssetData({}, (error, data) =>
+      this.getAssetDataCb(error, data)
     );
   }
 
@@ -932,7 +1010,8 @@ const mapDispatchToProps = dispatch => {
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
     changeSignInStatus: status => dispatch(uiChangeSignInStatus(status)),
     changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
-    changeTabIndex: index => dispatch(uiChangeCurrentTab(index))
+    changeTabIndex: index => dispatch(uiChangeCurrentTab(index)),
+    changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value))
   };
 };
 
