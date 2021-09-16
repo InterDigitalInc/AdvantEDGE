@@ -27,7 +27,7 @@ type AdjacentAppInfoNotification struct {
 	// Shall be set to \\\"AdjacentAppInfoNotification\\\".
 	NotificationType string `json:"notificationType"`
 
-	AdjacentAppInfo *AdjacentAppInfoNotificationAdjacentAppInfo `json:"adjacentAppInfo,omitempty"`
+	AdjacentAppInfo []AdjacentAppInfoNotificationAdjacentAppInfo `json:"adjacentAppInfo,omitempty"`
 
 	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
 }

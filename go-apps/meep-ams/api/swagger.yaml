@@ -916,23 +916,26 @@ components:
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: String
         adjacentAppInfo:
-          description: Identifiers to associate the information of target application instance.
-          properties:
-            appInstanceId:
-              description: Identifiers of the target application instance.
-              type: string
-              x-etsi-mec-cardinality: 0..1
-              x-etsi-mec-origin-type: String
-             
-            commInterface:
-              # description: If present, it specifies the communication interface of the application instance.
-              # x-etsi-mec-cardinality: 0..1
-              # x-etsi-mec-origin-type: CommunicationInterface
-              $ref: '#/components/schemas/CommunicationInterface'
-          type: object
-          x-etsi-mec-cardinality: 0..1
-          required:
+          items:
+            type: object
+            description: Identifiers to associate the information of target application instance.
+            properties:
+              appInstanceId:
+                description: Identifiers of the target application instance.
+                type: string
+                x-etsi-mec-cardinality: 0..1
+                x-etsi-mec-origin-type: String
+
+              commInterface:
+                # description: If present, it specifies the communication interface of the application instance.
+                # x-etsi-mec-cardinality: 0..1
+                # x-etsi-mec-origin-type: CommunicationInterface
+                $ref: '#/components/schemas/CommunicationInterface'
+            x-etsi-mec-cardinality: 0..N
+            required:
               - appInstanceId
+          minItems: 0
+          type: array
         timeStamp:
           # description: Time stamp.
           # x-etsi-mec-cardinality: 0..1

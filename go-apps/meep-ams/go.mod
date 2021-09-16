@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0 // indirect
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0

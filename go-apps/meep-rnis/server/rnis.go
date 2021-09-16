@@ -48,6 +48,7 @@ const moduleName = "meep-rnis"
 const rnisBasePath = "rni/v2/"
 const rnisKey = "rnis"
 const serviceName = "RNI Service"
+const serviceCategory = "RNI"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
@@ -542,7 +543,7 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = instanceName
+	appInfo.Name = serviceCategory //instanceName
 	appInfo.MepName = mepName
 	appInfo.Version = serviceAppVersion
 	appType := scc.SYSTEM_ApplicationType
@@ -597,7 +598,7 @@ func registerService(appInstanceId string) error {
 	var category smc.CategoryRef
 	category.Href = "catalogueHref"
 	category.Id = "rniId"
-	category.Name = "RNI"
+	category.Name = serviceCategory
 	category.Version = "v2"
 	srvInfo.SerCategory = &category
 

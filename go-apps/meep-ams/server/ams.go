@@ -31,7 +31,7 @@ import (
 	"sync"
 	"time"
 
-	//sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ams/sbi"
+	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ams/sbi"
 	asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
@@ -50,10 +50,12 @@ const moduleName = "meep-ams"
 const amsBasePath = "amsi/v1/"
 const amsKey = "ams"
 const serviceName = "App Mobility Service"
+const serviceCategory = "AMS"
 const defaultMepName = "global"
 const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
 const appTerminationPath = "notifications/mec011/appTermination"
+const typeDevice = "device"
 
 var metricStore *met.MetricStore
 
@@ -64,6 +66,8 @@ var sbxCtrlUrl string = "http://meep-sandbox-ctrl"
 var adjSubscriptionMap = map[int]*AdjacentAppInfoSubscription{}
 var mpSubscriptionMap = map[int]*MobilityProcedureSubscription{}
 var subscriptionExpiryMap = map[int][]int{}
+var appInfoMap = map[string]*scc.ApplicationInfo{}
+
 var currentStoreName = ""
 
 const (
@@ -91,12 +95,17 @@ var sandboxName string
 var mepName string = defaultMepName
 var scopeOfLocality string = defaultScopeOfLocality
 var consumedLocalOnly bool = defaultConsumedLocalOnly
+
 var locality []string
 var basePath string
 var baseKey string
+var baseKeyNoMep string
 var mutex sync.Mutex
 
 var expiryTicker *time.Ticker
+var periodicTriggerTicker *time.Ticker
+
+const defaultPeriodicTriggerInterval = 1
 
 var nextSubscriptionIdAvailable int
 var nextServiceIdAvailable int
@@ -121,6 +130,12 @@ var registrationTicker *time.Ticker
 
 var amsMqLocal *mq.MsgQueue
 var amsApiMgr *sam.SwaggerApiMgr
+
+var mepZonesMap = map[string]string{}
+
+type AppInstanceIdsList struct {
+	AppInstanceIds []string
+}
 
 /*func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -209,6 +224,20 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_LOCALITY: ", locality)
 
+	// Get Mep coverage
+	mepCoverageEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_COVERAGE"))
+	if mepCoverageEnv != "" {
+		allMepCoverage := strings.Split(mepCoverageEnv, "/")
+		for _, mepCoverage := range allMepCoverage {
+			mepZones := strings.Split(mepCoverage, ":")
+			for index, mepZone := range mepZones {
+				if index != 0 {
+					mepZonesMap[mepZone] = mepZones[0]
+				}
+			}
+		}
+	}
+
 	// Set base path
 	if mepName == defaultMepName {
 		basePath = "/" + sandboxName + "/" + amsBasePath
@@ -218,6 +247,7 @@ func Init() (err error) {
 
 	// Set base storage key
 	baseKey = dkm.GetKeyRoot(sandboxName) + amsKey + ":mep:" + mepName + ":"
+	baseKeyNoMep = dkm.GetKeyRoot(sandboxName) + amsKey + ":"
 
 	// Connect to Redis DB (AMS_DB)
 	rc, err = redis.NewConnector(redisAddr, AMS_DB)
@@ -234,6 +264,26 @@ func Init() (err error) {
 	go func() {
 		for range expiryTicker.C {
 			checkForExpiredSubscriptions()
+		}
+	}()
+
+	periodicTriggerInterval := defaultPeriodicTriggerInterval
+	periodicTriggerIntervalEnv := strings.TrimSpace(os.Getenv("PERIODIC_TRIGGER_INTERVAL"))
+	if periodicTriggerIntervalEnv != "" {
+		//ignoring last parameter which is the unit, only supporting seconds for now
+		periodicTriggerIntervalVal, err := time.ParseDuration(periodicTriggerIntervalEnv)
+		if err == nil {
+			periodicTriggerInterval = int(periodicTriggerIntervalVal.Seconds())
+		} else {
+			log.Error("Cannot parse PERIODIC_TRIGGER_INTERVAL, using default value")
+		}
+	}
+	log.Info("PERIODIC_TRIGGER_INTERVAL: ", periodicTriggerInterval)
+
+	periodicTriggerTicker = time.NewTicker(time.Duration(periodicTriggerInterval) * time.Second)
+	go func() {
+		for range periodicTriggerTicker.C {
+			checkPeriodicTrigger()
 		}
 	}()
 
@@ -258,17 +308,12 @@ func Init() (err error) {
 	log.Info("Swagger API Manager created")
 
 	// Initialize SBI
-	/*sbiCfg := sbi.SbiCfg{
-		ModuleName:   moduleName,
-		SandboxName:  sandboxName,
-		RedisAddr:    redisAddr,
-		Locality:     locality,
-		DeviceInfoCb: updateDeviceInfo,
-		//		UeDataCb:       updateUeData,
-		//		MeasInfoCb:     updateMeasInfo,
-		//		PoaInfoCb:      updatePoaInfo,
-		//		AppInfoCb:      updateAppInfo,
-		//		DomainDataCb:   updateDomainData,
+	sbiCfg := sbi.SbiCfg{
+		ModuleName:     moduleName,
+		SandboxName:    sandboxName,
+		RedisAddr:      redisAddr,
+		Locality:       locality,
+		DeviceInfoCb:   updateDeviceInfo,
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
 	}
@@ -282,7 +327,7 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("SBI Initialized")
-	*/
+
 	// Create App Enablement REST clients
 	if appEnablementEnabled {
 		// Create Sandbox Controller client
@@ -351,7 +396,7 @@ func Run() (err error) {
 	if appEnablementEnabled {
 		startRegistrationTicker()
 	}
-	return nil //sbi.Run()
+	return sbi.Run()
 }
 
 // Stop - Stop App Mobility service
@@ -370,7 +415,7 @@ func Stop() (err error) {
 		}
 	}
 
-	return nil //sbi.Stop()
+	return sbi.Stop()
 }
 
 func startRegistrationTicker() {
@@ -455,7 +500,7 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = instanceName
+	appInfo.Name = serviceCategory
 	appInfo.MepName = mepName
 	appInfo.Version = serviceAppVersion
 	appType := scc.SYSTEM_ApplicationType
@@ -665,6 +710,156 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func hasApplicationInfoChanged(appInfo1 *scc.ApplicationInfo, appInfo2 *scc.ApplicationInfo) bool {
+	if appInfo1 == nil && appInfo2 != nil {
+		return true
+	}
+	if appInfo1 != nil && appInfo2 == nil {
+		return true
+	}
+	if appInfo1 == nil && appInfo2 == nil {
+		return false
+	}
+	if appInfo1.Id != appInfo2.Id {
+		return true
+	}
+	if appInfo1.Name != appInfo2.Name {
+		return true
+	}
+	if appInfo1.MepName != appInfo2.MepName {
+		return true
+	}
+	if appInfo1.Version != appInfo2.Version {
+		return true
+	}
+	if string(*appInfo1.Type_) != string(*appInfo2.Type_) {
+		return true
+	}
+	if string(*appInfo1.State) != string(*appInfo2.State) {
+		return true
+	}
+	return false
+}
+
+func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, sub := range adjSubscriptionMap {
+		if sub != nil {
+			//verifying every criteria of the filter
+			//loop through all appIds
+			//find service category of subscription
+			appInfoReference := appInfoMap[sub.FilterCriteria.AppInstanceId]
+			if appInfoReference != nil {
+				//check if changes related to the same service category
+				match := false
+				for _, appName := range appNames {
+					if appName == appInfoReference.Name {
+						match = true
+						break
+					}
+				}
+
+				if match {
+					subsIdStr := strconv.Itoa(subsId)
+					log.Info("Sending AMS notification ", sub.CallbackReference)
+
+					var notif AdjacentAppInfoNotification
+					notif.NotificationType = ADJACENT_APP_INFO_NOTIFICATION
+
+					seconds := time.Now().Unix()
+					var timeStamp TimeStamp
+					timeStamp.Seconds = int32(seconds)
+
+					notif.TimeStamp = &timeStamp
+					//find all the appInfo with same name but omit the one that was used for subscription
+					for _, appInfo := range appInfoMap {
+						if appInfo != nil {
+							if appInfo.Name == appInfoReference.Name && appInfo.Id != appInfoReference.Id {
+								var adjAppInfo AdjacentAppInfoNotificationAdjacentAppInfo
+								adjAppInfo.AppInstanceId = appInfo.Id
+								notif.AdjacentAppInfo = append(notif.AdjacentAppInfo, adjAppInfo)
+							}
+						}
+					}
+					sendAdjNotification(sub.CallbackReference, notif)
+					log.Info("Adjacent Notification" + "(" + subsIdStr + ")")
+				}
+			}
+		}
+	}
+}
+
+func checkPeriodicTrigger() {
+
+	//query to fill adjacent nodes
+	appInfos, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsGET(context.TODO(), nil)
+	if err != nil {
+		log.Error("Failed to get App Instance ID with error: ", err)
+		return
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	changed := []string{}
+	//this only checks at new or modified applications
+	for _, appInfo := range appInfos {
+		oldAppInfo := appInfoMap[appInfo.Id]
+		newAppInfo := appInfo
+		appInfoMap[appInfo.Id] = &newAppInfo
+		//we only care about adjacent node applications, so not self
+		//		if oldAppInfo != nil && appInfo.MepName != oldAppInfo.MepName {
+		if hasApplicationInfoChanged(oldAppInfo, &newAppInfo) {
+			//do not send anything for changes on AMS
+			if newAppInfo.Name != serviceCategory {
+				changed = append(changed, newAppInfo.Name)
+			}
+		}
+	}
+	//this checks for delete applications
+	//going through the whole map and checking if it was already part of the appInfos that were checked
+	toRemove := []string{}
+	for id, appInfoFromMap := range appInfoMap {
+		if appInfoFromMap != nil {
+			alreadyProcessed := false
+			for _, appInfo := range appInfos {
+				if id == appInfo.Id {
+					alreadyProcessed = true
+					break
+				}
+			}
+			if !alreadyProcessed {
+				//this appInfo is no longer valid, remove after looping through the map
+				toRemove = append(toRemove, id)
+				changed = append(changed, appInfoFromMap.Name) //need to update all the subscription for this service category
+			}
+		}
+	}
+
+	for _, id := range toRemove {
+		appInfoMap[id] = nil
+	}
+
+	if len(changed) > 0 {
+		checkAdjAppInfoNotificationRegisteredSubscriptions(changed)
+	}
+
+	/*
+	   //only check if there is at least one subscription
+	   if len(mrSubscriptionMap) >= 1 {
+	           keyName := baseKey + "UE:*"
+	           err := rc.ForEachJSONEntry(keyName, checkMrNotificationRegisteredSubscriptions, int32(trigger))
+	           if err != nil {
+	                   log.Error(err.Error())
+	                   return
+	           }
+	   }
+	*/
+}
+
 func checkForExpiredSubscriptions() {
 
 	nowTime := int(time.Now().Unix())
@@ -774,7 +969,6 @@ func repopulateMpSubscriptionMap(key string, jsonInfo string, userData interface
 
 func isMatchMpFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
 	filter := filterCriteria.(*MobilityProcedureSubscriptionFilterCriteria)
-
 	//if filter criteria is not set, it acts as a wildcard and accepts all
 	if filter.AppInstanceId == "" {
 		return true
@@ -782,10 +976,26 @@ func isMatchMpFilterCriteriaAppInsId(filterCriteria interface{}, appId string) b
 	return (appId == filter.AppInstanceId)
 }
 
+func isMatchAdjFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
+	filter := filterCriteria.(*AdjacentAppInfoSubscriptionFilterCriteria)
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	//if app with appId is same app as app in filter
+	if filter.AppInstanceId == "" {
+		return true
+	}
+	//name is the serviceCategory and the must be different appIds
+	if appId != filter.AppInstanceId {
+		return (appInfoMap[filter.AppInstanceId].Name == appInfoMap[appId].Name)
+	}
+	return false
+}
+
 func isMatchFilterCriteriaAppInsId(subscriptionType string, filterCriteria interface{}, appId string) bool {
 	switch subscriptionType {
 	case MOBILITY_PROCEDURE_SUBSCRIPTION:
 		return isMatchMpFilterCriteriaAppInsId(filterCriteria, appId)
+	case ADJACENT_APP_INFO_SUBSCRIPTION:
+		return isMatchAdjFilterCriteriaAppInsId(filterCriteria, appId)
 	}
 	return true
 }
@@ -826,9 +1036,9 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 	for subsId, sub := range mpSubscriptionMap {
 
 		if sub != nil {
-
 			//verifying every criteria of the filter
 			match := isMatchFilterCriteriaAppInsId(MOBILITY_PROCEDURE_SUBSCRIPTION, sub.FilterCriteria, appId)
+
 			if match {
 				match = isMatchFilterCriteriaAssociateId(MOBILITY_PROCEDURE_SUBSCRIPTION, sub.FilterCriteria, assocId)
 			}
@@ -844,17 +1054,18 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			if err != nil || len(fields) == 0 {
 				instanceFound = false
 			}
-			if instanceFound && fields["serviceLevel"] == "APP_MOBILITY_NOT_ALLOWED" {
+			if instanceFound && fields["serviceLevel"] == string(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED) {
 				break
 			}
 			if !instanceFound {
+				instanceFound = true
 				key = baseKey + "mep:" + mepId + ":dev:" + assocId.Value
 				fields, err = rc.GetEntry(key)
 				if err != nil || len(fields) == 0 {
 					instanceFound = false
 				}
 
-				if instanceFound && fields["serviceLevel"] == "APP_MOBILITY_NOT_ALLOWED" {
+				if instanceFound && fields["serviceLevel"] == string(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED) {
 					break
 				}
 			}
@@ -886,9 +1097,31 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 				notif.TimeStamp = &timeStamp
 				notif.MobilityStatus = 1 //only supporting 1 = INTERHOST_MOVEOUT_TRIGGERED
+				//find appId of the registered app in the target mep or take directly if we are the mep
+				appInfo := appInfoMap[appId]
+				if appInfo == nil {
+					continue
+				}
+				appId := appInfo.Id
+				appName := appInfo.Name
+				targetAppId := ""
+				if mepId == appInfo.MepName {
+					targetAppId = appId
+				} else {
+					for _, appInfoFromMap := range appInfoMap {
+						if appInfoFromMap.Name == appName && appInfoFromMap.MepName == mepId {
+							targetAppId = appInfoFromMap.Id
+							break
+						}
+					}
+				}
+				if targetAppId == "" {
+					continue
+				}
+
 				var targetAppInfo MobilityProcedureNotificationTargetAppInfo
-				targetAppInfo.AppInstanceId = appId
-				notif.TargetAppInfo = &targetAppInfo //MobilityProcedureNotificationTargetAppInfo{appInstanceId: appId}
+				targetAppInfo.AppInstanceId = targetAppId
+				notif.TargetAppInfo = &targetAppInfo
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
 				sendMpNotification(subscription.CallbackReference, notif)
@@ -914,6 +1147,25 @@ func sendMpNotification(notifyUrl string, notification MobilityProcedureNotifica
 		return
 	}
 	met.ObserveNotification(sandboxName, serviceName, MOBILITY_PROCEDURE_NOTIFICATION, notifyUrl, resp, duration)
+	defer resp.Body.Close()
+}
+
+func sendAdjNotification(notifyUrl string, notification AdjacentAppInfoNotification) {
+	startTime := time.Now()
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		met.ObserveNotification(sandboxName, serviceName, ADJACENT_APP_INFO_NOTIFICATION, notifyUrl, nil, duration)
+		return
+	}
+	met.ObserveNotification(sandboxName, serviceName, ADJACENT_APP_INFO_NOTIFICATION, notifyUrl, resp, duration)
 	defer resp.Body.Close()
 }
 
@@ -1029,6 +1281,11 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
+		if subscription.FilterCriteria.AppInstanceId == "" {
+			log.Error("FilterCriteria AppInstanceId should not be null for this subscription type")
+			http.Error(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
 
 		//registration
 		registerAdj(&subscription, subsIdStr)
@@ -1137,6 +1394,11 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		if subscription.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
 			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+		if subscription.FilterCriteria.AppInstanceId == "" {
+			log.Error("FilterCriteria AppInstanceId should not be null for this subscription type")
+			http.Error(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1407,24 +1669,27 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	registrationInfo.AppMobilityServiceId = servIdStr
 
 	if registrationInfo.ServiceConsumerId.MepId != "" && mepName != registrationInfo.ServiceConsumerId.MepId {
-		log.Error("ERROR TBD: is this possible and valid?")
+		log.Error("This is not a possible value. Cannot track movements to other MEP.")
+		http.Error(w, "MepId must match current MEP. Cannot track movements in other MEPs.", http.StatusBadRequest)
+		return
 	}
 
-	key := baseKey + /*registrationInfo.ServiceConsumerId.MepId + ":apps:" + registrationInfo.ServiceConsumerId.AppInstanceId +*/ "services:" + servIdStr
+	key := baseKey + "services:" + servIdStr
 
 	_ = rc.JSONSetEntry(key, ".", convertRegistrationInfoToJson(&registrationInfo))
 
 	for _, deviceInfo := range registrationInfo.DeviceInformation {
 		fields := make(map[string]interface{})
 		fields["associateId"] = deviceInfo.AssociateId.Value
-		fields["serviceLevel"] = string(*deviceInfo.AppMobilityServiceLevel)
-		fields["contextTransferStats"] = string(*deviceInfo.ContextTransferState)
+		fields["serviceLevel"] = strconv.Itoa(int(*deviceInfo.AppMobilityServiceLevel))
+		fields["contextTransferState"] = strconv.Itoa(int(*deviceInfo.ContextTransferState))
 		fields["mobilityServiceId"] = servIdStr
-
+		fields["appInstanceId"] = ""
 		if registrationInfo.ServiceConsumerId.MepId != "" {
 			key = baseKey + "mep:" + registrationInfo.ServiceConsumerId.MepId + ":dev:" + deviceInfo.AssociateId.Value
 		} else { //must be appInstanceId
 			key = baseKey + "apps:" + registrationInfo.ServiceConsumerId.AppInstanceId + ":dev:" + deviceInfo.AssociateId.Value
+			fields["appInstanceId"] = registrationInfo.ServiceConsumerId.AppInstanceId
 		}
 		_ = rc.SetEntry(key, fields)
 	}
@@ -1495,7 +1760,9 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if registrationInfo.ServiceConsumerId.MepId != "" && mepName != registrationInfo.ServiceConsumerId.MepId {
-		log.Error("ERROR TBD: is this possible and valid?")
+		log.Error("This is not a possible value. Cannot track movements to other MEP.")
+		http.Error(w, "MepId must match current MEP. Cannot track movements in other MEPs.", http.StatusBadRequest)
+		return
 	}
 
 	key := baseKey + /*registrationInfo.ServiceConsumerId.MepId + ":apps:" + registrationInfo.ServiceConsumerId.AppInstanceId +*/ "services:" + serviceId
@@ -1514,14 +1781,15 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	for _, deviceInfo := range registrationInfo.DeviceInformation {
 		fields := make(map[string]interface{})
 		fields["associateId"] = deviceInfo.AssociateId.Value
-		fields["serviceLevel"] = string(*deviceInfo.AppMobilityServiceLevel)
-		fields["contextTransferStats"] = string(*deviceInfo.ContextTransferState)
+		fields["serviceLevel"] = strconv.Itoa(int(*deviceInfo.AppMobilityServiceLevel))
+		fields["contextTransferState"] = strconv.Itoa(int(*deviceInfo.ContextTransferState))
 		fields["mobilityServiceId"] = serviceId
-
+		fields["appInstanceId"] = ""
 		if registrationInfo.ServiceConsumerId.MepId != "" {
 			key = baseKey + "mep:" + registrationInfo.ServiceConsumerId.MepId + ":dev:" + deviceInfo.AssociateId.Value
 		} else { //must be appInstanceId
 			key = baseKey + "apps:" + registrationInfo.ServiceConsumerId.AppInstanceId + ":dev:" + deviceInfo.AssociateId.Value
+			fields["appInstanceId"] = registrationInfo.ServiceConsumerId.AppInstanceId
 		}
 		_ = rc.SetEntry(key, fields)
 	}
@@ -1651,6 +1919,7 @@ func cleanUp() {
 	adjSubscriptionMap = map[int]*AdjacentAppInfoSubscription{}
 	mpSubscriptionMap = map[int]*MobilityProcedureSubscription{}
 	subscriptionExpiryMap = map[int][]int{}
+	appInfoMap = map[string]*scc.ApplicationInfo{}
 
 	updateStoreName("")
 }
@@ -1677,4 +1946,83 @@ func updateStoreName(storeName string) {
 		}
 
 	}
+}
+
+func updateDeviceInfo(address string, zoneId string, procList []string) {
+	var oldZoneId string
+
+	// Get Device Info from DB
+	key := baseKey + typeDevice + ":" + address
+	instanceFound := true
+	oldFields, err := rc.GetEntry(key)
+	if err != nil || len(oldFields) == 0 {
+		instanceFound = false
+	}
+	if instanceFound {
+		oldZoneId = oldFields["zoneId"]
+	}
+
+	if oldZoneId != zoneId {
+		fields := make(map[string]interface{})
+		// Update Device info in DB & Send notifications
+		fields["zoneId"] = zoneId
+		_ = rc.SetEntry(key, fields)
+		//check 2 different MEPs are involved and destination is the current mep only (so entering)
+		if mepZonesMap[oldZoneId] != mepZonesMap[zoneId] { // && mepZonesMap[zoneId] == mepName {
+
+			//find all affected appIds
+			var appInstanceIdsList AppInstanceIdsList
+			//check apps first
+			key := baseKeyNoMep + "*:apps:*:dev:" + address
+			err := rc.ForEachEntry(key, populateAppInstanceIds, &appInstanceIdsList)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			//if no single app, seach for whole mep
+			if len(appInstanceIdsList.AppInstanceIds) == 0 {
+				key = baseKeyNoMep + "*:mep:*:dev:" + address
+				err = rc.ForEachEntry(key, populateAppInstanceIds, &appInstanceIdsList)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+				//create a list of strings
+				procs := ""
+				for _, proc := range procList {
+					procs = procs + ":" + proc
+					appInstanceIdsList.AppInstanceIds = append(appInstanceIdsList.AppInstanceIds, proc)
+				}
+				//fields["procs"] = procs
+			}
+			//either a whole mep (appId == "") or individuals appIds
+			var assocId AssociateId
+			assocId.Type_ = 1 //ipv4 address
+			assocId.Value = address
+
+			for _, appInstanceId := range appInstanceIdsList.AppInstanceIds {
+				checkMpNotificationRegisteredSubscriptions(appInstanceId, &assocId, mepZonesMap[zoneId])
+			}
+		}
+		//_ = rc.SetEntry(key, fields)
+	}
+
+}
+
+func populateAppInstanceIds(key string, fields map[string]string, response interface{}) error {
+	resp := response.(*AppInstanceIdsList)
+	if resp == nil {
+		return errors.New("Response not defined")
+	}
+	//instanceFound := true
+	//fields, err := rc.GetEntry(key)
+	//if err != nil || len(fields) == 0 {
+	//		instanceFound = false
+	//	}
+	//	if instanceFound {
+	appId := fields["appInstanceId"]
+	resp.AppInstanceIds = append(resp.AppInstanceIds, appId)
+	//	}
+	//response = &resp
+	return nil
 }
