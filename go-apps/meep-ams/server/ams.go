@@ -372,7 +372,9 @@ func Run() (err error) {
 // Stop - Stop App Mobility service
 func Stop() (err error) {
 
-	periodicTriggerTicker.Stop()
+	if periodicTriggerTicker != nil {
+		periodicTriggerTicker.Stop()
+	}
 
 	// Stop MEC Service registration ticker
 	if appEnablementEnabled {

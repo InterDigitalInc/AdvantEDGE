@@ -259,9 +259,6 @@ func processActiveScenarioUpdate() {
 			sbi.updateDeviceInfoCB(prevUeName, "", nil)
 		}
 	}
-
-	// find all apps under our mep
-
 }
 
 func getZoneProcMap(name string) (zone string, procMap map[string]string, err error) {
