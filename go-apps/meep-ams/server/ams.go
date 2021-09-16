@@ -803,9 +803,6 @@ func checkPeriodicTrigger() {
 		return
 	}
 
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	changed := []string{}
 	//this only checks at new or modified applications
 	for _, appInfo := range appInfos {
