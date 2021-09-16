@@ -794,6 +794,9 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 func checkPeriodicTrigger() {
 
 	//query to fill adjacent nodes
+	if sbxCtrlClient == nil {
+		return
+	}
 	appInfos, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsGET(context.TODO(), nil)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
