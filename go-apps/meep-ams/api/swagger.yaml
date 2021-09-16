@@ -95,13 +95,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegistrationInfo'    
-      responses:
-        '201':
-          description: Successful response for application mobility service creation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RegistrationInfo'
             example:
               deviceInformation:
                 - appMobilityServiceLevel: 1
@@ -111,6 +104,13 @@ paths:
                   contextTransferState: 0
               serviceConsumerId:
                 appInstanceId: '9afdbca8-afac-405b-b220-4154828280b8'
+      responses:
+        '201':
+          description: Successful response for application mobility service creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -291,15 +291,6 @@ paths:
               oneOf:
                - $ref: '#/components/schemas/MobilityProcedureSubscription'
                - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
-      responses:
-        '201':
-          description: 'Created subscription is described using the appropriate data type'
-          content:
-            application/json:
-              schema:
-               oneOf:
-               - $ref: '#/components/schemas/MobilityProcedureSubscription'
-               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'  
             example:
               subscriptionType: MobilityProcedureSubscription
               callbackReference: 'http://my.callback.com/amsi-mobility-procedure/some-id'
@@ -310,6 +301,15 @@ paths:
                   value: '10.100.0.3'
                 - type: 1
                   value: '10.100.0.1'
+      responses:
+        '201':
+          description: 'Created subscription is described using the appropriate data type'
+          content:
+            application/json:
+              schema:
+               oneOf:
+               - $ref: '#/components/schemas/MobilityProcedureSubscription'
+               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'  
         '400':
           $ref: '#/components/responses/400'
         '401':

@@ -140,6 +140,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegistrationInfo'
+            example:
+              deviceInformation:
+              - appMobilityServiceLevel: 1
+                associateId:
+                  type: 1
+                  value: 10.100.0.3
+                contextTransferState: 0
+              serviceConsumerId:
+                appInstanceId: 9afdbca8-afac-405b-b220-4154828280b8
         required: true
       responses:
         "201":
@@ -148,7 +157,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistrationInfo'
-            example: {}
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -527,6 +535,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/body'
+            example:
+              subscriptionType: MobilityProcedureSubscription
+              callbackReference: http://my.callback.com/amsi-mobility-procedure/some-id
+              filterCriteria:
+                appInstanceId: 9afdbca8-afac-405b-b220-4154828280b8
+                associateId:
+                - type: 1
+                  value: 10.100.0.3
+                - type: 1
+                  value: 10.100.0.1
         required: true
       responses:
         "201":
@@ -536,7 +554,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/body'
-            example: {}
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
