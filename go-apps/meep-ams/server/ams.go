@@ -1947,7 +1947,7 @@ func updateDeviceInfo(address string, zoneId string, procList []string) {
 			}
 			//if no single app, seach for whole mep
 			if len(appInstanceIdsList.AppInstanceIds) == 0 {
-				key = baseKeyGlobal + "dev:" + address
+				key = baseKeyGlobal + "mepId:*:dev:" + address
 				err = rc.ForEachEntry(key, populateAppInstanceIds, &appInstanceIdsList)
 				if err != nil {
 					log.Error(err)
