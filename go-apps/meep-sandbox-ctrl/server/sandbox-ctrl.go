@@ -312,6 +312,9 @@ func activateScenario(scenarioName string) (err error) {
 		return err
 	}
 
+	// Flush App Instances
+	_ = appCtrlFlushAppInstances()
+
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
@@ -806,6 +809,9 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 
 	// Renew APIs
 	_ = sbxCtrl.apiMgr.FlushMepApis()
+
+	// Flush App Instances
+	_ = appCtrlFlushAppInstances()
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

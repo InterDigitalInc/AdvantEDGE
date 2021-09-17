@@ -106,6 +106,12 @@ func appCtrlStop() (err error) {
 	return nil
 }
 
+// Flush App instances
+func appCtrlFlushAppInstances() (err error) {
+	_ = appCtrl.rc.DBFlush(appCtrl.baseKey)
+	return nil
+}
+
 func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("applicationsPOST")

@@ -118,7 +118,6 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
-	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB")
 
 	// Initialize subscription ID count
@@ -147,11 +146,6 @@ func Run() (err error) {
 
 // Stop - Stop Service Mgmt
 func Stop() (err error) {
-	// Flush all app-enablement instance data
-	if baseKey != "" {
-		key := baseKey + "*"
-		_ = rc.DBFlush(key)
-	}
 	return nil
 }
 
