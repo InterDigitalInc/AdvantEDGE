@@ -20,6 +20,7 @@ import { createSelector } from 'reselect';
 
 import { typeReducer } from './type-reducer';
 import { stateReducer } from './state-reducer';
+import { appInstanceTableReducer} from './app-instance-table-reducer';
 import { scenarioReducer } from './scenario-reducer';
 import { displayedScenarioReducer } from './displayed-scenario-reducer';
 import { execMapReducer } from './map-reducer';
@@ -58,6 +59,7 @@ export * from './table-reducer';
 export * from './selected-scenario-element';
 export * from './api-results';
 export * from './element-configuration';
+export * from './app-instance-table-reducer';
 
 const execTableElements = state => state.exec.table.entries;
 
@@ -169,7 +171,8 @@ const execReducer = combineReducers({
   table: execTableReducer,
   selectedScenarioElement: execSelectedScenarioElement,
   apiResults: execApiResultsReducer,
-  elementConfiguration: execElementConfigurationReducer
+  elementConfiguration: execElementConfigurationReducer,
+  appInstanceTable: appInstanceTableReducer 
 });
 
 export default execReducer;
