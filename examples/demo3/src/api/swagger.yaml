@@ -1,0 +1,240 @@
+openapi: 3.0.2
+info:
+  title: MEC Demo 3 API
+  description: This section describes use case 3 - 5 that the user can accomplish
+    using the MEC Sandbox APIs from a MEC application
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
+  license:
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
+  version: 0.0.1
+servers:
+- url: http://10.190.115.162:8093
+- url: http://10.190.115.162:8094
+paths:
+  /services/discover:
+    post:
+      tags:
+      - frontend_mec_service
+      description: This method retrieves information about a list of mec service resources
+        & subscribes to service availability notification subscription
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /service/create:
+    post:
+      tags:
+      - frontend_mec_service
+      description: This method creates a mec service on mec platform
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /service/delete:
+    delete:
+      tags:
+      - frontend_mec_service
+      description: This method deletes a mecService resource. This method is typically
+        used in the service deregistration procedure.
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /services/callback/service-availability:
+    post:
+      tags:
+      - frontend_notification
+      summary: MEC011 service availability notification
+      description: "."
+      operationId: NotificationPOST
+      requestBody:
+        description: service availability notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAvailabilityNotification'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /application/termination:
+    post:
+      tags:
+      - frontend_notification
+      summary: MEC011 app termination notification
+      description: "."
+      operationId: TerminateNotificatonPOST
+      requestBody:
+        description: app termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotificationSubscription'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+components:
+  schemas:
+    ServiceAvailabilityNotification:
+      required:
+      - _links
+      - notificationType
+      - serviceReferences
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to SerAvailabilityNotification
+          example: SerAvailabilityNotification
+        serviceReferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAvailabilityNotification_serviceReferences'
+        _links:
+          $ref: '#/components/schemas/Subscription'
+      description: This type represents the service availability information.
+    AppTerminationNotificationSubscription:
+      required:
+      - _links
+      - appInstanceId
+      - callbackReference
+      - subscriptionType
+      type: object
+      properties:
+        subscriptionType:
+          type: string
+          description: Shall be set to AppTerminationNotificationSubscription.
+        callbackReference:
+          type: string
+          description: URI selected by the MEC application instance to receive notifications
+            on the subscribed MEC application instance management information. This
+            shall be included in both the request and the response.
+          format: uri
+        _links:
+          $ref: '#/components/schemas/AppTerminationNotificationSubscription__links'
+        appInstanceId:
+          type: string
+          description: It is used as the filtering criterion for the subscribed events.
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+      example:
+        appInstanceId: appInstanceId
+        subscriptionType: subscriptionType
+        _links:
+          self:
+            href: http://example.com/aeiou
+        callbackReference: http://example.com/aeiou
+    AppTerminationNotificationSubscription__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: Self-referring URI.
+      example:
+        self:
+          href: http://example.com/aeiou
+    LinkType:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URI referring to a resource
+          format: uri
+          example: /mecSerMgmtApi/example
+      description: This type represents a type of link and may be referenced from
+        data structures
+    SerName:
+      type: string
+      description: The name of the service. This is how the service producing MEC
+        application identifies the service instance it produces.
+    SerInstanceId:
+      type: string
+      description: Identifier of the service instance assigned by the MEC platform.
+      readOnly: true
+    ServiceState:
+      type: string
+      description: This enumeration defines the possible states of a service.
+      enum:
+      - ACTIVE
+      - INACTIVE
+    Subscription:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: A link to the related subscription
+    ServiceAvailabilityNotification_serviceReferences:
+      required:
+      - changeType
+      - serInstanceId
+      - serName
+      - state
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/LinkType'
+        serName:
+          $ref: '#/components/schemas/SerName'
+        serInstanceId:
+          $ref: '#/components/schemas/SerInstanceId'
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        changeType:
+          type: string
+          description: "Type of the change. Valid values:\n ADDED: The service was\
+            \ newly added.\n  REMOVED: The service was removed.\n  STATE_CHANGED:\
+            \ Only the state of the service was changed. \n  ATTRIBUTES_CHANGED: At\
+            \ least one attribute of the service other than state was changed. The\
+            \ change may or may not include changing the state."
+          enum:
+          - ADDED
+          - REMOVED
+          - STATE_CHANGED
+          - ATTRIBUTES_CHANGED
+      description: List of links to services whose availability has changed.
+  parameters:
+    Path.AppInstanceId:
+      name: appInstanceId
+      in: path
+      description: Represents a MEC application instance. Note that the appInstanceId
+        is allocated by the MEC platform manager.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Path.ServiceId:
+      name: serviceId
+      in: path
+      description: Represents a MEC service instance.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
