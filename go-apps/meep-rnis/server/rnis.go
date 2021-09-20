@@ -582,7 +582,7 @@ func registerService(appInstanceId string) error {
 
 	//transportInfo
 	var transportInfo smc.TransportInfo
-	transportInfo.Id = "transport"
+	transportInfo.Id = "sandboxTransport"
 	transportInfo.Name = "REST"
 	transportType := smc.REST_HTTP_TransportType
 	transportInfo.Type_ = &transportType

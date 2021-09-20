@@ -76,8 +76,10 @@ var serAvailabilitySubscriptionMap = map[int]*SerAvailabilityNotificationSubscri
 var nextSubscriptionIdAvailable int
 
 type ServiceInfoList struct {
-	Services []ServiceInfo
-	Filters  *FilterParameters
+	Services                 []ServiceInfo
+	ConsumedLocalOnlyPresent bool
+	IsLocalPresent           bool
+	Filters                  *FilterParameters
 }
 
 type FilterParameters struct {
@@ -801,12 +803,16 @@ func getServices(w http.ResponseWriter, r *http.Request, appInstanceId string) {
 	serName := q["ser_name"]
 	serCategoryId := q.Get("ser_category_id")
 	consumedLocalOnly, err := strconv.ParseBool(q.Get("consumed_local_only"))
+	consumedLocalOnlyPresent := true
 	if err != nil {
 		consumedLocalOnly = false
+		consumedLocalOnlyPresent = false
 	}
 	isLocal, err := strconv.ParseBool(q.Get("is_local"))
+	isLocalPresent := true
 	if err != nil {
 		isLocal = false
+		isLocalPresent = false
 	}
 	scopeOfLocality := q.Get("scope_of_locality")
 
@@ -827,6 +833,8 @@ func getServices(w http.ResponseWriter, r *http.Request, appInstanceId string) {
 	filterParameters.isLocal = isLocal
 	filterParameters.scopeOfLocality = scopeOfLocality
 	sInfoList.Filters = &filterParameters
+	sInfoList.ConsumedLocalOnlyPresent = consumedLocalOnlyPresent
+	sInfoList.IsLocalPresent = isLocalPresent
 
 	var key string
 	if appInstanceId == "" {
@@ -913,6 +921,18 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 	// Get MEP Name
 	mep := getMepNameFromKey(key)
 
+	// Set IsLocal flag
+	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
+		sInfo.IsLocal = true
+	} else {
+		sInfo.IsLocal = false
+	}
+
+	// Filter out non-local services with "consumedLocalOnly" flag set to "true"
+	if !sInfo.IsLocal && sInfo.ConsumedLocalOnly {
+		return nil
+	}
+
 	// Filter services
 	if data.Filters != nil {
 
@@ -961,30 +981,26 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 		}
 
 		// Service consumed local only
-		if data.Filters.consumedLocalOnly {
-			if !sInfo.ConsumedLocalOnly {
-				return nil
+		if data.ConsumedLocalOnlyPresent {
+			if data.Filters.consumedLocalOnly {
+				if !sInfo.ConsumedLocalOnly {
+					return nil
+				}
+			} else { //data.Filters.consumedLocalOnly is false
+				if sInfo.ConsumedLocalOnly {
+					return nil
+				}
 			}
 		}
 
 		// Is local service
-		if data.Filters.isLocal {
-			if mep == "" || mep != mepName {
-				return nil
+		if data.IsLocalPresent {
+			if data.Filters.isLocal {
+				if !sInfo.IsLocal {
+					return nil
+				}
 			}
 		}
-	}
-
-	// Set IsLocal flag
-	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
-		sInfo.IsLocal = true
-	} else {
-		sInfo.IsLocal = false
-	}
-
-	// Filter out non-local services with "consumedLocalOnly" flag set to "true"
-	if !sInfo.IsLocal && sInfo.ConsumedLocalOnly {
-		return nil
 	}
 
 	// Add service to list
@@ -1268,7 +1284,7 @@ func transportsGET(w http.ResponseWriter, r *http.Request) {
 
 	//transportInfo
 	var transportInfo TransportInfo
-	transportInfo.Id = "transport"
+	transportInfo.Id = "sandboxTransport"
 	transportInfo.Name = "REST"
 	transportType := REST_HTTP
 	transportInfo.Type_ = &transportType
