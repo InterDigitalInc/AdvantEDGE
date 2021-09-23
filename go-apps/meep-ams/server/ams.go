@@ -505,7 +505,7 @@ func registerService(appInstanceId string) error {
 
 	//transportInfo
 	var transportInfo smc.TransportInfo
-	transportInfo.Id = "transport"
+	transportInfo.Id = "sandboxTransport"
 	transportInfo.Name = "REST"
 	transportType := smc.REST_HTTP_TransportType
 	transportInfo.Type_ = &transportType
@@ -1020,18 +1020,18 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			if err != nil || len(fields) == 0 {
 				instanceFound = false
 			}
-			if instanceFound && fields["serviceLevel"] == string(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED) {
+			if instanceFound && fields["serviceLevel"] == strconv.Itoa(int(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED)) {
 				break
 			}
 			if !instanceFound {
 				instanceFound = true
-				key = baseKey + "mep:" + mepId + ":dev:" + assocId.Value
+				key = baseKey + "mepId:" + mepId + ":dev:" + assocId.Value
 				fields, err = rc.GetEntry(key)
 				if err != nil || len(fields) == 0 {
 					instanceFound = false
 				}
 
-				if instanceFound && fields["serviceLevel"] == string(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED) {
+				if instanceFound && fields["serviceLevel"] == strconv.Itoa(int(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED)) {
 					break
 				}
 			}
@@ -1627,18 +1627,28 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if registrationInfo.ServiceConsumerId.MepId != "" && mepName != registrationInfo.ServiceConsumerId.MepId {
+		log.Error("This is not a possible value. Cannot track movements to other MEP.")
+		http.Error(w, "MepId must match current MEP. Cannot track movements in other MEPs.", http.StatusBadRequest)
+		return
+	}
+
+	//do a first pass to validate the content of deviceInfo
+	for _, deviceInfo := range registrationInfo.DeviceInformation {
+		//associateId is mandatory if deviceInfo is present
+		if deviceInfo.AssociateId == nil {
+			log.Error("AssociateId is a mandatory parameter if deviceInformation is present.")
+			http.Error(w, "AssociateId is a mandatory parameter if deviceInformation is present.", http.StatusBadRequest)
+			return
+		}
+	}
+
 	//new service id
 	newServId := nextServiceIdAvailable
 	nextServiceIdAvailable++
 	servIdStr := strconv.Itoa(newServId)
 
 	registrationInfo.AppMobilityServiceId = servIdStr
-
-	if registrationInfo.ServiceConsumerId.MepId != "" && mepName != registrationInfo.ServiceConsumerId.MepId {
-		log.Error("This is not a possible value. Cannot track movements to other MEP.")
-		http.Error(w, "MepId must match current MEP. Cannot track movements in other MEPs.", http.StatusBadRequest)
-		return
-	}
 
 	key := baseKey + "services:" + servIdStr
 
@@ -1933,8 +1943,8 @@ func updateDeviceInfo(address string, zoneId string, procList []string) {
 		// Update Device info in DB & Send notifications
 		fields["zoneId"] = zoneId
 		_ = rc.SetEntry(key, fields)
-		//check 2 different MEPs are involved and destination is the current mep only (so entering)
-		if mepZonesMap[oldZoneId] != mepZonesMap[zoneId] { // && mepZonesMap[zoneId] == mepName {
+		//check 2 different MEPs are involved and destination is the current mep only (so leaving only)
+		if mepZonesMap[oldZoneId] != mepZonesMap[zoneId] && mepZonesMap[oldZoneId] == mepName {
 
 			//find all affected appIds
 			var appInstanceIdsList AppInstanceIdsList
