@@ -2338,8 +2338,8 @@ definitions:
         description: "Application Version"
     description: "MEC Application instance information"
     example:
-      appInstanceId: "00afec52-f0b6-464e-a660-33568c0975b9"
-      appName: "MyAppName"
+      id: "00afec52-f0b6-464e-a660-33568c0975b9"
+      name: "MyAppName"
       type: "USER"
       state: "INITIALIZED"
       mepName: "mep1"

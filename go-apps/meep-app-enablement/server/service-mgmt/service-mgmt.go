@@ -219,6 +219,31 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 	getServices(w, r, appInstanceId)
 }
 
+func validateCategoryRef(categoryRef *CategoryRef) string {
+	if categoryRef != nil {
+		if categoryRef.Href == "" {
+			return "CategoryRef mandatory parameter Href missing."
+		}
+		if categoryRef.Id == "" {
+			return "CategoryRef mandatory parameter Id missing."
+		}
+		if categoryRef.Name == "" {
+			return "CategoryRef mandatory parameter Name missing."
+		}
+		if categoryRef.Version == "" {
+			return "CategoryRef mandatory parameter Version missing."
+		}
+	}
+	return ""
+}
+
+func sInfoPostDefaults(sInfoPost *ServiceInfoPost) {
+	locality := MEC_HOST
+	sInfoPost.ScopeOfLocality = &locality
+	sInfoPost.IsLocal = true
+	sInfoPost.ConsumedLocalOnly = true
+}
+
 func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("appServicesPOST")
@@ -243,6 +268,8 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve request parameters from body
 	var sInfoPost ServiceInfoPost
+	//set default values, if values are omited in json, defaults not be overriden
+	sInfoPostDefaults(&sInfoPost)
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&sInfoPost)
 	if err != nil {
@@ -281,6 +308,28 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		log.Error(errStr)
 		http.Error(w, errStr, http.StatusBadRequest)
 		return
+	}
+	if sInfoPost.SerCategory != nil {
+		errStr := validateCategoryRef(sInfoPost.SerCategory)
+		if errStr != "" {
+			log.Error(errStr)
+			http.Error(w, errStr, http.StatusBadRequest)
+			return
+		}
+	}
+	if (sInfoPost.TransportId != "" && sInfoPost.TransportInfo != nil) || (sInfoPost.TransportId == "" && sInfoPost.TransportInfo == nil) {
+		errStr := "Either transportId or transportInfo but not both shall be present"
+		log.Error(errStr)
+		http.Error(w, errStr, http.StatusBadRequest)
+		return
+	}
+	if sInfoPost.TransportInfo != nil {
+		if sInfoPost.TransportInfo.Id == "" || sInfoPost.TransportInfo.Name == "" || string(*sInfoPost.TransportInfo.Type_) == "" || sInfoPost.TransportInfo.Protocol == "" || sInfoPost.TransportInfo.Version == "" || sInfoPost.TransportInfo.Endpoint == nil {
+			errStr := "Id, Name, Type, Porotocl, Version, Endpoint are all mandatory parameters of TransportInfo"
+			log.Error(errStr)
+			http.Error(w, errStr, http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Create Service
@@ -426,6 +475,8 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	// Current implementation only supports state parameter change
 	state := *sInfo.State
 	*sInfo.State = *sInfoPrev.State
+	//isLocal appears only in query responses and service avail. subs and notif, so not here, make sure both have same value so they are ignored
+	sInfo.IsLocal = sInfoPrev.IsLocal
 	sInfoJson := convertServiceInfoToJson(&sInfo)
 	if sInfoJson != sInfoPrevJson {
 		errStr := "Only the ServiceInfo state property may be changed"
@@ -535,6 +586,15 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if subscription.FilteringCriteria.SerCategories != nil {
+			for _, categoryRef := range *subscription.FilteringCriteria.SerCategories {
+				errStr := validateCategoryRef(&categoryRef)
+				if errStr != "" {
+					log.Error(errStr)
+					http.Error(w, errStr, http.StatusBadRequest)
+					return
+				}
+			}
+
 			if len(*subscription.FilteringCriteria.SerCategories) > 0 {
 				nbMutuallyExclusiveParams++
 			}
@@ -1259,6 +1319,7 @@ func validateAppInstanceId(appInstanceId string) (error, int, string) {
 		problemDetails.Detail = "App Instance not ready. Waiting for AppReadyConfirmation."
 		return errors.New("App Instance not ready"), http.StatusForbidden, convertProblemDetailsToJson(&problemDetails)
 	}
+
 	return nil, http.StatusOK, ""
 }
 
