@@ -38,7 +38,9 @@ type ServiceInfoPost struct {
 	Serializer      *SerializerType `json:"serializer"`
 	ScopeOfLocality *LocalityType   `json:"scopeOfLocality,omitempty"`
 	// Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this  service instance.
-	ConsumedLocalOnly bool `json:"consumedLocalOnly,omitempty"`
+	// manually removed the omitempty
+	ConsumedLocalOnly bool `json:"consumedLocalOnly"`
 	// Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application.
-	IsLocal bool `json:"isLocal,omitempty"`
+        // manually removed the omitempty
+	IsLocal bool `json:"isLocal"`
 }

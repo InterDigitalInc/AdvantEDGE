@@ -702,10 +702,9 @@ components:
           version: '2.0'
           endpoint:
             uris:
-              - 'https://my.callback.com/sandboxname/mep1/rni/v2/'
+              - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
-        isLocal: true
     Subscription:
       description: A link to the related subscription
       type: object
@@ -1031,12 +1030,14 @@ components:
             $ref: '#/components/schemas/SerAvailabilityNotificationSubscription'
           example:
             subscriptionType: 'SerAvailabilityNotificationSubscription'
-            serNames: 
-              - 'myRnis'
-            states:
-              - 'ACTIVE'
-              - 'INACTIVE'
-            isLocal: true
+            callbackReference: "http://my.callback.com/mec_service_mgmt_ser_availabilities/some-id"
+            filterCriteria:
+              serNames: 
+                - 'myRnis'
+              states:
+                - 'ACTIVE'
+                - 'INACTIVE'
+              isLocal: true
       description: >-
         Entity body in the request contains a subscription to the MEC
         application termination notifications that is to be created.
@@ -1056,7 +1057,6 @@ components:
           schema:
             $ref: '#/components/schemas/ServiceInfoPost'
           example:
-            serInstanceId: 'rnisInstance1'
             serName: 'myRnis'
             serCategory:
               href: 'catItem1'
@@ -1074,10 +1074,9 @@ components:
               version: '2.0'
               endpoint:
                 uris:
-                  - 'https://my.callback.com/sandboxname/mep1/rni/v2/'
+                  - 'https://my.callback.com/sandboxname/rni/v2/'
             serializer: 'JSON'
             scopeOfLocality: 'MEC_SYSTEM'
-            isLocal: true
       description: >-
         New ServiceInfo with updated "state" is included as entity body of the
         request
@@ -1181,9 +1180,8 @@ components:
           version: '2.0'
           endpoint:
             uris:
-              - 'https://my.callback.com/sandboxname/mep1/rni/v2/'
+              - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
-        isLocal: true
 
 
