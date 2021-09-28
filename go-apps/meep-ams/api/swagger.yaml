@@ -245,7 +245,7 @@ paths:
           $ref: '#/components/responses/406'          
         '429':
           $ref: '#/components/responses/429'  
-  /subscriptions/:   
+  /subscriptions/:
     get:
       tags:
       - 'amsi'
