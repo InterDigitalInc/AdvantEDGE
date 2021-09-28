@@ -7,7 +7,7 @@ nav_order: 3
 permalink: docs/overview/features/monitoring/
 ---
 
-## Feature Overview
+# Feature Overview
 AdvantEDGE provides a built-in Monitoring Subsystem that integrates with scenarios.
 
 This feature provides the following capabilities:
@@ -25,17 +25,17 @@ This feature provides the following capabilities:
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
 
-### Micro-Services
+## Micro-Services
 - _InfluxDB:_ Time-Series database - used to monitor scenario network characteristics, events & custom user metrics.
 - _Grafana:_ Dashboard visualization and management solution
 - _metrics-engine:_ Collects automated measurements and implements the metrics API
 - _Prometheus:_ Collects platform micro-services metrics
 
-### Scenario Configuration
+## Scenario Configuration
 No scenario configuration
 
-### Scenario Runtime
-#### InfluxDB
+## Scenario Runtime
+### InfluxDB
 Influx DB is a time series database; it provides a central aggregation point to store AdvantEDGE metrics.
 
 Out-of-the-box collected metrics are:
@@ -53,7 +53,7 @@ InfluxDB is provided as a platform facility; if desired, users can use the Influ
 
 Externally from the platform, access to InfluxDB are proxied through Grafana.
 
-#### Grafana
+### Grafana
 Grafana is a flexible graphing service that can pull metrics directly from known data sources such as InfluxDB or Prometheus.
 
 Grafana integrates with AdvantEDGE by providing dashboards that are embedded in AdvantEDGE frontend.
@@ -63,7 +63,7 @@ Grafana is provided as a platform facility; if desired, users can use Grafana to
 Grafana provides a frontend that can be accessed from the Montitoring page; using Grafana frontend.
 Demo-specific dashboards can be added to the Monitoring page or the execution page.
 
-#### Metrics engine
+### Metrics engine
 AdvantEDGE provides a `/metrics` endpoint in its REST API to allow user to collect/use metrics from their scenario control software or to experiment from their edge applications.
 
 The service currently allows to query/subscribe to metrics related to:
@@ -73,7 +73,7 @@ The service currently allows to query/subscribe to metrics related to:
 
 Example usage of this API: in a past demo, we subscribed to this API to feed scenario data (throughput usage) into a ML algorithm of ours.
 
-#### Prometheus
+### Prometheus
 Prometheus is a monitoring & alerting toolkit that collects and stores metrics; its 2 main components are:
 - _Prometheus Server:_ Scrapes metrics from services and stores them in a time-series database; monitors alert conditions
 - _Alert Manager:_ Manages and publishes alert notifications
@@ -97,7 +97,7 @@ Prometheus exposes its data with the PromQL query language; allows retrieving an
 
 Prometheus server also monitors its configured alert thresholds, informing the Alert Manager of any alert conditions.
 
-##### Alert Manager
+#### Alert Manager
 Alert Manager processes alerts received from Prometheus server. When an alert is received, the Alert Manager sends an alert notification to its configured listeners via e-mail, chat or notification systems.
 
 Alert Manager also supports alert silencing and aggregation.
