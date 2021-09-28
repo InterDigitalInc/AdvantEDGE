@@ -15,10 +15,10 @@ This service provides the following capabilities:
 - _Registering edge applications to the MG_
 - _Executing application state transfers_
 
-### Micro-Services
+## Micro-Services
   - _Mobility Group Manager:_ Implements a proprietary API with a custom integration with AdvantEDGE APIs
 
-### Northbound API
+## Northbound API
 - Service API
   - Mobility Group Manager API
     - [Documentation (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-mg-manager)
@@ -34,7 +34,7 @@ This service provides the following capabilities:
     - [Specification (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-sandbox-ctrl/api/swagger.yaml)
   - Based on OpenAPI Specification (OAS) 2.0
 
-### AdvantEDGE Integration
+## AdvantEDGE Integration
 AdvantEDGE provides a state transfer service that facilitates UE state transfer between instances of a multi-edge group.
 
 To use the state transfer service, multi-edge application instances must:
@@ -47,12 +47,12 @@ When multi-edge application instances are registered to the MG, the MG Manager i
 
 _**Note:** The MG Manager uses the MG configuration to determine when to send events and which events to send to the application instances._
 
-#### MG Manager URIs
+### MG Manager URIs
 MG Manager REST API endpoint URIs are relative to: `https://<platform-fqdn>/mgm/v1`
 
 Mobility Group Application REST API endpoint URIs are relative to the URL provided at MG application registration.
 
-#### Mobility Group Creation
+### Mobility Group Creation
 Mobility Groups are automatically created at scenario deployment time based on the multi-edge groups defined in the scenario.
 
 The MG Manager service REST API endpoints used to create and configure MGs are the following:
@@ -70,7 +70,7 @@ stateTransferTrigger   | NET-LOC-IN-RANGE | The following state transfer events 
 sessionTransferMode    | FORCED           | Session between UE & Edge App instance is forcefully dropped after STATE-TRANSFER-COMPLETE event
 loadBalancingAlgorithm | HOP-COUNT        | Target multi-edge app instance is determined using minimum hop count to reach service
 
-#### Multi-Edge Application Instance Registration
+### Multi-Edge Application Instance Registration
 The MG Manager service REST API endpoints used for multi-edge application instance registration are the following:
 - /mg/{mgName}/app
 - /mg/{mgName}/app/{appId}
@@ -85,7 +85,7 @@ The following figure presents the MG creation and application instance registrat
     - POST /mg/multi-edge-svc/app/multi-edge-app1
     - POST /mg/multi-edge-svc/app/multi-edge-app2
 
-#### State Transfer on UE Mobility
+### State Transfer on UE Mobility
 The MG Manager service REST API endpoint used for transferring edge application UE state is the following:
 - /mg/{mgName}/app/{appId}/state
 
@@ -112,6 +112,6 @@ The following figure presents the UE State Transfer procedure.
 7. MG Manager forcefully terminates the UE connection to the initial multi-edge app instance (multi-edge-app1)
     - The UE should create a new connection to the multi-edge service, which will be routed to the new multi-edge app instance (multi-edge-app2)
 
-#### State Transfer on PoAs in Range Event
+### State Transfer on PoAs in Range Event
 
 _**Note: In cases where UE state transfer is required before a UE Mobility event occurs, the MG Manager service may be used to trigger a state transfer on a AdvantEDGE Sandbox Controller POAS-IN-RANGE event. This is the default MG Manager behavior, however the Demo Applications provided with the AdvantEDGE platform do not use this functionality. More details will be provided at a later time or upon request.**_

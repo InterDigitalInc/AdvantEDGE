@@ -27,12 +27,12 @@ This feature provides the following capabilities:
   - Network Characteristic update events: drive network characteristics based on distance from PoA (**v1.6+**)
   - Provides a more complete emulation for Location, RNI & WAI services
 
-### Micro-Services
+## Micro-Services
   - _Map server:_ Open Map Tiles is used to serve map data required by the frontend
   - _GIS Engine:_ Implements the GIS REST API
   - _Database:_ Postgres/Postgis backend database to store geospatial assets & perform calculations
 
-### Scenario Configuration
+## Scenario Configuration
 
 Element | Description
 ------ | ------
@@ -42,7 +42,7 @@ Terminal movement | It is possible to define a path for terminals and configure 
 Zone color coding | Zones can be assigned a color so that all PoAs belonging to a zone can easily be recognized on the map
 Map interactions | To facilitate configuration, geolocation of objects and path definitions are performed by interacting with the map
 
-### Scenario Runtime
+## Scenario Runtime
 
 GIS Runtime | Description
 ------ | ------
@@ -53,7 +53,7 @@ PoA in-range events | Application state transfer requires to know PoAs in range 
 Net.char events automation | A terminal's throughput is influenced by its signal strength; network characteristics can thgerefore be automated using distance to PoA of the terminal
 ETSI MEC Services | Some ETSI MEC services have geospatial component which is now integrated with GIS to provide accurate emulation
 
-### Using GIS feature
+## Using GIS feature
 
 ### Map Provisioning
 AdvantEDGE provides an integrated GIS service but does not provide any Map data out of the box. Prior to using the feature, it is therefore necessary to download the desired vector/raster map tiles that you will need for your experiment. These can be downloaded from [Open Map Tiles](https://openmaptiles.com/downloads/planet/) (we tested with _OpenStreetMap Vector Tiles_). Most maps have a free version available to experiment but may require a license fee for newer versions or to use in other contexts.

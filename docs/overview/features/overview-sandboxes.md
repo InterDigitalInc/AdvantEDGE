@@ -18,13 +18,13 @@ This feature provides the following capabilities:
 - _Collaboration_
   - Allows multiple users to observe the same sandbox
 
-### Micro-Services
+## Micro-Services
 See [Micro-service Architecture]({{site.baseurl}}{% link docs/overview/overview-architecture.md %}#micro-service-architecture) to learn about the micro-services running in a sandbox.
 
-### Scenario Configuration
+## Scenario Configuration
 No scenario configuration
 
-### Scenario Runtime
+## Scenario Runtime
 _**NOTE:** AdvantEDGE default deployment configuration provided in the repository assumes a **friendly & secure environment** where co-workers/collaborators can share a single platform (e.g. lab, home, etc.)._
 
 In order to manage expectations, the following is to be expected when using AdvantEDGE in a multi-users environment.
@@ -39,7 +39,7 @@ The following should therefore be expected:
 - users can view/add/modify/delete dashboards present in Grafana
 - sandbox lifecycle monitoring & management is not implemented in version 1.5 and has to be manually performed using the frontend
 
-#### Using Sandboxes
+### Using Sandboxes
 
 Using the platform frontend, in the execution tab, a user can create a sandbox by using the `NEW` sandbox button in the upper left corner.
 

@@ -166,10 +166,10 @@ You may configure the following events:
 ### MOBILITY
 This event moves a chosen network element to a new location in the network topology. The following options must be configured:
 
-#### Target
+##### Target
 Drop-down menu to select the network element to be moved.
 
-#### Destination
+##### Destination
 Drop-down menu to select the parent network element where the target element should be moved. This list is filtered to display valid destinations according to the selected target element.
 
 When destination is set to _DISCONNECTED_, 100% packet loss is set on the selected target element to simulate network connectivity loss.
@@ -177,13 +177,13 @@ When destination is set to _DISCONNECTED_, 100% packet loss is set on the select
 ### NETWORK-CHARACTERISTICS-UPDATE
 This event provides network characteristics that must be applied to a specific network element. The following options must be configured:
 
-#### Network Element Type
+##### Network Element Type
 Drop-down menu to select the type of network element to be updated.
 
-#### Network Element
+##### Network Element
 Drop-down menu to select the network element to be updated.
 
-#### Latency / Latency Variation / Packet Loss / Throughput
+##### Latency / Latency Variation / Packet Loss / Throughput
 Number fields to input element network characteristics to be sent in the event. Network characteristics are described in more detail [here]({{site.baseurl}}{% link docs/overview/overview-architecture.md %}#network-characteristics).
 
 ### SCENARIO-UPDATE
@@ -191,13 +191,13 @@ This event dynamically adds or removes terminal, edge or cloud applications in t
 
 The following options must be configured:
 
-#### Action Type
+##### Action Type
 Drop-down menu to select the action to perform.
 
-##### Adding an element
+_**Adding an element**_
 When adding an application, element configuration fields must be filled before submitting the event. Frontend & backend validation is performed on the event to prevent errors during process instantiation. Once successfully submitted, the platform performs all necessary actions to start the new application.
 
-##### Removing an element
+_**Removing an element**_
 When removing an application, the target _Process Type_ & _Process Name_ must be selected from the drop-down menus. Once successfully submitted, the platform performs all necessary actions to stop the selected application.
 
 ### PDU-SESSION
@@ -205,16 +205,16 @@ This event adds or removes terminal PDU Sessions. This event enables the [Cellul
 
 The following options must be configured:
 
-#### Action Type
+##### Action Type
 Drop-down menu to select the action to perform.
 
-#### Terminal
+##### Terminal
 Drop-down menu to select the terminal.
 
-#### PDU Session ID
+##### PDU Session ID
 Text Field to input PDU Session ID.
 
-#### Data Network Name
+##### Data Network Name
 Drop-down menu to select the data network name (only visible when creating a new PDU Session).
 
 ---

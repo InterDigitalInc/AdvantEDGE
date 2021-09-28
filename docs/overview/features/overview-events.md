@@ -22,10 +22,10 @@ This feature provides the following capabilities:
 
 Following any of the above events, network charactreristics of all affected nodes are re-calculated and re-applied.
 
-### Micro-Services
+## Micro-Services
   - _Sandbox Controller:_ Events received and executed by the Sandbox Controller
 
-### Scenario Configuration
+## Scenario Configuration
 
 Element | Description
 ------ | ------
@@ -33,7 +33,7 @@ Connectivity Model | _Deployment:_ PDU events are only available when using `Con
 Data Network Name | _Physical Location:_ [fog/edge/cloud] PDU session events rely on the specified `Data Network Name` (DNN) of the Physical nodes
 LADN | _Physical Location:_ [fog/edge/cloud] PDU sessions behave differently when the Data Network (DN) is a regular DN or a Local Area Data Network (LADN). LADNs nodes are only reachable when the terminal is in the same Zone while DNs are reachable from any Zone.
 
-### Scenario Runtime
+## Scenario Runtime
 Events can be triggered against a scenario to modify the running network model topology and network characteristics; these events are described below.
 
 Event | Description

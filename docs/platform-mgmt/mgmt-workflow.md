@@ -36,7 +36,7 @@ This procedure
 - _pre-requisites_
   - _AdvantEDGE Development Environment_
 
-#### Clone repository
+### Clone repository
 AdvantEDGE repository follows the [Gitflow Workflow](https://nvie.com/posts/a-successful-git-branching-model/) branching model for sharing official platform releases and development updates. Key branches are:
 - **_master:_** Official platform release branch
 - **_develop:_** Development branch with latest features
@@ -48,7 +48,7 @@ We recommend using the master branch
 git clone https://github.com/InterDigitalInc/AdvantEDGE.git
 ```
 
-#### Build & install meepctl
+### Build & install meepctl
 The bash script below buids & installs [_meepctl CLI tool_](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/meepctl/meepctl.md)
 
 ```
@@ -65,7 +65,7 @@ meepctl config gitdir /home/<user>/AdvantEDGE
 meepctl config
 ```
 
-#### Build frontend & micro-services
+### Build frontend & micro-services
 meepctl CLI tool is used to build frontend and micro-services.
 
 ```
@@ -91,12 +91,12 @@ This procedure
   - _AdvantEDGE Runtime Environment_
   - _meepctl CLI tool installed_
 
-#### Configure deployment (optional)
+### Configure deployment (optional)
 AdvantEDGE comes with a [default configuration](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/.meepctl-repocfg.yaml) that can be used out-of-the-box for private deployments.
 
 For custom deployments, the configuration file can be edited to control deployment parameters - see [Deployment Configuration]({{site.baseurl}}{% link docs/platform-mgmt/mgmt-cheat-sheet.md %}#deployment-configuration)
 
-#### Deploy dependencies
+### Deploy dependencies
 meepctl CLI tool is used to deploy AdvantEDGE dependencies on Kubernetes.
 
 ```
@@ -106,7 +106,7 @@ meepctl deploy dep
 # meepctl delete dep
 ```
 
-#### Containerize core micro-services
+### Containerize core micro-services
 meepctl CLI toolis used to containerize AdvantEDGE micro-services.
 
 ```
@@ -120,7 +120,7 @@ Note:
 - this command first creates the containers in the local docker registry
 - then pushes the images in the K8s registry; therefore make sure _dependencies_ are running
 
-#### Deploy core micro-services
+### Deploy core micro-services
 meepctl CLI tool is used to deploy AdvantEDGE core micro-services on Kubernetes.
 
 ```
@@ -171,7 +171,7 @@ This procedure
 - follow [Build procedure](#build)
 - follow [Deploy procedure](#deploy)
 
-#### Uninstall AdvantEDGE
+### Uninstall AdvantEDGE
 meepctl CLI tool is used to uninstall AdvantEDGE.
 
 ```
@@ -190,7 +190,7 @@ This procedure
 - runs Cypress CLI
 - alternatively, runs Cypress GUI
 
-#### Install Cypress
+### Install Cypress
 To install Cypress run the following commands:
 
 ```
@@ -198,7 +198,7 @@ cd ~/AdvantEDGE/test
 npm ci
 ```
 
-#### Run unit tests
+### Run unit tests
 ```
 cd AdvantEDGE/tests
 ./start-ut-env.sh
@@ -206,7 +206,7 @@ cd AdvantEDGE/tests
 ./stop-ut-env.sh
 ```
 
-#### Run Cypress CLI
+### Run Cypress CLI
 ```
 # Run Cypress tests using CLI
 cd ~/AdvantEDGE/test
@@ -217,7 +217,7 @@ cd ~/AdvantEDGE/test
 # npm run cy:run -- --env meep_url="http://<Node IP>"
 ```
 
-#### Cypress GUI
+### Cypress GUI
 ```
 # Run/Debug Cypress tests using GUI
 cd ~/AdvantEDGE/test
@@ -234,7 +234,7 @@ npm run cy:open
 >`echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`<br>
 >See details [here](https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers)
 
-#### Code Coverage
+### Code Coverage
 **(THIS SECTION IS OUTDATED - CODE COVERAGE NEEDS TO BE REWORKED)**
 
 AdvantEDGE core micro-services can be instrumented with code coverage instrumentation; when used in conjunction with Cypress or other system tests (manual or proprietary), it will provide an overview of the code coverage.

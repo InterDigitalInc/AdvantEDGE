@@ -118,7 +118,7 @@ AdvantEDGE platform API and frontend are served via an ingress controller on por
 
 The following tables present a summary of the service exposure.
 
-#### DEPENDENCY
+### DEPENDENCY
 
 Module | type | default
 -|-|-
@@ -133,7 +133,7 @@ postgis             |internal | -
 prometheus          |internal | -
 redis               |internal | -
 
-#### PLATFORM
+### PLATFORM
 
 Module | type | default
 -|-|-

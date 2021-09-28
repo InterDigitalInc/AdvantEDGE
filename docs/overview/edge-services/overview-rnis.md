@@ -16,7 +16,7 @@ This service provides the following capabilities:
 - _Learning about devices connected to the radio node(s) associated with the mobile edge host and their radio access bearers_
 - _Getting real-time updates on devices radio conditions as they move across the network_
 
-### Micro-Services
+## Micro-Services
   - _RNIS:_ Implements ETSI MEC012 northbound API with a custom integration with AdvantEDGE APIs
 
 ## API Version
@@ -27,7 +27,7 @@ This service provides the following capabilities:
   - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-rnis)
   - Based on OpenAPI Specification (OAS) 3.0
 
-### AdvantEDGE Integration
+## AdvantEDGE Integration
 - RNIS is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox
 
 - 3 components:

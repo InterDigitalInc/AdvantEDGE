@@ -33,6 +33,7 @@ AdvantEDGE backend offers a series of REST APIs that can be used to achieve diff
 AdvantEDGE APIs follow the [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification) (OAS) standard to define the platform APIs. Some of our APIs are aligned on OAS 2.0 version of the standard (formerly known as Swagger 2.0) while others are aligned with OAS 3.0.
 
 Following the OAS standard, allows AdvantEDGE APIs to benefit from a rich eco-system of tools to facilitate integration as described below.
+
 #### Finding API Specification
 In the GitHub repository, each application exposing a REST API has an associated `swagger.yaml` file.
 - For Golang micro-services it can be found under `go-apps/<micro-service>/api/`

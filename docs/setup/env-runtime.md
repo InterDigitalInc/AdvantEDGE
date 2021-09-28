@@ -72,7 +72,7 @@ Depending on your network setup, this can be achieved either by setting a static
 
 How we do it:
 
-###### STEP 1 - Verify pre-requisites [(here)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#before-you-begin)
+##### STEP 1 - Verify pre-requisites [(here)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#before-you-begin)
 
 ```
 # Disable swap
@@ -80,7 +80,7 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^/#/' /etc/fstab
 ```
 
-###### STEP 2 - Setup Docker daemon [(details)](https://kubernetes.io/docs/setup/cri/#docker)
+##### STEP 2 - Setup Docker daemon [(details)](https://kubernetes.io/docs/setup/cri/#docker)
 
 ```
 # Docker was previously installed
@@ -106,7 +106,7 @@ sudo mkdir -p /etc/systemd/system/docker.service.d
 sudo reboot
 ```
 
-###### STEP 3 - Install kubeadm, kubelet & kubectl [(details)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
+##### STEP 3 - Install kubeadm, kubelet & kubectl [(details)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
 
 If upgrading from an older version, start by uninstalling it:
 
@@ -139,7 +139,7 @@ sudo apt-get install -y kubelet=1.19.1-00 kubeadm=1.19.1-00 kubectl=1.19.1-00 ku
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
-###### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
+##### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
 
 ```
 sudo kubeadm init
@@ -165,7 +165,7 @@ sudo sysctl net.bridge.bridge-nf-call-iptables=1
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_MTU=1500"
 ```
 
-###### STEP 5 - Optionally add worker nodes to K8s cluster [(details)](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/)
+##### STEP 5 - Optionally add worker nodes to K8s cluster [(details)](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/)
 
 _**NOTE: This step is necessary only if using Worker Nodes; if you are only using 1 node, skip this step and go to STEP #6**_
 
@@ -193,13 +193,13 @@ mkdir ~/.kube
 scp <user>@<master-ip>:~/.kube/config ~/.kube/
 ```
 
-###### STEP 6 - Enable kubectl auto-completion
+##### STEP 6 - Enable kubectl auto-completion
 
 ```
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 ```
 
-###### STEP 7 - Configure Docker Registry
+##### STEP 7 - Configure Docker Registry
 
 Each node (master & worker) must be able to access the docker registry where container images are stored. By default, we install and use a private cluster registry. To enable access to the registry, run the following commands on each node:
 
@@ -232,7 +232,7 @@ _**NOTE:** Procedure is slightly different when upgrading Helm v2 to v3 versus i
 
 How we do it:
 
-#### Install Helm from scratch[(details)](https://helm.sh/docs/intro/install/)
+### Install Helm from scratch[(details)](https://helm.sh/docs/intro/install/)
 
 ```
 sudo snap install helm --channel=3.3/stable --classic
@@ -241,24 +241,24 @@ sudo snap install helm --channel=3.3/stable --classic
 sudo snap refresh helm --channel=3.3/stable --classic
 ```
 
-#### Upgrade Helm v2 to v3
+### Upgrade Helm v2 to v3
 
-###### STEP 1 - Delete all your deployment running in k8s.
+##### STEP 1 - Delete all your deployment running in k8s.
 
-###### STEP 2 - Install Helm v3
+##### STEP 2 - Install Helm v3
 
 ```
 sudo snap refresh helm --channel=3.3/stable --classic
 ```
 
-###### STEP 3 - Check helm installation
+##### STEP 3 - Check helm installation
 
 ```
 helm version
 # Output should show version as 3.3.1
 ```
 
-###### STEP 4 - Download helm v2 to v3 plugin to get the helm v2 configuration and data
+##### STEP 4 - Download helm v2 to v3 plugin to get the helm v2 configuration and data
 
 ```
 helm plugin install https://github.com/helm/helm-2to3  
@@ -268,7 +268,7 @@ helm plugin list
 # Note: Please check that all Helm v2 plugins that you have installed previously, work fine with the Helm v3, and remove the plugins that do not work with v3.
 ```
 
-###### STEP 5 - Migrate Helm v2 configurations
+##### STEP 5 - Migrate Helm v2 configurations
 
 ```
 helm 2to3 move config
@@ -277,7 +277,7 @@ helm repo list
 # This will show all the repositories you had added for Helm v2
 ```
 
-###### Optional Step - Clean up of Helm v2 data and releases
+##### Optional Step - Clean up of Helm v2 data and releases
 
 ```
 helm 2to3 cleanup
@@ -293,7 +293,7 @@ In order for Kubernetes to be aware of available GPU resources on its nodes, eac
 
 How we do it:
 
-###### STEP 1 - Install NVIDIA drivers
+##### STEP 1 - Install NVIDIA drivers
 
 Determine which NVIDIA GPU hardware is installed on your setup using the command `lspci | grep NVIDIA` and find the recommended driver version for your GPU by searching the [NVIDIA driver download page](https://www.nvidia.com/Download/index.aspx).
 
@@ -335,7 +335,7 @@ nvidia-smi
 +-----------------------------------------------------------------------------+
 ```
 
-###### STEP 2 - Install NVIDIA Container Runtime
+##### STEP 2 - Install NVIDIA Container Runtime
 
 Starting with Docker 19.03, NVIDIA GPU support is included in the default _runc_ container runtime. However, the NVIDIA device plugin requires the NVIDIA container runtime. We describe how to install it here.
 
@@ -389,7 +389,7 @@ sudo systemctl restart docker
 docker run --rm nvidia/cuda:9.0-base nvidia-smi
 ```
 
-###### STEP 3 - Install NVIDIA device plugin for Kubernetes
+##### STEP 3 - Install NVIDIA device plugin for Kubernetes
 
 We use the [NVIDIA Device Plugin for Kubernetes](https://github.com/nvidia/k8s-device-plugin) procedure.
 
@@ -399,7 +399,7 @@ Install the device plugin DaemonSet using the following command:
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta/nvidia-device-plugin.yml
 ```
 
-###### STEP 4 - Deploy a scenario requiring GPU resources
+##### STEP 4 - Deploy a scenario requiring GPU resources
 
 This can be done via AdvantEDGE frontend scenario configuration by selecting the number of requested GPUs for a specific application (GPU type must be set to _NVIDIA_). The application image must include or be based on an official NVIDIA image containing the matching NVIDIA drivers. DockerHub images can be found [here](https://hub.docker.com/r/nvidia/cuda/).
 

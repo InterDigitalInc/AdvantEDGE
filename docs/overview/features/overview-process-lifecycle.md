@@ -17,16 +17,16 @@ This feature provides the following capabilities:
   - Allows to create and delete terminal, edge & cloud applications
   - Validates process fields before updating active scenario
 
-### Micro-Services
+## Micro-Services
 - _Sandbox Controller:_ Provides API for active scenario update events
 - _Virtualization Engine:_ Deploys/terminates applications according to active scenario
 - _Traffic Control Engine:_ Enforces (via Traffic Control sidecars) the real-time routing rules & network characteristics
 - _Mobility Group Manager:_ Evaluates multi-edge service routing rules
 
-### Scenario Configuration
+## Scenario Configuration
 No scenario configuration
 
-### Scenario Runtime
+## Scenario Runtime
 
 Runtime | Description
 ------ | ------
@@ -36,7 +36,7 @@ Traffic Control Engine | On active scenario updates, TC Engine obtains any missi
 Mobility Group Manager | On active scenario updates, re-evaluates routing rules for multi-edge services and informs the TC Engine of any changes.
 Hierarchical Network Topology | Shows a real-time view of the active scenario topology; it is dynamically updated & refreshed when applications are added/removed from the deployed scenario.
 
-### Using Process Lifecycle events
+## Using Process Lifecycle events
 After deploying a scenario, events can be sent to modify the active scenario. Supported events include terminal mobility, network characteristic updates and PDU session management. Process Lifecycle management offers a new Scenario Update event type for dynamic instantiation/termination of processes in the active scenario.
 
 There are 2 methods for adding/removing applications:
