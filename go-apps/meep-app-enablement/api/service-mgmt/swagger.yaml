@@ -705,7 +705,6 @@ components:
               - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
-        isLocal: true
     Subscription:
       description: A link to the related subscription
       type: object
@@ -1078,7 +1077,6 @@ components:
                   - 'https://my.callback.com/sandboxname/rni/v2/'
             serializer: 'JSON'
             scopeOfLocality: 'MEC_SYSTEM'
-            isLocal: true
       description: >-
         New ServiceInfo with updated "state" is included as entity body of the
         request
@@ -1185,6 +1183,5 @@ components:
               - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
-        isLocal: true
 
 
