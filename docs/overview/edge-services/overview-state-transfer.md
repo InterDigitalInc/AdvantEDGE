@@ -38,7 +38,7 @@ This service provides the following capabilities:
 AdvantEDGE provides a state transfer service that facilitates UE state transfer between instances of a multi-edge group.
 
 To use the state transfer service, multi-edge application instances must:
-1. Create & Configure a Mobility Group (MG) using the MG Manager service REST API
+1. Create & Configure a Mobility Group (MG) using the MG Manager service REST API<br/>
    _**Note:** The MG is automatically created by the AdvantEDGE platform at scenario deployment time, based on the multi-edge group defined in the scenario; therefore, there is no need to create the MG via the MG Manager API._
 2. Register to the MG using the MG Manager service REST API
 3. Implement the MG Application State Transfer REST API to handle MG application state events
@@ -58,6 +58,7 @@ Mobility Groups are automatically created at scenario deployment time based on t
 The MG Manager service REST API endpoints used to create and configure MGs are the following:
 - /mg
 - /mg/{mgName}
+
 _**Note: The MG Manager currently supports only the default configuration. DO NOT use this API to set a different configuration.**_
 
 The AdvantEDGE platform uses the following default MG configuration:
