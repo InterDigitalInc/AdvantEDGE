@@ -126,7 +126,7 @@ Want to know more about Pod Placement: [Pod Placement]({{site.baseurl}}{% link d
 ## Process Lifecycle
 AdvantEDGE supports dynamic addition and removal of terminal, edge or cloud applications at scenario runtime. This _Process Lifecycle_ management feature enables a new set of platform experiments.
 
-> **NOTE:** The terms _process_ & _application_ are equivalent and used interchangeably in this document.
+_**NOTE:** The terms **process** & **application** are equivalent and used interchangeably in this document._
 
 This feature provides the following capabilities:
 - _API to trigger active scenario updates_

@@ -58,11 +58,11 @@ ETSI MEC Services | Some ETSI MEC services have geospatial component which is no
 ### Map Provisioning
 AdvantEDGE provides an integrated GIS service but does not provide any Map data out of the box. Prior to using the feature, it is therefore necessary to download the desired vector/raster map tiles that you will need for your experiment. These can be downloaded from [Open Map Tiles](https://openmaptiles.com/downloads/planet/) (we tested with _OpenStreetMap Vector Tiles_). Most maps have a free version available to experiment but may require a license fee for newer versions or to use in other contexts.
 
-> **NOTE:** The Planet map file represent ~60GB of data, we therefore recommend to use only the region for which you are experimenting.
+_**NOTE:** The Planet map file represent ~60GB of data, we therefore recommend to use only the region for which you are experimenting._
 
 Once the map `.mbtiles` file is downloaded, copy it in the following location `<your-installation-folder>/.meep/omt`
 
-> **NOTE:** Only a single `.mbtiles` file is supported at once.
+_**NOTE:** Only a single `.mbtiles` file is supported at once._
 
 ### Scenario Configuration
 To use the capabilities offered by GIS, it is necessary to configure geospatial information in the scenario, either by updating an existing scenario or  creating a new scenario from scratch.
@@ -73,7 +73,7 @@ The map view is used to interactively place elements on the map, change existing
 
 The configuration pane is used to set other data such as PoA signal radius, speed, EOP action or UE supported wireless types.
 
-> **NOTE:** When interacting with the map to configure geospatial data or any other configuration field, it is necessary to hit the `APPLY` button to retain modifications.
+_**NOTE:** When interacting with the map to configure geospatial data or any other configuration field, it is necessary to hit the `APPLY` button to retain modifications._
 
 ![gis-config.png]({{site.baseurl}}/assets/images/gis-config.png)
 

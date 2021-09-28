@@ -39,13 +39,13 @@ AdvantEDGE provides a state transfer service that facilitates UE state transfer 
 
 To use the state transfer service, multi-edge application instances must:
 1. Create & Configure a Mobility Group (MG) using the MG Manager service REST API
-> _**Note:** The MG is automatically created by the AdvantEDGE platform at scenario deployment time, based on the multi-edge group defined in the scenario; therefore, there is no need to create the MG via the MG Manager API._
+   _**Note:** The MG is automatically created by the AdvantEDGE platform at scenario deployment time, based on the multi-edge group defined in the scenario; therefore, there is no need to create the MG via the MG Manager API._
 2. Register to the MG using the MG Manager service REST API
 3. Implement the MG Application State Transfer REST API to handle MG application state events
 
 When multi-edge application instances are registered to the MG, the MG Manager informs them when a UE state transfer is needed. They can then transfer the requested UE state to the target application instance(s) via the MG Manager service API.
 
-> _**Note:** The MG Manager uses the MG configuration to determine when to send events and which events to send to the application instances._
+_**Note:** The MG Manager uses the MG configuration to determine when to send events and which events to send to the application instances._
 
 #### MG Manager URIs
 MG Manager REST API endpoint URIs are relative to: `https://<platform-fqdn>/mgm/v1`
@@ -58,7 +58,7 @@ Mobility Groups are automatically created at scenario deployment time based on t
 The MG Manager service REST API endpoints used to create and configure MGs are the following:
 - /mg
 - /mg/{mgName}
-> *Note: The MG Manager currently supports only the default configuration. DO NOT use this API to set a different configuration.*
+_**Note: The MG Manager currently supports only the default configuration. DO NOT use this API to set a different configuration.**_
 
 The AdvantEDGE platform uses the following default MG configuration:
 
@@ -113,4 +113,4 @@ The following figure presents the UE State Transfer procedure.
 
 #### State Transfer on PoAs in Range Event
 
-> *Note: In cases where UE state transfer is required before a UE Mobility event occurs, the MG Manager service may be used to trigger a state transfer on a AdvantEDGE Sandbox Controller POAS-IN-RANGE event. This is the default MG Manager behavior, however the Demo Applications provided with the AdvantEDGE platform do not use this functionality. More details will be provided at a later time or upon request.*
+_**Note: In cases where UE state transfer is required before a UE Mobility event occurs, the MG Manager service may be used to trigger a state transfer on a AdvantEDGE Sandbox Controller POAS-IN-RANGE event. This is the default MG Manager behavior, however the Demo Applications provided with the AdvantEDGE platform do not use this functionality. More details will be provided at a later time or upon request.**_

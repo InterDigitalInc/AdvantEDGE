@@ -31,7 +31,7 @@ See [Ubuntu runtime setup]({{site.baseurl}}{% link docs/setup/env-runtime.md %}#
 ----
 ## Go Toolchain
 
-> :exclamation: **BREAKING CHANGE** :exclamation:<br> With AdvantEDGE release v1.7+, **pre-1.13 Go toolchains are no longer supported**.
+_:exclamation: **BREAKING CHANGE** :exclamation:<br> With AdvantEDGE release v1.7+, **pre-1.13 Go toolchains are no longer supported**._
 
 We use the official [Go Programming Language install procedure](https://golang.org/doc/install)
 

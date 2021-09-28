@@ -57,7 +57,7 @@ sudo usermod -aG docker <your-user>
 ----
 ## Kubernetes
 
-> :exclamation: **BREAKING CHANGE** :exclamation:<br> With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**.
+_:exclamation: **BREAKING CHANGE** :exclamation:<br> With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**._
 
 We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independent/install-kubeadm/)
 
@@ -167,7 +167,7 @@ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl versio
 
 ###### STEP 5 - Optionally add worker nodes to K8s cluster [(details)](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/)
 
-> **NOTE: This step is necessary only if using Worker Nodes; if you are only using 1 node, skip this step and go to STEP #6**
+_**NOTE: This step is necessary only if using Worker Nodes; if you are only using 1 node, skip this step and go to STEP #6**_
 
 On the master node:
 
@@ -228,7 +228,7 @@ Versions we use:
 
 - 3.3 <br> _(Helm v2 deprecated)_
 
-> NOTE1: Procedure is slightly different when upgrading Helm v2 to v3 versus installing Helm v3 from scratch
+_**NOTE:** Procedure is slightly different when upgrading Helm v2 to v3 versus installing Helm v3 from scratch_
 
 How we do it:
 

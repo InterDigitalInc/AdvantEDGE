@@ -178,7 +178,7 @@ meepctl CLI tool is used to uninstall AdvantEDGE.
 meepctl delete core
 meepctl delete dep
 ```
-> **NOTE:** meepctl CLI tool performs a version check in the local _.meepctl-repocfg.yaml_ file. For this reason, it is recommended to uninstall AdvantEDGE before fetching the latest release.
+_**NOTE:** meepctl CLI tool performs a version check in the local **.meepctl-repocfg.yaml** file. For this reason, it is recommended to uninstall AdvantEDGE before fetching the latest release._
 
 ----
 ## Test
@@ -247,8 +247,8 @@ The following is a summary of the steps to enable code coverage measurement in A
 
 Once testing is completed
 - **Stop the micro-services gracefully**: `meepctl delete core`
-> Build, dockerize  & deploy will instrument and execute core micro-services so they measure code coverage.
-> When terminated gracefully, the core micro-services will store the code coverage result in the following location: `~/.meep/codecov/<micro-service-name>/codecov-<micro-service-name>.out`
+  _Build, dockerize  & deploy will instrument and execute core micro-services so they measure code coverage._
+  _When terminated gracefully, the core micro-services will store the code coverage result in the following location: `~/.meep/codecov/<micro-service-name>/codecov-<micro-service-name>.out`_
 - For convenience, code coverage reports can be generated using `meepctl test`
 
 

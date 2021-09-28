@@ -86,7 +86,7 @@ Prometheus metric are stored in a database as time-series uniquely identified by
 
 Prometheus is best used for metrics collection; by grouping data into metric types, Prometheus efficiently supports data storage, queries & alerting. It is an excellent tool for monitoring platform or system usage trends over time.
 
-> **NOTE:** InfluxDB is better suited for event logging and long-term data storage.
+_**NOTE:** InfluxDB is better suited for event logging and long-term data storage._
 
 ##### Prometheus Server
 Prometheus server pulls metrics from configured services by periodically _scraping_ the well-known `/metrics` endpoint. Each _scrape interval_, it collets samples from each configured service and stores them in the appropriate time-series.

@@ -93,7 +93,7 @@ cd ~/AdvantEDGE/examples/demo1/
 ./build-demo1.sh
 ```
 
-> **NOTE:** Binary files are created in ./bin/ folder
+_**NOTE:** Binary files are created in ./bin/ folder_
 
 ##### Optionally use pre-built binaries (from GitHub release)
 
@@ -107,7 +107,7 @@ tar -zxvf demo1.<version>.linux-amd64.tar.gz
 
 Demo Application binaries must be dockerized (containerized) as container images in the Docker registry. This step is necessary every time the demo binaries are updated.
 
-> **NOTE:** Make sure you have deployed the AdvantEDGE dependencies (e.g. docker registry) before dockerizing the demo binaries.
+_**NOTE:** Make sure you have deployed the AdvantEDGE dependencies (e.g. docker registry) before dockerizing the demo binaries._
 
 To generate docker images from demo binary files:
 

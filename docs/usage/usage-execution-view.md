@@ -42,7 +42,7 @@ Create a new sandbox:
   - Creates & starts new sandbox pods
   - Enables scenario deployment buttons
 
-> **NOTE:** Operation fails silently if a sandbox with the same name already exists. In this case you must click on _NEW_ again and enter a unique sandbox name.
+_**NOTE:** Operation fails silently if a sandbox with the same name already exists. In this case you must click on **NEW** again and enter a unique sandbox name._
 
 ### DELETE
 Delete the selected sandbox:
@@ -51,7 +51,7 @@ Delete the selected sandbox:
   - Removes the sandbox pods
   - Disables scenario deployment buttons until a new sandbox is selected or created
 
-> **NOTE:** Scenario pods running in the sandbox will also be removed when deleting a sandbox.
+_**NOTE:** Scenario pods running in the sandbox will also be removed when deleting a sandbox._
 
 ### DEPLOY
 Activate a scenario:
@@ -67,7 +67,7 @@ Save deployed scenario:
   - Validates the scenario name format & length
 - Sends the current state of the deployed scenario to the backend where it is added to the persistent store
 
-> **NOTE:** This operation overwrites any existing scenario with the same name. Be careful to use a unique name when saving the deployed scenario.
+_**NOTE:** This operation overwrites any existing scenario with the same name. Be careful to use a unique name when saving the deployed scenario._
 
 ### TERMINATE
 Deactivate a deployed scenario:
@@ -101,7 +101,7 @@ Create a new replay file:
 - Sends a replay file generation request to the backend
   - Backend queries the event database and creates a new replay file with the provided name & description
 
-> **NOTE:** You must click on the _AUTO-REPLAY_ button for the new replay file to be added to the list of available replay files in the frontend.
+_**NOTE:** You must click on the **AUTO-REPLAY** button for the new replay file to be added to the list of available replay files in the frontend._
 
 ### CLOSE
 Closes the event configuration bar.
@@ -147,12 +147,12 @@ We use a 3rd party mapping client called [Leaflet](https://leafletjs.com/) to re
 ### Network Metrics Point-to-Point
 This view loads the Network Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and destination nodes. It displays instantaneous measurements for round-trip ping time and UL & DL throughput, as well as a graph of these measurements over the last minute.
 
-> **NOTE:** You must select both a source and destination node in the Dashboard configuration bar to visualize data in this view.
+_**NOTE:** You must select both a source and destination node in the Dashboard configuration bar to visualize data in this view._
 
 ### Network Metrics Aggregation
 This view loads the Network Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and all other scenario application nodes. It displays graphs for round-trip ping times, UL & DL throughput measurements over the last minute. It also shows a table of events received by the backend.
 
-> **NOTE:** You must select a source node in the Dashboard configuration bar to visualize data in this view.
+_**NOTE:** You must select a source node in the Dashboard configuration bar to visualize data in this view._
 
 ### None
 Disables the view, giving its frontend real-estate to the other view.
@@ -240,7 +240,7 @@ This pane provides the following controls for replay file execution in the backe
 ### REPLAY FILE
 Drop-down menu to select the replay file to execute.
 
-> **NOTE:** New replay files created while this pane is open will only be added the the list after the pane is closed and re-opened.
+_**NOTE:** New replay files created while this pane is open will only be added the the list after the pane is closed and re-opened._
 
 ### LOOP
 Checkbox to enable replay file execution looping. If checked, the backend replay manager will run the selected replay file to completion, wait for 5 seconds and then restart the same replay file execution. It continues this loop until stopped.

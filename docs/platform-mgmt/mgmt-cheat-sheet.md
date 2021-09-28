@@ -85,7 +85,7 @@ parameter | description | default
 
 Dependency microservices and Core & Sandbox Subsystem microservices may also be modified using this configuration file. For example, specific microservices can be excluded from a platform build or deployment if not required.
 
-> **NOTE:** Modifying microservice configuration is only recommended for advanced platform users
+_**NOTE:** Modifying microservice configuration is only recommended for advanced platform users_
 
 ---
 ## Deployment files & paths

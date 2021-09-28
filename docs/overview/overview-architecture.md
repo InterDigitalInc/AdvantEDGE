@@ -145,9 +145,8 @@ Below are a few deployment model examples:
 
 - Other edge application deployment models may be valid too!
 
-> *__What if your deployment model is not listed?__<br>
-AdvantEDGE has been developed to provide as much flexibility as possible, so it may already support other deployment models not listed above out of the box.<br>
-If your use case requires a deployment model that is not currently supported, AdvantEDGE can be extended to support it.*
+_**What if your deployment model is not listed?**<br>_
+_AdvantEDGE has been developed to provide as much flexibility as possible, so it may already support other deployment models not listed above out of the box.<br>If your use case requires a deployment model that is not currently supported, AdvantEDGE can be extended to support it._
 
 ### Behavioral Model
 The behavioral model of an edge application can vary greatly depending on its  function, deployment model and overall design.

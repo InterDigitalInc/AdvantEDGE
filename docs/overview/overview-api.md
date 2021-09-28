@@ -39,7 +39,7 @@ In the GitHub repository, each application exposing a REST API has an associated
 - For Golang packages it can be found under `go-packages/<package>/api/`
 - For Javascript packages ir can be found under `js-packages/<package>/src/api/`
 
-> Note that not every component implements a REST API.
+_**NOTE:** that not every component implements a REST API._
 
 ### Viewing API Specification
 While YAML format is a convenient way to define an API, it is not a user friendly one to look at the API and understand its structure and details.
@@ -62,8 +62,8 @@ This is useful to quickly ramp-up on API functionality.
 
 Alternatively, CLI curl or numerous browser integrated HTTP probing solutions can be used to achieve the same result.
 
-> **IMPORTANT NOTE**<br>
-_Try It Now_ functionality is not supported for Notification APIs since these have  to be implemented by the service user.<br><br>For example, _Location Service Subscription Notification Callback REST API_ is an API implemented by a user of the _Location Service REST API_ <br>Therefore, _Try It Now_ works for _Location Service_ but not for _Location Service Subscription Notification Callback_
+_**IMPORTANT NOTE**<br>_
+**Try It Now** functionality is not supported for Notification APIs since these have  to be implemented by the service user.<br><br>For example, **Location Service Subscription Notification Callback REST API** is an API implemented by a user of the **Location Service REST API**<br>Therefore, **Try It Now** works for **Location Service** but not for **Location Service Subscription Notification Callback**_
 
 ### Interfacing with API
 Interfacing with AdvantEDGE APIs can be done following different methods.
@@ -82,7 +82,7 @@ For OAS3 specifications, we use swagger-codegen v3.0.22 from [this repo](https:/
 wget http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/3.0.22/swagger-codegen-cli-3.0.22.jar -O swagger-codegen-cli.jar
 ```
 
-> **NOTE v2 vs v3 swagger-codegen**<br>As explained [here](https://github.com/swagger-api/swagger-codegen#versioning), both version support OAS 2.0 but differently<br>- v2 swagger-codegen supports natively OAS 2.0 specs<br>- v3 swagger-codegen supports natively OAS 3.0 specs and supports OAS 2.0 via spec conversion prior to code generation<br>
+_**NOTE v2 vs v3 swagger-codegen**<br>As explained [here](https://github.com/swagger-api/swagger-codegen#versioning), both version support OAS 2.0 but differently<br>- v2 swagger-codegen supports natively OAS 2.0 specs<br>- v3 swagger-codegen supports natively OAS 3.0 specs and supports OAS 2.0 via spec conversion prior to code generation<br>_
 
 
 Swagger-codegen can generate client packages for many different languages:

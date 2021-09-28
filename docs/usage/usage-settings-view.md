@@ -35,7 +35,7 @@ This section provides the following browser options:
 ### Clear UI Cache
 Button to trigger deletion of the web application local storage. Certain frontend settings are persisted in the browser local storage to recover from a browser refresh. This button clears the local storage and resets the frontend state to its default values.
 
-> **NOTE:** Clearing the UI cache should only be necessary in certain version upgrade cases where state values may have changed. This should not happen often.
+_**NOTE:** Clearing the UI cache should only be necessary in certain version upgrade cases where state values may have changed. This should not happen often._
 
 ---
 ## About Information

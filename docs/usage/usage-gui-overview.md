@@ -21,7 +21,7 @@ Topic | Abstract
 The AdvantEDGE GUI can be accessed using a standard browser on standard HTTP/HTTPS ports 80/443 of the node where AdvantEDGE is deployed.
 
 Either `<your-node-ipaddress>` or `<your-node-URL>` should do the trick.
-> We currently do not perform cross-browser compatibility tests <br>Therefore your best chance of success is using Chrome
+_**NOTE:** We currently do not perform cross-browser compatibility tests; therefore your best chance of success is using Chrome._
 
 The GUI is sub-divided in 3 areas:
 - Top Bar
@@ -29,7 +29,7 @@ The GUI is sub-divided in 3 areas:
 - Footer
 
 The Top Bar is a fixed element that is always visible. It contains navigation tabs and a platform health indicator.
-> Health indicator verifies that the AdvantEDGE Core components are present and running
+_**NOTE:** Health indicator verifies that the AdvantEDGE Core components are present and running._
 
 The Top Bar navigation tabs allow to select which view to display in the Main Area.
 
@@ -39,7 +39,7 @@ The footer is at the bottom of each page and contains a copyright notice and lin
 ## Home
 The Home view provides basic platform information and useful links for further learning & help.
 
-> For public platform deployments, this is the only visible view when a user is not signed in.
+_**NOTE:** For public platform deployments, this is the only visible view when a user is not signed in._
 
 ----
 ## Configuration

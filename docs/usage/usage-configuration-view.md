@@ -42,9 +42,9 @@ Create a new scenario:
   - Opens the Network Element configuration pane
   - Shows the Network Element table with a single scenario element
 
-> **NOTE:** Operation fails silently if a scenario with the same name already exists. In this case you must click on _NEW_ again and enter a unique scenario name.
+_**NOTE:** Operation fails silently if a scenario with the same name already exists. In this case you must click on **NEW** again and enter a unique scenario name._
 
-> **NOTE:** At this point the scenario exists only in the frontend. Any operations performed on the scenario will be lost if the browser is refreshed. To persist the new scenario you must send it the the backend store using the _SAVE_ button.
+_**NOTE:** At this point the scenario exists only in the frontend. Any operations performed on the scenario will be lost if the browser is refreshed. To persist the new scenario you must send it the the backend store using the **SAVE** button._
 
 ### OPEN
 Open an existing scenario:
@@ -54,9 +54,9 @@ Open an existing scenario:
   - Opens the Network Element configuration pane
   - Shows the Network Element table with the list of elements in the selected scenario
 
-> **NOTE:** Any unsaved changes to a scenario being configured in the frontend will be lost when another scenario is opened.
+_**NOTE:** Any unsaved changes to a scenario being configured in the frontend will be lost when another scenario is opened._
 
-> **NOTE:** Operations performed on the scenario will only be persisted when sent to the backend store using the _SAVE_ button.
+_**NOTE:** Operations performed on the scenario will only be persisted when sent to the backend store using the **SAVE** button._
 
 ### SAVE
 Save scenario modifications:
@@ -66,9 +66,9 @@ Save scenario modifications:
   - Validates the scenario name format & length
 - Sends the latest scenario to the backend where it is added to the persistent store
 
-> **NOTE:** Once saved, there is no means of retrieving the previously saved version.
+_**NOTE:** Once saved, there is no means of retrieving the previously saved version._
 
-> **NOTE:** This operation overwrites any existing scenario with the same name. Be careful to use a unique name when saving to another scenario name.
+_**NOTE:** This operation overwrites any existing scenario with the same name. Be careful to use a unique name when saving to another scenario name._
 
 ### IMPORT
 Import a scenario from a _yaml_ file:
@@ -78,11 +78,11 @@ Import a scenario from a _yaml_ file:
   - Opens the Network Element configuration pane
   - Shows the Network Element table with the list of elements in the imported scenario
 
-> **NOTE:** Any unsaved changes to a scenario being configured in the frontend will be lost when a scenario is imported.
+_**NOTE:** Any unsaved changes to a scenario being configured in the frontend will be lost when a scenario is imported._
 
-> **NOTE:** At this point the scenario exists only in the frontend. To persist the imported scenario you must send it the the backend store using the _SAVE_ button.
+_**NOTE:** At this point the scenario exists only in the frontend. To persist the imported scenario you must send it the the backend store using the **SAVE** button._
 
-> **NOTE:** Scenario validation during import operation is limited. We recommend a visual inspection of the network elements after import.
+_**NOTE:** Scenario validation during import operation is limited. We recommend a visual inspection of the network elements after import._
 
 ### EXPORT
 Export a scenario to a _yaml_ file:
@@ -101,7 +101,7 @@ We use a 3rd party graphing tool called [vis.js](https://visjs.org/) to create a
 
 The scenario visualization shows basic network element information such as type, name & network characteristics directly in the graph. For more details on a specific element you can hover over the element to view an information tooltip, or you can click on it to open it in the network element configuration pane. You can switch between elements by clicking on a new one or on the graph background. You can set the network element positions using click & drag.
 
-> **NOTE:** Hovering over a link will also open a tooltip with additional network characteristics information. 
+_**NOTE:** Hovering over a link will also open a tooltip with additional network characteristics information._
 
 ### Map View
 We use a 3rd party mapping client called [Leaflet](https://leafletjs.com/) to render map tiles. Physical location assets such as UEs, PoAs & Compute nodes are then overlaid on the maps using markers, circles and lines. You can drag and zoom the map view using the provided controls or using your mouse click & scroll buttons.
@@ -112,9 +112,9 @@ We use [Leaflet-Geoman](https://geoman.io/leaflet-geoman) to enable location & p
 ## Network Element Configuration Pane
 This pane is only visible when a scenario is being configured. It provides a means of creating, editing, deleting & cloning network elements in the scenario. It provides the following buttons:
 
-> **NOTE:** There is no _EDIT_ button. To edit an element you must click on it in the scenario visualization area.
+_**NOTE:** There is no **EDIT** button. To edit an element you must click on it in the scenario visualization area._
 
-> **NOTE:** Any updates made to the scenario using this pane will only be persisted when sent to the backend using the headline bar _SAVE_ button.
+_**NOTE:** Any updates made to the scenario using this pane will only be persisted when sent to the backend using the headline bar **SAVE** button._
 
 ### NEW
 Configure a new scenario element:
@@ -158,7 +158,7 @@ When checked, terminal connectivity to the data network is blocked when the term
 #### Service Provider / Edge Compute Service Provider
 Text field to input service provider name. Accepts alphanumeric or ' ' with a limit of 50 characters.
 
-> **NOTE:** Currently ignored by the platform. 
+_**NOTE:** Currently ignored by the platform._
 
 #### MCC / MNC
 Text fields to input 3-digit hexadecimal Mobile Country Code (MCC) and Mobile Network Code (MNC) for simulated 3GPP cellular network.
@@ -178,14 +178,14 @@ Text field to input docker container image name to run. By default, pulls images
 #### Port
 Number field to input the service port to expose in the k8s pod. This port is pod-specific and can be accessed by all other pods.
 
-> **NOTE:** Although the backend supports a set of service ports, the frontend currently supports a single service port. If you need to expose more than 1 service port, you must do so using user-defined charts.
+_**NOTE:** Although the backend supports a set of service ports, the frontend currently supports a single service port. If you need to expose more than 1 service port, you must do so using user-defined charts._
 
 #### External Port
 Number field to input the service port to expose in the k8s cluster. This port maps to a k8s NodePort and must be unique within the cluster. Valid values range from 30000 to 32767.
 
 External ports provide direct access from clients running outside the k8s cluster to a service running in a k8s pod. This connection **is not impacted by network characteristics** defined in the scenario.
 
-> **NOTE:** To access an internal service and apply network characteristics to the connection you must configure an external node.
+_**NOTE:** To access an internal service and apply network characteristics to the connection you must configure an external node._
 
 #### Protocol
 Drop-down list of currently supported service protocol types.
@@ -195,7 +195,7 @@ Text field to input the Mobility Group service name. This service identifies the
 
 Several instances may join the same mobility group in order to offer a multi-edge service. Each service instance must register with the Mobility Group Manager as specified in the [Application State Transfer service]({{site.baseurl}}{% link docs/overview/edge-services/overview-state-transfer.md %}).
 
-> **NOTE:** Multi-edge services that do not require state transfer support are also enabled using this field. If multiple service instances specify the same group service name but do not register to the Mobility Group Manager, application traffic is automatically routed to the nearest service instance based on hop count. Any changes to this behavior must be coordinated through the Mobility Group Manager.
+_**NOTE:** Multi-edge services that do not require state transfer support are also enabled using this field. If multiple service instances specify the same group service name but do not register to the Mobility Group Manager, application traffic is automatically routed to the nearest service instance based on hop count. Any changes to this behavior must be coordinated through the Mobility Group Manager._
 
 #### GPU Count
 Number field to input the number of GPUs to reserve. The pod will not be scheduled unless the requested number of GPUs are available.
@@ -241,12 +241,12 @@ Checkbox to indicate if the application must be installed using a user-provided 
 
 When installing the user-defined chart, the _--name_ argument and the _fullnameOverride_ variable are both passed and set to the value **_\<scenario name\>-\<unique element name\>_**. This permits the installation of several instances using the same helm chart.
 
-> **NOTE:** For more information on writing helm charts see the [Helm](https://helm.sh/) website or the [Helm Charts repository](https://github.com/helm/charts) for examples.
+_**NOTE:** For more information on writing helm charts see the [Helm](https://helm.sh/) website or the [Helm Charts repository](https://github.com/helm/charts) for examples._
 
 #### User Chart Location
 Text field to input the user-defined chart location used by the Virtualization Engine. User-defined charts must be placed on the k8s master node at the following location: `~/.meep/virt-engine/user-charts/`. The Virtualization Engine uses the **relative path** provided in the _user chart location_ field to retrieve the requested user-defined charts from this folder.
 
-> **NOTE:** For AdvantEDGE versions older than v1.5, user charts may be placed anywhere on the backend host where the Virtualization Engine is running. This user chart location must to be specified as a full path, with the exception of the '~' character that is replaced by the _$HOME_ path.
+_**NOTE:** For AdvantEDGE versions older than v1.5, user charts may be placed anywhere on the backend host where the Virtualization Engine is running. This user chart location must to be specified as a full path, with the exception of the '~' character that is replaced by the **$HOME** path._
 
 #### User Chart Group
 Text field to input the user chart service information. This field provides the necessary details about the user chart service to enable network characteristics and mobility group management. If not specified, the user chart services may be accessed but will bypass traffic management.
@@ -257,12 +257,12 @@ The field is formatted as follows: _`Svc instance:svc group name:port:protocol`_
 - **_Port:_** Service port
 - **_Protocol:_** Service protocol
 
-> **NOTE:** The platform currently supports provisioning for a single user chart service.
+_**NOTE:** The platform currently supports provisioning for a single user chart service._
 
 #### User Chart Alternate Values
 Text field to input the path to an alternate _values.yaml_ file to use during chart installation. Alternate _values.yaml_ files must be placed on the k8s master node at the following location: `~/.meep/virt-engine/user-charts/`. The Virtualization Engine uses the **relative path** provided in the _user chart alternate values_ field to retrieve the requested alternate _values.yaml_ files from this folder.
 
-> **NOTE:** For AdvantEDGE versions older than v1.5, alternate _values.yaml_ files may be placed anywhere on the backend host where the Virtualization Engine is running. A full path is required, with the exception of the '~' character that is replaced by the _$HOME_ path.
+_**NOTE:** For AdvantEDGE versions older than v1.5, alternate **values.yaml** files may be placed anywhere on the backend host where the Virtualization Engine is running. A full path is required, with the exception of the '~' character that is replaced by the **$HOME** path._
 
 ### DELETE
 Remove an existing scenario element:
