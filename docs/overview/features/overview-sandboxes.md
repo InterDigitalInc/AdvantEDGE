@@ -25,7 +25,7 @@ See [Micro-service Architecture]({{site.baseurl}}{% link docs/overview/overview-
 No scenario configuration
 
 ### Scenario Runtime
-| AdvantEDGE default deployment configuration provided in the repository assumes a **friendly & secure environment** where co-workers/collaborators can share a single platform (e.g. lab, home, etc.) |
+**NOTE:** AdvantEDGE default deployment configuration provided in the repository assumes a **friendly & secure environment** where co-workers/collaborators can share a single platform (e.g. lab, home, etc.).
 
 In order to manage expectations, the following is to be expected when using AdvantEDGE in a multi-users environment.
 - platform does not provide user authentication by default
