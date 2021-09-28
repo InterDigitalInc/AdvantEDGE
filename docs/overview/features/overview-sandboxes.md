@@ -25,6 +25,7 @@ See [Micro-service Architecture]({{site.baseurl}}{% link docs/overview/overview-
 No scenario configuration
 
 ### Scenario Runtime
+|Note|
 |:-------------|
 | AdvantEDGE default deployment configuration provided in the repository assumes a **friendly & secure environment** where co-workers/collaborators can share a single platform (e.g. lab, home, etc.) |
 
