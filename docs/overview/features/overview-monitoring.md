@@ -88,8 +88,7 @@ Prometheus is best used for metrics collection; by grouping data into metric typ
 
 _**NOTE:** InfluxDB is better suited for event logging and long-term data storage._
 
-**Prometheus Server**
-
+##### Prometheus Server
 Prometheus server pulls metrics from configured services by periodically _scraping_ the well-known `/metrics` endpoint. Each _scrape interval_, it collets samples from each configured service and stores them in the appropriate time-series.
 
 Services wishing to provide metrics to the Prometheus server must expose the `/metrics` endpoint and create a custom `ServiceMonitor` resource. There are several readily available Prometheus exporters and libraries to easily instrument microservices for metrics exposure.
@@ -98,8 +97,7 @@ Prometheus exposes its data with the PromQL query language; allows retrieving an
 
 Prometheus server also monitors its configured alert thresholds, informing the Alert Manager of any alert conditions.
 
-**Alert Manager**
-
+##### Alert Manager
 Alert Manager processes alerts received from Prometheus server. When an alert is received, the Alert Manager sends an alert notification to its configured listeners via e-mail, chat or notification systems.
 
 Alert Manager also supports alert silencing and aggregation.
