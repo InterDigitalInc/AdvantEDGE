@@ -244,6 +244,13 @@ func sInfoPostDefaults(sInfoPost *ServiceInfoPost) {
 	sInfoPost.ConsumedLocalOnly = true
 }
 
+func sInfoDefaults(sInfo *ServiceInfo) {
+	locality := MEC_HOST
+	sInfo.ScopeOfLocality = &locality
+	sInfo.IsLocal = true
+	sInfo.ConsumedLocalOnly = true
+}
+
 func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("appServicesPOST")
@@ -464,6 +471,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve service info from request body
 	var sInfo ServiceInfo
+	sInfoDefaults(&sInfo)
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&sInfo)
 	if err != nil {
@@ -477,6 +485,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	*sInfo.State = *sInfoPrev.State
 	//isLocal appears only in query responses and service avail. subs and notif, so not here, make sure both have same value so they are ignored
 	sInfo.IsLocal = sInfoPrev.IsLocal
+
 	sInfoJson := convertServiceInfoToJson(&sInfo)
 	if sInfoJson != sInfoPrevJson {
 		errStr := "Only the ServiceInfo state property may be changed"
@@ -845,6 +854,8 @@ func createSInfoFromSInfoPost(sInfoPost *ServiceInfoPost) *ServiceInfo {
 	sInfo.Serializer = sInfoPost.Serializer
 	sInfo.ScopeOfLocality = sInfoPost.ScopeOfLocality
 	sInfo.ConsumedLocalOnly = sInfoPost.ConsumedLocalOnly
+	// although IsLocal is reevaluated when a query is replied to, value stored in sInfo as is for now
+	sInfo.IsLocal = sInfoPost.IsLocal
 	return &sInfo
 }
 
