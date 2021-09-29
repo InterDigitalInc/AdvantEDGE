@@ -22,7 +22,7 @@ import { Typography } from '@rmwc/typography';
 import '../../../img/AdvantEDGE-logo_Blue-01.png';
 
 import {
-  MEEP_WIKI_URL,
+  MEEP_DOCS_URL,
   MEEP_ARCHITECTURE_URL,
   MEEP_USAGE_URL,
   MEEP_HELP_GUI_URL,
@@ -104,7 +104,7 @@ class HomePageContainer extends Component {
                       <p>If you made it here, AdvantEDGE was successfully installed. Go ahead and experiment with the platform!</p>
                       <p>Need some help?</p>
                       <ul>
-                        <li>Check out the <a className='idcc-link' href={MEEP_WIKI_URL} target='_blank'>AdvantEDGE Wiki</a></li>
+                        <li>Check out the <a className='idcc-link' href={MEEP_DOCS_URL} target='_blank'>AdvantEDGE Docs</a></li>
                         <li>Learn more about platform <a className='idcc-link' href={MEEP_ARCHITECTURE_URL} target='_blank'>Architecture & Features</a></li>
                         <li>Follow the platform <a className='idcc-link' href={MEEP_USAGE_URL} target='_blank'>Usage Workflow</a></li>
                         <li>Have a look at the <a className='idcc-link' href={MEEP_HELP_GUI_URL} target='_blank'>GUI Help Page</a></li>

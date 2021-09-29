@@ -19,7 +19,7 @@ import { Typography } from '@rmwc/typography';
 import { Grid, GridCell } from '@rmwc/grid';
 
 import {
-  MEEP_WIKI_URL,
+  MEEP_DOCS_URL,
   MEEP_GITHUB_URL,
   MEEP_DISCUSSIONS_URL,
   MEEP_LICENSE_URL,
@@ -36,8 +36,8 @@ const Footer = () => {
       </GridCell>
       <GridCell span={5} align={'middle'}>
         <div align={'right'}>
-          <a href={MEEP_WIKI_URL} target="_blank" style={styles.link}>
-            <Typography use="body1">Wiki</Typography>
+          <a href={MEEP_DOCS_URL} target="_blank" style={styles.link}>
+            <Typography use="body1">Documentation</Typography>
           </a>
           <span style={styles.separator}>|</span>
           <a href={MEEP_GITHUB_URL} target="_blank" style={styles.link}>
