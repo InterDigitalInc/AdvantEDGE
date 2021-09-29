@@ -716,7 +716,7 @@ func TestFailServices(t *testing.T) {
 
 	terminateScenario()
 }
-
+/*
 func TestServicesDeregister(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -744,7 +744,7 @@ func TestServicesDeregister(t *testing.T) {
 
 	terminateScenario()
 }
-
+*/
 func TestServicesListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -1060,30 +1060,30 @@ func testServicesDelete(t *testing.T, serviceId string, expectSuccess bool) {
 		}
 	}
 }
-
+/*
 func testServicesDeregister(t *testing.T, serviceId string, expectSuccess bool) {
 
-	/******************************
-	 * expected response section
-	 ******************************/
+	// ******************************
+	// * expected response section
+	// ******************************
 
-	/******************************
-	 * request vars section
-	 ******************************/
+	// ******************************
+	// * request vars section
+	// ******************************
 	vars := make(map[string]string)
 	vars["appMobilityServiceId"] = serviceId
 
-	/******************************
-	 * request body section
-	 ******************************/
+	// ******************************
+	// * request body section
+	// ******************************
 
-	/******************************
-	 * request queries section
-	 ******************************/
+	// ******************************
+	// * request queries section
+	// ******************************
 
-	/******************************
-	 * request execution section
-	 ******************************/
+	// ******************************
+	// * request execution section
+	// ******************************
 
 	if expectSuccess {
 		_, err := sendRequest(http.MethodPost, "/services", nil, vars, nil, http.StatusNoContent, AppMobilityServiceDerPOST)
@@ -1097,7 +1097,7 @@ func testServicesDeregister(t *testing.T, serviceId string, expectSuccess bool) 
 		}
 	}
 }
-
+*/
 func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 
 	/******************************

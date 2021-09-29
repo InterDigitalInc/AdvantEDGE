@@ -7,7 +7,6 @@ Method | HTTP request | Description
 [**AppMobilityServiceByIdDELETE**](AmsiApi.md#AppMobilityServiceByIdDELETE) | **Delete** /app_mobility_services/{appMobilityServiceId} |  deregister the individual application mobility service
 [**AppMobilityServiceByIdGET**](AmsiApi.md#AppMobilityServiceByIdGET) | **Get** /app_mobility_services/{appMobilityServiceId} | Retrieve information about this individual application mobility service
 [**AppMobilityServiceByIdPUT**](AmsiApi.md#AppMobilityServiceByIdPUT) | **Put** /app_mobility_services/{appMobilityServiceId} |  update the existing individual application mobility service
-[**AppMobilityServiceDerPOST**](AmsiApi.md#AppMobilityServiceDerPOST) | **Post** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
 [**AppMobilityServiceGET**](AmsiApi.md#AppMobilityServiceGET) | **Get** /app_mobility_services |  Retrieve information about the registered application mobility service.
 [**AppMobilityServicePOST**](AmsiApi.md#AppMobilityServicePOST) | **Post** /app_mobility_services | Create a new application mobility service for the service requester.
 [**Mec011AppTerminationPOST**](AmsiApi.md#Mec011AppTerminationPOST) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
@@ -99,34 +98,6 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **AppMobilityServiceDerPOST**
-> AppMobilityServiceDerPOST(ctx, appMobilityServiceId)
- deregister the individual application mobility service
-
- deregister the individual application mobility service
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **appMobilityServiceId** | **string**| It uniquely identifies the created individual application mobility service | 
-
-### Return type
-
- (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

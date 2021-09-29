@@ -228,7 +228,7 @@ paths:
       required: true  
     post:
       tags:
-        - 'amsi'
+        - 'unsupported'
       summary: ' deregister the individual application mobility service'
       description: ' deregister the individual application mobility service'
       operationId: app_mobility_service_derPOST
