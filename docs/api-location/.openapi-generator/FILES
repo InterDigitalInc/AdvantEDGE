@@ -1,8 +1,9 @@
 .openapi-generator-ignore
 Apis/LocationApi.md
-Apis/UnsupportedApi.md
 Models/AccessPointInfo.md
 Models/AccessPointList.md
+Models/AppTerminationNotification.md
+Models/AppTerminationNotificationLinks.md
 Models/CallbackReference.md
 Models/CircleNotificationSubscription.md
 Models/ConnectionType.md
@@ -28,10 +29,12 @@ Models/InlineZoneList.md
 Models/InlineZoneStatusNotification.md
 Models/InlineZoneStatusSubscription.md
 Models/Link.md
+Models/LinkType.md
 Models/LocationInfo.md
 Models/LocationInfoVelocity.md
 Models/NotificationFormat.md
 Models/NotificationSubscriptionList.md
+Models/OperationActionType.md
 Models/OperationStatus.md
 Models/PeriodicNotificationSubscription.md
 Models/ProblemDetails.md

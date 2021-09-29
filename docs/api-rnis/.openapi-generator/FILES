@@ -1,6 +1,8 @@
 .openapi-generator-ignore
 Apis/RniApi.md
 Apis/UnsupportedApi.md
+Models/AppTerminationNotification.md
+Models/AppTerminationNotificationLinks.md
 Models/AssociateId.md
 Models/CaReconfNotification.md
 Models/CaReconfNotificationCarrierAggregationMeasInfo.md
@@ -45,6 +47,7 @@ Models/NrMeasRepUeNotificationSCell.md
 Models/NrMeasRepUeNotificationServCellMeasInfo.md
 Models/NrMeasRepUeSubscription.md
 Models/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md
+Models/OperationActionType.md
 Models/Plmn.md
 Models/PlmnInfo.md
 Models/ProblemDetails.md

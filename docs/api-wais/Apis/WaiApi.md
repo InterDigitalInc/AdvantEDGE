@@ -5,6 +5,7 @@ All URIs are relative to *https://localhost/sandboxname/wai/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apInfoGET**](WaiApi.md#apInfoGET) | **GET** /queries/ap/ap_information | Retrieve information on existing Access Points
+[**mec011AppTerminationPOST**](WaiApi.md#mec011AppTerminationPOST) | **POST** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 [**staInfoGET**](WaiApi.md#staInfoGET) | **GET** /queries/sta/sta_information | Retrieve information on existing Stations
 [**subscriptionLinkListSubscriptionsGET**](WaiApi.md#subscriptionLinkListSubscriptionsGET) | **GET** /subscriptions | Retrieve information on subscriptions for notifications
 [**subscriptionsDELETE**](WaiApi.md#subscriptionsDELETE) | **DELETE** /subscriptions/{subscriptionId} | Cancel an existing subscription
@@ -43,6 +44,33 @@ No authorization required
 
 - **Content-Type**: Not defined
 - **Accept**: application/json, application/problem+json
+
+<a name="mec011AppTerminationPOST"></a>
+# **mec011AppTerminationPOST**
+> mec011AppTerminationPOST(AppTerminationNotification)
+
+MEC011 Application Termination notification for self termination
+
+    Terminates itself.
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **AppTerminationNotification** | [**AppTerminationNotification**](../Models/AppTerminationNotification.md)| Termination notification details |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
 
 <a name="staInfoGET"></a>
 # **staInfoGET**
@@ -87,7 +115,7 @@ Retrieve information on subscriptions for notifications
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **subscription\_type** | **String**| Filter on a specific subscription type. Permitted values: assoc_sta, sta_data_rate. | [optional] [default to null]
+ **subscription\_type** | **String**| Filter on a specific subscription type. Permitted values: assoc_sta, sta_data_rate, measure_report. | [optional] [default to null]
 
 ### Return type
 

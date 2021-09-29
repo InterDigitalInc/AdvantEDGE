@@ -1,9 +1,13 @@
 .openapi-generator-ignore
 Apis/ActiveScenarioApi.md
+Apis/ApplicationsApi.md
 Apis/ConnectivityApi.md
 Apis/EventReplayApi.md
 Apis/EventsApi.md
 Models/ActivationInfo.md
+Models/ApplicationInfo.md
+Models/ApplicationState.md
+Models/ApplicationType.md
 Models/CellularDomainConfig.md
 Models/CellularPoaConfig.md
 Models/ConnectivityConfig.md
