@@ -48,7 +48,6 @@ import (
 const moduleName = "meep-ams"
 const amsBasePath = "amsi/v1/"
 const amsKey = "ams"
-const appEnablementKey = "app-enablement"
 const serviceName = "App Mobility Service"
 const serviceCategory = "AMS"
 const defaultMepName = "global"
@@ -100,7 +99,6 @@ var locality []string
 var basePath string
 var baseKey string
 var baseKeyGlobal string
-var serviceMgmtKey string
 var mutex sync.Mutex
 
 var expiryTicker *time.Ticker
@@ -248,7 +246,6 @@ func Init() (err error) {
 	// Set base storage key
 	baseKey = dkm.GetKeyRoot(sandboxName) + amsKey + ":mep:" + mepName + ":"
 	baseKeyGlobal = dkm.GetKeyRoot(sandboxName) + amsKey + ":mep:*:"
-	serviceMgmtKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName
 
 	// Connect to Redis DB (AMS_DB)
 	rc, err = redis.NewConnector(redisAddr, AMS_DB)
@@ -1648,18 +1645,10 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 
 	//validate if the appInstanceId exists
 	// Validate App Instance ID
-	if registrationInfo.ServiceConsumerId.AppInstanceId != "" {
-		err, code, problemDetails := validateAppInstanceId(registrationInfo.ServiceConsumerId.AppInstanceId)
-		if err != nil {
-			log.Error(err.Error())
-			if problemDetails != "" {
-				w.WriteHeader(code)
-				fmt.Fprintf(w, problemDetails)
-			} else {
-				http.Error(w, err.Error(), code)
-			}
-			return
-		}
+	if registrationInfo.ServiceConsumerId.AppInstanceId != "" && appInfoMap[registrationInfo.ServiceConsumerId.AppInstanceId] == nil {
+		log.Error("App Instance Id does not exist.")
+		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
+		return
 	}
 
 	//new service id
@@ -1872,19 +1861,19 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-//	if len(response.RegistrationInfoList) > 0 {
-		jsonResponse, err := json.Marshal(response.RegistrationInfoList)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+	//	if len(response.RegistrationInfoList) > 0 {
+	jsonResponse, err := json.Marshal(response.RegistrationInfoList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
-//	} else {
-//		w.WriteHeader(http.StatusNotFound)
-//	}
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+	//	} else {
+	//		w.WriteHeader(http.StatusNotFound)
+	//	}
 
 }
 
@@ -2021,23 +2010,4 @@ func populateAppInstanceIds(key string, fields map[string]string, response inter
 	//	}
 	//response = &resp
 	return nil
-}
-
-func validateAppInstanceId(appInstanceId string) (error, int, string) {
-	// Get application instance
-	key := serviceMgmtKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		return errors.New("App Instance not found"), http.StatusNotFound, ""
-	}
-
-	// Make sure App is in ready state
-	if fields["state"] != "READY" {
-		var problemDetails ProblemDetails
-		problemDetails.Status = http.StatusForbidden
-		problemDetails.Detail = "App Instance not ready. Waiting for AppReadyConfirmation."
-		return errors.New("App Instance not ready"), http.StatusForbidden, convertProblemDetailsToJson(&problemDetails)
-	}
-
-	return nil, http.StatusOK, ""
 }

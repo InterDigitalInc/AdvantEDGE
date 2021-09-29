@@ -32,6 +32,7 @@ import (
 	//met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+        scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 
 	"github.com/gorilla/mux"
 )
@@ -716,6 +717,7 @@ func TestFailServices(t *testing.T) {
 
 	terminateScenario()
 }
+
 /*
 func TestServicesDeregister(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -901,6 +903,7 @@ func testServicesPost(t *testing.T) string {
 
 	rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), nil, nil, http.StatusCreated, AppMobilityServicePOST)
 	if err != nil {
+	
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -1060,6 +1063,7 @@ func testServicesDelete(t *testing.T, serviceId string, expectSuccess bool) {
 		}
 	}
 }
+
 /*
 func testServicesDeregister(t *testing.T, serviceId string, expectSuccess bool) {
 
@@ -1843,6 +1847,8 @@ func initializeVars() {
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
 	sandboxName = testScenarioName
+	var appInfo scc.ApplicationInfo
+	appInfoMap["myapp"] = &appInfo
 }
 
 func initialiseScenario(testScenario string) {

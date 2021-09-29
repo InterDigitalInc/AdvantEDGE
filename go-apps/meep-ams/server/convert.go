@@ -89,12 +89,3 @@ func convertRegistrationInfoToJson(obj *RegistrationInfo) string {
 
 	return string(jsonInfo)
 }
-
-func convertProblemDetailsToJson(problemDetails *ProblemDetails) string {
-	jsonInfo, err := json.Marshal(*problemDetails)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-	return string(jsonInfo)
-}

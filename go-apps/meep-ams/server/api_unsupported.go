@@ -32,6 +32,5 @@ func AdjAppInstGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func AppMobilityServiceDerPOST(w http.ResponseWriter, r *http.Request) {
-        notImplemented(w, r)
+	notImplemented(w, r)
 }
-
