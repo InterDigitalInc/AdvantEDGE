@@ -70,8 +70,7 @@ When building the network and configuring compute nodes:
 ### Scenario Execution
 Immediately after deploying a scenario using the PDU connectivity model, terminals cannot communicate with any of the cloud/edge/fog nodes; in order to establish communication, a terminal minimally needs to create a PDU session. Typically, a terminal should establish a PDU session to the `internet` DNN and then establish PDU sessions to edge DNs as required.
 
-**Creating a PDU session**
-
+##### Creating a PDU session
 There are 3 methods for creating a PDU session:
 - `POST /connectivity/pdu-session/...` endpoint of the sandbox controller
 - `POST /events/...` endpoint of the sandbox controller
@@ -85,8 +84,7 @@ Depending on the experiments conducted by a user, the proper method for creating
 
 A terminal can have many PDU sessions concurrently active, for example, if it needs to use `internet` resources and edge resources located in `dn1` and `dn2`.
 
-**Using a PDU session**
-
+##### Using a PDU session
 After a PDU session is created, the TC engine evaluates if the terminal can communicate with the resources located in the DN. If the terminal is allowed to communicate, the network characteristics will be applied to the path between the terminal and DN resources according to AdvantEDGE emulation rules. From that moment, the terminal has IP connectivity with the DN resources.
 
 If the terminal moves in the network (e.g. mobility event)
@@ -99,6 +97,5 @@ Network characteristics changes apply normally to active PDU sessions.
 
 In the execution view, active PDU sessions of a terminal are listed on the network topology graph when clicking on a terminal.
 
-**Terminating a PDU session**
-
+##### Terminating a PDU session
 PDU sessions can be deleted at any time using one of the 3 methods previously mentioned for creation.
