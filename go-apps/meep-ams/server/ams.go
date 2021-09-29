@@ -1643,6 +1643,14 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	//validate if the appInstanceId exists
+	// Validate App Instance ID
+	if registrationInfo.ServiceConsumerId.AppInstanceId != "" && appInfoMap[registrationInfo.ServiceConsumerId.AppInstanceId] == nil {
+		log.Error("App Instance Id does not exist.")
+		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
+		return
+	}
+
 	//new service id
 	newServId := nextServiceIdAvailable
 	nextServiceIdAvailable++
@@ -1785,12 +1793,14 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
+/*
 func appMobilityServiceDerPOST(w http.ResponseWriter, r *http.Request) {
 	//these 2 methods are exactly the same based on spec except that the Deregistration happens on timer expiry
 	//It is not clear why the consumer service should be responsible to send that request rather than letting AMS to take care of it
 	//It looks more like a notification but there is no explanation in the spec regarding that message that enlighten the reason of its existence
 	appMobilityServiceByIdDELETE(w, r)
 }
+*/
 
 func serviceByIdDelete(serviceId string) (error, int) {
 	key := baseKey + /* ":apps:" + registrationInfo.ServiceConsumerId.AppInstanceId +*/ "services:" + serviceId
@@ -1851,19 +1861,19 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if len(response.RegistrationInfoList) > 0 {
-		jsonResponse, err := json.Marshal(response.RegistrationInfoList)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+	//	if len(response.RegistrationInfoList) > 0 {
+	jsonResponse, err := json.Marshal(response.RegistrationInfoList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
-		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+	//	} else {
+	//		w.WriteHeader(http.StatusNotFound)
+	//	}
 
 }
 

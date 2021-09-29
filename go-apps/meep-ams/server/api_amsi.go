@@ -39,10 +39,6 @@ func AppMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	appMobilityServiceByIdPUT(w, r)
 }
 
-func AppMobilityServiceDerPOST(w http.ResponseWriter, r *http.Request) {
-	appMobilityServiceDerPOST(w, r)
-}
-
 func AppMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 	appMobilityServiceGET(w, r)
 }

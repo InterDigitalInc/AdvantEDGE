@@ -24,7 +24,6 @@ Class | Method | HTTP request | Description
 *AmsiApi* | [**AppMobilityServiceByIdDELETE**](docs/AmsiApi.md#appmobilityservicebyiddelete) | **Delete** /app_mobility_services/{appMobilityServiceId} |  deregister the individual application mobility service
 *AmsiApi* | [**AppMobilityServiceByIdGET**](docs/AmsiApi.md#appmobilityservicebyidget) | **Get** /app_mobility_services/{appMobilityServiceId} | Retrieve information about this individual application mobility service
 *AmsiApi* | [**AppMobilityServiceByIdPUT**](docs/AmsiApi.md#appmobilityservicebyidput) | **Put** /app_mobility_services/{appMobilityServiceId} |  update the existing individual application mobility service
-*AmsiApi* | [**AppMobilityServiceDerPOST**](docs/AmsiApi.md#appmobilityservicederpost) | **Post** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
 *AmsiApi* | [**AppMobilityServiceGET**](docs/AmsiApi.md#appmobilityserviceget) | **Get** /app_mobility_services |  Retrieve information about the registered application mobility service.
 *AmsiApi* | [**AppMobilityServicePOST**](docs/AmsiApi.md#appmobilityservicepost) | **Post** /app_mobility_services | Create a new application mobility service for the service requester.
 *AmsiApi* | [**Mec011AppTerminationPOST**](docs/AmsiApi.md#mec011appterminationpost) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
@@ -34,6 +33,7 @@ Class | Method | HTTP request | Description
 *AmsiApi* | [**SubGET**](docs/AmsiApi.md#subget) | **Get** /subscriptions/ | Retrieve information about the subscriptions for this requestor.
 *AmsiApi* | [**SubPOST**](docs/AmsiApi.md#subpost) | **Post** /subscriptions/ | Create a new subscription to Application Mobility Service notifications.
 *UnsupportedApi* | [**AdjAppInstGET**](docs/UnsupportedApi.md#adjappinstget) | **Get** /queries/adjacent_app_instances | Retrieve information about this subscription.
+*UnsupportedApi* | [**AppMobilityServiceDerPOST**](docs/UnsupportedApi.md#appmobilityservicederpost) | **Post** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
 
 
 ## Documentation For Models

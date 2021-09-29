@@ -32,6 +32,7 @@ import (
 	//met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 
 	"github.com/gorilla/mux"
 )
@@ -717,6 +718,7 @@ func TestFailServices(t *testing.T) {
 	terminateScenario()
 }
 
+/*
 func TestServicesDeregister(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -744,7 +746,7 @@ func TestServicesDeregister(t *testing.T) {
 
 	terminateScenario()
 }
-
+*/
 func TestServicesListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -899,6 +901,10 @@ func testServicesPost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
+	//creating the appInfoMap so that the POST returns a valid response
+	var appInfo scc.ApplicationInfo
+	appInfoMap["myapp"] = &appInfo
+
 	rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), nil, nil, http.StatusCreated, AppMobilityServicePOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -959,6 +965,10 @@ func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string 
 	 ******************************/
 
 	if expectSuccess {
+		//creating the appInfoMap so that the POST returns a valid response
+		var appInfo scc.ApplicationInfo
+		appInfoMap["myapp"] = &appInfo
+
 		rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), vars, nil, http.StatusOK, AppMobilityServiceByIdPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1061,29 +1071,30 @@ func testServicesDelete(t *testing.T, serviceId string, expectSuccess bool) {
 	}
 }
 
+/*
 func testServicesDeregister(t *testing.T, serviceId string, expectSuccess bool) {
 
-	/******************************
-	 * expected response section
-	 ******************************/
+	// ******************************
+	// * expected response section
+	// ******************************
 
-	/******************************
-	 * request vars section
-	 ******************************/
+	// ******************************
+	// * request vars section
+	// ******************************
 	vars := make(map[string]string)
 	vars["appMobilityServiceId"] = serviceId
 
-	/******************************
-	 * request body section
-	 ******************************/
+	// ******************************
+	// * request body section
+	// ******************************
 
-	/******************************
-	 * request queries section
-	 ******************************/
+	// ******************************
+	// * request queries section
+	// ******************************
 
-	/******************************
-	 * request execution section
-	 ******************************/
+	// ******************************
+	// * request execution section
+	// ******************************
 
 	if expectSuccess {
 		_, err := sendRequest(http.MethodPost, "/services", nil, vars, nil, http.StatusNoContent, AppMobilityServiceDerPOST)
@@ -1097,7 +1108,7 @@ func testServicesDeregister(t *testing.T, serviceId string, expectSuccess bool) 
 		}
 	}
 }
-
+*/
 func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 
 	/******************************
