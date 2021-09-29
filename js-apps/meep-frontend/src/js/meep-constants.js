@@ -42,10 +42,10 @@ export const PAGE_MONITOR_INDEX = 3;
 export const PAGE_SETTINGS_INDEX = 4;
 
 // URLs
-export const MEEP_HELP_GUI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-gui-overview';
-export const MEEP_ARCHITECTURE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-architecture';
-export const MEEP_USAGE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-workflow';
-export const MEEP_WIKI_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
+export const MEEP_HELP_GUI_URL = 'https://interdigitalinc.github.io/AdvantEDGE/docs/usage/gui';
+export const MEEP_ARCHITECTURE_URL = 'https://interdigitalinc.github.io/AdvantEDGE/docs/overview/overview-architecture';
+export const MEEP_USAGE_URL = 'https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-workflow';
+export const MEEP_DOCS_URL = 'https://interdigitalinc.github.io/AdvantEDGE';
 export const MEEP_GITHUB_URL = 'https://github.com/InterDigitalInc/AdvantEDGE';
 export const MEEP_DISCUSSIONS_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/discussions';
 export const MEEP_LICENSE_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE';
