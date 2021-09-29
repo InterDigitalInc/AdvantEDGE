@@ -37,7 +37,7 @@ const Footer = () => {
       <GridCell span={5} align={'middle'}>
         <div align={'right'}>
           <a href={MEEP_DOCS_URL} target="_blank" style={styles.link}>
-            <Typography use="body1">Documentation</Typography>
+            <Typography use="body1">Docs</Typography>
           </a>
           <span style={styles.separator}>|</span>
           <a href={MEEP_GITHUB_URL} target="_blank" style={styles.link}>
