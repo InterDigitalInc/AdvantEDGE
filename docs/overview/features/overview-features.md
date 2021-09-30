@@ -16,7 +16,7 @@ Topic | Abstract
 [External Nodes Support](#external-node-support) | Capabilities offered for integrating external node with the AdvantEDGE platform
 [Pod Placement Support](#pod-placement-support) | Pod Placement enables node selection for applications in a multi-node cluster deployment
 [Process Lifecycle](#process-lifecycle) | Process Lifecycle enables dynamic instantiation & termination of terminal, edge or cloud applications
-[Cellular Connectivity Control](#Cellular-Connectivity-control) | Cellular connectivity control allows to emulate PDU session creation found in cellular mobile networks
+[Cellular Connectivity Control](#cellular-connectivity-control) | Cellular connectivity control allows to emulate PDU session creation found in cellular mobile networks
 NEXT STEP| [Edge services](#next-step)
 
 -----
