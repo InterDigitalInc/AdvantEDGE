@@ -17,7 +17,7 @@ This service provides the following capabilities:
   - _App Enablement Service:_ Implements ETSI MEC011 northbound APIs with a custom integration with AdvantEDGE APIs
 
 ## API Version
-- Radio Network Information Service is compliant with the ETSI MEC011 Specification, v2.1.1:
+- Edge Platform Application Enablement Service is compliant with the ETSI MEC011 Specification, v2.1.1:
   - [ETSI GS MEC 011 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_mec011v020101p.pdf)
   - [ETSI Forge - MEC Application Support API and MEC Service Management API](https://forge.etsi.org/rep/mec/gs011-app-enablement-api)
 - API
