@@ -22,7 +22,7 @@ Topic | Abstract
 [AMS API](#ams-api) | [OAS3] Application Mobility Service northbound API endpoints
 [Application State Transfer Service API](#application-state-transfer-service-api) | [OAS2] Mobility Group Manager membership and state transfer endpoints
 [Application State Transfer Notification API](#application-state-transfer-notification-api) | [OAS2] Client side Mobility Group Manager state transfer endpoints
-NEXT STEP: [Recomended hardware](#next-step) | |
+NEXT STEP: [Recommended hardware](#next-step) | |
 
 ----
 ## Getting Started with APIs
@@ -37,7 +37,7 @@ AdvantEDGE APIs follow the [OpenAPI Specification](https://github.com/OAI/OpenAP
 
 Following the OAS standard, allows AdvantEDGE APIs to benefit from a rich eco-system of tools to facilitate integration as described below.
 
-#### Finding API Specification
+### Finding API Specification
 In the GitHub repository, each application exposing a REST API has an associated `swagger.yaml` file.
 - For Golang micro-services it can be found under `go-apps/<micro-service>/api/`
 - For Golang packages it can be found under `go-packages/<package>/api/`
@@ -66,8 +66,10 @@ This is useful to quickly ramp-up on API functionality.
 
 Alternatively, CLI curl or numerous browser integrated HTTP probing solutions can be used to achieve the same result.
 
-_**IMPORTANT NOTE**<br>_
-**Try It Now** functionality is not supported for Notification APIs since these have  to be implemented by the service user.<br><br>For example, **Location Service Subscription Notification Callback REST API** is an API implemented by a user of the **Location Service REST API**<br>Therefore, **Try It Now** works for **Location Service** but not for **Location Service Subscription Notification Callback**_
+_**IMPORTANT NOTE:**<br>
+**Try It Now** functionality is not supported for Notification APIs since these have  to be implemented by the service user.<br>
+For example, **Location Service Subscription Notification Callback REST API** is an API implemented by a user of the **Location Service REST API**<br>
+Therefore, **Try It Now** works for **Location Service** but not for **Location Service Subscription Notification Callback**_
 
 ### Interfacing with API
 Interfacing with AdvantEDGE APIs can be done following different methods.
@@ -243,4 +245,4 @@ API:
 
 
 ## Next Step
-Learn about the [recomended hardware]({{site.baseurl}}{% link docs/setup/env-hw.md %}):
+Learn about the [recommended hardware]({{site.baseurl}}{% link docs/setup/env-hw.md %}):
