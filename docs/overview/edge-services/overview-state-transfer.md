@@ -3,7 +3,7 @@ layout: default
 title: Application State Transfer Service
 parent: EDGE Services
 grand_parent: Overview
-nav_order: 4
+nav_order: 6
 permalink: docs/overview/edge-services/asts/
 ---
 
