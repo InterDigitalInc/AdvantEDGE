@@ -17,6 +17,9 @@ Topic | Abstract
 [Location Service API](#location-service-api) | [OAS3] Location Service northbound API endpoints
 [RNIS API](#rnis-api) | [OAS3] RNIS northbound API endpoints
 [WAIS API](#wais-api) | [OAS3] WAIS northbound API endpoints
+[App Support API](#app-support-api) | [OAS3] App Support northbound API endpoints
+[Service Management API](#service-management-api) | [OAS3] Service Management northbound API endpoints
+[AMS API](#ams-api) | [OAS3] Application Mobility Service northbound API endpoints
 [Application State Transfer Service API](#application-state-transfer-service-api) | [OAS2] Mobility Group Manager membership and state transfer endpoints
 [Application State Transfer Notification API](#application-state-transfer-notification-api) | [OAS2] Client side Mobility Group Manager state transfer endpoints
 NEXT STEP: [Recomended hardware](#next-step) | |
@@ -191,6 +194,33 @@ This API allows to obtain WLAN network information by querying or subscribing; s
 API:
 - From repository: [meep-wais (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-wais/api/swagger.yaml)
 - From wiki: [WAIS (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-wais/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
+### App Support API
+This API enables application start-up/termination assistance by querying, subscribing and posting; see [Edge Platform Application Enablement Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) for service description.
+
+API:
+- From repository: [meep-app-support (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-app-enablement/api/app-support/swagger.yaml)
+- From wiki: [App Support (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-app-support/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
+### Service Management API
+This API allows edge applications to discover, advertise, consume and offer MEC services by querying, subscribing and posting; see [Edge Platform Application Enablement Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) for service description.
+
+API:
+- From repository: [meep-service-mgmt (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml)
+- From wiki: [Service Mgmt (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-service-mgmt/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
+### AMS API
+This API allows edge applications to relocate user context and/or application instance across MEC platforms by querying, subscribing and posting; see [Application Mobility Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) for service description.
+
+API:
+- From repository: [meep-ams (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-ams/api/swagger.yaml)
+- From wiki: [AMS (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-ams/README.md)
 - From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
 
 ----
