@@ -120,13 +120,13 @@ To help the user with port mapping management, AdvantEDGE provides two features:
   - port `31222` to access a service called `iperf`
   - port `31112` to access a service called `cloud-svc`
   - port `31223` to access a service called `cloud1-iperf`
-  ```
-  
-  # NOTE: Set your sandbox name in this command
-  curl -X GET "http://192.168.1.1/<sandbox-name>/v1/active/serviceMaps" -H "accept: application/json"
 
-  # pretty-printed
-  [
+```
+# NOTE: Set your sandbox name in this command
+curl -X GET "http://192.168.1.1/<sandbox-name>/v1/active/serviceMaps" -H "accept: application/json"
+
+# pretty-printed
+[
   {
     "node": "ue2-svc",
     "ingressServiceMap": [
@@ -157,4 +157,4 @@ To help the user with port mapping management, AdvantEDGE provides two features:
     ]
   }
 ]
-  ```
+```
