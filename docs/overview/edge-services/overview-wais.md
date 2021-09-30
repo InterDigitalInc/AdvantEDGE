@@ -19,8 +19,8 @@ This service provides the following capabilities:
   - _WAIS:_ Implements ETSI MEC028 northbound API with a custom integration with AdvantEDGE APIs
 
 ## Northbound API
-- WLAN Access Information Service is compliant with the ETSI MEC028 Specification, v2.1.1:
-  - [ETSI GS MEC 028 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_mec028v020101p.pdf)
+- WLAN Access Information Service is compliant with the ETSI MEC028 Specification, v2.2.1:
+  - [ETSI GS MEC 028 V2.2.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_MEC028v020201p.pdf)
   - [ETSI Forge - WLAN Access Information API repository](https://forge.etsi.org/rep/mec/gs028-wai-api)
 - API
   - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-wais)
