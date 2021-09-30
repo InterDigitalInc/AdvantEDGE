@@ -21,7 +21,7 @@ This feature provides the following capabilities:
   - Built-in dashboards: visualize network characteristics point-to-point (source to dest.) or aggregated (source to all)
   - Custom dashboards: create your own dashboards; allows access to display automated measurements (net.char/events) with your own measurements.
 - _Metrics API_
-  - Expose metrics to applications: Metrics can be exposed to external applications for condicting network adaptative experiments.
+  - Expose metrics to applications: Metrics can be exposed to external applications for conducting network adaptative experiments.
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
 
