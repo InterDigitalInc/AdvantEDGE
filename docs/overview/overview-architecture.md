@@ -77,7 +77,7 @@ _Process_ | The "leaf" of the model tree; process represents an application exec
 ## Wireless Connectivity
 AdvantEDGE supports 4G, 5G and WLAN wireless connectivity types for PoAs within a scenario and a PoA supports a unique technology. Wireless connectivity is reserved for user terminals while edge and cloud nodes are considered wired (e.g. not supporting wireless edge nodes yet)
 
-Accordingly, user terminals can be configured to support a subset or all existing wireless connectivity types. The wireless technologies of a terminal can also be prioritized in case a terminal is in range of several PoAs; in that case a UE woudl connect via the highest priority wireless technology which is physically the closest to the terminal.
+Accordingly, user terminals can be configured to support a subset or all existing wireless connectivity types. The wireless technologies of a terminal can also be prioritized in case a terminal is in range of several PoAs; in that case a UE would connect via the highest priority wireless technology which is physically the closest to the terminal.
 
 User terminals also support having no connectivity; this can happen if the initial state has been configured as disconnected, if a terminal is out of range of all supported PoAs (when using the GIS automation) or when a user sends a Mobility event to `DISCONNECTED` destination.
 
