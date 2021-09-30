@@ -632,8 +632,8 @@ func sessionTimeoutCb(session *sm.Session) {
 	}
 }
 
-// Generate a random state string
-func generateState(n int) (string, error) {
+// Generate a random string
+func generateRand(n int) (string, error) {
 	data := make([]byte, n)
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
 		return "", err
@@ -644,7 +644,7 @@ func generateState(n int) (string, error) {
 func getUniqueState() (state string, err error) {
 	for i := 0; i < 3; i++ {
 		// Get random state
-		randState, err := generateState(20)
+		randState, err := generateRand(20)
 		if err != nil {
 			log.Error(err.Error())
 			return "", err
@@ -944,8 +944,14 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	metric.Sandbox = sandboxName
 	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 
+	// Get random cache buster string
+	cacheBuster, err := generateRand(10)
+	if err != nil {
+		cacheBuster = ""
+	}
+
 	// Redirect user to sandbox
-	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
+	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole+"&cb="+cacheBuster, http.StatusFound)
 	metricSessionSuccess.Inc()
 	if isNew {
 		metricSessionActive.Inc()
@@ -1189,9 +1195,9 @@ func asTriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-* Response Code 200: Login is Supported and Session exists
-* Response Code 401: Login is Supported and Session doesn't exists
-* Response Code 404: Login is not Supported
+ * Response Code 200: Login is Supported and Session exists
+ * Response Code 401: Login is Supported and Session doesn't exists
+ * Response Code 404: Login is not Supported
  */
 func asLoginSupported(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN SUPPORTED-----")
