@@ -37,7 +37,7 @@ We use the official [Go Programming Language install procedure](https://golang.o
 
 Versions we use:
 
-- 1.14, 1.15 <br>(version 1.13 used to work - not tested anymore)
+- 1.14, 1.15, 1.16 <br>(version 1.13 used to work - not tested anymore)
 
 How we do it:
 
@@ -118,9 +118,8 @@ source ~/.profile
 
 ##### STEP 4 - Install Node.js (latest LTS version)
 
->**IMPORTANT NOTE**<br>
-Latest LTS version 12+ causes demo1 build failures (see issue [here](https://github.com/InterDigitalInc/AdvantEDGE/issues/32))<br>
-Workaround is to install previous LTS version 10 until issue is fixed
+_**IMPORTANT NOTE:** Latest LTS version 12+ causes demo1 build failures (see issue [here](https://github.com/InterDigitalInc/AdvantEDGE/issues/32))<br>
+Workaround is to install previous LTS version 10 until issue is fixed_
 
 ```
 # Retrieve & install latest LTS Node.js versions
