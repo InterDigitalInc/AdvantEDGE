@@ -51,10 +51,10 @@ This feature provides the following capabilities:
 - _Geospatial measurements_
   - Distance & signal strength calculations
   - Measurements caching
-- _Map interactions_:
+- _Map interactions_
   - Configuration & visualization of geospatial characteristics
   - Observation of geospatial assets on map at runtime
-- _Geospatial Automations_:
+- _Geospatial Automations_
   - Mobility events: UE connects to PoA according to PoA Selection algorithm
   - UE movement: UE follows defined path according to speed & EOP action
   - PoA in-range events: generates event listing all PoA in range
