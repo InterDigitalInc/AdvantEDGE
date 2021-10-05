@@ -156,6 +156,8 @@ redis               |internal | -
 
 Module | type | default
 -|-|-
+meep-ams            |ingress  | `/<sandbox-name>/amsi`
+meep-app-enablement |ingress  | `/<sandbox-name>/mec_app_support`<br>`/<sandbox-name>/mec_service_mgmt`
 meep-auth-svc       |ingress  | `/auth`
 meep-gis-engine     |ingress  | `/<sandbox-name>/gis`
 meep-loc-serv       |ingress  | `/<sandbox-name>/location`
