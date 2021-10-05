@@ -116,9 +116,9 @@ meepctl dockerize all
 # docker images | grep meep
 ```
 
-Note:
-- this command first creates the containers in the local docker registry
-- then pushes the images in the K8s registry; therefore make sure _dependencies_ are running
+_**NOTE:**_
+- _this command first creates the containers in the local docker registry_
+- _then pushes the images in the K8s registry; therefore make sure dependencies are running_
 
 ### Deploy core micro-services
 meepctl CLI tool is used to deploy AdvantEDGE core micro-services on Kubernetes.
@@ -229,10 +229,9 @@ npm run cy:open
 
 ```
 
->**NOTE**<br>
->Cypress may crash if max inotify watchers is too low. To fix this run the command:<br>
->`echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`<br>
->See details [here](https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers)
+_**NOTE:** Cypress may crash if max inotify watchers is too low. To fix this run the command:<br>
+`echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`<br>
+See details [here](https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers)_
 
 ### Code Coverage
 **(THIS SECTION IS OUTDATED - CODE COVERAGE NEEDS TO BE REWORKED)**
