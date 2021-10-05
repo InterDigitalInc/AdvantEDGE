@@ -239,7 +239,7 @@ API:
 This API must be implemented by a client subscribing to the Application State Transfer API.
 
 API:
-- From repository: [meep-mg-manager-client (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-packages/meep-mg-manager-client/api/swagger.yaml)
+- From repository: [meep-mg-manager-client (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-packages/meep-mg-app-client/api/swagger.yaml)
 - From wiki: [MG Manager Notification (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-mg-manager-notif/README.md)
 - From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
 
