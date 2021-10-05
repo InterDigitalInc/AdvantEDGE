@@ -6,13 +6,13 @@ nav_order: 6
 ---
 
 ## Demo2
-This scenario is the same as [demo1](../demo1/README.md) except that it uses _user charts_ to deploy its components instead of using dynamic chart generation.
+This scenario is the same as [demo1]({{site.baseurl}}{% link docs/usage/usage-demo1.md %}) except that it uses _user charts_ to deploy its components instead of using dynamic chart generation.
 
 ## Prerequisites
 - Running AdvantEDGE platform
 - Demo1 docker images
-  - [Build demo1](../demo1/README.md)
-  - [Dockerize demo1](../demo1/README.md)
+  - [Build demo1]({{site.baseurl}}{% link docs/usage/usage-demo1.md %}#obtain-demo-binaries)
+  - [Dockerize demo1]({{site.baseurl}}{% link docs/usage/usage-demo1.md %}#dockerize-demo-applications)
 
 ## Using the scenario
 The following steps need to be done prior to using this scenario
