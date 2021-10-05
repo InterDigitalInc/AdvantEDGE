@@ -63,7 +63,7 @@ We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independe
 
 Versions we use:
 
-- 1.19, 1.20 <br> _(versions 1.16 used to work - not tested anymore)_
+- 1.19, 1.20, 1.21 <br> _(versions 1.16 used to work - not tested anymore)_
 
 _**NOTE:** K8s deployment has a dependency on the node's IP address.<br>
 From our experience, it is **strongly recommended** to ensure that your platform always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
