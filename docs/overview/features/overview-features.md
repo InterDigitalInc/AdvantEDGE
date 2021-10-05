@@ -81,7 +81,7 @@ This feature provides the following capabilities:
   - Expose metrics to applications: Metrics can be exposed to external applications for conducting network adaptive experiments.
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
-- _Optional Metrics Long-term Storage_
+- _Metrics Long-term Storage (Optional)_
   - Long-term data retention: Thanos pushes Prometheus metrics to MinIO high-performance object store every 2 hours
   - Daily backups: cronjob pushes InfluxDB data to MinIO object store
 
