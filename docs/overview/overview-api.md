@@ -9,7 +9,7 @@ Topic | Abstract
 ------|------
 [Getting started with APIs](#getting-started-with-apis) | Finding/Viewing/Experimenting/Interfacing  AdvantEDGE APIs
 [Platform  API](#platform-api) | [OAS2] Scenario and Sandbox Management endpoints
-[Sandbox  API](#sandbox-api) | [OAS2] Scenario activation, Events and Connectivity endpoints
+[Sandbox  API](#sandbox-api) | [OAS2] Scenario activation, Events, Connectivity & Application instance endpoints
 [Monitoring API](#monitoring-api) | [OAS2] Microservice & scenario deployment status information endpoints
 [GIS API](#gis-api) | [OAS2] Geospatial information and automation endpoints
 [Metrics API](#metrics-api) | [OAS2] Network metrics and Events query and subscription endpoints
@@ -128,7 +128,7 @@ API:
 
 ----
 ## Sandbox API
-This API allows to control scenario activation, send events and control PDU session connectivity
+This API allows to control scenario activation, send events, control PDU session connectivity and manage Application instance IDs
 
 API:
 - From repository: [meep-sandbox-ctrl (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-sandbox-ctrl/api/swagger.yaml)
