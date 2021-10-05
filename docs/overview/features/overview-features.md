@@ -48,6 +48,9 @@ This feature provides the following capabilities:
   - Wireless signal range limits: PoAs
   - Path/speed/end-of-path (EOP) actions: UEs
   - Wireless type support & priorities: UEs
+- _Geospatial measurements_
+  - Distance & signal strength calculations
+  - Measurements caching
 - _Map interactions_:
   - Configuration & visualization of geospatial characteristics
   - Observation of geospatial assets on map at runtime
