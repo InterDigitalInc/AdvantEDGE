@@ -10,8 +10,13 @@ permalink: docs/overview/edge-services/app-enablement/
 ## Service Overview
 AdvantEDGE provides a built-in Edge Platform Application Enablement Service implementation that integrates with scenarios.
 
-This service provides the following capabilities:
-- TBD
+Mp1 reference point provides two different APIs: _MEC Application Support_ and _MEC Service Management_
+
+These APIs allow MEC Applications to interact with the MEC System, such as:
+- Application registration/deregistration
+- Service discovery & offering
+- Event notifications about service and application availability
+- Traffic rules, DNS and time of day
 
 ## Micro-Services
   - _App Enablement Service:_ Implements ETSI MEC011 northbound APIs with a custom integration with AdvantEDGE APIs
@@ -27,5 +32,3 @@ This service provides the following capabilities:
 
 ## AdvantEDGE Integration
 - Edge Platform Application Enablement Service is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox
-
-- TBD
