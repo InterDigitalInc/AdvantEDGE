@@ -59,6 +59,8 @@ _Metrics Engine_ | Provide an interface to retrieve stored metrics
 _Location Service_ | Provide an ETSI-MEC compliant Location service API
 _RNI Service_ | Provide an ETSI-MEC compliant Radio Network Information Service API
 _WAI Service_ | Provide an ETSI-MEC compliant WLAN Access Information Service API
+_App Enablement Service_ | Provide an ETSI-MEC compliant Edge Application Enablement Service (App Support API & Service Management API)
+_Application Mobility Service_ | Provide an ETSI-MEC compliant Application Mobility Service API
 
 ## Network Model
 AdvantEDGE uses the following model to define a scenario.
