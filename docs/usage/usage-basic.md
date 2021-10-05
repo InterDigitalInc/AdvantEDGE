@@ -5,6 +5,7 @@ parent: Usage
 nav_order: 3
 ---
 
+## Basic Operation
 AdvantEDGE comes pre-bundled with a demo scenario that allows for rapid experimentation.
 
 Going through the deployment/termination steps of that scenario is a good introduction to basic AdvantEDGE operations.
