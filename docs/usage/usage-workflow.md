@@ -8,8 +8,6 @@ nav_order: 1
 Topic | Abstract
 ------|------
 [Usage Workflow](#usage-workflow) | An overview of the workflow to use the platform
-[Basic Usage](usage-basic) | Step-by-step guide on how to deploy the demo scenario using pre-packaged demo scenario & applciation
-[First Scenario](usage-first-scenario) | Step-by-step guide on how to create your first sceanrio
 
 ----
 ## Usage Workflow
