@@ -69,8 +69,20 @@ Want to know more about App Enablement service: [Edge Platform Application Enabl
 ## Application Mobility Service
 AdvantEDGE provides a built-in Application Mobility Service implementation that integrates with scenarios.
 
-This service provides the following capabilities:
-- TBD
+Application Mobility Service provides support for relocation of user context and/or application instance between MEC hosts.
+
+AMS defines three types of MEC application user-context transfer:
+- _Application self-controlled_
+  - Application triggers and executes the context transfer
+  - Context is transferred from source to target application
+  - MEC system's role is to enable connectivity
+- _Device assisted_
+  - Device triggers and executes the context transfer
+  - Context is kept on the device
+  - MEC system's role is to decide if application mobility is required
+- _MEC assisted_
+  - MEC system triggers and assists the context transfer
+  - Context is transferred from source to target application
 
 Want to know more about AMS: [Application Mobility Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-ams.md %})
 
