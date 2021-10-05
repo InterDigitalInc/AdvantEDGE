@@ -75,7 +75,8 @@ This feature provides the following capabilities:
 - _Custom measurements_
   - Custom metrics: InfluxDB API is available for logging your own time-series metrics; just need to include an InfluxDB client in your application and start logging.
 - _Dashboard visualization and management interface_
-  - Built-in dashboards: visualize network characteristics point-to-point (source to dest.) or aggregated (source to all)
+  - Built-in network characteristics dashboards: visualize point-to-point (source to dest.) or aggregated (source to all) network metrics
+  - Built-in wireless metrics dashboards: visualize wireless metric KPIs (RSRP, RSRQ, RSSI & PoA distance)
   - Custom dashboards: create your own dashboards; allows access to display automated measurements (net.char/events) with your own measurements.
 - _Metrics API_
   - Expose metrics to applications: Metrics can be exposed to external applications for conducting network adaptive experiments.
