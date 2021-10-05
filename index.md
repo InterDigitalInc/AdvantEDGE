@@ -12,9 +12,9 @@ permalink: /
 
 **_What's New in v1.8.0!_**
 
-:zap: **Latest edge services to :rocket: boost up your edge apps :sunglasses: :point_right: [Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service)**
+:zap: **Latest edge services :sunglasses: :point_right: [Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) - :rocket: boost up your edge apps!**
 
-:zap: **Improved metrics & storage with support for :earth_americas: [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) and :card_file_box: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem)**
+:zap: **Improved metrics & storage with :earth_americas: [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) and :card_file_box: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem)**
 
 :zap: **General :hammer_and_wrench: Maintenance fixes**
 
