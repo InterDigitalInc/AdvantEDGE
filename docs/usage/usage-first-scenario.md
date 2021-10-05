@@ -5,6 +5,7 @@ parent: Usage
 nav_order: 4
 ---
 
+## First Scenario
 AdvantEDGE scenario is a yaml file that describes components of a macro-network with edge components.
 
 The scenario model follows a tree-like shape that starts with the scenario as the root element and extends all the way to the processes as the leaf elements.
