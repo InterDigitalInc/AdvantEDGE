@@ -17,6 +17,9 @@ This feature provides the following capabilities:
   - Wireless signal range limits: PoAs
   - Path/speed/end-of-path (EOP) actions: UEs
   - Wireless type support & priorities: UEs
+- _Geospatial measurements_
+  - Distance & signal strength calculations
+  - Measurements caching
 - _Map interactions_:
   - Configuration & visualization of geospatial characteristics
   - Observation of geospatial assets on map at runtime
@@ -30,7 +33,9 @@ This feature provides the following capabilities:
 ## Micro-Services
   - _Map server:_ Open Map Tiles is used to serve map data required by the frontend
   - _GIS Engine:_ Implements the GIS REST API
-  - _Database:_ Postgres/Postgis backend database to store geospatial assets & perform calculations
+  - _Databases:_ 
+    - Postgres/Postgis backend database to store geospatial assets & perform calculations
+    - Redis backend database to cache geospatial measurements
 
 ## Scenario Configuration
 
@@ -50,7 +55,8 @@ Runtime map | Real-time observation of geospatial assets position while a scenar
 Mobility events Automation | Mobility events are automated based on terminal position and available wireless signal; terminal connects to the closest supported PoA in range and supports disconnection event when no suitable wireless signal is available
 UE movement automation | Terminals follow configured path according to speed & EOP behavior configured; terminals can be paused if desired
 PoA in-range events | Application state transfer requires to know PoAs in range of the UE; these events can be automatically generated as the UE moves throught he network
-Net.char events automation | A terminal's throughput is influenced by its signal strength; network characteristics can thgerefore be automated using distance to PoA of the terminal
+Net.char events automation | A terminal's throughput is influenced by its signal strength; network characteristics can therefore be automated using distance to PoA of the terminal
+Measurements caching | Geospatial measurements are calculated periodically and cached for quick access
 ETSI MEC Services | Some ETSI MEC services have geospatial component which is now integrated with GIS to provide accurate emulation
 
 ## Using GIS feature
