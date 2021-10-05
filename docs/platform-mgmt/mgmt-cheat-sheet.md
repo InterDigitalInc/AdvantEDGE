@@ -88,7 +88,7 @@ parameter | description | default
 `metrics.influx.retention`  | Number of days to retain daily data backups | `7`
 `metrics.prometheus.external-labels.region`  | Deployment region (geographic or logical) | `idcc`
 `metrics.prometheus.external-labels.monitor`  | Function being monitored | `advantedge`
-`metrics.prometheus.external-labels.promenv`  | Prometheus environment (dev|prod) | `prod`
+`metrics.prometheus.external-labels.promenv`  | Prometheus environment (_dev_ or _prod_) | `prod`
 `metrics.prometheus.external-labels.replica`  | Unique deployment identifier | `platform-ip`
 `metrics.thanos.enabled`  | Enable Thanos | `false`
 `metrics.thanos.secret`  | Object store configuration secret | `meep-thanos-objstore-config`
