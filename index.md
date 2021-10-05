@@ -12,6 +12,10 @@ permalink: /
 
 **_What's New!_**
 
+:zap: **v1.8.0 new edge services :sunglasses: :point_right: [Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service)**
+
+:zap: **Maintenance :hammer_and_wrench: fixes and support for :card_file_box: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem)**
+
 :zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [:octocat: Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions)**
 
 ------
