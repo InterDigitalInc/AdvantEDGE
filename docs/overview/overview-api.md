@@ -9,7 +9,7 @@ Topic | Abstract
 ------|------
 [Getting started with APIs](#getting-started-with-apis) | Finding/Viewing/Experimenting/Interfacing  AdvantEDGE APIs
 [Platform  API](#platform-api) | [OAS2] Scenario and Sandbox Management endpoints
-[Sandbox  API](#sandbox-api) | [OAS2] Scenario activation, Events, Connectivity & Application instance endpoints
+[Sandbox  API](#sandbox-api) | [OAS2] Scenario activation, Events, Connectivity & Application instance ID management endpoints
 [Monitoring API](#monitoring-api) | [OAS2] Microservice & scenario deployment status information endpoints
 [GIS API](#gis-api) | [OAS2] Geospatial information and automation endpoints
 [Metrics API](#metrics-api) | [OAS2] Network metrics and Events query and subscription endpoints
