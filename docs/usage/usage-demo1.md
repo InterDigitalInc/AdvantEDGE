@@ -50,7 +50,7 @@ As the UE moves around the network, edge node instance will change.
 ### External UE
 External UE application is a javascript application running in an external browser.
 
-To start the aooplcation, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
+To start the application, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
 
 The application shows details about the connection, allows to start a state counter and iperf traffic and presents an image. See Iperf & Demo server sub-sections for more details.
 
