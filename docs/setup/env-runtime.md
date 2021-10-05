@@ -65,10 +65,9 @@ Versions we use:
 
 - 1.19, 1.20 <br> _(versions 1.16 used to work - not tested anymore)_
 
->**NOTE**<br>
-K8s deployment has a dependency on the node's IP address.<br>
+_**NOTE:** K8s deployment has a dependency on the node's IP address.<br>
 From our experience, it is **strongly recommended** to ensure that your platform always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
-Depending on your network setup, this can be achieved either by setting a static IP address on the host or configuring the DHCP server to always give the same IP address to your platform.<br>
+Depending on your network setup, this can be achieved either by setting a static IP address on the host or configuring the DHCP server to always give the same IP address to your platform._
 
 How we do it:
 
@@ -341,8 +340,7 @@ Starting with Docker 19.03, NVIDIA GPU support is included in the default _runc_
 
 We use the [NVIDIA Container Runtime for Docker](https://github.com/NVIDIA/nvidia-docker) procedure.
 
->**IMPORTANT NOTE**<br>
-For older versions of docker you must install the nvidia-docker2 runtime as described [here](https://github.com/NVIDIA/nvidia-docker#upgrading-with-nvidia-docker2-deprecated)
+_**IMPORTANT NOTE:** For older versions of docker you must install the nvidia-docker2 runtime as described [here](https://github.com/NVIDIA/nvidia-docker#upgrading-with-nvidia-docker2-deprecated)_
 
 Install container-toolkit & nvidia-runtime, and verify _runc_ runtime GPU support:
 
