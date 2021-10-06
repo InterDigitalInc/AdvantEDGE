@@ -1057,10 +1057,6 @@ components:
         (server) to communicate with the application client before relocating this
         application instance to another MEC host. Applicable values are: 1 = APP_MOBILITY_NOT_ALLOWED,
         2 = APP_MOBILITY_WITH_CONFIRMATION, 3 = APP_MOBILITY_WITHOUT_CONFIRMATION.'
-      enum:
-      - 1
-      - 2
-      - 3
       x-etsi-notes: 'APP_MOBILITY_NOT_ALLOWED: the current serving application instance
         continues to deliver the service to the device. The AMS will inform the MEP
         to perform the traffic steering to the device when the UE moves cross MEC
@@ -1120,10 +1116,6 @@ components:
       type: integer
       description: 'Indicate the status of the UE mobility. Values are: 1 = INTERHOST_MOVEOUT_TRIGGERED,
         2 = INTERHOST_MOVEOUT_COMPLETED, 3 = INTERHOST_MOVEOUT_FAILED'
-      enum:
-      - 1
-      - 2
-      - 3
     RegistrationInfo:
       required:
       - serviceConsumerId
@@ -1200,9 +1192,6 @@ components:
       description: 'If present, it represents the state of transferring the user context
         to another application instance. The applicable values are: 0 = NOT_TRANSFERRED,
         1= USER_CONTEXT_TRANSEFR_COMPLETED.'
-      enum:
-      - 0
-      - 1
     HostName:
       type: string
       description: Human-readable name of MEC host.
@@ -1219,12 +1208,6 @@ components:
           description: 'Numeric value (0-255) corresponding to specified type of identifier
             as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS.
             <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.'
-          enum:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         value:
@@ -1318,10 +1301,6 @@ components:
           description: 'Indicate the status of the UE mobility. Values are defined
             as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3
             = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.'
-          enum:
-          - 1
-          - 2
-          - 3
           x-etsi-mec-cardinality: "1"
         notificationType:
           type: string

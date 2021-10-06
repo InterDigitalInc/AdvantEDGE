@@ -864,9 +864,7 @@ func testServicesPost(t *testing.T) string {
 	 * expected response section
 	 ******************************/
 	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
-	appMobilityServiceLevel := AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION
-	contextTransferState := ContextTransferState_NOT_TRANSFERRED
-	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, &appMobilityServiceLevel, &contextTransferState}
+	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION, ContextTransferState_NOT_TRANSFERRED}
 	expectedDeviceInfo := []RegistrationInfoDeviceInformation{expectedDeviceInfo1}
 	expectedRegistrationInfo := RegistrationInfo{strconv.Itoa(nextServiceIdAvailable), expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myapp", ""}}
 	//expectedExpiry := TimeStamp{0, 1998599770}
@@ -927,9 +925,7 @@ func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string 
 	 * expected response section
 	 ******************************/
 	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
-	appMobilityServiceLevel := AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION
-	contextTransferState := ContextTransferState_NOT_TRANSFERRED
-	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, &appMobilityServiceLevel, &contextTransferState}
+	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION, ContextTransferState_NOT_TRANSFERRED}
 	expectedDeviceInfo := []RegistrationInfoDeviceInformation{expectedDeviceInfo1}
 	expectedRegistrationInfo := RegistrationInfo{serviceId, expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myapp", ""}}
 	//expectedExpiry := TimeStamp{0, 1998599770}
@@ -1116,7 +1112,7 @@ func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 	 ******************************/
 	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
 	expectedAssocId := []AssociateId{expectedAssocId1}
-	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []MobilityStatus{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
+	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []int32{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
@@ -1176,7 +1172,7 @@ func testSubscriptionMobilityProcedurePut(t *testing.T, subscriptionId string, e
 	 ******************************/
 	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
 	expectedAssocId := []AssociateId{expectedAssocId1}
-	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []MobilityStatus{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
+	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []int32{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}

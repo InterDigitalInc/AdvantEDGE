@@ -25,7 +25,7 @@
 package client
 
 type RegistrationInfoDeviceInformation struct {
-	AssociateId             *AssociateId             `json:"associateId"`
-	AppMobilityServiceLevel *AppMobilityServiceLevel `json:"appMobilityServiceLevel,omitempty"`
-	ContextTransferState    *ContextTransferState    `json:"contextTransferState,omitempty"`
+	AssociateId             *AssociateId `json:"associateId"`
+	AppMobilityServiceLevel int32        `json:"appMobilityServiceLevel,omitempty"`
+	ContextTransferState    int32        `json:"contextTransferState,omitempty"`
 }

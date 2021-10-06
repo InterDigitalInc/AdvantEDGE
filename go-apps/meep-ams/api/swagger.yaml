@@ -615,10 +615,6 @@ components:
       x-etsi-ref: 7.2.3
     AppMobilityServiceLevel:
       description: 'This attribute provides an option for the application instance (server) to communicate with the application client before relocating this application instance to another MEC host. Applicable values are: 1 = APP_MOBILITY_NOT_ALLOWED, 2 = APP_MOBILITY_WITH_CONFIRMATION, 3 = APP_MOBILITY_WITHOUT_CONFIRMATION.'
-      enum:
-      - 1
-      - 2
-      - 3
       type: integer
       x-etsi-notes: "APP_MOBILITY_NOT_ALLOWED: the current serving application instance continues to deliver the service to the device. The AMS will inform the MEP to perform the traffic steering to the device when the UE moves cross MEC hosts. \u2212 APP_MOBILITY_WITH_CONFIRMATION: the serving application instance is allowed to change with the confirmation by the application once the device mobility happens. The AMS then will inform the MEP to update the traffic routing to the target application instance and clean up the previous resource allocated to the application instance serving to the device after the serving application instance has been changed. \u2212 APP_MOBILITY_WITHOUT_CONFIRMATION: the serving application instance is allowed to change without confirmation from the application instance when the device mobility happens. The AMS will notify to the MEP to update the traffic routing to the target application instance and clean up the previous resource allocated to the application instance serving to the device after the serving application instance has been changed."
     CommunicationInterface:
@@ -694,10 +690,6 @@ components:
       - filterCriteria
     MobilityStatus:
       description: 'Indicate the status of the UE mobility. Values are: 1 = INTERHOST_MOVEOUT_TRIGGERED, 2 = INTERHOST_MOVEOUT_COMPLETED, 3 = INTERHOST_MOVEOUT_FAILED'
-      enum:
-      - 1
-      - 2
-      - 3
       type: integer
     RegistrationInfo:
       type: object
@@ -798,9 +790,6 @@ components:
       x-etsi-ref: 7.3.4
     ContextTransferState:
       description: 'If present, it represents the state of transferring the user context to another application instance. The applicable values are: 0 = NOT_TRANSFERRED, 1= USER_CONTEXT_TRANSEFR_COMPLETED.'
-      enum:
-      - 0
-      - 1
       type: integer
     HostName:
       description: >-
@@ -814,12 +803,6 @@ components:
       properties:
         type:
           description: 'Numeric value (0-255) corresponding to specified type of identifier as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS. <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.'
-          enum:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
           type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Enum
@@ -914,10 +897,6 @@ components:
           x-etsi-mec-origin-type: AssociateId
         mobilityStatus:
           description: 'Indicate the status of the UE mobility. Values are defined as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3 = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.'
-          enum:
-          - 1
-          - 2
-          - 3
           type: integer
           x-etsi-mec-cardinality: '1'
         notificationType:

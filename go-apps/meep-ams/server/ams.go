@@ -73,6 +73,23 @@ const (
 	notifExpiry = "ExpiryNotification"
 )
 
+const (
+	AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED          = 1
+	AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION    = 2
+	AppMobilityServiceLevel_APP_MOBILITY_WITHOUT_CONFIRMATION = 3
+)
+
+const (
+	MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED = 1
+	MobilityStatus_INTERHOST_MOVEOUT_COMPLETED = 2
+	MobilityStatus_INTERHOST_MOVEOUT_FAILED    = 3
+)
+
+const (
+	ContextTransferState_NOT_TRANSFERRED                 = 0
+	ContextTransferState_USER_CONTEXT_TRANSFER_COMPLETED = 1
+)
+
 const MOBILITY_PROCEDURE_SUBSCRIPTION_INT = int32(1)
 const MOBILITY_PROCEDURE_SUBSCRIPTION = "MobilityProcedureSubscription"
 const MOBILITY_PROCEDURE_NOTIFICATION = "MobilityProcedureNotification"
@@ -1665,8 +1682,8 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	for _, deviceInfo := range registrationInfo.DeviceInformation {
 		fields := make(map[string]interface{})
 		fields["associateId"] = deviceInfo.AssociateId.Value
-		fields["serviceLevel"] = strconv.Itoa(int(*deviceInfo.AppMobilityServiceLevel))
-		fields["contextTransferState"] = strconv.Itoa(int(*deviceInfo.ContextTransferState))
+		fields["serviceLevel"] = strconv.Itoa(int(deviceInfo.AppMobilityServiceLevel))
+		fields["contextTransferState"] = strconv.Itoa(int(deviceInfo.ContextTransferState))
 		fields["mobilityServiceId"] = servIdStr
 		fields["appInstanceId"] = ""
 		if registrationInfo.ServiceConsumerId.MepId != "" {
@@ -1765,8 +1782,8 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	for _, deviceInfo := range registrationInfo.DeviceInformation {
 		fields := make(map[string]interface{})
 		fields["associateId"] = deviceInfo.AssociateId.Value
-		fields["serviceLevel"] = strconv.Itoa(int(*deviceInfo.AppMobilityServiceLevel))
-		fields["contextTransferState"] = strconv.Itoa(int(*deviceInfo.ContextTransferState))
+		fields["serviceLevel"] = strconv.Itoa(int(deviceInfo.AppMobilityServiceLevel))
+		fields["contextTransferState"] = strconv.Itoa(int(deviceInfo.ContextTransferState))
 		fields["mobilityServiceId"] = serviceId
 		fields["appInstanceId"] = ""
 		if registrationInfo.ServiceConsumerId.MepId != "" {
