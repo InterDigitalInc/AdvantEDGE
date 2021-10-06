@@ -57,7 +57,7 @@ func main() {
 		// Setup configuration for Demo 3 then initalize use-case service
 		port, err := server.Init(envPath, envName)
 		if err != nil {
-			log.Info("Failed to initaliize Demo 3", err)
+			log.Fatal("Failed to initaliize Demo 3 ", err)
 		}
 
 		// Start demo 3 client

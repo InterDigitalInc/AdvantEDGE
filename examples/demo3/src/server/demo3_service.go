@@ -17,6 +17,7 @@ import (
 	"sync"
 
 	"github.com/InterDigitalInc/AdvantEDGE/example/demo3/src/util"
+	ams "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ams-client"
 	asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
@@ -25,7 +26,12 @@ import (
 var mutex sync.Mutex
 
 var srvMgmtClient *smc.APIClient
+var srvMgmtClientPath string
 var appSupportClient *asc.APIClient
+var appSupportClientPath string
+
+var amsClient *ams.APIClient
+var amsClientPath string
 
 var instanceName string
 var mecUrl string
@@ -33,14 +39,15 @@ var localPort string
 var subscriptionSent bool
 var confirmReady bool
 var appEnablementServiceId string
-var subscriptionId string
+var serviceSubscriptionId string
 var registeredService bool
-var appSupportClientPath string
-var srvMgmtClientPath string
+var terminationSubscriptionId string
+
 var serviceName string = "user-app"
 var scopeOfLocality string = defaultScopeOfLocality
 var consumedLocalOnly bool = defaultConsumedLocalOnly
 var terminationSubscription bool = false
+var terminated bool = false
 
 const serviceAppVersion = "2.1.1"
 const local = "http://10.190.115.162"
@@ -90,6 +97,15 @@ func Init(envPath string, envName string) (port string, err error) {
 		return "", errors.New("Failed to create App Enablement Service Management REST API client")
 	}
 
+	// Create application mobility suppport client
+	amsClientcfg := ams.NewConfiguration()
+	amsClientcfg.BasePath = mecUrl + "/amsi/v1"
+	amsClient = ams.NewAPIClient(amsClientcfg)
+	amsClientPath = amsClientcfg.BasePath
+	if amsClient == nil {
+		return "", errors.New("Failed to create Application Mobility Support REST API client")
+	}
+
 	return localPort, nil
 }
 
@@ -120,7 +136,7 @@ func servicesSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 // REST API
-// Handle subscription callback notification
+// Handle service subscription callback notification
 func notificationPOST(w http.ResponseWriter, r *http.Request) {
 
 	// Decode request body
@@ -202,8 +218,14 @@ func terminateNotificatonPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("Received user-app termination notification")
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 	Terminate()
+}
+
+// Rest API
+// Register MEC Application instances with AMS
+func amsCreatePOST(w http.ResponseWriter, r *http.Request) {
+
 }
 
 // Client request to notify mec platform of mec app
@@ -327,11 +349,20 @@ func subscribeAvailability(appInstanceId string, callbackReference string) error
 	if idPosition == -1 {
 		log.Error("Error parsing subscription id for subscription")
 	}
-	subscriptionId = hRefLink[idPosition+1:]
+	serviceSubscriptionId = hRefLink[idPosition+1:]
 
 	log.Info("Subscribed to service availibility notification on mec platform")
 
 	return nil
+}
+
+// Client request to sent confirm terminate
+func confirmTerminate(appInstanceId string, subscriptionId string) {
+	resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subscriptionId)
+	if err != nil {
+		log.Error("Failed to send confirm termination ", resp.Status)
+	}
+
 }
 
 // Client request to subscribe app-termination notifications
@@ -341,9 +372,29 @@ func subscribeAppTermination(appInstanceId string, callBackReference string) err
 	appTerminationBody.SubscriptionType = "AppTerminationNotificationSubscription"
 	appTerminationBody.CallbackReference = callBackReference
 	appTerminationBody.AppInstanceId = appInstanceId
-	_, resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationBody, appInstanceId)
+	appTerminationResponse, resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationBody, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send termination subscription: ", resp.Status)
+		return err
+	}
+
+	hRefLink := appTerminationResponse.Links.Self.Href
+
+	// Find subscription id from response
+	idPosition := strings.LastIndex(hRefLink, "/")
+	if idPosition == -1 {
+		log.Error("Error parsing subscription id for subscription")
+	}
+	terminationSubscriptionId = hRefLink[idPosition+1:]
+
+	return nil
+}
+
+// Client request to delete app-termination subscriptions
+func delAppTerminationSubscription(appInstanceId string, subscriptionId string) error {
+	resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subscriptionId)
+	if err != nil {
+		log.Error("Failed to clear app termination subscription ", resp.Status)
 		return err
 	}
 	return nil
@@ -353,7 +404,7 @@ func subscribeAppTermination(appInstanceId string, callBackReference string) err
 func delsubscribeAvailability(appInstanceId string, subscriptionId string) error {
 	resp, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subscriptionId)
 	if err != nil {
-		log.Error("Failed to clear mec subscriptions: ", resp.Status)
+		log.Error("Failed to clear service availability subscriptions: ", resp.Status)
 		return err
 	}
 	return nil
@@ -374,8 +425,7 @@ func Run() {
 
 	// Subscribe for App Termination notifications
 	if !terminationSubscription {
-		var callBackReference string
-		callBackReference = local + localPort + "/application/termination"
+		callBackReference := local + localPort + "/application/termination"
 		err := subscribeAppTermination(instanceName, callBackReference)
 		if err == nil {
 			log.Info("Subscribed to app termination notification on mec platform")
@@ -385,20 +435,37 @@ func Run() {
 }
 
 // Terminate by deleting all resources allocated on MEC platform & mec app
+// Delete service & app subscription & registered services
 func Terminate() {
-	// Delete subscription & registered services
 
-	if subscriptionSent {
-		err := delsubscribeAvailability(instanceName, subscriptionId)
+	// Only invoke graceful termination if terminated is false
+	// One can trigger terminate by receiving a termination notification
+	if !terminated {
+		//Delete app subscriptions
+		err := delAppTerminationSubscription(instanceName, terminationSubscriptionId)
 		if err == nil {
-			log.Info("Cleared user-app subscription on mec platform")
+			log.Info("Cleared app enablement subscription on mec platform")
 		}
+
+		//Send Confirm Terminate
+		confirmTerminate(instanceName, terminationSubscriptionId)
+
+		// Delete service subscriptions
+		if subscriptionSent {
+			err := delsubscribeAvailability(instanceName, serviceSubscriptionId)
+			if err == nil {
+				log.Info("Cleared service subscription on mec platform")
+			}
+		}
+
+		// Delete service
+		if registeredService {
+			err := unregisterService(instanceName, appEnablementServiceId)
+			if err == nil {
+				log.Info("Cleared user-app services on mec platform")
+			}
+		}
+		terminated = true
 	}
 
-	if registeredService {
-		err := unregisterService(instanceName, appEnablementServiceId)
-		if err == nil {
-			log.Info("Cleared user-app services on mec platform")
-		}
-	}
 }

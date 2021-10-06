@@ -38,3 +38,7 @@ func ServiceDeleteDelete(w http.ResponseWriter, r *http.Request) {
 func ServicesDiscoverPost(w http.ResponseWriter, r *http.Request) {
 	servicesSubscriptionPOST(w, r)
 }
+
+func AmsCreatePOST(w http.ResponseWriter, r *http.Request) {
+	amsCreatePOST(w, r)
+}

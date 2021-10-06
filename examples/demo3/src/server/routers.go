@@ -103,4 +103,10 @@ var routes = Routes{
 		"/application/termination",
 		TerminateNotificatonPOST,
 	},
+	Route{
+		"AmsCreatePOST",
+		strings.ToUpper("post"),
+		"/service/create/ams",
+		AmsCreatePOST,
+	},
 }
