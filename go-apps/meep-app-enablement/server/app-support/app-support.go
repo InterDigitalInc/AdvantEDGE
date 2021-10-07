@@ -250,20 +250,6 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Find matching subscription
-	found := false
-	for _, subscription := range appTerminationNotificationSubscriptionMap {
-		if subscription != nil && subscription.AppInstanceId == appInstanceId {
-			found = true
-			break
-		}
-	}
-	if !found {
-		log.Error("AppInstanceId not subscribed for graceful termination")
-		http.Error(w, "AppInstanceId not subscribed for graceful termination", http.StatusBadRequest)
-		return
-	}
-
 	// Check if Confirm Termination was expected
 	if appTerminationGracefulTimeoutMap[appInstanceId] == nil {
 		log.Error("Unexpected App Confirmation Termination Notification")
