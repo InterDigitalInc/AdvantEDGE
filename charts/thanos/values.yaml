@@ -98,7 +98,7 @@ query:
 
   ## Labels to treat as a replica indicator along which data is deduplicated
   ##
-  replicaLabel: [replica]
+  replicaLabel: []
 
   ## Dynamically configure store APIs using DNS discovery
   ##
