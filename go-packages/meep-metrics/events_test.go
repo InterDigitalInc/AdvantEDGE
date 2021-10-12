@@ -42,27 +42,27 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	ms.Flush()
 
 	fmt.Println("Set event metric")
-	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event1", "event1 description"})
+	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event1", "event1 description", "src1", "dst1"})
 	if err != nil {
 		t.Fatalf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event2", "event2 description"})
+	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event2", "event2 description", "src2", "dst2"})
 	if err != nil {
 		t.Fatalf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event3", "event3 description"})
+	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event3", "event3 description", "src3", "dst3"})
 	if err != nil {
 		t.Fatalf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event4", "event4 description"})
+	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event4", "event4 description", "src4", "dst4"})
 	if err != nil {
 		t.Fatalf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event5", "event5 description"})
+	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event5", "event5 description", "src5", "dst5"})
 	if err != nil {
 		t.Fatalf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event6", "event6 description"})
+	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event6", "event6 description", "src6", "dst6"})
 	if err != nil {
 		t.Fatalf("Unable to set event metric")
 	}

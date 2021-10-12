@@ -27,7 +27,7 @@ Add a replay file to the platform store
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **name** | **string**| Replay file name | 
+  **name** | **string**| replay file name | 
   **replayFile** | [**Replay**](Replay.md)| Replay-file | 
 
 ### Return type
@@ -56,7 +56,7 @@ Generate a replay file using events from the latest execution of a scenario
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **name** | **string**| Replay file name | 
+  **name** | **string**| replay file name | 
   **replayInfo** | [**ReplayInfo**](ReplayInfo.md)| Replay information | 
 
 ### Return type
@@ -137,7 +137,7 @@ Get a replay file by name from the platform store
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **name** | **string**| Replay file name | 
+  **name** | **string**| replay file name | 
 
 ### Return type
 
@@ -213,7 +213,7 @@ Loop-Execute a replay file present in the platform store
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **name** | **string**| Replay file name | 
+  **name** | **string**| replay file name | 
 
 ### Return type
 
@@ -241,7 +241,7 @@ Execute a replay file present in the platform store
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **name** | **string**| Replay file name | 
+  **name** | **string**| replay file name | 
 
 ### Return type
 
@@ -269,7 +269,7 @@ Stop execution a replay file
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **name** | **string**| Replay file name | 
+  **name** | **string**| replay file name | 
 
 ### Return type
 

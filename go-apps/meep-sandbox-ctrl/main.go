@@ -67,12 +67,12 @@ func main() {
 
 		var priSw string
 		var altSw string
-		userSw := os.Getenv("USER_SWAGGER_SANDBOX")
+		userSw := os.Getenv("USER_SWAGGER")
 		if userSw == "" {
 			priSw = "./swagger/"
 			altSw = ""
 		} else {
-			priSw = "." + userSw + "/"
+			priSw = "./user-swagger/"
 			altSw = "./swagger/"
 		}
 
@@ -96,6 +96,9 @@ func main() {
 	count := 0
 	for {
 		if !run {
+			// Stop Sandbox Controller
+			_ = server.Stop()
+
 			log.Info("Ran for ", count, " seconds")
 			break
 		}

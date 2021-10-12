@@ -14,13 +14,10 @@
 
 FROM debian:9.6-slim
 COPY ./meep-platform-ctrl /meep-platform-ctrl
-COPY ./frontend /frontend
-COPY ./swagger /swagger
-# COPY ./permissions.yaml /permissions.yaml
+COPY ./api /api
+COPY ./user-api /user-api
+COPY ./data /
 
-# RUN apt-get update \
-#  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates
+RUN chmod +x /entrypoint.sh
 
-# RUN update-ca-certificates
-
-ENTRYPOINT ["/meep-platform-ctrl"]
+ENTRYPOINT ["/entrypoint.sh"]

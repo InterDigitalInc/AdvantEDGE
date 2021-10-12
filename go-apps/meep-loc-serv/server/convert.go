@@ -24,6 +24,10 @@ import (
 
 func convertJsonToUserInfo(jsonInfo string) *UserInfo {
 
+	if jsonInfo == "" {
+		return nil
+	}
+
 	var userInfo UserInfo
 	err := json.Unmarshal([]byte(jsonInfo), &userInfo)
 	if err != nil {
@@ -35,6 +39,10 @@ func convertJsonToUserInfo(jsonInfo string) *UserInfo {
 
 func convertJsonToZoneInfo(jsonInfo string) *ZoneInfo {
 
+	if jsonInfo == "" {
+		return nil
+	}
+
 	var zoneInfo ZoneInfo
 	err := json.Unmarshal([]byte(jsonInfo), &zoneInfo)
 	if err != nil {
@@ -45,6 +53,10 @@ func convertJsonToZoneInfo(jsonInfo string) *ZoneInfo {
 }
 
 func convertJsonToAccessPointInfo(jsonInfo string) *AccessPointInfo {
+
+	if jsonInfo == "" {
+		return nil
+	}
 
 	var apInfo AccessPointInfo
 	err := json.Unmarshal([]byte(jsonInfo), &apInfo)
@@ -101,6 +113,10 @@ func convertZoneStatusSubscriptionToJson(zonalSubs *ZoneStatusSubscription) stri
 
 func convertJsonToZoneStatusSubscription(jsonInfo string) *ZoneStatusSubscription {
 
+	if jsonInfo == "" {
+		return nil
+	}
+
 	var zonal ZoneStatusSubscription
 	err := json.Unmarshal([]byte(jsonInfo), &zonal)
 	if err != nil {
@@ -122,6 +138,10 @@ func convertZonalSubscriptionToJson(zonalSubs *ZonalTrafficSubscription) string 
 }
 
 func convertJsonToZonalSubscription(jsonInfo string) *ZonalTrafficSubscription {
+
+	if jsonInfo == "" {
+		return nil
+	}
 
 	var zonal ZonalTrafficSubscription
 	err := json.Unmarshal([]byte(jsonInfo), &zonal)
@@ -145,6 +165,10 @@ func convertUserSubscriptionToJson(userSubs *UserTrackingSubscription) string {
 
 func convertJsonToUserSubscription(jsonInfo string) *UserTrackingSubscription {
 
+	if jsonInfo == "" {
+		return nil
+	}
+
 	var user UserTrackingSubscription
 	err := json.Unmarshal([]byte(jsonInfo), &user)
 	if err != nil {
@@ -154,6 +178,88 @@ func convertJsonToUserSubscription(jsonInfo string) *UserTrackingSubscription {
 	return &user
 }
 
+func convertPeriodicSubscriptionToJson(periodicSubs *PeriodicNotificationSubscription) string {
+
+	jsonInfo, err := json.Marshal(*periodicSubs)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+/*
+func convertJsonToPeriodicSubscription(jsonInfo string) *PeriodicNotificationSubscription {
+
+        if jsonInfo == "" {
+                return nil
+        }
+
+        var periodic PeriodicNotificationSubscription
+        err := json.Unmarshal([]byte(jsonInfo), &periodic)
+        if err != nil {
+                log.Error(err.Error())
+                return nil
+        }
+        return &periodic
+}
+*/
+
+func convertAreaCircleSubscriptionToJson(circleSubs *CircleNotificationSubscription) string {
+
+	jsonInfo, err := json.Marshal(*circleSubs)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+/*
+func convertJsonToAreaCircleSubscription(jsonInfo string) *CircleNotificationSubscription {
+
+        if jsonInfo == "" {
+                return nil
+        }
+
+	var circle CircleNotificationSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &circle)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &circle
+}
+*/
+func convertDistanceSubscriptionToJson(distanceSubs *DistanceNotificationSubscription) string {
+
+	jsonInfo, err := json.Marshal(*distanceSubs)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+/*
+func convertJsonToDistanceSubscription(jsonInfo string) *DistanceNotificationSubscription {
+
+        if jsonInfo == "" {
+                return nil
+        }
+
+	var distance DistanceNotificationSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &distance)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &distance
+}
+*/
 func convertStringToOperationStatus(opStatus string) OperationStatus {
 
 	switch opStatus {

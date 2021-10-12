@@ -43,10 +43,11 @@ type Route struct {
 type Routes []Route
 
 func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Router {
+	var handler http.Handler
 	router := mux.NewRouter().StrictSlash(true)
 
 	for _, route := range routes {
-		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
+		handler = Logger(route.HandlerFunc, route.Name)
 		handler = met.MetricsHandler(handler, "", serviceName)
 		router.
 			Methods(route.Method).
@@ -56,30 +57,45 @@ func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Rout
 	}
 
 	// Path prefix router order is important
+	// Service Api files
+	handler = http.StripPrefix("/platform-ctrl/v1/api/", http.FileServer(http.Dir("./api/")))
+	router.
+		PathPrefix("/platform-ctrl/v1/api/").
+		Name("Api").
+		Handler(handler)
+	// User supplied service API files
+	handler = http.StripPrefix("/platform-ctrl/v1/user-api/", http.FileServer(http.Dir("./user-api/")))
+	router.
+		PathPrefix("/platform-ctrl/v1/user-api/").
+		Name("UserApi").
+		Handler(handler)
+	// Alternate Swagger UI
 	if altSw != "" {
-		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
+		handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
 		router.
 			PathPrefix("/alt/api/").
 			Name("AltSw").
 			Handler(handler)
 	}
-	if altFe != "" {
-		var handler http.Handler = http.StripPrefix("/alt/", http.FileServer(http.Dir(altFe)))
-		router.
-			PathPrefix("/alt/").
-			Name("AltFe").
-			Handler(handler)
-	}
-
+	// Primary Swagger UI
 	if priSw != "" {
-		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
+		handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
 		router.
 			PathPrefix("/api/").
 			Name("PriSw").
 			Handler(handler)
 	}
+	// Alternate Frontend
+	if altFe != "" {
+		handler = http.StripPrefix("/alt/", http.FileServer(http.Dir(altFe)))
+		router.
+			PathPrefix("/alt/").
+			Name("AltFe").
+			Handler(handler)
+	}
+	// Primary Frontend
 	if priFe != "" {
-		var handler http.Handler = http.StripPrefix("/", http.FileServer(http.Dir(priFe)))
+		handler = http.StripPrefix("/", http.FileServer(http.Dir(priFe)))
 		router.
 			PathPrefix("/").
 			Name("PriFe").

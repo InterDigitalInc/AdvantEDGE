@@ -2,28 +2,28 @@ openapi: 3.0.0
 info:
   title: AdvantEDGE WLAN Access Information API
   description: 'WLAN Access Information Service is AdvantEDGE''s implementation of
-    [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf)
+    [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_MEC028v020201p.pdf)
     <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
     <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais)
     <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about WLAN access information in the network <p>**Details**<br>API
-    details available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a
-    selected subset of WAI API subscription types. <p>Supported subscriptions: <p>
-    - AssocStaSubscription'
+    information about WLAN access information in the network <p>**Note**<br>AdvantEDGE
+    supports a selected subset of WAI API subscription types. <p>Supported subscriptions:
+    <p> - AssocStaSubscription <p> - StaDataRateSubscription'
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
   license:
     name: Apache 2.0
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
-  version: 2.1.1
+  version: 2.2.1
 externalDocs:
-  description: ETSI MEC028 V2.1.1 WLAN Information API
-  url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_mec028v020101p.pdf
+  description: ETSI MEC028 V2.2.1 WLAN Information API
+  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.02.01_60/gs_mec028v020201p.pdf
 servers:
 - url: https://localhost/sandboxname/wai/v2
 tags:
 - name: wai
+- name: unsupported
 paths:
   /queries/ap/ap_information:
     get:
@@ -260,7 +260,7 @@ paths:
       - name: subscription_type
         in: query
         description: 'Filter on a specific subscription type. Permitted values: assoc_sta,
-          sta_data_rate.'
+          sta_data_rate, measure_report.'
         required: false
         style: form
         explode: true
@@ -342,7 +342,7 @@ paths:
                 seconds: 1977836800
                 nanoSeconds: 0
               apId:
-                macId: 005C0A0A0A0A
+                bssid: 005C0A0A0A0A
                 ssid:
                 - myNetworkSsid
                 ipAddress:
@@ -365,7 +365,7 @@ paths:
                   seconds: 1977836800
                   nanoSeconds: 0
                 apId:
-                  macId: 005C0A0A0A0A
+                  bssid: 005C0A0A0A0A
                   ssid:
                   - myNetworkSsid
                   ipAddress:
@@ -455,7 +455,7 @@ paths:
                         seconds: 1977836800
                         nanoseconds: 0
                       apId:
-                        macId: 005C0A0A0A0A
+                        bssid: 005C0A0A0A0A
                         ssid:
                         - myNetworkSsid
                         ipAddress:
@@ -508,7 +508,7 @@ paths:
                   seconds: 1977836800
                   nanoSeconds: 0
                 apId:
-                  macId: 005C0A0A0A0A
+                  bssid: 005C0A0A0A0A
                   ssid:
                   - myNetworkSsid
                   ipAddress:
@@ -587,7 +587,7 @@ paths:
                 seconds: 1977836800
                 nanoSeconds: 0
               apId:
-                macId: 005C0A0A0A0A
+                bssid: 005C0A0A0A0A
                 ssid:
                 - myNetworkSsid
                 ipAddress:
@@ -606,7 +606,11 @@ paths:
                     href: http://[hostIP]/sbox-xyz123/wai/v2/subscriptions/sub123
                 callbackReference: http://my.callback.com/wai/some-id
                 apId:
-                  macId: 005C0A0A0A0A
+                  bssid: 005C0A0A0A0A
+                  ssid:
+                  - myNetworkSsid
+                  ipAddress:
+                  - 10.10.100.1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -721,11 +725,450 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+  /measurements:
+    get:
+      tags:
+      - unsupported
+      summary: Retrieve information on measurements configuration
+      description: Queries information on measurements configuration
+      operationId: measurementLinkList_measurementsGET
+      responses:
+        "200":
+          description: Response body contains the list of links to requestors measurement
+            configurations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasurementConfigLinkList'
+              example:
+                _links:
+                  self:
+                    href: http://meAppServer.example.com/wai/v2/measurements
+                measurementConfig:
+                - href: http://meAppServer.example.com/wai/v2/measurements/meas123
+                  measurementId: myId1
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    post:
+      tags:
+      - unsupported
+      summary: Create a new measurement configuration
+      description: Creates a new measurement configuration
+      operationId: measurementsPOST
+      requestBody:
+        description: Measurement configuration information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeasurementConfig'
+            example:
+              staId:
+                macId: 005C01111111
+                ssid:
+                - myNetworkSsid
+                - myOtherNetworkSsid
+              measurementId: myId1
+              measurementInfo: {}
+        required: true
+      responses:
+        "201":
+          description: Successful measurement configuration response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasurementConfig'
+              example:
+                _links:
+                  self:
+                    href: http://meAppServer.example.com/wai/v2/measurements/meas123
+                staId:
+                  macId: 005C01111111
+                  ssid:
+                  - myNetworkSsid
+                  - myOtherNetworkSsid
+                measurementId: myId1
+                measurementInfo: {}
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "415":
+          description: 'Unsupported Media Type :  used to indicate that the server
+            or the client does not support the content type of the entity body.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "422":
+          description: 'Unprocessable Entity : used to indicate that the server understands
+            the content type of the request entity and that the syntax of the request
+            entity is correct but that the server is unable to process the contained
+            instructions. This error condition can occur if an JSON request body is
+            syntactically correct but semantically incorrect, for example if the target
+            area for the request is considered too large. This error condition can
+            also occur if the capabilities required by the request are not supported.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                application/problem+json:
+                  type: https://meAppServer.example.com/wai/v2/probs/too-many targets
+                  title: Too many targets
+                  status: "422"
+                  detail: The target area for the request is considered too large
+                  instance: /meAppClient.example.com/77777/msgs/abc
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /measurements/{measurementConfigId}:
+    get:
+      tags:
+      - unsupported
+      summary: Retrieve information on an existing measurement configuration
+      description: Queries information about an existing measurement configuration,
+        identified by its self-referring URI returned on creation (initial POST)
+      operationId: measurementsGET
+      parameters:
+      - name: measurementConfigId
+        in: path
+        description: Measurement configuration Id, specifically the "self" returned
+          in the measurement configuration request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+      responses:
+        "200":
+          description: Measurement configuration information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasurementConfig'
+              example:
+                _links:
+                  self:
+                    href: http://meAppServer.example.com/wai/v2/measurements/meas123
+                staId:
+                  macId: 005C01111111
+                  ssid:
+                  - myNetworkSsid
+                  - myOtherNetworkSsid
+                measurementId: myId1
+                measurementInfo: {}
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    put:
+      tags:
+      - unsupported
+      summary: Modify an existing measurement configuration
+      description: Updates an existing measurement configuration, identified by its
+        self-referring URI returned on creation (initial POST)
+      operationId: measurementsPUT
+      parameters:
+      - name: measurementConfigId
+        in: path
+        description: Measurement configuration Id, specifically the "self" returned
+          in the measurement configuration request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+      requestBody:
+        description: Measurement configuration to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeasurementConfig'
+            example:
+              _links:
+                self:
+                  href: http://meAppServer.example.com/wai/v2/measurements/meas123
+              staId:
+                macId: 005C01111111
+                ssid:
+                - myNetworkSsid
+                - myOtherNetworkSsid
+              measurementId: myId1
+              measurementInfo: {}
+        required: true
+      responses:
+        "200":
+          description: Successful measurement configuration modification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasurementConfig'
+              example:
+                _links:
+                  self:
+                    href: http://meAppServer.example.com/wai/v2/measurements/123
+                staId:
+                  macId: 005C01111111
+                  ssid:
+                  - myNetworkSsid
+                  - myOtherNetworkSsid
+                measurementId: myId1
+                measurementInfo: {}
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "412":
+          description: 'Precondition failed :  used when a condition has failed during
+            conditional requests, e.g. when using ETags to avoid write conflicts when
+            using PUT'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "422":
+          description: 'Unprocessable Entity : used to indicate that the server understands
+            the content type of the request entity and that the syntax of the request
+            entity is correct but that the server is unable to process the contained
+            instructions. This error condition can occur if an JSON request body is
+            syntactically correct but semantically incorrect, for example if the target
+            area for the request is considered too large. This error condition can
+            also occur if the capabilities required by the request are not supported.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                application/problem+json:
+                  type: https://meAppServer.example.com/wai/v2/probs/too-many targets
+                  title: Too many targets
+                  status: "422"
+                  detail: The target area for the request is considered too large
+                  instance: /meAppClient.example.com/77777/msgs/abc
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+      - unsupported
+      summary: Cancel a measurement configuration
+      description: Cancels an existing measurement configuration, identified by its
+        self-referring URI returned on creation (initial POST)
+      operationId: measurementsDELETE
+      parameters:
+      - name: measurementConfigId
+        in: path
+        description: Measurement configuration Id, specifically the "self" returned
+          in the measurement configuration request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /notifications/mec011/appTermination:
+    post:
+      tags:
+      - wai
+      summary: MEC011 Application Termination notification for self termination
+      description: Terminates itself.
+      operationId: mec011AppTerminationPOST
+      requestBody:
+        description: Termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotification'
+            example:
+              notificationType: AppTerminationNotification
+              operationAction: TERMINATING
+              maxGracefulTimeout: 10
+              links:
+                subscription:
+                  href: http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123
+                confirmTermination:
+                  href: http://mec011Server.example.com/mec_app_support/v1/confirm_termination
+        required: true
+      responses:
+        "204":
+          description: No Content
+      x-swagger-router-controller: notifications
 components:
   schemas:
     ApAssociated:
       required:
-      - macId
+      - bssid
       type: object
       properties:
         assocId:
@@ -733,7 +1176,15 @@ components:
           description: Unique number which identifies a particular association between
             the station and Access Point.
           x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: string
+          x-etsi-mec-origin-type: String
+        bssid:
+          type: string
+          description: Basic Service Set Identifier (BSSID) is a unique identifier
+            assigned to the Access Point (as network interface controller) for communications
+            at the data link layer of a network segment. BSSID is typically set to
+            an access point's MAC address.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
         ipAddress:
           minItems: 0
           type: array
@@ -741,14 +1192,7 @@ components:
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: string
-        macId:
-          type: string
-          description: Unique identifier assigned to the Access Point (as network
-            interface controller) for communications at the data link layer of a network
-            segment.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: string
+          x-etsi-mec-origin-type: String
         ssid:
           minItems: 0
           type: array
@@ -759,7 +1203,7 @@ components:
           x-etsi-mec-origin-type: String
       example:
         assocId: assocId
-        macId: macId
+        bssid: bssid
         ipAddress:
         - ipAddress
         - ipAddress
@@ -769,9 +1213,17 @@ components:
       x-etsi-ref: 6.5.12
     ApIdentity:
       required:
-      - macId
+      - bssid
       type: object
       properties:
+        bssid:
+          type: string
+          description: Basic Service Set Identifier (BSSID) is a unique Identifier
+            assigned to an Access Point (as network interface controller) for communications
+            at the data link layer of a network segment. BSSID is typically set to
+            an access point's MAC address.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
         ipAddress:
           minItems: 0
           type: array
@@ -780,23 +1232,17 @@ components:
             type: string
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: String
-        macId:
-          type: string
-          description: Unique Identifier assigned to an Access Point (as network interface
-            controller) for communications at the data link layer of a network segment.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: String
         ssid:
           minItems: 0
           type: array
-          description: Service Set Identifier to identify logical networks including
-            Basic Service Set and Extended Service Set.
+          description: Service Set Identifier (SSID) to identify logical WLAN networks
+            available via the Access Point.
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: String
       example:
-        macId: macId
+        bssid: bssid
         ipAddress:
         - ipAddress
         - ipAddress
@@ -813,18 +1259,18 @@ components:
           $ref: '#/components/schemas/ApIdentity'
         apLocation:
           $ref: '#/components/schemas/ApLocation'
-        apNeighbor:
-          $ref: '#/components/schemas/NeighborReport'
         bssLoad:
           $ref: '#/components/schemas/BssLoad'
         channel:
           type: integer
           description: Channel configured for the Access Point.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         extBssLoad:
           $ref: '#/components/schemas/ExtBssLoad'
+        oBssLoad:
+          $ref: '#/components/schemas/OBssLoad'
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
         wanMetrics:
@@ -833,27 +1279,27 @@ components:
           $ref: '#/components/schemas/WlanCapabilities'
       example:
         bssLoad:
-          channelUtilization: 1
-          staCount: 1
-          availAdmCap: 1
+          channelUtilization: 2
+          staCount: 4
+          availAdmCap: 3
         extBssLoad:
-          obsSec80MhzUtil: 5
-          obsSec40MhzUtil: 4
-          muMimoStaCount: 7
-          spatStreamUnderUtil: 9
+          obsSec80MhzUtil: 6
+          obsSec40MhzUtil: 1
+          muMimoStaCount: 1
+          spatStreamUnderUtil: 7
           obsSec20MhzUtil: 1
         timeStamp:
-          seconds: 6
-          nanoSeconds: 9
+          seconds: 8
+          nanoSeconds: 6
         apId:
-          macId: macId
+          bssid: bssid
           ipAddress:
           - ipAddress
           - ipAddress
           ssid:
           - ssid
           - ssid
-        channel: 6
+        channel: 7
         apLocation:
           civicLocation:
             country: country
@@ -898,49 +1344,45 @@ components:
             lat: 5
             latUncertainty: 2
             long: 7
+        oBssLoad:
+          overlap: 9
+          allocatedTrafficSelfStdDev: 4
+          allocatedTrafficShareStdDev: 9
+          allocatedTrafficShareMean: 5
+          allocatedTrafficSelfMean: 1
         wlanCap:
           vht:
             vhtMcsNss: 4
-            vhtCapInfo: 6
+            vhtCapInfo: 3
           edmg:
-            supportedMcs: 6
-            trnParameters: 0
-            reserved: 7
-            ampduParameters: 0
+            supportedMcs: 0
+            trnParameters: 7
+            ampduParameters: 7
           ht:
             aselCap: 7
-            txBeamFormCap: 0
-            ampduParameters: 3
-            htCapabilityInfo: 5
+            txBeamFormCap: 5
+            ampduParameters: 8
+            htCapabilityInfo: 3
             htExtendedCap: 3
-            supportedMcsSet: 4
+            supportedMcsSet: 7
           he:
-            supportedHeMcsNssSet: 3
-            hePhyCapinfo: 8
-            heMacCapInfo: 4
-            ppeThresholds: 7
+            supportedHeMcsNssSet: 4
+            hePhyCapinfo: 0
+            heMacCapInfo: 6
           dmg:
-            dmgStaCapInfo: 5
+            dmgStaCapInfo: 6
             maxNrShortAmsduSubframes: 3
-            sarCap: 3
-            maxNrBasicAmsduSubframes: 6
-            ExtScMcsCap: 2
-            dmgStaBeamTrackTimeLimit: 6
+            maxNrBasicAmsduSubframes: 3
+            ExtScMcsCap: 6
+            dmgStaBeamTrackTimeLimit: 5
             dmgApOrPcpCapInfo: 6
-            tddCap: 7
         wanMetrics:
-          uplinkLoad: 3
-          downlinkLoad: 8
-          lmd: 6
-          uplinkSpeed: 6
-          downlinkSpeed: 9
-          wanInfo: 1
-        apNeighbor:
-          bssid: bssid
-          operatingClass: 4
-          channel: 2
-          phyType: 7
-          bssidInfo: 3
+          uplinkLoad: 6
+          downlinkLoad: 9
+          lmd: 3
+          uplinkSpeed: 1
+          downlinkSpeed: 6
+          wanInfo: 2
       x-etsi-ref: 6.2.2
     ApLocation:
       type: object
@@ -1021,7 +1463,6 @@ components:
     AssocStaSubscription:
       required:
       - apId
-      - callbackReference
       - subscriptionType
       type: object
       properties:
@@ -1031,106 +1472,116 @@ components:
           $ref: '#/components/schemas/ApIdentity'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed WLAN information. This shall be included both in the
-            request and in response.
-          format: uri
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: URI
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
+        notificationEvent:
+          $ref: '#/components/schemas/AssocStaSubscription_notificationEvent'
+        notificationPeriod:
+          type: integer
+          description: |-
+            Set for periodic notification reporting.
+            Value indicates the notification period in seconds.
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        requestTestNotification:
+          type: boolean
+          description: Set to TRUE by the service consumer to request a test notification
+            on the callbackReference URI to determine if it is reachable by the WAIS
+            for notifications.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Boolean
         subscriptionType:
           type: string
           description: Shall be set to "AssocStaSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
-      example:
-        _links:
-          self: null
-        subscriptionType: subscriptionType
-        callbackReference: http://example.com/aeiou
-        expiryDeadline:
-          seconds: 6
-          nanoSeconds: 9
-        apId:
-          macId: macId
-          ipAddress:
-          - ipAddress
-          - ipAddress
-          ssid:
-          - ssid
-          - ssid
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+      x-etsi-notes: "NOTE 1:\tAt least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to WAIS to select the method to be used for notifications and to return\
+        \ only that method in the response.\nNOTE 2:\tAssocStaSubscription shall include\
+        \ either notificationPeriod or notificationEvent.\nNOTE 3:\tIf both notificationPeriod\
+        \ and notificationEvent attributes are set, notifications are issued periodically\
+        \ when the trigger threshold is satisfied."
       x-etsi-ref: 6.3.2
-    AssociatedStations:
-      required:
-      - macId
-      type: object
-      properties:
-        assocId:
-          type: string
-          description: Unique number which identifies a particular association between
-            an Access Point and a station.
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: string
-        ipAddress:
-          minItems: 0
-          type: array
-          description: IPv4 or IPv6 address allocated for the station associated with
-            the Access Point.
-          items:
-            type: string
-          x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: string
-        macId:
-          type: string
-          description: Unique identifier assigned to a station (as network interface
-            controller) for communications at the data link layer of a network segment.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: string
-      x-etsi-ref: 6.5.5
     BeaconReport:
       required:
-      - bssId
-      - channelId
+      - bssid
+      - channel
       - measurementId
-      - reportingCondition
-      - ssId
-      - staId
+      - operatingClass
+      - reportedFrameInfo
       type: object
       properties:
-        bssId:
-          minItems: 1
-          type: array
-          description: The BSSID field indicates the BSSID of the BSS(s) for which
-            a beacon report has been received.
-          items:
-            type: string
-          x-etsi-mec-cardinality: 1..N
+        antennaId:
+          type: integer
+          description: The Antenna ID field contains the identifying number for the
+            antenna(s) used for this measurement. Antenna ID is defined in section 9.4.2.40
+            of IEEE 802.11-2016 [8].
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        bssid:
+          type: string
+          description: Indicates the BSSID of the BSS for which a beacon report has
+            been received.
+          x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
-        channelId:
+        channel:
           type: integer
           description: Channel number where the beacon was received.
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
+          x-etsi-mec-origin-type: Uint8
         measurementId:
           type: string
           description: Measurement ID of the Measurement configuration applied to
             this Beacon Report.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
-        reportingCondition:
+        operatingClass:
           type: integer
-          description: As in table T9-89 of IEEE 802.11-2012 [8].
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        ssId:
-          minItems: 1
-          type: array
-          description: (Optional) The SSID subelement indicates the ESS(s) or IBSS(s)
-            for which a beacon report is received.
-          items:
-            type: string
-          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Uint8
+        parentTsf:
+          type: integer
+          description: The Parent TSF field contains the lower 4 octets of the measuring
+            STA's TSF timer value at the start of reception of the first octet of
+            the timestamp field of the reported Beacon, Measurement Pilot, or Probe
+            Response frame at the time the Beacon, Measurement Pilot, or Probe Response
+            frame being reported was received.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        rcpi:
+          type: integer
+          description: RCPI indicates the received channel power of the Beacon, Measurement
+            Pilot, or Probe Response frame, which is a logarithmic function of the
+            received signal power, as defined in section 9.4.2.38 of IEEE 802.11-2016
+            [8].
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        reportedFrameInfo:
+          $ref: '#/components/schemas/ReportedBeaconFrameInfo'
+        rsni:
+          type: integer
+          description: RSNI indicates the received signal-to-noise indication for
+            the Beacon, Measurement Pilot, or Probe Response frame, as described in
+            section 9.4.2.41 of IEEE 802.11-2016 [8].
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        ssid:
+          type: string
+          description: The SSID subelement indicates the ESS or IBSS for which a beacon
+            report is received.
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         staId:
           $ref: '#/components/schemas/StaIdentity'
@@ -1144,72 +1595,169 @@ components:
           ssid:
           - ssid
           - ssid
-        reportingCondition: 6
-        bssId:
-        - bssId
-        - bssId
+        antennaId: 0
+        bssid: bssid
+        operatingClass: 1
+        channel: 6
+        rsni: 9
+        parentTsf: 5
         measurementId: measurementId
-        channelId: 0
-        ssId:
-        - ssId
-        - ssId
+        ssid: ssid
+        rcpi: 5
+        reportedFrameInfo:
+          phyType: 7
+          frameType: 2
       x-etsi-ref: 6.5.27
-    BeaconRequestConfig:
+    BeaconReportingConfig:
       required:
-      - bssId
-      - channelId
-      - measurementMode
       - reportingCondition
-      - ssId
-      - staId
+      - threshold
       type: object
       properties:
-        bssId:
-          minItems: 1
-          type: array
-          description: The BSSID field indicates the BSSID of the BSS(s) for which
-            a beacon report is requested. When requesting beacon reports for all BSSs
-            on the channel, the BSSID field contains the wildcard BSSID.
-          items:
-            type: string
-          x-etsi-mec-cardinality: 1..N
+        reportingCondition:
+          type: integer
+          description: |-
+            Reporting condition for the Beacon Report as per Table 9-89 of IEEE 802.11-2016 [8]:
+            0 = Report to be issued after each measurement.
+            1 = measured RCPI level is greater than the threshold.
+            2 = measured RCPI level is less than the threshold.
+            3 = measured RSNI level is greater than the threshold.
+            4 = measured RSNI level is less than the threshold.
+            5 = measured RCPI level is greater than a threshold defined by an offset from the serving AP's reference RCPI.
+            6 = measured RCPI level is less than a threshold defined by an offset from the serving AP's reference RCPI.
+            7 = measured RSNI level is greater than a threshold defined by an offset from the serving AP's reference RSNI.
+            8 = measured RSNI level is less than a threshold defined by an offset from the serving AP's reference RSNI.
+            9 = measured RCPI level is in a range bound by the serving AP's reference RCPI and an offset from the serving AP's reference RCPI.
+            10 = measured RSNI level is in a range bound by the serving AP's reference RSNI and an offset from the serving AP's reference RSNI.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        threshold:
+          type: integer
+          description: |-
+            The threshold subfield contains either the threshold value or the offset value to be used for conditional reporting.
+
+            For reportingCondition subfield with values 1 and 2, the threshold value is a logarithmic function of the received signal power, as defined in section 9.4.2.38 of IEEE 802.11-2016 [8].
+
+            For reportingCondition subfield values 3 and 4, the threshold value is a logarithmic function of the signal-to-noise ratio, as described in section 9.4.2.41 of IEEE 802.11-2016 [8].
+
+            For reportingCondition subfield values 5 to 10, the offset value is an 8-bit 2s complement integer in units of 0,5 dBm. The indicated reporting condition applies individually to each measured Beacon, Measurement Pilot, or Probe Response frame.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+      example:
+        reportingCondition: 0
+        threshold: 6
+      x-etsi-ref: 6.5.28
+    BeaconRequestConfig:
+      required:
+      - beaconReportingConf
+      - channelId
+      - measurementMode
+      - operatingClass
+      type: object
+      properties:
+        beaconReportingConf:
+          $ref: '#/components/schemas/BeaconReportingConfig'
+        bssid:
+          type: string
+          description: The BSSID field indicates the BSS for which a beacon report
+            is requested. If absent, the requested beacon reports should include all
+            BSSs on the channel.
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         channelId:
           type: integer
           description: Channel number to scan. A Channel Number of 0 indicates a request
             to make iterative measurements for all supported channels in the Operating
             Class where the measurement is permitted on the channel and the channel
-            is valid for the current regulatory domain. A Channel Number of 255 indicates
+            is valid for the current regulatory domain. A Channel Number of 255 indicates
             a request to make iterative measurements for all supported channels in
             the current Operating Class listed in the latest AP Channel Report received
             from the serving AP.
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
+          x-etsi-mec-origin-type: Uint8
         measurementMode:
           type: integer
           description: |-
             0 for passive.
             1 for active.
             2 for beacon table.
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        reportingCondition:
+          x-etsi-mec-origin-type: Uint8
+        operatingClass:
           type: integer
-          description: As in table T9-89 of IEEE 802.11-2012 [8].
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.112016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        ssId:
-          minItems: 1
-          type: array
-          description: (Optional) The SSID subelement indicates the ESS(s) or IBSS(s)
-            for which a beacon report is requested.
-          items:
-            type: string
-          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Uint8
+        ssid:
+          type: string
+          description: The SSID subelement indicates the ESS or IBSS for which a beacon
+            report is requested.
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
-        staId:
-          $ref: '#/components/schemas/StaIdentity'
+      example:
+        measurementMode: 5
+        bssid: bssid
+        operatingClass: 5
+        beaconReportingConf:
+          reportingCondition: 0
+          threshold: 6
+        ssid: ssid
+        channelId: 1
       x-etsi-ref: 6.5.25
+    BssCapabilities:
+      required:
+      - apsd
+      - delayedBACK
+      - immediateBACK
+      - qos
+      - radioMeasurements
+      - spectrumManagement
+      type: object
+      properties:
+        apsd:
+          type: boolean
+          description: APSD Option implemented
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        delayedBACK:
+          type: boolean
+          description: Delayed Block Ack Option implemented
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        immediateBACK:
+          type: boolean
+          description: Immediate Block Ack Option implemented
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qos:
+          type: boolean
+          description: QoS Option implemented
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        radioMeasurements:
+          type: boolean
+          description: Radio Measurement Activated
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        spectrumManagement:
+          type: boolean
+          description: Spectrum Management required
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+      example:
+        delayedBACK: true
+        qos: true
+        spectrumManagement: true
+        immediateBACK: true
+        radioMeasurements: true
+        apsd: true
+      x-etsi-ref: 6.5.31
     BssLoad:
       required:
       - availAdmCap
@@ -1222,7 +1770,7 @@ components:
           description: Available Admission Capacity that specifies the remaining amount
             of medium time available via explicit admission control, in units of 32
             s/s.
-          format: int32
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
         channelUtilization:
@@ -1230,40 +1778,195 @@ components:
           description: The percentage of time, linearly scaled with 255 representing
             100 %, that the AP sensed the medium was busy, as indicated by either
             the physical or virtual Carrier Sense (CS) mechanism.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt8
         staCount:
           type: integer
           description: An unsigned integer that indicates the total number of STAs
             currently associated with this BSS.
-          format: int32
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt16
       example:
-        channelUtilization: 1
-        staCount: 1
-        availAdmCap: 1
+        channelUtilization: 2
+        staCount: 4
+        availAdmCap: 3
       x-etsi-ref: 6.5.7
-    ChannelLoadConfig:
+    BssidInfo:
       required:
-      - apId
-      - cChannelId
-      - channelLoad
+      - apReachability
+      - capabilities
+      - ftm
+      - highThroughput
+      - mobilityDomain
+      - security
+      - veryHighThroughput
       type: object
       properties:
-        apId:
-          $ref: '#/components/schemas/ApIdentity'
-        cChannelId:
+        apReachability:
           type: integer
-          description: Channel number which load is reported
+          description: |-
+            The apReachability field indicates whether the AP identified by this BSSID is reachable by the STA that requested the neighbor report. Valid values:
+            0 = reserved
+            1 = not reachable
+            2 = unknown
+            3 = reachable.
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
+          x-etsi-mec-origin-type: Uint8
+        capabilities:
+          $ref: '#/components/schemas/BssCapabilities'
+        ftm:
+          type: boolean
+          description: |-
+            True indicates the AP represented by this BSSID is an AP that has set the Fine Timing Measurement Responder field of the Extended Capabilities element to 1.
+
+            False indicates either that the reporting AP has dot11FineTimingMsmtRespActivated equal to false, or the reported AP has not set the Fine Timing Measurement Responder field of the Extended Capabilities element to 1 or that the Fine Timing Measurement Responder field of the reported AP is not available to the reporting AP at this time.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        highThroughput:
+          type: boolean
+          description: True indicates that the AP represented by this BSSID is an
+            HT AP including the HT Capabilities element in its Beacons, and that the
+            contents of that HT Capabilities element are identical to the HT Capabilities
+            element advertised by the AP sending the report.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        mobilityDomain:
+          type: boolean
+          description: True indicates the AP represented by this BSSID is including
+            an MDE in its Beacon frames and that the contents of that MDE are identical
+            to the MDE advertised by the AP sending the report.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        security:
+          type: boolean
+          description: |-
+            True indicates the AP identified by this BSSID supports the same security provisioning as used by the STA in its current association.
+
+            False indicates either that the AP does not support the same security provisioning or that the security information is not available at this time.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        veryHighThroughput:
+          type: boolean
+          description: True indicates that the AP represented by this BSSID is a VHT
+            AP and that the VHT Capabilities element, if included as a subelement
+            in the report, is identical in content to the VHT Capabilities element
+            included in the AP's Beacon.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+      example:
+        highThroughput: true
+        apReachability: 1
+        mobilityDomain: true
+        security: true
+        veryHighThroughput: true
+        capabilities:
+          delayedBACK: true
+          qos: true
+          spectrumManagement: true
+          immediateBACK: true
+          radioMeasurements: true
+          apsd: true
+        ftm: true
+      x-etsi-ref: 6.5.30
+    ChannelLoad:
+      required:
+      - channel
+      - channelLoad
+      - measurementDuration
+      - measurementId
+      - operatingClass
+      type: object
+      properties:
+        channel:
+          type: integer
+          description: Channel number indicates the channel number for which the measurement
+            report applies.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
         channelLoad:
           type: integer
-          description: Channel load as per IEEE 802.11-2012 [8], section 11.11.9.3
+          description: Proportion of measurement duration for which the measuring
+            STA determined the channel to be busy, as a percentage of time, linearly
+            scaled with 255 representing 100 %.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        measurementDuration:
+          type: integer
+          description: Duration over which the Channel Load report was measured, in
+            units of TUs of 1 024 µs.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        measurementId:
+          type: string
+          description: Measurement ID of the Measurement configuration applied to
+            this Channel Load Report.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        operatingClass:
+          type: integer
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        staId:
+          $ref: '#/components/schemas/StaIdentity'
+      example:
+        staId: null
+        operatingClass: 1
+        channel: 2
+        measurementDuration: 7
+        channelLoad: 4
+        measurementId: measurementId
+      x-etsi-ref: 6.5.39
+    ChannelLoadConfig:
+      required:
+      - channel
+      - operatingClass
+      type: object
+      properties:
+        channel:
+          type: integer
+          description: Channel for which the channel load report is requested.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Integer
+        operatingClass:
+          type: integer
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        reportingCondition:
+          type: integer
+          description: |-
+            Reporting condition for the Beacon Report as per Table 9-153 of IEEE 802.11-2016 [8]:
+            0 = Report to be issued after each measurement.
+            1 = Report to be issued when Channel Load is greater than or equal to the threshold.
+            2 = Report to be issued when Channel Load is less than or equal to the threshold.
+
+            If this optional field is not provided, channel load report should be issued after each measurement (reportingCondition = 0).
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        threshold:
+          type: integer
+          description: Channel Load reference value for threshold reporting. This
+            field shall be provided for reportingCondition values 1 and 2.
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+      example:
+        reportingCondition: 9
+        operatingClass: 7
+        channel: 2
+        threshold: 3
       x-etsi-ref: 6.5.24
     CivicLocation:
       required:
@@ -1277,7 +1980,7 @@ components:
           x-etsi-mec-origin-type: String
         ca1:
           type: string
-          description: 'National subdivisions (state, canton, region,province, prefecture) '
+          description: 'National subdivisions (state, canton, region, province, prefecture) '
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         ca128:
@@ -1479,73 +2182,57 @@ components:
       - dmgStaCapInfo
       - maxNrBasicAmsduSubframes
       - maxNrShortAmsduSubframes
-      - sarCap
-      - tddCap
       type: object
       properties:
         ExtScMcsCap:
           type: integer
-          description: Extended SC MCS capabilities as defined in draft IEEE P802.11/D4.0
-            [i.11]
-          format: int32
+          description: Extended SC MCS capabilities as defined in IEEE 802.11-2016
+            [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         dmgApOrPcpCapInfo:
           type: integer
-          description: DMG AP or PCP capabilities information as defined in draft
-            IEEE P802.11/D4.0 [i.11]
-          format: int32
+          description: DMG AP or PCP capabilities information as defined in IEEE 802.11-2016
+            [8].
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
         dmgStaBeamTrackTimeLimit:
           type: integer
-          description: DMG station beam tracking time limit as defined in draft IEEE
-            P802.11/D4.0 [i.11]
-          format: int32
+          description: 'DMG station beam tracking time limit as defined in IEEE 802.11-2016
+            [8]. '
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
         dmgStaCapInfo:
           type: integer
-          description: DMG station capabilities information as defined in draft IEEE
-            P802.11/D4.0 [i.11]
-          format: int64
+          description: 'DMG station capabilities information as defined in IEEE 802.11-2016
+            [8]. '
+          format: uint64
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint64
         maxNrBasicAmsduSubframes:
           type: integer
-          description: Number of basic A-MSDU subframes in A-MSDU as defined in draft
-            IEEE P802.11/D4.0 [i.11]
-          format: int32
+          description: Number of basic A-MSDU subframes in A-MSDU as defined in IEEE
+            802.11-2016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         maxNrShortAmsduSubframes:
           type: integer
-          description: Number of short A-MSDU subframes in A-MSDU as defined in draft
-            IEEE P802.11/D4.0 [i.11]
-          format: int32
+          description: Number of short A-MSDU subframes in A-MSDU as defined in IEEE
+            802.11-2016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
-        sarCap:
-          type: integer
-          description: SAR capabilities as defined in draft IEEE P802.11/D4.0 [i.11]
-          format: int32
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Uint8
-        tddCap:
-          type: integer
-          description: TDD capabilities as defined in draft IEEE P802.11/D4.0 [i.11]
-          format: int32
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Uint16
       example:
-        dmgStaCapInfo: 5
+        dmgStaCapInfo: 6
         maxNrShortAmsduSubframes: 3
-        sarCap: 3
-        maxNrBasicAmsduSubframes: 6
-        ExtScMcsCap: 2
-        dmgStaBeamTrackTimeLimit: 6
+        maxNrBasicAmsduSubframes: 3
+        ExtScMcsCap: 6
+        dmgStaBeamTrackTimeLimit: 5
         dmgApOrPcpCapInfo: 6
-        tddCap: 7
       x-etsi-ref: 6.5.17
     EdmgCapabilities:
       required:
@@ -1556,33 +2243,44 @@ components:
       properties:
         ampduParameters:
           type: integer
-          description: A-MPDU parameters as defined in draft IEEE P802.11/D4.0 [i.11]
-          format: Uint8
+          description: A-MPDU parameters as defined in draft IEEE P802.11ay [i.11]
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Uint8
-        reserved:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         supportedMcs:
           type: integer
-          description: Supported MCS as defined in draft IEEE P802.11/D4.0 [i.11]
-          format: int32
+          description: Supported MCS as defined in draft IEEE P802.11ay [i.11]
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         trnParameters:
           type: integer
-          description: Training parameters as defined in draft IEEE P802.11/D4.0 [i.11]
-          format: int32
+          description: Training parameters as defined in draft IEEE P802.11ay [i.11]
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
       example:
-        supportedMcs: 6
-        trnParameters: 0
-        reserved: 7
-        ampduParameters: 0
+        supportedMcs: 0
+        trnParameters: 7
+        ampduParameters: 7
       x-etsi-ref: 6.5.18
+    ExpiryNotification:
+      required:
+      - _links
+      - expiryDeadline
+      - notificationType
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/ExpiryNotification__links'
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        notificationType:
+          type: string
+          description: Shall be set to "ExpiryNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 6.4.4
     ExtBssLoad:
       required:
       - muMimoStaCount
@@ -1597,25 +2295,25 @@ components:
           description: Indicates the total number of STAs currently associated with
             this BSS that have a 1 in the MU Beamformee Capable field of their VHT
             Capabilities element.
-          format: int32
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt16
         obsSec20MhzUtil:
           type: integer
           description: Observable loading on each of the secondary 20 MHz channel.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         obsSec40MhzUtil:
           type: integer
           description: Observable loading on each of the secondary 40 MHz channel.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         obsSec80MhzUtil:
           type: integer
           description: Observable loading on each of the secondary 80 MHz channel.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         spatStreamUnderUtil:
@@ -1623,14 +2321,14 @@ components:
           description: The percentage of time, linearly scaled with 255 representing
             100 %, that the AP has underutilized spatial domain resources for given
             busy time of the medium.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt8
       example:
-        obsSec80MhzUtil: 5
-        obsSec40MhzUtil: 4
-        muMimoStaCount: 7
-        spatStreamUnderUtil: 9
+        obsSec80MhzUtil: 6
+        obsSec40MhzUtil: 1
+        muMimoStaCount: 1
+        spatStreamUnderUtil: 7
         obsSec20MhzUtil: 1
       x-etsi-ref: 6.5.8
     GeoLocation:
@@ -1646,56 +2344,56 @@ components:
           type: integer
           description: The altitude value of location as defined in IETF RFC 6225
             [6]
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         altitudeType:
           type: integer
           description: The type description for altitude information e.g. floors or
             meters as defined in IETF RFC 6225 [6]
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         altitudeUncertainty:
           type: integer
           description: The uncertainty for altitude information as defined in IETF
             RFC 6225 [6]
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         datum:
           type: integer
           description: The datum value to express how coordinates are organized and
             related to real world as defined in IETF RFC 6225 [6]
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         lat:
           type: integer
           description: The latitude value of location as defined in IETF RFC 6225
             [6]
-          format: int64
+          format: uint64
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint64
         latUncertainty:
           type: integer
           description: The uncertainty for Latitude information as defined in IETF
             RFC 6225 [6]
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         long:
           type: integer
           description: The longitude value of location as defined in IETF RFC 6225
             [6]
-          format: int64
+          format: uint64
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint64
         longUncertainty:
           type: integer
           description: The uncertainty for Longitude information as defined in IETF
             RFC 6225 [6]
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
       example:
@@ -1718,29 +2416,25 @@ components:
         heMacCapInfo:
           type: integer
           description: MAC capabilities of an Access Point.
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         hePhyCapinfo:
           type: integer
           description: PHY capabilities of an Access Point.
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
-        ppeThresholds:
-          type: integer
-          description: PPE Threshold determines the nominal packet padding value for
-            a HE PPDU.
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: not defined
         supportedHeMcsNssSet:
           type: integer
           description: Supported MCS and NSS Set.
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
       example:
-        supportedHeMcsNssSet: 3
-        hePhyCapinfo: 8
-        heMacCapInfo: 4
-        ppeThresholds: 7
+        supportedHeMcsNssSet: 4
+        hePhyCapinfo: 0
+        heMacCapInfo: 6
       x-etsi-ref: 6.5.16
     HtCapabilities:
       required:
@@ -1755,60 +2449,62 @@ components:
         ampduParameters:
           type: integer
           description: A-MPDU parameters as defined in IEEE 802.11-2016 [8].
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt8
         aselCap:
           type: integer
           description: ASEL capabilities as defined in IEEE 802.11-2016 [8].
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt8
         htCapabilityInfo:
           type: integer
           description: HT Capability Information as defined in IEEE 802.11-2016 [8].
-          format: int32
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt16
         htExtendedCap:
           type: integer
           description: Extended HT Capabilities as defined in IEEE 802.11-2016 [8].
-          format: int32
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt16
         supportedMcsSet:
           type: integer
           description: Supported MCS set as defined in IEEE 802.11-2016 [8].
-          format: int64
+          format: uint128
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint128
         txBeamFormCap:
           type: integer
           description: Transmit Beamforming Capabilities as defined in IEEE 802.11-2016
             [8].
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt32
       example:
         aselCap: 7
-        txBeamFormCap: 0
-        ampduParameters: 3
-        htCapabilityInfo: 5
+        txBeamFormCap: 5
+        ampduParameters: 8
+        htCapabilityInfo: 3
         htExtendedCap: 3
-        supportedMcsSet: 4
-      x-etsi-ref: 6.5.1
+        supportedMcsSet: 7
+      x-etsi-ref: 6.5.14
     InlineNotification:
       discriminator:
         propertyName: NotificationType
       oneOf:
       - $ref: '#/components/schemas/AssocStaNotification'
       - $ref: '#/components/schemas/StaDataRateNotification'
+      - $ref: '#/components/schemas/MeasurementReportNotification'
     InlineSubscription:
       discriminator:
         propertyName: SubscriptionType
       oneOf:
       - $ref: '#/components/schemas/AssocStaSubscription'
       - $ref: '#/components/schemas/StaDataRateSubscription'
+      - $ref: '#/components/schemas/MeasurementReportSubscription'
     LinkType:
       required:
       - href
@@ -1816,92 +2512,447 @@ components:
       properties:
         href:
           type: string
-          description: URI referring to a resource
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: String
       example:
         href: href
       x-etsi-ref: 6.5.23
     MeasurementConfig:
       required:
-      - measurementDuration
       - measurementId
-      - randomnInterval
+      - measurementInfo
+      - staId
       type: object
       properties:
-        beaconRequest:
+        _links:
+          $ref: '#/components/schemas/MeasurementConfig__links'
+        measurementId:
+          type: string
+          description: Unique identifier allocated by the service consumer to identify
+            measurement reports (within sta_information query), associated with this
+            measurement configuration.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        measurementInfo:
+          $ref: '#/components/schemas/MeasurementInfo'
+        staId:
+          minItems: 1
+          type: array
+          description: Identifier(s) to uniquely specify the target client station(s)
+            for the measurement configuration.
+          items:
+            $ref: '#/components/schemas/StaIdentity'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: StaIdentity
+      example:
+        staId:
+        - macId: macId
+          ipAddress:
+          - ipAddress
+          - ipAddress
+          aid: aid
+          ssid:
+          - ssid
+          - ssid
+        - macId: macId
+          ipAddress:
+          - ipAddress
+          - ipAddress
+          aid: aid
+          ssid:
+          - ssid
+          - ssid
+        measurementInfo:
+          beaconRequestConf:
+            measurementMode: 5
+            bssid: bssid
+            operatingClass: 5
+            beaconReportingConf:
+              reportingCondition: 0
+              threshold: 6
+            ssid: ssid
+            channelId: 1
+          randomInterval: 4
+          neighborReportConf:
+            bssid: bssid
+            ssid: ssid
+          measurementDuration: 2
+          channelLoadConf:
+            reportingCondition: 9
+            operatingClass: 7
+            channel: 2
+            threshold: 3
+          staStatisticsConf:
+            measurementCount: 1
+            triggerCondition:
+              rtsFailureCountThreshold: 5
+              failedCountThreshold: 1
+              multipleRetryCountThreshold: 1
+              fcsErrorCountThreshold: 6
+              retryCountThreshold: 4
+              ackFailureCountThreshold: 1
+              frameDuplicateCountThreshold: 7
+            triggerTimeout: 9
+            groupIdentity: 7
+            triggeredReport: true
+        _links:
+          self:
+            href: href
+        measurementId: measurementId
+      x-etsi-ref: 6.2.4
+    MeasurementConfigLinkList:
+      required:
+      - _links
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/MeasurementConfig__links'
+        measurementConfig:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeasurementConfigLinkList_measurementConfig'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+      example:
+        measurementConfig:
+        - href: http://example.com/aeiou
+          measurementId: measurementId
+        - href: http://example.com/aeiou
+          measurementId: measurementId
+        _links:
+          self:
+            href: href
+      x-etsi-ref: 6.2.5
+    MeasurementInfo:
+      type: object
+      properties:
+        beaconRequestConf:
           $ref: '#/components/schemas/BeaconRequestConfig'
-        channelLoad:
+        channelLoadConf:
           $ref: '#/components/schemas/ChannelLoadConfig'
         measurementDuration:
           type: integer
-          description: Duration of the measurement, shall be lower than Maximum Measurement
-            Duration in TU as defined in section 11.11.4 of IEEE 802.11 [8].
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        measurementId:
+          description: Duration of the measurement in Time Units (TUs) of 1 024 µs,
+            as defined in section 11.11.4 of IEEE 802.11-2016 [8]. If not provided,
+            the underlying system may utilize a default configuration that will be
+            indicated in resulting measurement reports.
+          format: uint16
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint16
+        neighborReportConf:
+          $ref: '#/components/schemas/NeighborReportConfig'
+        randomInterval:
+          type: integer
+          description: Random interval to be used for starting the measurement in
+            TUs of 1 024 µs, as specified in section 11.11.3 of IEEE 802.11-2016 [8].
+            If not provided, the underlying system may utilize a default configuration
+            that will be indicated in resulting measurement reports.
+          format: uint16
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint16
+        staStatisticsConf:
+          $ref: '#/components/schemas/StaStatisticsConfig'
+      example:
+        beaconRequestConf:
+          measurementMode: 5
+          bssid: bssid
+          operatingClass: 5
+          beaconReportingConf:
+            reportingCondition: 0
+            threshold: 6
+          ssid: ssid
+          channelId: 1
+        randomInterval: 4
+        neighborReportConf:
+          bssid: bssid
+          ssid: ssid
+        measurementDuration: 2
+        channelLoadConf:
+          reportingCondition: 9
+          operatingClass: 7
+          channel: 2
+          threshold: 3
+        staStatisticsConf:
+          measurementCount: 1
+          triggerCondition:
+            rtsFailureCountThreshold: 5
+            failedCountThreshold: 1
+            multipleRetryCountThreshold: 1
+            fcsErrorCountThreshold: 6
+            retryCountThreshold: 4
+            ackFailureCountThreshold: 1
+            frameDuplicateCountThreshold: 7
+          triggerTimeout: 9
+          groupIdentity: 7
+          triggeredReport: true
+      x-etsi-notes: "NOTE 1:\tOnly one of channelLoadConf, beaconRequestConf, staStatisticsConf\
+        \ or neighborReportConf is allowed in a MeasurementInfo instance.\nNOTE 2:\t\
+        As per IEEE 802.11-2016 [8], measurementDuration and randomInterval apply\
+        \ to channelLoad, beaconRequest, staStatistics, and neighborReport configurations."
+      x-etsi-ref: 6.5.41
+    MeasurementReportNotification:
+      required:
+      - notificationType
+      type: object
+      properties:
+        beaconReport:
+          minItems: 0
+          type: array
+          description: Beacon Report as defined in IEEE 802.11-2016 [8].
+          items:
+            $ref: '#/components/schemas/BeaconReport'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: BeaconReport
+        channelLoad:
+          minItems: 0
+          type: array
+          description: Channel Load reports as seen by the station as defined in IEEE
+            802.11-2016 [8].
+          items:
+            $ref: '#/components/schemas/ChannelLoad'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: ChannelLoad
+        neighborReport:
+          minItems: 0
+          type: array
+          description: Neighbor Report providing information about neighbor Access
+            Points seen by the station as defined in IEEE 802.112016 [8].
+          items:
+            $ref: '#/components/schemas/NeighborReport'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: NeighborReport
+        notificationType:
           type: string
-          description: Identifier of this measurement configuration.
+          description: Shall be set to "MeasurementReportNotification".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
-        randomnInterval:
-          type: integer
-          description: Random interval to be used for starting the measurement. In
-            units of TU as specifed in section 11.11.3 of IEEE 802.11 [8].
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
         staStatistics:
-          $ref: '#/components/schemas/StaStatisticsConfig'
-      x-etsi-notes: "NOTE:\tThis element enables the configuration of the channelLoad,\
-        \ beaconRequest and staStatistics in a single resource data type, although\
-        \ only one of each measurement. Multiple measurement configurations of each\
-        \ kind are not allowed."
-      x-etsi-ref: 6.2.4
+          minItems: 0
+          type: array
+          description: STA Statistics Report as defined in IEEE 802.11-2016 [8].
+          items:
+            $ref: '#/components/schemas/StaStatistics'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: StaStatistics
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-notes: "NOTE 1:\tEach MeasurementReportNotification shall include a single\
+        \ measurement report type (channelLoad, beaconRequest, etc.), based on the\
+        \ MeasurementReportSubscription.\nNOTE 2:\tA single MeasurementReportNotification\
+        \ may include multiple measurement reports (of the same type), if the MeasurementReportSubscription\
+        \ configured the measurement report for several client stations and multiple\
+        \ reports are available to WAIS."
+      x-etsi-ref: 6.4.5
+    MeasurementReportSubscription:
+      required:
+      - measurementId
+      - measurementInfo
+      - staId
+      - subscriptionType
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/AssocStaSubscription__links'
+        callbackReference:
+          type: string
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        measurementId:
+          type: string
+          description: Unique identifier allocated by the service consumer to identify
+            measurement reports associated with this measurement subscription.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        measurementInfo:
+          $ref: '#/components/schemas/MeasurementInfo'
+        requestTestNotification:
+          type: boolean
+          description: Set to TRUE by the service consumer to request a test notification
+            on the callbackReference URI to determine if it is reachable by the WAIS
+            for notifications.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Boolean
+        staId:
+          minItems: 1
+          type: array
+          description: Identifier(s) to uniquely specify the target client station(s)
+            for the subscription.
+          items:
+            $ref: '#/components/schemas/StaIdentity'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: StaIdentity
+        subscriptionType:
+          type: string
+          description: Shall be set to "MeasurementReportSubscription".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+      x-etsi-notes: "NOTE:\tAt least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to WAIS to select the method to be used for notifications and to return\
+        \ only that method in the response."
+      x-etsi-ref: 6.3.5
     NeighborReport:
       required:
       - bssid
       - bssidInfo
       - channel
+      - measurementId
       - operatingClass
       - phyType
       type: object
       properties:
+        bssTransitionCandidatePreference:
+          type: integer
+          description: Relative value indicating the preferred ordering for this BSS
+            as a transition candidate for roaming. 255 indicating the most preferred
+            candidate and 1 indicating the least preferred candidate, as defined in
+            Table 9-152 within IEEE 802.112016 [8].
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
         bssid:
           type: string
-          description: BSS Id of the Access Point that is being reported.
+          description: BSSID (MAC address) of the Access Point that is being reported.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         bssidInfo:
-          type: integer
-          description: Additional information related to Access Point that is being
-            reported such as AP reachability, security, key scope, Mobility Domain,
-            HT/VHT capability and Fine Time Measurements.
-          format: int32
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: UInt32
+          $ref: '#/components/schemas/BssidInfo'
         channel:
           type: integer
-          description: The channel currently used by this Access Point.
+          description: Channel field indicates a channel number, which is interpreted
+            in the context of the indicated operating class. Channel numbers are defined
+            in Annex E within IEEE 802.11-2016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
+        measurementId:
+          type: string
+          description: Measurement ID of the Measurement configuration applied to
+            this Neighbor Report.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
         operatingClass:
           type: integer
-          description: The channel set of the AP indicated by this BSSID.
+          description: Operating Class field indicates an operating class value as
+            defined in Annex E within IEEE 802.11-2016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         phyType:
           type: integer
-          description: PHY type of the AP indicated by this BSSID. It is an integer
-            value coded according to the value of the dot11PHYType.
+          description: |-
+            PHY type of the AP indicated by this BSSID. It is an integer value coded according to the value of the dot11PHYType, Annex C within IEEE 802.11-2016 [8].
+            2 = dsss
+            4 = ofdm
+            5 = hrdsss
+            6 = erp
+            7 = ht
+            8 = dmg
+            9 = vht
+            10 = tvht
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
+        staId:
+          $ref: '#/components/schemas/StaIdentity'
+      example:
+        staId: null
+        bssid: bssid
+        operatingClass: 7
+        channel: 6
+        phyType: 1
+        bssTransitionCandidatePreference: 1
+        bssidInfo:
+          highThroughput: true
+          apReachability: 1
+          mobilityDomain: true
+          security: true
+          veryHighThroughput: true
+          capabilities:
+            delayedBACK: true
+            qos: true
+            spectrumManagement: true
+            immediateBACK: true
+            radioMeasurements: true
+            apsd: true
+          ftm: true
+        measurementId: measurementId
+      x-etsi-ref: 6.5.10
+    NeighborReportConfig:
+      type: object
+      properties:
+        bssid:
+          type: string
+          description: BSSID of the neighbor AP which information is intended to obtain.
+            If no specific BSSID is given, the information will be provided for all
+            APs matching the ssid criteria.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ssid:
+          type: string
+          description: The SSID field is optionally present. If present, it contains
+            an SSID element. The presence of an SSID element in a Neighbor Report
+            indicates a request for a neighbor list for the specified SSID in the
+            SSID Element. The absence of an SSID element indicates neighbor report
+            for the current ESS.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
       example:
         bssid: bssid
-        operatingClass: 4
-        channel: 2
-        phyType: 7
-        bssidInfo: 3
-      x-etsi-ref: 6.5.10
+        ssid: ssid
+      x-etsi-notes: "NOTE:\tBoth SSID and BSSID are optional configuration parameters.\
+        \ BSSID is valid when a SSID setting is provided, otherwise ignored. If SSID\
+        \ is not included, the neighbor report will be generated for the SSID (i.e.\_\
+        current ESS) that the station is associated."
+      x-etsi-ref: 6.5.32
+    OBssLoad:
+      required:
+      - allocatedTrafficSelfMean
+      - allocatedTrafficShareMean
+      type: object
+      properties:
+        allocatedTrafficSelfMean:
+          type: integer
+          description: Mean of allocated traffic from this AP (BSS) in units of 32 µs
+            per second.
+          format: uint16
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint16
+        allocatedTrafficSelfStdDev:
+          type: integer
+          description: Standard deviation from the mean of allocation traffic from
+            this BSS in units of 32 µs per second.
+          format: uint16
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint16
+        allocatedTrafficShareMean:
+          type: integer
+          description: Mean of the sum of allocated traffic from other APs on the
+            overlapping channel in unit of 32 µs per second.
+          format: uint16
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint16
+        allocatedTrafficShareStdDev:
+          type: integer
+          description: Standard deviation from the mean of the sum of allocated traffic
+            from other APs on the overlapping channel in unit of 32 µs per second.
+          format: uint16
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint16
+        overlap:
+          type: integer
+          description: Indicates the number of other APs that are sharing the same
+            channel as the reporting AP.
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+      example:
+        overlap: 9
+        allocatedTrafficSelfStdDev: 4
+        allocatedTrafficShareStdDev: 9
+        allocatedTrafficShareMean: 5
+        allocatedTrafficSelfMean: 1
+      x-etsi-ref: 6.5.40
     ProblemDetails:
       type: object
       properties:
@@ -1921,7 +2972,7 @@ components:
         status:
           type: integer
           description: The HTTP status code for this occurrence of the problem
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         title:
@@ -1936,6 +2987,140 @@ components:
           format: uri
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+    ReportedBeaconFrameInfo:
+      required:
+      - frameType
+      - phyType
+      type: object
+      properties:
+        frameType:
+          type: integer
+          description: |-
+            A value of 0 indicates a Beacon or Probe Response.
+            A value of 1 indicates a Measurement Pilot frame.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        phyType:
+          type: integer
+          description: Value between 0 and 127 coded according to dot11PHYType.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+      example:
+        phyType: 7
+        frameType: 2
+      x-etsi-ref: 6.5.29
+    ReportingReasonQoSCounters:
+      required:
+      - qosAckFailure
+      - qosDiscarded
+      - qosFailed
+      - qosFrameDuplicate
+      - qosMultipleRetry
+      - qosRetry
+      - qosRtsFailure
+      type: object
+      properties:
+        qosAckFailure:
+          type: boolean
+          description: dot11QoSAckFailure
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qosDiscarded:
+          type: boolean
+          description: dot11QoSDiscarded
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qosFailed:
+          type: boolean
+          description: 'dot11QoSFailed '
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qosFrameDuplicate:
+          type: boolean
+          description: dot11QoSFrameDuplicate
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qosMultipleRetry:
+          type: boolean
+          description: dot11QoSMultipleRetry
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qosRetry:
+          type: boolean
+          description: dot11QoSRetry
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        qosRtsFailure:
+          type: boolean
+          description: dot11QoSRTSFailure
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+      example:
+        qosRtsFailure: true
+        qosMultipleRetry: true
+        qosFrameDuplicate: true
+        qosDiscarded: true
+        qosRetry: true
+        qosFailed: true
+        qosAckFailure: true
+      x-etsi-ref: 6.5.38
+    ReportingReasonStaCounters:
+      required:
+      - ackFailure
+      - failed
+      - fcsError
+      - frameDuplicate
+      - multipleRetry
+      - retry
+      - rtsFailure
+      type: object
+      properties:
+        ackFailure:
+          type: boolean
+          description: dot11AckFailure
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        failed:
+          type: boolean
+          description: dot11Failed
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        fcsError:
+          type: boolean
+          description: 'dot11FCSError '
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        frameDuplicate:
+          type: boolean
+          description: 'dot11FrameDuplicate '
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        multipleRetry:
+          type: boolean
+          description: dot11MultipleRetry
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        retry:
+          type: boolean
+          description: dot11Retry
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+        rtsFailure:
+          type: boolean
+          description: dot11RTSFailure
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+      example:
+        multipleRetry: true
+        failed: true
+        rtsFailure: true
+        ackFailure: true
+        fcsError: true
+        frameDuplicate: true
+        retry: true
+      x-etsi-ref: 6.5.37
     Rssi:
       required:
       - rssi
@@ -1944,12 +3129,66 @@ components:
         rssi:
           type: integer
           description: The Received Signal Strength Indicator from a station
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
       example:
-        rssi: 5
+        rssi: 4
       x-etsi-ref: 6.5.21
+    STACounterTriggerCondition:
+      type: object
+      properties:
+        ackFailureCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11AckFailureCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        failedCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11FailedCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        fcsErrorCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11FCSErrorCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        frameDuplicateCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11FrameDuplicateCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        multipleRetryCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11MultipleRetryCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        retryCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11RetryCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        rtsFailureCountThreshold:
+          type: integer
+          description: Configure and set threshold for dot11RTSFailureCount trigger
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+      example:
+        rtsFailureCountThreshold: 5
+        failedCountThreshold: 1
+        multipleRetryCountThreshold: 1
+        fcsErrorCountThreshold: 6
+        retryCountThreshold: 4
+        ackFailureCountThreshold: 1
+        frameDuplicateCountThreshold: 7
+      x-etsi-ref: 6.5.33
     StaDataRate:
       type: object
       properties:
@@ -1959,7 +3198,7 @@ components:
           type: integer
           description: The data transmit rate in kbps that was most recently used
             for transmission of data PPDUs from the access point to the station.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         staLastDataUplinkRate:
@@ -1967,13 +3206,17 @@ components:
           description: The data transmit rate in Kbps that was most recently used
             for transmission of data PPDUs from the associated station to the access
             point.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
       example:
         staId: null
         staLastDataDownlinkRate: 5
-        staLastDataUplinkRate: 2
+        staLastDataUplinkRate: 9
+      x-etsi-notes: "NOTE:\tStaDataRate shall include at least one instance of either\
+        \ downlink rate or uplink rate and may include both.\n If this report is contained\
+        \ within a data type that provides the station's identifier, staId field may\
+        \ be omitted"
       x-etsi-ref: 6.5.22
     StaDataRateNotification:
       required:
@@ -1998,7 +3241,6 @@ components:
       x-etsi-ref: 6.4.3
     StaDataRateSubscription:
       required:
-      - callbackReference
       - staId
       - subscriptionType
       type: object
@@ -2007,19 +3249,30 @@ components:
           $ref: '#/components/schemas/AssocStaSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed WLAN Access Information Service. This shall be included
-            both in the request and in response.
-          format: uri
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: URI
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
+        notificationEvent:
+          $ref: '#/components/schemas/StaDataRateSubscription_notificationEvent'
+        notificationPeriod:
+          type: integer
+          description: |-
+            Set for periodic notification reporting.
+            Value indicates the notification period in seconds.
+          format: uint8
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        requestTestNotification:
+          type: boolean
+          description: Set to TRUE by the service consumer to request a test notification
+            on the callbackReference URI to determine if it is reachable by the WAIS
+            for notifications.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Boolean
         staId:
           minItems: 1
           type: array
           description: Identifier(s) to uniquely specify the target client station(s)
-            for the subscription
+            for the subscription.
           items:
             $ref: '#/components/schemas/StaIdentity'
           x-etsi-mec-cardinality: 1..N
@@ -2029,28 +3282,15 @@ components:
           description: Shall be set to "StaDataRateSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
-      example:
-        staId:
-        - macId: macId
-          ipAddress:
-          - ipAddress
-          - ipAddress
-          aid: aid
-          ssid:
-          - ssid
-          - ssid
-        - macId: macId
-          ipAddress:
-          - ipAddress
-          - ipAddress
-          aid: aid
-          ssid:
-          - ssid
-          - ssid
-        _links: null
-        subscriptionType: subscriptionType
-        callbackReference: http://example.com/aeiou
-        expiryDeadline: null
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+      x-etsi-notes: "NOTE 1:\tAt least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to WAIS to select the method to be used for notifications and to return\
+        \ only that method in the response.\nNOTE 2:\tStaDataRateSubscription shall\
+        \ include either notificationPeriod or notificationEvent.\nNOTE 3:\tIf both\
+        \ notificationPeriod and notificationEvent attributes are set, notifications\
+        \ are issued periodically when the trigger threshold is satisfied."
       x-etsi-ref: 6.3.3
     StaIdentity:
       required:
@@ -2059,14 +3299,14 @@ components:
       properties:
         aid:
           type: string
-          description: 'Number which identifies a particular association between a
-            station and an Access Point '
+          description: Number which identifies a particular association between a
+            station and an Access Point
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         ipAddress:
           minItems: 0
           type: array
-          description: IPv4 or IPv6 address allocated for the station.
+          description: IPv4 or IPv6 address(es) allocated for the station.
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
@@ -2080,7 +3320,7 @@ components:
         ssid:
           minItems: 0
           type: array
-          description: Service Set Identifier to identify logical networks.
+          description: Service Set Identifier(s) to identify logical networks.
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
@@ -2103,13 +3343,39 @@ components:
         apAssociated:
           $ref: '#/components/schemas/ApAssociated'
         beaconReport:
-          $ref: '#/components/schemas/BeaconReport'
+          minItems: 0
+          type: array
+          description: 'Beacon Report as defined in IEEE 802.11-2016 [8]. '
+          items:
+            $ref: '#/components/schemas/BeaconReport'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: BeaconReport
         channel:
           type: integer
-          description: Channel currently used by the station.
-          format: int32
+          description: Channel currently used by the station to connect with its associated
+            Access Point.
+          format: uint32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
+        channelLoad:
+          minItems: 0
+          type: array
+          description: Channel Load reports as seen by the station as defined IEEE 802.11-2016
+            [8]. Channel Load reports may be configured for any channel, including
+            the station's current channel for association.
+          items:
+            $ref: '#/components/schemas/ChannelLoad'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: ChannelLoad
+        neighborReport:
+          minItems: 0
+          type: array
+          description: Information about neighbor Access Points seen by the station
+            as defined IEEE 802.11-2016 [8].
+          items:
+            $ref: '#/components/schemas/NeighborReport'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: NeighborReport
         rssi:
           $ref: '#/components/schemas/Rssi'
         staDataRate:
@@ -2117,113 +3383,196 @@ components:
         staId:
           $ref: '#/components/schemas/StaIdentity'
         staStatistics:
-          $ref: '#/components/schemas/StaStatistics'
+          minItems: 0
+          type: array
+          description: Statistics as defined in IEEE 802.11-2016 [8] for the client
+            station collected over measurement duration.
+          items:
+            $ref: '#/components/schemas/StaStatistics'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: StaStatistics
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
       example:
         timeStamp:
-          seconds: 6
-          nanoSeconds: 9
+          seconds: 8
+          nanoSeconds: 6
         staId: null
         rssi:
-          rssi: 5
+          rssi: 4
         staStatistics:
-          md: 9
-          groupIdentity: 7
-          statisticsGroupData:
-            dot11STAStatisticsStationCount: 1
-            dot11DualCTSFailureCount: 1
-            dot11RSNAStatsTKIPICVErrors: 6
-            dot11BeamformingFrameCount: 1
-            dot11TransmittedOctetsInGrantedRDGCount: 5
-            dot11RSNAStatsCMACReplays: 4
-            dot11RSNAStatsCCMPReplays: 3
-            dot11QosRTSSuccessCount: 0
-            dot11FailedCount: 5
-            dot11STBCCTSSuccessCount: 6
-            dot11RSNAStatsBIPMICErrors: 7
-            dot11RSNAStatsRobustMgmtCCMPReplays: 0
-            dot11ImplicitBARFailureCount: 6
-            dot11AckFailureCount: 7
-            dot11MultipleRetryCount: 6
-            dot11TwentyMHzFrameReceivedCount: 5
-            dot11FailedAMSDUCount: 4
-            dot11RetryCount: 4
-            dot11STAStatisticsAverageAccessDelayVoice: 0
-            dot11QosDiscardedFrameCount: 3
-            dot11FrameDuplicateCount: 6
-            dot11GroupTransmittedFrameCount: 3
-            dot11nonSTBCCTSFailureCount: 7
-            dot11AMPDUDelimiterCRCErrorCount: 3
-            dot11ReceivedAMSDUCount: 0
-            dot11QosReceivedFragmentCount: 4
-            dot11QosMPDUsReceivedCount: 0
-            dot11RTSLSIGSuccessCount: 7
-            dot11QosFrameDuplicateCount: 7
-            dot11STAStatisticsAverageAccessDelayBackGround: 8
-            dot11QosAckFailureCount: 6
-            dot11TransmittedMPDUsInAMPDUCount: 9
-            dot11nonSTBCCTSSuccessCount: 3
-            dot11GroupReceivedFrameCount: 6
-            dot11FCSErrorCount: 1
-            dot11STAStatisticsChannelUtilization: 2
-            dot11TransmittedFrameCount: 1
-            dot11QosRetryCount: 7
-            dot11TwentyMHzFrameTransmittedCount: 8
-            dot11TransmittedOctetsInAMSDUCount: 0
-            dot11QosTransmittedFrameCount: 3
-            dot11QosFailedCount: 3
-            dot11TransmittedOctetsInAMPDUCount: 8
-            dot11TransmittedAMPDUCount: 4
-            dot11DualCTSSuccessCount: 6
-            dot11MultipleRetryAMSDUCount: 2
-            dot11ReceivedOctetsInAMPDUCount: 0
-            dot11ReceivedOctetsInAMSDUCount: 7
-            dot11GrantedRDGUsedCount: 9
-            dot11TransmittedAMSDUCount: 8
-            dot11RTSLSIGFailureCount: 4
-            dot11ChannelWidthSwitchCount: 1
-            dot11RTSFailureCount: 1
-            dot11TransmittedFramesInGrantedRDGCount: 3
-            dot11STAStatisticsAPAverageAccessDelay: 6
-            dot11TransmittedFragmentCount: 9
-            dot11PSMPUTTGrantDuration: 6
-            dot11QosRTSFailureCount: 6
-            dot11QosMultipleRetryCount: 7
-            dot11AMSDUAckFailureCount: 4
-            dot11STAStatisticsAverageAccessDelayVideo: 3
-            dot11RetryAMSDUCount: 5
-            dot11QosTransmittedFragmentCount: 3
-            dot11GrantedRDGUnusedCount: 8
-            dot11RSNAStatsCCMPDecryptErrors: 5
-            dot11QosRetriesReceivedCount: 8
-            dot11PSMPUTTUsedDuration: 5
-            dot11STAStatisticsAverageAccessDelayBestEffort: 4
-            dot11RSNAStatsTKIPReplays: 4
-            dot11FortyMHzFrameReceivedCount: 9
-            dot11ExplicitBARFailureCount: 7
-            dot11FortyMHzFrameTransmittedCount: 9
-            dot11AMPDUReceivedCount: 2
-            dot11ReceivedFragmentCount: 9
-            dot11STBCCTSFailureCount: 8
-            dot11MPDUInReceivedAMPDUCount: 1
-            dot11RTSSuccessCount: 9
+        - staId: null
+          groupZeroData:
+            fcsErrorCount: 8
+            transmittedFrameCount: 5
+            failedCount: 4
+            groupTransmittedFrameCount: 3
+            reportingReasonStaCounters: null
+            transmittedFragmentCount: 7
+            receivedFragmentCount: 3
+            groupReceivedFrameCount: 7
+          groupOneData:
+            rtsFailureCount: 6
+            reportingReasonStaCounters:
+              multipleRetry: true
+              failed: true
+              rtsFailure: true
+              ackFailure: true
+              fcsError: true
+              frameDuplicate: true
+              retry: true
+            retryCount: 7
+            multipleRetryCount: 0
+            frameDuplicateCount: 7
+            ackFailureCount: 3
+            rtsSuccessCount: 0
+          measurementDuration: 3
+          group2to9Data:
+            qosFrameDuplicateCount: 9
+            qosAckFailureCount: 9
+            qosRetriesReceivedCount: 6
+            qosRTSFailureCount: 6
+            qosReceivedFragmentCount: 2
+            reportingReasonQoSCounters:
+              qosRtsFailure: true
+              qosMultipleRetry: true
+              qosFrameDuplicate: true
+              qosDiscarded: true
+              qosRetry: true
+              qosFailed: true
+              qosAckFailure: true
+            qosDiscardedFrameCount: 6
+            qosTransmittedFrameCount: 6
+            qosRetryCount: 6
+            qosMultipleRetryCount: 3
+            qosFailedCount: 8
+            qosRTSSuccessCount: 1
+            qosMPDUsReceivedCount: 6
+            qosTransmittedFragmentCount: 5
+          groupIdentity: 3
+          measurementId: measurementId
+        - staId: null
+          groupZeroData:
+            fcsErrorCount: 8
+            transmittedFrameCount: 5
+            failedCount: 4
+            groupTransmittedFrameCount: 3
+            reportingReasonStaCounters: null
+            transmittedFragmentCount: 7
+            receivedFragmentCount: 3
+            groupReceivedFrameCount: 7
+          groupOneData:
+            rtsFailureCount: 6
+            reportingReasonStaCounters:
+              multipleRetry: true
+              failed: true
+              rtsFailure: true
+              ackFailure: true
+              fcsError: true
+              frameDuplicate: true
+              retry: true
+            retryCount: 7
+            multipleRetryCount: 0
+            frameDuplicateCount: 7
+            ackFailureCount: 3
+            rtsSuccessCount: 0
+          measurementDuration: 3
+          group2to9Data:
+            qosFrameDuplicateCount: 9
+            qosAckFailureCount: 9
+            qosRetriesReceivedCount: 6
+            qosRTSFailureCount: 6
+            qosReceivedFragmentCount: 2
+            reportingReasonQoSCounters:
+              qosRtsFailure: true
+              qosMultipleRetry: true
+              qosFrameDuplicate: true
+              qosDiscarded: true
+              qosRetry: true
+              qosFailed: true
+              qosAckFailure: true
+            qosDiscardedFrameCount: 6
+            qosTransmittedFrameCount: 6
+            qosRetryCount: 6
+            qosMultipleRetryCount: 3
+            qosFailedCount: 8
+            qosRTSSuccessCount: 1
+            qosMPDUsReceivedCount: 6
+            qosTransmittedFragmentCount: 5
+          groupIdentity: 3
+          measurementId: measurementId
         apAssociated:
           assocId: assocId
-          macId: macId
+          bssid: bssid
           ipAddress:
           - ipAddress
           - ipAddress
           ssid:
           - ssid
           - ssid
+        neighborReport:
+        - staId: null
+          bssid: bssid
+          operatingClass: 7
+          channel: 6
+          phyType: 1
+          bssTransitionCandidatePreference: 1
+          bssidInfo:
+            highThroughput: true
+            apReachability: 1
+            mobilityDomain: true
+            security: true
+            veryHighThroughput: true
+            capabilities:
+              delayedBACK: true
+              qos: true
+              spectrumManagement: true
+              immediateBACK: true
+              radioMeasurements: true
+              apsd: true
+            ftm: true
+          measurementId: measurementId
+        - staId: null
+          bssid: bssid
+          operatingClass: 7
+          channel: 6
+          phyType: 1
+          bssTransitionCandidatePreference: 1
+          bssidInfo:
+            highThroughput: true
+            apReachability: 1
+            mobilityDomain: true
+            security: true
+            veryHighThroughput: true
+            capabilities:
+              delayedBACK: true
+              qos: true
+              spectrumManagement: true
+              immediateBACK: true
+              radioMeasurements: true
+              apsd: true
+            ftm: true
+          measurementId: measurementId
         staDataRate:
           staId: null
           staLastDataDownlinkRate: 5
-          staLastDataUplinkRate: 2
-        channel: 1
+          staLastDataUplinkRate: 9
+        channel: 3
+        channelLoad:
+        - staId: null
+          operatingClass: 1
+          channel: 2
+          measurementDuration: 7
+          channelLoad: 4
+          measurementId: measurementId
+        - staId: null
+          operatingClass: 1
+          channel: 2
+          measurementDuration: 7
+          channelLoad: 4
+          measurementId: measurementId
         beaconReport:
-          staId:
+        - staId:
             macId: macId
             ipAddress:
             - ipAddress
@@ -2232,605 +3581,427 @@ components:
             ssid:
             - ssid
             - ssid
-          reportingCondition: 6
-          bssId:
-          - bssId
-          - bssId
+          antennaId: 0
+          bssid: bssid
+          operatingClass: 1
+          channel: 6
+          rsni: 9
+          parentTsf: 5
           measurementId: measurementId
-          channelId: 0
-          ssId:
-          - ssId
-          - ssId
+          ssid: ssid
+          rcpi: 5
+          reportedFrameInfo:
+            phyType: 7
+            frameType: 2
+        - staId:
+            macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            aid: aid
+            ssid:
+            - ssid
+            - ssid
+          antennaId: 0
+          bssid: bssid
+          operatingClass: 1
+          channel: 6
+          rsni: 9
+          parentTsf: 5
+          measurementId: measurementId
+          ssid: ssid
+          rcpi: 5
+          reportedFrameInfo:
+            phyType: 7
+            frameType: 2
       x-etsi-ref: 6.2.3
     StaStatistics:
       required:
       - groupIdentity
-      - md
-      - statisticsGroupData
+      - measurementDuration
+      - measurementId
       type: object
       properties:
+        group2to9Data:
+          $ref: '#/components/schemas/StaStatisticsGroup2to9Data'
         groupIdentity:
           type: integer
-          description: Indicates the requested statistics group describing the Statistics
-            Group Data according to table 9-114 of IEEE 802.11-2016 [8].
+          description: |-
+            Indicates the requested statistics group describing the Statistics Group Data according to Table 9-114 of IEEE 802.11-2016 [8].
+            Depending on group identity, one and only one of the STA Statistics Group Data will be present.
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt8
-        md:
+        groupOneData:
+          $ref: '#/components/schemas/StaStatisticsGroupOneData'
+        groupZeroData:
+          $ref: '#/components/schemas/StaStatisticsGroupZeroData'
+        measurementDuration:
           type: integer
-          description: Measurement Duration.
+          description: Duration over which the Statistics Group Data was measured
+            in time units of 1 024 µs. Duration equal to zero indicates a report of
+            current values.
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt16
-        statisticsGroupData:
-          $ref: '#/components/schemas/StatisticsGroupData'
+        measurementId:
+          type: string
+          description: Measurement ID of the Measurement configuration applied to
+            this STA Statistics Report.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        staId:
+          $ref: '#/components/schemas/StaIdentity'
       example:
-        md: 9
-        groupIdentity: 7
-        statisticsGroupData:
-          dot11STAStatisticsStationCount: 1
-          dot11DualCTSFailureCount: 1
-          dot11RSNAStatsTKIPICVErrors: 6
-          dot11BeamformingFrameCount: 1
-          dot11TransmittedOctetsInGrantedRDGCount: 5
-          dot11RSNAStatsCMACReplays: 4
-          dot11RSNAStatsCCMPReplays: 3
-          dot11QosRTSSuccessCount: 0
-          dot11FailedCount: 5
-          dot11STBCCTSSuccessCount: 6
-          dot11RSNAStatsBIPMICErrors: 7
-          dot11RSNAStatsRobustMgmtCCMPReplays: 0
-          dot11ImplicitBARFailureCount: 6
-          dot11AckFailureCount: 7
-          dot11MultipleRetryCount: 6
-          dot11TwentyMHzFrameReceivedCount: 5
-          dot11FailedAMSDUCount: 4
-          dot11RetryCount: 4
-          dot11STAStatisticsAverageAccessDelayVoice: 0
-          dot11QosDiscardedFrameCount: 3
-          dot11FrameDuplicateCount: 6
-          dot11GroupTransmittedFrameCount: 3
-          dot11nonSTBCCTSFailureCount: 7
-          dot11AMPDUDelimiterCRCErrorCount: 3
-          dot11ReceivedAMSDUCount: 0
-          dot11QosReceivedFragmentCount: 4
-          dot11QosMPDUsReceivedCount: 0
-          dot11RTSLSIGSuccessCount: 7
-          dot11QosFrameDuplicateCount: 7
-          dot11STAStatisticsAverageAccessDelayBackGround: 8
-          dot11QosAckFailureCount: 6
-          dot11TransmittedMPDUsInAMPDUCount: 9
-          dot11nonSTBCCTSSuccessCount: 3
-          dot11GroupReceivedFrameCount: 6
-          dot11FCSErrorCount: 1
-          dot11STAStatisticsChannelUtilization: 2
-          dot11TransmittedFrameCount: 1
-          dot11QosRetryCount: 7
-          dot11TwentyMHzFrameTransmittedCount: 8
-          dot11TransmittedOctetsInAMSDUCount: 0
-          dot11QosTransmittedFrameCount: 3
-          dot11QosFailedCount: 3
-          dot11TransmittedOctetsInAMPDUCount: 8
-          dot11TransmittedAMPDUCount: 4
-          dot11DualCTSSuccessCount: 6
-          dot11MultipleRetryAMSDUCount: 2
-          dot11ReceivedOctetsInAMPDUCount: 0
-          dot11ReceivedOctetsInAMSDUCount: 7
-          dot11GrantedRDGUsedCount: 9
-          dot11TransmittedAMSDUCount: 8
-          dot11RTSLSIGFailureCount: 4
-          dot11ChannelWidthSwitchCount: 1
-          dot11RTSFailureCount: 1
-          dot11TransmittedFramesInGrantedRDGCount: 3
-          dot11STAStatisticsAPAverageAccessDelay: 6
-          dot11TransmittedFragmentCount: 9
-          dot11PSMPUTTGrantDuration: 6
-          dot11QosRTSFailureCount: 6
-          dot11QosMultipleRetryCount: 7
-          dot11AMSDUAckFailureCount: 4
-          dot11STAStatisticsAverageAccessDelayVideo: 3
-          dot11RetryAMSDUCount: 5
-          dot11QosTransmittedFragmentCount: 3
-          dot11GrantedRDGUnusedCount: 8
-          dot11RSNAStatsCCMPDecryptErrors: 5
-          dot11QosRetriesReceivedCount: 8
-          dot11PSMPUTTUsedDuration: 5
-          dot11STAStatisticsAverageAccessDelayBestEffort: 4
-          dot11RSNAStatsTKIPReplays: 4
-          dot11FortyMHzFrameReceivedCount: 9
-          dot11ExplicitBARFailureCount: 7
-          dot11FortyMHzFrameTransmittedCount: 9
-          dot11AMPDUReceivedCount: 2
-          dot11ReceivedFragmentCount: 9
-          dot11STBCCTSFailureCount: 8
-          dot11MPDUInReceivedAMPDUCount: 1
-          dot11RTSSuccessCount: 9
+        staId: null
+        groupZeroData:
+          fcsErrorCount: 8
+          transmittedFrameCount: 5
+          failedCount: 4
+          groupTransmittedFrameCount: 3
+          reportingReasonStaCounters: null
+          transmittedFragmentCount: 7
+          receivedFragmentCount: 3
+          groupReceivedFrameCount: 7
+        groupOneData:
+          rtsFailureCount: 6
+          reportingReasonStaCounters:
+            multipleRetry: true
+            failed: true
+            rtsFailure: true
+            ackFailure: true
+            fcsError: true
+            frameDuplicate: true
+            retry: true
+          retryCount: 7
+          multipleRetryCount: 0
+          frameDuplicateCount: 7
+          ackFailureCount: 3
+          rtsSuccessCount: 0
+        measurementDuration: 3
+        group2to9Data:
+          qosFrameDuplicateCount: 9
+          qosAckFailureCount: 9
+          qosRetriesReceivedCount: 6
+          qosRTSFailureCount: 6
+          qosReceivedFragmentCount: 2
+          reportingReasonQoSCounters:
+            qosRtsFailure: true
+            qosMultipleRetry: true
+            qosFrameDuplicate: true
+            qosDiscarded: true
+            qosRetry: true
+            qosFailed: true
+            qosAckFailure: true
+          qosDiscardedFrameCount: 6
+          qosTransmittedFrameCount: 6
+          qosRetryCount: 6
+          qosMultipleRetryCount: 3
+          qosFailedCount: 8
+          qosRTSSuccessCount: 1
+          qosMPDUsReceivedCount: 6
+          qosTransmittedFragmentCount: 5
+        groupIdentity: 3
+        measurementId: measurementId
       x-etsi-ref: 6.5.13
     StaStatisticsConfig:
       required:
       - groupIdentity
-      - staId
-      - triggerCondition
-      - triggerTimeout
       - triggeredReport
       type: object
       properties:
         groupIdentity:
           type: integer
-          description: As per table T 9-114 of IEEE 802.11-2012 [8].
+          description: As per Table 9-92 of IEEE 802.11-2016 [8].
+          format: uint8
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        staId:
-          $ref: '#/components/schemas/StaIdentity'
-        triggerCondition:
+          x-etsi-mec-origin-type: Uint8
+        measurementCount:
           type: integer
+          description: |-
+            Valid if triggeredReport = true.
+            Specifies the number of MAC service data units or protocol data units to determine if the trigger conditions are met.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        triggerCondition:
+          $ref: '#/components/schemas/STACounterTriggerCondition'
         triggerTimeout:
           type: integer
-          description: The Trigger Timeout field contains a value in units of 100
-            TUs during which a measuring STA does not generate further triggered STA
-            Statistics Reports after a trigger condition has been met.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
+          description: |-
+            Valid if triggeredReport = true.
+            The Trigger Timeout field contains a value in units of 100 time-units of 1 024 µs during which a measuring STA does not generate further triggered STA Statistics Reports after a trigger condition has been met.
+          format: uint16
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint16
         triggeredReport:
           type: boolean
+          description: True = triggered reporting, otherwise duration.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Boolean
+      example:
+        measurementCount: 1
+        triggerCondition:
+          rtsFailureCountThreshold: 5
+          failedCountThreshold: 1
+          multipleRetryCountThreshold: 1
+          fcsErrorCountThreshold: 6
+          retryCountThreshold: 4
+          ackFailureCountThreshold: 1
+          frameDuplicateCountThreshold: 7
+        triggerTimeout: 9
+        groupIdentity: 7
+        triggeredReport: true
       x-etsi-ref: 6.5.26
-    StatisticsGroupData:
+    StaStatisticsGroup2to9Data:
+      required:
+      - qosAckFailureCount
+      - qosDiscardedFrameCount
+      - qosFailedCount
+      - qosFrameDuplicateCount
+      - qosMPDUsReceivedCount
+      - qosMultipleRetryCount
+      - qosRTSFailureCount
+      - qosRTSSuccessCount
+      - qosReceivedFragmentCount
+      - qosRetriesReceivedCount
+      - qosRetryCount
+      - qosTransmittedFragmentCount
+      - qosTransmittedFrameCount
       type: object
       properties:
-        dot11AMPDUDelimiterCRCErrorCount:
+        qosAckFailureCount:
           type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
+          description: dot11QosAckFailureCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosDiscardedFrameCount:
+          type: integer
+          description: dot11QosDiscardedFrameCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosFailedCount:
+          type: integer
+          description: dot11QosFailedCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosFrameDuplicateCount:
+          type: integer
+          description: dot11QosFrameDuplicateCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosMPDUsReceivedCount:
+          type: integer
+          description: dot11QosMPDUsReceivedCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosMultipleRetryCount:
+          type: integer
+          description: dot11QosMultipleRetryCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosRTSFailureCount:
+          type: integer
+          description: dot11QosRTSFailureCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosRTSSuccessCount:
+          type: integer
+          description: dot11QosRTSSuccessCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
-        dot11AMPDUReceivedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11AMSDUAckFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11AckFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11BeamformingFrameCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11ChannelWidthSwitchCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11DualCTSFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11DualCTSSuccessCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11ExplicitBARFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11FCSErrorCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11FailedAMSDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11FailedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11FortyMHzFrameReceivedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11FortyMHzFrameTransmittedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11FrameDuplicateCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11GrantedRDGUnusedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11GrantedRDGUsedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11GroupReceivedFrameCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11GroupTransmittedFrameCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11ImplicitBARFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11MPDUInReceivedAMPDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11MultipleRetryAMSDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11MultipleRetryCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11PSMPUTTGrantDuration:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11PSMPUTTUsedDuration:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosAckFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosDiscardedFrameCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosFailedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosFrameDuplicateCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosMPDUsReceivedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosMultipleRetryCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosRTSFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosRTSSuccessCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosReceivedFragmentCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosRetriesReceivedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosRetryCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosTransmittedFragmentCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11QosTransmittedFrameCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsBIPMICErrors:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsCCMPDecryptErrors:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsCCMPReplays:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsCMACReplays:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsRobustMgmtCCMPReplays:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsTKIPICVErrors:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RSNAStatsTKIPReplays:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RTSFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RTSLSIGFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RTSLSIGSuccessCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RTSSuccessCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11ReceivedAMSDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11ReceivedFragmentCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11ReceivedOctetsInAMPDUCount:
-          type: integer
-          format: int64
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint64
-        dot11ReceivedOctetsInAMSDUCount:
-          type: integer
-          format: int64
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint64
-        dot11RetryAMSDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11RetryCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11STAStatisticsAPAverageAccessDelay:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STAStatisticsAverageAccessDelayBackGround:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STAStatisticsAverageAccessDelayBestEffort:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STAStatisticsAverageAccessDelayVideo:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STAStatisticsAverageAccessDelayVoice:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STAStatisticsChannelUtilization:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STAStatisticsStationCount:
-          type: integer
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint8
-        dot11STBCCTSFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11STBCCTSSuccessCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedAMPDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedAMSDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedFragmentCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedFrameCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedFramesInGrantedRDGCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedMPDUsInAMPDUCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedOctetsInAMPDUCount:
-          type: integer
-          format: int64
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint64
-        dot11TransmittedOctetsInAMSDUCount:
-          type: integer
-          format: int64
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TransmittedOctetsInGrantedRDGCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TwentyMHzFrameReceivedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11TwentyMHzFrameTransmittedCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11nonSTBCCTSFailureCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uint32
-        dot11nonSTBCCTSSuccessCount:
-          type: integer
-          format: int32
-          x-etsi-mec-cardinality: 0..1
+        qosReceivedFragmentCount:
+          type: integer
+          description: dot11QosReceivedFragmentCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosRetriesReceivedCount:
+          type: integer
+          description: dot11QosRetriesReceivedCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosRetryCount:
+          type: integer
+          description: dot11QosRetryCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosTransmittedFragmentCount:
+          type: integer
+          description: dot11QosTransmittedFragmentCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosTransmittedFrameCount:
+          type: integer
+          description: dot11QosTransmittedFrameCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        reportingReasonQoSCounters:
+          $ref: '#/components/schemas/ReportingReasonQoSCounters'
+      example:
+        qosFrameDuplicateCount: 9
+        qosAckFailureCount: 9
+        qosRetriesReceivedCount: 6
+        qosRTSFailureCount: 6
+        qosReceivedFragmentCount: 2
+        reportingReasonQoSCounters:
+          qosRtsFailure: true
+          qosMultipleRetry: true
+          qosFrameDuplicate: true
+          qosDiscarded: true
+          qosRetry: true
+          qosFailed: true
+          qosAckFailure: true
+        qosDiscardedFrameCount: 6
+        qosTransmittedFrameCount: 6
+        qosRetryCount: 6
+        qosMultipleRetryCount: 3
+        qosFailedCount: 8
+        qosRTSSuccessCount: 1
+        qosMPDUsReceivedCount: 6
+        qosTransmittedFragmentCount: 5
+      x-etsi-ref: 6.5.36
+    StaStatisticsGroupOneData:
+      required:
+      - ackFailureCount
+      - frameDuplicateCount
+      - multipleRetryCount
+      - retryCount
+      - rtsFailureCount
+      - rtsSuccessCount
+      type: object
+      properties:
+        ackFailureCount:
+          type: integer
+          description: dot11AckFailureCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        frameDuplicateCount:
+          type: integer
+          description: dot11FrameDuplicateCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        multipleRetryCount:
+          type: integer
+          description: dot11MultipleRetryCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        reportingReasonStaCounters:
+          $ref: '#/components/schemas/ReportingReasonStaCounters'
+        retryCount:
+          type: integer
+          description: dot11RetryCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        rtsFailureCount:
+          type: integer
+          description: dot11RTSFailureCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        rtsSuccessCount:
+          type: integer
+          description: dot11RTSSuccessCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
       example:
-        dot11STAStatisticsStationCount: 1
-        dot11DualCTSFailureCount: 1
-        dot11RSNAStatsTKIPICVErrors: 6
-        dot11BeamformingFrameCount: 1
-        dot11TransmittedOctetsInGrantedRDGCount: 5
-        dot11RSNAStatsCMACReplays: 4
-        dot11RSNAStatsCCMPReplays: 3
-        dot11QosRTSSuccessCount: 0
-        dot11FailedCount: 5
-        dot11STBCCTSSuccessCount: 6
-        dot11RSNAStatsBIPMICErrors: 7
-        dot11RSNAStatsRobustMgmtCCMPReplays: 0
-        dot11ImplicitBARFailureCount: 6
-        dot11AckFailureCount: 7
-        dot11MultipleRetryCount: 6
-        dot11TwentyMHzFrameReceivedCount: 5
-        dot11FailedAMSDUCount: 4
-        dot11RetryCount: 4
-        dot11STAStatisticsAverageAccessDelayVoice: 0
-        dot11QosDiscardedFrameCount: 3
-        dot11FrameDuplicateCount: 6
-        dot11GroupTransmittedFrameCount: 3
-        dot11nonSTBCCTSFailureCount: 7
-        dot11AMPDUDelimiterCRCErrorCount: 3
-        dot11ReceivedAMSDUCount: 0
-        dot11QosReceivedFragmentCount: 4
-        dot11QosMPDUsReceivedCount: 0
-        dot11RTSLSIGSuccessCount: 7
-        dot11QosFrameDuplicateCount: 7
-        dot11STAStatisticsAverageAccessDelayBackGround: 8
-        dot11QosAckFailureCount: 6
-        dot11TransmittedMPDUsInAMPDUCount: 9
-        dot11nonSTBCCTSSuccessCount: 3
-        dot11GroupReceivedFrameCount: 6
-        dot11FCSErrorCount: 1
-        dot11STAStatisticsChannelUtilization: 2
-        dot11TransmittedFrameCount: 1
-        dot11QosRetryCount: 7
-        dot11TwentyMHzFrameTransmittedCount: 8
-        dot11TransmittedOctetsInAMSDUCount: 0
-        dot11QosTransmittedFrameCount: 3
-        dot11QosFailedCount: 3
-        dot11TransmittedOctetsInAMPDUCount: 8
-        dot11TransmittedAMPDUCount: 4
-        dot11DualCTSSuccessCount: 6
-        dot11MultipleRetryAMSDUCount: 2
-        dot11ReceivedOctetsInAMPDUCount: 0
-        dot11ReceivedOctetsInAMSDUCount: 7
-        dot11GrantedRDGUsedCount: 9
-        dot11TransmittedAMSDUCount: 8
-        dot11RTSLSIGFailureCount: 4
-        dot11ChannelWidthSwitchCount: 1
-        dot11RTSFailureCount: 1
-        dot11TransmittedFramesInGrantedRDGCount: 3
-        dot11STAStatisticsAPAverageAccessDelay: 6
-        dot11TransmittedFragmentCount: 9
-        dot11PSMPUTTGrantDuration: 6
-        dot11QosRTSFailureCount: 6
-        dot11QosMultipleRetryCount: 7
-        dot11AMSDUAckFailureCount: 4
-        dot11STAStatisticsAverageAccessDelayVideo: 3
-        dot11RetryAMSDUCount: 5
-        dot11QosTransmittedFragmentCount: 3
-        dot11GrantedRDGUnusedCount: 8
-        dot11RSNAStatsCCMPDecryptErrors: 5
-        dot11QosRetriesReceivedCount: 8
-        dot11PSMPUTTUsedDuration: 5
-        dot11STAStatisticsAverageAccessDelayBestEffort: 4
-        dot11RSNAStatsTKIPReplays: 4
-        dot11FortyMHzFrameReceivedCount: 9
-        dot11ExplicitBARFailureCount: 7
-        dot11FortyMHzFrameTransmittedCount: 9
-        dot11AMPDUReceivedCount: 2
-        dot11ReceivedFragmentCount: 9
-        dot11STBCCTSFailureCount: 8
-        dot11MPDUInReceivedAMPDUCount: 1
-        dot11RTSSuccessCount: 9
+        rtsFailureCount: 6
+        reportingReasonStaCounters:
+          multipleRetry: true
+          failed: true
+          rtsFailure: true
+          ackFailure: true
+          fcsError: true
+          frameDuplicate: true
+          retry: true
+        retryCount: 7
+        multipleRetryCount: 0
+        frameDuplicateCount: 7
+        ackFailureCount: 3
+        rtsSuccessCount: 0
+      x-etsi-ref: 6.5.35
+    StaStatisticsGroupZeroData:
+      required:
+      - failedCount
+      - fcsErrorCount
+      - groupReceivedFrameCount
+      - groupTransmittedFrameCount
+      - receivedFragmentCount
+      - transmittedFragmentCount
+      - transmittedFrameCount
+      type: object
+      properties:
+        failedCount:
+          type: integer
+          description: dot11FailedCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        fcsErrorCount:
+          type: integer
+          description: dot11FCSErrorCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        groupReceivedFrameCount:
+          type: integer
+          description: dot11GroupReceivedFrameCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        groupTransmittedFrameCount:
+          type: integer
+          description: dot11GroupTransmittedFrameCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        receivedFragmentCount:
+          type: integer
+          description: dot11ReceivedFragmentCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        reportingReasonStaCounters:
+          $ref: '#/components/schemas/ReportingReasonStaCounters'
+        transmittedFragmentCount:
+          type: integer
+          description: dot11TransmittedFragmentCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        transmittedFrameCount:
+          type: integer
+          description: dot11TransmittedFrameCount counter
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      example:
+        fcsErrorCount: 8
+        transmittedFrameCount: 5
+        failedCount: 4
+        groupTransmittedFrameCount: 3
+        reportingReasonStaCounters: null
+        transmittedFragmentCount: 7
+        receivedFragmentCount: 3
+        groupReceivedFrameCount: 7
+      x-etsi-ref: 6.5.34
     SubscriptionLinkList:
       required:
       - _links
@@ -2838,96 +4009,36 @@ components:
       properties:
         _links:
           $ref: '#/components/schemas/SubscriptionLinkList__links'
-        assocStaSubscription:
+        subscription:
           type: array
           items:
-            $ref: '#/components/schemas/AssocStaSubscription'
+            $ref: '#/components/schemas/SubscriptionLinkList_subscription'
           x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: AssocStaSubscription
-        staDataRateSubscription:
-          type: array
-          items:
-            $ref: '#/components/schemas/StaDataRateSubscription'
-          x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: StaDataRateSubscription
+          x-etsi-mec-origin-type: Structure (inlined)
       example:
-        staDataRateSubscription:
-        - staId:
-          - macId: macId
-            ipAddress:
-            - ipAddress
-            - ipAddress
-            aid: aid
-            ssid:
-            - ssid
-            - ssid
-          - macId: macId
-            ipAddress:
-            - ipAddress
-            - ipAddress
-            aid: aid
-            ssid:
-            - ssid
-            - ssid
-          _links: null
-          subscriptionType: subscriptionType
-          callbackReference: http://example.com/aeiou
-          expiryDeadline: null
-        - staId:
-          - macId: macId
-            ipAddress:
-            - ipAddress
-            - ipAddress
-            aid: aid
-            ssid:
-            - ssid
-            - ssid
-          - macId: macId
-            ipAddress:
-            - ipAddress
-            - ipAddress
-            aid: aid
-            ssid:
-            - ssid
-            - ssid
-          _links: null
-          subscriptionType: subscriptionType
-          callbackReference: http://example.com/aeiou
-          expiryDeadline: null
         _links:
           self:
             href: href
-        assocStaSubscription:
-        - _links:
-            self: null
-          subscriptionType: subscriptionType
-          callbackReference: http://example.com/aeiou
-          expiryDeadline:
-            seconds: 6
-            nanoSeconds: 9
-          apId:
-            macId: macId
-            ipAddress:
-            - ipAddress
-            - ipAddress
-            ssid:
-            - ssid
-            - ssid
-        - _links:
-            self: null
-          subscriptionType: subscriptionType
-          callbackReference: http://example.com/aeiou
-          expiryDeadline:
-            seconds: 6
-            nanoSeconds: 9
-          apId:
-            macId: macId
-            ipAddress:
-            - ipAddress
-            - ipAddress
-            ssid:
-            - ssid
-            - ssid
+        subscription:
+        - subscriptionType: subscriptionType
+          href: http://example.com/aeiou
+        - subscriptionType: subscriptionType
+          href: http://example.com/aeiou
+      x-etsi-ref: 6.3.4
+    TestNotification:
+      required:
+      - _links
+      - notificationType
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/TestNotification__links'
+        notificationType:
+          type: string
+          description: Shall be set to "TestNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 6.4.6
     TimeStamp:
       required:
       - nanoSeconds
@@ -2938,19 +4049,19 @@ components:
           type: integer
           description: The nanoseconds part of the time. Time is defined as Unix-time
             since January 1, 1970, 00:00:00 UTC.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         seconds:
           type: integer
           description: The seconds part of the time. Time is defined as Unixtime since
             January 1, 1970, 00:00:00 UTC.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
       example:
-        seconds: 6
-        nanoSeconds: 9
+        seconds: 8
+        nanoSeconds: 6
       x-etsi-ref: 6.5.2
     VhtCapabilities:
       required:
@@ -2961,19 +4072,19 @@ components:
         vhtCapInfo:
           type: integer
           description: VHT capabilities Info as defined in IEEE 802.11-2016 [8].
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt32
         vhtMcsNss:
           type: integer
           description: Supported VHT-MCS and NSS Set as defined in IEEE 802.11-2016
             [8].
-          format: int64
+          format: uint64
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt64
       example:
         vhtMcsNss: 4
-        vhtCapInfo: 6
+        vhtCapInfo: 3
       x-etsi-ref: 6.5.15
     WanMetrics:
       required:
@@ -2989,17 +4100,17 @@ components:
           type: integer
           description: 1-octet positive integer representing the current percentage
             loading of the downlink WAN connection, scaled linearly with 255 representing
-            100 %, as measured over an interval the duration of which is reported
+            100 %, as measured over an interval the duration of which is reported
             in Load Measurement Duration. In cases where the downlink load is unknown
             to the AP, the value is set to zero.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt8
         downlinkSpeed:
           type: integer
           description: 4-octet positive integer whose value is an estimate of the
             WAN Backhaul link current downlink speed in kilobits per second.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         lmd:
@@ -3011,41 +4122,55 @@ components:
             reported. The value of the LMD field is set to 0 when neither the uplink
             nor downlink load can be computed. When the uplink and downlink loads
             are computed over different intervals, the maximum interval is reported.
-          format: int32
+          format: uint16
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint16
         uplinkLoad:
           type: integer
           description: 1-octet positive integer representing the current percentage
             loading of the uplink WAN connection, scaled linearly with 255 representing
-            100 %, as measured over an interval, the duration of which is reported
+            100 %, as measured over an interval, the duration of which is reported
             in Load Measurement Duration. In cases where the uplink load is unknown
             to the AP, the value is set to zero.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         uplinkSpeed:
           type: integer
           description: 4-octet positive integer whose value is an estimate of the
             WAN Backhaul link's current uplink speed in kilobits per second.
-          format: int32
+          format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UInt32
         wanInfo:
           type: integer
           description: Info about WAN link status, link symmetricity and capacity
             currently used.
-          format: int32
+          format: uint8
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
       example:
-        uplinkLoad: 3
-        downlinkLoad: 8
-        lmd: 6
-        uplinkSpeed: 6
-        downlinkSpeed: 9
-        wanInfo: 1
+        uplinkLoad: 6
+        downlinkLoad: 9
+        lmd: 3
+        uplinkSpeed: 1
+        downlinkSpeed: 6
+        wanInfo: 2
       x-etsi-ref: 6.5.6
+    WebsockNotifConfig:
+      type: object
+      properties:
+        requestWebsocketUri:
+          type: boolean
+          description: Set to true by the service consumer to indicate that Websocket
+            delivery is requested.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Boolean
+        websocketUri:
+          type: string
+          description: Set by WAIS to indicate to the service consumer the Websocket
+            URI to be used for delivering notifications.
+      x-etsi-ref: 6.3.6
     WlanCapabilities:
       type: object
       properties:
@@ -3062,34 +4187,59 @@ components:
       example:
         vht:
           vhtMcsNss: 4
-          vhtCapInfo: 6
+          vhtCapInfo: 3
         edmg:
-          supportedMcs: 6
-          trnParameters: 0
-          reserved: 7
-          ampduParameters: 0
+          supportedMcs: 0
+          trnParameters: 7
+          ampduParameters: 7
         ht:
           aselCap: 7
-          txBeamFormCap: 0
-          ampduParameters: 3
-          htCapabilityInfo: 5
+          txBeamFormCap: 5
+          ampduParameters: 8
+          htCapabilityInfo: 3
           htExtendedCap: 3
-          supportedMcsSet: 4
+          supportedMcsSet: 7
         he:
-          supportedHeMcsNssSet: 3
-          hePhyCapinfo: 8
-          heMacCapInfo: 4
-          ppeThresholds: 7
+          supportedHeMcsNssSet: 4
+          hePhyCapinfo: 0
+          heMacCapInfo: 6
         dmg:
-          dmgStaCapInfo: 5
+          dmgStaCapInfo: 6
           maxNrShortAmsduSubframes: 3
-          sarCap: 3
-          maxNrBasicAmsduSubframes: 6
-          ExtScMcsCap: 2
-          dmgStaBeamTrackTimeLimit: 6
+          maxNrBasicAmsduSubframes: 3
+          ExtScMcsCap: 6
+          dmgStaBeamTrackTimeLimit: 5
           dmgApOrPcpCapInfo: 6
-          tddCap: 7
       x-etsi-ref: 6.5.4
+    AppTerminationNotification:
+      required:
+      - _links
+      - maxGracefulTimeout
+      - notificationType
+      - operationAction
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to AppTerminationNotification.
+        operationAction:
+          $ref: '#/components/schemas/OperationActionType'
+        maxGracefulTimeout:
+          type: integer
+          description: Maximum timeout value in seconds for graceful termination or
+            graceful stop of an application instance.
+          format: uint32
+        _links:
+          $ref: '#/components/schemas/AppTerminationNotification__links'
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+    OperationActionType:
+      type: string
+      description: Operation that is being performed on the MEC application instance.
+      enum:
+      - STOPPING
+      - TERMINATING
     AssocStaSubscription__links:
       required:
       - self
@@ -3099,18 +4249,165 @@ components:
           $ref: '#/components/schemas/LinkType'
       description: Hyperlink related to the resource. This shall be only included
         in the HTTP responses and in HTTP PUT requests.
-      example:
-        self: null
-    SubscriptionLinkList__links:
+    AssocStaSubscription_notificationEvent:
+      required:
+      - threshold
+      - trigger
+      type: object
+      properties:
+        threshold:
+          type: integer
+          description: Number of connected stations threshold for trigger-based event
+            reporting.
+          format: uint8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        trigger:
+          type: integer
+          description: |-
+            Trigger for the notification:
+            1 = Notification issued when the number of connected stations is greater than or equal to the threshold.
+            2 = Notification issued when the number of connected stations is less than or equal to the threshold.
+          enum:
+          - 1
+          - 2
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum (inline)
+      description: 'Set for trigger-based event notification reporting. '
+    ExpiryNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: Hyperlink related to the resource.
+    MeasurementConfig__links:
+      required:
+      - self
       type: object
       properties:
         self:
           $ref: '#/components/schemas/LinkType'
-      description: Hyperlink related to the resource. This shall be only included
-        in the HTTP responses and in HTTP PUT requests.
+      description: Hyperlink related to the resource.
       example:
         self:
           href: href
+    MeasurementConfigLinkList_measurementConfig:
+      required:
+      - href
+      - measurementId
+      type: object
+      properties:
+        href:
+          type: string
+          description: The URI referring to a measurement configuration.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+        measurementId:
+          type: string
+          description: Unique identifier allocated by the service consumer to identify
+            measurement reports associated with this measurement configuration.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        href: http://example.com/aeiou
+        measurementId: measurementId
+    StaDataRateSubscription_notificationEvent:
+      required:
+      - trigger
+      type: object
+      properties:
+        downlinkRateThreshold:
+          type: integer
+          description: Downlink data rate threshold for StaDataRate reporting.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        trigger:
+          type: integer
+          description: |-
+            Trigger event for the notification:
+            1 = Notification issued when the STA's downlink data rate is greater than or equal to the downlink threshold.
+            2 = Notification issued when the STA's downlink data rate is less than or equal to the downlink threshold.
+            3 = Notification issued when the STA's uplink data rate is greater than or equal to the uplink threshold.
+            4 = Notification issued when the STA's uplink data rate is less than or equal to the uplink threshold.
+            5 = Notification issued when the STA's downlink and uplink data rate is greater than or equal to their thresholds.
+            6 = Notification issued when the STA's downlink and uplink data rate is less than or equal to their thresholds.
+            7 = Notification issued when the STA's downlink or uplink data rate is greater than or equal to their thresholds.
+            8 = Notification issued when the STA's downlink or uplink data rate is less than or equal to their thresholds.
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum (inline)
+        uplinkRateThreshold:
+          type: integer
+          description: Uplink data rate threshold for StaDataRate reporting.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+      description: Set for trigger-based event notification reporting.
+    SubscriptionLinkList__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: List of hyperlinks related to the resource.
+      example:
+        self:
+          href: href
+    SubscriptionLinkList_subscription:
+      required:
+      - href
+      - subscriptionType
+      type: object
+      properties:
+        href:
+          type: string
+          description: The URI referring to the subscription.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+        subscriptionType:
+          type: string
+          description: |-
+            Type of the subscription. The string shall be set according to the "subscriptionType" attribute of the associated subscription data type defined in 6.3.2, 6.3.3. and 6.3.5:
+            “AssocStaSubscription”
+            “StaDataRateSubscription”
+            “MeasurementReportSubscription”
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        subscriptionType: subscriptionType
+        href: http://example.com/aeiou
+    TestNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: 'Hyperlink related to the resource. '
+    AppTerminationNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+        confirmTermination:
+          $ref: '#/components/schemas/LinkType'
+      description: Object containing hyperlinks related to the resource.
   responses:
     "200":
       description: OK
@@ -3202,6 +4499,17 @@ components:
       schema:
         type: string
         format: uri
+    Path.measurementConfigId:
+      name: measurementConfigId
+      in: path
+      description: Measurement configuration Id, specifically the "self" returned
+        in the measurement configuration request
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uri
     Query.Filter:
       name: filter
       in: query
@@ -3265,7 +4573,7 @@ components:
       name: subscription_type
       in: query
       description: 'Filter on a specific subscription type. Permitted values: assoc_sta,
-        sta_data_rate.'
+        sta_data_rate, measure_report.'
       required: false
       style: form
       explode: true

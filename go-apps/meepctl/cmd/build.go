@@ -21,7 +21,6 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -168,10 +167,6 @@ func buildJsApp(targetName string, repo string, cobraCmd *cobra.Command) {
 	switch targetName {
 	case "meep-frontend":
 		buildFrontend(targetName, repo, cobraCmd)
-	case "meep-platform-swagger-ui":
-		buildSwaggerUi(targetName, repo, cobraCmd)
-	case "meep-sandbox-swagger-ui":
-		buildSwaggerUi(targetName, repo, cobraCmd)
 	default:
 		fmt.Println("Error: Unsupported JS App: ", targetName)
 	}
@@ -248,100 +243,6 @@ func buildFrontend(targetName string, repo string, cobraCmd *cobra.Command) {
 	}
 }
 
-func buildSwaggerUi(targetName string, repo string, cobraCmd *cobra.Command) {
-	fmt.Println("--", targetName, "--")
-	fmt.Println("   + creating api files")
-
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	target := utils.RepoCfg.GetStringMapString(repo + targetName)
-	apiBundle := utils.RepoCfg.GetStringSlice(repo + targetName + ".api-bundle")
-	gitDir := viper.GetString("meep.gitdir")
-	srcDir := gitDir + "/" + target["src"]
-	binDir := gitDir + "/" + target["bin"]
-
-	// remove old binDir if exists
-	if _, err := os.Stat(binDir); !os.IsNotExist(err) {
-		cmd := exec.Command("rm", "-r", binDir)
-		cmd.Dir = srcDir
-		out, err := utils.ExecuteCmd(cmd, cobraCmd)
-		if err != nil {
-			fmt.Println("Error:", err)
-			fmt.Println(out)
-		}
-	}
-
-	if verbose {
-		fmt.Println("    Copy hosting Api in " + binDir + " from " + srcDir)
-	}
-	//copy swagger-ui files
-	cmd := exec.Command("cp", "-r", srcDir, binDir)
-	_, err := utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Failed to copy: ", err)
-		return
-	}
-
-	//get all the yaml file to be put in the /api directory as well as putting the host line for the TRY-IT-OUT function to work
-	urls := " [ "
-	urlStringToReplace := `url: "https:\/\/petstore.swagger.io\/v2\/swagger.json",`
-
-	//find all the apis and copy them at the location above
-	for _, target := range apiBundle {
-		apiSrcFile := utils.RepoCfg.GetString("repo." + target + ".api")
-		if apiSrcFile == "" {
-			continue
-		}
-		apiSrcPath := gitDir + "/" + apiSrcFile
-		if apiSrcPath != "" {
-			name := target[strings.LastIndex(target, ".")+1:]
-			apiDstPath := binDir + "/" + name + "-api.yaml"
-			if verbose {
-				fmt.Println("    Copying: " + apiSrcPath + " --> " + apiDstPath)
-			}
-
-			cmd = exec.Command("cp", apiSrcPath, apiDstPath)
-			_, err = utils.ExecuteCmd(cmd, cobraCmd)
-			if err != nil {
-				fmt.Println("Failed to copy: ", err)
-				return
-			}
-
-			//update the string to update the drop-down menu in the index.html file of /api
-			cmd = exec.Command("grep", "title:", apiDstPath)
-			titles, err := utils.ExecuteCmd(cmd, cobraCmd)
-			if err != nil {
-				fmt.Println("Failed to move: ", err)
-				return
-			}
-			multiTitle := strings.Split(titles, "title:")
-			title := multiTitle[1]
-			title = strings.TrimSpace(title)
-			//title = title[6:]
-			//title = strings.TrimSpace(title)
-
-			if title[0] == '"' {
-				title = title[1:]
-			}
-			if title[len(title)-1] == '"' {
-				title = title[0 : len(title)-1]
-			}
-
-			//update urls for swagger-ui index file
-			urls = urls + `{"name": "` + title + `", "url": rootUrl + "` + name + `-api.yaml"},`
-		}
-	}
-
-	//update swagger-ui index file
-	urls = urls + " ],"
-	sedString := "s@" + urlStringToReplace + "@urls: " + urls + "@g"
-	cmd = exec.Command("sed", "-i", sedString, binDir+"/index.html")
-	_, err = utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Failed to sed: ", err)
-		return
-	}
-}
-
 func buildGoApp(targetName string, repo string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
 	target := utils.RepoCfg.GetStringMapString(repo + targetName)
@@ -396,15 +297,6 @@ func buildGoApp(targetName string, repo string, cobraCmd *cobra.Command) {
 		args = append(args, "-o", binDir+"/"+targetName, srcDir)
 		cmd = exec.Command("go", args...)
 	}
-	cmd.Dir = srcDir
-	out, err = utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println(out)
-	}
-
-	// Copy Dockerfile
-	cmd = exec.Command("cp", "Dockerfile", binDir)
 	cmd.Dir = srcDir
 	out, err = utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {

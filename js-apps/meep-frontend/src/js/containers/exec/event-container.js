@@ -24,7 +24,8 @@ import { Typography } from '@rmwc/typography';
 import {
   uiExecChangeEventCreationMode,
   uiExecChangeEventAutomationMode,
-  uiExecChangeEventReplayMode
+  uiExecChangeEventReplayMode,
+  uiExecChangeDashCfgMode
 } from '../../state/ui';
 
 import {
@@ -91,6 +92,7 @@ class EventContainer extends Component {
     this.props.changeEventCreationMode(true);
     this.props.changeEventAutomationMode(false);
     this.props.changeEventReplayMode(false);
+    this.props.changeDashCfgMode(false);
   }
 
   // EVENT AUTOMATION PANE
@@ -98,6 +100,7 @@ class EventContainer extends Component {
     this.props.changeEventCreationMode(false);
     this.props.changeEventAutomationMode(true);
     this.props.changeEventReplayMode(false);
+    this.props.changeDashCfgMode(false);
   }
 
   // SHOW REPLAY EVENT PANE
@@ -105,6 +108,7 @@ class EventContainer extends Component {
     this.props.changeEventCreationMode(false);
     this.props.changeEventAutomationMode(false);
     this.props.changeEventReplayMode(true);
+    this.props.changeDashCfgMode(false);
 
     // Refresh 
     this.props.onShowReplay();
@@ -211,7 +215,8 @@ const mapDispatchToProps = dispatch => {
   return {
     changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
     changeEventAutomationMode: mode => dispatch(uiExecChangeEventAutomationMode(mode)),
-    changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode))
+    changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
+    changeDashCfgMode: mode => dispatch(uiExecChangeDashCfgMode(mode))
   };
 };
 

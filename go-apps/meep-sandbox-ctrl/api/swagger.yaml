@@ -20,6 +20,7 @@ tags:
 - name: "Events"
 - name: "Event Replay"
 - name: "Connectivity"
+- name: "Applications"
 consumes:
 - "application/json"
 produces:
@@ -47,6 +48,10 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/Scenario"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
     delete:
       tags:
       - "Active Scenario"
@@ -59,8 +64,10 @@ paths:
       responses:
         200:
           description: "OK"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/{name}:
     post:
       tags:
@@ -88,9 +95,11 @@ paths:
         200:
           description: "OK"
         400:
-          description: "Bad request"
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/serviceMaps:
     get:
       tags:
@@ -131,8 +140,12 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/NodeServiceMaps"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/domains:
     get:
       tags:
@@ -243,8 +256,12 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/Domains"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/zones:
     get:
       tags:
@@ -355,8 +372,12 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/Zones"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/networkLocations:
     get:
       tags:
@@ -467,8 +488,12 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/NetworkLocations"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/physicalLocations:
     get:
       tags:
@@ -579,8 +604,12 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/PhysicalLocations"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /active/processes:
     get:
       tags:
@@ -691,8 +720,12 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/Processes"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /events/{type}:
     post:
       tags:
@@ -725,7 +758,9 @@ paths:
         200:
           description: "OK"
         400:
-          description: "Bad request"
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
   /replay:
     get:
       tags:
@@ -742,8 +777,10 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/ReplayFileList"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
     delete:
       tags:
       - "Event Replay"
@@ -756,8 +793,10 @@ paths:
       responses:
         200:
           description: "OK"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /replaystatus:
     get:
       tags:
@@ -773,8 +812,10 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/ReplayStatus"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /replay/{name}:
     get:
       tags:
@@ -787,7 +828,7 @@ paths:
       parameters:
       - name: "name"
         in: "path"
-        description: "Replay file name"
+        description: "replay file name"
         required: true
         type: "string"
         x-exportParamName: "Name"
@@ -796,8 +837,10 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/Replay"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
     post:
       tags:
       - "Event Replay"
@@ -809,7 +852,7 @@ paths:
       parameters:
       - name: "name"
         in: "path"
-        description: "Replay file name"
+        description: "replay file name"
         required: true
         type: "string"
         x-exportParamName: "Name"
@@ -823,8 +866,12 @@ paths:
       responses:
         200:
           description: "OK"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
     delete:
       tags:
       - "Event Replay"
@@ -843,8 +890,10 @@ paths:
       responses:
         200:
           description: "OK"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /replay/{name}/generate:
     post:
       tags:
@@ -858,7 +907,7 @@ paths:
       parameters:
       - name: "name"
         in: "path"
-        description: "Replay file name"
+        description: "replay file name"
         required: true
         type: "string"
         x-exportParamName: "Name"
@@ -873,9 +922,11 @@ paths:
         200:
           description: "OK"
         400:
-          description: "Bad request"
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /replay/{name}/play:
     post:
       tags:
@@ -888,15 +939,19 @@ paths:
       parameters:
       - name: "name"
         in: "path"
-        description: "Replay file name"
+        description: "replay file name"
         required: true
         type: "string"
         x-exportParamName: "Name"
       responses:
         200:
           description: "OK"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /replay/{name}/loop:
     post:
       tags:
@@ -909,15 +964,19 @@ paths:
       parameters:
       - name: "name"
         in: "path"
-        description: "Replay file name"
+        description: "replay file name"
         required: true
         type: "string"
         x-exportParamName: "Name"
       responses:
         200:
           description: "OK"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /replay/{name}/stop:
     post:
       tags:
@@ -930,15 +989,19 @@ paths:
       parameters:
       - name: "name"
         in: "path"
-        description: "Replay file name"
+        description: "replay file name"
         required: true
         type: "string"
         x-exportParamName: "Name"
       responses:
         200:
           description: "OK"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
   /connectivity/pdu-session:
     get:
       tags:
@@ -969,7 +1032,11 @@ paths:
           schema:
             $ref: "#/definitions/PDUSessionList"
         400:
-          description: "Bad request"
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
   /connectivity/pdu-session/{ueName}/{pduSessionId}:
     post:
       tags:
@@ -1003,9 +1070,11 @@ paths:
         200:
           description: "OK"
         400:
-          description: "Bad request"
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
     delete:
       tags:
       - "Connectivity"
@@ -1030,8 +1099,167 @@ paths:
       responses:
         200:
           description: "OK"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
         404:
-          description: "Not found"
+          description: "Not Found"
+  /applications:
+    get:
+      tags:
+      - "Applications"
+      description: "This method retrieves information about a list of mec application\
+        \ resources."
+      operationId: "Applications_GET"
+      parameters:
+      - name: "app"
+        in: "query"
+        description: "Filter by application name"
+        required: false
+        type: "string"
+        x-exportParamName: "App"
+        x-optionalDataType: "String"
+      - name: "state"
+        in: "query"
+        description: "Filter by application state"
+        required: false
+        type: "string"
+        enum:
+        - "READY"
+        - "INITIALIZED"
+        x-exportParamName: "State"
+        x-optionalDataType: "String"
+      - name: "type"
+        in: "query"
+        description: "Filter by application type"
+        required: false
+        type: "string"
+        enum:
+        - "USER"
+        - "SYSTEM"
+        x-exportParamName: "Type_"
+        x-optionalDataType: "String"
+      - name: "mep"
+        in: "query"
+        description: "Filter by MEP name"
+        required: false
+        type: "string"
+        x-exportParamName: "Mep"
+        x-optionalDataType: "String"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/ApplicationInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+    post:
+      tags:
+      - "Applications"
+      description: "This method is used to create a mec application resource."
+      operationId: "Applications_POST"
+      parameters:
+      - in: "body"
+        name: "applicationInfo"
+        description: "Application information"
+        required: true
+        schema:
+          $ref: "#/definitions/ApplicationInfo"
+        x-exportParamName: "ApplicationInfo"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ApplicationInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+  /applications/{appInstanceId}:
+    get:
+      tags:
+      - "Applications"
+      description: "This method retrieves information about a mec application resource."
+      operationId: "ApplicationsAppInstanceId_GET"
+      parameters:
+      - name: "appInstanceId"
+        in: "path"
+        description: "Represents a MEC application instance. Note that the appInstanceId\
+          \ is allocated by the MEC application manager POST method."
+        required: true
+        type: "string"
+        x-exportParamName: "AppInstanceId"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ApplicationInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+    put:
+      tags:
+      - "Applications"
+      description: "This method updates the information about a mec application resource."
+      operationId: "ApplicationsAppInstanceId_PUT"
+      parameters:
+      - name: "appInstanceId"
+        in: "path"
+        description: "Represents a MEC application instance. Note that the appInstanceId\
+          \ is allocated by the MEC application manager POST method."
+        required: true
+        type: "string"
+        x-exportParamName: "AppInstanceId"
+      - in: "body"
+        name: "applicationInfo"
+        description: "Application information"
+        required: true
+        schema:
+          $ref: "#/definitions/ApplicationInfo"
+        x-exportParamName: "ApplicationInfo"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ApplicationInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+    delete:
+      tags:
+      - "Applications"
+      description: "This method deletes a mec application resource."
+      operationId: "ApplicationsAppInstanceId_DELETE"
+      parameters:
+      - name: "appInstanceId"
+        in: "path"
+        description: "Represents a MEC application instance. Note that the appInstanceId\
+          \ is allocated by the MEC application manager POST method."
+        required: true
+        type: "string"
+        x-exportParamName: "AppInstanceId"
+      responses:
+        204:
+          description: "No Content"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
 definitions:
   Scenario:
     type: "object"
@@ -2086,7 +2314,165 @@ definitions:
           $ref: "#/definitions/PDUSession"
     description: "PDUSession list"
     example: {}
+  ApplicationInfo:
+    type: "object"
+    required:
+    - "mepName"
+    - "name"
+    properties:
+      id:
+        type: "string"
+        description: "Application Instance UUID"
+      name:
+        type: "string"
+        description: "Application name"
+      type:
+        $ref: "#/definitions/ApplicationType"
+      state:
+        $ref: "#/definitions/ApplicationState"
+      mepName:
+        type: "string"
+        description: "MEP Name where application instance is running"
+      version:
+        type: "string"
+        description: "Application Version"
+    description: "MEC Application instance information"
+    example:
+      id: "00afec52-f0b6-464e-a660-33568c0975b9"
+      name: "MyAppName"
+      type: "USER"
+      state: "INITIALIZED"
+      mepName: "mep1"
+      version: "v1.0.0"
+  ApplicationType:
+    type: "string"
+    description: "Application Type"
+    example: "USER"
+    enum:
+    - "USER"
+    - "SYSTEM"
+  ApplicationState:
+    type: "string"
+    description: "Application State"
+    example: "INITIALIZED"
+    enum:
+    - "READY"
+    - "INITIALIZED"
 parameters:
+  Body.ActivationInfo:
+    in: "body"
+    name: "activationInfo"
+    description: "Activation information"
+    required: false
+    schema:
+      $ref: "#/definitions/ActivationInfo"
+    x-exportParamName: "ActivationInfo"
+  Body.ApplicationInfo:
+    in: "body"
+    name: "applicationInfo"
+    description: "Application information"
+    required: true
+    schema:
+      $ref: "#/definitions/ApplicationInfo"
+    x-exportParamName: "ApplicationInfo"
+  Body.Event:
+    in: "body"
+    name: "event"
+    description: "Event to send to active scenario"
+    required: true
+    schema:
+      $ref: "#/definitions/Event"
+    x-exportParamName: "Event"
+  Body.PduSessionInfo:
+    in: "body"
+    name: "pduSessionInfo"
+    description: "PDU session information"
+    required: true
+    schema:
+      $ref: "#/definitions/PDUSessionInfo"
+    x-exportParamName: "PduSessionInfo"
+  Body.ReplayInfo:
+    in: "body"
+    name: "replayInfo"
+    description: "Replay information"
+    required: true
+    schema:
+      $ref: "#/definitions/ReplayInfo"
+    x-exportParamName: "ReplayInfo"
+  Body.ReplayFile:
+    in: "body"
+    name: "replay-file"
+    description: "Replay-file"
+    required: true
+    schema:
+      $ref: "#/definitions/Replay"
+    x-exportParamName: "ReplayFile"
+  Path.AppInstanceId:
+    name: "appInstanceId"
+    in: "path"
+    description: "Represents a MEC application instance. Note that the appInstanceId\
+      \ is allocated by the MEC application manager POST method."
+    required: true
+    type: "string"
+    x-exportParamName: "AppInstanceId"
+  Path.PduSessionId:
+    name: "pduSessionId"
+    in: "path"
+    description: "a UE provided identifier for the PDU Session"
+    required: true
+    type: "string"
+    x-exportParamName: "PduSessionId"
+  Path.ReplayFileName:
+    name: "name"
+    in: "path"
+    description: "replay file name"
+    required: true
+    type: "string"
+    x-exportParamName: "Name"
+  Path.EventType:
+    name: "type"
+    in: "path"
+    description: "Event type"
+    required: true
+    type: "string"
+    x-exportParamName: "Type_"
+  Path.UeName:
+    name: "ueName"
+    in: "path"
+    description: "UE unique identifier from the scenario"
+    required: true
+    type: "string"
+    x-exportParamName: "UeName"
+  Query.AppName:
+    name: "app"
+    in: "query"
+    description: "Filter by application name"
+    required: false
+    type: "string"
+    x-exportParamName: "App"
+    x-optionalDataType: "String"
+  Query.AppState:
+    name: "state"
+    in: "query"
+    description: "Filter by application state"
+    required: false
+    type: "string"
+    enum:
+    - "READY"
+    - "INITIALIZED"
+    x-exportParamName: "State"
+    x-optionalDataType: "String"
+  Query.AppType:
+    name: "type"
+    in: "query"
+    description: "Filter by application type"
+    required: false
+    type: "string"
+    enum:
+    - "USER"
+    - "SYSTEM"
+    x-exportParamName: "Type_"
+    x-optionalDataType: "String"
   Query.Domain:
     name: "domain"
     in: "query"
@@ -2106,14 +2492,30 @@ parameters:
     - "OPERATOR-CELLULAR"
     x-exportParamName: "DomainType"
     x-optionalDataType: "String"
-  Query.Zone:
-    name: "zone"
+  Query.ExcludeChildren:
+    name: "excludeChildren"
     in: "query"
-    description: "Zone name"
+    description: "Include child elements in response"
+    required: false
+    type: "boolean"
+    x-exportParamName: "ExcludeChildren"
+    x-optionalDataType: "Bool"
+  Query.MepName:
+    name: "mep"
+    in: "query"
+    description: "Filter by MEP name"
     required: false
     type: "string"
-    x-exportParamName: "Zone"
+    x-exportParamName: "Mep"
     x-optionalDataType: "String"
+  Query.Minimize:
+    name: "minimize"
+    in: "query"
+    description: "Return minimized scenario element content"
+    required: false
+    type: "boolean"
+    x-exportParamName: "Minimize"
+    x-optionalDataType: "Bool"
   Query.NetworkLocation:
     name: "networkLocation"
     in: "query"
@@ -2134,6 +2536,22 @@ parameters:
     - "POA-5G"
     - "POA-WIFI"
     x-exportParamName: "NetworkLocationType"
+    x-optionalDataType: "String"
+  Query.Node:
+    name: "node"
+    in: "query"
+    description: "Unique node identifier"
+    required: false
+    type: "string"
+    x-exportParamName: "Node"
+    x-optionalDataType: "String"
+  Query.PduSessionId:
+    name: "id"
+    in: "query"
+    description: "Return PDU session matching provided PDU session ID"
+    required: false
+    type: "string"
+    x-exportParamName: "Id"
     x-optionalDataType: "String"
   Query.PhysicalLocation:
     name: "physicalLocation"
@@ -2176,45 +2594,58 @@ parameters:
     - "UE-APP"
     x-exportParamName: "ProcessType"
     x-optionalDataType: "String"
-  Query.ExcludeChildren:
-    name: "excludeChildren"
+  Query.ScenarioName:
+    name: "name"
+    in: "path"
+    description: "Scenario name"
+    required: true
+    type: "string"
+    x-exportParamName: "Name"
+  Query.Service:
+    name: "service"
     in: "query"
-    description: "Include child elements in response"
+    description: "Exposed service name"
     required: false
-    type: "boolean"
-    x-exportParamName: "ExcludeChildren"
-    x-optionalDataType: "Bool"
-  Query.Minimize:
-    name: "minimize"
+    type: "string"
+    x-exportParamName: "Service"
+    x-optionalDataType: "String"
+  Query.Type:
+    name: "type"
     in: "query"
-    description: "Return minimized scenario element content"
+    description: "Exposed service type (ingress or egress)"
     required: false
-    type: "boolean"
-    x-exportParamName: "Minimize"
-    x-optionalDataType: "Bool"
+    type: "string"
+    x-exportParamName: "Type_"
+    x-optionalDataType: "String"
+  Query.UeName:
+    name: "ue"
+    in: "query"
+    description: "Return PDU sessions matching provided UE name"
+    required: false
+    type: "string"
+    x-exportParamName: "Ue"
+    x-optionalDataType: "String"
+  Query.Zone:
+    name: "zone"
+    in: "query"
+    description: "Zone name"
+    required: false
+    type: "string"
+    x-exportParamName: "Zone"
+    x-optionalDataType: "String"
 responses:
   Std200:
     description: "OK"
   Std201:
     description: "Created"
-  Std202:
-    description: "Accepted"
   Std204:
-    description: "No content"
-  Std304:
-    description: "Not modified"
+    description: "No Content"
   Std400:
-    description: "Bad request"
+    description: "Bad Request"
   Std401:
-    description: "Not authorized"
-  Std403:
-    description: "Forbidden"
+    description: "Unauthorized"
   Std404:
-    description: "Not found"
-  Std409:
-    description: "Conflict"
-  Std416:
-    description: "Requested range not satisfiable"
+    description: "Not Found"
   Std500:
     description: "Internal server error"
 externalDocs:

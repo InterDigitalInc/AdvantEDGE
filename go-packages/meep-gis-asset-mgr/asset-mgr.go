@@ -1839,6 +1839,9 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 		for poaName, meas := range ue.Measurements {
 			// Calculate power measurements
 			rssi, rsrp, rsrq := calculatePower(meas.SubType, meas.Radius, meas.Distance)
+			if rsrp == 0 && rsrq == 0 && rssi == 0 {
+				log.Error("ERROR: Zero Rsrp, Rsrq and Rssi should not happen: ", meas.SubType, "---", meas.Radius, "---", meas.Distance, "---", poaName, "---", ueName)
+			}
 
 			// Add new entry or update existing one
 			id := ueName + "-" + poaName
@@ -1954,15 +1957,21 @@ func calculatePower(subtype string, radius float32, distance float32) (rssi floa
 }
 
 // 4G Cellular signal strength calculator
+// OFFICIAL COMPLETE RANGE
 // RSRP power range: -156 dBm to -44 dBm
 // Equivalent RSRP range: -17 to 97
 // RSRQ power range: -34 dBm to 2.5 dBm
 // Equivalent RSRQ range: -30 to 46
+// IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
+// RSRP power range: -100 dBm to -70 dBm
+// Equivalent RSRP range: 40 to 70
+// RSRQ power range: -20 dBm to -5 dBm
+// Equivalent RSRQ range: -2 to 28
 // Algorithm: Linear proportion to distance over radius, if in range
-const minCell4gRsrp = float32(-17)
-const maxCell4gRsrp = float32(97)
-const minCell4gRsrq = float32(-30)
-const maxCell4gRsrq = float32(46)
+const minCell4gRsrp = float32(40)
+const maxCell4gRsrp = float32(70)
+const minCell4gRsrq = float32(-2)
+const maxCell4gRsrq = float32(28)
 
 func calculateCell4gPower(radius float32, distance float32) (rsrp float32, rsrq float32) {
 	rsrp = minCell4gRsrp
@@ -1979,11 +1988,16 @@ func calculateCell4gPower(radius float32, distance float32) (rsrp float32, rsrq 
 // Equivalent RSRP range: 0 to 127
 // RSRQ power range: -43 dBm to 20 dBm
 // Equivalent RSRQ range: 0 to 127
+// IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
+// RSRP power range: -115 dBm to -65 dBm
+// Equivalent RSRP range: 42 to 92
+// RSRQ power range: -20 dBm to -5 dBm
+// Equivalent RSRQ range: 47 to 77
 // Algorithm: Linear proportion to distance over radius, if in range
-const minCell5gRsrp = float32(0)
-const maxCell5gRsrp = float32(127)
-const minCell5gRsrq = float32(0)
-const maxCell5gRsrq = float32(127)
+const minCell5gRsrp = float32(42)
+const maxCell5gRsrp = float32(92)
+const minCell5gRsrq = float32(47)
+const maxCell5gRsrq = float32(77)
 
 func calculateCell5gPower(radius float32, distance float32) (rsrp float32, rsrq float32) {
 	rsrp = minCell5gRsrp
@@ -1998,9 +2012,12 @@ func calculateCell5gPower(radius float32, distance float32) (rsrp float32, rsrq 
 // WiFi signal strength calculator
 // Signal power range: -113 dBm to -10 dBm
 // Equivalent RSSI range: 0 to 100
+// IMPLEMENTED RANGE TO ONLY TAKE INTO ACCOUNT REAL WORLD SIGNAL STRENGHT
+// Signal power range: -80 dBm to -30 dBm
+// Equivalent RSSI range: 32 to 77
 // Algorithm: Linear proportion to distance over radius, if in range
-const minWifiRssi = float32(0)
-const maxWifiRssi = float32(100)
+const minWifiRssi = float32(32)
+const maxWifiRssi = float32(77)
 
 func calculateWifiPower(radius float32, distance float32) (rssi float32) {
 	rssi = minWifiRssi
@@ -2008,4 +2025,70 @@ func calculateWifiPower(radius float32, distance float32) (rssi float32) {
 		rssi = float32(int(minWifiRssi + ((maxWifiRssi - minWifiRssi) * (1 - (distance / radius)))))
 	}
 	return rssi
+}
+
+// Get distance between 2 coordinates
+func (am *AssetMgr) GetDistanceBetweenPoints(srcCoordinates string, dstCoordinates string) (float32, error) {
+	if profiling {
+		profilingTimers["distance - query"] = time.Now()
+	}
+
+	dbQuery := "SELECT ST_Distance(" + "'SRID=4326;POINT" + srcCoordinates + "'::geography, 'SRID=4326;POINT" + dstCoordinates + "'::geography);"
+
+	var rows *sql.Rows
+	rows, err := am.db.Query(dbQuery)
+	if err != nil {
+		log.Error(err.Error())
+		return 0, err
+	}
+	defer rows.Close()
+
+	dist := float32(0)
+
+	if rows.Next() {
+		err = rows.Scan(&dist)
+		if err != nil {
+			log.Error(err.Error())
+			return dist, err
+		}
+		return dist, nil
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+	return dist, err
+}
+
+// Get within range between 2 coordinates and a radius
+func (am *AssetMgr) GetWithinRangeBetweenPoints(srcCoordinates string, dstCoordinates string, radius string) (bool, error) {
+	if profiling {
+		profilingTimers["distance - query"] = time.Now()
+	}
+
+	dbQuery := "SELECT ST_DWithin(" + "'SRID=4326;POINT" + srcCoordinates + "'::geography, 'SRID=4326;POINT" + dstCoordinates + "'::geography, " + radius + ");"
+
+	var rows *sql.Rows
+	rows, err := am.db.Query(dbQuery)
+	if err != nil {
+		log.Error(err.Error())
+		return false, err
+	}
+	defer rows.Close()
+
+	within := false
+
+	if rows.Next() {
+		err = rows.Scan(&within)
+		if err != nil {
+			log.Error(err.Error())
+			return within, err
+		}
+		return within, nil
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+	return within, err
 }

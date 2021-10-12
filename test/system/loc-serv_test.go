@@ -83,6 +83,572 @@ func Test_loc_serv_load_scenarios(t *testing.T) {
 	}
 }
 
+func Test_periodic_success(t *testing.T) {
+        fmt.Println("--- ", t.Name())
+        log.MeepTextLogInit(t.Name())
+
+        initialiseLocServTest()
+        defer clearUpLocServTest()
+
+        referenceAddress := []string{"ue1"}
+	frequency := int32(1)
+        //don't care about initial position
+        geMoveAssetCoordinates(referenceAddress[0], 7.413917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+        //subscription to test
+        err := locServSubscriptionPeriodic(referenceAddress, locServServerUrl, frequency)
+        if err != nil {
+                t.Fatal("Subscription failed: ", err)
+        }
+
+        //wait to receive few notifications
+        time.Sleep(2500 * time.Millisecond)
+
+        //only check the first one, the same one is repeated every second
+	//hard to say if the period should cover 2 or 3 response... based on the timer timing
+        if len(httpReqBody) == 2 || len(httpReqBody) == 3 {
+                var body locServClient.InlineSubscriptionNotification
+                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+                if err != nil {
+                        t.Fatalf("cannot unmarshall response")
+                }
+                errStr := validatePeriodicSubscriptionNotification(body.SubscriptionNotification, referenceAddress[0])
+                if errStr != "" {
+                        printHttpReqBody()
+                        t.Fatalf(errStr)
+                }
+        } else {
+                printHttpReqBody()
+                t.Fatalf("Number of expected notifications not received")
+        }
+}
+
+func Test_all_within_distance_success(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ALL_WITHIN_DISTANCE_DistanceCriteria
+	distance := float32(200.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//only check the first one, the same one is repeated every second
+	if len(httpReqBody) >= 1 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr1 := validateDistanceSubscriptionNotification(body.SubscriptionNotification, monitoredAddress[0])
+		errStr2 := validateDistanceSubscriptionNotification(body.SubscriptionNotification, monitoredAddress[1])
+		if errStr1 != "" && errStr2 != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr1 + "---" + errStr2)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_all_within_distance_fail(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ALL_WITHIN_DISTANCE_DistanceCriteria
+	distance := float32(100.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
+		t.Fatalf("Notification received")
+	}
+}
+
+func Test_any_within_distance_success(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ANY_WITHIN_DISTANCE_DistanceCriteria
+	distance := float32(100.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//only check the first one, the same one is repeated every second
+	if len(httpReqBody) >= 1 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateDistanceSubscriptionNotification(body.SubscriptionNotification, monitoredAddress[1])
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_any_within_distance_fail(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ANY_WITHIN_DISTANCE_DistanceCriteria
+	distance := float32(10.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
+		t.Fatalf("Notification received")
+	}
+}
+
+func Test_all_beyond_distance_success(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ALL_BEYOND_DISTANCE_DistanceCriteria
+	distance := float32(20.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//only check the first one, the same one is repeated every second
+	if len(httpReqBody) >= 1 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		//will be one or the other depending on the order they were processed
+		errStr1 := validateDistanceSubscriptionNotification(body.SubscriptionNotification, monitoredAddress[0])
+		errStr2 := validateDistanceSubscriptionNotification(body.SubscriptionNotification, monitoredAddress[1])
+		if errStr1 != "" && errStr2 != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr1 + "---" + errStr2)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_all_beyond_distance_fail(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ALL_BEYOND_DISTANCE_DistanceCriteria
+	distance := float32(100.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
+		t.Fatalf("Notification received")
+	}
+}
+
+func Test_any_beyond_distance_success(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ANY_BEYOND_DISTANCE_DistanceCriteria
+	distance := float32(100.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//only check the first one, the same one is repeated every second
+	if len(httpReqBody) >= 1 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateDistanceSubscriptionNotification(body.SubscriptionNotification, monitoredAddress[0])
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_any_beyond_distance_fail(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	monitoredAddress := []string{"ue1", "ue2"}
+	referenceAddress := []string{"ue3"}
+	criteria := locServClient.ANY_BEYOND_DISTANCE_DistanceCriteria
+	distance := float32(200.0)
+
+	//moving to initial position
+	geMoveAssetCoordinates(monitoredAddress[0], 7.413917, 43.733505)
+	geMoveAssetCoordinates(monitoredAddress[1], 7.414917, 43.733505)
+	geMoveAssetCoordinates(referenceAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionDistance(monitoredAddress, referenceAddress, &criteria, distance, locServServerUrl, false)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
+
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(referenceAddress[0], 7.415917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
+		t.Fatalf("Notification received")
+	}
+}
+
+func Test_leaving_area_areaCircle_success(t *testing.T) {
+        fmt.Println("--- ", t.Name())
+        log.MeepTextLogInit(t.Name())
+
+        initialiseLocServTest()
+        defer clearUpLocServTest()
+
+        testAddress := []string{"ue1"}
+        criteria := locServClient.LEAVING_EnteringLeavingCriteria
+        latitude := float32(43.733505)
+        longitude := float32(7.414917)
+        radius := float32(100.0)
+
+
+        //moving to initial position
+        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+        time.Sleep(2000 * time.Millisecond)
+
+        //subscription to test
+        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+        if err != nil {
+                t.Fatalf("Subscription failed")
+        }
+
+        //wait to make sure the subscription got registered
+        time.Sleep(1500 * time.Millisecond)
+
+        log.Info("moving asset in")
+        geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+        log.Info("moving asset out")
+        geMoveAssetCoordinates(testAddress[0], 7.484917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+       if len(httpReqBody) == 1 {
+                var body locServClient.InlineSubscriptionNotification
+                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+                if err != nil {
+                        t.Fatalf("cannot unmarshall response")
+                }
+                errStr := validateCircleSubscriptionNotification(body.SubscriptionNotification, testAddress[0])
+                if errStr != "" {
+                        printHttpReqBody()
+                        t.Fatalf(errStr)
+                }
+        } else {
+                printHttpReqBody()
+                t.Fatalf("Number of expected notifications not received")
+        }
+}
+
+func Test_leaving_area_areaCircle_fail(t *testing.T) {
+        fmt.Println("--- ", t.Name())
+        log.MeepTextLogInit(t.Name())
+
+        initialiseLocServTest()
+        defer clearUpLocServTest()
+
+        testAddress := []string{"ue1"}
+        criteria := locServClient.LEAVING_EnteringLeavingCriteria
+        latitude := float32(43.733505)
+        longitude := float32(7.414917)
+        radius := float32(100.0)
+
+
+        //moving to initial position
+        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+        time.Sleep(2000 * time.Millisecond)
+
+        //subscription to test
+        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+        if err != nil {
+                t.Fatalf("Subscription failed")
+        }
+
+        //wait to make sure the subscription got registered
+        time.Sleep(1500 * time.Millisecond)
+
+        log.Info("moving asset in")
+        geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+        log.Info("moving asset still in")
+        geMoveAssetCoordinates(testAddress[0], 7.414927, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+        if len(httpReqBody) >= 1 {
+                printHttpReqBody()
+                t.Fatalf("Notification received")
+        }
+}
+
+func Test_entering_area_areaCircle_success(t *testing.T) {
+        fmt.Println("--- ", t.Name())
+        log.MeepTextLogInit(t.Name())
+
+        initialiseLocServTest()
+        defer clearUpLocServTest()
+
+        testAddress := []string{"ue1"}
+        criteria := locServClient.ENTERING_EnteringLeavingCriteria
+        latitude := float32(43.733505)
+        longitude := float32(7.414917)
+        radius := float32(100.0)
+
+
+        //moving to initial position
+        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+        time.Sleep(2000 * time.Millisecond)
+
+        //subscription to test
+        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+        if err != nil {
+                t.Fatalf("Subscription failed")
+        }
+
+        //wait to make sure the subscription got registered
+        time.Sleep(1500 * time.Millisecond)
+
+        log.Info("moving asset")
+        geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+       if len(httpReqBody) == 1 {
+                var body locServClient.InlineSubscriptionNotification
+                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+                if err != nil {
+                        t.Fatalf("cannot unmarshall response")
+                }
+                errStr := validateCircleSubscriptionNotification(body.SubscriptionNotification, testAddress[0])
+                if errStr != "" {
+                        printHttpReqBody()
+                        t.Fatalf(errStr)
+                }
+        } else {
+                printHttpReqBody()
+                t.Fatalf("Number of expected notifications not received")
+        }
+}
+
+func Test_entering_area_areaCircle_fail(t *testing.T) {
+        fmt.Println("--- ", t.Name())
+        log.MeepTextLogInit(t.Name())
+
+        initialiseLocServTest()
+        defer clearUpLocServTest()
+
+        testAddress := []string{"ue1"}
+        criteria := locServClient.ENTERING_EnteringLeavingCriteria
+        latitude := float32(43.733505)
+        longitude := float32(7.414917)
+        radius := float32(50.0)
+
+
+        //moving to initial position
+        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+        time.Sleep(2000 * time.Millisecond)
+
+        //subscription to test
+        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+        if err != nil {
+                t.Fatalf("Subscription failed")
+        }
+
+        //wait to make sure the subscription got registered
+        time.Sleep(1500 * time.Millisecond)
+
+        log.Info("moving asset")
+        geMoveAssetCoordinates(testAddress[0], 8.414917, 43.733505)
+        time.Sleep(2000 * time.Millisecond)
+
+        if len(httpReqBody) >= 1 {
+                printHttpReqBody()
+                t.Fatalf("Notification received")
+        }
+}
+
 func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -3363,6 +3929,48 @@ func locServSubscriptionZoneStatus(zoneId string, callbackReference string, nbAp
 	return nil
 }
 
+func locServSubscriptionDistance(monitoredAddress []string, referenceAddress []string, criteria *locServClient.DistanceCriteria, distance float32, callbackReference string, checkImmediate bool) error {
+
+	distanceSubscription := locServClient.DistanceNotificationSubscription{&locServClient.CallbackReference{"", nil, callbackReference}, checkImmediate, "", 0, criteria, distance, 0, 1, nil, monitoredAddress, referenceAddress, "", "", 1}
+	inlineDistanceNotificationSubscription := locServClient.InlineDistanceNotificationSubscription{&distanceSubscription}
+
+	_, _, err := locServAppClient.LocationApi.DistanceSubPOST(context.TODO(), inlineDistanceNotificationSubscription)
+	if err != nil {
+		log.Error("Failed to send subscription: ", err)
+		return err
+	}
+
+	return nil
+}
+
+func locServSubscriptionAreaCircle(address []string, criteria *locServClient.EnteringLeavingCriteria, latitude float32, longitude float32, radius float32, callbackReference string, checkImmediate bool) error {
+
+        areaCircleSubscription := locServClient.CircleNotificationSubscription{address, &locServClient.CallbackReference{"", nil, callbackReference}, checkImmediate, "", 0, 0, criteria, 1, latitude, nil, longitude, radius, "", "", 1}
+        inlineCircleNotificationSubscription := locServClient.InlineCircleNotificationSubscription{&areaCircleSubscription}
+
+        _, _, err := locServAppClient.LocationApi.AreaCircleSubPOST(context.TODO(), inlineCircleNotificationSubscription)
+        if err != nil {
+                log.Error("Failed to send subscription: ", err)
+                return err
+        }
+
+        return nil
+}
+
+func locServSubscriptionPeriodic(referenceAddress []string, callbackReference string, frequency int32) error {
+
+        periodicSubscription := locServClient.PeriodicNotificationSubscription{referenceAddress, &locServClient.CallbackReference{"", nil, callbackReference}, "", 0, frequency, nil, 1, "", ""}
+        inlinePeriodicNotificationSubscription := locServClient.InlinePeriodicNotificationSubscription{&periodicSubscription}
+
+        _, _, err := locServAppClient.LocationApi.PeriodicSubPOST(context.TODO(), inlinePeriodicNotificationSubscription)
+        if err != nil {
+                log.Error("Failed to send subscription: ", err)
+                return err
+        }
+
+        return nil
+}
+
 func validateZonalPresenceNotification(zonalPresenceNotification *locServClient.ZonalPresenceNotification, expectedAddress string, expectedZoneId string, expectedCurrentAccessPointId string, expectedPreviousAccessPointId string, expectedUserEventType locServClient.UserEventType) string {
 
 	if zonalPresenceNotification.Address != expectedAddress {
@@ -3404,3 +4012,31 @@ func validateZoneStatusNotification(zoneStatusNotification *locServClient.ZoneSt
 	}
 	return ""
 }
+
+func validateDistanceSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
+
+	if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
+		return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
+	}
+
+	return ""
+}
+
+func validateCircleSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
+
+        if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
+                return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
+        }
+
+        return ""
+}
+
+func validatePeriodicSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
+
+        if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
+                return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
+        }
+
+	return ""
+}
+

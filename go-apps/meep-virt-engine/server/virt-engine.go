@@ -42,6 +42,8 @@ const fieldSandboxName = "sandbox-name"
 const fieldEventType = "event-type"
 const fieldNodeName = "node-name"
 
+const appEnablementSvcName = "meep-app-enablement"
+
 type VirtEngine struct {
 	wdPinger            *wd.Pinger
 	mqGlobal            *mq.MsgQueue
@@ -49,11 +51,12 @@ type VirtEngine struct {
 	activeScenarioNames map[string]string
 	hostUrl             string
 	userSwagger         string
-	userSwaggerDir      string
 	httpsOnly           bool
 	authEnabled         bool
 	handlerId           int
 	sboxPods            map[string]string
+	sboxChartTemplates  map[string]bool
+	globalAppEnablement bool
 }
 
 var ve *VirtEngine
@@ -65,6 +68,17 @@ func Init() (err error) {
 	ve.activeModels = make(map[string]*mod.Model)
 	ve.activeScenarioNames = make(map[string]string)
 
+	// Retrieve list of available sandbox chart templates
+	templates, err := getSanboxChartTemplates()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	ve.sboxChartTemplates = make(map[string]bool)
+	for _, t := range templates {
+		ve.sboxChartTemplates[t] = true
+	}
+
 	// Retrieve sandbox pods list from environment variable
 	ve.sboxPods = make(map[string]string)
 	sboxPodsStr := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_PODS"))
@@ -73,6 +87,11 @@ func Init() (err error) {
 		sboxPodsList := strings.Split(sboxPodsStr, ",")
 		for _, pod := range sboxPodsList {
 			ve.sboxPods[pod] = pod
+
+			// Check if App Enablement global service is present
+			if pod == appEnablementSvcName {
+				ve.globalAppEnablement = true
+			}
 		}
 	}
 	if len(ve.sboxPods) == 0 {
@@ -98,15 +117,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("MEEP_USER_SWAGGER: ", ve.userSwagger)
-
-	// Retrieve User Swagger Dir from environment variable
-	ve.userSwaggerDir = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER_DIR"))
-	if ve.userSwaggerDir == "" {
-		err = errors.New("MEEP_USER_SWAGGER_DIR variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
 
 	// Retrieve HTTPS only mode from environment variable
 	httpsOnlyStr := strings.TrimSpace(os.Getenv("MEEP_HTTPS_ONLY"))

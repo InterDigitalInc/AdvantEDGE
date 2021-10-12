@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Location Service REST API
  *
- * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected subset of Location API endpoints (see below)
+ * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below).
  *
  * API version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -44,9 +44,10 @@ type Route struct {
 type Routes []Route
 
 func NewRouter() *mux.Router {
+	var handler http.Handler
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
+		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		handler = met.MetricsHandler(handler, sandboxName, serviceName)
 		handler = httpLog.LogRx(handler, "")
@@ -56,6 +57,20 @@ func NewRouter() *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
+
+	// Path prefix router order is important
+	// Service Api files
+	handler = http.StripPrefix("/location/v2/api/", http.FileServer(http.Dir("./api/")))
+	router.
+		PathPrefix("/location/v2/api/").
+		Name("Api").
+		Handler(handler)
+	// User supplied service API files
+	handler = http.StripPrefix("/location/v2/user-api/", http.FileServer(http.Dir("./user-api/")))
+	router.
+		PathPrefix("/location/v2/user-api/").
+		Name("UserApi").
+		Handler(handler)
 
 	return router
 }
@@ -84,6 +99,125 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v2/queries/zones/{zoneId}/accessPoints",
 		ApGET,
+	},
+
+	Route{
+		"AreaCircleSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubDELETE,
+	},
+
+	Route{
+		"AreaCircleSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubGET,
+	},
+
+	Route{
+		"AreaCircleSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/area/circle",
+		AreaCircleSubListGET,
+	},
+
+	Route{
+		"AreaCircleSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/area/circle",
+		AreaCircleSubPOST,
+	},
+
+	Route{
+		"AreaCircleSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubPUT,
+	},
+
+	Route{
+		"DistanceGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/distance",
+		DistanceGET,
+	},
+
+	Route{
+		"DistanceSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubDELETE,
+	},
+
+	Route{
+		"DistanceSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubGET,
+	},
+
+	Route{
+		"DistanceSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/distance",
+		DistanceSubListGET,
+	},
+
+	Route{
+		"DistanceSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/distance",
+		DistanceSubPOST,
+	},
+
+	Route{
+		"DistanceSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubPUT,
+	},
+
+	Route{
+		"Mec011AppTerminationPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/notifications/mec011/appTermination",
+		Mec011AppTerminationPOST,
+	},
+
+	Route{
+		"PeriodicSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubDELETE,
+	},
+
+	Route{
+		"PeriodicSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubGET,
+	},
+
+	Route{
+		"PeriodicSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/periodic",
+		PeriodicSubListGET,
+	},
+
+	Route{
+		"PeriodicSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/periodic",
+		PeriodicSubPOST,
+	},
+
+	Route{
+		"PeriodicSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubPUT,
 	},
 
 	Route{
@@ -210,117 +344,5 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v2/queries/zones/{zoneId}",
 		ZonesGetById,
-	},
-
-	Route{
-		"AreaCircleSubDELETE",
-		strings.ToUpper("Delete"),
-		"/location/v2/subscriptions/area/circle/{subscriptionId}",
-		AreaCircleSubDELETE,
-	},
-
-	Route{
-		"AreaCircleSubGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/area/circle/{subscriptionId}",
-		AreaCircleSubGET,
-	},
-
-	Route{
-		"AreaCircleSubListGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/area/circle",
-		AreaCircleSubListGET,
-	},
-
-	Route{
-		"AreaCircleSubPOST",
-		strings.ToUpper("Post"),
-		"/location/v2/subscriptions/area/circle",
-		AreaCircleSubPOST,
-	},
-
-	Route{
-		"AreaCircleSubPUT",
-		strings.ToUpper("Put"),
-		"/location/v2/subscriptions/area/circle/{subscriptionId}",
-		AreaCircleSubPUT,
-	},
-
-	Route{
-		"DistanceGET",
-		strings.ToUpper("Get"),
-		"/location/v2/queries/distance",
-		DistanceGET,
-	},
-
-	Route{
-		"DistanceSubDELETE",
-		strings.ToUpper("Delete"),
-		"/location/v2/subscriptions/distance/{subscriptionId}",
-		DistanceSubDELETE,
-	},
-
-	Route{
-		"DistanceSubGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/distance/{subscriptionId}",
-		DistanceSubGET,
-	},
-
-	Route{
-		"DistanceSubListGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/distance",
-		DistanceSubListGET,
-	},
-
-	Route{
-		"DistanceSubPOST",
-		strings.ToUpper("Post"),
-		"/location/v2/subscriptions/distance",
-		DistanceSubPOST,
-	},
-
-	Route{
-		"DistanceSubPUT",
-		strings.ToUpper("Put"),
-		"/location/v2/subscriptions/distance/{subscriptionId}",
-		DistanceSubPUT,
-	},
-
-	Route{
-		"PeriodicSubDELETE",
-		strings.ToUpper("Delete"),
-		"/location/v2/subscriptions/periodic/{subscriptionId}",
-		PeriodicSubDELETE,
-	},
-
-	Route{
-		"PeriodicSubGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/periodic/{subscriptionId}",
-		PeriodicSubGET,
-	},
-
-	Route{
-		"PeriodicSubListGET",
-		strings.ToUpper("Get"),
-		"/location/v2/subscriptions/periodic",
-		PeriodicSubListGET,
-	},
-
-	Route{
-		"PeriodicSubPOST",
-		strings.ToUpper("Post"),
-		"/location/v2/subscriptions/periodic",
-		PeriodicSubPOST,
-	},
-
-	Route{
-		"PeriodicSubPUT",
-		strings.ToUpper("Put"),
-		"/location/v2/subscriptions/periodic/{subscriptionId}",
-		PeriodicSubPUT,
 	},
 }

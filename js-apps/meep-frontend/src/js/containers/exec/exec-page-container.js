@@ -30,6 +30,7 @@ import HeadlineBar from '../../components/headline-bar';
 import EventCreationPane from './event-creation-pane';
 import EventAutomationPane from './event-automation-pane';
 import EventReplayPane from './event-replay-pane';
+import DashCfgPane from './dashboard-cfg-pane';
 
 import ExecTable from './exec-table';
 
@@ -74,6 +75,8 @@ import {
   NETWORK_CHARACTERISTICS_EVENT,
   SCENARIO_UPDATE_EVENT,
   PDU_SESSION_EVENT,
+  VIEW_1,
+  VIEW_2,
   EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
@@ -268,6 +271,9 @@ class ExecPageContainer extends Component {
   // CONFIGURE DASHBOARD
   onOpenDashCfg() {
     this.props.changeDashCfgMode(true);
+    this.props.changeEventCreationMode(false);
+    this.props.changeEventAutomationMode(false);
+    this.props.changeEventReplayMode(false);
   }
 
   // STOP CONFIGURE DASHBOARD
@@ -366,7 +372,7 @@ class ExecPageContainer extends Component {
       (this.props.scenarioState !== EXEC_STATE_IDLE) ? this.props.execScenarioName : 'None' :
       this.props.cfgScenarioName;
 
-    const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode;
+    const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode || this.props.dashCfgMode;
     const spanLeft = eventPaneOpen ? 8 : 12;
     const spanRight = eventPaneOpen ? 4 : 0;
     return (
@@ -475,6 +481,16 @@ class ExecPageContainer extends Component {
                   api={this.props.automationApi}
                   hide={!this.props.eventAutomationMode}
                   onClose={this.onQuitEventAutomationMode}
+                />
+              </Elevation>
+              <Elevation className='idcc-elevation' z={2}>
+                <DashCfgPane
+                  viewOptions={[VIEW_1, VIEW_2]}
+                  hide={!this.props.dashCfgMode}
+                  onClose={this.onCloseDashCfg}
+                  sandbox={this.props.sandbox}
+                  scenarioName={this.props.execScenarioName}
+                  showApps={this.props.showApps}
                 />
               </Elevation>
             </GridCell>

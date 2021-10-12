@@ -41,8 +41,8 @@ func convertApInfoCompleteToJson(obj *ApInfoComplete) string {
 	return string(jsonInfo)
 }
 
-func convertJsonToStaInfo(jsonData string) *StaInfo {
-	var obj StaInfo
+func convertJsonToStaData(jsonData string) *StaData {
+	var obj StaData
 	err := json.Unmarshal([]byte(jsonData), &obj)
 	if err != nil {
 		log.Error(err.Error())
@@ -51,7 +51,7 @@ func convertJsonToStaInfo(jsonData string) *StaInfo {
 	return &obj
 }
 
-func convertStaInfoToJson(obj *StaInfo) string {
+func convertStaDataToJson(obj *StaData) string {
 	jsonData, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
@@ -68,3 +68,14 @@ func convertAssocStaSubscriptionToJson(obj *AssocStaSubscription) string {
 	}
 	return string(jsonInfo)
 }
+
+/*
+func convertStaDataRateSubscriptionToJson(obj *StaDataRateSubscription) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+*/

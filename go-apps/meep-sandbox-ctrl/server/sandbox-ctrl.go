@@ -40,6 +40,7 @@ import (
 	pss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pdu-session-store"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
 type Scenario struct {
@@ -50,6 +51,7 @@ type SandboxCtrl struct {
 	sandboxName     string
 	mqGlobal        *mq.MsgQueue
 	mqLocal         *mq.MsgQueue
+	apiMgr          *sam.SwaggerApiMgr
 	scenarioStore   *couch.Connector
 	replayStore     *couch.Connector
 	modelCfg        mod.ModelCfg
@@ -126,6 +128,14 @@ func Init() (err error) {
 	}
 	log.Info("Local Message Queue created")
 
+	// Create Swagger API Manager
+	sbxCtrl.apiMgr, err = sam.NewSwaggerApiMgr(moduleName, sbxCtrl.sandboxName, "", sbxCtrl.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
+
 	// Create new active scenario model
 	sbxCtrl.modelCfg = mod.ModelCfg{
 		Name:      "activeScenario",
@@ -186,11 +196,27 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
+	// Initialize App Controller
+	err = appCtrlInit(sbxCtrl.sandboxName, sbxCtrl.mqLocal)
+	if err != nil {
+		log.Error("Failed to initialize App Info: ", err.Error())
+		return err
+	}
+	log.Info("App Info initialized")
+
 	return nil
 }
 
-// Run Starts the Sandbox Controller
+// Start Sandbox Controller
 func Run() (err error) {
+
+	// Start Swagger API Manager (provider & aggregator)
+	err = sbxCtrl.apiMgr.Start(true, true)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
 
 	// Activate scenario on sandbox startup if required, otherwise wait for activation request
 	if sbox, err := sbxCtrl.sandboxStore.Get(sbxCtrl.sandboxName); err == nil && sbox != nil {
@@ -203,6 +229,34 @@ func Run() (err error) {
 				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, sbox.ScenarioName, redisDBAddr, influxDBAddr)
 			}
 		}
+	}
+
+	// Start App Controller
+	err = appCtrlRun()
+	if err != nil {
+		log.Error("Failed to start App Controller: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// Stop Sandbox Controller
+func Stop() (err error) {
+	if sbxCtrl == nil {
+		return
+	}
+
+	if sbxCtrl.apiMgr != nil {
+		// Stop Swagger API Manager
+		_ = sbxCtrl.apiMgr.Stop()
+	}
+
+	// Stop App Controller
+	err = appCtrlStop()
+	if err != nil {
+		log.Error("Failed to stop App Controller: ", err.Error())
+		return err
 	}
 
 	return nil
@@ -257,6 +311,9 @@ func activateScenario(scenarioName string) (err error) {
 		log.Error("Failed to activate scenario with err: ", err.Error())
 		return err
 	}
+
+	// Flush App Instances
+	_ = appCtrlFlushAppInstances()
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
@@ -745,10 +802,16 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 	}
 
-	//force stop replay manager
+	// force stop replay manager
 	if sbxCtrl.replayMgr.IsStarted() {
 		_ = sbxCtrl.replayMgr.ForceStop()
 	}
+
+	// Renew APIs
+	_ = sbxCtrl.apiMgr.FlushMepApis()
+
+	// Flush App Instances
+	_ = appCtrlFlushAppInstances()
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -788,14 +851,24 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Process Event
 	var httpStatus int
-	var description string
+	var description, src, dest string
 	switch eventType {
 	case eventTypeMobility:
 		err, httpStatus, description = sendEventMobility(event)
+		if err == nil {
+			src = event.EventMobility.ElementName
+			dest = event.EventMobility.Dest
+		}
 	case eventTypeNetCharUpdate:
 		err, httpStatus, description = sendEventNetworkCharacteristics(event)
+		if err == nil {
+			src = event.EventNetworkCharacteristicsUpdate.ElementName
+		}
 	case eventTypePoasInRange:
 		err, httpStatus, description = sendEventPoasInRange(event)
+		if err == nil {
+			src = event.EventPoasInRange.Ue
+		}
 	case eventTypeScenarioUpdate:
 		err, httpStatus, description = sendEventScenarioUpdate(event)
 	case eventTypePduSession:
@@ -817,6 +890,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		var metric met.EventMetric
 		metric.Event = string(eventJSONStr)
 		metric.Description = description
+		metric.Src = src
+		metric.Dest = dest
 		err = sbxCtrl.metricStore.SetEventMetric(eventType, metric)
 	}
 	if err != nil {

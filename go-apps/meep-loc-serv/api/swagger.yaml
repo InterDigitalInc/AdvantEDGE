@@ -1,34 +1,32 @@
 openapi: 3.0.0
 info:
-  version: "2.1.1"
-  title: "AdvantEDGE Location Service REST API"
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
+  title: AdvantEDGE Location Service REST API
+  version: 2.1.1
   description: "Location Service is AdvantEDGE's implementation of
   [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
   <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
   <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations
-  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
-  <p>AdvantEDGE supports a selected subset of Location API endpoints (see below)"
+  <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below)."
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
 externalDocs:
-  description: "ETSI MEC013 V2.1.1 Location Service API"
-  url: "http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf"
+  description: ETSI MEC013 V2.1.1 Location API
+  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf'
 servers:
   - url: 'https://localhost/sandboxname/location/v2'
 tags:
 - name: 'location'
-- name: 'unsupported'
 paths:
   /queries/distance:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'UE Distance Lookup of a specific UE'
       description: 'UE Distance Lookup between terminals or a terminal and a location'
       operationId: distanceGET
@@ -207,7 +205,7 @@ paths:
   /subscriptions/area/circle:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieves all active subscriptions to area change notifications'
       description: 'This operation is used for retrieving all active subscriptions to area change notifications.'
       operationId: areaCircleSubListGET
@@ -225,7 +223,8 @@ paths:
                     callbackReference:
                       callbackData: '1234'
                       notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
+                    address:
+                    - 'acr:10.0.0.1'
                     checkImmediate: true
                     enteringLeavingCriteria: 'Entering'
                     frequency: 10
@@ -237,7 +236,7 @@ paths:
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle'
     post:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Creates a subscription for area change notification'
       description: 'Creates a subscription to the Location Service for an area change notification.'
       operationId: areaCircleSubPOST
@@ -254,7 +253,8 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address: 'acr:10.0.0.1'
+                address:
+                - 'acr:10.0.0.1'
                 checkImmediate: true
                 enteringLeavingCriteria: 'Entering'
                 frequency: 10
@@ -275,7 +275,8 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
+                  address:
+                  - 'acr:10.0.0.1'
                   checkImmediate: true
                   enteringLeavingCriteria: 'Entering'
                   frequency: 10
@@ -335,7 +336,7 @@ paths:
   /subscriptions/area/circle/{subscriptionId}:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: areaCircleSubGET
@@ -354,7 +355,8 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
+                  address:
+                  - 'acr:10.0.0.1'
                   checkImmediate: true
                   enteringLeavingCriteria: 'Entering'
                   frequency: 10
@@ -378,7 +380,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: areaCircleSubPUT
@@ -395,7 +397,8 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address: 'acr:10.0.0.1'
+                address:
+                - 'acr:10.0.0.1'
                 checkImmediate: true
                 enteringLeavingCriteria: 'Entering'
                 frequency: 10
@@ -419,7 +422,8 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
+                  address:
+                  - 'acr:10.0.0.1'
                   checkImmediate: true
                   enteringLeavingCriteria: 'Entering'
                   frequency: 10
@@ -447,7 +451,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: areaCircleSubDELETE
@@ -468,7 +472,7 @@ paths:
   /subscriptions/distance:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieves all active subscriptions to distance change notifications'
       description: 'This operation is used for retrieving all active subscriptions to a distance change notifications.'
       operationId: distanceSubListGET
@@ -493,13 +497,14 @@ paths:
                     criteria: 'AllWithinDistance'
                     distance: 100
                     frequency: 10
-                    referenceAddress: 'acr:10.0.0.3'
+                    referenceAddress:
+                    - 'acr:10.0.0.3'
                     trackingAccuracy: 10
                     resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/sub123'
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance'
     post:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Creates a subscription for distance change notification'
       description: 'Creates a subscription to the Location Service for a distance change notification.'
       operationId: distanceSubPOST
@@ -523,7 +528,8 @@ paths:
                 criteria: 'AllWithinDistance'
                 distance: 100
                 frequency: 10
-                referenceAddress: 'acr:10.0.0.3'
+                referenceAddress: 
+                - 'acr:10.0.0.3'
                 trackingAccuracy: 10
       responses:
         '201':
@@ -545,7 +551,8 @@ paths:
                   criteria: 'AllWithinDistance'
                   distance: 100
                   frequency: 10
-                  referenceAddress: 'acr:10.0.0.3'
+                  referenceAddress:
+                  - 'acr:10.0.0.3'
                   trackingAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
         '400':
@@ -609,7 +616,7 @@ paths:
   /subscriptions/distance/{subscriptionId}:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: distanceSubGET
@@ -635,7 +642,8 @@ paths:
                   criteria: 'AllWithinDistance'
                   distance: 100
                   frequency: 10
-                  referenceAddress: 'acr:10.0.0.3'
+                  referenceAddress:
+                  - 'acr:10.0.0.3'
                   trackingAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
         '400':
@@ -653,7 +661,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: distanceSubPUT
@@ -677,7 +685,8 @@ paths:
                 criteria: 'AllWithinDistance'
                 distance: 100
                 frequency: 10
-                referenceAddress: 'acr:10.0.0.3'
+                referenceAddress: 
+                - 'acr:10.0.0.3'
                 trackingAccuracy: 10
                 resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
       parameters:
@@ -702,7 +711,8 @@ paths:
                   criteria: 'AllWithinDistance'
                   distance: 100
                   frequency: 10
-                  referenceAddress: 'acr:10.0.0.3'
+                  referenceAddress:
+                  - 'acr:10.0.0.3'
                   trackingAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
         '400':
@@ -724,7 +734,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: distanceSubDELETE
@@ -745,7 +755,7 @@ paths:
   /subscriptions/periodic:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieves all active subscriptions to periodic notifications'
       description: 'This operation is used for retrieving all active subscriptions to periodic notifications.'
       operationId: periodicSubListGET
@@ -763,14 +773,15 @@ paths:
                     callbackReference:
                       callbackData: '1234'
                       notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
+                    address: 
+                    - 'acr:10.0.0.1'
                     frequency: 10
                     requestedAccuracy: 10
                     resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic'
     post:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Creates a subscription for periodic notification'
       description: 'Creates a subscription to the Location Service for a periodic notification.'
       operationId: periodicSubPOST
@@ -787,7 +798,8 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address: 'acr:10.0.0.1'
+                address: 
+                - 'acr:10.0.0.1'
                 frequency: 10
                 requestedAccuracy: 10
       responses:
@@ -803,7 +815,8 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
+                  address: 
+                  - 'acr:10.0.0.1'
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -857,7 +870,7 @@ paths:
   /subscriptions/periodic/{subscriptionId}:
     get:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: periodicSubGET
@@ -876,7 +889,8 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
+                  address:
+                  - 'acr:10.0.0.1'
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -895,7 +909,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: periodicSubPUT
@@ -912,7 +926,8 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address: 'acr:10.0.0.1'
+                address: 
+                - 'acr:10.0.0.1'
                 frequency: 10
                 requestedAccuracy: 10
                 resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -931,7 +946,8 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
+                  address:
+                  - 'acr:10.0.0.1'
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -954,7 +970,7 @@ paths:
       x-swagger-router-controller: "subscriptions"
     delete:
       tags:
-      - 'unsupported'
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: periodicSubDELETE
@@ -1635,6 +1651,33 @@ paths:
         '429':
           $ref: '#/components/responses/429'
       x-swagger-router-controller: 'subscriptions'
+  /notifications/mec011/appTermination:
+    post:
+      tags:
+      - 'location'
+      summary: 'MEC011 Application Termination notification for self termination'
+      description: 'Terminates itself.'
+      operationId: mec011AppTerminationPOST
+      requestBody:
+        description: 'Termination notification details'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotification'
+            example:
+                notificationType: 'AppTerminationNotification'
+                operationAction: 'TERMINATING'
+                maxGracefulTimeout: 10
+                links:
+                  subscription:
+                    href: 'http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123'
+                  confirmTermination:
+                    href: 'http://mec011Server.example.com/mec_app_support/v1/confirm_termination'
+      responses:
+        '204':
+          description: No Content
+      x-swagger-router-controller: 'notifications'
 components:
   responses:
     200:
@@ -2971,3 +3014,55 @@ components:
       properties:
         problemDetails:
           $ref: '#/components/schemas/ProblemDetails'
+    AppTerminationNotification:
+      description: >-
+        This type represents the information that the MEC platform
+        notifies the subscribed application instance about  the corresponding
+        application instance termination/stop.
+      type: object
+      required:
+        - notificationType
+        - operationAction
+        - maxGracefulTimeout
+        - _links
+      properties:
+        notificationType:
+          description: Shall be set to AppTerminationNotification.
+          type: string
+        operationAction:
+          $ref: '#/components/schemas/OperationActionType'
+        maxGracefulTimeout:
+          description: >-
+            Maximum timeout value in seconds for graceful termination or graceful
+            stop of an application instance.
+          type: integer
+          format: uint32
+        _links:
+          description: >-
+            Object containing hyperlinks related to the resource.
+          type: object
+          required:
+            - subscription
+          properties:
+            subscription:
+              $ref: '#/components/schemas/LinkType'
+            confirmTermination:
+              $ref: '#/components/schemas/LinkType'
+    LinkType:
+      properties:
+        href:
+          description: URI referring to a resource
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: URI
+      required:
+      - href
+      type: object
+    OperationActionType:
+      description: Operation that is being performed on the MEC application instance.
+      type: string
+      enum:
+        - STOPPING
+        - TERMINATING
+

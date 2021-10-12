@@ -18,6 +18,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,19 +32,27 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
+	asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
+	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 
 	"github.com/gorilla/mux"
 )
 
-const rnisBasePath = "/rni/v2/"
-const rnisKey = "rnis:"
-const logModuleRNIS = "meep-rnis"
+const moduleName = "meep-rnis"
+const rnisBasePath = "rni/v2/"
+const rnisKey = "rnis"
 const serviceName = "RNI Service"
+const serviceCategory = "RNI"
+const defaultMepName = "global"
+const defaultScopeOfLocality = "MEC_SYSTEM"
+const defaultConsumedLocalOnly = true
+const appTerminationPath = "notifications/mec011/appTermination"
 
 const (
 	notifCellChange = "CellChangeNotification"
@@ -62,6 +71,7 @@ var metricStore *met.MetricStore
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+var sbxCtrlUrl string = "http://meep-sandbox-ctrl"
 
 const cellChangeSubscriptionType = "cell_change"
 const rabEstSubscriptionType = "rab_est"
@@ -91,11 +101,17 @@ const RAB_REL_NOTIFICATION = "RabRelNotification"
 const MEAS_REP_UE_NOTIFICATION = "MeasRepUeNotification"
 const NR_MEAS_REP_UE_NOTIFICATION = "NrMeasRepUeNotification"
 
-var RNIS_DB = 5
+var RNIS_DB = 0
 
 var rc *redis.Connector
 var hostUrl *url.URL
+var instanceId string
+var instanceName string
 var sandboxName string
+var mepName string = defaultMepName
+var scopeOfLocality string = defaultScopeOfLocality
+var consumedLocalOnly bool = defaultConsumedLocalOnly
+var locality []string
 var basePath string
 var baseKey string
 var mutex sync.Mutex
@@ -186,6 +202,20 @@ type PlmnInfoResp struct {
 	PlmnInfoList []PlmnInfo
 }
 
+const serviceAppVersion = "2.1.1"
+
+var serviceAppInstanceId string
+
+var appEnablementUrl string
+var appEnablementEnabled bool
+var sendAppTerminationWhenDone bool = false
+var appEnablementServiceId string
+var appSupportClient *asc.APIClient
+var svcMgmtClient *smc.APIClient
+var sbxCtrlClient *scc.APIClient
+
+var registrationTicker *time.Ticker
+
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusNotImplemented)
@@ -193,6 +223,21 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 
 // Init - RNI Service initialization
 func Init() (err error) {
+
+	// Retrieve Instance ID from environment variable if present
+	instanceIdEnv := strings.TrimSpace(os.Getenv("MEEP_INSTANCE_ID"))
+	if instanceIdEnv != "" {
+		instanceId = instanceIdEnv
+	}
+	log.Info("MEEP_INSTANCE_ID: ", instanceId)
+
+	// Retrieve Instance Name from environment variable
+	instanceName = moduleName
+	instanceNameEnv := strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
+	if instanceNameEnv != "" {
+		instanceName = instanceNameEnv
+	}
+	log.Info("MEEP_POD_NAME: ", instanceName)
 
 	// Retrieve Sandbox name from environment variable
 	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
@@ -215,14 +260,57 @@ func Init() (err error) {
 			hostUrl = new(url.URL)
 		}
 	}
-	log.Info("resource URL: ", hostUrl)
+	log.Info("MEEP_HOST_URL: ", hostUrl)
+
+	// Get MEP name
+	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
+	if mepNameEnv != "" {
+		mepName = mepNameEnv
+	}
+	log.Info("MEEP_MEP_NAME: ", mepName)
+
+	// Get App Enablement URL
+	appEnablementEnabled = false
+	appEnablementEnv := strings.TrimSpace(os.Getenv("MEEP_APP_ENABLEMENT"))
+	if appEnablementEnv != "" {
+		appEnablementUrl = "http://" + appEnablementEnv
+		appEnablementEnabled = true
+	}
+	log.Info("MEEP_APP_ENABLEMENT: ", appEnablementUrl)
+
+	// Get scope of locality
+	scopeOfLocalityEnv := strings.TrimSpace(os.Getenv("MEEP_SCOPE_OF_LOCALITY"))
+	if scopeOfLocalityEnv != "" {
+		scopeOfLocality = scopeOfLocalityEnv
+	}
+	log.Info("MEEP_SCOPE_OF_LOCALITY: ", scopeOfLocality)
+
+	// Get local consumption
+	consumedLocalOnlyEnv := strings.TrimSpace(os.Getenv("MEEP_CONSUMED_LOCAL_ONLY"))
+	if consumedLocalOnlyEnv != "" {
+		value, err := strconv.ParseBool(consumedLocalOnlyEnv)
+		if err == nil {
+			consumedLocalOnly = value
+		}
+	}
+	log.Info("MEEP_CONSUMED_LOCAL_ONLY: ", consumedLocalOnly)
+
+	// Get locality
+	localityEnv := strings.TrimSpace(os.Getenv("MEEP_LOCALITY"))
+	if localityEnv != "" {
+		locality = strings.Split(localityEnv, ":")
+	}
+	log.Info("MEEP_LOCALITY: ", locality)
 
 	// Set base path
-	basePath = "/" + sandboxName + rnisBasePath
+	if mepName == defaultMepName {
+		basePath = "/" + sandboxName + "/" + rnisBasePath
+	} else {
+		basePath = "/" + sandboxName + "/" + mepName + "/" + rnisBasePath
+	}
 
-	// Get base store key
-	sandboxNameRoot := dkm.GetKeyRoot(sandboxName)
-	baseKey = sandboxNameRoot + rnisKey
+	// Set base storage key
+	baseKey = dkm.GetKeyRoot(sandboxName) + rnisKey + ":mep:" + mepName + ":"
 
 	// Connect to Redis DB (RNIS_DB)
 	rc, err = redis.NewConnector(redisAddr, RNIS_DB)
@@ -285,8 +373,10 @@ func Init() (err error) {
 
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{
+		ModuleName:     moduleName,
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
+		Locality:       locality,
 		UeDataCb:       updateUeData,
 		MeasInfoCb:     updateMeasInfo,
 		PoaInfoCb:      updatePoaInfo,
@@ -295,6 +385,9 @@ func Init() (err error) {
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
 	}
+	if mepName != defaultMepName {
+		sbiCfg.MepName = mepName
+	}
 	err = sbi.Init(sbiCfg)
 	if err != nil {
 		log.Error("Failed initialize SBI. Error: ", err)
@@ -302,6 +395,37 @@ func Init() (err error) {
 	}
 	log.Info("SBI Initialized")
 
+	// Create App Enablement REST clients
+	if appEnablementEnabled {
+		// Create Sandbox Controller client
+		sbxCtrlClientCfg := scc.NewConfiguration()
+		sbxCtrlClientCfg.BasePath = sbxCtrlUrl + "/sandbox-ctrl/v1"
+		sbxCtrlClient = scc.NewAPIClient(sbxCtrlClientCfg)
+		if sbxCtrlClient == nil {
+			return errors.New("Failed to create Sandbox Controller REST API client")
+		}
+		log.Info("Create Sandbox Controller REST API client")
+
+		// Create App Support client
+		appSupportClientCfg := asc.NewConfiguration()
+		appSupportClientCfg.BasePath = appEnablementUrl + "/mec_app_support/v1"
+		appSupportClient = asc.NewAPIClient(appSupportClientCfg)
+		if appSupportClient == nil {
+			return errors.New("Failed to create App Enablement App Support REST API client")
+		}
+		log.Info("Create App Enablement App Support REST API client")
+
+		// Create App Info client
+		srvMgmtClientCfg := smc.NewConfiguration()
+		srvMgmtClientCfg.BasePath = appEnablementUrl + "/mec_service_mgmt/v1"
+		svcMgmtClient = smc.NewAPIClient(srvMgmtClientCfg)
+		if svcMgmtClient == nil {
+			return errors.New("Failed to create App Enablement Service Management REST API client")
+		}
+		log.Info("Create App Enablement Service Management REST API client")
+	}
+
+	log.Info("RNIS successfully initialized")
 	return nil
 }
 
@@ -317,17 +441,292 @@ func reInit() {
 	_ = rc.ForEachJSONEntry(keyName, repopulateRrSubscriptionMap, nil)
 	_ = rc.ForEachJSONEntry(keyName, repopulateMrSubscriptionMap, nil)
 	_ = rc.ForEachJSONEntry(keyName, repopulateNrMrSubscriptionMap, nil)
-
 }
 
 // Run - Start RNIS
 func Run() (err error) {
+	// Start MEC Service registration ticker
+	if appEnablementEnabled {
+		startRegistrationTicker()
+	}
 	return sbi.Run()
 }
 
 // Stop - Stop RNIS
 func Stop() (err error) {
+	// Stop MEC Service registration ticker
+	if appEnablementEnabled {
+		stopRegistrationTicker()
+	}
 	return sbi.Stop()
+}
+
+func startRegistrationTicker() {
+	// Make sure ticker is not running
+	if registrationTicker != nil {
+		log.Warn("Registration ticker already running")
+		return
+	}
+
+	// Wait a few seconds to allow App Enablement Service to start.
+	// This is done to avoid the default 20 second TCP socket connect timeout
+	// if the App Enablement Service is not yet running.
+	log.Info("Waiting for App Enablement Service to start")
+	time.Sleep(5 * time.Second)
+
+	// Start registration ticker
+	registrationTicker = time.NewTicker(5 * time.Second)
+	go func() {
+		mecAppReadySent := false
+		registrationSent := false
+		subscriptionSent := false
+		for range registrationTicker.C {
+			// Get Application instance ID if not already available
+			if serviceAppInstanceId == "" {
+				var err error
+				serviceAppInstanceId, err = getAppInstanceId()
+				if err != nil || serviceAppInstanceId == "" {
+					continue
+				}
+			}
+
+			// Send App Ready message
+			if !mecAppReadySent {
+				err := sendReadyConfirmation(serviceAppInstanceId)
+				if err != nil {
+					log.Error("Failure when sending the MecAppReady message. Error: ", err)
+					continue
+				}
+				mecAppReadySent = true
+			}
+
+			// Register service instance
+			if !registrationSent {
+				err := registerService(serviceAppInstanceId)
+				if err != nil {
+					log.Error("Failed to register to appEnablement DB, keep trying. Error: ", err)
+					continue
+				}
+				registrationSent = true
+			}
+
+			// Register for graceful termination
+			if !subscriptionSent {
+				err := subscribeAppTermination(serviceAppInstanceId)
+				if err != nil {
+					log.Error("Failed to subscribe to graceful termination. Error: ", err)
+					continue
+				}
+				sendAppTerminationWhenDone = true
+				subscriptionSent = true
+			}
+
+			if mecAppReadySent && registrationSent && subscriptionSent {
+
+				// Registration complete
+				log.Info("Successfully registered with App Enablement Service")
+				stopRegistrationTicker()
+				return
+			}
+		}
+	}()
+}
+
+func stopRegistrationTicker() {
+	if registrationTicker != nil {
+		log.Info("Stopping App Enablement registration ticker")
+		registrationTicker.Stop()
+		registrationTicker = nil
+	}
+}
+
+func getAppInstanceId() (id string, err error) {
+	var appInfo scc.ApplicationInfo
+	appInfo.Id = instanceId
+	appInfo.Name = serviceCategory //instanceName
+	appInfo.MepName = mepName
+	appInfo.Version = serviceAppVersion
+	appType := scc.SYSTEM_ApplicationType
+	appInfo.Type_ = &appType
+	state := scc.INITIALIZED_ApplicationState
+	appInfo.State = &state
+	response, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
+	if err != nil {
+		log.Error("Failed to get App Instance ID with error: ", err)
+		return "", err
+	}
+	return response.Id, nil
+}
+
+func deregisterService(appInstanceId string, serviceId string) error {
+	_, err := svcMgmtClient.MecServiceMgmtApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
+	if err != nil {
+		log.Error("Failed to unregister the service to app enablement registry: ", err)
+		return err
+	}
+	return nil
+}
+
+func registerService(appInstanceId string) error {
+	var srvInfo smc.ServiceInfoPost
+	//serName
+	srvInfo.SerName = instanceName
+	//version
+	srvInfo.Version = serviceAppVersion
+	//state
+	state := smc.ACTIVE_ServiceState
+	srvInfo.State = &state
+	//serializer
+	serializer := smc.JSON_SerializerType
+	srvInfo.Serializer = &serializer
+
+	//transportInfo
+	var transportInfo smc.TransportInfo
+	transportInfo.Id = "sandboxTransport"
+	transportInfo.Name = "REST"
+	transportType := smc.REST_HTTP_TransportType
+	transportInfo.Type_ = &transportType
+	transportInfo.Protocol = "HTTP"
+	transportInfo.Version = "2.0"
+	var endpoint smc.OneOfTransportInfoEndpoint
+	endpointPath := hostUrl.String() + basePath
+	endpoint.Uris = append(endpoint.Uris, endpointPath)
+	transportInfo.Endpoint = &endpoint
+	srvInfo.TransportInfo = &transportInfo
+
+	//serCategory
+	var category smc.CategoryRef
+	category.Href = "catalogueHref"
+	category.Id = "rniId"
+	category.Name = serviceCategory
+	category.Version = "v2"
+	srvInfo.SerCategory = &category
+
+	//scopeOfLocality
+	localityType := smc.LocalityType(scopeOfLocality)
+	srvInfo.ScopeOfLocality = &localityType
+
+	//consumedLocalOnly
+	srvInfo.ConsumedLocalOnly = consumedLocalOnly
+
+	appServicesPostResponse, _, err := svcMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	if err != nil {
+		log.Error("Failed to register the service to app enablement registry: ", err)
+		return err
+	}
+	log.Info("Application Enablement Service instance Id: ", appServicesPostResponse.SerInstanceId)
+	appEnablementServiceId = appServicesPostResponse.SerInstanceId
+	return nil
+}
+
+func sendReadyConfirmation(appInstanceId string) error {
+	var appReady asc.AppReadyConfirmation
+	appReady.Indication = "READY"
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send a ready confirm acknowlegement: ", err)
+		return err
+	}
+	return nil
+}
+
+func sendTerminationConfirmation(appInstanceId string) error {
+	var appTermination asc.AppTerminationConfirmation
+	operationAction := asc.TERMINATING_OperationActionType
+	appTermination.OperationAction = &operationAction
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmTerminationPOST(context.TODO(), appTermination, appInstanceId)
+	if err != nil {
+		log.Error("Failed to send a confirm termination acknowlegement: ", err)
+		return err
+	}
+	return nil
+}
+
+func subscribeAppTermination(appInstanceId string) error {
+	var subscription asc.AppTerminationNotificationSubscription
+	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
+	subscription.AppInstanceId = appInstanceId
+	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + rnisBasePath + appTerminationPath
+	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	if err != nil {
+		log.Error("Failed to register to App Support subscription: ", err)
+		return err
+	}
+	return nil
+}
+
+/*
+func unsubscribeAppTermination(appInstanceId string) error {
+	//only subscribe to one subscription, so we force number to be one, couldn't be anything else
+	_, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
+	if err != nil {
+		log.Error("Failed to unregister to App Support subscription: ", err)
+		return err
+	}
+	return nil
+}
+*/
+
+func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var notification AppTerminationNotification
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&notification)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if !appEnablementEnabled {
+		//just ignore the message
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	go func() {
+		//delete any registration it made
+		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
+		//_ = unsubscribeAppTermination(serviceAppInstanceId)
+		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
+
+		//send scenario update with a deletion
+		var event scc.Event
+		var eventScenarioUpdate scc.EventScenarioUpdate
+		var process scc.Process
+		var nodeDataUnion scc.NodeDataUnion
+		var node scc.ScenarioNode
+
+		process.Name = instanceName
+		process.Type_ = "EDGE-APP"
+
+		nodeDataUnion.Process = &process
+
+		node.Type_ = "EDGE-APP"
+		node.Parent = mepName
+		node.NodeDataUnion = &nodeDataUnion
+
+		eventScenarioUpdate.Node = &node
+		eventScenarioUpdate.Action = "REMOVE"
+
+		event.EventScenarioUpdate = &eventScenarioUpdate
+		event.Type_ = "SCENARIO-UPDATE"
+
+		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	if sendAppTerminationWhenDone {
+		go func() {
+			//ignore any error and delete yourself anyway
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}()
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func updateUeData(obj sbi.UeDataSbi) {
@@ -353,6 +752,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 	ueData.ThroughputUL = obj.ThroughputUL
 	ueData.ThroughputDL = obj.ThroughputDL
 	ueData.PacketLoss = obj.PacketLoss
+	ueData.ParentPoaName = obj.ParentPoaName
 
 	oldPlmn := new(Plmn)
 	oldPlmnMnc := ""
@@ -365,7 +765,6 @@ func updateUeData(obj sbi.UeDataSbi) {
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+obj.Name, ".")
-
 	if jsonUeData != "" {
 		ueDataObj := convertJsonToUeData(jsonUeData)
 		if ueDataObj != nil {
@@ -374,14 +773,17 @@ func updateUeData(obj sbi.UeDataSbi) {
 				oldPlmnMnc = ueDataObj.Ecgi.Plmn.Mnc
 				oldPlmnMcc = ueDataObj.Ecgi.Plmn.Mcc
 				oldCellId = ueDataObj.Ecgi.CellId
-				oldErabId = ueDataObj.ErabId
+				if oldCellId != "" {
+					oldErabId = ueDataObj.ErabId
+				}
 			}
 			if ueDataObj.Nrcgi != nil {
 				oldNrPlmnMnc = ueDataObj.Nrcgi.Plmn.Mnc
 				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
 				oldNrCellId = ueDataObj.Nrcgi.NrcellId
 			}
-
+			// Keep previous measurements
+			ueData.InRangePoas = ueDataObj.InRangePoas
 		}
 	}
 	//updateDB if changes occur (4G section)
@@ -421,6 +823,9 @@ func updateUeData(obj sbi.UeDataSbi) {
 		}
 	} else {
 		//5G section
+		//keep erabId info that was there
+		ueData.ErabId = oldErabId
+
 		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
 			//update because nrcgi changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
@@ -446,7 +851,6 @@ func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string,
 			}
 			ueDataObj.InRangePoas = inRangePoas
 		}
-
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
 	}
 }
@@ -1447,7 +1851,6 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 				}
 
 				subscription := convertJsonToMeasRepUeSubscription(jsonInfo)
-				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
 				var notif MeasRepUeNotification
 				notif.NotificationType = MEAS_REP_UE_NOTIFICATION
@@ -1464,10 +1867,12 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 				notif.AssociateId = append(notif.AssociateId, *assocId)
 
 				//adding the data of all reachable cells
+				parentMeasExists := false
 				for _, poa := range ueData.InRangePoas {
 					if poa.Name == ueData.ParentPoaName {
 						notif.Rsrp = poa.Rsrp
 						notif.Rsrq = poa.Rsrq
+						parentMeasExists = true
 					} else {
 						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
@@ -1496,12 +1901,15 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
 						default:
 						}
-
 					}
 				}
 
-				go sendMrNotification(subscription.CallbackReference, notif)
-				log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				if parentMeasExists {
+					log.Info("Sending RNIS notification ", subscription.CallbackReference)
+					callbackReference := subscription.CallbackReference
+					go sendMrNotification(callbackReference, notif)
+					log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				}
 			}
 		}
 	}
@@ -1553,7 +1961,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			match := isMatchFilterCriteriaAssociateId(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, assocId)
 
 			if match {
-
 				if ueData.Nrcgi != nil {
 					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrcellId, "")
 				} else {
@@ -1566,7 +1973,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 			}
 
 			if match {
-
 				subsIdStr := strconv.Itoa(subsId)
 				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
@@ -1574,7 +1980,6 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 				}
 
 				subscription := convertJsonToNrMeasRepUeSubscription(jsonInfo)
-				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
 				var notif NrMeasRepUeNotification
 				notif.NotificationType = NR_MEAS_REP_UE_NOTIFICATION
@@ -1594,8 +1999,13 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 				notif.AssociateId = append(notif.AssociateId, *assocId)
 
+				//4G and 5G neighbours information are mutually exclusive
+				//If at least one 5G neighbor exist, only report 5G
+				report5GNeighborOnly := false
+
 				strongestRsrp := int32(0)
 				//adding the data of all reachable cells
+				parentMeasExists := false
 				for _, poa := range ueData.InRangePoas {
 					if poa.Name == ueData.ParentPoaName {
 						var measQuantityResultsNr MeasQuantityResultsNr
@@ -1604,6 +2014,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						var nrMeasRepUeNotificationSCell NrMeasRepUeNotificationSCell
 						nrMeasRepUeNotificationSCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
 						notif.ServCellMeasInfo[0].SCell = &nrMeasRepUeNotificationSCell
+						parentMeasExists = true
 					} else {
 						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
 						if jsonInfo == "" {
@@ -1630,6 +2041,8 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 							}
 
 							notif.NrNeighCellMeasInfo = append(notif.NrNeighCellMeasInfo, neighborCell)
+							report5GNeighborOnly = true
+
 						case poaType4G:
 							var neighborCell NrMeasRepUeNotificationEutraNeighCellMeasInfo
 							neighborCell.Rsrp = poa.Rsrp
@@ -1641,9 +2054,16 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 					}
 				}
+				if report5GNeighborOnly {
+					notif.EutraNeighCellMeasInfo = nil
+				}
 
-				go sendNrMrNotification(subscription.CallbackReference, notif)
-				log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				if parentMeasExists {
+					log.Info("Sending RNIS notification ", subscription.CallbackReference)
+					callbackReference := subscription.CallbackReference
+					go sendNrMrNotification(callbackReference, notif)
+					log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+				}
 			}
 		}
 	}
@@ -1943,6 +2363,12 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if subscription.FilterCriteriaQci.Qci == 0 {
+			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
+
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
@@ -1971,6 +2397,18 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
 			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+
+		if subscription.FilterCriteriaQci.Qci == 0 {
+			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			return
+		}
+
+		if subscription.FilterCriteriaQci.ErabId == 0 {
+			log.Error("Missing or non valid value of 0 mandatory ErabId parameter in FilterCriteriaQci")
+			http.Error(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
 			return
 		}
 
@@ -2021,6 +2459,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 				supportedTriggerAlreadyPresent = true
 			}
 		}
+
 		if !supportedTriggerAlreadyPresent {
 			subscription.FilterCriteriaAssocTri.Trigger = append(subscription.FilterCriteriaAssocTri.Trigger, TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS)
 		}
@@ -2786,51 +3225,7 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 		return nil
 	}
 
-	//name of the element is used as the ipv4 address at the moment
-	partOfFilter = true
-	for _, address := range data.queryIpv4Addresses {
-		if address != "" {
-			partOfFilter = false
-			if address == ueData.Name {
-				partOfFilter = true
-				break
-			}
-		}
-	}
-	if !partOfFilter {
-		return nil
-	}
-
 	found := false
-
-	//find if cellUeInfo already exists
-	var cellUeIndex int
-	assocId := new(AssociateId)
-	assocId.Type_ = 1 //UE_IPV4_ADDRESS
-	subKeys := strings.Split(key, ":")
-	assocId.Value = subKeys[len(subKeys)-1]
-
-	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
-		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
-			found = true
-			cellUeIndex = index
-		}
-	}
-	if !found {
-		newCellUeInfo := new(L2MeasCellUeInfo)
-		newEcgi := new(Ecgi)
-		newPlmn := new(Plmn)
-		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
-		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
-		newEcgi.Plmn = newPlmn
-		newEcgi.CellId = ueData.Ecgi.CellId
-
-		newCellUeInfo.Ecgi = newEcgi
-		newCellUeInfo.AssociateId = assocId
-
-		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
-		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
-	}
 
 	//find if cellInfo already exists
 	var cellIndex int
@@ -2917,6 +3312,52 @@ func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
 	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeUlNongbrCell++
 	data.l2Meas.CellInfo[cellIndex].DlNongbrPdrCell = poaPacketLoss
 	data.l2Meas.CellInfo[cellIndex].UlNongbrPdrCell = poaPacketLoss
+
+	//name of the element is used as the ipv4 address at the moment
+	partOfFilter = true
+	for _, address := range data.queryIpv4Addresses {
+		if address != "" {
+			partOfFilter = false
+			if address == ueData.Name {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	found = false
+
+	//find if cellUeInfo already exists
+	var cellUeIndex int
+	assocId := new(AssociateId)
+	assocId.Type_ = 1 //UE_IPV4_ADDRESS
+	subKeys := strings.Split(key, ":")
+	assocId.Value = subKeys[len(subKeys)-1]
+
+	for index, currentCellUeInfo := range data.l2Meas.CellUEInfo {
+		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
+			found = true
+			cellUeIndex = index
+		}
+	}
+	if !found {
+		newCellUeInfo := new(L2MeasCellUeInfo)
+		newEcgi := new(Ecgi)
+		newPlmn := new(Plmn)
+		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
+		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
+		newEcgi.Plmn = newPlmn
+		newEcgi.CellId = ueData.Ecgi.CellId
+
+		newCellUeInfo.Ecgi = newEcgi
+		newCellUeInfo.AssociateId = assocId
+
+		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
+		cellUeIndex = len(data.l2Meas.CellUEInfo) - 1
+	}
 
 	//update ueInfo delay
 	//delay is the latency between air interface (POA<->UE)
@@ -3352,7 +3793,11 @@ func updateStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
 
-		err := httpLog.ReInit(logModuleRNIS, sandboxName, storeName, redisAddr, influxAddr)
+		logComponent := moduleName
+		if mepName != defaultMepName {
+			logComponent = moduleName + "-" + mepName
+		}
+		err := httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 		if err != nil {
 			log.Error("Failed to initialise httpLog: ", err)
 			return

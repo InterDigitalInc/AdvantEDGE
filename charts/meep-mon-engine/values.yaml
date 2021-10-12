@@ -8,7 +8,10 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
 
 affinity:
   nodeAffinity:
@@ -23,6 +26,7 @@ image:
   tag: latest
   pullPolicy: Always
   env:
+    MEEP_SVC_PATH: /mon-engine/v1
     # Provide comma-separated list of expected pods to be monitored
     MEEP_DEPENDENCY_PODS: ""
     MEEP_CORE_PODS: ""
@@ -54,5 +58,6 @@ prometheus:
     
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-mon-engine"
 
 meepOrigin: core

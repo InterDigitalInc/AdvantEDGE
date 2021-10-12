@@ -16,6 +16,11 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**getActiveScenarioProcess**](Apis/ActiveScenarioApi.md#getactivescenarioprocess) | **GET** /active/processes | Get process elements from the deployed scenario
 *ActiveScenarioApi* | [**getActiveScenarioZone**](Apis/ActiveScenarioApi.md#getactivescenariozone) | **GET** /active/zones | Get zone elements from the deployed scenario
 *ActiveScenarioApi* | [**terminateScenario**](Apis/ActiveScenarioApi.md#terminatescenario) | **DELETE** /active | Terminate the deployed scenario
+*ApplicationsApi* | [**applicationsAppInstanceIdDELETE**](Apis/ApplicationsApi.md#applicationsappinstanceiddelete) | **DELETE** /applications/{appInstanceId} | This method deletes a mec application resource.
+*ApplicationsApi* | [**applicationsAppInstanceIdGET**](Apis/ApplicationsApi.md#applicationsappinstanceidget) | **GET** /applications/{appInstanceId} | This method retrieves information about a mec application resource.
+*ApplicationsApi* | [**applicationsAppInstanceIdPUT**](Apis/ApplicationsApi.md#applicationsappinstanceidput) | **PUT** /applications/{appInstanceId} | This method updates the information about a mec application resource.
+*ApplicationsApi* | [**applicationsGET**](Apis/ApplicationsApi.md#applicationsget) | **GET** /applications | This method retrieves information about a list of mec application resources.
+*ApplicationsApi* | [**applicationsPOST**](Apis/ApplicationsApi.md#applicationspost) | **POST** /applications | This method is used to create a mec application resource.
 *ConnectivityApi* | [**createPduSession**](Apis/ConnectivityApi.md#createpdusession) | **POST** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
 *ConnectivityApi* | [**getPduSessionList**](Apis/ConnectivityApi.md#getpdusessionlist) | **GET** /connectivity/pdu-session | Get list of PDU Sessions
 *ConnectivityApi* | [**terminatePduSession**](Apis/ConnectivityApi.md#terminatepdusession) | **DELETE** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
@@ -36,6 +41,9 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [ActivationInfo](./Models/ActivationInfo.md)
+ - [ApplicationInfo](./Models/ApplicationInfo.md)
+ - [ApplicationState](./Models/ApplicationState.md)
+ - [ApplicationType](./Models/ApplicationType.md)
  - [CellularDomainConfig](./Models/CellularDomainConfig.md)
  - [CellularPoaConfig](./Models/CellularPoaConfig.md)
  - [ConnectivityConfig](./Models/ConnectivityConfig.md)

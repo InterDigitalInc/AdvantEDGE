@@ -35,11 +35,16 @@ const (
 )
 
 const (
+	fieldDistance  = "dist"
 	fieldLatitude  = "lat"
 	fieldLongitude = "long"
+	fieldDest      = "dest"
+	fieldDestType  = "destType"
 	fieldRssi      = "rssi"
 	fieldRsrp      = "rsrp"
 	fieldRsrq      = "rsrq"
+	fieldSrc       = "src"
+	fieldSrcType   = "srcType"
 )
 
 const (
@@ -58,9 +63,10 @@ type UeMeasurement struct {
 }
 
 type Measurement struct {
-	Rssi float32
-	Rsrp float32
-	Rsrq float32
+	Rssi     float32
+	Rsrp     float32
+	Rsrq     float32
+	Distance float32
 }
 
 type GisCache struct {
@@ -104,6 +110,28 @@ func (gc *GisCache) SetPosition(typ string, name string, position *Position) err
 		return err
 	}
 	return nil
+}
+
+// GetPosition - Get entry in DB
+// supports wildcards
+func (gc *GisCache) GetPosition(typ string, name string) (*Position, error) {
+	key := gc.baseKey + posKey + typ + ":" + name
+
+	// Create position map
+	positionMap := make(map[string]*Position)
+
+	// Get all position entry details
+	err := gc.rc.ForEachEntry(key, getPosition, &positionMap)
+	if err != nil {
+		log.Error("Failed to get all entries with error: ", err.Error())
+		return nil, err
+	}
+
+	// only one result, so return the first one
+	for _, position := range positionMap {
+		return position, nil
+	}
+	return nil, nil
 }
 
 // GetAllPositions - Return positions with provided type
@@ -153,14 +181,19 @@ func (gc *GisCache) DelPosition(typ string, name string) {
 }
 
 // SetMeasurement - Create or update entry in DB
-func (gc *GisCache) SetMeasurement(ue string, poa string, meas *Measurement) error {
-	key := gc.baseKey + measKey + ue + ":" + poa
+func (gc *GisCache) SetMeasurement(src string, srcType string, dest string, destType string, meas *Measurement) error {
+	key := gc.baseKey + measKey + src + ":" + dest
 
 	// Prepare data
 	fields := make(map[string]interface{})
+	fields[fieldSrc] = src
+	fields[fieldSrcType] = srcType
+	fields[fieldDest] = dest
+	fields[fieldDestType] = destType
 	fields[fieldRssi] = fmt.Sprintf("%f", meas.Rssi)
 	fields[fieldRsrp] = fmt.Sprintf("%f", meas.Rsrp)
 	fields[fieldRsrq] = fmt.Sprintf("%f", meas.Rsrq)
+	fields[fieldDistance] = fmt.Sprintf("%f", meas.Distance)
 
 	// Update entry in DB
 	err := gc.rc.SetEntry(key, fields)
@@ -214,6 +247,9 @@ func getMeasurement(key string, fields map[string]string, userData interface{}) 
 	}
 	if rsrq, err := strconv.ParseFloat(fields[fieldRsrq], 32); err == nil {
 		meas.Rsrq = float32(rsrq)
+	}
+	if distance, err := strconv.ParseFloat(fields[fieldDistance], 32); err == nil {
+		meas.Distance = float32(distance)
 	}
 
 	// Add measurement to map

@@ -24,22 +24,27 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
 const moduleName string = "meep-rnis-sbi"
 
 type UeDataSbi struct {
-	Name         string
-	Mnc          string
-	Mcc          string
-	CellId       string
-	NrCellId     string
-	ErabIdValid  bool
-	AppNames     []string
-	Latency      int32
-	ThroughputUL int32
-	ThroughputDL int32
-	PacketLoss   float64
+	Name          string
+	Mnc           string
+	Mcc           string
+	CellId        string
+	NrCellId      string
+	ErabIdValid   bool
+	AppNames      []string
+	Latency       int32
+	ThroughputUL  int32
+	ThroughputDL  int32
+	PacketLoss    float64
+	ParentPoaName string
+	InRangePoas   []string
+	InRangeRsrps  []int32
+	InRangeRsrqs  []int32
 }
 
 type PoaInfoSbi struct {
@@ -65,8 +70,11 @@ type AppInfoSbi struct {
 }
 
 type SbiCfg struct {
+	ModuleName     string
 	SandboxName    string
+	MepName        string
 	RedisAddr      string
+	Locality       []string
 	UeDataCb       func(UeDataSbi)
 	MeasInfoCb     func(string, string, []string, []int32, []int32)
 	PoaInfoCb      func(PoaInfoSbi)
@@ -77,9 +85,14 @@ type SbiCfg struct {
 }
 
 type RnisSbi struct {
+	moduleName           string
 	sandboxName          string
+	mepName              string
+	localityEnabled      bool
+	locality             map[string]bool
 	mqLocal              *mq.MsgQueue
 	handlerId            int
+	apiMgr               *sam.SwaggerApiMgr
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
@@ -102,7 +115,9 @@ func Init(cfg SbiCfg) (err error) {
 		sbi = nil
 	}
 	sbi = new(RnisSbi)
+	sbi.moduleName = cfg.ModuleName
 	sbi.sandboxName = cfg.SandboxName
+	sbi.mepName = cfg.MepName
 	sbi.updateUeDataCB = cfg.UeDataCb
 	sbi.updateMeasInfoCB = cfg.MeasInfoCb
 	sbi.updatePoaInfoCB = cfg.PoaInfoCb
@@ -111,13 +126,32 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
 
+	// Fill locality map
+	if len(cfg.Locality) > 0 {
+		sbi.locality = make(map[string]bool)
+		for _, locality := range cfg.Locality {
+			sbi.locality[locality] = true
+		}
+		sbi.localityEnabled = true
+	} else {
+		sbi.localityEnabled = false
+	}
+
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), sbi.moduleName, sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	sbi.apiMgr, err = sam.NewSwaggerApiMgr(sbi.moduleName, sbi.sandboxName, sbi.mepName, sbi.mqLocal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
 
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
@@ -150,6 +184,22 @@ func Init(cfg SbiCfg) (err error) {
 // Run - MEEP RNIS execution
 func Run() (err error) {
 
+	// Start Swagger API Manager (provider)
+	err = sbi.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = sbi.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
 	sbi.handlerId, err = sbi.mqLocal.RegisterHandler(handler)
@@ -165,10 +215,26 @@ func Run() (err error) {
 }
 
 func Stop() (err error) {
+	if sbi == nil {
+		return
+	}
+
 	// Stop refresh loop
 	stopRefreshTicker()
 
-	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	if sbi.mqLocal != nil {
+		sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	}
+
+	if sbi.apiMgr != nil {
+		// Remove APIs
+		err = sbi.apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -223,14 +289,16 @@ func processActiveScenarioUpdate() {
 	prevUeNames := []string{}
 	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range prevUeNameList {
-		if isUeConnected(name) {
+		// Make sure UE is in Locality
+		if isUeConnected(name) && isInLocality(name) {
 			prevUeNames = append(prevUeNames, name)
 		}
 	}
 	prevApps := []string{}
 	prevAppList := sbi.activeModel.GetNodeNames("UE-APP", "EDGE-APP")
 	for _, app := range prevAppList {
-		if isAppConnected(app) {
+		// Make sure App is in Locality
+		if isAppConnected(app) && isInLocality(app) {
 			prevApps = append(prevApps, app)
 		}
 	}
@@ -260,86 +328,91 @@ func processActiveScenarioUpdate() {
 	// Update UE info
 	ueNames := []string{}
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
-	for _, name := range ueNameList {
-		// Ignore disconnected UEs
-		if !isUeConnected(name) {
-			continue
-		}
-		ueNames = append(ueNames, name)
-		ueParent := sbi.activeModel.GetNodeParent(name)
-		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
-			poaParent := sbi.activeModel.GetNodeParent(poa.Name)
-			if zone, ok := poaParent.(*dataModel.Zone); ok {
-				zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
-				if domain, ok := zoneParent.(*dataModel.Domain); ok {
-					mnc := ""
-					mcc := ""
-					cellId := ""
-					nrcellId := ""
-					erabIdValid := false
-					if domain.CellularDomainConfig != nil {
-						mnc = domain.CellularDomainConfig.Mnc
-						mcc = domain.CellularDomainConfig.Mcc
-						cellId = domain.CellularDomainConfig.DefaultCellId
-					}
-					switch poa.Type_ {
-					case mod.NodeTypePoa4G:
-						//using the default cellId if no poa4GConfig is set
-						if poa.Poa4GConfig != nil {
-							if poa.Poa4GConfig.CellId != "" {
-								cellId = poa.Poa4GConfig.CellId
-							}
+
+	//get all measurements to update without waiting for ticker
+	if len(ueNameList) > 0 {
+		for _, name := range ueNameList {
+			// Ignore disconnected UEs
+			if !isUeConnected(name) || !isInLocality(name) {
+				continue
+			}
+			ueNames = append(ueNames, name)
+			ueParent := sbi.activeModel.GetNodeParent(name)
+			if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
+				poaParent := sbi.activeModel.GetNodeParent(poa.Name)
+				if zone, ok := poaParent.(*dataModel.Zone); ok {
+					zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
+					if domain, ok := zoneParent.(*dataModel.Domain); ok {
+						mnc := ""
+						mcc := ""
+						cellId := ""
+						nrcellId := ""
+						erabIdValid := false
+						if domain.CellularDomainConfig != nil {
+							mnc = domain.CellularDomainConfig.Mnc
+							mcc = domain.CellularDomainConfig.Mcc
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
-						erabIdValid = true
-					/*no support for RNIS on 5G elements anymore, but need the info for meas_rep_ue*/
-					case mod.NodeTypePoa5G:
-						//clearing the cellId filled by the domain since it does not apply to 5G elements
-						cellId = ""
-						if poa.Poa5GConfig != nil {
-							if poa.Poa5GConfig.CellId != "" {
-								nrcellId = poa.Poa5GConfig.CellId
+						switch poa.Type_ {
+						case mod.NodeTypePoa4G:
+							//using the default cellId if no poa4GConfig is set
+							if poa.Poa4GConfig != nil {
+								if poa.Poa4GConfig.CellId != "" {
+									cellId = poa.Poa4GConfig.CellId
+								}
 							}
+							erabIdValid = true
+						/*no support for RNIS on 5G elements anymore, but need the info for meas_rep_ue*/
+						case mod.NodeTypePoa5G:
+							//clearing the cellId filled by the domain since it does not apply to 5G elements
+							cellId = ""
+							if poa.Poa5GConfig != nil {
+								if poa.Poa5GConfig.CellId != "" {
+									nrcellId = poa.Poa5GConfig.CellId
+								}
+							}
+						default:
+							//empty cells for POAs not supporting RNIS
+							cellId = ""
 						}
-					default:
-						//empty cells for POAs not supporting RNIS
-						cellId = ""
-					}
 
-					node := sbi.activeModel.GetNode(name)
-					ue := node.(*dataModel.PhysicalLocation)
+						node := sbi.activeModel.GetNode(name)
+						ue := node.(*dataModel.PhysicalLocation)
 
-					node = sbi.activeModel.GetNodeChild(name)
-					apps := node.(*[]dataModel.Process)
+						node = sbi.activeModel.GetNodeChild(name)
+						apps := node.(*[]dataModel.Process)
 
-					var appNames []string
-					for _, process := range *apps {
-						appNames = append(appNames, process.Name)
-					}
-					latency := int32(0)
-					ploss := float64(0.0)
-					throughputDL := int32(0)
-					throughputUL := int32(0)
-					if ue.NetChar != nil {
-						latency = ue.NetChar.Latency
-						ploss = ue.NetChar.PacketLoss
-						throughputDL = ue.NetChar.ThroughputDl
-						throughputUL = ue.NetChar.ThroughputUl
-					}
+						var appNames []string
+						for _, process := range *apps {
+							appNames = append(appNames, process.Name)
+						}
+						latency := int32(0)
+						ploss := float64(0.0)
+						throughputDL := int32(0)
+						throughputUL := int32(0)
+						if ue.NetChar != nil {
+							latency = ue.NetChar.Latency
+							ploss = ue.NetChar.PacketLoss
+							throughputDL = ue.NetChar.ThroughputDl
+							throughputUL = ue.NetChar.ThroughputUl
+						}
 
-					var ueDataSbi = UeDataSbi{
-						Name:         name,
-						Mnc:          mnc,
-						Mcc:          mcc,
-						CellId:       cellId,
-						NrCellId:     nrcellId,
-						ErabIdValid:  erabIdValid,
-						AppNames:     appNames,
-						Latency:      latency,
-						ThroughputUL: throughputUL,
-						ThroughputDL: throughputDL,
-						PacketLoss:   ploss,
+						var ueDataSbi = UeDataSbi{
+							Name:          name,
+							Mnc:           mnc,
+							Mcc:           mcc,
+							CellId:        cellId,
+							NrCellId:      nrcellId,
+							ErabIdValid:   erabIdValid,
+							AppNames:      appNames,
+							Latency:       latency,
+							ThroughputUL:  throughputUL,
+							ThroughputDL:  throughputDL,
+							PacketLoss:    ploss,
+							ParentPoaName: poa.Name,
+						}
+						sbi.updateUeDataCB(ueDataSbi)
 					}
-					sbi.updateUeDataCB(ueDataSbi)
 				}
 			}
 		}
@@ -376,8 +449,8 @@ func processActiveScenarioUpdate() {
 	for _, appName := range appNameList {
 		meAppParent := sbi.activeModel.GetNodeParent(appName)
 		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {
-			// Ignore disconnected apps
-			if !pl.Connected {
+			// Ignore disconnected UEs
+			if !isUeConnected(pl.Name) || !isInLocality(appName) {
 				continue
 			}
 			appNames = append(appNames, appName)
@@ -427,6 +500,11 @@ func processActiveScenarioUpdate() {
 	// Update POA Cellular and Wifi info
 	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa)
 	for _, name := range poaNameList {
+		// Ignore POAs not in locality
+		if !isInLocality(name) {
+			continue
+		}
+
 		node := sbi.activeModel.GetNode(name)
 		if node != nil {
 			nl := node.(*dataModel.NetworkLocation)
@@ -487,8 +565,9 @@ func refreshMeasurements() {
 	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+
 		// Ignore disconnected UEs
-		if !isUeConnected(name) {
+		if !isUeConnected(name) || !isInLocality(name) {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
 			continue
 		}
@@ -542,4 +621,18 @@ func isAppConnected(app string) bool {
 		return pl.Connected
 	}
 	return false
+}
+
+func isInLocality(name string) bool {
+	if sbi.localityEnabled {
+		ctx := sbi.activeModel.GetNodeContext(name)
+		if ctx == nil {
+			log.Error("Error getting context for: " + name)
+			return false
+		}
+		if _, found := sbi.locality[ctx.Parents[mod.Zone]]; !found {
+			return false
+		}
+	}
+	return true
 }

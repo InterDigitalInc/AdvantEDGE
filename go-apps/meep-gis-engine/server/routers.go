@@ -44,9 +44,10 @@ type Route struct {
 type Routes []Route
 
 func NewRouter() *mux.Router {
+	var handler http.Handler
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
+		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		handler = met.MetricsHandler(handler, ge.sandboxName, serviceName)
 		router.
@@ -55,6 +56,20 @@ func NewRouter() *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
+
+	// Path prefix router order is important
+	// Service Api files
+	handler = http.StripPrefix("/gis/v1/api/", http.FileServer(http.Dir("./api/")))
+	router.
+		PathPrefix("/gis/v1/api/").
+		Name("Api").
+		Handler(handler)
+	// User supplied service API files
+	handler = http.StripPrefix("/gis/v1/user-api/", http.FileServer(http.Dir("./user-api/")))
+	router.
+		PathPrefix("/gis/v1/user-api/").
+		Name("UserApi").
+		Handler(handler)
 
 	return router
 }
@@ -107,10 +122,24 @@ var routes = Routes{
 	},
 
 	Route{
+		"GetDistanceGeoDataByName",
+		strings.ToUpper("Post"),
+		"/gis/v1/geodata/{assetName}/distanceTo",
+		GetDistanceGeoDataByName,
+	},
+
+	Route{
 		"GetGeoDataByName",
 		strings.ToUpper("Get"),
 		"/gis/v1/geodata/{assetName}",
 		GetGeoDataByName,
+	},
+
+	Route{
+		"GetWithinRangeByName",
+		strings.ToUpper("Post"),
+		"/gis/v1/geodata/{assetName}/withinRange",
+		GetWithinRangeByName,
 	},
 
 	Route{

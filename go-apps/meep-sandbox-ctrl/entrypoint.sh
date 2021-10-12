@@ -3,8 +3,14 @@ set -e
 
 echo "MEEP_HOST_URL: ${MEEP_HOST_URL}"
 echo "MEEP_SANDBOX_NAME: ${MEEP_SANDBOX_NAME}"
+echo "MEEP_MEP_NAME: ${MEEP_MEP_NAME}"
 echo "USER_SWAGGER: ${USER_SWAGGER}"
-echo "USER_SWAGGER_SANDBOX: ${USER_SWAGGER_SANDBOX}"
+
+if [[ ! -z "${MEEP_MEP_NAME}" ]]; then
+    svcPath="${MEEP_SANDBOX_NAME}/${MEEP_MEP_NAME}"
+else
+    svcPath="${MEEP_SANDBOX_NAME}"
+fi
 
 # Update API yaml basepaths to enable "Try-it-out" feature
 # OAS2: Set relative path to sandbox name + endpoint path (origin will be derived from browser URL)
@@ -12,29 +18,32 @@ echo "USER_SWAGGER_SANDBOX: ${USER_SWAGGER_SANDBOX}"
 setBasepath() {
     # OAS3
     hostName=$(echo "${MEEP_HOST_URL}" | sed -E 's/^\s*.*:\/\///g')
-    #newHostName=${hostName}/${MEEP_SANDBOX_NAME}
-    echo "Replacing [localhost] with ${hostName} to url in: $1"
-    sed -i "s,localhost,${hostName},g" $1;
+    echo "Replacing [localhost] with ${hostName} to url in: '$1'"
+    sed -i "s,localhost,${hostName},g" "$1";
 
     # OAS2 and OAS3
-    echo "Replacing [sandboxname] with ${MEEP_SANDBOX_NAME} to basepath or url in: $1"
-    #sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $1;
-    sed -i "s,sandboxname,${MEEP_SANDBOX_NAME},g" $1;
+    echo "Replacing [sandboxname] with ${svcPath} to basepath or url in: '$1'"
+    sed -i "s,sandboxname,${svcPath},g" "$1";
 }
 
-# Set baspath for AdvantEDGE Swagger API files
-for file in /swagger/*-api.yaml; do
-    setBasepath $file
+# Set basepath for API files
+for file in /api/*; do
+    if [[ ! -e "$file" ]]; then continue; fi
+    setBasepath "$file"
 done
 
-# Set baspath for User-provided Swagger API files
+# Set basepath for user-supplied API files
+for file in /user-api/*; do
+    if [[ ! -e "$file" ]]; then continue; fi
+    setBasepath "$file"
+done
+
+# Create a user Swagger UI copy if enabled
 if [[ ! -z "${USER_SWAGGER}" ]]; then
-    cp -r ${USER_SWAGGER} ${USER_SWAGGER_SANDBOX}
-    shopt -s nullglob
-    for file in ${USER_SWAGGER_SANDBOX}/*-api.yaml; do
-        setBasepath $file
-    done
+    swaggerDir="/swagger"
+    userSwaggerDir="/user-swagger"
+    cp -r ${swaggerDir} ${userSwaggerDir}
 fi
 
-# Start virt engine
+# Start service
 exec /meep-sandbox-ctrl

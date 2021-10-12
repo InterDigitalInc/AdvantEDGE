@@ -8,7 +8,10 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
 
 image:
   repository: meep-docker-registry:30001/meep-gis-engine
@@ -16,6 +19,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    MEEP_SVC_PATH: /gis/v1
 
 service:
   name: meep-gis-engine
@@ -50,6 +54,7 @@ prometheus:
     
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-gis-engine"
 
 meepOrigin: core
 

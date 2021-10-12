@@ -5,6 +5,7 @@ All URIs are relative to *https://localhost/sandboxname/rni/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**Layer2MeasInfoGET**](RniApi.md#Layer2MeasInfoGET) | **Get** /queries/layer2_meas | Retrieve information on layer 2 measurements
+[**Mec011AppTerminationPOST**](RniApi.md#Mec011AppTerminationPOST) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 [**PlmnInfoGET**](RniApi.md#PlmnInfoGET) | **Get** /queries/plmn_info | Retrieve information on the underlying Mobile Network that the MEC application is associated to
 [**RabInfoGET**](RniApi.md#RabInfoGET) | **Get** /queries/rab_info | Retrieve information on Radio Access Bearers
 [**SubscriptionLinkListSubscriptionsGET**](RniApi.md#SubscriptionLinkListSubscriptionsGET) | **Get** /subscriptions | Retrieve information on subscriptions for notifications
@@ -87,8 +88,36 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **Mec011AppTerminationPOST**
+> Mec011AppTerminationPOST(ctx, body)
+MEC011 Application Termination notification for self termination
+
+Terminates itself.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**AppTerminationNotification**](AppTerminationNotification.md)| Termination notification details | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **PlmnInfoGET**
-> PlmnInfo PlmnInfoGET(ctx, appInsId)
+> []PlmnInfo PlmnInfoGET(ctx, appInsId)
 Retrieve information on the underlying Mobile Network that the MEC application is associated to
 
 Queries information about the Mobile Network
@@ -102,7 +131,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**PlmnInfo**](PlmnInfo.md)
+[**[]PlmnInfo**](PlmnInfo.md)
 
 ### Authorization
 

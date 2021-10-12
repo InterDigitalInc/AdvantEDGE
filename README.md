@@ -1,14 +1,16 @@
-![AdvantEDGE-logo](https://github.com/InterDigitalInc/AdvantEDGE/wiki/images/AdvantEDGE-logo_Blue-01.png)
+![AdvantEDGE-logo](https://github.com/InterDigitalInc/AdvantEDGE/blob/gh-pages/assets/images/AdvantEDGE-logo_Blue-01.png)
 
 ------
 
-**_What's New!_** 
+**_What's New in v1.8.0!_**
 
-:zap: **v1.7.0 cool features :sunglasses: :point_right: [**process lifecycle API**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-features#process-lifecycle) and [**cellular connectivity API**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-features#cellular-connectivity-control) - open-up new edge experiments**
+:zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service) to boost up your edge apps! :rocket:**
 
-:zap:  **Wiki refresh was overdue :shamrock: Hope the :sparkles: new structure & [**Sitemap**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/project-sitemap) :sparkles: make it easier to navigate**
+:zap: **Improved metrics & storage with :earth_americas: [Geospatial network KPIs](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#geospatial-subsystem) and :card_file_box: [Metrics long-term storage](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#monitoring-subsystem)**
 
-:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [:octocat: **Discussion**](https://github.com/InterDigitalInc/AdvantEDGE/discussions)**
+:zap: **General Maintenance fixes :hammer_and_wrench:**
+
+:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
 ------
 
@@ -37,13 +39,13 @@ AdvantEDGE provides an emulation environment, enabling experimentation with Edge
 
 ## Getting started
 
-[:one: :heavy_minus_sign: **Familiarize with Architecture and Features**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/overview-architecture)
+[:one: :heavy_minus_sign: **Familiarize with Architecture and Features**](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/overview-architecture)
 
-[:two: :heavy_minus_sign: **Setup environment**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/env-hw)
+[:two: :heavy_minus_sign: **Setup environment**](https://interdigitalinc.github.io/AdvantEDGE/docs/setup/env-hw)
 
-[:three: :heavy_minus_sign: **Deploy platform**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/mgmt-workflow)
+[:three: :heavy_minus_sign: **Deploy platform**](https://interdigitalinc.github.io/AdvantEDGE/docs/platform-mgmt/mgmt-workflow)
 
-[:four: :heavy_minus_sign: **Start using AdvantEDGE**](https://github.com/InterDigitalInc/AdvantEDGE/wiki/usage-workflow)
+[:four: :heavy_minus_sign: **Start using AdvantEDGE**](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-workflow)
 
 ## How to Contribute
 If you like this project and would like to participate in its evolution, you can find information on contributing [**here**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md)

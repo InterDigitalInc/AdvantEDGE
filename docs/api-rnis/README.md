@@ -8,6 +8,7 @@ All URIs are relative to *https://localhost/sandboxname/rni/v2*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *RniApi* | [**layer2MeasInfoGET**](Apis/RniApi.md#layer2measinfoget) | **GET** /queries/layer2_meas | Retrieve information on layer 2 measurements
+*RniApi* | [**mec011AppTerminationPOST**](Apis/RniApi.md#mec011appterminationpost) | **POST** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 *RniApi* | [**plmnInfoGET**](Apis/RniApi.md#plmninfoget) | **GET** /queries/plmn_info | Retrieve information on the underlying Mobile Network that the MEC application is associated to
 *RniApi* | [**rabInfoGET**](Apis/RniApi.md#rabinfoget) | **GET** /queries/rab_info | Retrieve information on Radio Access Bearers
 *RniApi* | [**subscriptionLinkListSubscriptionsGET**](Apis/RniApi.md#subscriptionlinklistsubscriptionsget) | **GET** /subscriptions | Retrieve information on subscriptions for notifications
@@ -21,6 +22,8 @@ Class | Method | HTTP request | Description
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
+ - [AppTerminationNotification](./Models/AppTerminationNotification.md)
+ - [AppTerminationNotificationLinks](./Models/AppTerminationNotificationLinks.md)
  - [AssociateId](./Models/AssociateId.md)
  - [CaReconfNotification](./Models/CaReconfNotification.md)
  - [CaReconfNotificationCarrierAggregationMeasInfo](./Models/CaReconfNotificationCarrierAggregationMeasInfo.md)
@@ -65,6 +68,7 @@ Class | Method | HTTP request | Description
  - [NrMeasRepUeNotificationServCellMeasInfo](./Models/NrMeasRepUeNotificationServCellMeasInfo.md)
  - [NrMeasRepUeSubscription](./Models/NrMeasRepUeSubscription.md)
  - [NrMeasRepUeSubscriptionFilterCriteriaNrMrs](./Models/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md)
+ - [OperationActionType](./Models/OperationActionType.md)
  - [Plmn](./Models/Plmn.md)
  - [PlmnInfo](./Models/PlmnInfo.md)
  - [ProblemDetails](./Models/ProblemDetails.md)

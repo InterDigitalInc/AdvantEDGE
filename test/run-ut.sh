@@ -8,6 +8,7 @@ GOAPPS=(
     meep-loc-serv/server
     meep-rnis/server
     meep-wais/server
+    meep-ams/server
 )
 
 GOPKGS=(

@@ -159,6 +159,7 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/docker-registry")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/grafana")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/minio")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine/user-charts")
@@ -186,12 +187,16 @@ func deployCore(cobraCmd *cobra.Command) {
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
+		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+		httpsOnly := utils.RepoCfg.GetBool("repo.deployment.ingress.https-only")
 		flags := deployRunScriptsAndGetFlags(app, chart, cobraCmd)
 
 		// Set core flags
 		coreFlags := utils.HelmFlags(flags, "--set", "image.repository="+deployData.registry+"/"+app)
 		coreFlags = utils.HelmFlags(coreFlags, "--set", "image.tag="+deployData.tag)
 		if deployData.codecov && codecov {
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV='true'")
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV_LOCATION="+deployData.workdir+"/codecov/")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.location="+deployData.workdir+"/codecov/"+app)
 		}
@@ -202,7 +207,11 @@ func deployCore(cobraCmd *cobra.Command) {
 		if userSwagger {
 			// deployment level flag - not all apps use it
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.enabled=true")
-			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.location="+deployData.workdir+"/user/swagger")
+		}
+		if httpsOnly {
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
+		} else {
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
 		}
 
 		k8sDeploy(app, chart, coreFlags, cobraCmd)
@@ -275,6 +284,19 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		}
 	case "meep-influxdb":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
+		backupEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.influx.enabled")
+		if backupEnabled {
+			url := utils.RepoCfg.GetString("repo.deployment.metrics.influx.url")
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.influx.secret")
+			retention := utils.RepoCfg.GetString("repo.deployment.metrics.influx.retention")
+			flags = utils.HelmFlags(flags, "--set", "backup.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "backup.s3.credentialsSecret="+secret)
+			flags = utils.HelmFlags(flags, "--set", "backup.s3.endpointUrl="+url)
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.s3.credentialsSecret="+secret)
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.s3.endpointUrl="+url)
+			flags = utils.HelmFlags(flags, "--set", "backupRetention.s3.daysToRetain="+retention)
+		}
 	case "meep-ingress":
 		// Port configuration
 		hostPorts := utils.RepoCfg.GetBool("repo.deployment.ingress.host-ports")
@@ -295,11 +317,96 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
+	case "meep-minio":
+		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
+		flags = utils.HelmFlags(flags, "--set", "securityContext.runAsUser="+uid)
+		gid := utils.RepoCfg.GetString("repo.deployment.permissions.gid")
+		flags = utils.HelmFlags(flags, "--set", "securityContext.runAsGroup="+gid)
+		flags = utils.HelmFlags(flags, "--set", "securityContext.fsGroup="+gid)
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/minio/")
 	case "meep-open-map-tiles":
 		deploySetOmtConfig(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
 	case "meep-postgis":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/postgis/")
+	case "meep-prometheus":
+		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
+		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.securityContext.runAsUser="+uid)
+		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.securityContext.runAsUser="+uid)
+		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.persistentVolume.location="+deployData.workdir+"/prometheus/server/")
+		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.persistentVolume.location="+deployData.workdir+"/prometheus/alertmanager/")
+		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")
+		regionLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.region")
+		if regionLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.region="+regionLabel)
+		}
+		monitorLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.monitor")
+		if monitorLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.monitor="+monitorLabel)
+		}
+		promenvLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.promenv")
+		if promenvLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.promenv="+promenvLabel)
+		}
+		replicaLabel := utils.RepoCfg.GetString("repo.deployment.metrics.prometheus.external-labels.replica")
+		if replicaLabel != "" {
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.externalLabels.replica="+replicaLabel)
+		}
+		thanosEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.enabled")
+		if thanosEnabled {
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.secret")
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.thanos.objectStorageConfig.name="+secret)
+			flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.thanos.objectStorageConfig.key=objstore.yml")
+			flags = utils.HelmFlags(flags, "--set", "prometheus.thanosService.enabled=true")
+		}
+	case "meep-thanos":
+		thanosEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.enabled")
+		if thanosEnabled {
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.secret")
+			flags = utils.HelmFlags(flags, "--set", "existingObjstoreSecret="+secret)
+			// Query
+			queryEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.query.enabled")
+			flags = utils.HelmFlags(flags, "--set", "query.enabled="+strconv.FormatBool(queryEnabled))
+			if queryEnabled {
+				thanosArchiveEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos-archive.enabled")
+				if thanosArchiveEnabled {
+					flags = utils.HelmFlags(flags, "--set", "query.stores={dnssrv+_grpc._tcp.meep-prometheus-thanos-discovery.default.svc.cluster.local,dnssrv+_grpc._tcp.meep-thanos-archive-storegateway.default.svc.cluster.local}")
+				}
+			}
+			// Query Frontend
+			queryFrontendEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.query-frontend.enabled")
+			flags = utils.HelmFlags(flags, "--set", "queryFrontend.enabled="+strconv.FormatBool(queryFrontendEnabled))
+			// Store Gateway
+			storeGatewayEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.store-gateway.enabled")
+			flags = utils.HelmFlags(flags, "--set", "storegateway.enabled="+strconv.FormatBool(storeGatewayEnabled))
+			// Compactor
+			compactorEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos.compactor.enabled")
+			flags = utils.HelmFlags(flags, "--set", "compactor.enabled="+strconv.FormatBool(compactorEnabled))
+			if compactorEnabled {
+				retentionResolutionRaw := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.compactor.retention.resolution-raw")
+				if retentionResolutionRaw != "" {
+					flags = utils.HelmFlags(flags, "--set", "compactor.retentionResolutionRaw="+retentionResolutionRaw)
+				}
+				retentionResolution5m := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.compactor.retention.resolution-5m")
+				if retentionResolutionRaw != "" {
+					flags = utils.HelmFlags(flags, "--set", "compactor.retentionResolution5m="+retentionResolution5m)
+				}
+				retentionResolution1h := utils.RepoCfg.GetString("repo.deployment.metrics.thanos.compactor.retention.resolution-1h")
+				if retentionResolutionRaw != "" {
+					flags = utils.HelmFlags(flags, "--set", "compactor.retentionResolution1h="+retentionResolution1h)
+				}
+			}
+		}
+	case "meep-thanos-archive":
+		thanosArchiveEnabled := utils.RepoCfg.GetBool("repo.deployment.metrics.thanos-archive.enabled")
+		if thanosArchiveEnabled {
+			secret := utils.RepoCfg.GetString("repo.deployment.metrics.thanos-archive.secret")
+			flags = utils.HelmFlags(flags, "--set", "existingObjstoreSecret="+secret)
+			flags = utils.HelmFlags(flags, "--set", "query.enabled=false")
+			flags = utils.HelmFlags(flags, "--set", "queryFrontend.enabled=false")
+			flags = utils.HelmFlags(flags, "--set", "storegateway.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "compactor.enabled=false")
+		}
 
 	// Core pods
 	case "meep-auth-svc":
@@ -307,8 +414,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		if sessionKeySecret != "" {
 			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_SESSION_KEY.name="+sessionKeySecret)
 		}
-		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
 		maxSessions := utils.RepoCfg.GetString("repo.deployment.auth.session.max-sessions")
 		if maxSessions != "" {
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_MAX_SESSIONS="+maxSessions)
@@ -382,19 +487,12 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_AUTH_ENABLED=\""+strconv.FormatBool(authEnabled)+"\"")
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
-		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\""+strconv.FormatBool(httpsOnly)+"\"")
-		if httpsOnly {
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
-		} else {
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
-		}
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER_DIR=\""+deployData.workdir+"/user/sandbox-swagger"+"\"")
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")
@@ -402,13 +500,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 		flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
 		flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
-	case "meep-prometheus":
-		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
-		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.securityContext.runAsUser="+uid)
-		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.securityContext.runAsUser="+uid)
-		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.persistentVolume.location="+deployData.workdir+"/prometheus/server/")
-		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.persistentVolume.location="+deployData.workdir+"/prometheus/alertmanager/")
-		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")
+	default:
 	}
 
 	return flags

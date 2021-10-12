@@ -26,7 +26,9 @@ Class | Method | HTTP request | Description
 *AutomationApi* | [**SetAutomationStateByName**](docs/AutomationApi.md#setautomationstatebyname) | **Post** /automation/{type} | Set automation state
 *GeospatialDataApi* | [**DeleteGeoDataByName**](docs/GeospatialDataApi.md#deletegeodatabyname) | **Delete** /geodata/{assetName} | Delete geospatial data
 *GeospatialDataApi* | [**GetAssetData**](docs/GeospatialDataApi.md#getassetdata) | **Get** /geodata | Get geospatial data
+*GeospatialDataApi* | [**GetDistanceGeoDataByName**](docs/GeospatialDataApi.md#getdistancegeodatabyname) | **Post** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 *GeospatialDataApi* | [**GetGeoDataByName**](docs/GeospatialDataApi.md#getgeodatabyname) | **Get** /geodata/{assetName} | Get geospatial data
+*GeospatialDataApi* | [**GetWithinRangeByName**](docs/GeospatialDataApi.md#getwithinrangebyname) | **Post** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 *GeospatialDataApi* | [**UpdateGeoDataByName**](docs/GeospatialDataApi.md#updategeodatabyname) | **Post** /geodata/{assetName} | Create/Update geospatial data
 
 
@@ -34,10 +36,14 @@ Class | Method | HTTP request | Description
 
  - [AutomationState](docs/AutomationState.md)
  - [AutomationStateList](docs/AutomationStateList.md)
+ - [Distance](docs/Distance.md)
  - [GeoData](docs/GeoData.md)
  - [GeoDataAssetList](docs/GeoDataAssetList.md)
  - [LineString](docs/LineString.md)
  - [Point](docs/Point.md)
+ - [TargetPoint](docs/TargetPoint.md)
+ - [TargetRange](docs/TargetRange.md)
+ - [WithinRange](docs/WithinRange.md)
  - [GeoDataAsset](docs/GeoDataAsset.md)
 
 

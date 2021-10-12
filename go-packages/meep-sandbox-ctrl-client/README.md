@@ -30,6 +30,11 @@ Class | Method | HTTP request | Description
 *ActiveScenarioApi* | [**GetActiveScenarioProcess**](docs/ActiveScenarioApi.md#getactivescenarioprocess) | **Get** /active/processes | Get process elements from the deployed scenario
 *ActiveScenarioApi* | [**GetActiveScenarioZone**](docs/ActiveScenarioApi.md#getactivescenariozone) | **Get** /active/zones | Get zone elements from the deployed scenario
 *ActiveScenarioApi* | [**TerminateScenario**](docs/ActiveScenarioApi.md#terminatescenario) | **Delete** /active | Terminate the deployed scenario
+*ApplicationsApi* | [**ApplicationsAppInstanceIdDELETE**](docs/ApplicationsApi.md#applicationsappinstanceiddelete) | **Delete** /applications/{appInstanceId} | 
+*ApplicationsApi* | [**ApplicationsAppInstanceIdGET**](docs/ApplicationsApi.md#applicationsappinstanceidget) | **Get** /applications/{appInstanceId} | 
+*ApplicationsApi* | [**ApplicationsAppInstanceIdPUT**](docs/ApplicationsApi.md#applicationsappinstanceidput) | **Put** /applications/{appInstanceId} | 
+*ApplicationsApi* | [**ApplicationsGET**](docs/ApplicationsApi.md#applicationsget) | **Get** /applications | 
+*ApplicationsApi* | [**ApplicationsPOST**](docs/ApplicationsApi.md#applicationspost) | **Post** /applications | 
 *ConnectivityApi* | [**CreatePduSession**](docs/ConnectivityApi.md#createpdusession) | **Post** /connectivity/pdu-session/{ueName}/{pduSessionId} | Create a PDU Session
 *ConnectivityApi* | [**GetPduSessionList**](docs/ConnectivityApi.md#getpdusessionlist) | **Get** /connectivity/pdu-session | Get list of PDU Sessions
 *ConnectivityApi* | [**TerminatePduSession**](docs/ConnectivityApi.md#terminatepdusession) | **Delete** /connectivity/pdu-session/{ueName}/{pduSessionId} | Terminate a PDU Session
@@ -49,6 +54,9 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [ActivationInfo](docs/ActivationInfo.md)
+ - [ApplicationInfo](docs/ApplicationInfo.md)
+ - [ApplicationState](docs/ApplicationState.md)
+ - [ApplicationType](docs/ApplicationType.md)
  - [CellularDomainConfig](docs/CellularDomainConfig.md)
  - [CellularPoaConfig](docs/CellularPoaConfig.md)
  - [ConnectivityConfig](docs/ConnectivityConfig.md)

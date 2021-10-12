@@ -46,6 +46,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	pcc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-platform-ctrl-client"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
@@ -67,6 +68,7 @@ const postgisUser = "postgres"
 const postgisPwd = "pwd"
 const pfmCtrlBasepath = "http://meep-platform-ctrl/platform-ctrl/v1"
 const providerModeSecure = "secure"
+const mepPrefix = "mep--"
 
 // Permission Configuration types
 type Permission struct {
@@ -89,11 +91,13 @@ type Endpoint struct {
 	Roles  map[string]string `yaml:"roles"`
 }
 type Service struct {
-	Name      string     `yaml:"name"`
-	Path      string     `yaml:"path"`
-	Sbox      bool       `yaml:"sbox"`
-	Default   Permission `yaml:"default"`
-	Endpoints []Endpoint `yaml:"endpoints"`
+	Name        string       `yaml:"name"`
+	Api         string       `yaml:"api"`
+	Path        string       `yaml:"path"`
+	Sbox        bool         `yaml:"sbox"`
+	Default     Permission   `yaml:"default"`
+	Endpoints   []Endpoint   `yaml:"endpoints"`
+	Fileservers []Fileserver `yaml:"fileservers"`
 }
 type PermissionsConfig struct {
 	Default     Permission   `yaml:"default"`
@@ -126,6 +130,7 @@ type AuthSvc struct {
 	userStore     *users.Connector
 	metricStore   *met.MetricStore
 	mqGlobal      *mq.MsgQueue
+	apiMgr        *sam.SwaggerApiMgr
 	pfmCtrlClient *pcc.APIClient
 	maxSessions   int
 	uri           string
@@ -190,6 +195,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Swagger API Manager
+	authSvc.apiMgr, err = sam.NewSwaggerApiMgr(moduleName, "", "", authSvc.mqGlobal)
+	if err != nil {
+		log.Error("Failed to create Swagger API Manager. Error: ", err)
+		return err
+	}
+	log.Info("Swagger API Manager created")
 
 	// Create Platform Controller REST API client
 	pfmCtrlClientCfg := pcc.NewConfiguration()
@@ -295,7 +308,24 @@ func Init() (err error) {
 	return nil
 }
 
+// Run - Start service execution
 func Run() (err error) {
+	// Start Swagger API Manager (provider)
+	err = authSvc.apiMgr.Start(true, false)
+	if err != nil {
+		log.Error("Failed to start Swagger API Manager with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger API Manager started")
+
+	// Add module Swagger APIs
+	err = authSvc.apiMgr.AddApis()
+	if err != nil {
+		log.Error("Failed to add Swagger APIs with error: ", err.Error())
+		return err
+	}
+	log.Info("Swagger APIs successfully added")
+
 	// Start Session Watchdog
 	err = authSvc.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
 	if err != nil {
@@ -303,6 +333,21 @@ func Run() (err error) {
 		return err
 	}
 	return nil
+}
+
+// Stop - Shut down the service
+func Stop() {
+	if authSvc == nil {
+		return
+	}
+
+	if authSvc.apiMgr != nil {
+		// Remove APIs
+		err := authSvc.apiMgr.RemoveApis()
+		if err != nil {
+			log.Error("Failed to remove APIs with err: ", err.Error())
+		}
+	}
 }
 
 func getPermissionsConfig() (config *PermissionsConfig, err error) {
@@ -365,32 +410,96 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 	authSvc.cache.Services = make(map[string]map[string]*Permission)
 
 	for _, svc := range cfg.Services {
-		// Create new service + add it to service cache
-		svcMap := make(map[string]*Permission)
-		authSvc.cache.Services[svc.Name] = svcMap
+		// Get/Create service + add it to service cache
+		svcMap, found := authSvc.cache.Services[svc.Name]
+		if !found {
+			svcMap = make(map[string]*Permission)
+			authSvc.cache.Services[svc.Name] = svcMap
+		}
+
+		// Get API-specific prefix if present
+		apiPrefix := ""
+		if svc.Api != "" {
+			apiPrefix = svc.Api + "--"
+		}
 
 		// Service Endpoints
 		for _, ep := range svc.Endpoints {
-			// Cache service endpoint permissions
+			// Create service endpoint permissions
 			permission := new(Permission)
 			permission.Mode = ep.Mode
 			permission.Roles = make(map[string]string)
 			for role, access := range ep.Roles {
 				permission.Roles[role] = access
 			}
-			svcMap[ep.Name] = permission
 
-			// Add auth service route
-			route := new(AuthRoute)
-			route.Name = ep.Name
-			route.Prefix = false
-			route.Method = ep.Method
+			// Add auth service routes + cache service endpoint permissions
 			if svc.Sbox {
+				// Mep-specific sandbox service endpoint
+				route := new(AuthRoute)
+				route.Prefix = false
+				route.Method = ep.Method
+				route.Name = mepPrefix + apiPrefix + ep.Name
+				route.Pattern = "/{sbox}/{mep}" + svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+
+				// Sandbox service endpoint
+				route = new(AuthRoute)
+				route.Prefix = false
+				route.Method = ep.Method
+				route.Name = apiPrefix + ep.Name
 				route.Pattern = "/{sbox}" + svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
 			} else {
+				// Global service endpoint
+				route := new(AuthRoute)
+				route.Prefix = false
+				route.Method = ep.Method
+				route.Name = apiPrefix + ep.Name
 				route.Pattern = svc.Path + ep.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
 			}
-			routes = append(routes, route)
+		}
+
+		// Service Fileserver Endpoints
+		for _, fs := range svc.Fileservers {
+			// Create service fileserver permissions
+			permission := new(Permission)
+			permission.Mode = fs.Mode
+			permission.Roles = make(map[string]string)
+			for role, access := range fs.Roles {
+				permission.Roles[role] = access
+			}
+
+			// Add auth service routes + cache filserver permissions
+			if svc.Sbox {
+				// Mep-specific sandbox service fileservers
+				route := new(AuthRoute)
+				route.Prefix = true
+				route.Name = mepPrefix + apiPrefix + fs.Name
+				route.Pattern = "/{sbox}/{mep}" + svc.Path + fs.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+
+				// Sandbox service fileserver
+				route = new(AuthRoute)
+				route.Prefix = true
+				route.Name = apiPrefix + fs.Name
+				route.Pattern = "/{sbox}" + svc.Path + fs.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+			} else {
+				// Global service fileserver
+				route := new(AuthRoute)
+				route.Prefix = true
+				route.Name = apiPrefix + fs.Name
+				route.Pattern = svc.Path + fs.Path
+				routes = append(routes, route)
+				svcMap[route.Name] = permission
+			}
 		}
 
 		// Default service permissions
@@ -407,18 +516,33 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 			// Use cache default permission if service-specific default is not found
 			permission = authSvc.cache.Default
 		}
-		svcMap[svc.Name] = permission
 
-		// Add auth service default route
-		route := new(AuthRoute)
-		route.Name = svc.Name
-		route.Prefix = true
+		// Add auth service routes + cache service permissions
 		if svc.Sbox {
+			// Mep-specific sandbox service
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = mepPrefix + apiPrefix + svc.Name
+			route.Pattern = "/{sbox}/{mep}" + svc.Path
+			routes = append(routes, route)
+			svcMap[route.Name] = permission
+
+			// Sandbox service
+			route = new(AuthRoute)
+			route.Prefix = true
+			route.Name = apiPrefix + svc.Name
 			route.Pattern = "/{sbox}" + svc.Path
+			routes = append(routes, route)
+			svcMap[route.Name] = permission
 		} else {
+			// Global service
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = apiPrefix + svc.Name
 			route.Pattern = svc.Path
+			routes = append(routes, route)
+			svcMap[route.Name] = permission
 		}
-		routes = append(routes, route)
 	}
 
 	// Add routes to router
@@ -432,25 +556,40 @@ func cacheFileserverPermissions(cfg *PermissionsConfig) {
 	authSvc.cache.Fileservers = make(map[string]*Permission)
 
 	for _, fs := range cfg.Fileservers {
-		// Cache fileserver permissions
+		// Create fileserver permissions
 		permission := new(Permission)
 		permission.Mode = fs.Mode
 		permission.Roles = make(map[string]string)
 		for role, access := range fs.Roles {
 			permission.Roles[role] = access
 		}
-		authSvc.cache.Fileservers[fs.Name] = permission
 
-		// Add auth service route
-		route := new(AuthRoute)
-		route.Name = fs.Name
-		route.Prefix = true
+		// Add auth service routes + cache filserver permissions
 		if fs.Sbox {
+			// Mep-specific sandbox fileservers
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = mepPrefix + fs.Name
+			route.Pattern = "/{sbox}/{mep}" + fs.Path
+			routes = append(routes, route)
+			authSvc.cache.Fileservers[route.Name] = permission
+
+			// Sandbox fileserver
+			route = new(AuthRoute)
+			route.Prefix = true
+			route.Name = fs.Name
 			route.Pattern = "/{sbox}" + fs.Path
+			routes = append(routes, route)
+			authSvc.cache.Fileservers[route.Name] = permission
 		} else {
+			// Global fileserver
+			route := new(AuthRoute)
+			route.Prefix = true
+			route.Name = fs.Name
 			route.Pattern = fs.Path
+			routes = append(routes, route)
+			authSvc.cache.Fileservers[route.Name] = permission
 		}
-		routes = append(routes, route)
 	}
 
 	// Add routes to router
@@ -493,8 +632,8 @@ func sessionTimeoutCb(session *sm.Session) {
 	}
 }
 
-// Generate a random state string
-func generateState(n int) (string, error) {
+// Generate a random string
+func generateRand(n int) (string, error) {
 	data := make([]byte, n)
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
 		return "", err
@@ -505,7 +644,7 @@ func generateState(n int) (string, error) {
 func getUniqueState() (state string, err error) {
 	for i := 0; i < 3; i++ {
 		// Get random state
-		randState, err := generateState(20)
+		randState, err := generateRand(20)
 		if err != nil {
 			log.Error(err.Error())
 			return "", err
@@ -559,7 +698,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	// Get service & sandbox name from request query parameters
 	query := r.URL.Query()
 	svcName := query.Get("svc")
-	// sboxName := query.Get("sbox")
 	var sboxName string
 
 	// Get original request URL & method
@@ -585,12 +723,24 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	if authSvc.router.Match(r, &match) {
 		routeName := match.Route.GetName()
 		sboxName = match.Vars["sbox"]
-		log.Debug("routeName: ", routeName, " sboxName: ", sboxName)
+		mepName := match.Vars["mep"]
+		log.Debug("routeName: ", routeName, " sboxName: ", sboxName, " mepName: ", mepName)
 
 		// Check service-specific routes
 		if svcName != "" {
 			if svcPermissions, found := authSvc.cache.Services[svcName]; found {
 				permission = svcPermissions[routeName]
+			} else {
+				// Possibly a multi-API service.
+				// Search for prefix key matches in this case.
+				for key, permissions := range authSvc.cache.Services {
+					if strings.HasPrefix(key, svcName) {
+						permission = permissions[routeName]
+						if permission != nil {
+							break
+						}
+					}
+				}
 			}
 		}
 		// Check file servers if not already found
@@ -794,8 +944,14 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	metric.Sandbox = sandboxName
 	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 
+	// Get random cache buster string
+	cacheBuster, err := generateRand(10)
+	if err != nil {
+		cacheBuster = ""
+	}
+
 	// Redirect user to sandbox
-	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole, http.StatusFound)
+	http.Redirect(w, r, authSvc.uri+"?sbox="+sandboxName+"&user="+userId+"&role="+userRole+"&cb="+cacheBuster, http.StatusFound)
 	metricSessionSuccess.Inc()
 	if isNew {
 		metricSessionActive.Inc()
@@ -1039,9 +1195,9 @@ func asTriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-* Response Code 200: Login is Supported and Session exists
-* Response Code 401: Login is Supported and Session doesn't exists
-* Response Code 404: Login is not Supported
+ * Response Code 200: Login is Supported and Session exists
+ * Response Code 401: Login is Supported and Session doesn't exists
+ * Response Code 404: Login is not Supported
  */
 func asLoginSupported(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN SUPPORTED-----")

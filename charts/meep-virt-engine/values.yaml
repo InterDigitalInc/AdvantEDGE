@@ -8,7 +8,10 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
-  dependency: kube-dns
+  dependencies:
+    system:
+      - kube-dns
+    namespace:
 
 affinity:
   nodeAffinity:
@@ -27,7 +30,6 @@ image:
     MEEP_SANDBOX_PODS: ""
     MEEP_HOST_URL: "http://www.example.com"
     MEEP_USER_SWAGGER: "false"
-    MEEP_USER_SWAGGER_DIR: "/path/to/user/swagger"
     MEEP_HTTPS_ONLY: "false"
     MEEP_AUTH_ENABLED: "\"false\""
   envSecret:
@@ -61,5 +63,6 @@ user:
 
 codecov:
   enabled: false
+  location: "<WORKDIR>/codecov/meep-virt-engine"
 
 meepOrigin: core

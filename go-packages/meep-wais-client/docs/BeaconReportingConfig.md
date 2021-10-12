@@ -1,0 +1,11 @@
+# BeaconReportingConfig
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**ReportingCondition** | **int32** | Reporting condition for the Beacon Report as per Table 9-89 of IEEE 802.11-2016 [8]: 0 &#x3D; Report to be issued after each measurement. 1 &#x3D; measured RCPI level is greater than the threshold. 2 &#x3D; measured RCPI level is less than the threshold. 3 &#x3D; measured RSNI level is greater than the threshold. 4 &#x3D; measured RSNI level is less than the threshold. 5 &#x3D; measured RCPI level is greater than a threshold defined by an offset from the serving AP&#39;s reference RCPI. 6 &#x3D; measured RCPI level is less than a threshold defined by an offset from the serving AP&#39;s reference RCPI. 7 &#x3D; measured RSNI level is greater than a threshold defined by an offset from the serving AP&#39;s reference RSNI. 8 &#x3D; measured RSNI level is less than a threshold defined by an offset from the serving AP&#39;s reference RSNI. 9 &#x3D; measured RCPI level is in a range bound by the serving AP&#39;s reference RCPI and an offset from the serving AP&#39;s reference RCPI. 10 &#x3D; measured RSNI level is in a range bound by the serving AP&#39;s reference RSNI and an offset from the serving AP&#39;s reference RSNI. | [default to null]
+**Threshold** | **int32** | The threshold subfield contains either the threshold value or the offset value to be used for conditional reporting.  For reportingCondition subfield with values 1 and 2, the threshold value is a logarithmic function of the received signal power, as defined in section 9.4.2.38 of IEEE 802.11-2016 [8].  For reportingCondition subfield values 3 and 4, the threshold value is a logarithmic function of the signal-to-noise ratio, as described in section 9.4.2.41 of IEEE 802.11-2016 [8].  For reportingCondition subfield values 5 to 10, the offset value is an 8-bit 2s complement integer in units of 0,5 dBm. The indicated reporting condition applies individually to each measured Beacon, Measurement Pilot, or Probe Response frame. | [default to null]
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

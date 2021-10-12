@@ -28,7 +28,7 @@ Add a replay file
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | [default to null]
+ **name** | **String**| replay file name | [default to null]
  **replay-file** | [**Replay**](../Models/Replay.md)| Replay-file |
 
 ### Return type
@@ -56,7 +56,7 @@ Generate a replay file from Active Scenario events
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | [default to null]
+ **name** | **String**| replay file name | [default to null]
  **replayInfo** | [**ReplayInfo**](../Models/ReplayInfo.md)| Replay information |
 
 ### Return type
@@ -135,7 +135,7 @@ Get a specific replay file
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | [default to null]
+ **name** | **String**| replay file name | [default to null]
 
 ### Return type
 
@@ -210,7 +210,7 @@ Loop-Execute a replay file present in the platform store
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | [default to null]
+ **name** | **String**| replay file name | [default to null]
 
 ### Return type
 
@@ -237,7 +237,7 @@ Execute a replay file present in the platform store
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | [default to null]
+ **name** | **String**| replay file name | [default to null]
 
 ### Return type
 
@@ -264,7 +264,7 @@ Stop execution of a replay file
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **String**| Replay file name | [default to null]
+ **name** | **String**| replay file name | [default to null]
 
 ### Return type
 

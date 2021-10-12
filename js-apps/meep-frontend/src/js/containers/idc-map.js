@@ -23,6 +23,7 @@ import 'mapbox-gl-leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import deepEqual from 'deep-equal';
 import tinycolor from 'tinycolor2';
+import _ from 'lodash';
 import {
   updateObject,
   deepCopy
@@ -68,7 +69,10 @@ import {
   getElemFieldVal,
   getElemFieldErr,
   setElemFieldVal,
-  setElemFieldErr
+  setElemFieldErr,
+  FIELD_DN_NAME,
+  FIELD_DN_ECSP,
+  FIELD_DN_LADN
 } from '../util/elem-utils';
 
 import 'leaflet/dist/images/marker-shadow.png';
@@ -106,7 +110,7 @@ const POA_RANGE_OPACITY = 0.05;
 const POA_RANGE_OPACITY_BACKGROUND = 0.05;
 
 const COMPUTE_ICON = 'ion-android-cloud';
-const COMPUTE_COLOR_DEFAULT = '#696969';
+const COMPUTE_COLOR_DEFAULT = '#0a50f2';
 const COMPUTE_OPACITY = 1.0;
 const COMPUTE_OPACITY_BACKGROUND = 0.35;
 
@@ -469,13 +473,10 @@ class IDCMap extends Component {
   }
 
   getComputeColor(compute) {
-    var color = undefined;
-    if (this.isConnected(compute)) {
-      color = this.getZoneColor(this.getComputeZone(compute));
-    } else {
-      color = DISCONNECTED_COLOR;
+    if (!this.isConnected(compute)) {
+      return DISCONNECTED_COLOR;
     }
-    return color ? color : COMPUTE_COLOR_DEFAULT;
+    return COMPUTE_COLOR_DEFAULT;
   }
 
   // Get connected status
@@ -660,10 +661,44 @@ class IDCMap extends Component {
 
   // UE Marker Event Handler
   updateComputePopup(marker) {
-    var latlng = marker.getLatLng();
-    var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
-    msg += 'location: ' + this.getLocationStr(latlng);
-    marker.getPopup().setContent(msg);
+    var table = this.getTable();
+    if (marker && table && table.entries) {
+      // Retrieve state 
+      const networkName = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_NAME);
+      const edgeProvider = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_ECSP);
+      const ladn = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_LADN);
+      var appInstanceTable = this.props.appInstanceTable;
+      var latlng = marker.getLatLng();
+      // Parse mec application state on current popup
+      var appInstances = [];
+      for (var i = 0; i < appInstanceTable.length ; i++) {
+        if (appInstanceTable[i].mepName === marker.options.meep.compute.id) {
+          appInstances.push(appInstanceTable[i]);
+        }
+      }
+      // Sort parsed array of mec app
+      var sortedAppInstances = _.sortBy(appInstances, ['name']);
+      // Modify render message
+      var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
+      if (edgeProvider) {
+        msg += 'service-provider: ' + edgeProvider + '<br>';
+      }
+      if (networkName) {
+        msg += 'data-network: ' + networkName;
+        if (ladn) {
+          msg += ' (LADN)';
+        }
+        msg += '<br>';
+      }
+      msg += 'applications: <br>';
+      if (appInstances) {
+        sortedAppInstances.forEach(elem => {
+          msg += '<li>' + elem.name + ' ' + '(id: ' + elem.id.substring(0,6) + '...' + elem.id.substring(elem.id.length - 6,elem.id.length + 1) + ')'   + '<br>';
+        });
+      }
+      msg += 'location: ' + this.getLocationStr(latlng);
+      marker.getPopup().setContent(msg);
+    }
   }
 
   setUeMarker(ue) {
@@ -1296,7 +1331,8 @@ const mapStateToProps = state => {
     execTable: state.exec.table,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     cfgView: state.ui.cfgView,
-    cfgScenarioName: state.cfg.scenario.name
+    cfgScenarioName: state.cfg.scenario.name,
+    appInstanceTable: state.exec.appInstanceTable.data
   };
 };
 

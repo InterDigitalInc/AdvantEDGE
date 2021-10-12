@@ -1,0 +1,1116 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 9,
+  "iteration": 1633697259754,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 91,
+      "panels": [],
+      "title": "Sandbox Metrics",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "meep-influxdb",
+      "decimals": 2,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "displayName": "Sbox Creation Time",
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 7,
+      "gridPos": {
+        "h": 7,
+        "w": 10,
+        "x": 0,
+        "y": 1
+      },
+      "hiddenSeries": false,
+      "id": 93,
+      "interval": "",
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": false,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.3.5",
+      "pointradius": 2,
+      "points": true,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "hide": false,
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT createtime FROM global_sandbox_metrics.autogen.sbox WHERE $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Sandbox Creation Time",
+      "tooltip": {
+        "shared": false,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 10,
+        "y": 1
+      },
+      "id": 95,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum(increase(mon_engine_sbox_create_duration_sum{replica=~\"$replica\"}[$__range])) / sum(increase(mon_engine_sbox_create_duration_count{replica=~\"$replica\"}[$__range]))",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Average Sandbox Creation Time",
+      "type": "stat"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-green",
+                "value": null
+              },
+              {
+                "color": "light-green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 10,
+        "x": 14,
+        "y": 1
+      },
+      "id": 97,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum by (le) (increase(mon_engine_sbox_create_duration_bucket{replica=~\"$replica\"}[$__range]))",
+          "format": "heatmap",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Sandbox Creation Time Distribution (seconds)",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 37,
+      "panels": [],
+      "title": "Platform API Requests & Notifications",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 78,
+      "options": {
+        "content": "",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.3.5",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Requests",
+      "type": "text"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 79,
+      "options": {
+        "content": "",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.3.5",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Notifications",
+      "type": "text"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 10
+      },
+      "id": 55,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Total Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 4,
+        "y": 10
+      },
+      "id": 77,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "2xx",
+          "refId": "B"
+        },
+        {
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "3xx",
+          "refId": "C"
+        },
+        {
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "4xx",
+          "refId": "D"
+        },
+        {
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "5xx",
+          "refId": "E"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Request Response Codes",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 10
+      },
+      "id": 85,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Total Notifications",
+      "type": "stat"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-purple",
+                "value": null
+              },
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      },
+      "id": 86,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "2xx",
+          "refId": "B"
+        },
+        {
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "3xx",
+          "refId": "C"
+        },
+        {
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "4xx",
+          "refId": "D"
+        },
+        {
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range)) or vector(0)",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "5xx",
+          "refId": "E"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Notification Response Codes",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "${__series.name}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 30,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "topk(10, sort_desc(sum by (svc,path,method)((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range))))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{method}} {{path}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top 10 Requests",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "${__series.name}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-purple",
+                "value": null
+              },
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "method"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 121
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 166
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 87,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "topk(10, sort_desc(sum by (svc,notif)((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range))))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{svc}} | {{notif}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top 10 Notifications",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 33,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum by (le) ((max_over_time(metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range))",
+          "format": "heatmap",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Request Duration Distribution (ms)",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-purple",
+                "value": null
+              },
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 88,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "sum by (le) ((max_over_time(metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range))",
+          "format": "heatmap",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Notification Processing Time Distribution (ms)",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "${__series.name}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "id": 38,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "topk(10, sort_desc(rate(metrics_http_request_duration_sum{replica=~\"$replica\",svc=~\"$service\"}[$__range]) / rate(metrics_http_request_duration_count{replica=~\"$replica\",svc!=\"Auth Service\"}[$__range])))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{method}} {{path}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top 10 Highest Average Request Processing Time",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Thanos",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "${__series.name}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-purple",
+                "value": null
+              },
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "id": 89,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.3.5",
+      "targets": [
+        {
+          "expr": "topk(10, sort_desc(avg by (svc,notif) (rate(metrics_http_notification_duration_sum{replica=~\"$replica\",svc=~\"$service\"}[$__range]) / rate(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]))))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{svc}} | {{notif}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top 5 Highest Average Notification Processing Times",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 26,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": "",
+        "current": {
+          "selected": true,
+          "tags": [],
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": "Thanos",
+        "definition": "label_values(metrics_http_request_duration_count, svc)",
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": "label_values(metrics_http_request_duration_count, svc)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "tags": [],
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": "Thanos",
+        "definition": "label_values(metrics_http_request_duration_count, replica) ",
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "replica",
+        "options": [],
+        "query": "label_values(metrics_http_request_duration_count, replica) ",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 2,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "15s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Platform (AdvantEDGE)",
+  "uid": "platform-advantedge",
+  "version": 3
+}
+

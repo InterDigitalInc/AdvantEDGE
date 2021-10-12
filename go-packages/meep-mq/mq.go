@@ -77,6 +77,14 @@ const (
 	// GIS Engine
 	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
 
+	// App Enablement
+	MsgAppTerminate Message = "APP-TERMINATE"
+	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
+
+	// API
+	MsgApiUpdate  Message = "API-UPDATE"
+	MsgApiRequest Message = "API-REQUEST"
+
 	// Watchdog
 	MsgPing Message = "PING"
 	MsgPong Message = "PONG"

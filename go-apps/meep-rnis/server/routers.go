@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Radio Network Information Service REST API
  *
- * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
+ * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
  * API version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -44,9 +44,10 @@ type Route struct {
 type Routes []Route
 
 func NewRouter() *mux.Router {
+	var handler http.Handler
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
+		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		handler = met.MetricsHandler(handler, sandboxName, serviceName)
 		handler = httpLog.LogRx(handler, "")
@@ -56,6 +57,20 @@ func NewRouter() *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
+
+	// Path prefix router order is important
+	// Service Api files
+	handler = http.StripPrefix("/rni/v2/api/", http.FileServer(http.Dir("./api/")))
+	router.
+		PathPrefix("/rni/v2/api/").
+		Name("Api").
+		Handler(handler)
+	// User supplied service API files
+	handler = http.StripPrefix("/rni/v2/user-api/", http.FileServer(http.Dir("./user-api/")))
+	router.
+		PathPrefix("/rni/v2/user-api/").
+		Name("UserApi").
+		Handler(handler)
 
 	return router
 }
@@ -77,6 +92,13 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/rni/v2/queries/layer2_meas",
 		Layer2MeasInfoGET,
+	},
+
+	Route{
+		"Mec011AppTerminationPOST",
+		strings.ToUpper("Post"),
+		"/rni/v2/notifications/mec011/appTermination",
+		Mec011AppTerminationPOST,
 	},
 
 	Route{

@@ -14,34 +14,50 @@ definitions:
         description: Replay-file name to execute at deployment time
     description: Activation information
     example: {}
-  CellularPoaConfig:
+  ApplicationInfo:
+    description: MEC Application instance information
     type: object
+    required:
+      - name
+      - mepName
     properties:
-      cellId:
+      id:
+        description: Application Instance UUID
         type: string
-        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
-    description: '**DEPRECATED** As of release 1.5.1, renamed to poa4GConfig'
-  Poa4GConfig:
-    type: object
-    properties:
-      cellId:
+      name:
+        description: Application name
         type: string
-        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
-    description: Cellular 4G POA configuration information
-  Poa5GConfig:
-    type: object
-    properties:
-      cellId:
+      type:
+        $ref: '#/definitions/ApplicationType'
+      state:
+        $ref: '#/definitions/ApplicationState'
+      mepName:
+        description: MEP Name where application instance is running
         type: string
-        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the NR serving the cell
-    description: Cellular 5G POA configuration information
-  PoaWifiConfig:
-    type: object
-    properties:
-      macId:
+      version:
+        description: Application Version
         type: string
-        description: WIFI POA MAC Address
-    description: WIFI POA configuration information
+    example:
+      id: '00afec52-f0b6-464e-a660-33568c0975b9'
+      name: 'MyAppName'
+      type: 'USER'
+      state: 'INITIALIZED'
+      mepName: 'mep1'
+      version: 'v1.0.0'
+  ApplicationState:
+    description: Application State
+    type: string
+    enum:
+      - READY
+      - INITIALIZED
+    example: 'INITIALIZED'
+  ApplicationType:
+    description: Application Type
+    type: string
+    enum:
+      - USER
+      - SYSTEM
+    example: 'USER'
   CellularDomainConfig:
     type: object
     properties:
@@ -56,22 +72,13 @@ definitions:
         description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
     description: Cellular domain configuration information
     example: {}
-  DNConfig:
+  CellularPoaConfig:
     type: object
     properties:
-      dnn:
+      cellId:
         type: string
-        description: Data Network Name
-      ladn:
-        type: boolean
-        description: |-
-          true: Data network serves local area only
-          false: Data network is not limited to local area
-      ecsp:
-        type: string
-        description: Edge Compute Service Provider
-    description: Data Network Configuration
-    example: {}
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+    description: '**DEPRECATED** As of release 1.5.1, renamed to poa4GConfig'
   ConnectivityConfig:
     type: object
     properties:
@@ -85,83 +92,18 @@ definitions:
           - OPEN
           - PDU
     example: {}
-  GeoData:
-    description: Geographic data
+  CpuConfig:
     type: object
     properties:
-      location:
-        $ref: '#/definitions/Point'
-      radius:
-        description: Optional - Radius (in meters) around the location
+      min:
         type: number
-      path:
-        $ref: '#/definitions/LineString'
-      eopMode:
-        description: >-
-          End-of-Path mode:
-          <li>LOOP: When path endpoint is reached, start over from the beginning
-          <li>REVERSE: When path endpoint is reached, return on the reverse path
-        type: string
-        enum:
-          - LOOP
-          - REVERSE
-      velocity:
-        description: Speed of movement along path in m/s
+        format: float
+        description: Minimum requested CPU
+      max:
         type: number
-  Point:
-    description: A single position in coordinate space (GeoJSON); a position is an array of two numbers
-    type: object
-    externalDocs:
-      url: 'https://tools.ietf.org/html/rfc7946'
-    required:
-      - type
-    properties:
-      type:
-        description: Must be Point
-        type: string
-        enum:
-          - Point
-      coordinates:
-        description: For a Point, coordinates MUST be an array of two decimal numbers; longitude and latitude precisely in that order
-        type: array
-        items:
-          type: number
-  LineString:
-    description: An array of two or more positions in coordinate space (GeoJSON); a position is an array of two numbers
-    type: object
-    externalDocs:
-      url: 'https://tools.ietf.org/html/rfc7946'
-    required:
-      - type
-    properties:
-      type:
-        description: Must be LineString
-        type: string
-        enum:
-          - LineString
-      coordinates:
-        description: For a LineString, coordinates is an array of two or more positions; a position is an array of two decimal numbers (longitude and latitude precisely in that order)
-        type: array
-        items:
-          type: array
-          items:
-            type: number
-  NodeServiceMaps:
-    type: object
-    properties:
-      node:
-        type: string
-        description: Unique external node identifier
-      ingressServiceMap:
-        type: array
-        items:
-          $ref: '#/definitions/IngressService'
-      egressServiceMap:
-        type: array
-        items:
-          $ref: '#/definitions/EgressService'
-    description: Node-specific mapping of exposed internal & external services
-    example: {}
+        format: float
+        description: Maximum requested CPU
+    description: CPU configuration object
   Deployment:
     type: object
     properties:
@@ -254,6 +196,22 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Domain'
+  DNConfig:
+    type: object
+    properties:
+      dnn:
+        type: string
+        description: Data Network Name
+      ladn:
+        type: boolean
+        description: |-
+          true: Data network serves local area only
+          false: Data network is not limited to local area
+      ecsp:
+        type: string
+        description: Edge Compute Service Provider
+    description: Data Network Configuration
+    example: {}
   EgressService:
     type: object
     properties:
@@ -430,6 +388,29 @@ definitions:
       External Process configuration.
       NOTE: Only valid if 'isExternal' is set.
     example: {}
+  GeoData:
+    description: Geographic data
+    type: object
+    properties:
+      location:
+        $ref: '#/definitions/Point'
+      radius:
+        description: Optional - Radius (in meters) around the location
+        type: number
+      path:
+        $ref: '#/definitions/LineString'
+      eopMode:
+        description: >-
+          End-of-Path mode:
+          <li>LOOP: When path endpoint is reached, start over from the beginning
+          <li>REVERSE: When path endpoint is reached, return on the reverse path
+        type: string
+        enum:
+          - LOOP
+          - REVERSE
+      velocity:
+        description: Speed of movement along path in m/s
+        type: number
   GpuConfig:
     type: object
     properties:
@@ -456,6 +437,47 @@ definitions:
         type: string
         description: Service protocol (TCP or UDP)
     description: Internal service exposed externally via specific port
+  LineString:
+    description: An array of two or more positions in coordinate space (GeoJSON); a position is an array of two numbers
+    type: object
+    externalDocs:
+      url: 'https://tools.ietf.org/html/rfc7946'
+    required:
+      - type
+    properties:
+      type:
+        description: Must be LineString
+        type: string
+        enum:
+          - LineString
+      coordinates:
+        description: For a LineString, coordinates is an array of two or more positions; a position is an array of two decimal numbers (longitude and latitude precisely in that order)
+        type: array
+        items:
+          type: array
+          items:
+            type: number
+  LocalityType:
+    description: The scope of locality as expressed by "consumedLocalOnly" and "isLocal". If absent, defaults to MEC_HOST
+    type: string
+    enum:
+      - MEC_SYSTEM
+      - MEC_HOST
+      - NFVI_POP
+      - ZONE
+      - ZONE_GROUP
+      - NFVI_NODE
+    example: 'MEC_SYSTEM'
+  MemoryConfig:
+    type: object
+    properties:
+      min:
+        type: integer
+        description: Minimum requested memory
+      max:
+        type: integer
+        description: Maximum requested memory
+    description: Memory configuration object
   NetworkCharacteristics:
     type: object
     properties:
@@ -573,6 +595,50 @@ definitions:
       process:
         $ref: '#/definitions/Process'
     example: {}
+  NodeServiceMaps:
+    type: object
+    properties:
+      node:
+        type: string
+        description: Unique external node identifier
+      ingressServiceMap:
+        type: array
+        items:
+          $ref: '#/definitions/IngressService'
+      egressServiceMap:
+        type: array
+        items:
+          $ref: '#/definitions/EgressService'
+    description: Node-specific mapping of exposed internal & external services
+    example: {}
+  PDUSession:
+    type: object
+    properties:
+      ue:
+        type: string
+        description: UE name as defined in the scenario
+      id:
+        type: string
+        description: PDU Session ID
+      info:
+        $ref: '#/definitions/PDUSessionInfo'
+    description: PDU Session
+    example: {}
+  PDUSessionInfo:
+    type: object
+    properties:
+      dnn:
+        type: string
+        description: Data Network Name as defined in the scenario
+  PDUSessionList:
+    type: object
+    properties:
+      sessions:
+        type: array
+        items:
+          $ref: '#/definitions/PDUSession'
+    description: PDUSession list
+    example: {}
   PhysicalLocation:
     type: object
     properties:
@@ -684,6 +750,45 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/PhysicalLocation'
+  Poa4GConfig:
+    type: object
+    properties:
+      cellId:
+        type: string
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+    description: Cellular 4G POA configuration information
+  Poa5GConfig:
+    type: object
+    properties:
+      cellId:
+        type: string
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the NR serving the cell
+    description: Cellular 5G POA configuration information
+  PoaWifiConfig:
+    type: object
+    properties:
+      macId:
+        type: string
+        description: WIFI POA MAC Address
+    description: WIFI POA configuration information
+  Point:
+    description: A single position in coordinate space (GeoJSON); a position is an array of two numbers
+    type: object
+    externalDocs:
+      url: 'https://tools.ietf.org/html/rfc7946'
+    required:
+      - type
+    properties:
+      type:
+        description: Must be Point
+        type: string
+        enum:
+          - Point
+      coordinates:
+        description: For a Point, coordinates MUST be an array of two decimal numbers; longitude and latitude precisely in that order
+        type: array
+        items:
+          type: number
   Process:
     type: object
     properties:
@@ -1075,53 +1180,3 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Zone'
-  MemoryConfig:
-    type: object
-    properties:
-      min:
-        type: integer
-        description: Minimum requested memory
-      max:
-        type: integer
-        description: Maximum requested memory
-    description: Memory configuration object
-  CpuConfig:
-    type: object
-    properties:
-      min:
-        type: number
-        format: float
-        description: Minimum requested CPU
-      max:
-        type: number
-        format: float
-        description: Maximum requested CPU
-    description: CPU configuration object
-  PDUSession:
-    type: object
-    properties:
-      ue:
-        type: string
-        description: UE name as defined in the scenario
-      id:
-        type: string
-        description: PDU Session ID
-      info:
-        $ref: '#/definitions/PDUSessionInfo'
-    description: PDU Session
-    example: {}
-  PDUSessionInfo:
-    type: object
-    properties:
-      dnn:
-        type: string
-        description: Data Network Name as defined in the scenario
-  PDUSessionList:
-    type: object
-    properties:
-      sessions:
-        type: array
-        items:
-          $ref: '#/definitions/PDUSession'
-    description: PDUSession list
-    example: {}
