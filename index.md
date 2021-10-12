@@ -18,7 +18,7 @@ permalink: /
 
 :zap: **General Maintenance fixes :hammer_and_wrench:**
 
-:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [:octocat: Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions)**
+:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
 ------
 
