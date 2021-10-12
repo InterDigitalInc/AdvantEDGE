@@ -16,7 +16,7 @@ permalink: /
 
 :zap: **Improved metrics & storage with :earth_americas: [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) and :card_file_box: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem)**
 
-:zap: **General :hammer_and_wrench: Maintenance fixes**
+:zap: **General Maintenance fixes :hammer_and_wrench:**
 
 :zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [:octocat: Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions)**
 
