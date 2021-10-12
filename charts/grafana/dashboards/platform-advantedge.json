@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 17,
-  "iteration": 1618533539997,
+  "id": 9,
+  "iteration": 1633697259754,
   "links": [],
   "panels": [
     {
@@ -211,7 +211,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum(increase(mon_engine_sbox_create_duration_sum[$__range])) / sum(increase(mon_engine_sbox_create_duration_count[$__range]))",
+          "expr": "sum(increase(mon_engine_sbox_create_duration_sum{replica=~\"$replica\"}[$__range])) / sum(increase(mon_engine_sbox_create_duration_count{replica=~\"$replica\"}[$__range]))",
           "instant": true,
           "interval": "",
           "intervalFactor": 1,
@@ -269,7 +269,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum by (le) (increase(mon_engine_sbox_create_duration_bucket[$__range]))",
+          "expr": "sum by (le) (increase(mon_engine_sbox_create_duration_bucket{replica=~\"$replica\"}[$__range]))",
           "format": "heatmap",
           "instant": true,
           "interval": "",
@@ -391,7 +391,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum(increase(metrics_http_request_duration_count{svc=~\"$service\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "intervalFactor": 1,
@@ -450,28 +450,28 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum(increase(metrics_http_request_duration_count{svc=~\"$service\",status=~\"2.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "2xx",
           "refId": "B"
         },
         {
-          "expr": "sum(increase(metrics_http_request_duration_count{svc=~\"$service\",status=~\"3.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "3xx",
           "refId": "C"
         },
         {
-          "expr": "sum(increase(metrics_http_request_duration_count{svc=~\"$service\",status=~\"4.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "4xx",
           "refId": "D"
         },
         {
-          "expr": "sum(increase(metrics_http_request_duration_count{svc=~\"$service\",status=~\"5.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "5xx",
@@ -527,7 +527,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum(increase(metrics_http_notification_duration_count{svc=~\"$service\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "intervalFactor": 1,
@@ -586,28 +586,28 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum(increase(metrics_http_notification_duration_count{svc=~\"$service\",status=~\"2.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"2.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "2xx",
           "refId": "B"
         },
         {
-          "expr": "sum(increase(metrics_http_notification_duration_count{svc=~\"$service\",status=~\"3.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"3.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "3xx",
           "refId": "C"
         },
         {
-          "expr": "sum(increase(metrics_http_notification_duration_count{svc=~\"$service\",status=~\"4.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"4.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "4xx",
           "refId": "D"
         },
         {
-          "expr": "sum(increase(metrics_http_notification_duration_count{svc=~\"$service\",status=~\"5.*\"}[$__range])) or vector(0)",
+          "expr": "sum((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\",status=~\"5.*\"} offset $__range)) or vector(0)",
           "instant": true,
           "interval": "",
           "legendFormat": "5xx",
@@ -668,7 +668,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "topk(10, sort_desc(sum by (svc,path,method) (increase(metrics_http_request_duration_count{svc=~\"$service\"}[$__range]))))",
+          "expr": "topk(10, sort_desc(sum by (svc,path,method)((max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_request_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range))))",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -756,7 +756,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "topk(10, sort_desc(sum by (svc,notif) (increase(metrics_http_notification_duration_count{svc=~\"$service\"}[$__range]))))",
+          "expr": "topk(10, sort_desc(sum by (svc,notif)((max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"} offset $__range))))",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -815,7 +815,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum by (le) (increase(metrics_http_request_duration_bucket{svc=~\"$service\"}[$__range]))",
+          "expr": "sum by (le) ((max_over_time(metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_request_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range))",
           "format": "heatmap",
           "instant": true,
           "interval": "",
@@ -874,7 +874,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "sum by (le) (increase(metrics_http_notification_duration_bucket{svc=~\"$service\"}[$__range]))",
+          "expr": "sum by (le) ((max_over_time(metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) - metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range) or (max_over_time(metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"}[$__range]) unless metrics_http_notification_duration_bucket{replica=~\"$replica\",svc=~\"$service\"} offset $__range))",
           "format": "heatmap",
           "instant": true,
           "interval": "",
@@ -938,7 +938,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "topk(10, sort_desc(rate(metrics_http_request_duration_sum{svc=~\"$service\"}[$__range]) / rate(metrics_http_request_duration_count{svc!=\"Auth Service\"}[$__range])))",
+          "expr": "topk(10, sort_desc(rate(metrics_http_request_duration_sum{replica=~\"$replica\",svc=~\"$service\"}[$__range]) / rate(metrics_http_request_duration_count{replica=~\"$replica\",svc!=\"Auth Service\"}[$__range])))",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -1002,7 +1002,7 @@
       "pluginVersion": "7.3.5",
       "targets": [
         {
-          "expr": "topk(10, sort_desc(avg by (svc,notif) (rate(metrics_http_notification_duration_sum{svc=~\"$service\"}[$__range]) / rate(metrics_http_notification_duration_count{svc=~\"$service\"}[$__range]))))",
+          "expr": "topk(10, sort_desc(avg by (svc,notif) (rate(metrics_http_notification_duration_sum{replica=~\"$replica\",svc=~\"$service\"}[$__range]) / rate(metrics_http_notification_duration_count{replica=~\"$replica\",svc=~\"$service\"}[$__range]))))",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -1017,7 +1017,7 @@
       "type": "bargauge"
     }
   ],
-  "refresh": "15s",
+  "refresh": "",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -1027,6 +1027,7 @@
         "allValue": "",
         "current": {
           "selected": true,
+          "tags": [],
           "text": [
             "All"
           ],
@@ -1035,7 +1036,7 @@
           ]
         },
         "datasource": "Prometheus",
-        "definition": "label_values(metrics_http_request_duration_count, svc) ",
+        "definition": "label_values(metrics_http_request_duration_count, svc)",
         "error": null,
         "hide": 0,
         "includeAll": true,
@@ -1043,11 +1044,43 @@
         "multi": true,
         "name": "service",
         "options": [],
-        "query": "label_values(metrics_http_request_duration_count, svc) ",
+        "query": "label_values(metrics_http_request_duration_count, svc)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "tags": [],
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(metrics_http_request_duration_count, replica) ",
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "replica",
+        "options": [],
+        "query": "label_values(metrics_http_request_duration_count, replica) ",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 2,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1078,5 +1111,6 @@
   "timezone": "",
   "title": "Platform (AdvantEDGE)",
   "uid": "platform-advantedge",
-  "version": 2
+  "version": 3
 }
+

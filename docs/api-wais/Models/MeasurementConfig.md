@@ -3,12 +3,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**beaconRequest** | [**BeaconRequestConfig**](BeaconRequestConfig.md) |  | [optional] [default to null]
-**channelLoad** | [**ChannelLoadConfig**](ChannelLoadConfig.md) |  | [optional] [default to null]
-**measurementDuration** | [**Integer**](integer.md) | Duration of the measurement, shall be lower than Maximum Measurement Duration in TU as defined in section 11.11.4 of IEEE 802.11 [8]. | [default to null]
-**measurementId** | [**String**](string.md) | Identifier of this measurement configuration. | [default to null]
-**randomnInterval** | [**Integer**](integer.md) | Random interval to be used for starting the measurement. In units of TU as specifed in section 11.11.3 of IEEE 802.11 [8]. | [default to null]
-**staStatistics** | [**StaStatisticsConfig**](StaStatisticsConfig.md) |  | [optional] [default to null]
+**\_links** | [**MeasurementConfig__links**](MeasurementConfig__links.md) |  | [optional] [default to null]
+**measurementId** | [**String**](string.md) | Unique identifier allocated by the service consumer to identify measurement reports (within sta_information query), associated with this measurement configuration. | [default to null]
+**measurementInfo** | [**MeasurementInfo**](MeasurementInfo.md) |  | [default to null]
+**staId** | [**List**](StaIdentity.md) | Identifier(s) to uniquely specify the target client station(s) for the measurement configuration. | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

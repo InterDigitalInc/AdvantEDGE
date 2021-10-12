@@ -4,7 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ca0** | [**String**](string.md) | Language | [optional] [default to null]
-**ca1** | [**String**](string.md) | National subdivisions (state, canton, region,province, prefecture)  | [optional] [default to null]
+**ca1** | [**String**](string.md) | National subdivisions (state, canton, region, province, prefecture)  | [optional] [default to null]
 **ca128** | [**String**](string.md) | Script | [optional] [default to null]
 **ca16** | [**String**](string.md) | Leading street direction | [optional] [default to null]
 **ca17** | [**String**](string.md) | Trailing street suffix | [optional] [default to null]

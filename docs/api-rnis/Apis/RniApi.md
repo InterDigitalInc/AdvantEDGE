@@ -5,6 +5,7 @@ All URIs are relative to *https://localhost/sandboxname/rni/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**layer2MeasInfoGET**](RniApi.md#layer2MeasInfoGET) | **GET** /queries/layer2_meas | Retrieve information on layer 2 measurements
+[**mec011AppTerminationPOST**](RniApi.md#mec011AppTerminationPOST) | **POST** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 [**plmnInfoGET**](RniApi.md#plmnInfoGET) | **GET** /queries/plmn_info | Retrieve information on the underlying Mobile Network that the MEC application is associated to
 [**rabInfoGET**](RniApi.md#rabInfoGET) | **GET** /queries/rab_info | Retrieve information on Radio Access Bearers
 [**subscriptionLinkListSubscriptionsGET**](RniApi.md#subscriptionLinkListSubscriptionsGET) | **GET** /subscriptions | Retrieve information on subscriptions for notifications
@@ -79,9 +80,36 @@ No authorization required
 - **Content-Type**: Not defined
 - **Accept**: application/json, application/problem+json
 
+<a name="mec011AppTerminationPOST"></a>
+# **mec011AppTerminationPOST**
+> mec011AppTerminationPOST(AppTerminationNotification)
+
+MEC011 Application Termination notification for self termination
+
+    Terminates itself.
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **AppTerminationNotification** | [**AppTerminationNotification**](../Models/AppTerminationNotification.md)| Termination notification details |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
+
 <a name="plmnInfoGET"></a>
 # **plmnInfoGET**
-> PlmnInfo plmnInfoGET(app\_ins\_id)
+> List plmnInfoGET(app\_ins\_id)
 
 Retrieve information on the underlying Mobile Network that the MEC application is associated to
 
@@ -95,7 +123,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**PlmnInfo**](../Models/PlmnInfo.md)
+[**List**](../Models/PlmnInfo.md)
 
 ### Authorization
 

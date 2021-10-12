@@ -3,8 +3,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**assetName** | [**String**](string.md) | Name of geospatial asset | [optional] [default to null]
-**assetType** | [**String**](string.md) | Asset type | [optional] [default to null]
+**assetName** | [**String**](string.md) | Name of geospatial asset | [default to null]
+**assetType** | [**String**](string.md) | Asset type | [default to null]
 **subType** | [**String**](string.md) | Asset sub-type | [optional] [default to null]
 **location** | [**Point**](Point.md) |  | [optional] [default to null]
 **radius** | [**BigDecimal**](number.md) | Optional - Radius (in meters) around the location | [optional] [default to null]
