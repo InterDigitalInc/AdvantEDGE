@@ -58,10 +58,11 @@ AdvantEDGE provides a built-in Edge Platform Application Enablement Service impl
 Mp1 reference point provides two different APIs: _MEC Application Support_ and _MEC Service Management_
 
 These APIs allow MEC Applications to interact with the MEC System, such as:
-- _Application registration/deregistration_
-- _Service discovery & offering_
-- _Event notifications about service and application availability_
-- _Traffic rules, DNS and time of day_
+- _Application registration/deregistration_ (supported)
+- _Service discovery & offering_ (supported)
+- _Event notifications about service and application availability_ (supported)
+- _Traffic rules, DNS_ (not supported)
+- _Time of day_ (supported)
 
 Want to know more about App Enablement service: [Edge Platform Application Enablement Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-app-enablement-service.md %})
 
