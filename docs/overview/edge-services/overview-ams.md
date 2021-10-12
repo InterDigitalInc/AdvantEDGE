@@ -13,15 +13,15 @@ AdvantEDGE provides a built-in Application Mobility Service implementation that 
 Application Mobility Service provides support for relocation of user context between MEC hosts; application instance relocation not supported.
 
 AMS defines three types of MEC application user-context transfer:
-- _Application self-controlled_
+- _Application self-controlled_ (not supported)
   - Application triggers and executes the context transfer
   - Context is transferred from source to target application
   - MEC system's role is to enable connectivity
-- _Device assisted_
+- _Device assisted_ (not supported)
   - Device triggers and executes the context transfer
   - Context is kept on the device
   - MEC system's role is to decide if application mobility is required
-- _MEC assisted_
+- _MEC assisted_ (supported)
   - MEC system triggers and assists the context transfer
   - Context is transferred from source to target application
 
