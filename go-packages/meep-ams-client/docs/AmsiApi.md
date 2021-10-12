@@ -226,7 +226,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubByIdGET**
-> Body SubByIdGET(ctx, subscriptionId)
+> InlineSubscription SubByIdGET(ctx, subscriptionId)
 Retrieve information about this subscription.
 
 Retrieve information about this subscription.
@@ -240,7 +240,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Body**](body.md)
+[**InlineSubscription**](InlineSubscription.md)
 
 ### Authorization
 
@@ -254,7 +254,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubByIdPUT**
-> Body1 SubByIdPUT(ctx, body, subscriptionId)
+> InlineSubscription SubByIdPUT(ctx, body, subscriptionId)
 update the existing individual subscription.
 
 update the existing individual subscription.
@@ -264,12 +264,12 @@ update the existing individual subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body1**](Body1.md)|  | 
+  **body** | [**InlineSubscription**](InlineSubscription.md)|  | 
   **subscriptionId** | **string**| Refers to created subscription, where the AMS API allocates a unique resource name for this subscription | 
 
 ### Return type
 
-[**Body1**](body_1.md)
+[**InlineSubscription**](InlineSubscription.md)
 
 ### Authorization
 
@@ -318,7 +318,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubPOST**
-> Body SubPOST(ctx, body)
+> InlineSubscription SubPOST(ctx, body)
 Create a new subscription to Application Mobility Service notifications.
 
 Create a new subscription to Application Mobility Service notifications.
@@ -328,11 +328,11 @@ Create a new subscription to Application Mobility Service notifications.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body**](Body.md)|  | 
+  **body** | [**InlineSubscription**](InlineSubscription.md)|  | 
 
 ### Return type
 
-[**Body**](body.md)
+[**InlineSubscription**](InlineSubscription.md)
 
 ### Authorization
 

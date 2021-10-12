@@ -98,9 +98,6 @@ const ADJACENT_APP_INFO_SUBSCRIPTION_INT = int32(2)
 const ADJACENT_APP_INFO_SUBSCRIPTION = "AdjacentAppInfoSubscription"
 const ADJACENT_APP_INFO_NOTIFICATION = "AdjacentAppInfoNotification"
 
-const APP_TERM_NOTIFICATION = "AppTerminationNotification"
-const TRIGGER_NOTIFICATION = "TriggerNotification"
-
 var AMS_DB = 0
 
 var rc *redis.Connector
@@ -610,86 +607,63 @@ func unsubscribeAppTermination(appInstanceId string) error {
 func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var notificationCommon NotificationCommon
+	var notification AppTerminationNotification
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(bodyBytes, &notificationCommon)
+	err := json.Unmarshal(bodyBytes, &notification)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//extract common body part
-	notificationType := notificationCommon.NotificationType
 
-	switch notificationType {
-	case APP_TERM_NOTIFICATION:
-		var notification AppTerminationNotification
-		err = json.Unmarshal(bodyBytes, &notification)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if !appEnablementEnabled {
-			//just ignore the message
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		go func() {
-			//delete any registration it made
-			// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
-			//_ = unsubscribeAppTermination(serviceAppInstanceId)
-			_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
-
-			//send scenario update with a deletion
-			var event scc.Event
-			var eventScenarioUpdate scc.EventScenarioUpdate
-			var process scc.Process
-			var nodeDataUnion scc.NodeDataUnion
-			var node scc.ScenarioNode
-
-			process.Name = instanceName
-			process.Type_ = "EDGE-APP"
-
-			nodeDataUnion.Process = &process
-
-			node.Type_ = "EDGE-APP"
-			node.Parent = mepName
-			node.NodeDataUnion = &nodeDataUnion
-
-			eventScenarioUpdate.Node = &node
-			eventScenarioUpdate.Action = "REMOVE"
-
-			event.EventScenarioUpdate = &eventScenarioUpdate
-			event.Type_ = "SCENARIO-UPDATE"
-
-			_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-			if err != nil {
-				log.Error(err)
-			}
-		}()
-
-		if sendAppTerminationWhenDone {
-			go func() {
-				//ignore any error and delete yourself anyway
-				_ = sendTerminationConfirmation(serviceAppInstanceId)
-			}()
-		}
-
-	case TRIGGER_NOTIFICATION:
-		var notification TriggerNotification
-		err = json.Unmarshal(bodyBytes, &notification)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		log.Info("Manual trigger : ", notification.DestinationMep, "---", notification.AppInstanceId, "---", notification.AssociateId.Value)
-		checkMpNotificationRegisteredSubscriptions(notification.AppInstanceId, &notification.AssociateId, notification.DestinationMep)
-	default:
+	if !appEnablementEnabled {
+		//just ignore the message
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
+
+	go func() {
+		//delete any registration it made
+		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate
+		// since it believes it never registered
+		//_ = unsubscribeAppTermination(serviceAppInstanceId)
+		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
+
+		//send scenario update with a deletion
+		var event scc.Event
+		var eventScenarioUpdate scc.EventScenarioUpdate
+		var process scc.Process
+		var nodeDataUnion scc.NodeDataUnion
+		var node scc.ScenarioNode
+
+		process.Name = instanceName
+		process.Type_ = "EDGE-APP"
+
+		nodeDataUnion.Process = &process
+
+		node.Type_ = "EDGE-APP"
+		node.Parent = mepName
+		node.NodeDataUnion = &nodeDataUnion
+
+		eventScenarioUpdate.Node = &node
+		eventScenarioUpdate.Action = "REMOVE"
+
+		event.EventScenarioUpdate = &eventScenarioUpdate
+		event.Type_ = "SCENARIO-UPDATE"
+
+		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	if sendAppTerminationWhenDone {
+		go func() {
+			//ignore any error and delete yourself anyway
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}()
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -1189,31 +1163,25 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 
 func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	var subscriptionCommon SubscriptionCommon
+
+	// Use discriminator to obtain subscription type
+	var discriminator OneOfInlineSubscription
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
+	err := json.Unmarshal(bodyBytes, &discriminator)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//extract common body part
-	subscriptionType := subscriptionCommon.SubscriptionType
+	subscriptionType := discriminator.SubscriptionType
 
-	//mandatory parameter
-	if subscriptionCommon.CallbackReference == "" {
-		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
-		return
-	}
-
-	//new subscription id
+	// Get new subscription id
 	newSubsId := nextSubscriptionIdAvailable
-	nextSubscriptionIdAvailable++
 	subsIdStr := strconv.Itoa(newSubsId)
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
 
+	// Process subscription request
 	var jsonResponse []byte
 
 	switch subscriptionType {
@@ -1226,26 +1194,40 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		link := new(AdjacentAppInfoSubscriptionLinks)
-		link.Self = self
-		subscription.Links = link
-
+		// Validate subscription
+		if subscription.CallbackReference == "" {
+			log.Error("Mandatory CallbackReference parameter not present")
+			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			return
+		}
 		if subscription.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
 			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
-		//populate mobilityStatus
+		// Set resource link
+		link := new(AdjacentAppInfoSubscriptionLinks)
+		link.Self = self
+		subscription.Links = link
+
+		// populate mobilityStatus
 		if len(subscription.FilterCriteria.MobilityStatus) == 0 {
 			subscription.FilterCriteria.MobilityStatus = append(subscription.FilterCriteria.MobilityStatus, MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED)
 		}
 
-		//registration
+		// Register subscription
 		registerMp(&subscription, subsIdStr)
 		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMobilityProcedureSubscriptionToJson(&subscription))
 
+		// Prepare response
 		jsonResponse, err = json.Marshal(subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 	case ADJACENT_APP_INFO_SUBSCRIPTION:
 		var subscription AdjacentAppInfoSubscription
 		err = json.Unmarshal(bodyBytes, &subscription)
@@ -1255,10 +1237,12 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		link := new(AdjacentAppInfoSubscriptionLinks)
-		link.Self = self
-		subscription.Links = link
-
+		// Validate subscription
+		if subscription.CallbackReference == "" {
+			log.Error("Mandatory CallbackReference parameter not present")
+			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			return
+		}
 		if subscription.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
 			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
@@ -1270,70 +1254,54 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//registration
+		// Set resource link
+		link := new(AdjacentAppInfoSubscriptionLinks)
+		link.Self = self
+		subscription.Links = link
+
+		// Register subscription
 		registerAdj(&subscription, subsIdStr)
 		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertAdjacentAppInfoSubscriptionToJson(&subscription))
 
+		// Prepare response
 		jsonResponse, err = json.Marshal(subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 	default:
-		nextSubscriptionIdAvailable--
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	//processing the error of the jsonResponse
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Increment subscription count
+	nextSubscriptionIdAvailable++
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, string(jsonResponse))
-
 }
 
 func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
+	// Parse query params
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	var subscriptionCommon SubscriptionCommon
+	// Use discriminator to obtain subscription type
+	var discriminator OneOfInlineSubscription
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
+	err := json.Unmarshal(bodyBytes, &discriminator)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//extract common body part
-	subscriptionType := subscriptionCommon.SubscriptionType
+	subscriptionType := discriminator.SubscriptionType
 
-	//mandatory parameter
-	if subscriptionCommon.CallbackReference == "" {
-		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
-		return
-	}
-
-	link := subscriptionCommon.Links
-	if link == nil || link.Self == nil {
-		log.Error("Mandatory Link parameter not present")
-		http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
-		return
-	}
-
-	selfUrl := strings.Split(link.Self.Href, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
-
-	if subsIdStr != subIdParamStr {
-		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
-		return
-	}
-
+	// Process subscription request
 	alreadyRegistered := false
 	var jsonResponse []byte
 
@@ -1347,24 +1315,44 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Validate subscription
+		if subscription.CallbackReference == "" {
+			log.Error("Mandatory CallbackReference parameter not present")
+			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			return
+		}
+		link := subscription.Links
+		if link == nil || link.Self == nil {
+			log.Error("Mandatory Link parameter not present")
+			http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
+			return
+		}
+		selfUrl := strings.Split(link.Self.Href, "/")
+		subsIdStr := selfUrl[len(selfUrl)-1]
+		if subsIdStr != subIdParamStr {
+			log.Error("SubscriptionId in endpoint and in body not matching")
+			http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+			return
+		}
 		if subscription.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
 			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
-		//populate mobilityStatus
+		// populate mobilityStatus
 		if len(subscription.FilterCriteria.MobilityStatus) == 0 {
 			subscription.FilterCriteria.MobilityStatus = append(subscription.FilterCriteria.MobilityStatus, MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED)
 		}
 
-		//registration
+		// Register subscription
 		if isSubscriptionIdRegisteredMp(subsIdStr) {
 			registerMp(&subscription, subsIdStr)
 			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMobilityProcedureSubscriptionToJson(&subscription))
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
+
 	case ADJACENT_APP_INFO_SUBSCRIPTION:
 		var subscription AdjacentAppInfoSubscription
 		err = json.Unmarshal(bodyBytes, &subscription)
@@ -1374,6 +1362,25 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Validate subscription
+		if subscription.CallbackReference == "" {
+			log.Error("Mandatory CallbackReference parameter not present")
+			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			return
+		}
+		link := subscription.Links
+		if link == nil || link.Self == nil {
+			log.Error("Mandatory Link parameter not present")
+			http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
+			return
+		}
+		selfUrl := strings.Split(link.Self.Href, "/")
+		subsIdStr := selfUrl[len(selfUrl)-1]
+		if subsIdStr != subIdParamStr {
+			log.Error("SubscriptionId in endpoint and in body not matching")
+			http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+			return
+		}
 		if subscription.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
 			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
@@ -1385,7 +1392,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//registration
+		// Register subscription
 		if isSubscriptionIdRegisteredAdj(subsIdStr) {
 			registerAdj(&subscription, subsIdStr)
 			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertAdjacentAppInfoSubscriptionToJson(&subscription))

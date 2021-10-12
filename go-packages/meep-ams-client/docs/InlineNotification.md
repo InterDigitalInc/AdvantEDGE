@@ -1,4 +1,4 @@
-# Body1
+# InlineNotification
 
 ## Properties
 Name | Type | Description | Notes

@@ -1018,15 +1018,15 @@ Retrieve information about this subscription.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
 
-@return Body
+@return InlineSubscription
 */
-func (a *AmsiApiService) SubByIdGET(ctx context.Context, subscriptionId string) (Body, *http.Response, error) {
+func (a *AmsiApiService) SubByIdGET(ctx context.Context, subscriptionId string) (InlineSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Body
+		localVarReturnValue InlineSubscription
 	)
 
 	// create path and map variables
@@ -1085,7 +1085,7 @@ func (a *AmsiApiService) SubByIdGET(ctx context.Context, subscriptionId string) 
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v Body
+			var v InlineSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1174,15 +1174,15 @@ update the existing individual subscription.
  * @param body
  * @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
 
-@return Body1
+@return InlineSubscription
 */
-func (a *AmsiApiService) SubByIdPUT(ctx context.Context, body Body1, subscriptionId string) (Body1, *http.Response, error) {
+func (a *AmsiApiService) SubByIdPUT(ctx context.Context, body InlineSubscription, subscriptionId string) (InlineSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Body1
+		localVarReturnValue InlineSubscription
 	)
 
 	// create path and map variables
@@ -1243,7 +1243,7 @@ func (a *AmsiApiService) SubByIdPUT(ctx context.Context, body Body1, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v Body1
+			var v InlineSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1516,15 +1516,15 @@ Create a new subscription to Application Mobility Service notifications.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param body
 
-@return Body
+@return InlineSubscription
 */
-func (a *AmsiApiService) SubPOST(ctx context.Context, body Body) (Body, *http.Response, error) {
+func (a *AmsiApiService) SubPOST(ctx context.Context, body InlineSubscription) (InlineSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Body
+		localVarReturnValue InlineSubscription
 	)
 
 	// create path and map variables
@@ -1584,7 +1584,7 @@ func (a *AmsiApiService) SubPOST(ctx context.Context, body Body) (Body, *http.Re
 		}
 
 		if localVarHttpResponse.StatusCode == 201 {
-			var v Body
+			var v InlineSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

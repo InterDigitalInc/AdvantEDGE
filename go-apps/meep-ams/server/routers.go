@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Application Mobility API
  *
- * Application Mobility Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.01.01_60/gs_MEC021v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about application mobility in the network <p>**Note**<br>AdvantEDGE supports all of Application Mobility API endpoints (see below).
+ * Application Mobility Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.01.01_60/gs_MEC021v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about application mobility in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Mobility API endpoints (see below).
  *
  * API version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -88,13 +88,6 @@ var routes = Routes{
 	},
 
 	Route{
-		"AdjAppInstGET",
-		strings.ToUpper("Get"),
-		"/amsi/v1/queries/adjacent_app_instances",
-		AdjAppInstGET,
-	},
-
-	Route{
 		"AppMobilityServiceByIdDELETE",
 		strings.ToUpper("Delete"),
 		"/amsi/v1/app_mobility_services/{appMobilityServiceId}",
@@ -127,13 +120,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/amsi/v1/app_mobility_services",
 		AppMobilityServicePOST,
-	},
-
-	Route{
-		"AppMobilityServiceDerPOST",
-		strings.ToUpper("Post"),
-		"/amsi/v1/app_mobility_services/{appMobilityServiceId}/deregister_task",
-		AppMobilityServiceDerPOST,
 	},
 
 	Route{
@@ -176,5 +162,19 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/amsi/v1/subscriptions/",
 		SubPOST,
+	},
+
+	Route{
+		"AdjAppInstGET",
+		strings.ToUpper("Get"),
+		"/amsi/v1/queries/adjacent_app_instances",
+		AdjAppInstGET,
+	},
+
+	Route{
+		"AppMobilityServiceDerPOST",
+		strings.ToUpper("Post"),
+		"/amsi/v1/app_mobility_services/{appMobilityServiceId}/deregister_task",
+		AppMobilityServiceDerPOST,
 	},
 }

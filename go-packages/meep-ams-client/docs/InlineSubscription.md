@@ -1,4 +1,4 @@
-# OneOfbody
+# InlineSubscription
 
 ## Properties
 Name | Type | Description | Notes

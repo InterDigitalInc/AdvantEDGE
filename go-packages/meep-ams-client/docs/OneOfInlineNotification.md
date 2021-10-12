@@ -1,4 +1,4 @@
-# OneOfbody1
+# OneOfInlineNotification
 
 ## Properties
 Name | Type | Description | Notes
