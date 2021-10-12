@@ -10,7 +10,7 @@ permalink: docs/overview/edge-services/ams/
 ## Service Overview
 AdvantEDGE provides a built-in Application Mobility Service implementation that integrates with scenarios.
 
-Application Mobility Service provides support for relocation of user context and/or application instance between MEC hosts.
+Application Mobility Service provides support for relocation of user context between MEC hosts; application instance relocation not supported.
 
 AMS defines three types of MEC application user-context transfer:
 - _Application self-controlled_
