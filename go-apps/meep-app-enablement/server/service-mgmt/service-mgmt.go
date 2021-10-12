@@ -48,7 +48,7 @@ const SER_AVAILABILITY_NOTIFICATION_TYPE = "SerAvailabilityNotification"
 const APP_STATE_READY = "READY"
 
 //const logModuleAppEnablement = "meep-app-enablement"
-const serviceName = "APP-ENABLEMENT Service"
+const serviceName = "App Enablement Service"
 
 // App Info fields
 const fieldState = "state"
