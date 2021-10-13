@@ -194,7 +194,7 @@ Settings    | <br>- General platform settings
 ### States
 A key portion of the React application state structure is shown below:
 
-``` Javascript
+```
 {
   ui: {
     page: ...,
