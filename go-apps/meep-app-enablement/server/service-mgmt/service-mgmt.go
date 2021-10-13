@@ -1240,9 +1240,11 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 		serAvailabilityRef.ChangeType = string(changeType)
 		serAvailabilityRefList = append(serAvailabilityRefList, serAvailabilityRef)
 		notif.ServiceReferences = serAvailabilityRefList
-
-		sendSerAvailNotification(sub.CallbackReference, notif)
-		log.Info("Service Availability Notification (" + idStr + ") for " + string(changeType))
+		callbackReference := sub.CallbackReference
+		go func() {
+			sendSerAvailNotification(callbackReference, notif)
+			log.Info("Service Availability Notification (" + idStr + ") for " + string(changeType))
+		}()
 	}
 }
 
