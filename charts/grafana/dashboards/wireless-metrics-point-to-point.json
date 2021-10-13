@@ -974,7 +974,7 @@
           "measurement": "events",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT type,description FROM $database.autogen.events WHERE (\"src\" =~ /^$src$/ AND (\"dest\" =~ /^$dest$/ OR \"dest\" = \'\')) AND $timeFilter ORDER BY time desc LIMIT 100",
+          "query": "SELECT type,description FROM $database.autogen.events WHERE (\"src\" =~ /^$src$/ AND (\"dest\" =~ /^$dest$/ OR \"dest\" = \"\")) AND $timeFilter ORDER BY time desc LIMIT 100",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
