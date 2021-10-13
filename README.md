@@ -6,7 +6,9 @@
 
 :zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service) to boost up your edge apps! :rocket:**
 
-:zap: **Improved metrics & storage with :earth_americas: [Geospatial network KPIs](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#geospatial-subsystem) and :card_file_box: [Metrics long-term storage](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#monitoring-subsystem)**
+:zap: **Improved network emulation & metrics: [Geospatial network KPIs](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#geospatial-subsystem) :earth_americas: provide network signal emulation based on terminal location**
+
+:zap: **Long term storage support: [Metrics long-term storage](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#monitoring-subsystem) :card_file_box: integration with Thanos & MinIO**
 
 :zap: **General Maintenance fixes :hammer_and_wrench:**
 
