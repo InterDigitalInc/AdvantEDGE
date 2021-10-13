@@ -24,5 +24,6 @@
 
 package client
 
-type OneOfbody1 struct {
+type InlineNotification struct {
+	// Not used in client code
 }

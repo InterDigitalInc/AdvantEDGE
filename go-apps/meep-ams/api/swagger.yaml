@@ -288,9 +288,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-               - $ref: '#/components/schemas/MobilityProcedureSubscription'
-               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: MobilityProcedureSubscription
               callbackReference: 'http://my.callback.com/amsi-mobility-procedure/some-id'
@@ -307,9 +305,7 @@ paths:
           content:
             application/json:
               schema:
-               oneOf:
-               - $ref: '#/components/schemas/MobilityProcedureSubscription'
-               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'  
+                $ref: '#/components/schemas/InlineSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -339,14 +335,10 @@ paths:
                 content:
                   application/json:
                     schema:
-                      oneOf:
-                      - $ref: '#/components/schemas/MobilityProcedureNotification'
-                      - $ref: '#/components/schemas/AdjacentAppInfoNotification'        
+                      $ref: '#/components/schemas/InlineNotification'
               responses:
                 '204':
                   $ref: '#/components/responses/204'
-
-
   /subscriptions/{subscriptionId}:
     parameters:
     - in: path
@@ -367,9 +359,7 @@ paths:
           content:
             application/json:
               schema:
-               oneOf:
-               - $ref: '#/components/schemas/MobilityProcedureSubscription'
-               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'        
+                $ref: '#/components/schemas/InlineSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -393,9 +383,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-               - $ref: '#/components/schemas/MobilityProcedureSubscription'
-               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'    
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: MobilityProcedureSubscription
               callbackReference: 'http://my.callback.com/amsi-mobility-procedure/some-id'
@@ -415,9 +403,7 @@ paths:
           content:
             application/json:
               schema:
-               oneOf:
-               - $ref: '#/components/schemas/MobilityProcedureSubscription'
-               - $ref: '#/components/schemas/AdjacentAppInfoSubscription'        
+                $ref: '#/components/schemas/InlineSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1037,7 +1023,19 @@ components:
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
-      type: object      
+      type: object
+    InlineSubscription:
+      oneOf:
+        - $ref: '#/components/schemas/MobilityProcedureSubscription'
+        - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
+      discriminator:
+          propertyName: subscriptionType
+    InlineNotification:
+      oneOf:
+        - $ref: '#/components/schemas/MobilityProcedureNotification'
+        - $ref: '#/components/schemas/AdjacentAppInfoNotification'
+      discriminator:
+        propertyName: notificationType
   responses:
     204:
       description: No Content

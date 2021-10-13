@@ -48,7 +48,7 @@ const APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE = "AppTerminationNotificati
 const APP_TERMINATION_NOTIFICATION_TYPE = "AppTerminationNotification"
 const DEFAULT_GRACEFUL_TIMEOUT = 10
 
-const serviceName = "APP-ENABLEMENT Service"
+const serviceName = "App Enablement Service"
 
 // App Info fields
 const fieldState = "state"

@@ -534,7 +534,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body'
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: MobilityProcedureSubscription
               callbackReference: http://my.callback.com/amsi-mobility-procedure/some-id
@@ -553,7 +553,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body'
+                $ref: '#/components/schemas/InlineSubscription'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -626,9 +626,7 @@ paths:
                 content:
                   application/json:
                     schema:
-                      oneOf:
-                      - $ref: '#/components/schemas/MobilityProcedureNotification'
-                      - $ref: '#/components/schemas/AdjacentAppInfoNotification'
+                      $ref: '#/components/schemas/InlineNotification'
                 required: true
               responses:
                 "204":
@@ -657,7 +655,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body'
+                $ref: '#/components/schemas/InlineSubscription'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -718,7 +716,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body_1'
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: MobilityProcedureSubscription
               callbackReference: http://my.callback.com/amsi-mobility-procedure/some-id
@@ -740,7 +738,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body_1'
+                $ref: '#/components/schemas/InlineSubscription'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -1394,14 +1392,18 @@ components:
           format: uri
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
-    body:
+    InlineSubscription:
+      discriminator:
+        propertyName: SubscriptionType
       oneOf:
       - $ref: '#/components/schemas/MobilityProcedureSubscription'
       - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
-    body_1:
+    InlineNotification:
+      discriminator:
+        propertyName: NotificationType
       oneOf:
-      - $ref: '#/components/schemas/MobilityProcedureSubscription'
-      - $ref: '#/components/schemas/AdjacentAppInfoSubscription'
+      - $ref: '#/components/schemas/MobilityProcedureNotification'
+      - $ref: '#/components/schemas/AdjacentAppInfoNotification'
     AdjacentAppInfoSubscription__links:
       type: object
       properties:
