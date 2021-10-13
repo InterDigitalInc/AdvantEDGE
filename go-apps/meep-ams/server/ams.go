@@ -747,8 +747,11 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 							}
 						}
 					}
-					sendAdjNotification(sub.CallbackReference, notif)
-					log.Info("Adjacent Notification" + "(" + subsIdStr + ")")
+
+					go func() {
+						sendAdjNotification(sub.CallbackReference, notif)
+						log.Info("Adjacent Notification" + "(" + subsIdStr + ")")
+					}()
 				}
 			}
 		}
@@ -773,10 +776,11 @@ func checkPeriodicTrigger() {
 	// Update appInfo map & get list of updated entries
 	updatedApps := []string{}
 	for _, appInfo := range appInfoList {
-		oldAppInfo := appInfoMap[appInfo.Id]
-		if hasApplicationInfoChanged(oldAppInfo, &appInfo) {
-			updatedApps = append(updatedApps, appInfo.Name)
-			appInfoMap[appInfo.Id] = &appInfo
+		oldAppInfo, found := appInfoMap[appInfo.Id]
+		if !found || hasApplicationInfoChanged(oldAppInfo, &appInfo) {
+			newAppInfo := appInfo
+			updatedApps = append(updatedApps, newAppInfo.Name)
+			appInfoMap[appInfo.Id] = &newAppInfo
 		}
 	}
 
@@ -1008,8 +1012,10 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.TargetAppInfo = &targetAppInfo
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendMpNotification(subscription.CallbackReference, notif)
-				log.Info("Mobility_procedure Notification" + "(" + subsIdStr + ")")
+				go func() {
+					sendMpNotification(subscription.CallbackReference, notif)
+					log.Info("Mobility_procedure Notification" + "(" + subsIdStr + ")")
+				}()
 			}
 		}
 	}
