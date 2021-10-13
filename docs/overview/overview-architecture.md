@@ -45,7 +45,7 @@ _Platform Subsystem_ | Control interactions between the user (GUI) and other mic
 _Virtualization Subsystem_ | Deploy/Delete sandbox & scenario containers
 _Access/Admission Subsystem_ | L7-HTTP ingress router/docker images storage/K8s admission hooks
 _Monitoring Subsystem_ | Monitor the state of platform & sandbox containers
-_Metrics Subsystem_ | Collect platform wide metrics
+_Metrics Subsystem_ | Collect & store platform wide metrics
 
 The following components compose each AdvantEDGE Sandbox:
 
