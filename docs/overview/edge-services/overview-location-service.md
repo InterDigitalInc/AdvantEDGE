@@ -15,10 +15,10 @@ This feature provides the following capabilities:
 - _Learning information on all devices located within a zone or connected to a point-of-access_
 - _Getting real-time updates on device location as they move across the network_
 
-### Micro-Services
+## Micro-Services
   - _Location Service:_ Implements ETSI MEC013 northbound API with a custom integration with AdvantEDGE APIs
 
-### Northbound API
+## Northbound API
 - Location Service is compliant with the ETSI MEC013 Specification, v2.1.1:
   - [ETSI GS MEC 013 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
   - [ETSI Forge - Location API repository](https://forge.etsi.org/gitlab/mec/gs013-location-api)
@@ -29,7 +29,7 @@ This feature provides the following capabilities:
   - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-location)
   - Based on OpenAPI Specification (OAS) 3.0
 
-### AdvantEDGE Integration
+## AdvantEDGE Integration
 - Location service is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox
 
 - 3 components:

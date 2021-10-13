@@ -5,6 +5,7 @@ parent: Usage
 nav_order: 4
 ---
 
+## First Scenario
 AdvantEDGE scenario is a yaml file that describes components of a macro-network with edge components.
 
 The scenario model follows a tree-like shape that starts with the scenario as the root element and extends all the way to the processes as the leaf elements.
@@ -24,7 +25,7 @@ From AdvantEDGE GUI
 - Name your scenario `my-first-scenario`
 - Hit **OK** & **Save**
 
-> _You successfully saved your scenario in the document store <br>If you close the browser now or restart AdvantEDGE, you can retrieve it by using **Open** and select it from the drop-down menu_
+_**NOTE:** You successfully saved your scenario in the document store<br>If you close the browser now or restart AdvantEDGE, you can retrieve it by using **Open** and select it from the drop-down menu_
 
 Changes made to the scenario in the AdvantEDGE GUI are not propagated to the document store until **Save** is pressed. Auto-save is currently not supported.
 
@@ -62,11 +63,7 @@ From AdvantEDGE GUI
   - Protocol `UDP`
   - Command: `/bin/bash`
   - Arguments: `-c, iperf -u -s -p $IPERF_CLOUD_SERVER_SERVICE_PORT`
-  > NOTES:<br>
-  gophernet is the registry and iperf-server the container image name; default registry when none is specified is dockerhub<br>
-  Command: starts a bash shell<br>
-  Arguments: -c=tells bash to read command from string, iperf...=starts iperf server in UDP on port 80
-
+  - _NOTES:<br>  gophernet is the registry and iperf-server the container image name; default registry when none is specified is dockerhub<br>  Command: starts a bash shell<br>  Arguments: -c=tells bash to read command from string, iperf...=starts iperf server in UDP on port 80_
 
   - Add a **EDGE APPLICATION** named `iperf-fog-server` to `fog1`
     - Container image name: `gophernet/iperf-server`
@@ -74,15 +71,13 @@ From AdvantEDGE GUI
     - Protocol `UDP`
     - Command: `/bin/bash`
     - Arguments: `-c, iperf -u -s -p $IPERF_FOG_SERVER_SERVICE_PORT`
-    > NOTES:<br>
-    Arguments: iperf...=starts iperf server in UDP on port 80
+    - _NOTES:<br>  Arguments: iperf...=starts iperf server in UDP on port 80_
 
 - Add a **TERMINAL APPLICATION** named `iperf-cloud-client` to `ue1`
     - Container image name: `gophernet/iperf-client`
     - Command: `/bin/bash`
     - Arguments: `-c, iperf -u -c $IPERF_CLOUD_SERVER_SERVICE_HOST -p $IPERF_CLOUD_SERVER_SERVICE_PORT -t 3600 -b 50M;`
-    > NOTES:<br>
-    Arguments: iperf...=starts iperf client in UDP connect to CLOUD server IP on port 80 & do 50Mbps for 3600secs
+    - _NOTES:<br>  Arguments: iperf...=starts iperf client in UDP connect to CLOUD server IP on port 80 & do 50Mbps for 3600secs_
 
 - We will now add a 2nd TERMINAL called `ue2` by cloning `ue1`
   - Select `ue1` in the network topology
@@ -105,15 +100,15 @@ From AdvantEDGE GUI
   - latency: 100-150ms with all other nodes
   - throughput: ~50Mbps downlink from both `ue1` & `ue2`
 
-> **Network Metrics Aggregation dashboard**<br>
-allows to observe latency characteristics between nodes; it refreshes every second.<br>
-Latencies graph shows measured latency between _src_ node & other nodes from the scenario<br>
-Variation in latency is introduced by the jitter parameter.<br>
-Uplink & Downlink throughput is the measured throughput between the selected node & other nodes from the scenario<br>
-Events show the events injected in the scenario; these appear as vertical lines on the graphs_
+_**Network Metrics Aggregation dashboard**<br>_
+_allows to observe latency characteristics between nodes; it refreshes every second.<br>_
+_Latencies graph shows measured latency between **src** node & other nodes from the scenario<br>_
+_Variation in latency is introduced by the jitter parameter.<br>_
+_Uplink & Downlink throughput is the measured throughput between the selected node & other nodes from the scenario<br>_
+_Events show the events injected in the scenario; these appear as vertical lines on the graphs_
 
 - Send a mobility event to move **ue2** to **poa2**
-> Event appears on the graphs; selecting `ue2` as the source you notice that edge-app & `ue1` latency increased
+_**NOTE:** Event appears on the graphs; selecting `ue2` as the source you notice that edge-app & `ue1` latency increased_
 
 - Terminate the scenario
 

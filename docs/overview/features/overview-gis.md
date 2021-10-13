@@ -17,22 +17,27 @@ This feature provides the following capabilities:
   - Wireless signal range limits: PoAs
   - Path/speed/end-of-path (EOP) actions: UEs
   - Wireless type support & priorities: UEs
-- _Map interactions_:
+- _Geospatial measurements_
+  - Distance & signal strength calculations
+  - Measurements caching
+- _Map interactions_
   - Configuration & visualization of geospatial characteristics
   - Observation of geospatial assets on map at runtime
-- _Geospatial Automations_:
+- _Geospatial Automations_
   - Mobility events: UE connects to PoA according to PoA Selection algorithm
   - UE movement: UE follows defined path according to speed & EOP action
   - PoA in-range events: generates event listing all PoA in range
   - Network Characteristic update events: drive network characteristics based on distance from PoA (**v1.6+**)
   - Provides a more complete emulation for Location, RNI & WAI services
 
-### Micro-Services
+## Micro-Services
   - _Map server:_ Open Map Tiles is used to serve map data required by the frontend
   - _GIS Engine:_ Implements the GIS REST API
-  - _Database:_ Postgres/Postgis backend database to store geospatial assets & perform calculations
+  - _Databases:_ 
+    - Postgres/Postgis backend database to store geospatial assets & perform calculations
+    - Redis backend database to cache geospatial measurements
 
-### Scenario Configuration
+## Scenario Configuration
 
 Element | Description
 ------ | ------
@@ -42,7 +47,7 @@ Terminal movement | It is possible to define a path for terminals and configure 
 Zone color coding | Zones can be assigned a color so that all PoAs belonging to a zone can easily be recognized on the map
 Map interactions | To facilitate configuration, geolocation of objects and path definitions are performed by interacting with the map
 
-### Scenario Runtime
+## Scenario Runtime
 
 GIS Runtime | Description
 ------ | ------
@@ -50,19 +55,20 @@ Runtime map | Real-time observation of geospatial assets position while a scenar
 Mobility events Automation | Mobility events are automated based on terminal position and available wireless signal; terminal connects to the closest supported PoA in range and supports disconnection event when no suitable wireless signal is available
 UE movement automation | Terminals follow configured path according to speed & EOP behavior configured; terminals can be paused if desired
 PoA in-range events | Application state transfer requires to know PoAs in range of the UE; these events can be automatically generated as the UE moves throught he network
-Net.char events automation | A terminal's throughput is influenced by its signal strength; network characteristics can thgerefore be automated using distance to PoA of the terminal
+Net.char events automation | A terminal's throughput is influenced by its signal strength; network characteristics can therefore be automated using distance to PoA of the terminal
+Measurements caching | Geospatial measurements are calculated periodically and cached for quick access
 ETSI MEC Services | Some ETSI MEC services have geospatial component which is now integrated with GIS to provide accurate emulation
 
-### Using GIS feature
+## Using GIS feature
 
 ### Map Provisioning
 AdvantEDGE provides an integrated GIS service but does not provide any Map data out of the box. Prior to using the feature, it is therefore necessary to download the desired vector/raster map tiles that you will need for your experiment. These can be downloaded from [Open Map Tiles](https://openmaptiles.com/downloads/planet/) (we tested with _OpenStreetMap Vector Tiles_). Most maps have a free version available to experiment but may require a license fee for newer versions or to use in other contexts.
 
-> **NOTE:** The Planet map file represent ~60GB of data, we therefore recommend to use only the region for which you are experimenting.
+_**NOTE:** The Planet map file represent ~60GB of data, we therefore recommend to use only the region for which you are experimenting._
 
 Once the map `.mbtiles` file is downloaded, copy it in the following location `<your-installation-folder>/.meep/omt`
 
-> **NOTE:** Only a single `.mbtiles` file is supported at once.
+_**NOTE:** Only a single `.mbtiles` file is supported at once._
 
 ### Scenario Configuration
 To use the capabilities offered by GIS, it is necessary to configure geospatial information in the scenario, either by updating an existing scenario or  creating a new scenario from scratch.
@@ -73,7 +79,7 @@ The map view is used to interactively place elements on the map, change existing
 
 The configuration pane is used to set other data such as PoA signal radius, speed, EOP action or UE supported wireless types.
 
-> **NOTE:** When interacting with the map to configure geospatial data or any other configuration field, it is necessary to hit the `APPLY` button to retain modifications.
+_**NOTE:** When interacting with the map to configure geospatial data or any other configuration field, it is necessary to hit the `APPLY` button to retain modifications._
 
 ![gis-config.png]({{site.baseurl}}/assets/images/gis-config.png)
 

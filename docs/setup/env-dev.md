@@ -31,32 +31,32 @@ See [Ubuntu runtime setup]({{site.baseurl}}{% link docs/setup/env-runtime.md %}#
 ----
 ## Go Toolchain
 
-> :exclamation: **BREAKING CHANGE** :exclamation:<br> With AdvantEDGE release v1.7+, **pre-1.13 Go toolchains are no longer supported**.
+_:exclamation: **BREAKING CHANGE** :exclamation:<br> With AdvantEDGE release v1.7+, **pre-1.13 Go toolchains are no longer supported**._
 
 We use the official [Go Programming Language install procedure](https://golang.org/doc/install)
 
 Versions we use:
 
-- 1.14, 1.15 <br>(version 1.13 used to work - not tested anymore)
+- 1.14, 1.15, 1.16 <br>(version 1.13 used to work - not tested anymore)
 
 How we do it:
 
-###### STEP 1 - Download Go linux tarball [(here)](https://golang.org/dl/)
+##### STEP 1 - Download Go linux tarball [(here)](https://golang.org/dl/)
 
-###### STEP 2 - Unzip tarball & install
+##### STEP 2 - Unzip tarball & install
 
 ```
 # Example tarball: go1.15.3.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz
 ```
 
-###### STEP 3 - Create Go working directory
+##### STEP 3 - Create Go working directory
 
 ```
 mkdir -p ~/gocode/bin
 ```
 
-###### STEP 4 - Update PATH in bashrc
+##### STEP 4 - Update PATH in bashrc
 
 ```
 # Add the following lines at the end of your $HOME/.bashrc
@@ -64,13 +64,13 @@ export GOPATH=$HOME/gocode
 export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
 ```
 
-###### STEP 5 - Apply profile updates
+##### STEP 5 - Apply profile updates
 
 ```
 source ~/.bashrc
 ```
 
-###### STEP 6 - Verify install
+##### STEP 6 - Verify install
 
 ```
 which go
@@ -96,31 +96,30 @@ Versions we use:
 
 How we do it:
 
-###### STEP 1 - Install dependencies
+##### STEP 1 - Install dependencies
 
 ```
 sudo apt-get update
 sudo apt-get install build-essential libssl-dev
 ```
 
-###### STEP 2 - Download & install NVM
+##### STEP 2 - Download & install NVM
 
 ```
 curl -skL https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh -o install_nvm.sh
 bash install_nvm.sh
 ```
 
-###### STEP 3 - Apply profile updates
+##### STEP 3 - Apply profile updates
 
 ```
 source ~/.profile
 ```
 
-###### STEP 4 - Install Node.js (latest LTS version)
+##### STEP 4 - Install Node.js (latest LTS version)
 
->**IMPORTANT NOTE**<br>
-Latest LTS version 12+ causes demo1 build failures (see issue [here](https://github.com/InterDigitalInc/AdvantEDGE/issues/32))<br>
-Workaround is to install previous LTS version 10 until issue is fixed
+_**IMPORTANT NOTE:** Latest LTS version 12+ causes demo1 build failures (see issue [here](https://github.com/InterDigitalInc/AdvantEDGE/issues/32))<br>
+Workaround is to install previous LTS version 10 until issue is fixed_
 
 ```
 # Retrieve & install latest LTS Node.js versions
@@ -128,13 +127,13 @@ nvm ls-remote | grep "Latest LTS"
 nvm install 10.16.3
 ```
 
-###### STEP 5 - Update NPM version bundled with Node.js
+##### STEP 5 - Update NPM version bundled with Node.js
 
 ```
 npm install -g npm
 ```
 
-###### STEP 6 - Verify install
+##### STEP 6 - Verify install
 
 ```
 node -v
@@ -164,19 +163,19 @@ Versions we use:
 
 How we do it:
 
-###### STEP 1 - Install ESLint globally
+##### STEP 1 - Install ESLint globally
 
 ```
 npm install -g eslint@5.16.0
 ```
 
-###### STEP 2 - Install ESLint React plugin
+##### STEP 2 - Install ESLint React plugin
 
 ```
 npm install -g eslint-plugin-react
 ```
 
-###### STEP 3 - Verify install
+##### STEP 3 - Verify install
 
 ```
 eslint -v
@@ -195,14 +194,14 @@ Versions we use:
 
 How we do it:
 
-###### STEP 1 - Install GolangCI-Lint
+##### STEP 1 - Install GolangCI-Lint
 
 ```
 cd ~
 GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
 ```
 
-###### STEP 2 - Verify install
+##### STEP 2 - Verify install
 
 ```
 golangci-lint --version

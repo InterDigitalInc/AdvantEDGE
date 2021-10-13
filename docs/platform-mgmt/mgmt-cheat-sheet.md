@@ -82,10 +82,29 @@ parameter | description | default
 `auth.gitlab.token-url`  | GitLab access token URL | `https://gitlab.com/oauth/token`
 `auth.gitlab.redirect-uri`  | GitLab OAuth redirect URI | `https://my-platform-fqdn/platform-ctrl/v1/authorize`
 `auth.gitlab.secret`  | GitLab OAuth k8s secret<br> Data:<br> -> _client-id_: GitLab OAuth app client ID<br> -> _secret_: GitLab OAuth app secret | `meep-oauth-gitlab`
+`metrics.influx.enabled`  | Enable influx data backups | `false`
+`metrics.influx.url`  | Object store url | `my-object-store-fqdn`
+`metrics.influx.secret`  | Object store configuration secret | `meep-influx-objstore-config`
+`metrics.influx.retention`  | Number of days to retain daily data backups | `7`
+`metrics.prometheus.external-labels.region`  | Deployment region (geographic or logical) | `idcc`
+`metrics.prometheus.external-labels.monitor`  | Function being monitored | `advantedge`
+`metrics.prometheus.external-labels.promenv`  | Prometheus environment (_dev_ or _prod_) | `prod`
+`metrics.prometheus.external-labels.replica`  | Unique deployment identifier | `platform-ip`
+`metrics.thanos.enabled`  | Enable Thanos | `false`
+`metrics.thanos.secret`  | Object store configuration secret | `meep-thanos-objstore-config`
+`metrics.thanos.query.enabled`  | Enable querier | `true`
+`metrics.thanos.query-frontend.enabled`  | Enable query frontend | `true`
+`metrics.thanos.store-gateway.enabled`  | Enable store gateway | `true`
+`metrics.thanos.compactor.enabled`  | Enable compactor | `false`
+`metrics.thanos.compactor.retention.resolution-raw`  | Raw data retention | `30d`
+`metrics.thanos.compactor.retention.resolution-5m`  | 5m downsampled data retention | `60d`
+`metrics.thanos.compactor.retention.resolution-1h`  | 1h downsampled data retention | `10y`
+`metrics.thanos.thanos-archive.enabled`  | Enable Thanos archive | `false`
+`metrics.thanos.thanos-archive.secret`  | Archive object store configuration secret | `meep-thanos-archive-objstore-config`
 
 Dependency microservices and Core & Sandbox Subsystem microservices may also be modified using this configuration file. For example, specific microservices can be excluded from a platform build or deployment if not required.
 
-> **NOTE:** Modifying microservice configuration is only recommended for advanced platform users
+_**NOTE:** Modifying microservice configuration is only recommended for advanced platform users_
 
 ---
 ## Deployment files & paths
@@ -118,7 +137,7 @@ AdvantEDGE platform API and frontend are served via an ingress controller on por
 
 The following tables present a summary of the service exposure.
 
-#### DEPENDENCY
+### DEPENDENCY
 
 Module | type | default
 -|-|-
@@ -133,10 +152,12 @@ postgis             |internal | -
 prometheus          |internal | -
 redis               |internal | -
 
-#### PLATFORM
+### PLATFORM
 
 Module | type | default
 -|-|-
+meep-ams            |ingress  | `/<sandbox-name>/amsi`
+meep-app-enablement |ingress  | `/<sandbox-name>/mec_app_support`<br>`/<sandbox-name>/mec_service_mgmt`
 meep-auth-svc       |ingress  | `/auth`
 meep-gis-engine     |ingress  | `/<sandbox-name>/gis`
 meep-loc-serv       |ingress  | `/<sandbox-name>/location`

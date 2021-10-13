@@ -5,8 +5,7 @@ parent: Usage
 nav_order: 5
 ---
 
-# Demo1
-
+## Demo1
 A simple scenario used to showcase platform capabilities.
 
 This scenario is composed of three applications (_iperf-server_, _iperf-proxy & _demo-server_) deployed across multiple tiers of the network (fog/edge/cloud).
@@ -31,7 +30,6 @@ The platform capabilities demonstrated with this scenario are:
 - Monitoring (demo specific dashboards)
 
 ## Scenario composition
-
 The scenario is composed of the following components:
 
 - 2 distant cloud application: _iperf_ server and _demo_ server
@@ -44,30 +42,26 @@ The scenario is composed of the following components:
   - 1 internal UE that runs an iperf client
   - 1 external UE that runs a Demo client
 
-#### Internal UE application
-
+### Internal UE application
 Upon scenario startup, internal UE application (an iperf client) connects automatically to the closest iperf server and starts transferring traffic.
 
 As the UE moves around the network, edge node instance will change.
 
-#### External UE
-
+### External UE
 External UE application is a javascript application running in an external browser.
 
-To start the aooplcation, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
+To start the application, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
 
 The application shows details about the connection, allows to start a state counter and iperf traffic and presents an image. See Iperf & Demo server sub-sections for more details.
 
-#### Iperf server
-
+### Iperf server
 This is a standard iperf server that will terminate iperf client connections.
 
 There is an iperf client running in the internal UE and another one in the external UE.
 
 External UE needs the iperf proxy running to be able to control the iperf client from the javascript GUI.
 
-#### Demo server
-
+### Demo server
 Demo server is a web server that maintains a UE state and also stores unique data.
 Only the external UE accesses the demo server.
 
@@ -79,13 +73,11 @@ On the UE GUI, the counter is started by pressing the button.
 When the external UE moves in the network and transitions from one edge instance to another, the "UE state" (e.g. the counter value) is transferred using the application state transfer. On the UE GUI, the counter continue incrementing (e.g. not reset to zero) when the UE moves in the network.
 
 ## Using the scenario
-
 The following steps need to be done prior to using this scenario
 
-#### Obtain demo binaries
+### Obtain demo binaries
 
 ##### Build from source
-
 To build _iperf-proxy_ & _demo-server_ binaries from source code:
 
 ```
@@ -93,21 +85,19 @@ cd ~/AdvantEDGE/examples/demo1/
 ./build-demo1.sh
 ```
 
-> **NOTE:** Binary files are created in ./bin/ folder
+_**NOTE:** Binary files are created in ./bin/ folder_
 
 ##### Optionally use pre-built binaries (from GitHub release)
-
 ```
 # Get bin folder tarball from desired release
 cd ~/AdvantEDGE/examples/demo1
 tar -zxvf demo1.<version>.linux-amd64.tar.gz
 ```
 
-#### Dockerize demo applications
-
+### Dockerize demo applications
 Demo Application binaries must be dockerized (containerized) as container images in the Docker registry. This step is necessary every time the demo binaries are updated.
 
-> **NOTE:** Make sure you have deployed the AdvantEDGE dependencies (e.g. docker registry) before dockerizing the demo binaries.
+_**NOTE:** Make sure you have deployed the AdvantEDGE dependencies (e.g. docker registry) before dockerizing the demo binaries._
 
 To generate docker images from demo binary files:
 
@@ -116,8 +106,7 @@ cd ~/AdvantEDGE/examples/demo1/
 ./dockerize.sh
 ```
 
-#### Start iperf proxy
-
+### Start iperf proxy
 Do it everytime you start using the demo when the iperf-proxy is not running
 
 This demo scenario requires iperf installed on the AdvantEDGE host and the iperf proxy running.

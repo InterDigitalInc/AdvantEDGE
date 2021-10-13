@@ -27,11 +27,11 @@ This feature provides the following capabilities:
 - _API to trigger PDU session management_
   - Allows to create and delete PDU sessions
 
-### Micro-Services
+## Micro-Services
 - _Sandbox Controller:_ Connectivity API & manages connectivity events
 - _Traffic Control Engine:_ Enforces the real-time connectivity rules & network characteristics
 
-### Scenario Configuration
+## Scenario Configuration
 
 Element | Description
 ------ | ------
@@ -40,7 +40,7 @@ Data Network Name | On compute physical nodes (cloud/edge/fog), assigns a name t
 Local Area Data Network (LADN) | On compute physical nodes (cloud/edge/fog), indicates if the DN is local to its zone
 Edge Compute Service Provider | On compute physical nodes (edge/fog), indicates the name of the service provider
 
-### Scenario Runtime
+## Scenario Runtime
 
 Runtime | Description
 ------ | ------
@@ -48,9 +48,9 @@ Sandbox Controller | Sandbox controller implements the REST API used to manage (
 Traffic Control Engine | On PDU session changes, TC Engine re-evaluates all connectivity rules; if a new PDU session is established, traffic will be allowed between the terminal and the DNs services.
 Hierarchical Network Topology | Shows a real-time list of active PDU sessions that a terminal has; hovering over a terminal brings a contextual pop-up indicating the terminal configuration and actual PDU sessions
 
-### Using PDU connectivity model
+## Using PDU connectivity model
 
-#### Scenario Configuration
+### Scenario Configuration
 At runtime, the connectivity model present in the scenario indicates to AdvantEDGE how emulation should be performed.
 - `OPEN` connectivity is the default & legacy mode; in this mode, all terminals present in the scenario can communicate with all compute nodes (cloud/edge/fog) regardless of their network location.
 - `PDU` connectivity is the new mode; in this mode, terminals must establish a PDU session to a Data Network (DN) before they can consume services located in this DN
@@ -67,11 +67,10 @@ When building the network and configuring compute nodes:
   - LADN: when selected, the serving area of the DN is limited to the local zone where the DN is located; a terminal will therefore need to have a PDU session to the DN and be attached to a PoA located in the same zone as the DN to establish communication to a LADN.
   - ECSP: not used in the current implementation.
 
-#### Scenario Execution
+### Scenario Execution
 Immediately after deploying a scenario using the PDU connectivity model, terminals cannot communicate with any of the cloud/edge/fog nodes; in order to establish communication, a terminal minimally needs to create a PDU session. Typically, a terminal should establish a PDU session to the `internet` DNN and then establish PDU sessions to edge DNs as required.
 
-**Creating a PDU session**
-
+##### Creating a PDU session
 There are 3 methods for creating a PDU session:
 - `POST /connectivity/pdu-session/...` endpoint of the sandbox controller
 - `POST /events/...` endpoint of the sandbox controller
@@ -85,8 +84,7 @@ Depending on the experiments conducted by a user, the proper method for creating
 
 A terminal can have many PDU sessions concurrently active, for example, if it needs to use `internet` resources and edge resources located in `dn1` and `dn2`.
 
-**Using a PDU session**
-
+##### Using a PDU session
 After a PDU session is created, the TC engine evaluates if the terminal can communicate with the resources located in the DN. If the terminal is allowed to communicate, the network characteristics will be applied to the path between the terminal and DN resources according to AdvantEDGE emulation rules. From that moment, the terminal has IP connectivity with the DN resources.
 
 If the terminal moves in the network (e.g. mobility event)
@@ -99,6 +97,5 @@ Network characteristics changes apply normally to active PDU sessions.
 
 In the execution view, active PDU sessions of a terminal are listed on the network topology graph when clicking on a terminal.
 
-**Terminating a PDU session**
-
+##### Terminating a PDU session
 PDU sessions can be deleted at any time using one of the 3 methods previously mentioned for creation.

@@ -24,7 +24,8 @@ nav_order: 2
 | 12-2020 |[1.6.0](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.6.0)|- New MEC Service: ETSI-MEC WLAN Access Information Service (WAIS)<br>- ETSI MEC RNIS & Location Service graduate to v2.1.1<br>- Support different PoA radio technologies (5G/4G/WLAN), UE radio technologies & UE disconnected state<br>- Possibility to limit CPU and Memory on scenario pods<br>- Network characteristics automaion based on geolocation<br>- Zone color coding on map + other map improvements<br>- Platform API and GIS engine API improvements<br>- Ansible playbook for dev. environment<br>- Support for Ubuntu 20.04/K8s 1.19 & transition to Helm v3<br>- Support for Open API v3.0 specifications<br>- Various deployment knobs added (Let's Encrypt CA certs, max users, session management, user roles, OAuth) to support diverse deployments of the platform<br>- Various bug fixes
 |01-2021 | [1.6.1](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.6.1)| - Helm related hotfix
 |04-2021 | [1.7.0](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.7.0)| - Process lifecycle API to control containers @ scenario runtime<br>- Network reachability/connectivity to control reachability of the network @ scenario runtime<br>- Improved platform monitoring & KPIs (Prometheus)<br>- New dashboards<br>- RNIS improvements (L2Meas, measurement reports) 
-|09-2021 | 1.8.0| TBD
+|09-2021 | [1.8.0](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.8.0)| - New MEC Service: ETSI-MEC Edge Application Enablement Service<br>- New MEC Service: ETSI-MEC Application Mobility Service<br>- Geopspatial measurements caching (distance & signal strength)<br>- Wireless Metrics dashboards in frontend<br>- Long-term metrics storage capabilities
+|12-2021 | 1.9.0| TBD
 
 ## Project Roadmap
 

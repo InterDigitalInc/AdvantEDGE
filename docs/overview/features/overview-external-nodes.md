@@ -19,10 +19,10 @@ This feature provides the following capabilities:
   - Network Characteristics: network characteristics are applied to ingress/egress flows from/to the external device
   - Events: scenario events impacts network characteristics from/to the external device
 
-### Micro-Services
+## Micro-Services
   - _shadow-pod:_ a shadow pod is created for every external node; it is in this pod that the network emulation of external devices happen
 
-### Scenario Configuration
+## Scenario Configuration
 
 Element | Description
 ------ | ------
@@ -30,15 +30,15 @@ External App | _Process:_ [terminal,edge,cloud] Indicates if a process is runnin
 Ingress Service Mapping | _Process:_ [terminal,edge,cloud] Provides a mapping for flows comming from the external node; maps an `external port` to an `internal service`. Traffic sent to the designated port will be redirected to the internal service
 Egress Service Mapping | _Process:_ [terminal,edge,cloud] Provides a mapping for flows going to an external node; maps an `internal service` to an `external IP address`. Traffic sent to the internal service will be redirected to the external IP address.
 
-### Scenario Runtime
-#### Internal node
+## Scenario Runtime
+### Internal node
 An internal node has its application(s) running inside the AdvantEDGE platform; these applications have the following characteristics:
 - application runs in a K8s pod that has its own IP address
 - applications can discover edge applications using the platform DNS server
   - to access single-edge application, send a DNS request for the *edge application name*
   - to access multi-edge application, send a DNS request for the *edge-group name*
 
-#### External node
+### External node
 An external node has its application(s) running outside of the AdvantEDGE platform; these applications have the following characteristics:
 - application runs on a node that has its own IP address which is unknown to AdvantEDGE
 - application can discover edge applications via the port map registry API (see below) as it does not have access to the platform DNS server
@@ -46,7 +46,7 @@ An external node has its application(s) running outside of the AdvantEDGE platfo
   - to access multi-edge application, query the port map registry API providing the UE name and the *edge-group name*
   - Alternatively, ports can be provisioned manually in the UE if using the registry is not desired
 
-#### External node support
+### External node support
 One of the complexities of supporting external nodes is applying network characteristics to the traffic flows as if they were running on the simulation platform.
 
 To enable this use case, AdvantEDGE creates a K8s pod that runs on the platform for **each** external node. External applications accessing internal services (edge/fog/distant cloud), or internal applications accessing external services must do so by routing traffic flows through their respective shadowing pod. This makes it possible for AdvantEDGE to track an external node location through the network and to apply the required network characteristics to that node.<br>
@@ -96,7 +96,7 @@ It is important to note that all combinations are supported:
 - Internal-UE to External Edge/Fog/cloud Server
 
 
-#### Port Mapping
+### Port Mapping
 Since AdvantEDGE components are co-located on a single physical platform, services exposed externally all share the same IP address. Services are therefore exposed  externally on different port numbers. This imposes some port management for the scenario designer.
 
 As shown on the following figure, this requires to expose a port for every service accessed externally. These ports are statically configured by the scenario designer at scenario creation time.
@@ -120,12 +120,13 @@ To help the user with port mapping management, AdvantEDGE provides two features:
   - port `31222` to access a service called `iperf`
   - port `31112` to access a service called `cloud-svc`
   - port `31223` to access a service called `cloud1-iperf`
-  ```
-  # NOTE: Set your sandbox name in this command
-  curl -X GET "http://192.168.1.1/<sandbox-name>/v1/active/serviceMaps" -H "accept: application/json"
 
-  # pretty-printed
-  [
+```
+# NOTE: Set your sandbox name in this command
+curl -X GET "http://192.168.1.1/<sandbox-name>/v1/active/serviceMaps" -H "accept: application/json"
+
+# pretty-printed
+[
   {
     "node": "ue2-svc",
     "ingressServiceMap": [
@@ -156,4 +157,4 @@ To help the user with port mapping management, AdvantEDGE provides two features:
     ]
   }
 ]
-  ```
+```

@@ -36,7 +36,7 @@ Loads the Grafana frontend in a new browser tab with a connection to the _meep-g
 ## Dashboard Configuration Pane
 This section provides an editable list of dashboards. The default dashboards can't be removed or modified. Additional dashboards can be added, modified or removed as follows:
 
-> **NOTE:** Any user-configured dashboards will be deleted if the web application local storage is cleared via the browser or the Settings View button to clear the UI cache.
+_**NOTE:** Any user-configured dashboards will be deleted if the web application local storage is cleared via the browser or the Settings View button to clear the UI cache._
 
 **Create Dashboard:**
 - Click _NEW_
@@ -56,4 +56,4 @@ This section provides an editable list of dashboards. The default dashboards can
 ## Visualization Iframe
 This section uses an iframe to load the selected dashboard URL into the frontend.
 
-> **NOTE:** Certain websites don't allow iframe embedding. Dashboards will only load if the _X-Frame-Options_ are not set in the http response.
+_**NOTE:** Certain websites don't allow iframe embedding. Dashboards will only load if the **X-Frame-Options** are not set in the http response._

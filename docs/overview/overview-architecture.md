@@ -35,7 +35,7 @@ _Scenario_ | containers implementing an edge application use case
 
 High-level overview of AdvantEDGE micro-service architecture:
 
-![micro-service arch]({{site.baseurl}}/assets/images/architecture.png)
+[![micro-service arch]({{site.baseurl}}/assets/images/architecture.png)]({{site.baseurl}}/assets/images/architecture.png)
 
 The following subsystems compose the AdvantEDGE Platform:
 
@@ -45,7 +45,7 @@ _Platform Subsystem_ | Control interactions between the user (GUI) and other mic
 _Virtualization Subsystem_ | Deploy/Delete sandbox & scenario containers
 _Access/Admission Subsystem_ | L7-HTTP ingress router/docker images storage/K8s admission hooks
 _Monitoring Subsystem_ | Monitor the state of platform & sandbox containers
-_Metrics Subsystem_ | Collect platform wide metrics
+_Metrics Subsystem_ | Collect & store platform wide metrics
 
 The following components compose each AdvantEDGE Sandbox:
 
@@ -59,11 +59,13 @@ _Metrics Engine_ | Provide an interface to retrieve stored metrics
 _Location Service_ | Provide an ETSI-MEC compliant Location service API
 _RNI Service_ | Provide an ETSI-MEC compliant Radio Network Information Service API
 _WAI Service_ | Provide an ETSI-MEC compliant WLAN Access Information Service API
+_App Enablement Service_ | Provide an ETSI-MEC compliant Edge Application Enablement Service (App Support API & Service Management API)
+_Application Mobility Service_ | Provide an ETSI-MEC compliant Application Mobility Service API
 
 ## Network Model
 AdvantEDGE uses the following model to define a scenario.
 
-![network model]({{site.baseurl}}/assets/images/model.png)
+[![network model]({{site.baseurl}}/assets/images/model.png)]({{site.baseurl}}/assets/images/model.png)
 
 Layer | Description
 ---------|------------
@@ -77,7 +79,7 @@ _Process_ | The "leaf" of the model tree; process represents an application exec
 ## Wireless Connectivity
 AdvantEDGE supports 4G, 5G and WLAN wireless connectivity types for PoAs within a scenario and a PoA supports a unique technology. Wireless connectivity is reserved for user terminals while edge and cloud nodes are considered wired (e.g. not supporting wireless edge nodes yet)
 
-Accordingly, user terminals can be configured to support a subset or all existing wireless connectivity types. The wireless technologies of a terminal can also be prioritized in case a terminal is in range of several PoAs; in that case a UE woudl connect via the highest priority wireless technology which is physically the closest to the terminal.
+Accordingly, user terminals can be configured to support a subset or all existing wireless connectivity types. The wireless technologies of a terminal can also be prioritized in case a terminal is in range of several PoAs; in that case a UE would connect via the highest priority wireless technology which is physically the closest to the terminal.
 
 User terminals also support having no connectivity; this can happen if the initial state has been configured as disconnected, if a terminal is out of range of all supported PoAs (when using the GIS automation) or when a user sends a Mobility event to `DISCONNECTED` destination.
 
@@ -107,7 +109,7 @@ A path is a collection of segments with each segments having its own network cha
 Two processes exchanging data in one direction is called a flow. A flow contains a path. A path is unidirectional.<br>
 
 The following provides a general overview of a path-segments evaluation between processes executing in different physical locations for a given scenario.
-![path-segments]({{site.baseurl}}/assets/images/segments.png)
+[![path-segments]({{site.baseurl}}/assets/images/segments.png)]({{site.baseurl}}/assets/images/segments.png)
 
 ### Compute Characteristics
 AdvantEDGE supports the following compute characteristics: CPU limits (min & max), memory limits (min & max).
@@ -145,9 +147,8 @@ Below are a few deployment model examples:
 
 - Other edge application deployment models may be valid too!
 
-> *__What if your deployment model is not listed?__<br>
-AdvantEDGE has been developed to provide as much flexibility as possible, so it may already support other deployment models not listed above out of the box.<br>
-If your use case requires a deployment model that is not currently supported, AdvantEDGE can be extended to support it.*
+_**What if your deployment model is not listed?**<br>_
+_AdvantEDGE has been developed to provide as much flexibility as possible, so it may already support other deployment models not listed above out of the box.<br>If your use case requires a deployment model that is not currently supported, AdvantEDGE can be extended to support it._
 
 ### Behavioral Model
 The behavioral model of an edge application can vary greatly depending on its  function, deployment model and overall design.
@@ -193,7 +194,7 @@ Settings    | <br>- General platform settings
 ### States
 A key portion of the React application state structure is shown below:
 
-``` Javascript
+```
 {
   ui: {
     page: ...,
@@ -273,7 +274,7 @@ The state of the application is updated through Redux _actions_ when user-initia
 
 The following diagram illustrates this general pattern as used in the _AdvantEDGE_ frontend.
 
-![General Data Flow Pattern]({{site.baseurl}}/assets/images/meep-frontend-data-flow-pattern.png)
+[![General Data Flow Pattern]({{site.baseurl}}/assets/images/meep-frontend-data-flow-pattern.png)]({{site.baseurl}}/assets/images/meep-frontend-data-flow-pattern.png)
 
 The following table describes actions of the _AdvantEDGE_ application.
 

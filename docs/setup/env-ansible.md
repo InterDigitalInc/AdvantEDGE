@@ -7,10 +7,10 @@ parent: Setup
 
 AdvantEDGE comes with a set of Ansible playbooks to streamline platform environment setup.
 
->**Playbooks are currently a _beta-feature_**<br>
+_**Playbooks are currently a beta-feature**<br>
 They are available for configuring the runtime & development environments<br><br>
 We've used them to setup multiple systems/VMs and are confident they will work, so you are welcome to try them<br>
-To help us sanitize Playbooks, let us know in [GitHub Issues](https://github.com/InterDigitalInc/AdvantEDGE/issues) if you encounter problems.
+To help us sanitize Playbooks, let us know in [GitHub Issues](https://github.com/InterDigitalInc/AdvantEDGE/issues) if you encounter problems._
 
 ## Ansible Installation
 To run playbooks, you must first install ansible on your management system. This machine can be one of your AdvantEDGE platform cluster nodes or any other system with SSH access to the cluster.
@@ -49,6 +49,5 @@ ANSIBLE_CONFIG=./ansible.cfg ansible-playbook uninstall-runtime-env.yml
 ANSIBLE_CONFIG=./ansible.cfg ansible-playbook install-development-env.yml
 ```
 
->**NOTE**<br>
-You will be prompted for SSH & sudo passwords when you run a playbook.<br>
-This allows ansible to connect to the managed hosts and to run tasks with elevated privileges when necessary.
+_**NOTE:** You will be prompted for SSH & sudo passwords when you run a playbook.<br>
+This allows ansible to connect to the managed hosts and to run tasks with elevated privileges when necessary._

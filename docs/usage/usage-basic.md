@@ -5,6 +5,7 @@ parent: Usage
 nav_order: 3
 ---
 
+## Basic Operation
 AdvantEDGE comes pre-bundled with a demo scenario that allows for rapid experimentation.
 
 Going through the deployment/termination steps of that scenario is a good introduction to basic AdvantEDGE operations.
@@ -27,7 +28,7 @@ From AdvantEDGE GUI
 - Browse to `AdvantEDGE/examples/demo1/` and select `demo1-scenario.yaml`
 - Once the scenario topology appears, click on **Save**
 
-> You successfully imported the scenario in AdvantEDGE internal storage. <br>Next time you need to use it, simply click on **Open** and select it from the drop-down menu
+_**NOTE:** You successfully imported the scenario in AdvantEDGE internal storage. <br>Next time you need to use it, simply click on **Open** and select it from the drop-down menu_
 
 ## Deploy Demo1 Scenario
 From AdvantEDGE GUI
@@ -35,20 +36,20 @@ From AdvantEDGE GUI
 - Click on **Deploy**
 - Select `demo1` from the drop-down menu
 
-> After the scenario is deployed, a table appears below the topology graph and indicates status information about the scenario deployment
+_**NOTE:** After the scenario is deployed, a table appears below the topology graph and indicates status information about the scenario deployment_
 
 ## Experiment with Demo1 Scenario
 The Service Maps that appears in the status table indicates which port the external Terminal should use to reach a given service.
 
-> Make sure iperf-proxy was previously started. See [start the iperf-proxy](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/examples/demo1/README.md#start-iperf-proxy)
+_**NOTE:** Make sure iperf-proxy was previously started. See [start the iperf-proxy](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/examples/demo1/README.md#start-iperf-proxy)_
 
 For an external Demo Terminal, we will use a browser (can be on a different computer)
 
 - Access the demo edge service from the external Terminal
   - Open address `<AdvantEDGE-node-ip-address>:31111` <br> _The demo edge service instance closest to the PoA of `ue2-ext` serves the Demo GUI which constantly refreshes with localized edge data_
 
-  > Verify that
-  > - Node Instance Name (Demo GUI) matches demo edge service name closest to the PoA of `ue2-ext` (AdvantEDGE GUI)
+  - _Verify that:_
+    - _Node Instance Name (Demo GUI) matches demo edge service name closest to the PoA of `ue2-ext` (AdvantEDGE GUI)_
 
 - Send a mobility event to `ue2-ext
   - In **Execute** window, click on **Event** then **MANUAL** to open the manual event pane
@@ -57,20 +58,21 @@ For an external Demo Terminal, we will use a browser (can be on a different comp
   - Select `zone2-poa1`
   - Click on **Submit**
 
-  > Verify that
-  > - `ue2-ext` PoA changed on the topology graph (AdvantEDGE GUI)
-  > - Node Instance Name and Image changed (Demo GUI) <br>_Information now originates from edge node closest to the new PoA
+  - _Verify that:_
+    - _`ue2-ext` PoA changed on the topology graph (AdvantEDGE GUI)_
+    - _Node Instance Name and Image changed (Demo GUI)_
+    - _Information now originates from edge node closest to the new PoA_
 
 - Trigger an application state transfer
   - In Demo GUI, click on **Restart Counter**
   - State counter starts to increment in the edge service <br>_This counter is a "Terminal state" that lives in the demo edge service, the GUI only displays the value from its localized edge_
   - Send a mobility event to move `ue2-ext` to `zone1-poa2`
 
-  > Verify that
-  > - `ue-2-ext` PoA changed on the topology graph (AdvantEDGE GUI)
-  > - Node Instance Name and Image changed (Demo GUI)
-  > - The counter did not reset to 0 (Demo GUI)
-  <br>The Terminal state (counter) was transferred to the newest edge instance
+  - _Verify that:_
+    - _`ue-2-ext` PoA changed on the topology graph (AdvantEDGE GUI)_
+    - _Node Instance Name and Image changed (Demo GUI)_
+    - _The counter did not reset to 0 (Demo GUI)_
+    - _The Terminal state (counter) was transferred to the newest edge instance_
 
 - Observe traffic from the Execute page
   - Select **Dashboard** then in View 2 dropdown select **Network Metrics Aggregation**

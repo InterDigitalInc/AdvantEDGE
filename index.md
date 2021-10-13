@@ -10,13 +10,17 @@ permalink: /
 
 ------
 
-**_What's New!_**
+**_What's New in v1.8.0!_**
 
-:zap: **v1.7.0 cool features :sunglasses: :point_right: [process lifecycle API]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#process-lifecyle) and [cellular connectivity API]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#cellular-connectivity-control) - open-up new edge experiments**
+:zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) to boost up your edge apps! :rocket:**
 
-:zap:  **Wiki refresh was overdue :shamrock: Hope the :sparkles: new structure & [Sitemap]({{site.baseurl}}{% link docs/project/project-sitemap.md %}) :sparkles: make it easier to navigate**
+:zap: **Improved network emulation & metrics:  [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) :earth_americas: provide network signal emulation based on terminal location**
 
-:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [:octocat: Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions)**
+:zap: **Long term storage support: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem) :card_file_box: integration with Thanos & MinIO**
+
+:zap: **General Maintenance fixes :hammer_and_wrench:**
+
+:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
 ------
 
@@ -25,7 +29,7 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 
 AdvantEDGE provides an emulation environment, enabling experimentation with Edge Computing Technologies, Applications, and Services.  The platform facilitates exploring edge / fog deployment models and their impact on applications and services in short and agile iterations.
 
-#### Motivation
+### Motivation
 
 - [x] **Accelerate Mobile Edge Computing adoption**
 - [x] **Help Discover new edge application use cases & services**
@@ -34,9 +38,9 @@ AdvantEDGE provides an emulation environment, enabling experimentation with Edge
 <li>Where should my application components be located in the edge network?</li>
 <li>How do network characteristics (such as latency, jitter, and packet loss) impact my application or service?</li>
 <li>How will my application behave when the user moves within and across access networks?</li>
-</ul></ul><br>
+</ul></ul>
 
-#### Intended Users
+### Intended Users
 
 - [x] **Edge Application Developers**
 - [x] **Edge Network and Service Designers**

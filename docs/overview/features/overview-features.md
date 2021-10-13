@@ -16,7 +16,7 @@ Topic | Abstract
 [External Nodes Support](#external-node-support) | Capabilities offered for integrating external node with the AdvantEDGE platform
 [Pod Placement Support](#pod-placement-support) | Pod Placement enables node selection for applications in a multi-node cluster deployment
 [Process Lifecycle](#process-lifecycle) | Process Lifecycle enables dynamic instantiation & termination of terminal, edge or cloud applications
-[Cellular Connectivity Control](#Cellular-Connectivity-control) | Cellular connectivity control allows to emulate PDU session creation found in cellular mobile networks
+[Cellular Connectivity Control](#cellular-connectivity-control) | Cellular connectivity control allows to emulate PDU session creation found in cellular mobile networks
 NEXT STEP| [Edge services](#next-step)
 
 -----
@@ -48,10 +48,13 @@ This feature provides the following capabilities:
   - Wireless signal range limits: PoAs
   - Path/speed/end-of-path (EOP) actions: UEs
   - Wireless type support & priorities: UEs
-- _Map interactions_:
+- _Geospatial measurements_
+  - Distance & signal strength calculations
+  - Measurements caching
+- _Map interactions_
   - Configuration & visualization of geospatial characteristics
   - Observation of geospatial assets on map at runtime
-- _Geospatial Automations_:
+- _Geospatial Automations_
   - Mobility events: UE connects to PoA according to PoA Selection algorithm
   - UE movement: UE follows defined path according to speed & EOP action
   - PoA in-range events: generates event listing all PoA in range
@@ -72,12 +75,16 @@ This feature provides the following capabilities:
 - _Custom measurements_
   - Custom metrics: InfluxDB API is available for logging your own time-series metrics; just need to include an InfluxDB client in your application and start logging.
 - _Dashboard visualization and management interface_
-  - Built-in dashboards: visualize network characteristics point-to-point (source to dest.) or aggregated (source to all)
+  - Built-in network characteristics dashboards: visualize point-to-point (source to dest.) or aggregated (source to all) network metrics
+  - Built-in wireless metrics dashboards: visualize wireless metric KPIs (RSRP, RSRQ, RSSI & PoA distance)
   - Custom dashboards: create your own dashboards; allows access to display automated measurements (net.char/events) with your own measurements.
 - _Metrics API_
   - Expose metrics to applications: Metrics can be exposed to external applications for conducting network adaptive experiments.
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
+- _Metrics Long-term Storage (Optional)_
+  - Long-term data retention: Thanos pushes Prometheus metrics to MinIO high-performance object store every 2 hours
+  - Daily backups: cronjob pushes InfluxDB data to MinIO object store
 
 Want to know more about Monitoring feature: [Monitoring Subsystem]({{site.baseurl}}{% link docs/overview/features/overview-monitoring.md %})
 
@@ -126,7 +133,7 @@ Want to know more about Pod Placement: [Pod Placement]({{site.baseurl}}{% link d
 ## Process Lifecycle
 AdvantEDGE supports dynamic addition and removal of terminal, edge or cloud applications at scenario runtime. This _Process Lifecycle_ management feature enables a new set of platform experiments.
 
-> **NOTE:** The terms _process_ & _application_ are equivalent and used interchangeably in this document.
+_**NOTE:** The terms **process** & **application** are equivalent and used interchangeably in this document._
 
 This feature provides the following capabilities:
 - _API to trigger active scenario updates_

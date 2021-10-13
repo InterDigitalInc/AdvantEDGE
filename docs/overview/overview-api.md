@@ -9,7 +9,7 @@ Topic | Abstract
 ------|------
 [Getting started with APIs](#getting-started-with-apis) | Finding/Viewing/Experimenting/Interfacing  AdvantEDGE APIs
 [Platform  API](#platform-api) | [OAS2] Scenario and Sandbox Management endpoints
-[Sandbox  API](#sandbox-api) | [OAS2] Scenario activation, Events and Connectivity endpoints
+[Sandbox  API](#sandbox-api) | [OAS2] Scenario activation, Events, Connectivity & Application instance ID management endpoints
 [Monitoring API](#monitoring-api) | [OAS2] Microservice & scenario deployment status information endpoints
 [GIS API](#gis-api) | [OAS2] Geospatial information and automation endpoints
 [Metrics API](#metrics-api) | [OAS2] Network metrics and Events query and subscription endpoints
@@ -17,9 +17,12 @@ Topic | Abstract
 [Location Service API](#location-service-api) | [OAS3] Location Service northbound API endpoints
 [RNIS API](#rnis-api) | [OAS3] RNIS northbound API endpoints
 [WAIS API](#wais-api) | [OAS3] WAIS northbound API endpoints
+[App Support API](#app-support-api) | [OAS3] App Support northbound API endpoints
+[Service Management API](#service-management-api) | [OAS3] Service Management northbound API endpoints
+[AMS API](#ams-api) | [OAS3] Application Mobility Service northbound API endpoints
 [Application State Transfer Service API](#application-state-transfer-service-api) | [OAS2] Mobility Group Manager membership and state transfer endpoints
 [Application State Transfer Notification API](#application-state-transfer-notification-api) | [OAS2] Client side Mobility Group Manager state transfer endpoints
-NEXT STEP: [Recomended hardware](#next-step) | |
+NEXT STEP: [Recommended hardware](#next-step) | |
 
 ----
 ## Getting Started with APIs
@@ -33,13 +36,14 @@ AdvantEDGE backend offers a series of REST APIs that can be used to achieve diff
 AdvantEDGE APIs follow the [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification) (OAS) standard to define the platform APIs. Some of our APIs are aligned on OAS 2.0 version of the standard (formerly known as Swagger 2.0) while others are aligned with OAS 3.0.
 
 Following the OAS standard, allows AdvantEDGE APIs to benefit from a rich eco-system of tools to facilitate integration as described below.
-#### Finding API Specification
+
+### Finding API Specification
 In the GitHub repository, each application exposing a REST API has an associated `swagger.yaml` file.
 - For Golang micro-services it can be found under `go-apps/<micro-service>/api/`
 - For Golang packages it can be found under `go-packages/<package>/api/`
 - For Javascript packages ir can be found under `js-packages/<package>/src/api/`
 
-> Note that not every component implements a REST API.
+_**NOTE:** that not every component implements a REST API._
 
 ### Viewing API Specification
 While YAML format is a convenient way to define an API, it is not a user friendly one to look at the API and understand its structure and details.
@@ -62,8 +66,10 @@ This is useful to quickly ramp-up on API functionality.
 
 Alternatively, CLI curl or numerous browser integrated HTTP probing solutions can be used to achieve the same result.
 
-> **IMPORTANT NOTE**<br>
-_Try It Now_ functionality is not supported for Notification APIs since these have  to be implemented by the service user.<br><br>For example, _Location Service Subscription Notification Callback REST API_ is an API implemented by a user of the _Location Service REST API_ <br>Therefore, _Try It Now_ works for _Location Service_ but not for _Location Service Subscription Notification Callback_
+_**IMPORTANT NOTE:**<br>
+**Try It Now** functionality is not supported for Notification APIs since these have  to be implemented by the service user.<br>
+For example, **Location Service Subscription Notification Callback REST API** is an API implemented by a user of the **Location Service REST API**<br>
+Therefore, **Try It Now** works for **Location Service** but not for **Location Service Subscription Notification Callback**_
 
 ### Interfacing with API
 Interfacing with AdvantEDGE APIs can be done following different methods.
@@ -82,7 +88,7 @@ For OAS3 specifications, we use swagger-codegen v3.0.22 from [this repo](https:/
 wget http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/3.0.22/swagger-codegen-cli-3.0.22.jar -O swagger-codegen-cli.jar
 ```
 
-> **NOTE v2 vs v3 swagger-codegen**<br>As explained [here](https://github.com/swagger-api/swagger-codegen#versioning), both version support OAS 2.0 but differently<br>- v2 swagger-codegen supports natively OAS 2.0 specs<br>- v3 swagger-codegen supports natively OAS 3.0 specs and supports OAS 2.0 via spec conversion prior to code generation<br>
+_**NOTE v2 vs v3 swagger-codegen**<br>As explained [here](https://github.com/swagger-api/swagger-codegen#versioning), both version support OAS 2.0 but differently<br>- v2 swagger-codegen supports natively OAS 2.0 specs<br>- v3 swagger-codegen supports natively OAS 3.0 specs and supports OAS 2.0 via spec conversion prior to code generation<br>_
 
 
 Swagger-codegen can generate client packages for many different languages:
@@ -122,7 +128,7 @@ API:
 
 ----
 ## Sandbox API
-This API allows to control scenario activation, send events and control PDU session connectivity
+This API allows to control scenario activation, send events, control PDU session connectivity and manage Application instance IDs
 
 API:
 - From repository: [meep-sandbox-ctrl (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-sandbox-ctrl/api/swagger.yaml)
@@ -193,6 +199,33 @@ API:
 - From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
 
 ----
+### App Support API
+This API enables application start-up/termination assistance by querying, subscribing and posting; see [Edge Platform Application Enablement Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) for service description.
+
+API:
+- From repository: [meep-app-support (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-app-enablement/api/app-support/swagger.yaml)
+- From wiki: [App Support (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-app-support/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
+### Service Management API
+This API allows edge applications to discover, advertise, consume and offer MEC services by querying, subscribing and posting; see [Edge Platform Application Enablement Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) for service description.
+
+API:
+- From repository: [meep-service-mgmt (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-app-enablement/api/service-mgmt/swagger.yaml)
+- From wiki: [Service Mgmt (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-service-mgmt/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
+### AMS API
+This API allows edge applications to relocate user context and/or application instance across MEC platforms by querying, subscribing and posting; see [Application Mobility Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) for service description.
+
+API:
+- From repository: [meep-ams (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-ams/api/swagger.yaml)
+- From wiki: [AMS (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-ams/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
 ### Application State Transfer Service API
 This API allows to manage group membership and control application state transfer; see [Application State Transfer Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-sate-transfer-service) for service description.
 
@@ -206,10 +239,10 @@ API:
 This API must be implemented by a client subscribing to the Application State Transfer API.
 
 API:
-- From repository: [meep-mg-manager-client (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-packages/meep-mg-manager-client/api/swagger.yaml)
+- From repository: [meep-mg-manager-client (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-packages/meep-mg-app-client/api/swagger.yaml)
 - From wiki: [MG Manager Notification (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-mg-manager-notif/README.md)
 - From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
 
 
 ## Next Step
-Learn about the [recomended hardware]({{site.baseurl}}{% link docs/setup/env-hw.md %}):
+Learn about the [recommended hardware]({{site.baseurl}}{% link docs/setup/env-hw.md %}):

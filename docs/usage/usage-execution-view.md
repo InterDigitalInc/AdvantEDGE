@@ -42,7 +42,7 @@ Create a new sandbox:
   - Creates & starts new sandbox pods
   - Enables scenario deployment buttons
 
-> **NOTE:** Operation fails silently if a sandbox with the same name already exists. In this case you must click on _NEW_ again and enter a unique sandbox name.
+_**NOTE:** Operation fails silently if a sandbox with the same name already exists. In this case you must click on **NEW** again and enter a unique sandbox name._
 
 ### DELETE
 Delete the selected sandbox:
@@ -51,7 +51,7 @@ Delete the selected sandbox:
   - Removes the sandbox pods
   - Disables scenario deployment buttons until a new sandbox is selected or created
 
-> **NOTE:** Scenario pods running in the sandbox will also be removed when deleting a sandbox.
+_**NOTE:** Scenario pods running in the sandbox will also be removed when deleting a sandbox._
 
 ### DEPLOY
 Activate a scenario:
@@ -67,7 +67,7 @@ Save deployed scenario:
   - Validates the scenario name format & length
 - Sends the current state of the deployed scenario to the backend where it is added to the persistent store
 
-> **NOTE:** This operation overwrites any existing scenario with the same name. Be careful to use a unique name when saving the deployed scenario.
+_**NOTE:** This operation overwrites any existing scenario with the same name. Be careful to use a unique name when saving the deployed scenario._
 
 ### TERMINATE
 Deactivate a deployed scenario:
@@ -101,7 +101,7 @@ Create a new replay file:
 - Sends a replay file generation request to the backend
   - Backend queries the event database and creates a new replay file with the provided name & description
 
-> **NOTE:** You must click on the _AUTO-REPLAY_ button for the new replay file to be added to the list of available replay files in the frontend.
+_**NOTE:** You must click on the **AUTO-REPLAY** button for the new replay file to be added to the list of available replay files in the frontend._
 
 ### CLOSE
 Closes the event configuration bar.
@@ -147,12 +147,22 @@ We use a 3rd party mapping client called [Leaflet](https://leafletjs.com/) to re
 ### Network Metrics Point-to-Point
 This view loads the Network Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and destination nodes. It displays instantaneous measurements for round-trip ping time and UL & DL throughput, as well as a graph of these measurements over the last minute.
 
-> **NOTE:** You must select both a source and destination node in the Dashboard configuration bar to visualize data in this view.
+_**NOTE:** You must select both a source and destination node in the Dashboard configuration bar to visualize data in this view._
 
 ### Network Metrics Aggregation
 This view loads the Network Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and all other scenario application nodes. It displays graphs for round-trip ping times, UL & DL throughput measurements over the last minute. It also shows a table of events received by the backend.
 
-> **NOTE:** You must select a source node in the Dashboard configuration bar to visualize data in this view.
+_**NOTE:** You must select a source node in the Dashboard configuration bar to visualize data in this view._
+
+### Wireless Metrics Point-to-Point
+This view loads the Wireless Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some signal strength metrics and distance measurements between the configured UE and POA. It displays instantaneous measurements for RSRP & RSRQ when attached to a 4G or 5G POA, and the RSSI when attached to a WiFi POA. The dashboard also provides the current distance between the UE and POA, as well as a graph of all of these measurements over the last minute (overlayed with mobility events to easily track POA transitions).
+
+_**NOTE:** You must select both a UE and a POA in the Dashboard configuration bar to visualize data in this view._
+
+### Wireless Metrics Aggregation
+This view loads the Wireless Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some signal strength metrics and distance measurements between the configured UE and all POAs in range. It displays graphs for RSRP & RSRP (4G/5G POAs), RSSI (WiFi POAs), and distance measurements over the last minute (overlayed with mobility events to easily track POA transitions). It also shows a table of events received by the backend.
+
+_**NOTE:** You must select a UE in the Dashboard configuration bar to visualize data in this view._
 
 ### None
 Disables the view, giving its frontend real-estate to the other view.
@@ -166,10 +176,10 @@ You may configure the following events:
 ### MOBILITY
 This event moves a chosen network element to a new location in the network topology. The following options must be configured:
 
-#### Target
+##### Target
 Drop-down menu to select the network element to be moved.
 
-#### Destination
+##### Destination
 Drop-down menu to select the parent network element where the target element should be moved. This list is filtered to display valid destinations according to the selected target element.
 
 When destination is set to _DISCONNECTED_, 100% packet loss is set on the selected target element to simulate network connectivity loss.
@@ -177,13 +187,13 @@ When destination is set to _DISCONNECTED_, 100% packet loss is set on the select
 ### NETWORK-CHARACTERISTICS-UPDATE
 This event provides network characteristics that must be applied to a specific network element. The following options must be configured:
 
-#### Network Element Type
+##### Network Element Type
 Drop-down menu to select the type of network element to be updated.
 
-#### Network Element
+##### Network Element
 Drop-down menu to select the network element to be updated.
 
-#### Latency / Latency Variation / Packet Loss / Throughput
+##### Latency / Latency Variation / Packet Loss / Throughput
 Number fields to input element network characteristics to be sent in the event. Network characteristics are described in more detail [here]({{site.baseurl}}{% link docs/overview/overview-architecture.md %}#network-characteristics).
 
 ### SCENARIO-UPDATE
@@ -191,13 +201,13 @@ This event dynamically adds or removes terminal, edge or cloud applications in t
 
 The following options must be configured:
 
-#### Action Type
+##### Action Type
 Drop-down menu to select the action to perform.
 
-##### Adding an element
+_**Adding an element**_
 When adding an application, element configuration fields must be filled before submitting the event. Frontend & backend validation is performed on the event to prevent errors during process instantiation. Once successfully submitted, the platform performs all necessary actions to start the new application.
 
-##### Removing an element
+_**Removing an element**_
 When removing an application, the target _Process Type_ & _Process Name_ must be selected from the drop-down menus. Once successfully submitted, the platform performs all necessary actions to stop the selected application.
 
 ### PDU-SESSION
@@ -205,16 +215,16 @@ This event adds or removes terminal PDU Sessions. This event enables the [Cellul
 
 The following options must be configured:
 
-#### Action Type
+##### Action Type
 Drop-down menu to select the action to perform.
 
-#### Terminal
+##### Terminal
 Drop-down menu to select the terminal.
 
-#### PDU Session ID
+##### PDU Session ID
 Text Field to input PDU Session ID.
 
-#### Data Network Name
+##### Data Network Name
 Drop-down menu to select the data network name (only visible when creating a new PDU Session).
 
 ---
@@ -240,7 +250,7 @@ This pane provides the following controls for replay file execution in the backe
 ### REPLAY FILE
 Drop-down menu to select the replay file to execute.
 
-> **NOTE:** New replay files created while this pane is open will only be added the the list after the pane is closed and re-opened.
+_**NOTE:** New replay files created while this pane is open will only be added the the list after the pane is closed and re-opened._
 
 ### LOOP
 Checkbox to enable replay file execution looping. If checked, the backend replay manager will run the selected replay file to completion, wait for 5 seconds and then restart the same replay file execution. It continues this loop until stopped.

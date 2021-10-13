@@ -9,8 +9,8 @@ nav_order: 3
 
 -----
 
-#### FAQ 1
-> _When using an egress service with an external node, unxplained session disconnections are observed_
+## FAQ 1
+_**When using an egress service with an external node, unexplained session disconnections are observed**_
 
 "Egress service" is an AdvantEDGE feature used to include [external edge nodes]({{site.baseurl}}{% link docs/overview/features/overview-external-nodes.md %}) into a scenario. On certain systems, configuring & using an egress service will present unexplained spurious disconnections.
 
