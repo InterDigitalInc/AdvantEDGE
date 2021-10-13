@@ -37,4 +37,33 @@ AMS defines three types of MEC application user-context transfer:
   - Based on OpenAPI Specification (OAS) 3.0
 
 ## AdvantEDGE Integration
-- Application Mobility Service is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox
+Application Mobility Service is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox.
+
+To use this service, MEC applications must first obtain an application instance ID from the AdvantEDGE platform using the _Applications_ endpoints of the [Sandbox Controller API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#sandbox-api). After provisioning the application instance ID, MEC applications must use the [Application Support API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#app-support-api) to confirm application readiness and optionally register for graceful termination.
+
+Once confirmed, MEC Applications may use the Application Mobility Service to perform MEC-assisted application mobility as described in the use case below.
+
+### Use case for MEC-assisted application mobility
+This use case applies to MEC Applications with multiple instances running on different MEC platforms wishing to perform user context transfers with the assistance of the Application Mobility Service. MEC applications inform the service about which terminal devices to track and subscribe for Mobility Procedure notifications with details about the target application instance.
+- Start multiple MEC Application instances
+  - Each instance must obtain a unique application instance ID & confirm application readiness
+- Register to AMS:
+  - MEC Applications provide registration information (including application instance ID)
+  - Device information must be included only by the MEC application with the user context
+  - ```POST .../amsi/v1/app_mobility_services```
+- Subscribe for Mobility notifications:
+  - MEC applications with the user context must subscribe for _MobilityProcedure_ notifications
+  - Tracked device information must also be provided
+  - ```POST .../amsi/v1/app_mobility_services```
+- Wait for Terminal device to trigger Mobility notification:
+  - AMS algorithm monitors terminal and trigger a mobility procedure when it transitions to the coverage area of a different MEC platform
+  - Notification includes target application information
+  - _NOTE:_ notifications are only send to MEC applications running on the source MEC platform
+- Perform user context transfer
+  - Source MEC application instance transfers terminal device context to target MEC application instance
+- Inform AMS about transfer complete:
+  - The source MEC application should set the device context transfer state to _COMPLETE_
+  - Optionally delete the device information until the user context returns
+  - PUT .../app_mobility_services/{appMobilityServiceId}
+- Repeat procedure:
+  - Target MEC Application now becomes the source for future context transfers
