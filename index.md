@@ -14,7 +14,9 @@ permalink: /
 
 :zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) to boost up your edge apps! :rocket:**
 
-:zap: **Improved metrics & storage with :earth_americas: [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) and :card_file_box: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem)**
+:zap: **Improved network emulation & metrics:  [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) :earth_americas: provide network signal emulation based on terminal location**
+
+:zap: **Long term storage support: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem) :card_file_box: integration with Thanos & MinIO **
 
 :zap: **General Maintenance fixes :hammer_and_wrench:**
 
