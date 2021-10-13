@@ -154,6 +154,16 @@ This view loads the Network Metrics Aggregation Grafana Dashboard in an iframe. 
 
 _**NOTE:** You must select a source node in the Dashboard configuration bar to visualize data in this view._
 
+### Wireless Metrics Point-to-Point
+This view loads the Wireless Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some signal strength metrics and distance measurements between the configured UE and POA. It displays instantaneous measurements for RSRP & RSRQ when attached to a 4G or 5G POA, and the RSSI when attached to a WiFi POA. The dashboard also provides the current distance between the UE and POA, as well as a graph of all of these measurements over the last minute (overlayed with mobility events to easily track POA transitions).
+
+_**NOTE:** You must select both a UE and a POA in the Dashboard configuration bar to visualize data in this view._
+
+### Wireless Metrics Aggregation
+This view loads the Wireless Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some signal strength metrics and distance measurements between the configured UE and all POAs in range. It displays graphs for RSRP & RSRP (4G/5G POAs), RSSI (WiFi POAs), and distance measurements over the last minute (overlayed with mobility events to easily track POA transitions). It also shows a table of events received by the backend.
+
+_**NOTE:** You must select a UE in the Dashboard configuration bar to visualize data in this view._
+
 ### None
 Disables the view, giving its frontend real-estate to the other view.
 
