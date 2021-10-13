@@ -1,3 +1,3 @@
-# AdvantEDGE Documents
+# AdvantEDGE Docs
 
-Documentation is maintained in the [AdvantEDGE Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki)
+Documentation available [here](https://interdigitalinc.github.io/AdvantEDGE/).
