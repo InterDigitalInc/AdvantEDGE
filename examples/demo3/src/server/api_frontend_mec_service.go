@@ -42,3 +42,7 @@ func ServicesDiscoverPost(w http.ResponseWriter, r *http.Request) {
 func AmsCreatePOST(w http.ResponseWriter, r *http.Request) {
 	amsCreatePOST(w, r)
 }
+
+func AmsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
+	amsSubscriptionPOST(w, r)
+}

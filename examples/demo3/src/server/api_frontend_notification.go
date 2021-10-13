@@ -34,3 +34,7 @@ func NotificationPOST(w http.ResponseWriter, r *http.Request) {
 func TerminateNotificatonPOST(w http.ResponseWriter, r *http.Request) {
 	terminateNotificatonPOST(w, r)
 }
+
+func AmsNotificationPOST(w http.ResponseWriter, r *http.Request) {
+	amsNotificationPOST(w, r)
+}

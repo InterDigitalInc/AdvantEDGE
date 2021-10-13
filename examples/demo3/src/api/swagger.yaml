@@ -51,7 +51,7 @@ paths:
     post: 
       tags:
       - frontend_mec_service
-      description: Create a new application mobility service for the service requester.
+      description: Create a new application mobility service for the service requester & create subscription to ams.
       responses:
         "200":
           description: OK
@@ -62,8 +62,29 @@ paths:
   /services/callback/amsevent: 
     post: 
       tags:
-      - frontend_mec_service
+      - 'frontend_notification'
+      summary: MEC021 ams notifcation
       description: Handle Application Mobility Service notifications.
+      requestBody:
+                description: Subscription notification
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MobilityProcedureNotification'
+                required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /ams/subscriptions:
+    post:
+      tags:
+      - frontend_mec_service
+      description: 'Create a new subscription to Application Mobility Service notifications.'
+      operationId: AmsSubscriptionPOST 
       responses:
         "200":
           description: OK
@@ -194,6 +215,99 @@ components:
           self:
             href: http://example.com/aeiou
         callbackReference: http://example.com/aeiou
+    MobilityProcedureNotification:
+      required:
+      - mobilityStatus
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        mobilityStatus:
+          type: integer
+          description: 'Indicate the status of the UE mobility. Values are defined
+            as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3
+            = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.'
+          x-etsi-mec-cardinality: "1"
+        notificationType:
+          type: string
+          description: Shall be set to \"MobilityProcedureNotification\".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        targetAppInfo:
+          $ref: '#/components/schemas/MobilityProcedureNotification_targetAppInfo'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 7.4.2
+    TimeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: The nanoseconds part of the time. Time is defined as Unix-time
+            since January 1, 1970, 00:00:00 UTC.
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: The seconds part of the time. Time is defined as Unixtime since
+            January 1, 1970, 00:00:00 UTC.
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+    MobilityProcedureNotification_targetAppInfo:
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          example: '10.100.0.3'
+          description: Identifiers of the target application instance.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        commInterface:
+          $ref: '#/components/schemas/CommunicationInterface'
+      description: Identifiers to associate the information of target application
+        instance.
+    CommunicationInterface:
+      properties:
+        ipAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunicationInterface_ipAddresses'
+      example:
+        ipAddresses:
+        - port: 0
+          host: host
+        - port: 0
+          host: host
+    AssociateId:
+      properties:
+        type:
+          type: integer
+          description: 'Numeric value (0-255) corresponding to specified type of identifier
+            as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS.
+            <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.'
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum
+        value:
+          type: string
+          description: Value for the identifier.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        type: 0
+        value: value
     AppTerminationNotificationSubscription__links:
       required:
       - self

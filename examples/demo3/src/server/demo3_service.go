@@ -12,6 +12,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -42,12 +43,16 @@ var appEnablementServiceId string
 var serviceSubscriptionId string
 var registeredService bool
 var terminationSubscriptionId string
+var mep string
+var amsSubscriptionId string
 
 var serviceName string = "user-app"
 var scopeOfLocality string = defaultScopeOfLocality
 var consumedLocalOnly bool = defaultConsumedLocalOnly
 var terminationSubscription bool = false
 var terminated bool = false
+var terminateNotification bool = false
+var amsSubscriptionSent bool = false
 
 const serviceAppVersion = "2.1.1"
 const local = "http://10.190.115.162"
@@ -70,6 +75,14 @@ func Init(envPath string, envName string) (port string, err error) {
 
 	// Retrieve sandbox url from config
 	mecUrl = config.SandboxUrl
+
+	// Parse mec platfor mep no. use for ams service
+	resp := strings.LastIndex(mecUrl, "/")
+	if resp == -1 {
+		log.Fatal("Error parsing mep no. from config")
+	} else {
+		mep = mecUrl[resp+1:]
+	}
 
 	// Retreieve local url from config
 	localPort = config.Port
@@ -99,7 +112,10 @@ func Init(envPath string, envName string) (port string, err error) {
 
 	// Create application mobility suppport client
 	amsClientcfg := ams.NewConfiguration()
-	amsClientcfg.BasePath = mecUrl + "/amsi/v1"
+
+	// Replace amsUrl with mep1 to demonstrate use-case of ams api
+	amsUrl := strings.Replace(mecUrl, "mep2", "mep1", 1)
+	amsClientcfg.BasePath = amsUrl + "/amsi/v1"
 	amsClient = ams.NewAPIClient(amsClientcfg)
 	amsClientPath = amsClientcfg.BasePath
 	if amsClient == nil {
@@ -171,10 +187,10 @@ func notificationPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 // Rest API
-// Create mec service
+// Create mec service only if none created
 func servicePOST(w http.ResponseWriter, r *http.Request) {
 
-	// Lock registered service to prevent creating more than one mec service
+	// Lock registered service to prevent creating more than one mec service from multiple client concurrently
 	mutex.Lock()
 	defer mutex.Unlock()
 	if !registeredService {
@@ -185,10 +201,15 @@ func servicePOST(w http.ResponseWriter, r *http.Request) {
 		}
 		registeredService = true
 		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "Sucessfully created a service")
+		return
 	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Service already created")
 }
 
-// Rest API - delete mec service
+// Rest API
 // Delete mec service only if present
 func serviceDELETE(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
@@ -203,7 +224,9 @@ func serviceDELETE(w http.ResponseWriter, r *http.Request) {
 		registeredService = false
 		log.Info(serviceName, " service deleted")
 		w.WriteHeader(http.StatusOK)
+		return
 	}
+	fmt.Fprintf(w, "Need to create a service first")
 }
 
 // Rest API
@@ -219,13 +242,137 @@ func terminateNotificatonPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("Received user-app termination notification")
 	w.WriteHeader(http.StatusOK)
+	terminateNotification = true
 	Terminate()
 }
 
 // Rest API
-// Register MEC Application instances with AMS
-func amsCreatePOST(w http.ResponseWriter, r *http.Request) {
+// Handle AMS notification
+func amsNotificationPOST(w http.ResponseWriter, r *http.Request) {
+	var amsNotification ams.MobilityProcedureNotification
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&amsNotification)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	// Should put to AMS
+	log.Info("AMS event received for ", amsNotification.AssociateId[0].Value, " to ", amsNotification.TargetAppInfo.AppInstanceId)
+	w.WriteHeader(http.StatusOK)
+}
+
+// Rest API
+// Submit AMS subscription to mec platform
+func amsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
+	err := amsSendSubscription(instanceName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+// Rest API
+// Register MEC Application instances with AMS & consume servicee
+func amsCreatePOST(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	err := amsSendService(instanceName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
+}
+
+// CLient request to create a new application mobility service
+func amsSendService(appInstanceId string) error {
+	log.Debug("Sending request to mec platform create ams api")
+	var bodyRegisterationInfo ams.RegistrationInfo
+	bodyRegisterationInfo.ServiceConsumerId = &ams.RegistrationInfoServiceConsumerId{
+		AppInstanceId: appInstanceId,
+	}
+
+	// Provide device info only specific to mep1 platform
+	if mep == "mep1" {
+		var associateId ams.AssociateId
+		associateId.Type_ = 1
+		associateId.Value = "10.100.0.10"
+		bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
+			AppMobilityServiceLevel: 3,
+			ContextTransferState:    0,
+		})
+	}
+
+	_, _, err := amsClient.AmsiApi.AppMobilityServicePOST(context.TODO(), bodyRegisterationInfo)
+
+	if err != nil {
+		log.Error(err)
+		return err
+	} else {
+		log.Info("Consumed AMS service sucessfully")
+	}
+
+	return nil
+}
+
+// CLient request to create a new application mobility service
+func amsSendSubscription(appInstanceId string) error {
+	log.Debug("Sending request to mec platform add ams subscription api")
+
+	var mobilityProcedureSubscription ams.MobilityProcedureSubscription
+
+	// Add body param callback ref
+	mobilityProcedureSubscription.CallbackReference = local + localPort + "/subscriptions"
+	mobilityProcedureSubscription.SubscriptionType = "MobilityProcedureSubscription"
+
+	// Default tracking ue set to 10.100.0.3
+	var associateId ams.AssociateId
+	associateId.Type_ = 1
+	associateId.Value = "10.100.0.3"
+
+	// Filter criteria
+	var mobilityFiler ams.MobilityProcedureSubscriptionFilterCriteria
+	mobilityFiler.AppInstanceId = appInstanceId
+	mobilityFiler.AssociateId = append(mobilityFiler.AssociateId, associateId)
+
+	mobilityProcedureSubscription.FilterCriteria = &mobilityFiler
+
+	inlineSubscription := ams.ConvertMobilityProcedureSubscriptionToInlineSubscription(&mobilityProcedureSubscription)
+
+	mobilitySubscription, resp, err := amsClient.AmsiApi.SubPOST(context.TODO(), *inlineSubscription)
+	hRefLink := mobilitySubscription.Links.Self.Href
+
+	// Find subscription id from response
+	idPosition := strings.LastIndex(hRefLink, "/")
+	if idPosition == -1 {
+		log.Error("Error parsing subscription id for subscription")
+		return err
+	}
+	amsSubscriptionId = hRefLink[idPosition+1:]
+
+	if err != nil {
+		log.Error(resp.Status)
+		return err
+	} else {
+		amsSubscriptionSent = true
+		log.Info("Successfully created ams subscription")
+	}
+	return nil
+}
+
+// Client request to delete ams subscription
+func deleteAmsSubscription(subscriptionId string) error {
+	log.Debug("Sending request to mec platform delete ams susbcription api")
+	if amsSubscriptionSent {
+		resp, err := amsClient.AmsiApi.AppMobilityServiceByIdDELETE(context.TODO(), subscriptionId)
+		if err != nil {
+			log.Info("Failed to delete ams subcription ", resp.Status)
+			return err
+		}
+	}
+	return nil
 }
 
 // Client request to notify mec platform of mec app
@@ -244,7 +391,7 @@ func sendReadyConfirmation(appInstanceId string) error {
 // Client request to retrieve list of mec service resources on sandbox
 func getMecServices() error {
 	appServicesPostResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
-	log.Debug("Sending request to mec platform get services api ") //srvMgmtClientPath
+	log.Debug("Sending request to mec platform get services api ")
 	if err != nil {
 		log.Error("Failed to fetch services on mec platform ", resp.Status)
 		return err
@@ -331,7 +478,7 @@ func unregisterService(appInstanceId string, serviceId string) error {
 
 // Client request to subscribe service-availability notifications
 func subscribeAvailability(appInstanceId string, callbackReference string) error {
-	log.Debug("Sending request to mec platform add subscription api") //srvMgmtClientPath
+	log.Debug("Sending request to mec platform add subscription api")
 	var filter smc.SerAvailabilityNotificationSubscriptionFilteringCriteria
 	filter.SerNames = nil
 	filter.IsLocal = true
@@ -357,10 +504,16 @@ func subscribeAvailability(appInstanceId string, callbackReference string) error
 }
 
 // Client request to sent confirm terminate
-func confirmTerminate(appInstanceId string, subscriptionId string) {
-	resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subscriptionId)
+func confirmTerminate(appInstanceId string) {
+
+	operationAction := asc.TERMINATING_OperationActionType
+	var terminationBody asc.AppTerminationConfirmation
+	terminationBody.OperationAction = &operationAction
+	resp, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmTerminationPOST(context.TODO(), terminationBody, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send confirm termination ", resp.Status)
+	} else {
+		log.Info("Confirm Terminated")
 	}
 
 }
@@ -435,20 +588,15 @@ func Run() {
 }
 
 // Terminate by deleting all resources allocated on MEC platform & mec app
-// Delete service & app subscription & registered services
 func Terminate() {
 
 	// Only invoke graceful termination if terminated is false
-	// One can trigger terminate by receiving a termination notification
 	if !terminated {
 		//Delete app subscriptions
 		err := delAppTerminationSubscription(instanceName, terminationSubscriptionId)
 		if err == nil {
 			log.Info("Cleared app enablement subscription on mec platform")
 		}
-
-		//Send Confirm Terminate
-		confirmTerminate(instanceName, terminationSubscriptionId)
 
 		// Delete service subscriptions
 		if subscriptionSent {
@@ -465,6 +613,20 @@ func Terminate() {
 				log.Info("Cleared user-app services on mec platform")
 			}
 		}
+
+		// Delete ams subscriptions
+		if amsSubscriptionSent {
+			err := deleteAmsSubscription(amsSubscriptionId)
+			if err == nil {
+				log.Info("Cleared ams subcription on mec platform")
+			}
+		}
+
+		//Send Confirm Terminate if received notification
+		if terminateNotification {
+			confirmTerminate(instanceName)
+		}
+
 		terminated = true
 	}
 
