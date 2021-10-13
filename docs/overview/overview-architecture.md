@@ -35,7 +35,7 @@ _Scenario_ | containers implementing an edge application use case
 
 High-level overview of AdvantEDGE micro-service architecture:
 
-![micro-service arch]({{site.baseurl}}/assets/images/architecture.png)
+[![micro-service arch]({{site.baseurl}}/assets/images/architecture.png)]({{site.baseurl}}/assets/images/architecture.png)
 
 The following subsystems compose the AdvantEDGE Platform:
 
@@ -65,7 +65,7 @@ _Application Mobility Service_ | Provide an ETSI-MEC compliant Application Mobil
 ## Network Model
 AdvantEDGE uses the following model to define a scenario.
 
-![network model]({{site.baseurl}}/assets/images/model.png)
+[![network model]({{site.baseurl}}/assets/images/model.png)]({{site.baseurl}}/assets/images/model.png)
 
 Layer | Description
 ---------|------------
@@ -109,7 +109,7 @@ A path is a collection of segments with each segments having its own network cha
 Two processes exchanging data in one direction is called a flow. A flow contains a path. A path is unidirectional.<br>
 
 The following provides a general overview of a path-segments evaluation between processes executing in different physical locations for a given scenario.
-![path-segments]({{site.baseurl}}/assets/images/segments.png)
+[![path-segments]({{site.baseurl}}/assets/images/segments.png)]({{site.baseurl}}/assets/images/segments.png)
 
 ### Compute Characteristics
 AdvantEDGE supports the following compute characteristics: CPU limits (min & max), memory limits (min & max).
@@ -274,7 +274,7 @@ The state of the application is updated through Redux _actions_ when user-initia
 
 The following diagram illustrates this general pattern as used in the _AdvantEDGE_ frontend.
 
-![General Data Flow Pattern]({{site.baseurl}}/assets/images/meep-frontend-data-flow-pattern.png)
+[![General Data Flow Pattern]({{site.baseurl}}/assets/images/meep-frontend-data-flow-pattern.png)]({{site.baseurl}}/assets/images/meep-frontend-data-flow-pattern.png)
 
 The following table describes actions of the _AdvantEDGE_ application.
 
