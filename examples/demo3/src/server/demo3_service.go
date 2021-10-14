@@ -265,18 +265,23 @@ func amsNotificationPOST(w http.ResponseWriter, r *http.Request) {
 // Rest API
 // Submit AMS subscription to mec platform
 func amsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
-	err := amsSendSubscription(instanceName)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	if !amsSubscriptionSent {
+		err := amsSendSubscription(instanceName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Already have a subscription")
 }
 
 // Rest API
 // Register MEC Application instances with AMS & consume servicee
 func amsCreatePOST(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 	err := amsSendService(instanceName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -298,10 +303,10 @@ func amsSendService(appInstanceId string) error {
 	if mep == "mep1" {
 		var associateId ams.AssociateId
 		associateId.Type_ = 1
-		associateId.Value = "10.100.0.10"
+		associateId.Value = "10.100.0.3"
 		bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
 			AppMobilityServiceLevel: 3,
-			ContextTransferState:    0,
+			ContextTransferState:    1,
 		})
 	}
 
@@ -317,6 +322,34 @@ func amsSendService(appInstanceId string) error {
 	return nil
 }
 
+// Client request to update device context transfer state
+func amsUpdate(subscriptionId string, appInstanceId string) error {
+	var bodyRegisterationInfo ams.RegistrationInfo
+	bodyRegisterationInfo.ServiceConsumerId = &ams.RegistrationInfoServiceConsumerId{
+		AppInstanceId: appInstanceId,
+	}
+
+	// Provide device info only specific to mep1 platform
+	if mep == "mep1" {
+		var associateId ams.AssociateId
+		associateId.Type_ = 1
+		associateId.Value = "10.100.0.3"
+		bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
+			AppMobilityServiceLevel: 3,
+			ContextTransferState:    1, // update transfer state
+		})
+	}
+
+	_, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), bodyRegisterationInfo, subscriptionId)
+	if err != nil {
+		log.Error(err)
+		return err
+	} else {
+		log.Info("Update AMS service sucessfully")
+	}
+	return nil
+}
+
 // CLient request to create a new application mobility service
 func amsSendSubscription(appInstanceId string) error {
 	log.Debug("Sending request to mec platform add ams subscription api")
@@ -324,7 +357,7 @@ func amsSendSubscription(appInstanceId string) error {
 	var mobilityProcedureSubscription ams.MobilityProcedureSubscription
 
 	// Add body param callback ref
-	mobilityProcedureSubscription.CallbackReference = local + localPort + "/subscriptions"
+	mobilityProcedureSubscription.CallbackReference = local + localPort + "/services/callback/amsevent"
 	mobilityProcedureSubscription.SubscriptionType = "MobilityProcedureSubscription"
 
 	// Default tracking ue set to 10.100.0.3
@@ -520,7 +553,7 @@ func confirmTerminate(appInstanceId string) {
 
 // Client request to subscribe app-termination notifications
 func subscribeAppTermination(appInstanceId string, callBackReference string) error {
-	log.Debug("Sending request to mec platform confirm terminate subscription api")
+	log.Debug("Sending request to mec platform app terminate subscription api")
 	var appTerminationBody asc.AppTerminationNotificationSubscription
 	appTerminationBody.SubscriptionType = "AppTerminationNotificationSubscription"
 	appTerminationBody.CallbackReference = callBackReference
