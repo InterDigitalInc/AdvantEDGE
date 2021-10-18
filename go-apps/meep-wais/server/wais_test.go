@@ -6028,21 +6028,6 @@ func testSubscriptionListGet(t *testing.T) {
 func testSubscriptionAssocStaPost(t *testing.T) string {
 
 	/******************************
-	 * expected response section
-	 ******************************/
-	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
-	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, 1}
-	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
-
-	expectedResponseStr, err := json.Marshal(expectedResponse)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
-	/******************************
 	 * request vars section
 	 ******************************/
 
@@ -6050,7 +6035,10 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	apId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
+	callBackRef := "myCallbakRef"
+	trigger := AssocStaSubscriptionNotificationEvent{1, 1}
+	subscriptionPost1 := AssocStaSubscription{nil, &apId, callBackRef, nil /*&expectedExpiry*/, &trigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6075,6 +6063,17 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &apId, callBackRef, nil /*&expectedExpiry*/, &trigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	if rr != string(expectedResponseStr) {
 		t.Fatalf("Failed to get expected response")
 	}

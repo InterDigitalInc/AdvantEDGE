@@ -24,8 +24,6 @@
 package server
 
 type OneOfInlineSubscription struct {
-	/*
-		AssocStaSubscription
-		StaDataRateSubscription
-	*/
+	/* Discriminator */
+	SubscriptionType string `json:"subscriptionType"`
 }

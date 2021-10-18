@@ -69,13 +69,32 @@ func convertAssocStaSubscriptionToJson(obj *AssocStaSubscription) string {
 	return string(jsonInfo)
 }
 
-/*
-func convertStaDataRateSubscriptionToJson(obj *StaDataRateSubscription) string {
-	jsonInfo, err := json.Marshal(*obj)
+func convertJsonToAssocStaSubscription(jsonData string) *AssocStaSubscription {
+	var obj AssocStaSubscription
+	err := json.Unmarshal([]byte(jsonData), &obj)
 	if err != nil {
 		log.Error(err.Error())
-		return ""
+		return nil
 	}
-	return string(jsonInfo)
+	return &obj
 }
-*/
+
+func convertJsonToStaDataRateSubscription(jsonData string) *StaDataRateSubscription {
+	var obj StaDataRateSubscription
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertJsonToMeasurementReportSubscription(jsonData string) *MeasurementReportSubscription {
+	var obj MeasurementReportSubscription
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
