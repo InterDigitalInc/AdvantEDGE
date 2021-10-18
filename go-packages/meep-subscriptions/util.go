@@ -31,7 +31,7 @@ func generateRand(n int) (string, error) {
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(data), nil
+	return base64.URLEncoding.EncodeToString(data), nil
 }
 
 func convertSubToJson(sub *Subscription) (string, error) {

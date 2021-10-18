@@ -18,12 +18,13 @@ package subscriptions
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
 
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 )
 
 type TestNotification struct {
@@ -117,34 +118,56 @@ func (sub *Subscription) deleteSubscription() error {
 	return nil
 }
 
-func (sub *Subscription) getSubscription() string {
-	jsonSub, err := json.Marshal(*sub)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-	return string(jsonSub)
-}
-
-func (sub *Subscription) sendNotification(notif []byte) error {
+func (sub *Subscription) sendNotification(cfg *SubscriptionMgrCfg, notif []byte) error {
 	if sub.State == StateReady || sub.State == StateExpired {
 		if sub.Mode == ModeDirect {
-			// startTime := time.Now()
-			resp, err := http.Post(sub.Cfg.NotifyUrl, "application/json", bytes.NewBuffer(notif))
-			// duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-			// _ = httpLog.LogTx(sub.Cfg.NotifyUrl, "POST", string(notif), resp, startTime)
-			if err != nil {
-				log.Error(err)
-				// met.ObserveNotification(sandboxName, serviceName, notifSubscription, notifyUrl, nil, duration)
-				return err
+
+			// Post to notification URL
+			if cfg.MetricsEnabled {
+				// With metrics logging
+				startTime := time.Now()
+				resp, err := http.Post(sub.Cfg.NotifyUrl, "application/json", bytes.NewBuffer(notif))
+				duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+				_ = httpLog.LogTx(sub.Cfg.NotifyUrl, "POST", string(notif), resp, startTime)
+				if err != nil {
+					log.Error(err)
+					met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Cfg.NotifyUrl, nil, duration)
+					return err
+				}
+				met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Cfg.NotifyUrl, resp, duration)
+				defer resp.Body.Close()
+			} else {
+				// Without metrics logging
+				resp, err := http.Post(sub.Cfg.NotifyUrl, "application/json", bytes.NewBuffer(notif))
+				if err != nil {
+					log.Error(err)
+					return err
+				}
+				defer resp.Body.Close()
 			}
-			// met.ObserveNotification(sandboxName, serviceName, notifSubscription, notifyUrl, resp, duration)
-			defer resp.Body.Close()
 
 		} else if sub.Mode == ModeWebsocket {
-			err := sub.Ws.sendNotification(notif)
-			if err != nil {
-				log.Error(err)
+
+			// Send notification over websocket
+			if cfg.MetricsEnabled {
+				// With metrics logging
+				startTime := time.Now()
+				err := sub.Ws.sendNotification(notif)
+				duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+				_ = httpLog.LogTx(sub.Ws.Id, "WEBSOCK", string(notif), nil, startTime)
+				if err != nil {
+					met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Ws.Id, nil, duration)
+					log.Error(err)
+					return err
+				}
+				met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Ws.Id, nil, duration)
+			} else {
+				// Without metrics logging
+				err := sub.Ws.sendNotification(notif)
+				if err != nil {
+					log.Error(err)
+					return err
+				}
 			}
 		}
 	} else {

@@ -218,6 +218,11 @@ func Init() (err error) {
 	subMgrCfg.Module = moduleName
 	subMgrCfg.Sandbox = sandboxName
 	subMgrCfg.Mep = mepName
+	subMgrCfg.Service = serviceName
+	subMgrCfg.Basekey = baseKey
+	subMgrCfg.MetricsEnabled = true
+	subMgrCfg.ExpiredSubCb = ExpiredSubscriptionCb
+	subMgrCfg.PeriodicSubCb = PeriodicSubscriptionCb
 	subMgr, err = sm.NewSubscriptionMgr(&subMgrCfg, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Subscription Manager. Error: ", err)
@@ -642,8 +647,8 @@ func checkAllStaDataRateNotification(staId *StaIdentity, dataRateDl int32, dataR
 }
 
 func checkStaDataRateNotification(sub *sm.Subscription, staId *StaIdentity, dataRateDl int32, dataRateUl int32) {
-	// Ignore periodic subscriptions
-	if sub.Cfg.PeriodicInterval > 0 {
+	// Make sure subscription is ready to send notifications
+	if !subMgr.ReadyToSend(sub) {
 		return
 	}
 
@@ -763,7 +768,9 @@ func checkStaDataRateNotification(sub *sm.Subscription, staId *StaIdentity, data
 	}
 
 	log.Info("Sending STA Data Rate notification for sub: ", sub.Cfg.Id)
-	go subMgr.SendNotification(sub, jsonNotif)
+	go func() {
+		_ = subMgr.SendNotification(sub, jsonNotif)
+	}()
 }
 
 // func sendStaDataRateNotification(notifyUrl string, notification StaDataRateNotification) {
@@ -877,8 +884,8 @@ func checkAllAssocStaNotification(staMacIds []string, apMacId string) {
 }
 
 func checkAssocStaNotification(sub *sm.Subscription, staMacIds []string, apMacId string) {
-	// Ignore periodic subscriptions
-	if sub.Cfg.PeriodicInterval > 0 {
+	// Make sure subscription is ready to send notifications
+	if !subMgr.ReadyToSend(sub) {
 		return
 	}
 
@@ -932,7 +939,9 @@ func checkAssocStaNotification(sub *sm.Subscription, staMacIds []string, apMacId
 	}
 
 	log.Info("Sending Assoc STA notification for sub: ", sub.Cfg.Id)
-	go subMgr.SendNotification(sub, jsonNotif)
+	go func() {
+		_ = subMgr.SendNotification(sub, jsonNotif)
+	}()
 }
 
 // func sendAssocStaNotification(notifyUrl string, notification AssocStaNotification) {
@@ -1483,7 +1492,10 @@ func ExpiredSubscriptionCb(sub *sm.Subscription) {
 	}
 
 	// Send expiry notification
-	subMgr.SendNotification(sub, jsonNotif)
+	log.Info("Sending Expiry notification for sub: ", sub.Cfg.Id)
+	go func() {
+		_ = subMgr.SendNotification(sub, jsonNotif)
+	}()
 }
 
 // func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
@@ -1506,6 +1518,8 @@ func ExpiredSubscriptionCb(sub *sm.Subscription) {
 // }
 
 func PeriodicSubscriptionCb(sub *sm.Subscription) {
+
+	log.Debug("PeriodicSubscriptionCb")
 
 	switch sub.Cfg.Type {
 	case ASSOC_STA_SUBSCRIPTION:

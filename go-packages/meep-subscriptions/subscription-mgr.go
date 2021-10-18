@@ -32,14 +32,16 @@ type TestNotificationCb func(*Subscription) (string, error)
 type NotificationRespCb func(*Subscription)
 
 type SubscriptionMgrCfg struct {
-	Module        string
-	Sandbox       string
-	Mep           string
-	BasePath      string
-	expiredSubCb  ExpiredSubscriptionCb
-	periodicSubCb PeriodicSubscriptionCb
-	testNotifCb   TestNotificationCb
-	notifRespCb   NotificationRespCb
+	Module         string
+	Sandbox        string
+	Mep            string
+	Service        string
+	Basekey        string
+	MetricsEnabled bool
+	ExpiredSubCb   ExpiredSubscriptionCb
+	PeriodicSubCb  PeriodicSubscriptionCb
+	TestNotifCb    TestNotificationCb
+	NotifRespCb    NotificationRespCb
 }
 
 type SubscriptionMgr struct {
@@ -71,8 +73,12 @@ func NewSubscriptionMgr(cfg *SubscriptionMgrCfg, addr string) (sm *SubscriptionM
 	log.Info("Connected to Subscription Manager Redis DB")
 
 	// Get base store key
-	// data:sbox:<sandbox-name>:<module-name>:mep:<mep-name>:app:<app-id>:sub:<sub-type>:<sub-id>
-	sm.baseKey = dkm.GetKeyRoot(cfg.Sandbox) + ":" + cfg.Module + ":mep:" + cfg.Mep + ":"
+	if cfg.Basekey != "" {
+		sm.baseKey = cfg.Basekey
+	} else {
+		// data:sbox:<sandbox-name>:<module-name>:mep:<mep-name>:app:<app-id>:sub:<sub-type>:<sub-id>
+		sm.baseKey = dkm.GetKeyRoot(cfg.Sandbox) + cfg.Module + ":mep:" + cfg.Mep + ":"
+	}
 
 	// Initialize subscription cache from store
 	var subList []*Subscription
@@ -239,17 +245,19 @@ func (sm *SubscriptionMgr) GetSubscriptionList(AppId string, Type string) ([]*Su
 }
 
 func (sm *SubscriptionMgr) GenerateSubscriptionId() string {
-	randomStr, _ := generateRand(10)
+	randomStr, _ := generateRand(12)
 	// return uuid.New().String()
-	return "sub" + randomStr
+	return randomStr
 }
 
-func (sm *SubscriptionMgr) ForEachSubscription(AppId string, Type string, cb func(sub *Subscription) error, userData interface{}) error {
-
-	// Iterate through subscriptions and invoke provided function
-	// Useful when looking for matching subscriptions to trigger notifications
-	// 	   Notifications to be sent either directly via REST calls or via Websocket messages
-	return nil
+func (sm *SubscriptionMgr) ReadyToSend(sub *Subscription) bool {
+	if sub.State != StateReady {
+		return false
+	}
+	if sub.Cfg.PeriodicInterval > 0 && sub.PeriodicCounter != periodicCounterPending {
+		return false
+	}
+	return true
 }
 
 func (sm *SubscriptionMgr) SendNotification(sub *Subscription, notif []byte) error {
@@ -259,10 +267,9 @@ func (sm *SubscriptionMgr) SendNotification(sub *Subscription, notif []byte) err
 	}
 
 	// Send notification
-	err := sub.sendNotification(notif)
+	err := sub.sendNotification(sm.cfg, notif)
 	if err != nil {
 		log.Error(err.Error())
-		return err
 	}
 
 	sm.mutex.Lock()
@@ -273,7 +280,7 @@ func (sm *SubscriptionMgr) SendNotification(sub *Subscription, notif []byte) err
 		sub.PeriodicCounter = sub.Cfg.PeriodicInterval
 	}
 
-	return nil
+	return err
 }
 
 func (sm *SubscriptionMgr) delSubscription(sub *Subscription) error {
@@ -302,7 +309,7 @@ func (sm *SubscriptionMgr) runTicker() {
 	defer sm.mutex.Unlock()
 
 	// Check for expired subscriptions
-	if sm.cfg.expiredSubCb != nil {
+	if sm.cfg.ExpiredSubCb != nil {
 		var expiredSubList []*Subscription
 		currentTime := time.Now()
 
@@ -313,7 +320,9 @@ func (sm *SubscriptionMgr) runTicker() {
 			} else if sub.ExpiryTime != nil && currentTime.After(*sub.ExpiryTime) {
 				// Set state to expired & invoke expiry callback
 				sub.State = StateExpired
-				go sm.cfg.expiredSubCb(sub)
+
+				log.Debug("Invoking expiry callback for sub: ", sub.Cfg.Id)
+				go sm.cfg.ExpiredSubCb(sub)
 			}
 		}
 
@@ -324,7 +333,7 @@ func (sm *SubscriptionMgr) runTicker() {
 	}
 
 	// Trigger periodic notifications
-	if sm.cfg.periodicSubCb != nil {
+	if sm.cfg.PeriodicSubCb != nil {
 		for _, sub := range sm.subscriptions {
 			if sub.Cfg.PeriodicInterval > 0 {
 				if sub.PeriodicCounter > 0 {
@@ -335,7 +344,8 @@ func (sm *SubscriptionMgr) runTicker() {
 					sub.PeriodicCounter = periodicCounterPending
 
 					// Invoke periodic callback
-					go sm.cfg.periodicSubCb(sub)
+					log.Debug("Invoking periodic callback for sub: ", sub.Cfg.Id)
+					go sm.cfg.PeriodicSubCb(sub)
 				}
 			}
 		}
