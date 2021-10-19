@@ -9,6 +9,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -26,71 +27,105 @@ import (
 
 var mutex sync.Mutex
 
+// App-enablement client
 var srvMgmtClient *smc.APIClient
 var srvMgmtClientPath string
 var appSupportClient *asc.APIClient
 var appSupportClientPath string
 
+// Ams client & payload
 var amsClient *ams.APIClient
-var amsClientPath string
+var amsServiceId string
+var amsTargetId string
+var contextState ContextState
 
+// Demo 3 edge-case handling
+var subscriptionSent bool
+var confirmReady bool
+var registeredService bool
+var amsSubscriptionSent bool
+var amsServiceCreated bool
+
+// Config attributes
 var instanceName string
 var mecUrl string
 var localPort string
-var subscriptionSent bool
-var confirmReady bool
-var appEnablementServiceId string
-var serviceSubscriptionId string
-var registeredService bool
-var terminationSubscriptionId string
+var local string
 var mep string
-var amsSubscriptionId string
 
+// Demo 3 discovered services & create service
+var mecServices = make(map[string]string)
 var serviceName string = "user-app"
 var scopeOfLocality string = defaultScopeOfLocality
 var consumedLocalOnly bool = defaultConsumedLocalOnly
-var terminationSubscription bool = false
-var terminated bool = false
-var terminateNotification bool = false
-var amsSubscriptionSent bool = false
 
 const serviceAppVersion = "2.1.1"
-const local = "http://10.190.115.162"
 const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
 
+// Demo 3 termination handling
+var amsSubscriptionId string
+var appEnablementServiceId string
+var serviceSubscriptionId string
+var terminationSubscriptionId string
+var terminationSubscription bool = false
+var terminated bool = false
+var terminateNotification bool = false
+
+type ContextState struct {
+	Counter int    `json:"counter"`
+	AppId   string `json:"appId,omitempty"`
+	Mep     string `json:"mep,omitempty"`
+}
+
+func IncrementCounter() {
+	contextState.Counter++
+}
+
 func Init(envPath string, envName string) (port string, err error) {
+	// Start counter & initalize context state for ams
+	contextState = ContextState{
+		Counter: 0,
+	}
+
 	var config util.Config
 	var configErr error
 
-	log.Info("Using config from ", envPath, "/", envName)
+	log.Info("Using config values from ", envPath, "/", envName)
 	config, configErr = util.LoadConfig(envPath, envName)
 
 	if configErr != nil {
 		log.Fatal(configErr)
 	}
 
+	// Retrieve local url from config
+	local = config.Localurl
+
 	// Retrieve app id from config
 	instanceName = config.AppInstanceId
+	contextState.AppId = instanceName
 
 	// Retrieve sandbox url from config
 	mecUrl = config.SandboxUrl
 
-	// Parse mec platfor mep no. use for ams service
+	// Find mec platform mec app is on
 	resp := strings.LastIndex(mecUrl, "/")
 	if resp == -1 {
-		log.Fatal("Error parsing mep no. from config")
+		log.Error("Error finding mec platform")
 	} else {
 		mep = mecUrl[resp+1:]
 	}
+	contextState.Mep = mep
 
 	// Retreieve local url from config
 	localPort = config.Port
 
-	// Retrieve service name config if present
+	// Retrieve service name config otherwise use default service name
 	if config.ServiceName != "" {
 		serviceName = config.ServiceName
 	}
+
+	log.Info("Starting Demo 3 instance on Port=", localPort, " using app instance id=", instanceName, " mec platform=", mep)
 
 	// Create application support client
 	appSupportClientCfg := asc.NewConfiguration()
@@ -108,18 +143,6 @@ func Init(envPath string, envName string) (port string, err error) {
 	srvMgmtClientPath = srvMgmtClientCfg.BasePath
 	if srvMgmtClient == nil {
 		return "", errors.New("Failed to create App Enablement Service Management REST API client")
-	}
-
-	// Create application mobility suppport client
-	amsClientcfg := ams.NewConfiguration()
-
-	// Replace amsUrl with mep1 to demonstrate use-case of ams api
-	amsUrl := strings.Replace(mecUrl, "mep2", "mep1", 1)
-	amsClientcfg.BasePath = amsUrl + "/amsi/v1"
-	amsClient = ams.NewAPIClient(amsClientcfg)
-	amsClientPath = amsClientcfg.BasePath
-	if amsClient == nil {
-		return "", errors.New("Failed to create Application Mobility Support REST API client")
 	}
 
 	return localPort, nil
@@ -183,7 +206,7 @@ func notificationPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info(notification.ServiceReferences[0].SerName + " " + msg + " (" + state + ")")
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 }
 
 // Rest API
@@ -201,7 +224,7 @@ func servicePOST(w http.ResponseWriter, r *http.Request) {
 		}
 		registeredService = true
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "Sucessfully created a service")
+		fmt.Fprintf(w, "Successfully created a service")
 		return
 	}
 
@@ -247,6 +270,60 @@ func terminateNotificatonPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 // Rest API
+// Register MEC Application instances with AMS & consume servicee
+func amsCreatePOST(w http.ResponseWriter, r *http.Request) {
+
+	// Cofigure AMS mec client
+	// Create application mobility suppport client
+	if !amsServiceCreated {
+
+		amsClientcfg := ams.NewConfiguration()
+		amsUrl := mecServices["mec021-1"]
+		if amsUrl == "" {
+			log.Info("Could not find ams services try discovering available services ")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not find ams services try discovering available services")
+			return
+		}
+		amsClientcfg.BasePath = amsUrl
+		amsClient = ams.NewAPIClient(amsClientcfg)
+		if amsClient == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// Invoke client
+		err := amsSendService(instanceName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		amsServiceCreated = true
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	fmt.Fprintf(w, "AMS service created already")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Rest API
+// Submit AMS subscription to mec platform
+func amsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
+
+	if !amsSubscriptionSent && amsServiceCreated {
+		err := amsSendSubscription(instanceName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Need to create a service or already have a subscription")
+}
+
+// Rest API
 // Handle AMS notification
 func amsNotificationPOST(w http.ResponseWriter, r *http.Request) {
 	var amsNotification ams.MobilityProcedureNotification
@@ -257,37 +334,68 @@ func amsNotificationPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Should put to AMS
-	log.Info("AMS event received for ", amsNotification.AssociateId[0].Value, " to ", amsNotification.TargetAppInfo.AppInstanceId)
-	w.WriteHeader(http.StatusOK)
-}
+	amsTargetId = amsNotification.TargetAppInfo.AppInstanceId
 
-// Rest API
-// Submit AMS subscription to mec platform
-func amsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
+	log.Info("AMS event received for ", amsNotification.AssociateId[0].Value, " moved to app ", amsTargetId)
 
-	if !amsSubscriptionSent {
-		err := amsSendSubscription(instanceName)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
+	// Find ams target service resource url using mec011
+	serviceInfo, _, serviceErr := srvMgmtClient.MecServiceMgmtApi.AppServicesGET(context.TODO(), amsTargetId, nil)
+	if serviceErr != nil {
+		log.Debug("Failed to get target app mec service resource on mec platform")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	notifyUrl := serviceInfo[0].TransportInfo.Endpoint.Uris[0]
+
+	sendContextTransfer(notifyUrl, amsNotification.TargetAppInfo.AppInstanceId)
+
+	// Update ams
+	amsErr := amsUpdate(amsServiceId, instanceName, amsTargetId, 1, true)
+	if amsErr != nil {
+		log.Error("Failed to update ams")
+	}
+
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Already have a subscription")
 }
 
 // Rest API
-// Register MEC Application instances with AMS & consume servicee
-func amsCreatePOST(w http.ResponseWriter, r *http.Request) {
-	err := amsSendService(instanceName)
+// Handle context state transfer
+func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
+	var targetContextState ContextState
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&targetContextState)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Update AMS
+	amsErr := amsUpdate(amsServiceId, instanceName, targetContextState.AppId, 0, false)
+	if amsErr != nil {
+		log.Info("Failed to update ams")
+	}
+
+	log.Info("AMS context info counter = ", targetContextState.Counter, " received from user app ", targetContextState.AppId, " on ", targetContextState.Mep)
 	w.WriteHeader(http.StatusOK)
+}
+
+// Client request to sent context state transfer
+func sendContextTransfer(notifyUrl string, targetId string) {
+	log.Info("Sending context state counter = ", contextState.Counter, " to user app ", targetId)
+	jsonCounter, err := json.Marshal(contextState)
+	if err != nil {
+		log.Error("Failed to marshal context state ", err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonCounter))
+	log.Info(notifyUrl)
+	if err != nil {
+		log.Error(resp.Status, err)
+		return
+	}
+
+	defer resp.Body.Close()
 
 }
 
@@ -299,60 +407,64 @@ func amsSendService(appInstanceId string) error {
 		AppInstanceId: appInstanceId,
 	}
 
-	// Provide device info only specific to mep1 platform
-	if mep == "mep1" {
-		var associateId ams.AssociateId
-		associateId.Type_ = 1
-		associateId.Value = "10.100.0.3"
-		bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
-			AppMobilityServiceLevel: 3,
-			ContextTransferState:    1,
-		})
-	}
+	var associateId ams.AssociateId
+	associateId.Type_ = 1
+	associateId.Value = "10.100.0.3"
+	bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
+		AppMobilityServiceLevel: 3,
+		ContextTransferState:    0,
+	})
 
-	_, _, err := amsClient.AmsiApi.AppMobilityServicePOST(context.TODO(), bodyRegisterationInfo)
+	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServicePOST(context.TODO(), bodyRegisterationInfo)
+
+	// Store ams service id
+	amsServiceId = registerationInfo.AppMobilityServiceId
 
 	if err != nil {
 		log.Error(err)
 		return err
 	} else {
-		log.Info("Consumed AMS service sucessfully")
+		log.Info("Created app mobility service resource on user app instance ", instanceName[0:6], "...", " tracking ", associateId.Value)
 	}
 
 	return nil
 }
 
 // Client request to update device context transfer state
-func amsUpdate(subscriptionId string, appInstanceId string) error {
+func amsUpdate(amsId string, appInstanceId string, targetId string, contextState int32, leaving bool) error {
 	var bodyRegisterationInfo ams.RegistrationInfo
+	bodyRegisterationInfo.AppMobilityServiceId = amsId
 	bodyRegisterationInfo.ServiceConsumerId = &ams.RegistrationInfoServiceConsumerId{
 		AppInstanceId: appInstanceId,
 	}
 
 	// Provide device info only specific to mep1 platform
-	if mep == "mep1" {
-		var associateId ams.AssociateId
-		associateId.Type_ = 1
-		associateId.Value = "10.100.0.3"
-		bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
-			AppMobilityServiceLevel: 3,
-			ContextTransferState:    1, // update transfer state
-		})
-	}
+	var associateId ams.AssociateId
+	associateId.Type_ = 1
+	associateId.Value = "10.100.0.3"
+	bodyRegisterationInfo.DeviceInformation = append(bodyRegisterationInfo.DeviceInformation, ams.RegistrationInfoDeviceInformation{AssociateId: &associateId,
+		AppMobilityServiceLevel: 3,
+		ContextTransferState:    contextState,
+	})
 
-	_, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), bodyRegisterationInfo, subscriptionId)
+	_, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), bodyRegisterationInfo, amsId)
 	if err != nil {
 		log.Error(err)
 		return err
+	}
+
+	if leaving {
+		log.Info("Completed AMS context transfer on ", instanceName[0:6], "... to user-app ", targetId[0:6], "...")
 	} else {
-		log.Info("Update AMS service sucessfully")
+		log.Info("Completed AMS context transfer from ", targetId[0:6], "...")
+
 	}
 	return nil
 }
 
-// CLient request to create a new application mobility service
+// CLient request to create an ams subscription
 func amsSendSubscription(appInstanceId string) error {
-	log.Debug("Sending request to mec platform add ams subscription api")
+	log.Debug("Sending request to mec platform adding ams subscription api")
 
 	var mobilityProcedureSubscription ams.MobilityProcedureSubscription
 
@@ -395,19 +507,6 @@ func amsSendSubscription(appInstanceId string) error {
 	return nil
 }
 
-// Client request to delete ams subscription
-func deleteAmsSubscription(subscriptionId string) error {
-	log.Debug("Sending request to mec platform delete ams susbcription api")
-	if amsSubscriptionSent {
-		resp, err := amsClient.AmsiApi.AppMobilityServiceByIdDELETE(context.TODO(), subscriptionId)
-		if err != nil {
-			log.Info("Failed to delete ams subcription ", resp.Status)
-			return err
-		}
-	}
-	return nil
-}
-
 // Client request to notify mec platform of mec app
 func sendReadyConfirmation(appInstanceId string) error {
 	log.Debug("Sending request to mec platform user-app confirm-ready api")
@@ -423,21 +522,19 @@ func sendReadyConfirmation(appInstanceId string) error {
 
 // Client request to retrieve list of mec service resources on sandbox
 func getMecServices() error {
-	appServicesPostResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
-	log.Debug("Sending request to mec platform get services api ")
+	log.Debug("Sending request to mec platform get service resources api ")
+	appServicesResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
 		log.Error("Failed to fetch services on mec platform ", resp.Status)
 		return err
 	}
 
-	log.Info("Returning available mec services on mec platform")
-	servicesName := make([]string, len(appServicesPostResponse))
-	for i := 0; i < len(appServicesPostResponse); i++ {
-		servicesName[i] = appServicesPostResponse[i].SerName + " URL: " + appServicesPostResponse[i].TransportInfo.Endpoint.Uris[0]
-	}
+	log.Info("Returning available mec service resources on mec platform")
 
-	for _, v := range servicesName {
-		log.Info(v)
+	// Store mec services & log service urls
+	for i := 0; i < len(appServicesResponse); i++ {
+		mecServices[appServicesResponse[i].SerName] = appServicesResponse[i].TransportInfo.Endpoint.Uris[0]
+		log.Info(appServicesResponse[i].SerName, " URL: ", appServicesResponse[i].TransportInfo.Endpoint.Uris[0])
 	}
 
 	return nil
@@ -445,7 +542,7 @@ func getMecServices() error {
 
 // Client request to create a mec-service resource
 func registerService(appInstanceId string) error {
-	log.Debug("Sending request to mec platform post service api ")
+	log.Debug("Sending request to mec platform post service resource api ")
 	var srvInfo smc.ServiceInfoPost
 	//serName
 	srvInfo.SerName = serviceName
@@ -467,7 +564,7 @@ func registerService(appInstanceId string) error {
 	transportInfo.Protocol = "HTTP"
 	transportInfo.Version = "2.0"
 	var endpoint smc.OneOfTransportInfoEndpoint
-	endpointPath := local + "/" + localPort
+	endpointPath := local + localPort + "/services/callback/incoming-context"
 	endpoint.Uris = append(endpoint.Uris, endpointPath)
 	transportInfo.Endpoint = &endpoint
 	srvInfo.TransportInfo = &transportInfo
@@ -489,10 +586,10 @@ func registerService(appInstanceId string) error {
 
 	appServicesPostResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
-		log.Error("Failed to register service on mec app enablement registry: ", resp.Status)
+		log.Error("Failed to register service resource on mec app enablement registry: ", resp.Status)
 		return err
 	}
-	log.Info(serviceName, " service created with instance id: ", appServicesPostResponse.SerInstanceId)
+	log.Info(serviceName, " service resource created with instance id: ", appServicesPostResponse.SerInstanceId)
 	appEnablementServiceId = appServicesPostResponse.SerInstanceId
 	registeredService = true
 	return nil
@@ -500,10 +597,10 @@ func registerService(appInstanceId string) error {
 
 // Client request to delete a mec-service resource
 func unregisterService(appInstanceId string, serviceId string) error {
-	log.Debug("Sending request to mec platform delete service api")
+	//log.Debug("Sending request to mec platform delete service api")
 	resp, err := srvMgmtClient.MecServiceMgmtApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
 	if err != nil {
-		log.Debug("Failed to send request to delete service on mec platform ", resp.Status)
+		log.Debug("Failed to send request to delete service resource on mec platform ", resp.Status)
 		return err
 	}
 	return nil
@@ -511,7 +608,7 @@ func unregisterService(appInstanceId string, serviceId string) error {
 
 // Client request to subscribe service-availability notifications
 func subscribeAvailability(appInstanceId string, callbackReference string) error {
-	log.Debug("Sending request to mec platform add subscription api")
+	log.Debug("Sending request to mec platform add service-avail subscription api")
 	var filter smc.SerAvailabilityNotificationSubscriptionFilteringCriteria
 	filter.SerNames = nil
 	filter.IsLocal = true
@@ -553,7 +650,7 @@ func confirmTerminate(appInstanceId string) {
 
 // Client request to subscribe app-termination notifications
 func subscribeAppTermination(appInstanceId string, callBackReference string) error {
-	log.Debug("Sending request to mec platform app terminate subscription api")
+	log.Debug("Sending request to mec platform add app terminate subscription api")
 	var appTerminationBody asc.AppTerminationNotificationSubscription
 	appTerminationBody.SubscriptionType = "AppTerminationNotificationSubscription"
 	appTerminationBody.CallbackReference = callBackReference
@@ -596,6 +693,30 @@ func delsubscribeAvailability(appInstanceId string, subscriptionId string) error
 	return nil
 }
 
+// Client request to delete ams service
+func delAmsService(serviceId string) error {
+	resp, err := amsClient.AmsiApi.AppMobilityServiceByIdDELETE(context.TODO(), serviceId)
+	if err != nil {
+		log.Error("Failed to cleared ams service ", resp.Status)
+		return err
+	}
+
+	return nil
+}
+
+// Client request to delete ams subscription
+func deleteAmsSubscription(subscriptionId string) error {
+	//log.Debug("Sending request to mec platform delete ams susbcription api")
+	if amsSubscriptionSent {
+		resp, err := amsClient.AmsiApi.SubByIdDELETE(context.TODO(), subscriptionId)
+		if err != nil {
+			log.Error("Failed to clear ams subcription ", resp.Status)
+			return err
+		}
+	}
+	return nil
+}
+
 // Confirm app readiness & app termination subscription
 func Run() {
 
@@ -605,7 +726,7 @@ func Run() {
 		if err != nil {
 			log.Fatal("Check configurations if valid")
 		} else {
-			log.Info("User app is ready to mec platform")
+			log.Info("User app instance ", instanceName[0:6], ".... is ready to mec platform")
 		}
 	}
 
@@ -628,14 +749,14 @@ func Terminate() {
 		//Delete app subscriptions
 		err := delAppTerminationSubscription(instanceName, terminationSubscriptionId)
 		if err == nil {
-			log.Info("Cleared app enablement subscription on mec platform")
+			log.Info("Cleared app-termination subscription on mec platform")
 		}
 
 		// Delete service subscriptions
 		if subscriptionSent {
 			err := delsubscribeAvailability(instanceName, serviceSubscriptionId)
 			if err == nil {
-				log.Info("Cleared service subscription on mec platform")
+				log.Info("Cleared service-avail subscription on mec platform")
 			}
 		}
 
@@ -644,6 +765,14 @@ func Terminate() {
 			err := unregisterService(instanceName, appEnablementServiceId)
 			if err == nil {
 				log.Info("Cleared user-app services on mec platform")
+			}
+		}
+
+		// Delete ams service
+		if amsServiceCreated {
+			err := delAmsService(amsServiceId)
+			if err == nil {
+				log.Info("Cleared ams service on mec platform")
 			}
 		}
 

@@ -121,4 +121,10 @@ var routes = Routes{
 		"/services/callback/amsevent",
 		AmsNotificationPOST,
 	},
+	Route{
+		"ContextTransferPOST",
+		strings.ToUpper("post"),
+		"/services/callback/incoming-context",
+		ContextTransferPOST,
+	},
 }

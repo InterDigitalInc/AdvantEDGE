@@ -87,6 +87,6 @@ func main() {
 			break
 		}
 		time.Sleep(time.Second)
-
+		server.IncrementCounter()
 	}
 }

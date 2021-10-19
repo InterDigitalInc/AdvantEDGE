@@ -46,3 +46,7 @@ func AmsCreatePOST(w http.ResponseWriter, r *http.Request) {
 func AmsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
 	amsSubscriptionPOST(w, r)
 }
+
+func ContextTransferPOST(w http.ResponseWriter, r *http.Request) {
+	stateTransferPOST(w, r)
+}

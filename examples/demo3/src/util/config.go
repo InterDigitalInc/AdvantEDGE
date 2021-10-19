@@ -9,6 +9,7 @@ import (
 type Config struct {
 	SandboxUrl    string `mapstructure:"sandbox"`
 	AppInstanceId string `mapstructure:"appid"`
+	Localurl      string `mapstructure:"localurl"`
 	Port          string `mapstructure:"port"`
 	ServiceName   string `mapstructure:"service"`
 }
