@@ -44,6 +44,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/InterDigitalInc/AdvantEDGE v1.7.1 h1:XKOqcRWvlqhyFmhH0hHOAnCYNVWln6XqWLp1OQ5JwZ4=
 github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0-20210505162607-cc887b7a0c0a h1:fjxPT6ITEFXPZ9LRbev8iFy1swOhe7lRCUobSd0vHQA=
 github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0-20210505162607-cc887b7a0c0a/go.mod h1:Xy2Z6nc9m0DRQRj9g0+/4E6OkDlCkFYySa65JoQ2d8g=
+github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0-20211012135439-29644864b026 h1:YFADWZghbg8ASHxm9Z+BN+oXEQodK+DMCBBojZUlDQ8=
+github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0-20211012135439-29644864b026/go.mod h1:Xy2Z6nc9m0DRQRj9g0+/4E6OkDlCkFYySa65JoQ2d8g=
 github.com/antihax/optional v1.0.0 h1:xK2lYat7ZLaVVcIuj82J8kIro4V6kDe0AUDFboUCwcg=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=

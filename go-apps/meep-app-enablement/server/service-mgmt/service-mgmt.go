@@ -204,17 +204,18 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
-	if err != nil {
-		log.Error(err.Error())
-		if problemDetails != "" {
-			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
-		} else {
-			http.Error(w, err.Error(), code)
-		}
-		return
-	}
+	// Do not validate app instance id in order to find url of ams service on anther mec platform
+	// err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	if problemDetails != "" {
+	// 		w.WriteHeader(code)
+	// 		fmt.Fprintf(w, problemDetails)
+	// 	} else {
+	// 		http.Error(w, err.Error(), code)
+	// 	}
+	// 	return
+	// }
 
 	getServices(w, r, appInstanceId)
 }
@@ -911,7 +912,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appInstanceId string) {
 	if appInstanceId == "" {
 		key = baseKeyGlobal + ":app:*:svc:*"
 	} else {
-		key = baseKey + ":app:" + appInstanceId + ":svc:*"
+		key = baseKeyGlobal + ":app:" + appInstanceId + ":svc:*"
 	}
 
 	err = rc.ForEachJSONEntry(key, populateServiceInfoList, &sInfoList)

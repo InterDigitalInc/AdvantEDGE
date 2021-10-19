@@ -744,7 +744,7 @@ func Run() {
 // Terminate by deleting all resources allocated on MEC platform & mec app
 func Terminate() {
 
-	// Only invoke graceful termination if terminated is false
+	// Only invoke graceful termination if not terminated
 	if !terminated {
 		//Delete app subscriptions
 		err := delAppTerminationSubscription(instanceName, terminationSubscriptionId)
