@@ -2454,9 +2454,9 @@ func periodicSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if periodicSub.Frequency == 0 {
-		log.Error("Mandatory Frequency parameter not present")
-		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+	if periodicSub.Frequency == 0 || periodicSub.Frequency < 0 {
+		log.Error("Mandatory Frequency parameter missing or Frequency value should be 1 or above")
+		http.Error(w, "Mandatory Frequency parameter missing or Frequency value should be 1 or above", http.StatusBadRequest)
 		return
 	}
 	/*	if periodicSub.RequestedAccuracy == 0 {
