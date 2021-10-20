@@ -159,15 +159,15 @@ func (sm *SubscriptionMgr) UpdateSubscription(sub *Subscription) error {
 
 	// Update subscription
 
-	if sub.Cfg.RequestWebsocketUri {
-		// Ignore test notif & callback URI
-		// Set subscription state to 'InitWebsocket'
-		// Create websocket URI
-		// Provision subscription-specific websocket path in router (sub-type + random string)
-		//     Implement websocket server in path handler
-	} else {
-		// Update subscription details
-	}
+	// if sub.Cfg.RequestWebsocketUri {
+	// 	// Ignore test notif & callback URI
+	// 	// Set subscription state to 'InitWebsocket'
+	// 	// Create websocket URI
+	// 	// Provision subscription-specific websocket path in router (sub-type + random string)
+	// 	//     Implement websocket server in path handler
+	// } else {
+	// 	// Update subscription details
+	// }
 
 	// Store updated subscription
 	jsonSub, err := convertSubToJson(sub)
@@ -251,9 +251,15 @@ func (sm *SubscriptionMgr) GenerateSubscriptionId() string {
 }
 
 func (sm *SubscriptionMgr) ReadyToSend(sub *Subscription) bool {
+	// Subscription state
 	if sub.State != StateReady {
 		return false
 	}
+	// Websocket state
+	if sub.Ws != nil && sub.Ws.State != WsStateReady {
+		return false
+	}
+	// Periodic interval
 	if sub.Cfg.PeriodicInterval > 0 && sub.PeriodicCounter != periodicCounterPending {
 		return false
 	}

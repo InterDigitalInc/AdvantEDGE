@@ -805,6 +805,9 @@ default:
 #       - name: 'UserApi'
 #         path: '/user-api'
 #         mode: 'allow'
+#       - name: 'Websocket'
+#         path: '/ws'
+#         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'
 #         path: '/'

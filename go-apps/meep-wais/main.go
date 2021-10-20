@@ -51,6 +51,7 @@ func main() {
 	}()
 
 	go func() {
+
 		// Initialize WAIS
 		err := server.Init()
 		if err != nil {
@@ -69,6 +70,7 @@ func main() {
 
 		// Start WAIS REST API Server
 		router := server.NewRouter()
+		server.SetRouter(router)
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))

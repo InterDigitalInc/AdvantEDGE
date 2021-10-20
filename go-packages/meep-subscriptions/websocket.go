@@ -25,11 +25,17 @@ import (
 )
 
 type Websocket struct {
-	Id                string
-	Endpoint          string
-	ConnectionHandler func(w http.ResponseWriter, r *http.Request)
-	Connection        *websocket.Conn
+	Id                string                                       `json:"id"`
+	State             string                                       `json:"state"`
+	Endpoint          string                                       `json:"endpoint"`
+	ConnectionHandler func(w http.ResponseWriter, r *http.Request) `json:"-"`
+	Connection        *websocket.Conn                              `json:"-"`
 }
+
+const (
+	WsStateInit  = "Init"
+	WsStateReady = "Ready"
+)
 
 // Websocket connection upgrader
 var upgrader = websocket.Upgrader{
@@ -41,14 +47,15 @@ var upgrader = websocket.Upgrader{
 func newWebsocket() (*Websocket, error) {
 	// Create new websocket
 	var ws Websocket
-	ws.Id = ""
 
 	// Generate a random websocket URI
-	randomStr, err := generateRand(10)
+	randomStr, err := generateRand(12)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
 	}
+	ws.Id = randomStr
+	ws.State = WsStateInit
 	ws.Endpoint = "ws/" + randomStr
 
 	// Create websocket handler
@@ -58,18 +65,43 @@ func newWebsocket() (*Websocket, error) {
 }
 
 func (ws *Websocket) close() {
+
 	// Close websocket connection
-	_ = ws.Connection.Close()
+	if ws.Connection != nil {
+		go func() {
+			// Send close message & wait
+			err := ws.Connection.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Error(err.Error())
+			}
+			time.Sleep(time.Second)
+
+			// Close connection
+			_ = ws.Connection.Close()
+		}()
+	}
+
+	// Reset state
+	ws.State = WsStateInit
 }
 
 func (ws *Websocket) connectionHandler(w http.ResponseWriter, r *http.Request) {
+	// Accept a single websocket connection at a time
+	if ws.State != WsStateInit {
+		log.Error("Websocket connection already up")
+		http.Error(w, "Websocket connection already up", http.StatusInternalServerError)
+		return
+	}
+
 	// Upgrade TCP REST connection to websocket connection
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Error(err.Error())
+		http.Error(w, "Failed to upgrade websocket connection", http.StatusInternalServerError)
 		return
 	}
 	ws.Connection = connection
+	ws.State = WsStateReady
 	log.Info("Client connected to websocket")
 
 	// Start reader & keepalive
@@ -82,6 +114,9 @@ func (ws *Websocket) startReader() {
 		_, p, err := ws.Connection.ReadMessage()
 		if err != nil {
 			log.Error(err.Error())
+
+			// Reset websocket state
+			ws.State = WsStateInit
 			return
 		}
 		log.Debug("Received msg: ", string(p))
@@ -94,7 +129,7 @@ func (ws *Websocket) startKeepalive() {
 			log.Error(err.Error())
 			return
 		}
-		time.Sleep(5 * time.Minute)
+		time.Sleep(10 * time.Minute)
 	}
 }
 

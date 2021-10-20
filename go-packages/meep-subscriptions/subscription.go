@@ -28,27 +28,27 @@ import (
 )
 
 type TestNotification struct {
-	State string
+	State string `json:"state"`
 }
 
 type SubscriptionCfg struct {
-	Id                  string
-	AppId               string
-	Type                string
-	NotifyUrl           string
-	ExpiryTime          *time.Time
-	PeriodicInterval    int32
-	RequestTestNotif    bool
-	RequestWebsocketUri bool
+	Id                  string     `json:"id"`
+	AppId               string     `json:"appId"`
+	Type                string     `json:"subType"`
+	NotifyUrl           string     `json:"notifyUrl"`
+	ExpiryTime          *time.Time `json:"expiryTime"`
+	PeriodicInterval    int32      `json:"periodicInterval"`
+	RequestTestNotif    bool       `json:"reqTestNotif"`
+	RequestWebsocketUri bool       `json:"reqWebsockUri"`
 }
 
 type Subscription struct {
 	Cfg             *SubscriptionCfg
-	JsonSubOrig     string
-	Mode            string
-	State           string
-	ExpiryTime      *time.Time
-	PeriodicCounter int32
+	JsonSubOrig     string     `json:"jsonSubOrig"`
+	Mode            string     `json:"mode"`
+	State           string     `json:"state"`
+	ExpiryTime      *time.Time `json:"expiryTime"`
+	PeriodicCounter int32      `json:"periodicCounter"`
 	TestNotif       *TestNotification
 	Ws              *Websocket
 }
@@ -84,7 +84,6 @@ func newSubscription(cfg *SubscriptionCfg, jsonSubOrig string) (*Subscription, e
 		}
 		sub.Ws = ws
 		sub.Mode = ModeWebsocket
-		sub.State = StateInit
 
 	} else if cfg.RequestTestNotif {
 		// 	Start goroutine:
@@ -100,9 +99,9 @@ func newSubscription(cfg *SubscriptionCfg, jsonSubOrig string) (*Subscription, e
 		// }
 	} else {
 		sub.Mode = ModeDirect
-		sub.State = StateReady
 	}
 
+	sub.State = StateReady
 	return &sub, nil
 }
 

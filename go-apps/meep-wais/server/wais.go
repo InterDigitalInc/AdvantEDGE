@@ -109,6 +109,7 @@ var svcMgmtClient *smc.APIClient
 var sbxCtrlClient *scc.APIClient
 var registrationTicker *time.Ticker
 var subMgr *sm.SubscriptionMgr
+var waisRouter *mux.Router
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -300,6 +301,11 @@ func Stop() (err error) {
 	}
 
 	return sbi.Stop()
+}
+
+// SetRouter - Store router in server
+func SetRouter(router *mux.Router) {
+	waisRouter = router
 }
 
 func startRegistrationTicker() {
@@ -1170,13 +1176,45 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 			expiryTime := time.Unix(int64(sub.ExpiryDeadline.Seconds), int64(sub.ExpiryDeadline.NanoSeconds))
 			subCfg.ExpiryTime = &expiryTime
 		}
-		subCfg.RequestTestNotif = false
-		subCfg.RequestWebsocketUri = false
-		_, err := subMgr.CreateSubscription(&subCfg, jsonSub)
+		subCfg.RequestTestNotif = sub.RequestTestNotification
+		if sub.WebsockNotifConfig != nil {
+			subCfg.RequestWebsocketUri = sub.WebsockNotifConfig.RequestWebsocketUri
+		}
+		subscription, err := subMgr.CreateSubscription(&subCfg, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
 			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
+		}
+
+		// Add websocket handler for subscription
+		if subscription.Ws != nil {
+			path := "/" + waisBasePath + subscription.Ws.Endpoint
+			waisRouter.HandleFunc(path, subscription.Ws.ConnectionHandler).Name(subscription.Cfg.Id)
+			log.Info("Created websocket endpoint ", path, " for subscription ", subscription.Cfg.Id)
+
+			// Update WebsockNotifConfig URI
+			wsUrl, err := url.Parse(hostUrl.String())
+			if err != nil {
+				log.Error("Failed to create websocket URI")
+				http.Error(w, "Failed to create websocket URI", http.StatusInternalServerError)
+				return
+			}
+			wsUrl.Scheme = "wss"
+			sub.WebsockNotifConfig.WebsocketUri = wsUrl.String() + basePath + subscription.Ws.Endpoint
+
+			// Convert subscription to json
+			jsonSub := convertAssocStaSubscriptionToJson(&sub)
+			jsonResponse = jsonSub
+
+			// Update subscription to reflect changes
+			subscription.JsonSubOrig = jsonSub
+			err = subMgr.UpdateSubscription(subscription)
+			if err != nil {
+				log.Error("Failed to update subscription")
+				http.Error(w, "Failed to update subscription", http.StatusInternalServerError)
+				return
+			}
 		}
 
 	case STA_DATA_RATE_SUBSCRIPTION:
@@ -1320,6 +1358,14 @@ func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
+	}
+
+	// Disable subscription websocket endpoint
+	if subscription.Ws != nil {
+		route := waisRouter.Get(subscription.Cfg.Id)
+		if route != nil {
+			route.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
+		}
 	}
 
 	// Delete subscription
@@ -1518,8 +1564,6 @@ func ExpiredSubscriptionCb(sub *sm.Subscription) {
 // }
 
 func PeriodicSubscriptionCb(sub *sm.Subscription) {
-
-	log.Debug("PeriodicSubscriptionCb")
 
 	switch sub.Cfg.Type {
 	case ASSOC_STA_SUBSCRIPTION:
