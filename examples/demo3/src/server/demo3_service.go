@@ -345,7 +345,13 @@ func amsNotificationPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	notifyUrl := serviceInfo[0].TransportInfo.Endpoint.Uris[0]
+
+	var notifyUrl string
+	for i := 0; i < len(serviceInfo); i++ {
+		if serviceInfo[i].SerName == serviceName {
+			notifyUrl = serviceInfo[i].TransportInfo.Endpoint.Uris[0]
+		}
+	}
 
 	sendContextTransfer(notifyUrl, amsNotification.TargetAppInfo.AppInstanceId)
 
