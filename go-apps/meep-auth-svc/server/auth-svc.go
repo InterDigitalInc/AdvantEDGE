@@ -638,7 +638,7 @@ func generateRand(n int) (string, error) {
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(data), nil
+	return base64.URLEncoding.EncodeToString(data), nil
 }
 
 func getUniqueState() (state string, err error) {
@@ -945,7 +945,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 
 	// Get random cache buster string
-	cacheBuster, err := generateRand(10)
+	cacheBuster, err := generateRand(12)
 	if err != nil {
 		cacheBuster = ""
 	}

@@ -888,9 +888,9 @@ components:
       example:
         _links:
           subscriptions:
-          - rel: rel
+          - subscriptionType: subscriptionType
             href: http://example.com/aeiou
-          - rel: rel
+          - subscriptionType: subscriptionType
             href: http://example.com/aeiou
           self:
             href: /mecSerMgmtApi/example
@@ -1295,19 +1295,21 @@ components:
     SubscriptionLinkList__links_subscriptions:
       required:
       - href
-      - rel
+      - subscriptionType
       type: object
       properties:
         href:
           type: string
           description: URI referring to a resource
           format: uri
-        rel:
+        subscriptionType:
           type: string
-          description: The value shall be se to SerAvailabilityNotificationSubscription.
+          description: Type of the subscription. The values are as defined in the
+            "subscriptionType" attribute for each different Mp1 event subscription
+            data type.
       description: A link to a subscription.
       example:
-        rel: rel
+        subscriptionType: subscriptionType
         href: http://example.com/aeiou
     SubscriptionLinkList__links:
       required:
@@ -1324,9 +1326,9 @@ components:
       description: Self-referring URI.
       example:
         subscriptions:
-        - rel: rel
+        - subscriptionType: subscriptionType
           href: http://example.com/aeiou
-        - rel: rel
+        - subscriptionType: subscriptionType
           href: http://example.com/aeiou
         self:
           href: /mecSerMgmtApi/example
