@@ -203,8 +203,7 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, false)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -261,7 +260,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -369,7 +368,7 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -422,7 +421,7 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, false)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -448,7 +447,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -547,7 +546,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -653,7 +652,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -688,7 +687,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -727,7 +726,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	err, code, problemDetails := validateAppInstanceId(appInstanceId, true)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -911,7 +910,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appInstanceId string) {
 	if appInstanceId == "" {
 		key = baseKeyGlobal + ":app:*:svc:*"
 	} else {
-		key = baseKey + ":app:" + appInstanceId + ":svc:*"
+		key = baseKeyGlobal + ":app:" + appInstanceId + ":svc:*"
 	}
 
 	err = rc.ForEachJSONEntry(key, populateServiceInfoList, &sInfoList)
@@ -948,7 +947,7 @@ func getService(w http.ResponseWriter, r *http.Request, appInstanceId string, se
 	if appInstanceId == "" {
 		key = baseKeyGlobal + ":app:*:svc:" + serviceId
 	} else {
-		key = baseKey + ":app:" + appInstanceId + ":svc:" + serviceId
+		key = baseKeyGlobal + ":app:" + appInstanceId + ":svc:" + serviceId
 	}
 
 	err := rc.ForEachJSONEntry(key, populateServiceInfoList, &sInfoList)
@@ -965,7 +964,7 @@ func getService(w http.ResponseWriter, r *http.Request, appInstanceId string, se
 	}
 
 	// Prepare & send response
-	jsonResponse, err := json.Marshal(sInfoList.Services)
+	jsonResponse, err := json.Marshal(sInfoList.Services[0])
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1240,9 +1239,11 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 		serAvailabilityRef.ChangeType = string(changeType)
 		serAvailabilityRefList = append(serAvailabilityRefList, serAvailabilityRef)
 		notif.ServiceReferences = serAvailabilityRefList
-
-		sendSerAvailNotification(sub.CallbackReference, notif)
-		log.Info("Service Availability Notification (" + idStr + ") for " + string(changeType))
+		callbackReference := sub.CallbackReference
+		go func() {
+			sendSerAvailNotification(callbackReference, notif)
+			log.Info("Service Availability Notification (" + idStr + ") for " + string(changeType))
+		}()
 	}
 }
 
@@ -1315,16 +1316,57 @@ func validateServiceQueryParams(serInstanceId []string, serName []string, serCat
 	return nil
 }
 
-func validateAppInstanceId(appInstanceId string) (error, int, string) {
-	// Get application instance
-	key := baseKey + ":app:" + appInstanceId + ":info"
-	fields, err := rc.GetEntry(key)
-	if err != nil || len(fields) == 0 {
-		return errors.New("App Instance not found"), http.StatusNotFound, ""
+func populateAppValues(key string, redisEntry map[string]string, data interface{}) error {
+	appInfoList := data.(*[]map[string]string)
+	appEntries := make(map[string]string)
+
+	if data == nil {
+		return errors.New("App instance lookup error")
+	}
+
+	for k := range redisEntry {
+		redisEntryValue := redisEntry[k]
+		appEntries[k] = redisEntryValue
+	}
+
+	s := *appInfoList
+	*appInfoList = append(s, appEntries)
+
+	return nil
+}
+
+func validateAppInstanceId(appInstanceId string, localMepOnly bool) (error, int, string) {
+
+	var appInfoState string
+
+	// Validate app instance by if app is local to mep or global lookup
+	if localMepOnly {
+		// Get application instance by local base key
+		key := baseKey + ":app:" + appInstanceId + ":info"
+		fields, err := rc.GetEntry(key)
+		if err != nil || len(fields) == 0 {
+			return errors.New("App Instance not found"), http.StatusNotFound, ""
+		}
+		appInfoState = fields[fieldState]
+	} else {
+		// Get application instance by global key with additional wild card
+		key := baseKeyGlobal + ":app:" + appInstanceId + ":info"
+		var appInfoList []map[string]string
+		err := rc.ForEachEntry(key, populateAppValues, &appInfoList)
+		if err != nil {
+			log.Error(err)
+			return err, http.StatusInternalServerError, ""
+		}
+		// There should be one unique app instance found
+		if len(appInfoList) != 1 {
+			return errors.New("App Instance not found"), http.StatusNotFound, ""
+		}
+		appInfos := appInfoList[0]
+		appInfoState = appInfos[fieldState]
 	}
 
 	// Make sure App is in ready state
-	if fields[fieldState] != APP_STATE_READY {
+	if appInfoState != APP_STATE_READY {
 		var problemDetails ProblemDetails
 		problemDetails.Status = http.StatusForbidden
 		problemDetails.Detail = "App Instance not ready. Waiting for AppReadyConfirmation."

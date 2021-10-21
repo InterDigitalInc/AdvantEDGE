@@ -1,0 +1,5 @@
+# Demo 3 Configurations
+sandbox: ''
+appid: ''
+port: ':8093'
+service: 'use-case1&2'
