@@ -1358,7 +1358,7 @@ func validateAppInstanceId(appInstanceId string, localMepOnly bool) (error, int,
 			return err, http.StatusInternalServerError, ""
 		}
 		// There should be one unique app instance found
-		if len(appInfoList) > 1 {
+		if len(appInfoList) != 1 {
 			return errors.New("App Instance not found"), http.StatusNotFound, ""
 		}
 		appInfos := appInfoList[0]
