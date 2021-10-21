@@ -370,6 +370,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Location", subscription.Links.Self.Href)
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, string(jsonResponse))
 }
@@ -488,7 +489,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 			var subscription SubscriptionLinkListLinksSubscriptions
 			subscription.Href = appTermSubscription.Links.Self.Href
 			//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
-			subscription.Rel = APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE
+			subscription.SubscriptionType = APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE
 			subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
 		}
 	}

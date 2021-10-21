@@ -347,6 +347,9 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get resource uri
+	resourceUri := hostUrl.String() + basePath + "applications/" + appInstanceId + "/services/" + sInfo.SerInstanceId
+
 	// Send response
 	jsonResponse, err := json.Marshal(sInfo)
 	if err != nil {
@@ -354,6 +357,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Location", resourceUri)
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, string(jsonResponse))
 }
@@ -638,6 +642,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Location", subscription.Links.Self.Href)
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, string(jsonResponse))
 }
@@ -1096,7 +1101,7 @@ func populateSubscriptionsList(key string, jsonInfo string, data interface{}) er
 	var subscription SubscriptionLinkListLinksSubscriptions
 	subscription.Href = serAvailSubscription.Links.Self.Href
 	//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
-	subscription.Rel = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
+	subscription.SubscriptionType = SER_AVAILABILITY_NOTIFICATION_SUBSCRIPTION_TYPE
 
 	// Add subscription to list
 	subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
