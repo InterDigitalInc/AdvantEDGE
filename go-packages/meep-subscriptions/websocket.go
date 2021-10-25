@@ -17,6 +17,7 @@
 package subscriptions
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -24,12 +25,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type WebsocketCfg struct {
+	Timeout time.Duration `json:"timeout"`
+}
+
 type Websocket struct {
+	Cfg               *WebsocketCfg
 	Id                string                                       `json:"id"`
 	State             string                                       `json:"state"`
 	Endpoint          string                                       `json:"endpoint"`
 	ConnectionHandler func(w http.ResponseWriter, r *http.Request) `json:"-"`
 	Connection        *websocket.Conn                              `json:"-"`
+	MsgHandler        chan []byte                                  `json:"-"`
+	Done              chan int                                     `json:"-"`
 }
 
 const (
@@ -44,9 +52,10 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-func newWebsocket() (*Websocket, error) {
+func newWebsocket(cfg *WebsocketCfg) (*Websocket, error) {
 	// Create new websocket
 	var ws Websocket
+	ws.Cfg = cfg
 
 	// Generate a random websocket URI
 	randomStr, err := generateRand(12)
@@ -105,13 +114,18 @@ func (ws *Websocket) connectionHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("Client connected to websocket")
 
 	// Start reader & keepalive
-	go ws.startReader()
+	go ws.startMsgHandler()
 	go ws.startKeepalive()
 }
 
-func (ws *Websocket) startReader() {
+func (ws *Websocket) startMsgHandler() {
+	// Create message handler channel
+	ws.MsgHandler = make(chan []byte)
+
+	// Start reading messages
 	for {
-		_, p, err := ws.Connection.ReadMessage()
+		// Receive message
+		msgType, msg, err := ws.Connection.ReadMessage()
 		if err != nil {
 			log.Error(err.Error())
 
@@ -119,7 +133,14 @@ func (ws *Websocket) startReader() {
 			ws.State = WsStateInit
 			return
 		}
-		log.Debug("Received msg: ", string(p))
+
+		// Handle binary message
+		if msgType == websocket.BinaryMessage {
+			// Send message on message handler channel
+			ws.MsgHandler <- msg
+		} else {
+			log.Warn("Ignoring unexpected message type: ", msgType)
+		}
 	}
 }
 
@@ -133,10 +154,36 @@ func (ws *Websocket) startKeepalive() {
 	}
 }
 
-func (ws *Websocket) sendNotification(notif []byte) error {
-	if err := ws.Connection.WriteMessage(websocket.TextMessage, notif); err != nil {
+func (ws *Websocket) sendMessage(msg []byte) ([]byte, error) {
+	var resp []byte
+
+	// Make sure websocket is ready to send
+	if ws.State != WsStateReady {
+		err := errors.New("Websocket connection not ready to send")
 		log.Error(err.Error())
-		return err
+		return nil, err
 	}
-	return nil
+
+	// Flush message channel in case we received unexpected messages
+	for len(ws.MsgHandler) > 0 {
+		log.Warn("Flushing unexpected websocket message")
+		<-ws.MsgHandler
+	}
+
+	// Write message on websocket
+	if err := ws.Connection.WriteMessage(websocket.BinaryMessage, msg); err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	// Wait for message response or timeout
+	select {
+	case resp = <-ws.MsgHandler:
+	case <-time.After(ws.Cfg.Timeout):
+		err := errors.New("Request timed out")
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
 }

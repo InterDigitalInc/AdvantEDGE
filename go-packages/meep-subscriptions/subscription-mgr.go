@@ -28,7 +28,7 @@ import (
 
 type ExpiredSubscriptionCb func(*Subscription)
 type PeriodicSubscriptionCb func(*Subscription)
-type TestNotificationCb func(*Subscription) (string, error)
+type TestNotificationCb func(*Subscription)
 type NotificationRespCb func(*Subscription)
 
 type SubscriptionMgrCfg struct {
@@ -124,6 +124,32 @@ func (sm *SubscriptionMgr) CreateSubscription(cfg *SubscriptionCfg, jsonSubOrig 
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
+	}
+
+	// Send test notification if necessary
+	if cfg.RequestTestNotif && !sub.TestNotifSent {
+		go func() {
+			// Allow subscription creation response to be returned to subscriber
+			time.Sleep(100 * time.Millisecond)
+
+			// Send test notification
+			sm.cfg.TestNotifCb(sub)
+		}()
+
+		// Set flag indicating test notification was sent
+		sub.TestNotifSent = true
+
+		// 	Start goroutine:
+		// 		Wait ~1 second to allow subscription creation response to be returned to subscriber
+		// 		Invoke SendTestNotificationCb(sub)
+		// 		If (response == 204)
+		// 			Set subscription state to 'Ready'
+		// 			Return
+		// 		Else
+		// 			Set subscription state to 'InitWebsocket'
+		// go func() {
+
+		// }
 	}
 
 	sm.mutex.Lock()
@@ -273,7 +299,7 @@ func (sm *SubscriptionMgr) SendNotification(sub *Subscription, notif []byte) err
 	}
 
 	// Send notification
-	err := sub.sendNotification(sm.cfg, notif)
+	err := sub.sendNotification(notif, sm.cfg.Sandbox, sm.cfg.Service, sm.cfg.MetricsEnabled)
 	if err != nil {
 		log.Error(err.Error())
 	}

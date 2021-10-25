@@ -19,17 +19,15 @@ package subscriptions
 import (
 	"bytes"
 	"errors"
+	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 )
-
-type TestNotification struct {
-	State string `json:"state"`
-}
 
 type SubscriptionCfg struct {
 	Id                  string     `json:"id"`
@@ -44,12 +42,13 @@ type SubscriptionCfg struct {
 
 type Subscription struct {
 	Cfg             *SubscriptionCfg
-	JsonSubOrig     string     `json:"jsonSubOrig"`
-	Mode            string     `json:"mode"`
-	State           string     `json:"state"`
-	ExpiryTime      *time.Time `json:"expiryTime"`
-	PeriodicCounter int32      `json:"periodicCounter"`
-	TestNotif       *TestNotification
+	JsonSubOrig     string       `json:"jsonSubOrig"`
+	Mode            string       `json:"mode"`
+	State           string       `json:"state"`
+	ExpiryTime      *time.Time   `json:"expiryTime"`
+	PeriodicCounter int32        `json:"periodicCounter"`
+	TestNotifSent   bool         `json:"testNotifSent"`
+	HttpClient      *http.Client `json:"-"`
 	Ws              *Websocket
 }
 
@@ -58,15 +57,23 @@ const (
 	ModeWebsocket = "Websocket"
 )
 const (
-	StateInit    = "Init"
-	StateReady   = "Ready"
-	StateExpired = "Expired"
+	StateInit      = "Init"
+	StateTestNotif = "TestNotif"
+	StateReady     = "Ready"
+	StateExpired   = "Expired"
 )
+const subTimeout = 5 * time.Second
 
 func newSubscription(cfg *SubscriptionCfg, jsonSubOrig string) (*Subscription, error) {
 	// Validate params
 	if cfg == nil {
 		return nil, errors.New("Missing subscription config")
+	}
+	if !cfg.RequestWebsocketUri && cfg.NotifyUrl == "" {
+		return nil, errors.New("RequestWebsocketUri or NotifyUrl must be set")
+	}
+	if cfg.RequestWebsocketUri && (cfg.NotifyUrl != "" || cfg.RequestTestNotif) {
+		return nil, errors.New("RequestWebsocketUri must not be set together with NotifyUrl or RequestTestNotif")
 	}
 
 	// Create new subscription
@@ -74,36 +81,57 @@ func newSubscription(cfg *SubscriptionCfg, jsonSubOrig string) (*Subscription, e
 	sub.Cfg = cfg
 	sub.JsonSubOrig = jsonSubOrig
 	sub.PeriodicCounter = 0
+	sub.HttpClient = &http.Client{
+		Timeout: subTimeout,
+	}
 
 	if cfg.RequestWebsocketUri {
 		// Create websocket
-		ws, err := newWebsocket()
+		wsCfg := &WebsocketCfg{
+			Timeout: subTimeout,
+		}
+		ws, err := newWebsocket(wsCfg)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
 		}
 		sub.Ws = ws
 		sub.Mode = ModeWebsocket
-
+		sub.State = StateReady
 	} else if cfg.RequestTestNotif {
-		// 	Start goroutine:
-		// 		Wait ~1 second to allow subscription creation response to be returned to subscriber
-		// 		Invoke SendTestNotificationCb(sub)
-		// 		If (response == 204)
-		// 			Set subscription state to 'Ready'
-		// 			Return
-		// 		Else
-		// 			Set subscription state to 'InitWebsocket'
-		// go func() {
-
-		// }
+		sub.Mode = ModeDirect
+		sub.State = StateTestNotif
+		sub.TestNotifSent = false
 	} else {
 		sub.Mode = ModeDirect
+		sub.State = StateReady
 	}
 
-	sub.State = StateReady
 	return &sub, nil
 }
+
+// func (sub *Subscription) updateSubscription() error {
+
+// 	if cfg.RequestWebsocketUri {
+// 		// Create websocket
+// 		ws, err := newWebsocket()
+// 		if err != nil {
+// 			log.Error(err.Error())
+// 			return nil, err
+// 		}
+// 		sub.Ws = ws
+// 		sub.Mode = ModeWebsocket
+// 		sub.State = StateReady
+// 	} else if cfg.RequestTestNotif {
+
+// 		sub.State = StateTestNotif
+// 	} else {
+// 		sub.Mode = ModeDirect
+// 		sub.State = StateReady
+// 	}
+
+// 	return &sub, nil
+// }
 
 func (sub *Subscription) deleteSubscription() error {
 	// Close websocket
@@ -117,60 +145,91 @@ func (sub *Subscription) deleteSubscription() error {
 	return nil
 }
 
-func (sub *Subscription) sendNotification(cfg *SubscriptionMgrCfg, notif []byte) error {
+func (sub *Subscription) sendNotification(notif []byte, sandbox string, service string, metricsEnabled bool) error {
+	// Check if subscription is ready to send a notification
 	if sub.State == StateReady || sub.State == StateExpired {
+
+		// Create HTTP request
+		request, err := http.NewRequest("POST", sub.Cfg.NotifyUrl, bytes.NewBuffer(notif))
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+		request.Header.Set("Content-type", "application/json")
+
+		// Post HTTP message directly or via websocket connection
+		var notifErr error
+		var notifResp *http.Response
+		var notifUrl string
+		var notifMethod string
+		startTime := time.Now()
 		if sub.Mode == ModeDirect {
-
-			// Post to notification URL
-			if cfg.MetricsEnabled {
-				// With metrics logging
-				startTime := time.Now()
-				resp, err := http.Post(sub.Cfg.NotifyUrl, "application/json", bytes.NewBuffer(notif))
-				duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-				_ = httpLog.LogTx(sub.Cfg.NotifyUrl, "POST", string(notif), resp, startTime)
-				if err != nil {
-					log.Error(err)
-					met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Cfg.NotifyUrl, nil, duration)
-					return err
-				}
-				met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Cfg.NotifyUrl, resp, duration)
-				defer resp.Body.Close()
-			} else {
-				// Without metrics logging
-				resp, err := http.Post(sub.Cfg.NotifyUrl, "application/json", bytes.NewBuffer(notif))
-				if err != nil {
-					log.Error(err)
-					return err
-				}
-				defer resp.Body.Close()
-			}
-
+			notifUrl = sub.Cfg.NotifyUrl
+			notifMethod = "POST"
+			notifResp, notifErr = sub.HttpClient.Do(request)
 		} else if sub.Mode == ModeWebsocket {
+			notifUrl = sub.Cfg.Id
+			notifMethod = "WEBSOCK"
+			notifResp, notifErr = sub.sendWsRequest(request)
+		}
 
-			// Send notification over websocket
-			if cfg.MetricsEnabled {
-				// With metrics logging
-				startTime := time.Now()
-				err := sub.Ws.sendNotification(notif)
-				duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-				_ = httpLog.LogTx(sub.Ws.Id, "WEBSOCK", string(notif), nil, startTime)
-				if err != nil {
-					met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Ws.Id, nil, duration)
-					log.Error(err)
-					return err
-				}
-				met.ObserveNotification(cfg.Sandbox, cfg.Service, string(notif), sub.Ws.Id, nil, duration)
-			} else {
-				// Without metrics logging
-				err := sub.Ws.sendNotification(notif)
-				if err != nil {
-					log.Error(err)
-					return err
-				}
+		// Log metrics if necessary
+		if metricsEnabled {
+			duration := float64(time.Since(startTime).Microseconds()) / 1000.0
+			_ = httpLog.LogTx(notifUrl, notifMethod, string(notif), notifResp, startTime)
+			if notifErr != nil {
+				log.Error(notifErr)
+				met.ObserveNotification(sandbox, service, string(notif), notifUrl, nil, duration)
+				return err
+			}
+			met.ObserveNotification(sandbox, service, string(notif), notifUrl, notifResp, duration)
+		} else {
+			if notifErr != nil {
+				log.Error(err)
+				return err
 			}
 		}
+		defer notifResp.Body.Close()
+
 	} else {
 		return errors.New("Subscription not ready to send notifications")
 	}
 	return nil
+}
+
+func (sub *Subscription) sendWsRequest(request *http.Request) (*http.Response, error) {
+
+	// TODO -- encode entire http request to send over websocket
+	// For now, just send request body
+	body, err := request.GetBody()
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	wsReq, err := ioutil.ReadAll(body)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	// Send message over websocket
+	wsResp, err := sub.Ws.sendMessage(wsReq)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	// TODO -- decode HTTP response
+	// For now, assume status code was received
+	statusCode, err := strconv.Atoi(string(wsResp))
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	resp := &http.Response{
+		StatusCode: statusCode,
+		Body:       ioutil.NopCloser(bytes.NewReader(nil)),
+	}
+
+	return resp, nil
 }

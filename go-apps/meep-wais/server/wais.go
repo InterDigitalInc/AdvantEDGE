@@ -1106,7 +1106,7 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	subscriptionType := discriminator.SubscriptionType
 
 	// Process subscription request
-	var jsonResponse string
+	var jsonSub string
 
 	switch subscriptionType {
 	case ASSOC_STA_SUBSCRIPTION:
@@ -1161,26 +1161,34 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		link.Self = self
 		sub.Links = link
 
-		// Convert subscription to json
-		jsonSub := convertAssocStaSubscriptionToJson(&sub)
-		jsonResponse = jsonSub
-
-		// Create & store subscription
-		var subCfg sm.SubscriptionCfg
-		subCfg.Id = subId
-		subCfg.Type = ASSOC_STA_SUBSCRIPTION
-		subCfg.AppId = instanceId
-		subCfg.NotifyUrl = sub.CallbackReference
-		subCfg.PeriodicInterval = sub.NotificationPeriod
+		// Configure subscription
+		subCfg := &sm.SubscriptionCfg{
+			Id:               subId,
+			Type:             ASSOC_STA_SUBSCRIPTION,
+			AppId:            instanceId,
+			PeriodicInterval: sub.NotificationPeriod,
+		}
 		if sub.ExpiryDeadline != nil {
 			expiryTime := time.Unix(int64(sub.ExpiryDeadline.Seconds), int64(sub.ExpiryDeadline.NanoSeconds))
 			subCfg.ExpiryTime = &expiryTime
 		}
-		subCfg.RequestTestNotif = sub.RequestTestNotification
-		if sub.WebsockNotifConfig != nil {
-			subCfg.RequestWebsocketUri = sub.WebsockNotifConfig.RequestWebsocketUri
+		// If websocket is requested, ignore callback reference & test notification request
+		if sub.WebsockNotifConfig != nil && sub.WebsockNotifConfig.RequestWebsocketUri {
+			subCfg.RequestWebsocketUri = true
+			subCfg.NotifyUrl = ""
+			subCfg.RequestTestNotif = false
+			sub.RequestTestNotification = false
+			sub.CallbackReference = ""
+		} else {
+			subCfg.NotifyUrl = sub.CallbackReference
+			subCfg.RequestTestNotif = sub.RequestTestNotification
+			subCfg.RequestWebsocketUri = false
+			sub.WebsockNotifConfig = nil
 		}
-		subscription, err := subMgr.CreateSubscription(&subCfg, jsonSub)
+
+		// Create & store subscription
+		jsonSub = convertAssocStaSubscriptionToJson(&sub)
+		subscription, err := subMgr.CreateSubscription(subCfg, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
 			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
@@ -1204,8 +1212,7 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 			sub.WebsockNotifConfig.WebsocketUri = wsUrl.String() + basePath + subscription.Ws.Endpoint
 
 			// Convert subscription to json
-			jsonSub := convertAssocStaSubscriptionToJson(&sub)
-			jsonResponse = jsonSub
+			jsonSub = convertAssocStaSubscriptionToJson(&sub)
 
 			// Update subscription to reflect changes
 			subscription.JsonSubOrig = jsonSub
@@ -1229,7 +1236,7 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, jsonResponse)
+	fmt.Fprintf(w, jsonSub)
 }
 
 func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
