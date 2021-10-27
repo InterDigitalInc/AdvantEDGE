@@ -64,13 +64,6 @@ const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
 const appTerminationPath = "notifications/mec011/appTermination"
 const serviceAppVersion = "2.1.1"
-
-// const (
-// 	notifAssocSta    = "AssocStaNotification"
-// 	notifStaDataRate = "StaDataRateNotification"
-// 	notifExpiry      = "ExpiryNotification"
-// 	notifTest        = "TestNotification"
-// )
 const (
 	ASSOC_STA_SUBSCRIPTION          = "AssocStaSubscription"
 	STA_DATA_RATE_SUBSCRIPTION      = "StaDataRateSubscription"
@@ -80,6 +73,7 @@ const (
 	ASSOC_STA_NOTIFICATION     = "AssocStaNotification"
 	STA_DATA_RATE_NOTIFICATION = "StaDataRateNotification"
 	TEST_NOTIFICATION          = "TestNotification"
+	EXPIRY_NOTIFICATION        = "ExpiryNotification"
 )
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
@@ -215,16 +209,19 @@ func Init() (err error) {
 	log.Info("Connected to Redis DB, WAI service table")
 
 	// Create Subscription Manager
-	var subMgrCfg sm.SubscriptionMgrCfg
-	subMgrCfg.Module = moduleName
-	subMgrCfg.Sandbox = sandboxName
-	subMgrCfg.Mep = mepName
-	subMgrCfg.Service = serviceName
-	subMgrCfg.Basekey = baseKey
-	subMgrCfg.MetricsEnabled = true
-	subMgrCfg.ExpiredSubCb = ExpiredSubscriptionCb
-	subMgrCfg.PeriodicSubCb = PeriodicSubscriptionCb
-	subMgr, err = sm.NewSubscriptionMgr(&subMgrCfg, redisAddr)
+	subMgrCfg := &sm.SubscriptionMgrCfg{
+		Module:         moduleName,
+		Sandbox:        sandboxName,
+		Mep:            mepName,
+		Service:        serviceName,
+		Basekey:        baseKey,
+		MetricsEnabled: true,
+		ExpiredSubCb:   ExpiredSubscriptionCb,
+		PeriodicSubCb:  PeriodicSubscriptionCb,
+		TestNotifCb:    TestNotificationCb,
+		NewWsCb:        NewWebsocketCb,
+	}
+	subMgr, err = sm.NewSubscriptionMgr(subMgrCfg, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Subscription Manager. Error: ", err)
 		return err
@@ -768,35 +765,11 @@ func checkStaDataRateNotification(sub *sm.Subscription, staId *StaIdentity, data
 		notif.StaDataRate = staDataRateList
 	}
 
-	jsonNotif, err := json.Marshal(notif)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
 	log.Info("Sending STA Data Rate notification for sub: ", sub.Cfg.Id)
 	go func() {
-		_ = subMgr.SendNotification(sub, jsonNotif)
+		_ = subMgr.SendNotification(sub, []byte(convertStaDataRateNotificationToJson(&notif)))
 	}()
 }
-
-// func sendStaDataRateNotification(notifyUrl string, notification StaDataRateNotification) {
-// 	startTime := time.Now()
-// 	jsonNotif, err := json.Marshal(notification)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 	}
-
-// 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
-// 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-// 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-// 	if err != nil {
-// 		log.Error(err)
-// 		met.ObserveNotification(sandboxName, serviceName, notifStaDataRate, notifyUrl, nil, duration)
-// 		return
-// 	}
-// 	met.ObserveNotification(sandboxName, serviceName, notifStaDataRate, notifyUrl, resp, duration)
-// 	defer resp.Body.Close()
-// }
 
 func updateApInfo(name string, apMacId string, longitude *float32, latitude *float32, staMacIds []string) {
 	newLat := convertFloatToGeolocationFormat(latitude)
@@ -939,61 +912,11 @@ func checkAssocStaNotification(sub *sm.Subscription, staMacIds []string, apMacId
 		notif.StaId = append(notif.StaId, staId)
 	}
 
-	jsonNotif, err := json.Marshal(notif)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
 	log.Info("Sending Assoc STA notification for sub: ", sub.Cfg.Id)
 	go func() {
-		_ = subMgr.SendNotification(sub, jsonNotif)
+		_ = subMgr.SendNotification(sub, []byte(convertAssocStaNotificationToJson(&notif)))
 	}()
 }
-
-// func sendAssocStaNotification(notifyUrl string, notification AssocStaNotification) {
-// 	startTime := time.Now()
-// 	jsonNotif, err := json.Marshal(notification)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 	}
-
-// 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
-// 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-// 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-// 	if err != nil {
-// 		log.Error(err)
-// 		met.ObserveNotification(sandboxName, serviceName, notifAssocSta, notifyUrl, nil, duration)
-// 		return
-// 	}
-// 	met.ObserveNotification(sandboxName, serviceName, notifAssocSta, notifyUrl, resp, duration)
-// 	defer resp.Body.Close()
-// }
-
-// func sendTestNotification(notifyUrl string, linkType *LinkType) {
-// 	var notification TestNotification
-// 	notification.NotificationType = TEST_NOTIFICATION
-
-// 	link := new(TestNotificationLinks)
-// 	link.Subscription = linkType
-// 	notification.Links = link
-
-// 	startTime := time.Now()
-// 	jsonNotif, err := json.Marshal(notification)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 	}
-
-// 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
-// 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-// 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-// 	if err != nil {
-// 		log.Error(err)
-// 		met.ObserveNotification(sandboxName, serviceName, notifTest, notifyUrl, nil, duration)
-// 		return
-// 	}
-// 	met.ObserveNotification(sandboxName, serviceName, notifTest, notifyUrl, resp, duration)
-// 	defer resp.Body.Close()
-// }
 
 func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -1063,14 +986,8 @@ func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request
 	}
 
 	// Send response
-	jsonResponse, err := json.Marshal(subscriptionLinkList)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprintf(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
@@ -1110,8 +1027,8 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 	switch subscriptionType {
 	case ASSOC_STA_SUBSCRIPTION:
-		var sub AssocStaSubscription
-		err = json.Unmarshal(bodyBytes, &sub)
+		var assocStaSub AssocStaSubscription
+		err = json.Unmarshal(bodyBytes, &assocStaSub)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1119,29 +1036,29 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate subscription
-		if sub.CallbackReference == "" {
+		if assocStaSub.CallbackReference == "" {
 			log.Error("Mandatory CallbackReference parameter not present")
 			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 			return
 		}
-		if sub.NotificationPeriod == 0 && sub.NotificationEvent == nil {
+		if assocStaSub.NotificationPeriod == 0 && assocStaSub.NotificationEvent == nil {
 			log.Error("Either or Both NotificationPeriod or NotificationEvent shall be present")
 			http.Error(w, "Either or Both NotificationPeriod or NotificationEvent shall be present", http.StatusBadRequest)
 			return
 		}
-		if sub.NotificationEvent != nil {
-			if sub.NotificationEvent.Trigger <= 0 && sub.NotificationEvent.Trigger > 2 {
+		if assocStaSub.NotificationEvent != nil {
+			if assocStaSub.NotificationEvent.Trigger <= 0 && assocStaSub.NotificationEvent.Trigger > 2 {
 				log.Error("Mandatory Notification Event Trigger not valid")
 				http.Error(w, "Mandatory Notification Event Trigger not valid", http.StatusBadRequest)
 				return
 			}
 		}
-		if sub.ApId == nil {
+		if assocStaSub.ApId == nil {
 			log.Error("Mandatory ApId missing")
 			http.Error(w, "Mandatory ApId missing", http.StatusBadRequest)
 			return
 		} else {
-			if sub.ApId.Bssid == "" {
+			if assocStaSub.ApId.Bssid == "" {
 				log.Error("Mandatory ApId Bssid missing")
 				http.Error(w, "Mandatory ApId Bssid missing", http.StatusBadRequest)
 				return
@@ -1159,69 +1076,25 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		self.Href = hostUrl.String() + basePath + "subscriptions/" + subId
 		link := new(AssocStaSubscriptionLinks)
 		link.Self = self
-		sub.Links = link
-
-		// Configure subscription
-		subCfg := &sm.SubscriptionCfg{
-			Id:               subId,
-			Type:             ASSOC_STA_SUBSCRIPTION,
-			AppId:            instanceId,
-			PeriodicInterval: sub.NotificationPeriod,
-		}
-		if sub.ExpiryDeadline != nil {
-			expiryTime := time.Unix(int64(sub.ExpiryDeadline.Seconds), int64(sub.ExpiryDeadline.NanoSeconds))
-			subCfg.ExpiryTime = &expiryTime
-		}
-		// If websocket is requested, ignore callback reference & test notification request
-		if sub.WebsockNotifConfig != nil && sub.WebsockNotifConfig.RequestWebsocketUri {
-			subCfg.RequestWebsocketUri = true
-			subCfg.NotifyUrl = ""
-			subCfg.RequestTestNotif = false
-			sub.RequestTestNotification = false
-			sub.CallbackReference = ""
-		} else {
-			subCfg.NotifyUrl = sub.CallbackReference
-			subCfg.RequestTestNotif = sub.RequestTestNotification
-			subCfg.RequestWebsocketUri = false
-			sub.WebsockNotifConfig = nil
-		}
+		assocStaSub.Links = link
 
 		// Create & store subscription
-		jsonSub = convertAssocStaSubscriptionToJson(&sub)
-		subscription, err := subMgr.CreateSubscription(subCfg, jsonSub)
+		subCfg := newAssocStaSubscriptionCfg(&assocStaSub, subId)
+		jsonSub = convertAssocStaSubscriptionToJson(&assocStaSub)
+		sub, err := subMgr.CreateSubscription(subCfg, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
 			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
 		}
 
-		// Add websocket handler for subscription
-		if subscription.Ws != nil {
-			path := "/" + waisBasePath + subscription.Ws.Endpoint
-			waisRouter.HandleFunc(path, subscription.Ws.ConnectionHandler).Name(subscription.Cfg.Id)
-			log.Info("Created websocket endpoint ", path, " for subscription ", subscription.Cfg.Id)
-
-			// Update WebsockNotifConfig URI
-			wsUrl, err := url.Parse(hostUrl.String())
-			if err != nil {
-				log.Error("Failed to create websocket URI")
-				http.Error(w, "Failed to create websocket URI", http.StatusInternalServerError)
-				return
-			}
-			wsUrl.Scheme = "wss"
-			sub.WebsockNotifConfig.WebsocketUri = wsUrl.String() + basePath + subscription.Ws.Endpoint
-
-			// Convert subscription to json
-			jsonSub = convertAssocStaSubscriptionToJson(&sub)
-
-			// Update subscription to reflect changes
-			subscription.JsonSubOrig = jsonSub
-			err = subMgr.UpdateSubscription(subscription)
-			if err != nil {
-				log.Error("Failed to update subscription")
-				http.Error(w, "Failed to update subscription", http.StatusInternalServerError)
-				return
-			}
+		// Update subscription JSON based on suubscription state
+		jsonSub = updateAssocStaSubscriptionJson(&assocStaSub, sub)
+		err = subMgr.SetSubscriptionJson(sub, jsonSub)
+		if err != nil {
+			log.Error("Failed to create subscription")
+			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+			return
 		}
 
 	case STA_DATA_RATE_SUBSCRIPTION:
@@ -1257,12 +1130,12 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	subscriptionType := discriminator.SubscriptionType
 
 	// Process subscription request
-	var jsonResponse string
+	var jsonSub string
 
 	switch subscriptionType {
 	case ASSOC_STA_SUBSCRIPTION:
-		var sub AssocStaSubscription
-		err = json.Unmarshal(bodyBytes, &sub)
+		var assocStaSub AssocStaSubscription
+		err = json.Unmarshal(bodyBytes, &assocStaSub)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1270,12 +1143,12 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate parameters
-		if sub.CallbackReference == "" {
+		if assocStaSub.CallbackReference == "" {
 			log.Error("Mandatory CallbackReference parameter not present")
 			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 			return
 		}
-		link := sub.Links
+		link := assocStaSub.Links
 		if link == nil || link.Self == nil {
 			log.Error("Mandatory Link parameter not present")
 			http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
@@ -1288,54 +1161,57 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 			return
 		}
-		if sub.NotificationPeriod == 0 && sub.NotificationEvent == nil {
+		if assocStaSub.NotificationPeriod == 0 && assocStaSub.NotificationEvent == nil {
 			log.Error("Either or Both NotificationPeriod or NotificationEvent shall be present")
 			http.Error(w, "Either or Both NotificationPeriod or NotificationEvent shall be present", http.StatusBadRequest)
 			return
 		}
 
-		if sub.NotificationEvent != nil {
-			if sub.NotificationEvent.Trigger <= 0 && sub.NotificationEvent.Trigger > 8 {
+		if assocStaSub.NotificationEvent != nil {
+			if assocStaSub.NotificationEvent.Trigger <= 0 && assocStaSub.NotificationEvent.Trigger > 8 {
 				log.Error("Mandatory Notification Event Trigger not valid")
 				http.Error(w, "Mandatory Notification Event Trigger not valid", http.StatusBadRequest)
 				return
 			}
 		}
-		if sub.ApId == nil {
+		if assocStaSub.ApId == nil {
 			log.Error("Mandatory ApId missing")
 			http.Error(w, "Mandatory ApId missing", http.StatusBadRequest)
 			return
 		} else {
-			if sub.ApId.Bssid == "" {
+			if assocStaSub.ApId.Bssid == "" {
 				log.Error("Mandatory ApId Bssid missing")
 				http.Error(w, "Mandatory ApId Bssid missing", http.StatusBadRequest)
 				return
 			}
 		}
 
-		// Convert sub to json
-		jsonSub := convertAssocStaSubscriptionToJson(&sub)
-		jsonResponse = jsonSub
-
 		mutex.Lock()
 		defer mutex.Unlock()
 
 		// Find subscription by ID
-		subscription, err := subMgr.GetSubscription(subId)
+		sub, err := subMgr.GetSubscription(subId)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
-		// Update original subscription
-		subscription.JsonSubOrig = jsonSub
-
 		// Update subscription
-		err = subMgr.UpdateSubscription(subscription)
+		sub.Cfg = newAssocStaSubscriptionCfg(&assocStaSub, subId)
+		err = subMgr.UpdateSubscription(sub)
 		if err != nil {
 			log.Error("Failed to update subscription")
 			http.Error(w, "Failed to update subscription", http.StatusInternalServerError)
+			return
+		}
+
+		// Update subscription JSON based on suubscription state
+		jsonSub = updateAssocStaSubscriptionJson(&assocStaSub, sub)
+		err = subMgr.SetSubscriptionJson(sub, jsonSub)
+		if err != nil {
+			log.Error("Failed to create subscription")
+			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
 		}
 
@@ -1351,7 +1227,7 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprintf(w, string(jsonSub))
 }
 
 func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
@@ -1398,15 +1274,9 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prepare response
-	jsonResponse, err := json.Marshal(apInfoList)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprintf(w, convertApInfoListToJson(&apInfoList))
 }
 
 func staInfoGET(w http.ResponseWriter, r *http.Request) {
@@ -1422,15 +1292,9 @@ func staInfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prepare response
-	jsonResponse, err := json.Marshal(staInfoList)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprintf(w, convertStaInfoListToJson(&staInfoList))
 }
 
 func populateApInfo(key string, jsonInfo string, userData interface{}) error {
@@ -1524,51 +1388,59 @@ func populateStaInfo(key string, jsonInfo string, userData interface{}) error {
 	return nil
 }
 
+func newAssocStaSubscriptionCfg(sub *AssocStaSubscription, subId string) *sm.SubscriptionCfg {
+	reqWsUri := false
+	if sub.WebsockNotifConfig != nil {
+		reqWsUri = sub.WebsockNotifConfig.RequestWebsocketUri
+	}
+	var expiryTime *time.Time
+	if sub.ExpiryDeadline != nil {
+		expiry := time.Unix(int64(sub.ExpiryDeadline.Seconds), int64(sub.ExpiryDeadline.NanoSeconds))
+		expiryTime = &expiry
+	}
+	subCfg := &sm.SubscriptionCfg{
+		Id:                  subId,
+		AppId:               instanceId,
+		Type:                ASSOC_STA_SUBSCRIPTION,
+		NotifyUrl:           sub.CallbackReference,
+		ExpiryTime:          expiryTime,
+		PeriodicInterval:    sub.NotificationPeriod,
+		RequestTestNotif:    sub.RequestTestNotification,
+		RequestWebsocketUri: reqWsUri,
+	}
+	return subCfg
+}
+
+func updateAssocStaSubscriptionJson(assocStaSub *AssocStaSubscription, sub *sm.Subscription) string {
+	assocStaSub.CallbackReference = sub.Cfg.NotifyUrl
+	assocStaSub.RequestTestNotification = sub.Cfg.RequestTestNotif
+	if sub.Ws != nil {
+		assocStaSub.WebsockNotifConfig.WebsocketUri = sub.Ws.Uri
+	} else {
+		assocStaSub.WebsockNotifConfig = nil
+	}
+	return convertAssocStaSubscriptionToJson(assocStaSub)
+}
+
 func ExpiredSubscriptionCb(sub *sm.Subscription) {
-	var jsonNotif []byte
-	var notif ExpiryNotification
-
-	link := new(ExpiryNotificationLinks)
-	linkType := new(LinkType)
-	linkType.Href = sub.Cfg.NotifyUrl
-	link.Subscription = linkType
-	notif.Links = link
-
-	var expiryTimeStamp TimeStamp
-	expiryTimeStamp.Seconds = int32(sub.Cfg.ExpiryTime.Unix())
-	expiryTimeStamp.NanoSeconds = int32(sub.Cfg.ExpiryTime.UnixNano())
-	notif.ExpiryDeadline = &expiryTimeStamp
-
-	jsonNotif, err := json.Marshal(notif)
-	if err != nil {
-		log.Error(err.Error())
+	// Build expiry notification
+	notif := ExpiryNotification{
+		NotificationType: EXPIRY_NOTIFICATION,
+		Links: &ExpiryNotificationLinks{
+			Subscription: &LinkType{
+				Href: hostUrl.String() + basePath + "subscriptions/" + sub.Cfg.Id,
+			},
+		},
+		ExpiryDeadline: &TimeStamp{
+			Seconds:     int32(sub.Cfg.ExpiryTime.Unix()),
+			NanoSeconds: int32(sub.Cfg.ExpiryTime.UnixNano()),
+		},
 	}
 
 	// Send expiry notification
 	log.Info("Sending Expiry notification for sub: ", sub.Cfg.Id)
-	go func() {
-		_ = subMgr.SendNotification(sub, jsonNotif)
-	}()
+	_ = subMgr.SendNotification(sub, []byte(convertExpiryNotificationToJson(&notif)))
 }
-
-// func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
-// 	startTime := time.Now()
-// 	jsonNotif, err := json.Marshal(notification)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 	}
-
-// 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
-// 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-// 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-// 	if err != nil {
-// 		log.Error(err)
-// 		met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, nil, duration)
-// 		return
-// 	}
-// 	met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, resp, duration)
-// 	defer resp.Body.Close()
-// }
 
 func PeriodicSubscriptionCb(sub *sm.Subscription) {
 
@@ -1610,6 +1482,63 @@ func PeriodicSubscriptionCb(sub *sm.Subscription) {
 		log.Error("Unsupported subscription type: ", sub.Cfg.Type)
 		return
 	}
+}
+
+func TestNotificationCb(sub *sm.Subscription) error {
+	// Build test notification
+	notif := TestNotification{
+		NotificationType: TEST_NOTIFICATION,
+		Links: &TestNotificationLinks{
+			Subscription: &LinkType{
+				Href: hostUrl.String() + basePath + "subscriptions/" + sub.Cfg.Id,
+			},
+		},
+	}
+
+	// Send test notification
+	log.Info("Sending Test notification for sub: ", sub.Cfg.Id)
+	return subMgr.SendNotification(sub, []byte(convertTestNotificationToJson(&notif)))
+}
+
+func NewWebsocketCb(sub *sm.Subscription) (string, error) {
+	// var jsonSub string
+
+	// Add Websocket endpoint
+	wsPath := "/" + waisBasePath + sub.Ws.Endpoint
+	waisRouter.HandleFunc(wsPath, sub.Ws.ConnectionHandler).Name(sub.Cfg.Id)
+	log.Info("Created websocket endpoint ", wsPath, " for subscription ", sub.Cfg.Id)
+
+	// Update Websocket URI
+	wsUrl, err := url.Parse(hostUrl.String())
+	if err != nil {
+		log.Error(err.Error())
+		return "", err
+	}
+	wsUrl.Scheme = "wss"
+	websocketUri := wsUrl.String() + basePath + sub.Ws.Endpoint
+
+	return websocketUri, nil
+
+	// switch sub.Cfg.Type {
+	// case ASSOC_STA_SUBSCRIPTION:
+	// 	// Obtain original subscription
+	// 	var subOrig AssocStaSubscription
+	// 	err := json.Unmarshal([]byte(sub.JsonSubOrig), &subOrig)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	// Set websocket URI
+	// 	subOrig.WebsockNotifConfig.WebsocketUri = websocketUri
+
+	// 	// Convert subscription to json
+	// 	jsonSub = convertAssocStaSubscriptionToJson(&subOrig)
+	// default:
+	// 	return errors.New("Unsupported subscription type: " + sub.Cfg.Type)
+	// }
+
+	// // Set updated subscription
+	// sub.JsonSubOrig = jsonSub
 }
 
 func cleanUp() {

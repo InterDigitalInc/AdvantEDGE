@@ -98,3 +98,66 @@ func convertJsonToMeasurementReportSubscription(jsonData string) *MeasurementRep
 	}
 	return &obj
 }
+
+func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertAssocStaNotificationToJson(obj *AssocStaNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertStaDataRateNotificationToJson(obj *StaDataRateNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertExpiryNotificationToJson(obj *ExpiryNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertTestNotificationToJson(obj *TestNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertApInfoListToJson(obj *[]ApInfo) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertStaInfoListToJson(obj *[]StaInfo) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}

@@ -34,6 +34,7 @@ type Websocket struct {
 	Id                string                                       `json:"id"`
 	State             string                                       `json:"state"`
 	Endpoint          string                                       `json:"endpoint"`
+	Uri               string                                       `json:"uri"`
 	ConnectionHandler func(w http.ResponseWriter, r *http.Request) `json:"-"`
 	Connection        *websocket.Conn                              `json:"-"`
 	MsgHandler        chan []byte                                  `json:"-"`

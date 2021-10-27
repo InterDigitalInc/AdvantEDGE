@@ -28,8 +28,9 @@ import (
 
 type ExpiredSubscriptionCb func(*Subscription)
 type PeriodicSubscriptionCb func(*Subscription)
-type TestNotificationCb func(*Subscription)
+type TestNotificationCb func(*Subscription) error
 type NotificationRespCb func(*Subscription)
+type NewWebsocketCb func(*Subscription) (string, error)
 
 type SubscriptionMgrCfg struct {
 	Module         string
@@ -42,6 +43,7 @@ type SubscriptionMgrCfg struct {
 	PeriodicSubCb  PeriodicSubscriptionCb
 	TestNotifCb    TestNotificationCb
 	NotifRespCb    NotificationRespCb
+	NewWsCb        NewWebsocketCb
 }
 
 type SubscriptionMgr struct {
@@ -126,51 +128,22 @@ func (sm *SubscriptionMgr) CreateSubscription(cfg *SubscriptionCfg, jsonSubOrig 
 		return nil, err
 	}
 
-	// Send test notification if necessary
-	if cfg.RequestTestNotif && !sub.TestNotifSent {
-		go func() {
-			// Allow subscription creation response to be returned to subscriber
-			time.Sleep(100 * time.Millisecond)
-
-			// Send test notification
-			sm.cfg.TestNotifCb(sub)
-		}()
-
-		// Set flag indicating test notification was sent
-		sub.TestNotifSent = true
-
-		// 	Start goroutine:
-		// 		Wait ~1 second to allow subscription creation response to be returned to subscriber
-		// 		Invoke SendTestNotificationCb(sub)
-		// 		If (response == 204)
-		// 			Set subscription state to 'Ready'
-		// 			Return
-		// 		Else
-		// 			Set subscription state to 'InitWebsocket'
-		// go func() {
-
-		// }
-	}
-
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
 
-	// Store subscription
-	jsonSub, err := convertSubToJson(sub)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	key := sm.baseKey + "app:" + cfg.AppId + ":sub:" + cfg.Type + ":" + cfg.Id
-	err = sm.rc.JSONSetEntry(key, ".", jsonSub)
+	// Process new subscription
+	err = sm.processSubscription(sub)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
 	}
 
-	// Cache subscription
-	sm.subscriptions[cfg.Id] = sub
-
+	// Store new subscription
+	err = sm.storeSubscription(sub)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
 	return sub, nil
 }
 
@@ -184,33 +157,46 @@ func (sm *SubscriptionMgr) UpdateSubscription(sub *Subscription) error {
 	defer sm.mutex.Unlock()
 
 	// Update subscription
+	err := sub.updateSubscription()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
 
-	// if sub.Cfg.RequestWebsocketUri {
-	// 	// Ignore test notif & callback URI
-	// 	// Set subscription state to 'InitWebsocket'
-	// 	// Create websocket URI
-	// 	// Provision subscription-specific websocket path in router (sub-type + random string)
-	// 	//     Implement websocket server in path handler
-	// } else {
-	// 	// Update subscription details
-	// }
+	// Process updated subscription
+	err = sm.processSubscription(sub)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
 
 	// Store updated subscription
-	jsonSub, err := convertSubToJson(sub)
+	err = sm.storeSubscription(sub)
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-	key := sm.baseKey + "app:" + sub.Cfg.AppId + ":sub:" + sub.Cfg.Type + ":" + sub.Cfg.Id
-	err = sm.rc.JSONSetEntry(key, ".", jsonSub)
+	return nil
+}
+
+func (sm *SubscriptionMgr) SetSubscriptionJson(sub *Subscription, jsonSub string) error {
+	// Validate params
+	if sub == nil {
+		return errors.New("Missing subscription")
+	}
+
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+
+	// Set original JSON
+	sub.JsonSubOrig = jsonSub
+
+	// Store updated subscription
+	err := sm.storeSubscription(sub)
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-
-	// Cache updated subscription
-	sm.subscriptions[sub.Cfg.Id] = sub
-
 	return nil
 }
 
@@ -224,7 +210,12 @@ func (sm *SubscriptionMgr) DeleteSubscription(sub *Subscription) error {
 	defer sm.mutex.Unlock()
 
 	// Delete subscription
-	return sm.delSubscription(sub)
+	err := sm.delSubscription(sub)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
 }
 
 func (sm *SubscriptionMgr) DeleteAllSubscriptions() error {
@@ -239,7 +230,10 @@ func (sm *SubscriptionMgr) DeleteAllSubscriptions() error {
 
 	// Delete subscriptions
 	for _, sub := range subList {
-		_ = sm.delSubscription(sub)
+		err := sm.delSubscription(sub)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 	return nil
 }
@@ -315,6 +309,72 @@ func (sm *SubscriptionMgr) SendNotification(sub *Subscription, notif []byte) err
 	return err
 }
 
+func (sm *SubscriptionMgr) processSubscription(sub *Subscription) error {
+
+	if sub.Mode == ModeWebsocket {
+		// Create Websocket path handler
+		if !sub.WsCreated {
+			// Validate callback
+			if sm.cfg.NewWsCb == nil {
+				err := errors.New("Websockets not supported")
+				log.Error(err.Error())
+				return err
+			}
+
+			// Invoke callback to create websocket path
+			wsUri, err := sm.cfg.NewWsCb(sub)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+
+			// Update Websocket URI & creation flag
+			sub.Ws.Uri = wsUri
+			sub.WsCreated = true
+		}
+
+	} else if sub.Mode == ModeDirect {
+		// Send Test notification if necessary
+		if sub.State == StateTestNotif && !sub.TestNotifSent && sub.Cfg.RequestTestNotif {
+			// Validate callback
+			if sm.cfg.TestNotifCb == nil {
+				err := errors.New("Test notification not supported")
+				log.Error(err.Error())
+				return err
+			}
+			// Start goroutine to trigger test notification after subscription creation
+			go func() {
+				// Allow some time to complete subscription creation
+				time.Sleep(100 * time.Millisecond)
+
+				// Invoke callback to send test notification & wait for result
+				err := sm.cfg.TestNotifCb(sub)
+
+				sm.mutex.Lock()
+				defer sm.mutex.Unlock()
+
+				// Update subscription state according to test notification result
+				if err != nil {
+					sub.TestNotifSent = false
+				} else {
+					sub.State = StateReady
+				}
+
+				// Store updated subscription
+				err = sm.storeSubscription(sub)
+				if err != nil {
+					log.Error(err.Error())
+				}
+			}()
+
+			// Set flag indicating test notification was sent
+			sub.TestNotifSent = true
+		}
+	}
+
+	return nil
+}
+
 func (sm *SubscriptionMgr) delSubscription(sub *Subscription) error {
 	// Delete subscription
 	err := sub.deleteSubscription()
@@ -332,6 +392,27 @@ func (sm *SubscriptionMgr) delSubscription(sub *Subscription) error {
 
 	// Remove from cache
 	delete(sm.subscriptions, sub.Cfg.Id)
+
+	return nil
+}
+
+func (sm *SubscriptionMgr) storeSubscription(sub *Subscription) error {
+
+	// Store subscription
+	jsonSub, err := convertSubToJson(sub)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	key := sm.baseKey + "app:" + sub.Cfg.AppId + ":sub:" + sub.Cfg.Type + ":" + sub.Cfg.Id
+	err = sm.rc.JSONSetEntry(key, ".", jsonSub)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Cache updated subscription
+	sm.subscriptions[sub.Cfg.Id] = sub
 
 	return nil
 }
