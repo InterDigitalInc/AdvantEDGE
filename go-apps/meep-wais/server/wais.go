@@ -1395,7 +1395,7 @@ func newAssocStaSubscriptionCfg(sub *AssocStaSubscription, subId string) *sm.Sub
 	}
 	var expiryTime *time.Time
 	if sub.ExpiryDeadline != nil {
-		expiry := time.Unix(int64(sub.ExpiryDeadline.Seconds), int64(sub.ExpiryDeadline.NanoSeconds))
+		expiry := time.Unix(int64(sub.ExpiryDeadline.Seconds), 0)
 		expiryTime = &expiry
 	}
 	subCfg := &sm.SubscriptionCfg{
@@ -1433,7 +1433,7 @@ func ExpiredSubscriptionCb(sub *sm.Subscription) {
 		},
 		ExpiryDeadline: &TimeStamp{
 			Seconds:     int32(sub.Cfg.ExpiryTime.Unix()),
-			NanoSeconds: int32(sub.Cfg.ExpiryTime.UnixNano()),
+			NanoSeconds: 0,
 		},
 	}
 

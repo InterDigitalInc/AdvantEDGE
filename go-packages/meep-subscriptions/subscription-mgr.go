@@ -430,7 +430,7 @@ func (sm *SubscriptionMgr) runTicker() {
 			if sub.State == StateExpired {
 				// Add to list of expired subscriptions
 				expiredSubList = append(expiredSubList, sub)
-			} else if sub.ExpiryTime != nil && currentTime.After(*sub.ExpiryTime) {
+			} else if sub.Cfg.ExpiryTime != nil && currentTime.After(*sub.Cfg.ExpiryTime) {
 				// Set state to expired & invoke expiry callback
 				sub.State = StateExpired
 

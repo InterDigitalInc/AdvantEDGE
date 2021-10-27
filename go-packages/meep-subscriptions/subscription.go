@@ -45,7 +45,6 @@ type Subscription struct {
 	JsonSubOrig     string       `json:"jsonSubOrig"`
 	Mode            string       `json:"mode"`
 	State           string       `json:"state"`
-	ExpiryTime      *time.Time   `json:"expiryTime"`
 	PeriodicCounter int32        `json:"periodicCounter"`
 	TestNotifSent   bool         `json:"testNotifSent"`
 	WsCreated       bool         `json:"wsCreated"`
