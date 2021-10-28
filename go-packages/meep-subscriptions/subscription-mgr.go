@@ -29,7 +29,6 @@ import (
 type ExpiredSubscriptionCb func(*Subscription)
 type PeriodicSubscriptionCb func(*Subscription)
 type TestNotificationCb func(*Subscription) error
-type NotificationRespCb func(*Subscription)
 type NewWebsocketCb func(*Subscription) (string, error)
 
 type SubscriptionMgrCfg struct {
@@ -42,7 +41,6 @@ type SubscriptionMgrCfg struct {
 	ExpiredSubCb   ExpiredSubscriptionCb
 	PeriodicSubCb  PeriodicSubscriptionCb
 	TestNotifCb    TestNotificationCb
-	NotifRespCb    NotificationRespCb
 	NewWsCb        NewWebsocketCb
 }
 
@@ -271,6 +269,9 @@ func (sm *SubscriptionMgr) GenerateSubscriptionId() string {
 }
 
 func (sm *SubscriptionMgr) ReadyToSend(sub *Subscription) bool {
+	if sub == nil {
+		return false
+	}
 	// Subscription state
 	if sub.State != StateReady {
 		return false

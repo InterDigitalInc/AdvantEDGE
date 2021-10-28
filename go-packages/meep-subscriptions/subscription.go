@@ -108,6 +108,7 @@ func (sub *Subscription) updateSubscription() error {
 }
 
 func (sub *Subscription) refreshState() error {
+	log.Info("Previous mode: ", sub.Mode, " state: ", sub.State)
 
 	// Give priority to Websocket if requested
 	if sub.Cfg.RequestWebsocketUri {
@@ -164,6 +165,7 @@ func (sub *Subscription) refreshState() error {
 		}
 	}
 
+	log.Info("Current mode: ", sub.Mode, " state: ", sub.State)
 	return nil
 }
 
