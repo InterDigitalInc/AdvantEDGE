@@ -18,7 +18,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-subscriptions v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr v0.0.0
 	github.com/antihax/optional v1.0.0 // indirect
-	github.com/gorilla/handlers v1.4.0
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/prometheus/client_golang v1.9.0
 )
