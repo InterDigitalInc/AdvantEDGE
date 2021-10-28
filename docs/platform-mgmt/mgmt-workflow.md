@@ -243,7 +243,7 @@ See details [here](https://github.com/guard/listen/wiki/Increasing-the-amount-of
 
 ----
 ## Code Coverage
-AdvantEDGE core micro-services can be instrumented to measure code coverage; when used in conjunction with Cypress or other system tests (manual or proprietary), it will provide an overview of the code coverage.
+AdvantEDGE core micro-services can be instrumented to measure code coverage; when used in conjunction with Cypress, system & manual tests, an overview of the platform code coverage can be obtained.
 
 To enable code coverage measurements in AdvantEDGE:
 - Build for code coverage: `meepctl build all --codecov`
