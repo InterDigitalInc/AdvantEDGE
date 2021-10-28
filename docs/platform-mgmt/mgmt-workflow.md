@@ -243,6 +243,8 @@ See details [here](https://github.com/guard/listen/wiki/Increasing-the-amount-of
 
 ----
 ## Code Coverage
+**IMPORTANT NOTE: CODE COVERAGE IS NOTE WORKING WITH THE LATEST RELEASE**
+
 AdvantEDGE core micro-services can be instrumented to measure code coverage; when used in conjunction with Cypress, system & manual tests, an overview of the platform code coverage can be obtained.
 
 To enable code coverage measurements in AdvantEDGE:
