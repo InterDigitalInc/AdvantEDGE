@@ -51,16 +51,16 @@ Related resources:
 
 -----
 ## FAQ 2: K8s Docker container runtime deprecation
-_**Starting with k8s version 1.22, docker container runtime is no longer supported**_
+_**Starting with k8s version 1.22, Docker container runtime is no longer supported**_
 
 With release 1.20, Kubernetes announced the deprecation of Docker as a container runtime, promoting instead other runtimes that support the
-Container Runtime Interface (CRI) such as containerd and CRI-O. As of releses 1.22, Docker container runtime was officially unsupported.
+Container Runtime Interface (CRI) such as containerd and CRI-O. As of release 1.22, Docker container runtime was officially unsupported.
 
 **Why deprecate Docker container runtime?**
 
-To support interoperability with different container runtimes, Kubernetes requires a container runtime that implements the Container Runtime Interface (CRI).
-Docker container runtime is not CRI-compliant and requires an adaptation layer called _dockershim_ maintained by k8s. As of release 1.22, k8s decided to
-no longer maintains _dockershim_ for Docker container runtime, in favor of CRI-compatible runtimes.
+To support interoperability with different container runtimes, Kubernetes requires a runtime that implements the Container Runtime Interface (CRI).
+Docker container runtime is not CRI-compliant and requires an adaptation layer called _dockershim_, maintained by k8s. As of release 1.22, k8s decided
+to stop maintaining _dockershim_ for Docker, in favor of other CRI-compatible runtimes.
 
 More details about the deprecation can be found here:
 - [K8s dockershim deprecation v1.20 release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.20.md#dockershim-deprecation)
