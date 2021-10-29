@@ -70,7 +70,7 @@ More details about the deprecation can be found here:
 
 **Impact on AdvantEDGE deployment**
 
-AdvantEDGE [runtime installation procedure](https://interdigitalinc.github.io/AdvantEDGE/docs/setup/env-runtime/) deploys Docker as the
+AdvantEDGE [runtime installation procedure]({{site.baseurl}}{% link docs/setup/env-runtime.md %}) deploys Docker as the
 k8s container runtime. For this reason, AdvantEDGE installation as currently documented only supports k8s versions up to 1.21. We have validated
 that the Docker container runtime can be replaced seamlessly by _containerd_ for k8s version 1.20, however we have not yet tested with the latest
 k8s release 1.22.
