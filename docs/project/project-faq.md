@@ -53,8 +53,8 @@ Related resources:
 ## FAQ 2: K8s Docker container runtime deprecation
 _**Starting with k8s version 1.22, Docker container runtime is no longer supported**_
 
-With release 1.20, Kubernetes announced the deprecation of Docker as a container runtime, promoting instead other runtimes that support the
-Container Runtime Interface (CRI) such as containerd and CRI-O. As of release 1.22, Docker container runtime was officially unsupported.
+With release 1.20, Kubernetes announced that it was deprecating Docker as a container runtime, promoting instead other runtimes that support the
+Container Runtime Interface (CRI), such as containerd and CRI-O. As of release 1.22, Docker container runtime is officially unsupported by k8s.
 
 **Why deprecate Docker container runtime?**
 
