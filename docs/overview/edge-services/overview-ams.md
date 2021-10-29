@@ -64,6 +64,6 @@ This use case applies to MEC Applications with multiple instances running on dif
 - Inform AMS about transfer complete:
   - The source MEC application should set the device context transfer state to _COMPLETE_
   - Optionally delete the device information until the user context returns
-  - PUT .../app_mobility_services/{appMobilityServiceId}
+  - ```PUT .../app_mobility_services/{appMobilityServiceId}```
 - Repeat procedure:
   - Target MEC Application now becomes the source for future context transfers
