@@ -76,6 +76,9 @@ func newWebsocket(cfg *WebsocketCfg) (*Websocket, error) {
 
 func (ws *Websocket) close() {
 
+	// Reset state
+	ws.State = WsStateInit
+
 	// Close websocket connection
 	if ws.Connection != nil {
 		go func() {
@@ -90,9 +93,6 @@ func (ws *Websocket) close() {
 			_ = ws.Connection.Close()
 		}()
 	}
-
-	// Reset state
-	ws.State = WsStateInit
 }
 
 func (ws *Websocket) connectionHandler(w http.ResponseWriter, r *http.Request) {

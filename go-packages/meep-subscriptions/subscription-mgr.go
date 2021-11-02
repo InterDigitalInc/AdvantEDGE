@@ -461,9 +461,6 @@ func (sm *SubscriptionMgr) runTicker() {
 					// Invoke periodic callback
 					log.Debug("Invoking periodic callback for sub: ", sub.Cfg.Id)
 					go sm.cfg.PeriodicSubCb(sub)
-				} else if sub.PeriodicCounter == periodicCounterPending && sub.isReady() {
-					// Handle error cases where notification was not sent
-					sub.PeriodicCounter = sub.Cfg.PeriodicInterval
 				}
 			}
 		}
