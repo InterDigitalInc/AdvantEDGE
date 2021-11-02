@@ -275,3 +275,15 @@ func (sub *Subscription) sendWsRequest(request *http.Request) (*http.Response, e
 
 	return resp, nil
 }
+
+func (sub *Subscription) isReady() bool {
+	// Subscription state
+	if sub.State != StateReady {
+		return false
+	}
+	// Websocket state
+	if sub.Ws != nil && sub.Ws.State != WsStateReady {
+		return false
+	}
+	return true
+}

@@ -444,7 +444,7 @@ repo:
         # enable meepctl deploy/delete
         deploy: true
         # supports code coverage measurement when built in codecov mode
-        codecov: false
+        codecov: true
         # supports linting
         lint: true
         # location of API specifications
@@ -1021,6 +1021,11 @@ repo:
       meep-sessions:
         # location of source code
         src: go-packages/meep-sessions
+        # supports linting
+        lint: true
+      meep-subscriptions:
+        # location of source code
+        src: go-packages/meep-subscriptions
         # supports linting
         lint: true
       meep-users:

@@ -130,8 +130,8 @@ func (ws *Websocket) startMsgHandler() {
 		if err != nil {
 			log.Error(err.Error())
 
-			// Reset websocket state
-			ws.State = WsStateInit
+			// Close websocket
+			ws.close()
 			return
 		}
 

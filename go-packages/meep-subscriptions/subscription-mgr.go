@@ -272,12 +272,12 @@ func (sm *SubscriptionMgr) ReadyToSend(sub *Subscription) bool {
 	if sub == nil {
 		return false
 	}
+
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+
 	// Subscription state
-	if sub.State != StateReady {
-		return false
-	}
-	// Websocket state
-	if sub.Ws != nil && sub.Ws.State != WsStateReady {
+	if !sub.isReady() {
 		return false
 	}
 	// Periodic interval
@@ -453,13 +453,17 @@ func (sm *SubscriptionMgr) runTicker() {
 				if sub.PeriodicCounter > 0 {
 					sub.PeriodicCounter--
 				}
-				if sub.PeriodicCounter == 0 && sub.State == StateReady {
+				// If periodic interval is up, trigger notification if subscription is ready
+				if sub.PeriodicCounter == 0 && sub.isReady() {
 					// Set counter to -1; it will be reset when notification is sent
 					sub.PeriodicCounter = periodicCounterPending
 
 					// Invoke periodic callback
 					log.Debug("Invoking periodic callback for sub: ", sub.Cfg.Id)
 					go sm.cfg.PeriodicSubCb(sub)
+				} else if sub.PeriodicCounter == periodicCounterPending && sub.isReady() {
+					// Handle error cases where notification was not sent
+					sub.PeriodicCounter = sub.Cfg.PeriodicInterval
 				}
 			}
 		}
