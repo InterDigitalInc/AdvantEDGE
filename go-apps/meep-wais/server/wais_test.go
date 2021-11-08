@@ -24,7 +24,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -5910,15 +5910,15 @@ func TestSuccessSubscriptionAssocSta(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 	//post
-	expectedGetResp := testSubscriptionAssocStaPost(t)
+	subId, expectedGetResp := testSubscriptionAssocStaPost(t)
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, subId, expectedGetResp)
 	//put
-	expectedGetResp = testSubscriptionAssocStaPut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	expectedGetResp = testSubscriptionAssocStaPut(t, subId, true)
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, subId, expectedGetResp)
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	testSubscriptionDelete(t, subId, true)
 	terminateScenario()
 }
 
@@ -5941,13 +5941,13 @@ func TestFailSubscriptionAssocSta(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+	testSubscriptionGet(t, "invalidSubId", "")
 
 	//put
-	_ = testSubscriptionAssocStaPut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	_ = testSubscriptionAssocStaPut(t, "invalidSubId", false)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	testSubscriptionDelete(t, "invalidSubId", false)
 
 	terminateScenario()
 }
@@ -5971,15 +5971,15 @@ func TestSubscriptionsListGet(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//post
-	_ = testSubscriptionAssocStaPost(t)
-	_ = testSubscriptionAssocStaPost(t)
+	subId1, _ := testSubscriptionAssocStaPost(t)
+	subId2, _ := testSubscriptionAssocStaPost(t)
 
 	//get list
 	testSubscriptionListGet(t)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-2), true)
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	testSubscriptionDelete(t, subId1, true)
+	testSubscriptionDelete(t, subId2, true)
 
 	terminateScenario()
 }
@@ -6025,22 +6025,7 @@ func testSubscriptionListGet(t *testing.T) {
 	}
 }
 
-func testSubscriptionAssocStaPost(t *testing.T) string {
-
-	/******************************
-	 * expected response section
-	 ******************************/
-	expectedApId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
-	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testSandboxName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedTrigger := AssocStaSubscriptionNotificationEvent{1, 1}
-	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
-
-	expectedResponseStr, err := json.Marshal(expectedResponse)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+func testSubscriptionAssocStaPost(t *testing.T) (string, string) {
 
 	/******************************
 	 * request vars section
@@ -6050,7 +6035,10 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, &expectedTrigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	apId := ApIdentity{"myMacId", []string{"myIp"}, []string{"mySSid"}}
+	callBackRef := "myCallbakRef"
+	trigger := AssocStaSubscriptionNotificationEvent{1, 1}
+	subscriptionPost1 := AssocStaSubscription{nil, &apId, callBackRef, nil /*&expectedExpiry*/, &trigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6075,10 +6063,25 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	self := respBody.Links.Self.Href
+	fmt.Println("self: " + self)
+	var subId = self[strings.LastIndex(self, "/")+1:]
+	fmt.Println("subId: " + subId)
+	expectedLinkType := LinkType{respBody.Links.Self.Href}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &apId, callBackRef, nil /*&expectedExpiry*/, &trigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	if rr != string(expectedResponseStr) {
 		t.Fatalf("Failed to get expected response")
 	}
-	return string(expectedResponseStr)
+	return subId, string(expectedResponseStr)
 }
 
 func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
@@ -6366,7 +6369,13 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody AssocStaSubscription
+	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -6410,7 +6419,9 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	self := respBody.Links.Self.Href
+	var subId = self[strings.LastIndex(self, "/")+1:]
+	testSubscriptionDelete(t, subId, true)
 
 	/******************************
 	 * back to initial state section

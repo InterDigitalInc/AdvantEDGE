@@ -19,6 +19,7 @@ GOPKGS=(
     meep-mq
     meep-net-char-mgr
     meep-pdu-session-store
+    meep-subscriptions
     meep-watchdog
 )
 
