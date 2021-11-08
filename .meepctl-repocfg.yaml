@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.8.0
+version: 1.8.1
 repo:
   name: AdvantEDGE
 
@@ -1046,6 +1046,11 @@ repo:
       meep-watchdog:
         # location of source code
         src: go-packages/meep-watchdog
+        # supports linting
+        lint: true
+      meep-websocket:
+        # location of source code
+        src: go-packages/meep-websocket
         # supports linting
         lint: true
 

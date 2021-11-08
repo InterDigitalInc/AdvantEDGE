@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package subscriptions
+package websocket
 
 import (
 	"bytes"
@@ -75,7 +75,7 @@ func EncodeRequest(r *http.Request, seq uint32) ([]byte, error) {
 	return req, nil
 }
 
-func DecodeRequest(data []byte, url string) (*http.Request, uint32, error) {
+func DecodeRequest(data []byte) (*http.Request, uint32, error) {
 	offset := 0
 
 	// Get Sequence number
@@ -98,7 +98,7 @@ func DecodeRequest(data []byte, url string) (*http.Request, uint32, error) {
 	}
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req, err := http.NewRequest("POST", "", bytes.NewBuffer(payload))
 	if err != nil {
 		log.Error(err.Error())
 		return nil, 0, err
@@ -162,7 +162,7 @@ func EncodeResponse(r *http.Response, seq uint32) ([]byte, error) {
 	return resp, nil
 }
 
-func DecodeResponse(data []byte, url string) (*http.Response, uint32, error) {
+func DecodeResponse(data []byte) (*http.Response, uint32, error) {
 	offset := 0
 
 	// Get Sequence number
@@ -244,11 +244,12 @@ func getSequenceNumber(data []byte, offset *int) (uint32, error) {
 	}
 
 	// Find EOL
-	eolIndex := bytes.Index(data[curIndex:], []byte(eolStr))
-	if eolIndex == -1 {
+	eolOffset := bytes.Index(data[curIndex:], []byte(eolStr))
+	if eolOffset == -1 {
 		return 0, errors.New("Missing sequence line")
 	}
-	byteCount := eolIndex + len(eolStr)
+	byteCount := eolOffset + len(eolStr)
+	eolIndex := *offset + eolOffset
 
 	// Compare sequence string
 	nextIndex := curIndex + len(seqStr)
@@ -274,7 +275,7 @@ func getSequenceNumber(data []byte, offset *int) (uint32, error) {
 
 // Status
 func addStatus(data *[]byte, code int, status string) {
-	*data = append(*data, []byte(status+strconv.Itoa(code)+" "+eolStr)...)
+	*data = append(*data, []byte(strconv.Itoa(code)+" "+status+eolStr)...)
 }
 
 func getStatus(data []byte, offset *int) (int, string, error) {
@@ -284,17 +285,19 @@ func getStatus(data []byte, offset *int) (int, string, error) {
 	}
 
 	// Find EOL
-	eolIndex := bytes.Index(data[*offset:], []byte(eolStr))
-	if eolIndex == -1 {
+	eolOffset := bytes.Index(data[*offset:], []byte(eolStr))
+	if eolOffset == -1 {
 		return 0, "", errors.New("Missing status line")
 	}
-	byteCount := eolIndex + len(eolStr)
+	byteCount := eolOffset + len(eolStr)
+	eolIndex := *offset + eolOffset
 
 	// Extract status
-	statusIndex := bytes.Index(data[*offset:eolIndex], []byte(" "))
-	if statusIndex == -1 {
+	statusOffset := bytes.Index(data[*offset:eolIndex], []byte(" "))
+	if statusOffset == -1 {
 		return 0, "", errors.New("Invalid status line format")
 	}
+	statusIndex := *offset + statusOffset
 	status := string(data[statusIndex:eolIndex])
 
 	// Extract status code
@@ -331,16 +334,17 @@ func getHeaders(data []byte, offset *int) (map[string]string, error) {
 	}
 
 	// Find end of headers section --> 2 x EOL
-	eolIndex := bytes.Index(data[*offset:], []byte(eolStr))
-	if eolIndex == -1 {
+	eolOffset := bytes.Index(data[*offset:], []byte(eolStr+eolStr))
+	if eolOffset == -1 {
 		return nil, errors.New("Missing headers section")
 	}
-	byteCount := eolIndex + len(eolStr)
+	byteCount := eolOffset + len(eolStr+eolStr)
+	eolIndex := *offset + eolOffset
 
 	// Extract headers
-	headerLines := strings.Split(eolStr, string(data[*offset:eolIndex]))
+	headerLines := strings.Split(string(data[*offset:eolIndex]), eolStr)
 	for _, headerLine := range headerLines {
-		parts := strings.Split(": ", headerLine)
+		parts := strings.Split(headerLine, ": ")
 		if len(parts) != 2 {
 			return nil, errors.New("Invalid header line: " + headerLine)
 		}
