@@ -112,7 +112,7 @@ describe('Scenario Execution', function () {
   it('Test Event - Save button', function () {
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
-    cy.wait(1000);
+    cy.wait(2000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(3000);
 
