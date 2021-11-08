@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Get full path to script directory
+SCRIPT=$(readlink -f "$0")
+BASEDIR=$(dirname "$SCRIPT")
+
+DEMOBIN=$BASEDIR/bin/demo-server
+
+echo ""
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>> Building Demo Service Frontend"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ""
+$BASEDIR/src/frontend/build.sh
+
+echo ""
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>> Building Demo 3 Go Server"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ""
+$BASEDIR/src/backend/build.sh $DEMOBIN
+
+echo ""
+echo ">>> Demo Service build completed"
+
+
+

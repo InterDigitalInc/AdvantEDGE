@@ -1,0 +1,784 @@
+openapi: 3.0.2
+info:
+  title: MEC Demo 3 API
+  description: This section describes use-case for demo 3 that the user can accomplish
+    using the MEC Sandbox APIs from a MEC application
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.1
+servers:
+- url: http://10.190.115.162:8093
+paths:
+  /info/application/{mecPlatform}:
+    get:
+      tags:
+      - frontend
+      summary: Retrieve app instance info
+      description: This method retrieves a specific app instance info on a mec platform
+        to display on demo frontend
+      parameters:
+      - name: mecPlatform
+        in: path
+        description: MEC platform where the application instance is running
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Uppon success, a response body containing the app instance
+            info is returned
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInstance'
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+        "404":
+          description: Not found
+  /info/logs:
+    get:
+      tags:
+      - frontend
+      summary: Retrieve activity log on a registered app instance
+      description: This method retrieves demo activity log for a registered app instance
+      parameters:
+      - name: numLogs
+        in: query
+        description: Represent number of logs to retrieve
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Uppon success, a response body containing logs of demo activities
+            stored as strings will be returned
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+        "404":
+          description: Not found
+  /info/ams/logs:
+    get:
+      tags:
+      - frontend
+      summary: Retrieve ams log on a registered app instance
+      description: This method retrieves ams log for a mec app displaying context
+        state transfer
+      parameters:
+      - name: numLogs
+        in: query
+        description: Represent number of logs to retrieve
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Uppon success, a response body containing the list of ams log
+            and context state stored as strings is returned
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+        "404":
+          description: Not found
+  /service/ams/update/{device}:
+    put:
+      tags:
+      - frontend
+      summary: Updates the AMS resource
+      description: Update mobility service with device info
+      parameters:
+      - name: device
+        in: path
+        description: Start AMS service resource to track device name
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /service/ams/delete/{device}:
+    delete:
+      tags:
+      - frontend
+      summary: Delete AMS device in the AMS service resource
+      description: Create a new application mobility service for the service requester
+        & create subscription to ams.
+      parameters:
+      - name: device
+        in: path
+        description: Delete device from AMS service resource
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /services/discover:
+    post:
+      tags:
+      - mec_service
+      description: This method retrieves information about a list of mec service resources
+        & subscribes to service availability notification subscription
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /service/create:
+    post:
+      tags:
+      - mec_service
+      description: This method creates a mec service on mec platform
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /service/delete:
+    delete:
+      tags:
+      - mec_service
+      description: This method deletes a mecService resource. This method is typically
+        used in the service deregistration procedure.
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /services/callback/amsevent:
+    post:
+      tags:
+      - notification
+      summary: MEC021 ams notifcation
+      description: Handle Application Mobility Service notifications.
+      requestBody:
+        description: Subscription notification
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobilityProcedureNotification'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /ams/subscriptions:
+    post:
+      tags:
+      - mec_service
+      description: Create a new subscription to Application Mobility Service notifications.
+      operationId: AmsSubscriptionPOST
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /services/callback/service-availability:
+    post:
+      tags:
+      - notification
+      summary: MEC011 service availability notification
+      description: "."
+      operationId: NotificationPOST
+      requestBody:
+        description: service availability notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAvailabilityNotification'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /application/termination:
+    post:
+      tags:
+      - notification
+      summary: MEC011 app termination notification
+      description: "."
+      operationId: TerminateNotificatonPOST
+      requestBody:
+        description: app termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationSubscription'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+components:
+  schemas:
+    ApplicationInstance:
+      type: object
+      properties:
+        name:
+          type: string
+          example: MEP Name
+        url:
+          type: string
+        config:
+          type: string
+          example: app_instance1.yaml
+        ip:
+          type: string
+          example: <IP:port>
+        id:
+          type: string
+        mecReady:
+          type: boolean
+          description: Confirm if app instance is ready
+        mecTerminated:
+          type: boolean
+          description: Confirm the application level termination of application instance
+        amsResource:
+          type: boolean
+          description: Confirm if app instance has an ams service resource
+        subscriptions:
+          $ref: '#/components/schemas/ApplicationInstance_subscriptions'
+        offeredService:
+          $ref: '#/components/schemas/ApplicationInstance_offeredService'
+        discoveredServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationInstance_discoveredServices'
+      description: This type represent information to display on frontend app instance
+        text field
+      example:
+        mecReady: true
+        subscriptions:
+          'SerAvailabilitySubscription:':
+            subId: subId
+          AmsLinkListSubscription:
+            subId: subId
+            associateId:
+            - type: 0
+              value: value
+            - type: 0
+              value: value
+          AppTerminationSubscription:
+            subId: subId
+        amsResource: true
+        ip: <IP:port>
+        name: MEP Name
+        id: id
+        discoveredServices:
+        - link: link
+          serName: null
+          consumedLocalOnly: true
+          version: version
+          serInstanceId: serInstanceId
+        - link: link
+          serName: null
+          consumedLocalOnly: true
+          version: version
+          serInstanceId: serInstanceId
+        config: app_instance1.yaml
+        offeredService:
+          scopeOfLocality: MEC_SYSTEM
+          serName: serName
+          id: id
+          state: ACTIVE
+          consumedLocalOnly: true
+        url: url
+        mecTerminated: true
+    LocalityType:
+      type: string
+      description: The scope of locality as expressed by "consumedLocalOnly" and "isLocal".
+        If absent, defaults to MEC_HOST
+      enum:
+      - MEC_SYSTEM
+      - MEC_HOST
+      - NFVI_POP
+      - ZONE
+      - ZONE_GROUP
+      - NFVI_NODE
+    ServiceAvailabilityNotification:
+      required:
+      - _links
+      - notificationType
+      - serviceReferences
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to SerAvailabilityNotification
+          example: SerAvailabilityNotification
+        serviceReferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAvailabilityNotification_serviceReferences'
+        _links:
+          $ref: '#/components/schemas/Subscription'
+      description: This type represents the service availability information.
+    AppTerminationSubscription:
+      required:
+      - _links
+      - appInstanceId
+      - callbackReference
+      - subscriptionType
+      type: object
+      properties:
+        subscriptionType:
+          type: string
+          description: Shall be set to AppTerminationSubscription.
+        callbackReference:
+          type: string
+          description: URI selected by the MEC application instance to receive notifications
+            on the subscribed MEC application instance management information. This
+            shall be included in both the request and the response.
+          format: uri
+        _links:
+          $ref: '#/components/schemas/AppTerminationSubscription__links'
+        appInstanceId:
+          type: string
+          description: It is used as the filtering criterion for the subscribed events.
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+      example:
+        appInstanceId: appInstanceId
+        subscriptionType: subscriptionType
+        _links:
+          self:
+            href: http://example.com/aeiou
+        callbackReference: http://example.com/aeiou
+    MobilityProcedureNotification:
+      required:
+      - mobilityStatus
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        mobilityStatus:
+          type: integer
+          description: 'Indicate the status of the UE mobility. Values are defined
+            as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3
+            = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.'
+          x-etsi-mec-cardinality: "1"
+        notificationType:
+          type: string
+          description: Shall be set to \"MobilityProcedureNotification\".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        targetAppInfo:
+          $ref: '#/components/schemas/MobilityProcedureNotification_targetAppInfo'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 7.4.2
+    TimeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: The nanoseconds part of the time. Time is defined as Unix-time
+            since January 1, 1970, 00:00:00 UTC.
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: The seconds part of the time. Time is defined as Unixtime since
+            January 1, 1970, 00:00:00 UTC.
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+    MobilityProcedureSubscription:
+      required:
+      - callbackReference
+      - filterCriteria
+      - subscriptionType
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/MobilityProcedureSubscription__links'
+        callbackReference:
+          type: string
+          description: URI selected by the service consumer to receive notifications
+            on the subscribed Application Mobility Service. This shall be included
+            both in the request and in response.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        filterCriteria:
+          $ref: '#/components/schemas/MobilityProcedureSubscription_filterCriteria'
+        subscriptionType:
+          type: string
+          description: Shall be set to "MobilityProcedureSubscription".
+          enum:
+          - MobilityProcedureSubscription
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 7.3.2
+    MobilityStatus:
+      type: integer
+      description: 'Indicate the status of the UE mobility. Values are: 1 = INTERHOST_MOVEOUT_TRIGGERED,
+        2 = INTERHOST_MOVEOUT_COMPLETED, 3 = INTERHOST_MOVEOUT_FAILED'
+    RegistrationInfo:
+      required:
+      - serviceConsumerId
+      type: object
+      properties:
+        appMobilityServiceId:
+          type: string
+          description: The identifier of registered application mobility service.
+            Shall be absent in POST requests, and present otherwise.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        deviceInformation:
+          type: array
+          description: If present, it specifies the device served by the application
+            instance which is registering the application mobility service.
+          items:
+            $ref: '#/components/schemas/RegistrationInfo_deviceInformation'
+        expiryTime:
+          type: integer
+          description: If present, it indicates the time of application mobility service
+            expiration from the time of registration accepted.The value "0" means
+            infinite time, i.e. no expiration.The unit of expiry time is one second.
+          format: Uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        serviceConsumerId:
+          $ref: '#/components/schemas/RegistrationInfo_serviceConsumerId'
+      x-etsi-notes: "NOTE:\tThe data type of AssociateId is defined in ETSI GS MEC\
+        \ 012 [6]."
+      x-etsi-ref: 7.2.2
+    MobilityProcedureNotification_targetAppInfo:
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifiers of the target application instance.
+          example: 10.100.0.3
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        commInterface:
+          $ref: '#/components/schemas/CommunicationInterface'
+      description: Identifiers to associate the information of target application
+        instance.
+    CommunicationInterface:
+      properties:
+        ipAddresses:
+          type: string
+    AssociateId:
+      properties:
+        type:
+          type: integer
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum
+        value:
+          type: string
+          description: Value for the identifier.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        type: 0
+        value: value
+    AppTerminationSubscription__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: Self-referring URI.
+      example:
+        self:
+          href: http://example.com/aeiou
+    LinkType:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URI referring to a resource
+          format: uri
+          example: /mecSerMgmtApi/example
+      description: This type represents a type of link and may be referenced from
+        data structures
+    SerName:
+      type: string
+      description: The name of the service. This is how the service producing MEC
+        application identifies the service instance it produces.
+    SerInstanceId:
+      type: string
+      description: Identifier of the service instance assigned by the MEC platform.
+      readOnly: true
+    ServiceState:
+      type: string
+      description: This enumeration defines the possible states of a service.
+      enum:
+      - ACTIVE
+      - INACTIVE
+    Subscription:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: A link to the related subscription
+    ApplicationInstance_subscriptions_AppTerminationSubscription:
+      type: object
+      properties:
+        subId:
+          type: string
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+      example:
+        subId: subId
+    ApplicationInstance_subscriptions_SerAvailabilitySubscription:
+      type: object
+      properties:
+        subId:
+          type: string
+      description: This type represents a subscription to the notifications from the
+        MEC platform regarding the availability of a MEC service or a list of MEC
+        services.
+      example:
+        subId: subId
+    ApplicationInstance_subscriptions_AmsLinkListSubscription:
+      type: object
+      properties:
+        subId:
+          type: string
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about app mobility support
+      example:
+        subId: subId
+        associateId:
+        - type: 0
+          value: value
+        - type: 0
+          value: value
+    ApplicationInstance_subscriptions:
+      type: object
+      properties:
+        AppTerminationSubscription:
+          $ref: '#/components/schemas/ApplicationInstance_subscriptions_AppTerminationSubscription'
+        'SerAvailabilitySubscription:':
+          $ref: '#/components/schemas/ApplicationInstance_subscriptions_SerAvailabilitySubscription'
+        AmsLinkListSubscription:
+          $ref: '#/components/schemas/ApplicationInstance_subscriptions_AmsLinkListSubscription'
+      description: List of ams subscription unique to device and their id
+      example:
+        'SerAvailabilitySubscription:':
+          subId: subId
+        AmsLinkListSubscription:
+          subId: subId
+          associateId:
+          - type: 0
+            value: value
+          - type: 0
+            value: value
+        AppTerminationSubscription:
+          subId: subId
+    ApplicationInstance_offeredService:
+      type: object
+      properties:
+        serName:
+          $ref: '#/components/schemas/SerName'
+        id:
+          type: string
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        scopeOfLocality:
+          $ref: '#/components/schemas/LocalityType'
+        consumedLocalOnly:
+          type: boolean
+          description: Indicate whether the service can only be consumed by the MEC
+            applications located in the same locality (as defined by scopeOfLocality)
+            as this  service instance.
+      description: service offering
+      example:
+        scopeOfLocality: MEC_SYSTEM
+        serName: serName
+        id: id
+        state: ACTIVE
+        consumedLocalOnly: true
+    ApplicationInstance_discoveredServices:
+      type: object
+      properties:
+        serName:
+          $ref: '#/components/schemas/SerName'
+        serInstanceId:
+          $ref: '#/components/schemas/SerInstanceId'
+        consumedLocalOnly:
+          type: boolean
+          description: Indicate whether the service can only be consumed by the MEC
+            applications located in the same locality (as defined by scopeOfLocality)
+            as this  service instance.
+        link:
+          type: string
+        version:
+          type: string
+          description: Service version
+      description: List of service name and their status
+      example:
+        link: link
+        serName: null
+        consumedLocalOnly: true
+        version: version
+        serInstanceId: serInstanceId
+    ServiceAvailabilityNotification_serviceReferences:
+      required:
+      - changeType
+      - serInstanceId
+      - serName
+      - state
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/LinkType'
+        serName:
+          $ref: '#/components/schemas/SerName'
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        changeType:
+          type: string
+          description: "Type of the change. Valid values:\n ADDED: The service was\
+            \ newly added.\n  REMOVED: The service was removed.\n  STATE_CHANGED:\
+            \ Only the state of the service was changed. \n  ATTRIBUTES_CHANGED: At\
+            \ least one attribute of the service other than state was changed. The\
+            \ change may or may not include changing the state."
+          enum:
+          - ADDED
+          - REMOVED
+          - STATE_CHANGED
+          - ATTRIBUTES_CHANGED
+      description: List of links to services whose availability has changed.
+    MobilityProcedureSubscription__links:
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+    MobilityProcedureSubscription_filterCriteria:
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifier of the application instance that registers the application
+            mobility service.
+          x-etsi-mec-cardinality: 0..1
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+        mobilityStatus:
+          minItems: 0
+          type: array
+          description: In case mobilityStatus is not included in the subscription
+            request, the default value 1 = INTER_HOST_MOBILITY_TRIGGERED shall be
+            used and included in the response.
+          items:
+            $ref: '#/components/schemas/MobilityStatus'
+          x-etsi-mec-cardinality: 0..N
+    RegistrationInfo_deviceInformation:
+      required:
+      - associateId
+      type: object
+      properties:
+        associateId:
+          $ref: '#/components/schemas/AssociateId'
+        appMobilityServiceLevel:
+          $ref: '#/components/schemas/AppMobilityServiceLevel'
+        contextTransferState:
+          $ref: '#/components/schemas/ContextTransferState'
+    RegistrationInfo_serviceConsumerId:
+      properties:
+        appInstanceId:
+          type: string
+          description: If present, it represents the identifier of the application
+            instance registering the application mobility service.
+          x-etsi-mec-cardinality: 0..1
+        mepId:
+          type: string
+          description: If present, it represents the identifier of the MEC platform
+            registering the application mobility service.
+          x-etsi-mec-cardinality: 0..1
+      description: The identifier of service consumer requesting the application mobility
+        service, i.e. either the application instance ID or the MEC platform ID.
+  parameters:
+    Path.AppInstanceId:
+      name: appInstanceId
+      in: path
+      description: Represents a MEC application instance. Note that the appInstanceId
+        is allocated by the MEC platform manager.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Path.ServiceId:
+      name: serviceId
+      in: path
+      description: Represents a MEC service instance.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
