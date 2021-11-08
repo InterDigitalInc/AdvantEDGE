@@ -265,7 +265,7 @@ func (sm *SubscriptionMgr) GetSubscriptionList(AppId string, Type string) ([]*Su
 func (sm *SubscriptionMgr) GenerateSubscriptionId() string {
 	randomStr, _ := generateRand(12)
 	// return uuid.New().String()
-	return randomStr
+	return "sub-" + randomStr
 }
 
 func (sm *SubscriptionMgr) ReadyToSend(sub *Subscription) bool {

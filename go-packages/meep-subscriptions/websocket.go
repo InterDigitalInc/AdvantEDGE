@@ -64,9 +64,9 @@ func newWebsocket(cfg *WebsocketCfg) (*Websocket, error) {
 		log.Error(err.Error())
 		return nil, err
 	}
-	ws.Id = randomStr
+	ws.Id = "websocket-" + randomStr
 	ws.State = WsStateInit
-	ws.Endpoint = "ws/" + randomStr
+	ws.Endpoint = "ws/" + ws.Id
 
 	// Create websocket handler
 	ws.ConnectionHandler = ws.connectionHandler
