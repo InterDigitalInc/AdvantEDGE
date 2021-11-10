@@ -76,14 +76,13 @@ func NewSubscriptionMgr(cfg *SubscriptionMgrCfg, addr string) (sm *SubscriptionM
 	if cfg.Basekey != "" {
 		sm.baseKey = cfg.Basekey
 	} else {
-		// data:sbox:<sandbox-name>:<module-name>:mep:<mep-name>:app:<app-id>:sub:<sub-type>:<sub-id>
 		sm.baseKey = dkm.GetKeyRoot(cfg.Sandbox) + cfg.Module + ":mep:" + cfg.Mep + ":"
 	}
 
 	// Initialize subscription cache from store
 	var subList []*Subscription
 	var subListPtr = &subList
-	key := sm.baseKey + "app:*:sub:*:*"
+	key := sm.baseKey + "sub:*:*"
 	err = sm.rc.ForEachJSONEntry(key, populateSubList, subListPtr)
 	if err != nil {
 		log.Error(err.Error())
@@ -385,7 +384,7 @@ func (sm *SubscriptionMgr) delSubscription(sub *Subscription) error {
 	}
 
 	// Remove from store
-	err = sm.rc.JSONDelEntry(sm.baseKey+"app:"+sub.Cfg.AppId+":sub:"+sub.Cfg.Type+":"+sub.Cfg.Id, ".")
+	err = sm.rc.JSONDelEntry(sm.baseKey+"sub:"+sub.Cfg.Type+":"+sub.Cfg.Id, ".")
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -405,7 +404,7 @@ func (sm *SubscriptionMgr) storeSubscription(sub *Subscription) error {
 		log.Error(err.Error())
 		return err
 	}
-	key := sm.baseKey + "app:" + sub.Cfg.AppId + ":sub:" + sub.Cfg.Type + ":" + sub.Cfg.Id
+	key := sm.baseKey + "sub:" + sub.Cfg.Type + ":" + sub.Cfg.Id
 	err = sm.rc.JSONSetEntry(key, ".", jsonSub)
 	if err != nil {
 		log.Error(err.Error())
