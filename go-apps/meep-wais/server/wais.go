@@ -387,13 +387,14 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = serviceCategory //instanceName
+	appInfo.Name = serviceCategory
+	appInfo.Type_ = "SYSTEM"
 	appInfo.MepName = mepName
-	appInfo.Version = serviceAppVersion
-	appType := scc.SYSTEM_ApplicationType
-	appInfo.Type_ = &appType
-	state := scc.INITIALIZED_ApplicationState
-	appInfo.State = &state
+	if mepName == defaultMepName {
+		appInfo.Persist = true
+	} else {
+		appInfo.Persist = false
+	}
 	response, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)

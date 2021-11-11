@@ -340,9 +340,6 @@ func validateAppInfo(appInfo *dataModel.ApplicationInfo, appInstanceId string) e
 	if appInfo.MepName == "" {
 		return errors.New("Mandatory MEP Name not present")
 	}
-	if appInfo.State == nil {
-		return errors.New("Mandatory State not present")
-	}
 
 	// Set default App type if missing
 	if appInfo.Type_ == "" {
@@ -371,9 +368,11 @@ func convertAppToApplicationInfo(app *apps.Application) *dataModel.ApplicationIn
 
 func convertApplicationInfoToApp(appInfo *dataModel.ApplicationInfo) *apps.Application {
 	app := &apps.Application{
-		Id:   appInfo.Id,
-		Name: appInfo.Name,
-		Mep:  appInfo.MepName,
+		Id:      appInfo.Id,
+		Name:    appInfo.Name,
+		Mep:     appInfo.MepName,
+		Type:    appInfo.Type_,
+		Persist: appInfo.Persist,
 	}
 	return app
 }
