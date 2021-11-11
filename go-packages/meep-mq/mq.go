@@ -77,7 +77,10 @@ const (
 	// GIS Engine
 	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
 
-	// App Enablement
+	// Applications
+	MsgAppUpdate    Message = "APP-UPDATE"
+	MsgAppRemove    Message = "APP-REMOVE"
+	MsgAppRemoveAll Message = "APP-REMOVE-ALL"
 	MsgAppTerminate Message = "APP-TERMINATE"
 	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
 

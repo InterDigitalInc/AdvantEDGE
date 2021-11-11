@@ -58,7 +58,7 @@ func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) (err error) {
 	cfg := &apps.ApplicationStoreCfg{
 		Name:      moduleName,
 		Namespace: sandboxName,
-		UpdateCb:  updateCb,
+		UpdateCb:  appStoreUpdateCb,
 		RedisAddr: redisDBAddr,
 	}
 	appCtrl.appStore, err = apps.NewApplicationStore(cfg)
@@ -377,6 +377,28 @@ func convertApplicationInfoToApp(appInfo *dataModel.ApplicationInfo) *apps.Appli
 	return app
 }
 
-func updateCb(eventType string, eventData interface{}) {
-	log.Info("updateCb event: ", eventType)
+func appStoreUpdateCb(eventType string, eventData interface{}) {
+	var msg *mq.Msg
+
+	// Create message to send on MQ
+	switch eventType {
+	case apps.EventAdd:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppUpdate, mq.TargetAll, appCtrl.sandboxName)
+		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
+	case apps.EventRemove:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemove, mq.TargetAll, appCtrl.sandboxName)
+		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
+	case apps.EventRemoveAll:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemoveAll, mq.TargetAll, appCtrl.sandboxName)
+	default:
+		return
+	}
+
+	// Send message to inform other modules of app store changes
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := appCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return
+	}
 }

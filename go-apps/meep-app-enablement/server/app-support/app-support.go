@@ -29,23 +29,26 @@ import (
 	"time"
 
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-app-enablement/server/service-mgmt"
+	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	subs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-subscriptions"
 
 	"github.com/gorilla/mux"
 )
 
+const moduleName = "meep-app-enablement"
 const mappsupportBasePath = "mec_app_support/v1/"
 const mappsupportKey = "as"
 const appEnablementKey = "app-enablement"
 const globalMepName = "global"
 const APP_STATE_READY = "READY"
-const APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE = "AppTerminationNotificationSubscription"
-const APP_TERMINATION_NOTIFICATION_TYPE = "AppTerminationNotification"
+const APP_TERMINATION_NOTIF_SUB_TYPE = "AppTerminationNotificationSubscription"
+const APP_TERMINATION_NOTIF_TYPE = "AppTerminationNotification"
 const DEFAULT_GRACEFUL_TIMEOUT = 10
 
 const serviceName = "App Enablement Service"
@@ -71,15 +74,15 @@ var handlerId int
 var hostUrl *url.URL
 var sandboxName string
 var mepName string
-var isMepGlobal bool
 var basePath string
 var baseKey string
 var baseKeyGlobal string
+var subMgr *subs.SubscriptionMgr
+var appStore *apps.ApplicationStore
 
 //var expiryTicker *time.Ticker
-var appTerminationGracefulTimeoutMap = map[string]*time.Ticker{}
-var appTerminationNotificationSubscriptionMap = map[int]*AppTerminationNotificationSubscription{}
-var nextSubscriptionIdAvailable int
+var gracefulTerminateMap = map[string]*time.Ticker{}
+var notifSubMap = map[int]*AppTerminationNotificationSubscription{}
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -92,21 +95,15 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 	mqLocal = msgQueue
 	mutex = globalMutex
 	mepName = mep
-	if mepName == globalMepName {
-		isMepGlobal = true
-	} else {
-		isMepGlobal = false
-	}
 
-	// Set base path
-	if isMepGlobal {
+	// Set base path & base storage key
+	if mepName == globalMepName {
 		basePath = "/" + sandboxName + "/" + mappsupportBasePath
+		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":global:"
 	} else {
 		basePath = "/" + sandboxName + "/" + mepName + "/" + mappsupportBasePath
+		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName + ":"
 	}
-
-	// Set base storage key
-	baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, APP_ENABLEMENT_DB)
@@ -116,12 +113,40 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 	}
 	log.Info("Connected to Redis DB")
 
-	// Initialize subscription ID count
-	nextSubscriptionIdAvailable = 1
+	// Create Application Store
+	cfg := &apps.ApplicationStoreCfg{
+		Name:      moduleName,
+		Namespace: sandboxName,
+		RedisAddr: redisAddr,
+	}
+	appStore, err = apps.NewApplicationStore(cfg)
+	if err != nil {
+		log.Error("Failed to connect to Application Store. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Application Store")
 
-	// Initialize local termination notification subscription map from DB
-	key := baseKey + ":mep:" + mepName + ":app:*:" + mappsupportKey + ":sub:*"
-	_ = rc.ForEachJSONEntry(key, repopulateAppTerminationNotificationSubscriptionMap, nil)
+	// Create Subscription Manager
+	subMgrCfg := &subs.SubscriptionMgrCfg{
+		Module:         moduleName,
+		Sandbox:        sandboxName,
+		Mep:            mepName,
+		Service:        serviceName,
+		Basekey:        baseKey,
+		MetricsEnabled: true,
+		ExpiredSubCb:   nil,
+		PeriodicSubCb:  nil,
+		TestNotifCb:    nil,
+		NewWsCb:        nil,
+	}
+	subMgr, err = subs.NewSubscriptionMgr(subMgrCfg, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Subscription Manager. Error: ", err)
+		return err
+	}
+	log.Info("Created Subscription Manager")
+
+	// TODO -- Initialize subscriptions from DB
 
 	return nil
 }
@@ -153,56 +178,29 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 		appId := msg.Payload[mqFieldAppInstanceId]
 		mep := msg.Payload[mqFieldMepName]
 		processAppTerminate(appId, mep)
+	case mq.MsgAppUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+	case mq.MsgAppRemove:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+	case mq.MsgAppRemoveAll:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 	default:
 	}
-}
-
-// see NOTE from ReInit()
-func repopulateAppTerminationNotificationSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
-	var subscription AppTerminationNotificationSubscription
-
-	// Format response
-	err := json.Unmarshal([]byte(jsonInfo), &subscription)
-	if err != nil {
-		return err
-	}
-
-	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
-	subIdStr := selfUrl[len(selfUrl)-1]
-	subId, _ := strconv.Atoi(subIdStr)
-
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	appTerminationNotificationSubscriptionMap[subId] = &subscription
-
-	//reinitialisation of next available Id for future subscription request
-	if subId >= nextSubscriptionIdAvailable {
-		nextSubscriptionIdAvailable = subId + 1
-	}
-	return nil
 }
 
 func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("applicationsConfirmReadyPOST")
 	vars := mux.Vars(r)
-	appInstanceId := vars["appInstanceId"]
+	appId := vars["appInstanceId"]
 
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Get App instance from DB
-	appInfo, err := getAppInstance(appInstanceId)
+	// Make sure App instance exists
+	appInfo, err := getAppInfo(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	// Get MEP name from App Info
-	mep, err := getMepName(appInfo)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -230,8 +228,11 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update App state
-	err = setAppState(mep, appInstanceId, APP_STATE_READY)
+	// Set App state
+	appInfo[fieldState] = APP_STATE_READY
+
+	// Set App Info
+	err = setAppInfo(appInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -246,13 +247,13 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Info("applicationsConfirmTerminationPOST")
 	vars := mux.Vars(r)
-	appInstanceId := vars["appInstanceId"]
+	appId := vars["appInstanceId"]
 
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	// Get App instance
-	appInfo, err := getAppInstance(appInstanceId)
+	appInfo, err := getAppInfo(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -271,26 +272,19 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Get MEP name from App Info
-	mep, err := getMepName(appInfo)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	// Check if Confirm Termination was expected
-	if appTerminationGracefulTimeoutMap[appInstanceId] == nil {
+	if gracefulTerminateMap[appId] == nil {
 		log.Error("Unexpected App Confirmation Termination Notification")
 		http.Error(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
 		return
 	}
 
 	// Stop graceful termination ticker
-	ticker := appTerminationGracefulTimeoutMap[appInstanceId]
+	ticker := gracefulTerminateMap[appId]
 	if ticker != nil {
 		ticker.Stop()
 	}
-	appTerminationGracefulTimeoutMap[appInstanceId] = nil
+	gracefulTerminateMap[appId] = nil
 
 	// Retrieve Termination Confirmation data
 	var confirmation AppTerminationConfirmation
@@ -332,7 +326,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance
-	appInfo, err := getAppInstance(appInstanceId)
+	appInfo, err := getAppInfo(appInstanceId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -361,13 +355,13 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//checking for mandatory properties
+	// Verify mandatory properties
 	if subscription.CallbackReference == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
 		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
-	if subscription.SubscriptionType != APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE {
+	if subscription.SubscriptionType != APP_TERMINATION_NOTIF_SUB_TYPE {
 		log.Error("SubscriptionType shall be AppTerminationNotificationSubscription")
 		http.Error(w, "SubscriptionType shall be AppTerminationNotificationSubscription", http.StatusBadRequest)
 		return
@@ -380,6 +374,35 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	if subscription.AppInstanceId != appInstanceId {
 		log.Error("AppInstanceId in endpoint and in body not matching")
 		http.Error(w, "AppInstanceId in endpoint and in body not matching", http.StatusBadRequest)
+		return
+	}
+
+	// Get a new subscription ID
+	subId := subMgr.GenerateSubscriptionId()
+
+	// Set resource link
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "subscriptions/" + subId
+	link := new(AssocStaSubscriptionLinks)
+	link.Self = self
+	assocStaSub.Links = link
+
+	// Create & store subscription
+	subCfg := newAssocStaSubscriptionCfg(&assocStaSub, subId)
+	jsonSub = convertAssocStaSubscriptionToJson(&assocStaSub)
+	sub, err := subMgr.CreateSubscription(subCfg, jsonSub)
+	if err != nil {
+		log.Error("Failed to create subscription")
+		http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+		return
+	}
+
+	// Update subscription JSON based on suubscription state
+	jsonSub = updateAssocStaSubscriptionJson(&assocStaSub, sub)
+	err = subMgr.SetSubscriptionJson(sub, jsonSub)
+	if err != nil {
+		log.Error("Failed to create subscription")
+		http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
 		return
 	}
 
@@ -413,14 +436,18 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
-	subIdParamStr := vars["subscriptionId"]
-	appInstanceId := vars["appInstanceId"]
+	subId := vars["subscriptionId"]
+	appId := vars["appInstanceId"]
 
-	mutex.Lock()
-	defer mutex.Unlock()
+	// Get App instance info
+	appInfo, err := getAppInfo(appId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 
-	// Validate App Instance ID
-	err, code, problemDetails := validateAppInstanceId(appInstanceId)
+	// Validate App info
+	code, problemDetails, err := validateAppInfo(appInfo)
 	if err != nil {
 		log.Error(err.Error())
 		if problemDetails != "" {
@@ -432,17 +459,25 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get Subscription
-	key := baseKey + ":mep:" + mepName + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdParamStr
-	jsonResponse, _ := rc.JSONGetEntry(key, ".")
-	if jsonResponse == "" {
-		w.WriteHeader(http.StatusNotFound)
+	// Find subscription by ID
+	subscription, err := subMgr.GetSubscription(subId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	// Send response
+	// Validate subscription
+	if subscription.Cfg.AppId != appId || subscription.Cfg.Type != APP_TERMINATION_NOTIF_SUB_TYPE {
+		err = errors.New("Subscription not found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Return original marshalled subscription
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprintf(w, subscription.JsonSubOrig)
 }
 
 func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
@@ -489,6 +524,20 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
+	subId := vars["subscriptionId"]
+
+	// Find subscription by ID
+	subscription, err := subMgr.GetSubscription(subId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Return original marshalled subscription
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, subscription.JsonSubOrig)
+
 	appInstanceId := vars["appInstanceId"]
 
 	mutex.Lock()
@@ -519,12 +568,12 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	//loop through all different types of subscription
 
 	//loop through appTerm map
-	for _, appTermSubscription := range appTerminationNotificationSubscriptionMap {
+	for _, appTermSubscription := range notifSubMap {
 		if appTermSubscription != nil && appTermSubscription.AppInstanceId == appInstanceId {
 			var subscription SubscriptionLinkListLinksSubscriptions
 			subscription.Href = appTermSubscription.Links.Self.Href
 			//in v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
-			subscription.SubscriptionType = APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE
+			subscription.SubscriptionType = APP_TERMINATION_NOTIF_SUB_TYPE
 			subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
 		}
 	}
@@ -541,18 +590,18 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerAppTermination(subscription *AppTerminationNotificationSubscription, subId int) {
-	appTerminationNotificationSubscriptionMap[subId] = subscription
-	log.Info("New registration: ", subId, " type: ", APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE)
+	notifSubMap[subId] = subscription
+	log.Info("New registration: ", subId, " type: ", APP_TERMINATION_NOTIF_SUB_TYPE)
 }
 
 func deregisterAppTermination(subIdStr string) {
 	subId, _ := strconv.Atoi(subIdStr)
-	appTerminationNotificationSubscriptionMap[subId] = nil
-	log.Info("Deregistration: ", subId, " type: ", APP_TERMINATION_NOTIFICATION_SUBSCRIPTION_TYPE)
+	notifSubMap[subId] = nil
+	log.Info("Deregistration: ", subId, " type: ", APP_TERMINATION_NOTIF_SUB_TYPE)
 }
 
 func deleteAppSubscriptions(mep string, appInstanceId string) {
-	for id, sub := range appTerminationNotificationSubscriptionMap {
+	for id, sub := range notifSubMap {
 		if sub != nil && sub.AppInstanceId == appInstanceId {
 			subIdStr := strconv.Itoa(id)
 			key := baseKey + ":mep:" + mep + ":app:" + appInstanceId + ":" + mappsupportKey + ":sub:" + subIdStr
@@ -577,33 +626,21 @@ func deleteAppInstance(mep string, appInstanceId string) {
 	_ = rc.DBFlush(key)
 }
 
-func getAppInstance(appInstanceId string) (map[string]string, error) {
-	var appInfo map[string]string
+func getAppInfo(appId string) (map[string]interface{}, error) {
+	var appInfo map[string]interface{}
 
-	// Get application instance
-	if isMepGlobal {
-		// Get application instance by global key with additional wild card
-		key := baseKey + ":mep:*:app:" + appInstanceId + ":info"
-		var appInfoList []map[string]string
-		err := rc.ForEachEntry(key, populateAppInfo, &appInfoList)
-		if err != nil {
-			log.Error(err)
-			return nil, errors.New("App Instance not found")
-		}
-		// There should be one unique app instance found
-		if len(appInfoList) != 1 {
-			return nil, errors.New("App Instance not found")
-		}
-		appInfo = appInfoList[0]
-	} else {
-		// Get app instance from local MEP only
-		key := baseKey + ":mep:" + mepName + ":app:" + appInstanceId + ":info"
-		appInfo, err := rc.GetEntry(key)
-		if err != nil || len(appInfo) == 0 {
-			return nil, errors.New("App Instance not found")
-		}
+	// Get app instance from local MEP only
+	key := baseKey + ":app:" + appId + ":info"
+	appInfo, err := rc.GetEntry(key)
+	if err != nil || len(appInfo) == 0 {
+		return nil, errors.New("App Instance not found")
 	}
 	return appInfo, nil
+}
+
+func setAppInfo(appInfo map[string]interface{}) error {
+	key := baseKey + ":app:" + appInfo[fieldAppInstanceId] + ":info"
+	return rc.SetEntry(key, appInfo)
 }
 
 func populateAppInfo(key string, entry map[string]string, data interface{}) error {
@@ -624,7 +661,7 @@ func populateAppInfo(key string, entry map[string]string, data interface{}) erro
 	return nil
 }
 
-func validateAppInfo(appInfo map[string]string) (int, string, error) {
+func validateAppInfo(appInfo map[string]interface{}) (int, string, error) {
 	// Make sure App is in ready state
 	if appInfo[fieldState] != APP_STATE_READY {
 		var problemDetails ProblemDetails
@@ -649,13 +686,6 @@ func getMepName(appInfo map[string]string) (string, error) {
 	return mep, nil
 }
 
-func setAppState(mep string, appInstanceId string, state string) error {
-	key := baseKey + ":mep:" + mep + ":app:" + appInstanceId + ":info"
-	entry := make(map[string]interface{})
-	entry[fieldState] = state
-	return rc.SetEntry(key, entry)
-}
-
 func processAppTerminate(appInstanceId string, mep string) {
 	// Ignore if not for this MEP
 	if mep != mepName {
@@ -664,7 +694,7 @@ func processAppTerminate(appInstanceId string, mep string) {
 
 	// Filter subscriptions
 	gracefulTermination := false
-	for subId, sub := range appTerminationNotificationSubscriptionMap {
+	for subId, sub := range notifSubMap {
 		// Filter subscriptions
 		if sub == nil || sub.AppInstanceId != appInstanceId {
 			continue
@@ -689,16 +719,16 @@ func processAppTerminate(appInstanceId string, mep string) {
 
 		// Start graceful timeout prior to sending the app termination notification, or the answer could be received before the timer is started
 		gracefulTimeoutTicker := time.NewTicker(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second)
-		appTerminationGracefulTimeoutMap[appInstanceId] = gracefulTimeoutTicker
+		gracefulTerminateMap[appInstanceId] = gracefulTimeoutTicker
 		callbackReference := sub.CallbackReference
 		go func() {
 			sendAppTermNotification(callbackReference, notif)
 			log.Info("App Termination Notification" + "(" + subIdStr + ") for " + appInstanceId)
 
 			for range gracefulTimeoutTicker.C {
-				log.Info("Graceful timeout expiry for ", appInstanceId, "---", appTerminationGracefulTimeoutMap[appInstanceId])
+				log.Info("Graceful timeout expiry for ", appInstanceId, "---", gracefulTerminateMap[appInstanceId])
 				gracefulTimeoutTicker.Stop()
-				appTerminationGracefulTimeoutMap[appInstanceId] = nil
+				gracefulTerminateMap[appInstanceId] = nil
 
 				// Delete App instance if timer expires before receiving a termination confirmation
 				deleteAppInstance(appInstanceId)

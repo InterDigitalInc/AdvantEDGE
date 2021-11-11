@@ -759,6 +759,10 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 
 func checkPeriodicTrigger() {
 
+	// PATCH: Update appStore with DB contents periodically.
+	//        Eventually, should sync with DB only when notified of a DB change.
+	appStore.Refresh()
+
 	// Retrieve current list of app instance IDs
 	appList, err := appStore.GetAll()
 	if err != nil {
