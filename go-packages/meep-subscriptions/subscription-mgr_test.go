@@ -17,18 +17,19 @@
 package subscriptions
 
 import (
+	"bytes"
 	"crypto/tls"
 	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"testing"
 	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	meeplog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ws "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-websocket"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -662,7 +663,7 @@ func TestWebsocketSubscription(t *testing.T) {
 	if err = validateSub(sub1, sub1Cfg, testSubJson, ModeWebsocket, StateReady, false, true); err != nil {
 		t.Fatalf(err.Error())
 	}
-	if err = validateWebsocket(sub1.Ws, WsStateInit, ws1Uri); err != nil {
+	if err = validateWebsocket(sub1.Ws, ws.WsStateInit, ws1Uri); err != nil {
 		t.Fatalf(err.Error())
 	}
 	if newWebsocketCount != 1 {
@@ -670,14 +671,14 @@ func TestWebsocketSubscription(t *testing.T) {
 	}
 
 	log.Println("Start websocket server")
-	startWebsocketServer(sub1.Ws.connectionHandler)
+	startWebsocketServer(sub1.Ws.ConnHandler)
 
 	log.Println("Start websocket client")
 	wsConn, err := startWebsocketClient(ws1Uri)
 	if err != nil || wsConn == nil {
 		t.Fatalf("Failed to establish websocket connection")
 	}
-	if err = validateWebsocket(sub1.Ws, WsStateReady, ws1Uri); err != nil {
+	if err = validateWebsocket(sub1.Ws, ws.WsStateReady, ws1Uri); err != nil {
 		t.Fatalf(err.Error())
 	}
 
@@ -695,7 +696,7 @@ func TestWebsocketSubscription(t *testing.T) {
 		t.Fatalf("Failed to stop websocket connection")
 	}
 	time.Sleep(1500 * time.Millisecond)
-	if err = validateWebsocket(sub1.Ws, WsStateInit, ws1Uri); err != nil {
+	if err = validateWebsocket(sub1.Ws, ws.WsStateInit, ws1Uri); err != nil {
 		t.Fatalf(err.Error())
 	}
 
@@ -704,7 +705,7 @@ func TestWebsocketSubscription(t *testing.T) {
 	if err != nil || wsConn == nil {
 		t.Fatalf("Failed to establish websocket connection")
 	}
-	if err = validateWebsocket(sub1.Ws, WsStateReady, ws1Uri); err != nil {
+	if err = validateWebsocket(sub1.Ws, ws.WsStateReady, ws1Uri); err != nil {
 		t.Fatalf(err.Error())
 	}
 
@@ -917,15 +918,15 @@ func validateSub(sub *Subscription, subCfg *SubscriptionCfg,
 	return nil
 }
 
-func validateWebsocket(ws *Websocket, state string, uri string) error {
-	if ws == nil {
-		return errors.New("ws == nil")
+func validateWebsocket(websock *ws.Websocket, state string, uri string) error {
+	if websock == nil {
+		return errors.New("websock == nil")
 	}
-	if ws.State != state {
-		return errors.New("ws.State != state")
+	if websock.State != state {
+		return errors.New("websock.State != state")
 	}
-	if ws.Uri != uri {
-		return errors.New("ws.Uri != uri")
+	if websock.Uri != uri {
+		return errors.New("websock.Uri != uri")
 	}
 	return nil
 }
@@ -1091,13 +1092,45 @@ func startWebsocketClient(uri string) (*websocket.Conn, error) {
 			if msgType == websocket.BinaryMessage {
 				log.Printf("[%s] Received message: %s", time.Now().String(), msg)
 
-				// Notify websocket listener
-				wsNotifChannel <- string(msg)
+				// Decode message
+				req, seq, err := ws.DecodeRequest(msg)
+				if err != nil {
+					log.Println("decode:", err)
+					return
+				}
 
-				// Send successful response
-				response := strconv.Itoa(http.StatusNoContent)
-				log.Printf("[%s] Sending message: %s", time.Now().String(), response)
-				err := wsConn.WriteMessage(websocket.BinaryMessage, []byte(response))
+				// Get notification body
+				notif := ""
+				bodyBytes, err := ioutil.ReadAll(req.Body)
+				if err == nil {
+					notif = string(bodyBytes)
+				}
+
+				// Notify websocket listener
+				wsNotifChannel <- string(notif)
+
+				// Create HTTP response
+				var respBody []byte
+				resp := &http.Response{
+					StatusCode:    http.StatusNoContent,
+					Status:        http.StatusText(http.StatusNoContent),
+					ContentLength: 0,
+					Header:        make(http.Header),
+					Body:          ioutil.NopCloser(bytes.NewReader(respBody)),
+				}
+				resp.Header.Set("Content-Type", "application/json")
+				resp.Header.Set("Content-Length", "0")
+
+				// Encode response
+				notifResp, err := ws.EncodeResponse(resp, seq)
+				if err != nil {
+					log.Println("encode:", err)
+					return
+				}
+
+				// Send response
+				log.Printf("[%s] Sending message: %s", time.Now().String(), notifResp)
+				err = wsConn.WriteMessage(websocket.BinaryMessage, []byte(notifResp))
 				if err != nil {
 					log.Println("write:", err)
 					return

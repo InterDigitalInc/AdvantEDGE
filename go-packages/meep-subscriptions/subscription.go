@@ -19,7 +19,6 @@ package subscriptions
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -27,6 +26,7 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
+	ws "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-websocket"
 )
 
 type SubscriptionCfg struct {
@@ -49,7 +49,8 @@ type Subscription struct {
 	TestNotifSent   bool         `json:"testNotifSent"`
 	WsCreated       bool         `json:"wsCreated"`
 	HttpClient      *http.Client `json:"-"`
-	Ws              *Websocket
+	Ws              *ws.Websocket
+	WsTransport     *ws.Transport3gppWsNotif `json:"-"`
 }
 
 const (
@@ -117,16 +118,27 @@ func (sub *Subscription) refreshState() error {
 		if sub.Mode != ModeWebsocket {
 			// Create websocket if it does not exist
 			if sub.Ws == nil {
-				wsCfg := &WebsocketCfg{
-					Timeout: subTimeout,
-				}
-				ws, err := newWebsocket(wsCfg)
+				// Create websocket
+				websock, err := ws.NewWebsocket()
 				if err != nil {
 					log.Error(err.Error())
 					return err
 				}
-				sub.Ws = ws
+				sub.Ws = websock
 				sub.WsCreated = false
+
+				// Create 3GPP Websocket Notif transport
+				transportCfg := &ws.Transport3gppWsNotifCfg{
+					Name:    sub.Cfg.Id,
+					Ws:      sub.Ws,
+					Timeout: subTimeout,
+				}
+				transport, err := ws.NewTransport3gppWsNotif(transportCfg)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
+				sub.WsTransport = transport
 			}
 			sub.Mode = ModeWebsocket
 			sub.State = StateReady
@@ -143,7 +155,7 @@ func (sub *Subscription) refreshState() error {
 		if sub.Mode != ModeDirect {
 			// Destroy websocket if it exists
 			if sub.Ws != nil {
-				sub.Ws.close()
+				sub.Ws.Close()
 				sub.Ws = nil
 			}
 			sub.Mode = ModeDirect
@@ -172,7 +184,7 @@ func (sub *Subscription) refreshState() error {
 func (sub *Subscription) deleteSubscription() error {
 	// Close websocket
 	if sub.Ws != nil {
-		sub.Ws.close()
+		sub.Ws.Close()
 	}
 
 	// Reset subscription state
@@ -193,7 +205,10 @@ func (sub *Subscription) sendNotification(notif []byte, sandbox string, service 
 		log.Error(err.Error())
 		return err
 	}
-	request.Header.Set("Content-type", "application/json")
+	request.Header.Set("Content-Type", "application/json")
+	if notif != nil {
+		request.Header.Set("Content-Length", strconv.Itoa(len(notif)))
+	}
 
 	// Post HTTP message directly or via websocket connection
 	var notifErr error
@@ -208,7 +223,7 @@ func (sub *Subscription) sendNotification(notif []byte, sandbox string, service 
 	} else if sub.Mode == ModeWebsocket {
 		notifUrl = sub.Cfg.Id
 		notifMethod = "WEBSOCK"
-		notifResp, notifErr = sub.sendWsRequest(request)
+		notifResp, notifErr = sub.WsTransport.SendRequest(request)
 	}
 
 	// Log metrics if necessary
@@ -239,50 +254,13 @@ func (sub *Subscription) sendNotification(notif []byte, sandbox string, service 
 	return nil
 }
 
-func (sub *Subscription) sendWsRequest(request *http.Request) (*http.Response, error) {
-
-	// TODO -- encode entire http request to send over websocket
-	// For now, just send request body
-	body, err := request.GetBody()
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	wsReq, err := ioutil.ReadAll(body)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-
-	// Send message over websocket
-	wsResp, err := sub.Ws.sendMessage(wsReq)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-
-	// TODO -- decode HTTP response
-	// For now, assume status code was received
-	statusCode, err := strconv.Atoi(string(wsResp))
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	resp := &http.Response{
-		StatusCode: statusCode,
-		Body:       ioutil.NopCloser(bytes.NewReader(nil)),
-	}
-
-	return resp, nil
-}
-
 func (sub *Subscription) isReady() bool {
 	// Subscription state
 	if sub.State != StateReady {
 		return false
 	}
 	// Websocket state
-	if sub.Ws != nil && sub.Ws.State != WsStateReady {
+	if sub.Ws != nil && sub.Ws.State != ws.WsStateReady {
 		return false
 	}
 	return true
