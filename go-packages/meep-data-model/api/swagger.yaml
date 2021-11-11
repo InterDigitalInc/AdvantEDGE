@@ -27,16 +27,18 @@ definitions:
       name:
         description: Application name
         type: string
-      type:
-        $ref: '#/definitions/ApplicationType'
-      state:
-        $ref: '#/definitions/ApplicationState'
       mepName:
         description: MEP Name where application instance is running
         type: string
-      version:
-        description: Application Version
+      type:
+        description: Application Type
         type: string
+        enum:
+          - USER
+          - SYSTEM
+      persist:
+        description: Reserved for internal platform usage
+        type: boolean
     example:
       id: '00afec52-f0b6-464e-a660-33568c0975b9'
       name: 'MyAppName'
@@ -44,20 +46,6 @@ definitions:
       state: 'INITIALIZED'
       mepName: 'mep1'
       version: 'v1.0.0'
-  ApplicationState:
-    description: Application State
-    type: string
-    enum:
-      - READY
-      - INITIALIZED
-    example: 'INITIALIZED'
-  ApplicationType:
-    description: Application Type
-    type: string
-    enum:
-      - USER
-      - SYSTEM
-    example: 'USER'
   CellularDomainConfig:
     type: object
     properties:

@@ -24,5 +24,4 @@
 package server
 
 type InlineSubscription struct {
-	// Not used in server
 }

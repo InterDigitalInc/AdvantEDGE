@@ -154,8 +154,6 @@ Class | Method | HTTP request | Description
 
  - [AdvantEdgeSandboxControllerRestApi.ActivationInfo](docs/ActivationInfo.md)
  - [AdvantEdgeSandboxControllerRestApi.ApplicationInfo](docs/ApplicationInfo.md)
- - [AdvantEdgeSandboxControllerRestApi.ApplicationState](docs/ApplicationState.md)
- - [AdvantEdgeSandboxControllerRestApi.ApplicationType](docs/ApplicationType.md)
  - [AdvantEdgeSandboxControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.ConnectivityConfig](docs/ConnectivityConfig.md)

@@ -24,5 +24,4 @@
 package server
 
 type InlineNotification struct {
-	// Not used in server
 }

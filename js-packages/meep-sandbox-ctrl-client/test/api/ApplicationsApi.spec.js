@@ -86,12 +86,12 @@
             expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
-            expect(data.type).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationType);
-                expect(data.state).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationState);
-                expect(data.mepName).to.be.a('string');
+            expect(data.mepName).to.be.a('string');
             expect(data.mepName).to.be("");
-            expect(data.version).to.be.a('string');
-            expect(data.version).to.be("");
+            expect(data.type).to.be.a('string');
+            expect(data.type).to.be("USER");
+            expect(data.persist).to.be.a('boolean');
+            expect(data.persist).to.be(false);
 
             done();
           });
@@ -108,10 +108,9 @@
           var applicationInfo = new AdvantEdgeSandboxControllerRestApi.ApplicationInfo();
           applicationInfo.id = "";
           applicationInfo.name = "";
-          applicationInfo.type = new AdvantEdgeSandboxControllerRestApi.ApplicationType();
-          applicationInfo.state = new AdvantEdgeSandboxControllerRestApi.ApplicationState();
           applicationInfo.mepName = "";
-          applicationInfo.version = "";
+          applicationInfo.type = "USER";
+          applicationInfo.persist = false;
 
           instance.applicationsAppInstanceIdPUT(appInstanceId, applicationInfo, function(error, data, response) {
             if (error) {
@@ -124,12 +123,12 @@
             expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
-            expect(data.type).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationType);
-                expect(data.state).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationState);
-                expect(data.mepName).to.be.a('string');
+            expect(data.mepName).to.be.a('string');
             expect(data.mepName).to.be("");
-            expect(data.version).to.be.a('string');
-            expect(data.version).to.be("");
+            expect(data.type).to.be.a('string');
+            expect(data.type).to.be("USER");
+            expect(data.persist).to.be.a('boolean');
+            expect(data.persist).to.be(false);
 
             done();
           });
@@ -144,9 +143,8 @@
           /*
           var opts = {};
           opts.app = "app_example";
-          opts.state = "state_example";
-          opts.type = "type_example";
           opts.mep = "mep_example";
+          opts.type = "type_example";
 
           instance.applicationsGET(opts, function(error, data, response) {
             if (error) {
@@ -164,12 +162,12 @@
               expect(data.id).to.be("");
               expect(data.name).to.be.a('string');
               expect(data.name).to.be("");
-              expect(data.type).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationType);
-                  expect(data.state).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationState);
-                  expect(data.mepName).to.be.a('string');
+              expect(data.mepName).to.be.a('string');
               expect(data.mepName).to.be("");
-              expect(data.version).to.be.a('string');
-              expect(data.version).to.be("");
+              expect(data.type).to.be.a('string');
+              expect(data.type).to.be("USER");
+              expect(data.persist).to.be.a('boolean');
+              expect(data.persist).to.be(false);
             }
 
             done();
@@ -186,10 +184,9 @@
           var applicationInfo = new AdvantEdgeSandboxControllerRestApi.ApplicationInfo();
           applicationInfo.id = "";
           applicationInfo.name = "";
-          applicationInfo.type = new AdvantEdgeSandboxControllerRestApi.ApplicationType();
-          applicationInfo.state = new AdvantEdgeSandboxControllerRestApi.ApplicationState();
           applicationInfo.mepName = "";
-          applicationInfo.version = "";
+          applicationInfo.type = "USER";
+          applicationInfo.persist = false;
 
           instance.applicationsPOST(applicationInfo, function(error, data, response) {
             if (error) {
@@ -202,12 +199,12 @@
             expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
-            expect(data.type).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationType);
-                expect(data.state).to.be.a(AdvantEdgeSandboxControllerRestApi.ApplicationState);
-                expect(data.mepName).to.be.a('string');
+            expect(data.mepName).to.be.a('string');
             expect(data.mepName).to.be("");
-            expect(data.version).to.be.a('string');
-            expect(data.version).to.be("");
+            expect(data.type).to.be.a('string');
+            expect(data.type).to.be("USER");
+            expect(data.persist).to.be.a('boolean');
+            expect(data.persist).to.be(false);
 
             done();
           });
