@@ -38,7 +38,7 @@ import (
 )
 
 const moduleName = "meep-app-enablement"
-const mappsupportBasePath = "mec_app_support/v1/"
+const appSupportBasePath = "mec_app_support/v1/"
 const appEnablementKey = "app-enablement"
 const globalMepName = "global"
 const APP_STATE_READY = "READY"
@@ -90,10 +90,10 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 
 	// Set base path & base storage key
 	if mepName == globalMepName {
-		basePath = "/" + sandboxName + "/" + mappsupportBasePath
+		basePath = "/" + sandboxName + "/" + appSupportBasePath
 		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":global:"
 	} else {
-		basePath = "/" + sandboxName + "/" + mepName + "/" + mappsupportBasePath
+		basePath = "/" + sandboxName + "/" + mepName + "/" + appSupportBasePath
 		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName + ":"
 	}
 
@@ -341,7 +341,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create subscription
+	// Retrieve subscription request
 	var appTermNotifSub AppTerminationNotificationSubscription
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&appTermNotifSub)

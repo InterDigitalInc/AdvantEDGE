@@ -32,11 +32,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const appEnablementModule = "meep-app-enablement"
-
 // MQ payload fields
 const mqFieldAppInstanceId = "id"
-const mqFieldMepName = "mep"
 const mqFieldPersist = "persist"
 
 type AppCtrl struct {
@@ -229,7 +226,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	// Validate & retrieve query parameters
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
-	validParams := []string{"app", "mep"}
+	validParams := []string{"app", "mep", "type"}
 	err := validateQueryParams(q, validParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -238,6 +235,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 
 	appName := q.Get("app")
 	mepName := q.Get("mep")
+	appType := q.Get("type")
 
 	// Get application list
 	appList, err := appCtrl.appStore.GetAll()
@@ -252,7 +250,8 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	for _, app := range appList {
 		// Filter using query params
 		if (appName != "" && app.Name != appName) ||
-			(mepName != "" && app.Mep != mepName) {
+			(mepName != "" && app.Mep != mepName) ||
+			(appType != "" && app.Type != appType) {
 			continue
 		}
 		// Append appInfo
@@ -344,6 +343,8 @@ func convertAppToApplicationInfo(app *apps.Application) *dataModel.ApplicationIn
 		Id:      app.Id,
 		Name:    app.Name,
 		MepName: app.Mep,
+		Type_:   app.Type,
+		Persist: app.Persist,
 	}
 	return appInfo
 }
