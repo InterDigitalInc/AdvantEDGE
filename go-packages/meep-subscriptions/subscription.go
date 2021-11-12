@@ -33,6 +33,7 @@ type SubscriptionCfg struct {
 	Id                  string     `json:"id"`
 	AppId               string     `json:"appId"`
 	Type                string     `json:"subType"`
+	Self                string     `json:"self"`
 	NotifyUrl           string     `json:"notifyUrl"`
 	ExpiryTime          *time.Time `json:"expiryTime"`
 	PeriodicInterval    int32      `json:"periodicInterval"`

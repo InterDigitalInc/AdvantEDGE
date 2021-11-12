@@ -36,9 +36,9 @@ const (
 	fieldPersist string = "persist"
 )
 const (
-	EventAdd       string = "EVENT-ADD-APP"
-	EventRemove    string = "EVENT-REMOVE-APP"
-	EventRemoveAll string = "EVENT-REMOVE-ALL-APP"
+	EventAdd    string = "EVENT-ADD"
+	EventRemove string = "EVENT-REMOVE"
+	EventFlush  string = "EVENT-FLUSH"
 )
 const (
 	TypeUser   string = "USER"
@@ -186,7 +186,8 @@ func (as *ApplicationStore) FlushNonPersistent() {
 
 	// Invoke application update callback
 	if as.updateCb != nil {
-		as.updateCb(EventRemoveAll, nil)
+		flushPersistent := false
+		as.updateCb(EventFlush, flushPersistent)
 	}
 }
 
@@ -197,7 +198,8 @@ func (as *ApplicationStore) Flush() {
 
 	// Invoke application update callback
 	if as.updateCb != nil {
-		as.updateCb(EventRemoveAll, nil)
+		flushPersistent := true
+		as.updateCb(EventFlush, flushPersistent)
 	}
 }
 

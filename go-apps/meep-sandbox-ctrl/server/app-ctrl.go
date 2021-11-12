@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -36,6 +37,7 @@ const appEnablementModule = "meep-app-enablement"
 // MQ payload fields
 const mqFieldAppInstanceId = "id"
 const mqFieldMepName = "mep"
+const mqFieldPersist = "persist"
 
 type AppCtrl struct {
 	sandboxName string
@@ -184,7 +186,7 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 }
 
 func applicationsAppInstanceIdGET(w http.ResponseWriter, r *http.Request) {
-	log.Info("applicationsByIdGET")
+	log.Info("applicationsAppInstanceIdGET")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
@@ -205,35 +207,15 @@ func applicationsAppInstanceIdGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
-	log.Info("applicationsByIdDELETE")
+	log.Info("applicationsAppInstanceIdDELETE")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
-	appInstanceId := vars["appInstanceId"]
+	appId := vars["appInstanceId"]
 
-	// Get App info for requested App instance ID
-	app, err := appCtrl.appStore.Get(appInstanceId)
+	// Flush App instance data
+	err := appCtrl.appStore.Del(appId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	// Inform MEP instance to terminate App instance
-	msg := appCtrl.mqLocal.CreateMsg(mq.MsgAppTerminate, appEnablementModule, appCtrl.sandboxName)
-	msg.Payload[mqFieldAppInstanceId] = app.Id
-	msg.Payload[mqFieldMepName] = app.Mep
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = appCtrl.mqLocal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
-
-		// TODO -- [Graceful Terminate Failure] Update App instance Service availability + Flush App Instance data
-
-		// Flush App instance data
-		err = appCtrl.appStore.Del(appInstanceId)
-		if err != nil {
-			log.Error(err.Error())
-		}
 	}
 
 	// Send response
@@ -388,8 +370,9 @@ func appStoreUpdateCb(eventType string, eventData interface{}) {
 	case apps.EventRemove:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemove, mq.TargetAll, appCtrl.sandboxName)
 		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
-	case apps.EventRemoveAll:
-		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemoveAll, mq.TargetAll, appCtrl.sandboxName)
+	case apps.EventFlush:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppFlush, mq.TargetAll, appCtrl.sandboxName)
+		msg.Payload[mqFieldPersist] = strconv.FormatBool(eventData.(bool))
 	default:
 		return
 	}

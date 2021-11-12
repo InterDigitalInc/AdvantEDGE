@@ -172,14 +172,14 @@ func TestDirectSubscription(t *testing.T) {
 	}
 
 	log.Println("Get invalid subscription list")
-	subList, err := sm.GetSubscriptionList(subInvalidAppId, "")
+	subList, err := sm.GetFilteredSubscriptions(subInvalidAppId, "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 0, []string{}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", subInvalidType)
+	subList, err = sm.GetFilteredSubscriptions("", subInvalidType)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -197,7 +197,7 @@ func TestDirectSubscription(t *testing.T) {
 	}
 
 	log.Println("Get subscription list")
-	subList, err = sm.GetSubscriptionList(sub1AppId, sub1Type)
+	subList, err = sm.GetFilteredSubscriptions(sub1AppId, sub1Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -207,7 +207,7 @@ func TestDirectSubscription(t *testing.T) {
 	if err = validateSub(subList[0], sub1Cfg, testSubJson, ModeDirect, StateReady, false, false); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList(sub1AppId, "")
+	subList, err = sm.GetFilteredSubscriptions(sub1AppId, "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -217,7 +217,7 @@ func TestDirectSubscription(t *testing.T) {
 	if err = validateSub(subList[0], sub1Cfg, testSubJson, ModeDirect, StateReady, false, false); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", sub1Type)
+	subList, err = sm.GetFilteredSubscriptions("", sub1Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -227,7 +227,7 @@ func TestDirectSubscription(t *testing.T) {
 	if err = validateSub(subList[0], sub1Cfg, testSubJson, ModeDirect, StateReady, false, false); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", "")
+	subList, err = sm.GetFilteredSubscriptions("", "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -290,7 +290,7 @@ func TestDirectSubscription(t *testing.T) {
 	}
 
 	log.Println("Get deleted subscription list")
-	subList, err = sm.GetSubscriptionList("", "")
+	subList, err = sm.GetFilteredSubscriptions("", "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -395,7 +395,7 @@ func TestDirectSubscriptionMulti(t *testing.T) {
 	}
 
 	log.Println("Get subscription list")
-	subList, err := sm.GetSubscriptionList(sub1AppId, sub1Type)
+	subList, err := sm.GetFilteredSubscriptions(sub1AppId, sub1Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -405,7 +405,7 @@ func TestDirectSubscriptionMulti(t *testing.T) {
 	if err = validateSub(subList[0], sub1Cfg, testSubJson, ModeDirect, StateReady, false, false); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList(sub2AppId, sub2Type)
+	subList, err = sm.GetFilteredSubscriptions(sub2AppId, sub2Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -415,7 +415,7 @@ func TestDirectSubscriptionMulti(t *testing.T) {
 	if err = validateSub(subList[0], sub2Cfg, testSubJson, ModeDirect, StateReady, false, false); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList(sub3AppId, sub3Type)
+	subList, err = sm.GetFilteredSubscriptions(sub3AppId, sub3Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -426,49 +426,49 @@ func TestDirectSubscriptionMulti(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	subList, err = sm.GetSubscriptionList(sub1AppId, "")
+	subList, err = sm.GetFilteredSubscriptions(sub1AppId, "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 2, []string{sub1Id, sub2Id}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList(sub2AppId, "")
+	subList, err = sm.GetFilteredSubscriptions(sub2AppId, "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 2, []string{sub1Id, sub2Id}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList(sub3AppId, "")
+	subList, err = sm.GetFilteredSubscriptions(sub3AppId, "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 1, []string{sub3Id}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", sub1Type)
+	subList, err = sm.GetFilteredSubscriptions("", sub1Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 1, []string{sub1Id}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", sub2Type)
+	subList, err = sm.GetFilteredSubscriptions("", sub2Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 2, []string{sub2Id, sub3Id}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", sub3Type)
+	subList, err = sm.GetFilteredSubscriptions("", sub3Type)
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
 	if err = validateSubList(subList, 2, []string{sub2Id, sub3Id}); err != nil {
 		t.Fatalf(err.Error())
 	}
-	subList, err = sm.GetSubscriptionList("", "")
+	subList, err = sm.GetFilteredSubscriptions("", "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -504,7 +504,7 @@ func TestDirectSubscriptionMulti(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to delete subscription")
 	}
-	subList, err = sm.GetSubscriptionList("", "")
+	subList, err = sm.GetFilteredSubscriptions("", "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -517,7 +517,7 @@ func TestDirectSubscriptionMulti(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to delete all subscriptions")
 	}
-	subList, err = sm.GetSubscriptionList("", "")
+	subList, err = sm.GetFilteredSubscriptions("", "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}
@@ -722,7 +722,7 @@ func TestWebsocketSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to delete subscription")
 	}
-	subList, err := sm.GetSubscriptionList("", "")
+	subList, err := sm.GetFilteredSubscriptions("", "")
 	if err != nil {
 		t.Fatalf("Failed to get subscription list")
 	}

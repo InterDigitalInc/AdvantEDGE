@@ -78,10 +78,11 @@ const (
 	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
 
 	// Applications
-	MsgAppUpdate    Message = "APP-UPDATE"
-	MsgAppRemove    Message = "APP-REMOVE"
-	MsgAppRemoveAll Message = "APP-REMOVE-ALL"
-	MsgAppTerminate Message = "APP-TERMINATE"
+	MsgAppUpdate Message = "APP-UPDATE"
+	MsgAppRemove Message = "APP-REMOVE"
+	MsgAppFlush  Message = "APP-FLUSH"
+
+	// MEC Services
 	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
 
 	// API

@@ -219,10 +219,32 @@ func (sm *SubscriptionMgr) DeleteAllSubscriptions() error {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
 
-	// Get list of subscriptions to delete
+	// Get subscriptions from cache
 	subList := make([]*Subscription, 0, len(sm.subscriptions))
 	for _, sub := range sm.subscriptions {
 		subList = append(subList, sub)
+	}
+
+	// Delete subscriptions
+	for _, sub := range subList {
+		err := sm.delSubscription(sub)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+	return nil
+}
+
+func (sm *SubscriptionMgr) DeleteFilteredSubscriptions(AppId string, Type string) error {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+
+	// Get filtered subscriptions from cache
+	var subList []*Subscription
+	for _, sub := range sm.subscriptions {
+		if (AppId == "" || sub.Cfg.AppId == AppId) && (Type == "" || sub.Cfg.Type == Type) {
+			subList = append(subList, sub)
+		}
 	}
 
 	// Delete subscriptions
@@ -247,11 +269,23 @@ func (sm *SubscriptionMgr) GetSubscription(Id string) (*Subscription, error) {
 	return sub, nil
 }
 
-func (sm *SubscriptionMgr) GetSubscriptionList(AppId string, Type string) ([]*Subscription, error) {
+func (sm *SubscriptionMgr) GetAllSubscriptions() ([]*Subscription, error) {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
 
-	// Get subscription list from cache
+	// Get subscriptions from cache
+	var subList []*Subscription
+	for _, sub := range sm.subscriptions {
+		subList = append(subList, sub)
+	}
+	return subList, nil
+}
+
+func (sm *SubscriptionMgr) GetFilteredSubscriptions(AppId string, Type string) ([]*Subscription, error) {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+
+	// Get filtered subscriptions from cache
 	var subList []*Subscription
 	for _, sub := range sm.subscriptions {
 		if (AppId == "" || sub.Cfg.AppId == AppId) && (Type == "" || sub.Cfg.Type == Type) {

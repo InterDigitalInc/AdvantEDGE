@@ -638,7 +638,7 @@ func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, 
 
 func checkAllStaDataRateNotification(staId *StaIdentity, dataRateDl int32, dataRateUl int32) {
 	// Get subscription list
-	subList, err := subMgr.GetSubscriptionList(instanceId, STA_DATA_RATE_SUBSCRIPTION)
+	subList, err := subMgr.GetFilteredSubscriptions(instanceId, STA_DATA_RATE_SUBSCRIPTION)
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -851,7 +851,7 @@ func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32
 
 func checkAllAssocStaNotification(staMacIds []string, apMacId string) {
 	// Get subscription list
-	subList, err := subMgr.GetSubscriptionList(instanceId, ASSOC_STA_SUBSCRIPTION)
+	subList, err := subMgr.GetFilteredSubscriptions(instanceId, ASSOC_STA_SUBSCRIPTION)
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -957,7 +957,7 @@ func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request
 			subscriptionType = MEASUREMENT_REPORT_SUBSCRIPTION
 		}
 	}
-	subList, err := subMgr.GetSubscriptionList(instanceId, subscriptionType)
+	subList, err := subMgr.GetFilteredSubscriptions(instanceId, subscriptionType)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1403,6 +1403,7 @@ func newAssocStaSubscriptionCfg(sub *AssocStaSubscription, subId string) *sm.Sub
 		Id:                  subId,
 		AppId:               instanceId,
 		Type:                ASSOC_STA_SUBSCRIPTION,
+		Self:                sub.Links.Self.Href,
 		NotifyUrl:           sub.CallbackReference,
 		ExpiryTime:          expiryTime,
 		PeriodicInterval:    sub.NotificationPeriod,
