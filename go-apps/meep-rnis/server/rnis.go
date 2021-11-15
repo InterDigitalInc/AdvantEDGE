@@ -644,11 +644,15 @@ func sendTerminationConfirmation(appInstanceId string) error {
 }
 
 func subscribeAppTermination(appInstanceId string) error {
-	var subscription asc.AppTerminationNotificationSubscription
-	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
-	subscription.AppInstanceId = appInstanceId
-	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + rnisBasePath + appTerminationPath
-	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	var sub asc.AppTerminationNotificationSubscription
+	sub.SubscriptionType = "AppTerminationNotificationSubscription"
+	sub.AppInstanceId = appInstanceId
+	if mepName == defaultMepName {
+		sub.CallbackReference = "http://" + moduleName + "/" + rnisBasePath + appTerminationPath
+	} else {
+		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + rnisBasePath + appTerminationPath
+	}
+	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err

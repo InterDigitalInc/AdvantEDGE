@@ -105,8 +105,8 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 		baseKeyAnyMep = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":global:"
 	} else {
 		basePath = "/" + sandboxName + "/" + mepName + "/" + svcMgmtBasePath
-		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName
-		baseKeyAnyMep = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:*"
+		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName + ":"
+		baseKeyAnyMep = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:*:"
 	}
 
 	// Connect to Redis DB
@@ -443,7 +443,7 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 
 	// Notify remote listeners (except if global instance)
 	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
-	if mepName == globalMepName {
+	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
 
@@ -893,7 +893,7 @@ func DeleteServices(appId string) error {
 	}
 
 	// Get Service list
-	key := baseKey + ":app:" + appId + ":svc:*"
+	key := baseKey + "app:" + appId + ":svc:*"
 	err = rc.ForEachJSONEntry(key, deleteService, appId)
 	if err != nil {
 		log.Error(err.Error())
@@ -921,7 +921,7 @@ func deleteService(key string, sInfoJson string, data interface{}) error {
 
 	// Notify remote listeners (except if global instance)
 	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
-	if mepName == globalMepName {
+	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
 
@@ -932,7 +932,7 @@ func deleteService(key string, sInfoJson string, data interface{}) error {
 }
 
 func delServiceById(appId string, svcId string) error {
-	key := baseKey + ":app:" + appId + ":svc:" + svcId
+	key := baseKey + "app:" + appId + ":svc:" + svcId
 	err := rc.JSONDelEntry(key, ".")
 	if err != nil {
 		return err
@@ -943,14 +943,14 @@ func delServiceById(appId string, svcId string) error {
 func setService(appId string, sInfo *ServiceInfo, changeType ServiceAvailabilityNotificationChangeType) (err error, retCode int) {
 	// Create/update service
 	sInfoJson := convertServiceInfoToJson(sInfo)
-	key := baseKey + ":app:" + appId + ":svc:" + sInfo.SerInstanceId
+	key := baseKey + "app:" + appId + ":svc:" + sInfo.SerInstanceId
 	err = rc.JSONSetEntry(key, ".", sInfoJson)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 
 	// Notify remote listeners (except if global instance)
-	if mepName == globalMepName {
+	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
 
@@ -961,7 +961,7 @@ func setService(appId string, sInfo *ServiceInfo, changeType ServiceAvailability
 }
 
 func getServiceById(appId string, svcId string) (string, error) {
-	key := baseKey + ":app:" + appId + ":svc:" + svcId
+	key := baseKey + "app:" + appId + ":svc:" + svcId
 	sInfoPrevJson, err := rc.JSONGetEntry(key, ".")
 	if err != nil {
 		return "", err
@@ -1023,9 +1023,9 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 
 	var key string
 	if appId == "" {
-		key = baseKeyAnyMep + ":app:*:svc:*"
+		key = baseKeyAnyMep + "app:*:svc:*"
 	} else {
-		key = baseKeyAnyMep + ":app:" + appId + ":svc:*"
+		key = baseKeyAnyMep + "app:" + appId + ":svc:*"
 	}
 
 	err = rc.ForEachJSONEntry(key, populateServiceInfoList, sInfoList)
@@ -1060,9 +1060,9 @@ func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId 
 
 	var key string
 	if appId == "" {
-		key = baseKeyAnyMep + ":app:*:svc:" + serviceId
+		key = baseKeyAnyMep + "app:*:svc:" + serviceId
 	} else {
-		key = baseKeyAnyMep + ":app:" + appId + ":svc:" + serviceId
+		key = baseKeyAnyMep + "app:" + appId + ":svc:" + serviceId
 	}
 
 	err := rc.ForEachJSONEntry(key, populateServiceInfoList, &sInfoList)
@@ -1408,7 +1408,7 @@ func getAppInfo(appId string) (map[string]string, error) {
 	var appInfo map[string]string
 
 	// Get app instance from local MEP only
-	key := baseKey + ":app:" + appId + ":info"
+	key := baseKey + "app:" + appId + ":info"
 	appInfo, err := rc.GetEntry(key)
 	if err != nil || len(appInfo) == 0 {
 		return nil, errors.New("App Instance not found")

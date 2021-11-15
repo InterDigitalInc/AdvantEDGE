@@ -491,7 +491,11 @@ func subscribeAppTermination(appInstanceId string) error {
 	var sub asc.AppTerminationNotificationSubscription
 	sub.SubscriptionType = "AppTerminationNotificationSubscription"
 	sub.AppInstanceId = appInstanceId
-	sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + waisBasePath + appTerminationPath
+	if mepName == defaultMepName {
+		sub.CallbackReference = "http://" + moduleName + "/" + waisBasePath + appTerminationPath
+	} else {
+		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + waisBasePath + appTerminationPath
+	}
 	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
