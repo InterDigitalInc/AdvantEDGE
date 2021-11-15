@@ -101,8 +101,8 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 	// Set base path & storage key
 	if mepName == globalMepName {
 		basePath = "/" + sandboxName + "/" + svcMgmtBasePath
-		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":global:"
-		baseKeyAnyMep = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":global:"
+		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep-global:"
+		baseKeyAnyMep = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep-global:"
 	} else {
 		basePath = "/" + sandboxName + "/" + mepName + "/" + svcMgmtBasePath
 		baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey + ":mep:" + mepName + ":"
