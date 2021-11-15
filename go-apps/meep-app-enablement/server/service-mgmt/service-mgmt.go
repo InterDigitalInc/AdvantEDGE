@@ -167,10 +167,9 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgMecSvcUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		sInfoJson := msg.Payload[fieldSvcInfo]
-		appId := msg.Payload[fieldAppId]
 		mep := msg.Payload[fieldMepName]
 		changeType := msg.Payload[fieldChangeType]
-		processSvcUpdate(sInfoJson, appId, mep, changeType)
+		processSvcUpdate(sInfoJson, mep, changeType)
 	default:
 	}
 }
@@ -448,7 +447,7 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send local service availability notifications
-	checkSerAvailNotification(sInfo, appId, mepName, changeType)
+	checkSerAvailNotification(sInfo, mepName, changeType)
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -926,7 +925,7 @@ func deleteService(key string, sInfoJson string, data interface{}) error {
 	}
 
 	// Send local service availability notifications
-	checkSerAvailNotification(sInfo, appId, mepName, changeType)
+	checkSerAvailNotification(sInfo, mepName, changeType)
 
 	return nil
 }
@@ -955,21 +954,21 @@ func setService(appId string, sInfo *ServiceInfo, changeType ServiceAvailability
 	}
 
 	// Send local service availability notifications
-	checkSerAvailNotification(sInfo, appId, mepName, changeType)
+	checkSerAvailNotification(sInfo, mepName, changeType)
 
 	return nil, http.StatusOK
 }
 
 func getServiceById(appId string, svcId string) (string, error) {
 	key := baseKey + "app:" + appId + ":svc:" + svcId
-	sInfoPrevJson, err := rc.JSONGetEntry(key, ".")
+	sInfoJson, err := rc.JSONGetEntry(key, ".")
 	if err != nil {
 		return "", err
 	}
-	if sInfoPrevJson == "" {
+	if sInfoJson == "" {
 		return "", errors.New("Service info not found")
 	}
-	return sInfoPrevJson, nil
+	return sInfoJson, nil
 }
 
 func getServices(w http.ResponseWriter, r *http.Request, appId string) {
@@ -1213,7 +1212,7 @@ func sendSvcUpdateMsg(sInfoJson, appId, mep, changeType string) {
 	}
 }
 
-func processSvcUpdate(sInfoJson, appId, mep, changeType string) {
+func processSvcUpdate(sInfoJson, mep, changeType string) {
 	// Ignore updates for global MEP instance
 	if mepName == globalMepName {
 		log.Warn("Ignoring service update received at global instance")
@@ -1228,10 +1227,10 @@ func processSvcUpdate(sInfoJson, appId, mep, changeType string) {
 	sInfo := convertJsonToServiceInfo(sInfoJson)
 
 	// Check if notifications must be sent
-	checkSerAvailNotification(sInfo, appId, mep, ServiceAvailabilityNotificationChangeType(changeType))
+	checkSerAvailNotification(sInfo, mep, ServiceAvailabilityNotificationChangeType(changeType))
 }
 
-func checkSerAvailNotification(sInfo *ServiceInfo, appId string, mep string, changeType ServiceAvailabilityNotificationChangeType) {
+func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType ServiceAvailabilityNotificationChangeType) {
 	// Set IsLocal flag
 	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
 		sInfo.IsLocal = true
@@ -1244,8 +1243,8 @@ func checkSerAvailNotification(sInfo *ServiceInfo, appId string, mep string, cha
 		return
 	}
 
-	// Get subscriptions for App instance
-	subList, err := subMgr.GetFilteredSubscriptions(appId, SER_AVAILABILITY_NOTIF_SUB_TYPE)
+	// Get subscriptions with matching type
+	subList, err := subMgr.GetFilteredSubscriptions("", SER_AVAILABILITY_NOTIF_SUB_TYPE)
 	if err != nil {
 		log.Error("Failed to get subscription list with err: ", err.Error())
 		return
