@@ -2332,10 +2332,8 @@ definitions:
     example:
       id: "00afec52-f0b6-464e-a660-33568c0975b9"
       name: "MyAppName"
-      type: "USER"
-      state: "INITIALIZED"
       mepName: "mep1"
-      version: "v1.0.0"
+      type: "USER"
 parameters:
   Body.ActivationInfo:
     in: "body"
