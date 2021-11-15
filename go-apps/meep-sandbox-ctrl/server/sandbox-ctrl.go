@@ -312,8 +312,8 @@ func activateScenario(scenarioName string) (err error) {
 		return err
 	}
 
-	// Flush App Instances
-	_ = appCtrlFlushAppInstances()
+	// Refresh App Instances
+	_ = appCtrlResetAppInstances(sbxCtrl.activeModel)
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
@@ -395,6 +395,9 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Refresh App Instances
+	_ = appCtrlResetAppInstances(sbxCtrl.activeModel)
 
 	_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName, redisDBAddr, influxDBAddr)
 
@@ -811,7 +814,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	_ = sbxCtrl.apiMgr.FlushMepApis()
 
 	// Flush App Instances
-	_ = appCtrlFlushAppInstances()
+	_ = appCtrlResetAppInstances(nil)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

@@ -872,6 +872,18 @@ func flushApps(persist bool) error {
 
 	// Delete App instances
 	for _, appInfo := range appInfoList {
+
+		// Ignore persistent apps unless required
+		if !persist {
+			appPersist, err := strconv.ParseBool(appInfo[fieldPersist])
+			if err != nil {
+				appPersist = false
+			}
+			if appPersist {
+				continue
+			}
+		}
+
 		// Get app instance ID
 		appId := appInfo[fieldAppId]
 		if appId == "" {

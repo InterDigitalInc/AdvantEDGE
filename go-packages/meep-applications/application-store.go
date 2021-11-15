@@ -19,6 +19,7 @@ package applications
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"sync"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -67,6 +68,8 @@ type ApplicationStore struct {
 	updateCb func(eventType string, eventData interface{})
 	mutex    sync.Mutex
 }
+
+var SysAppNames []string = []string{"meep-app-enablement", "meep-ams", "meep-loc-serv", "meep-rnis", "meep-wais"}
 
 // NewApplicationStore - Creates and initialize an Application Store instance
 func NewApplicationStore(cfg *ApplicationStoreCfg) (as *ApplicationStore, err error) {
@@ -225,6 +228,16 @@ func (as *ApplicationStore) Refresh() {
 	for _, app := range appList {
 		as.apps[app.Id] = app
 	}
+}
+
+func (as *ApplicationStore) IsSysApp(appName string) bool {
+	name := appName[strings.LastIndex(appName, "/")+1:]
+	for _, sysAppName := range SysAppNames {
+		if sysAppName == name {
+			return true
+		}
+	}
+	return false
 }
 
 func (as *ApplicationStore) setEntry(app *Application) error {

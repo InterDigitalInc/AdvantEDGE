@@ -450,12 +450,18 @@ func startRegistrationTicker() {
 		registrationSent := false
 		subscriptionSent := false
 		for range registrationTicker.C {
-			// Get Application instance ID if not already available
+			// Get Application instance ID
 			if serviceAppInstanceId == "" {
-				var err error
-				serviceAppInstanceId, err = getAppInstanceId()
-				if err != nil || serviceAppInstanceId == "" {
-					continue
+				// If global service, request an app instance ID from Sandbox Controller
+				// Otherwise use the scenario-provisioned instance ID
+				if mepName == defaultMepName {
+					var err error
+					serviceAppInstanceId, err = getAppInstanceId()
+					if err != nil || serviceAppInstanceId == "" {
+						continue
+					}
+				} else {
+					serviceAppInstanceId = instanceId
 				}
 			}
 

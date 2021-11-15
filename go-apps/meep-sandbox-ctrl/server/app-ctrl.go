@@ -27,6 +27,7 @@ import (
 	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -46,7 +47,8 @@ type AppCtrl struct {
 var appCtrl *AppCtrl
 
 // Initialize App Controller
-func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) (err error) {
+func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) error {
+	var err error
 
 	// Create new App Controller
 	appCtrl = new(AppCtrl)
@@ -71,18 +73,55 @@ func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) (err error) {
 }
 
 // Start App Controller
-func appCtrlRun() (err error) {
+func appCtrlRun() error {
 	return nil
 }
 
 // Stop App Controller
-func appCtrlStop() (err error) {
+func appCtrlStop() error {
 	return nil
 }
 
-// Flush App instances
-func appCtrlFlushAppInstances() (err error) {
+func appCtrlResetAppInstances(activeModel *mod.Model) error {
+	// Flush non-persistent app instances
 	appCtrl.appStore.FlushNonPersistent()
+
+	// Create app instances for scenario processes
+	if activeModel != nil {
+		// Get active scenario node names
+		appNames := activeModel.GetNodeNames(mod.NodeTypeEdgeApp)
+		for _, appName := range appNames {
+			// Get App Process & context
+			appNode := activeModel.GetNode(appName)
+			if appNode == nil {
+				continue
+			}
+			appNodeCtx := activeModel.GetNodeContext(appName)
+			if appNodeCtx == nil {
+				continue
+			}
+			appProc := appNode.(*dataModel.Process)
+
+			// Determine app type
+			appType := apps.TypeUser
+			if appCtrl.appStore.IsSysApp(appProc.Image) {
+				appType = apps.TypeSystem
+			}
+
+			// Create & store app instance
+			app := &apps.Application{
+				Id:      appProc.Id,
+				Name:    appProc.Name,
+				Mep:     appNodeCtx.Parents[mod.PhyLoc],
+				Type:    appType,
+				Persist: false,
+			}
+			err := appCtrl.appStore.Set(app)
+			if err != nil {
+				log.Error(err.Error())
+			}
+		}
+	}
 	return nil
 }
 
