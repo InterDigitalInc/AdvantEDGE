@@ -97,6 +97,7 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
+var appTermSubId string
 var appEnablementServiceId string
 var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
@@ -496,9 +497,20 @@ func subscribeAppTermination(appInstanceId string) error {
 	} else {
 		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + waisBasePath + appTerminationPath
 	}
-	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
+	subscription, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
+		return err
+	}
+	appTermSubLink := subscription.Links.Self.Href
+	appTermSubId = appTermSubLink[strings.LastIndex(appTermSubLink, "/")+1:]
+	return nil
+}
+
+func unsubscribeAppTermination(appInstanceId string, subId string) error {
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subId)
+	if err != nil {
+		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
 	}
 	return nil
@@ -523,38 +535,40 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		//delete any registration it made
+		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
-		//send scenario update with a deletion
-		var event scc.Event
-		var eventScenarioUpdate scc.EventScenarioUpdate
-		var process scc.Process
-		var nodeDataUnion scc.NodeDataUnion
-		var node scc.ScenarioNode
-		process.Name = instanceName
-		process.Type_ = "EDGE-APP"
-		nodeDataUnion.Process = &process
-		node.Type_ = "EDGE-APP"
-		node.Parent = mepName
-		node.NodeDataUnion = &nodeDataUnion
-		eventScenarioUpdate.Node = &node
-		eventScenarioUpdate.Action = "REMOVE"
-		event.EventScenarioUpdate = &eventScenarioUpdate
-		event.Type_ = "SCENARIO-UPDATE"
+		// Delete subscriptions
+		_ = unsubscribeAppTermination(serviceAppInstanceId, appTermSubId)
 
+		// Confirm App termination if necessary
+		if sendAppTerminationWhenDone {
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}
+
+		// Remove node from active scenario
+		event := scc.Event{
+			Type_: "SCENARIO-UPDATE",
+			EventScenarioUpdate: &scc.EventScenarioUpdate{
+				Action: "REMOVE",
+				Node: &scc.ScenarioNode{
+					Type_:  "EDGE-APP",
+					Parent: mepName,
+					NodeDataUnion: &scc.NodeDataUnion{
+						Process: &scc.Process{
+							Type_: "EDGE-APP",
+							Name:  instanceName,
+						},
+					},
+				},
+			},
+		}
 		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 		if err != nil {
 			log.Error(err)
 		}
 	}()
 
-	if sendAppTerminationWhenDone {
-		go func() {
-			//ignore any error and delete yourself anyway
-			_ = sendTerminationConfirmation(serviceAppInstanceId)
-		}()
-	}
 	w.WriteHeader(http.StatusNoContent)
 }
 

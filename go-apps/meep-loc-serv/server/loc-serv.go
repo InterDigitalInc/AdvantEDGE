@@ -171,6 +171,7 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
+var appTermSubId string
 var appEnablementServiceId string
 var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
@@ -575,26 +576,26 @@ func subscribeAppTermination(appInstanceId string) error {
 	} else {
 		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + LocServBasePath + appTerminationPath
 	}
-	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
+	subscription, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err
 	}
-
+	appTermSubLink := subscription.Links.Self.Href
+	appTermSubId = appTermSubLink[strings.LastIndex(appTermSubLink, "/")+1:]
 	return nil
 }
 
-/*
-func unsubscribeAppTermination(appInstanceId string) error {
+func unsubscribeAppTermination(appInstanceId string, subId string) error {
 	//only subscribe to one subscription, so we force number to be one, couldn't be anything else
-	_, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subId)
 	if err != nil {
 		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
 	}
 	return nil
 }
-*/
+
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, err := strconv.Atoi(subsIdStr)
 	if err != nil {
@@ -3863,39 +3864,34 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 
 	//using a go routine to quickly send the response to the requestor
 	go func() {
-		//delete any registration it made
-		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the
-		// confirm_terminate since it believes it never registered
-		//_ = unsubscribeAppTermination(serviceAppInstanceId)
+		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
-		// Send confirm termination when done
+		// Delete subscriptions
+		_ = unsubscribeAppTermination(serviceAppInstanceId, appTermSubId)
+
+		// Confirm App termination if necessary
 		if sendAppTerminationWhenDone {
 			_ = sendTerminationConfirmation(serviceAppInstanceId)
 		}
 
-		//send scenario update with a deletion
-		var event scc.Event
-		var eventScenarioUpdate scc.EventScenarioUpdate
-		var process scc.Process
-		var nodeDataUnion scc.NodeDataUnion
-		var node scc.ScenarioNode
-
-		process.Name = instanceName
-		process.Type_ = "EDGE-APP"
-
-		nodeDataUnion.Process = &process
-
-		node.Type_ = "EDGE-APP"
-		node.Parent = mepName
-		node.NodeDataUnion = &nodeDataUnion
-
-		eventScenarioUpdate.Node = &node
-		eventScenarioUpdate.Action = "REMOVE"
-
-		event.EventScenarioUpdate = &eventScenarioUpdate
-		event.Type_ = "SCENARIO-UPDATE"
-
+		// Remove node from active scenario
+		event := scc.Event{
+			Type_: "SCENARIO-UPDATE",
+			EventScenarioUpdate: &scc.EventScenarioUpdate{
+				Action: "REMOVE",
+				Node: &scc.ScenarioNode{
+					Type_:  "EDGE-APP",
+					Parent: mepName,
+					NodeDataUnion: &scc.NodeDataUnion{
+						Process: &scc.Process{
+							Type_: "EDGE-APP",
+							Name:  instanceName,
+						},
+					},
+				},
+			},
+		}
 		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 		if err != nil {
 			log.Error(err)
