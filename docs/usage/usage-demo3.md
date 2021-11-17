@@ -2,7 +2,7 @@
 layout: default
 title: Demo 3 Scenario
 parent: Usage
-nav_order: 5
+nav_order: 7
 ---
 
 # Demo3
@@ -122,6 +122,10 @@ cd ~/AdvantEDGE/examples/demo3/
 ```
 
 #### Open demo 3 scenario in the AdvantEdge configure tab & save
+
+1. Import demo3-scenario.yaml as a scenario in AdvantEdge configuration view & save it as a name of your choice
+2. Create a sandbox & deploy scenario above in Execution view 
+3. Enable automation and movement in events tab
 
 #### Start demo 3 frontend
 
