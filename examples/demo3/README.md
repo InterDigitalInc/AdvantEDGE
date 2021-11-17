@@ -66,11 +66,12 @@ npm i
 cd ~/AdvantEDGE/examples/demo3/src/client
 npm i 
 ```
-4. Set up your .env.local file with values of where demo 3 backend is served  
+4. Set up your .env file with values of where demo 3 backend is served  
 ```
 cd AdvantEdge/examples/demo3/src
-# Create a file called .env.local
+# Modify .env
 # Apply configurations 
+ENVIRONMENT=SANDBOX
 URL=http://<my-ip-address>:<my-demo3-port-number>
 ```
 5. Run demo 3 in development mode or build into binaries
@@ -89,7 +90,7 @@ Demo server is a web server that will run internally in AdvantEdge as the backen
 
 The following steps need to be done prior to using this scenario
 
-#### Obtain demo binaries
+#### Configure demo frontend and obtain binaries
 
 ##### Build from source
 
@@ -137,7 +138,7 @@ A quick look at the top-level relevant files and directories in demo 3 project.
          ├── src
               ├── js
               ├── css
-              ├── .env.local
+              ├── .env
     ├── client
           ├── node_modules 
           

@@ -41,9 +41,15 @@ import '@/css/global.css';
 export default function Homepage() {
   // MEEP Demo REST API JS Client 
   // Configure server url based on environmental variable externally or preset internally
- 
-  // var basepath = process.env.URL;
-  var basepath = 'http://' + location.host + location.pathname;
+
+  var basepath; 
+  if (process.env.ENVIRONMENT === 'SANDBOX') {
+    basepath = process.env.URL;
+  } else {
+    basepath = 'http://' + location.host + location.pathname;
+  }
+  
+  
   demoSvcRestApiClient.ApiClient.instance.basePath = basepath.replace(
     /\/+$/,
     ''
