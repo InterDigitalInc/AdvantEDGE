@@ -41,7 +41,7 @@ The following steps need to be done prior to running demo 3
 | 4. Optional: If running a dual mep scenario on MEC sandbox. The above steps needs to be repeated to run a seperate instance of demo 3 application by applying configurations into `mep2.yaml` |  | 
 
 configuration will look like this at the end:
-```sh .env
+```
 mode: 'sandbox'
 sandbox: `https://<my-mec-url>/<my-sandbox-key>/mep1`
 mecplatform: 'mep1'
