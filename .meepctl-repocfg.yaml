@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.8.1
+version: 1.8.2
 repo:
   name: AdvantEDGE
 
@@ -913,6 +913,21 @@ repo:
 
     # Go Packages
     go-packages:
+      meep-ams-client:
+        # location of source code
+        src: go-packages/meep-ams-client
+        # supports linting
+        lint: false
+      meep-app-support-client:
+        # location of source code
+        src: go-packages/meep-app-support-client
+        # supports linting
+        lint: false
+      meep-applications:
+        # location of source code
+        src: go-packages/meep-applications
+        # supports linting
+        lint: true
       meep-couch:
         # location of source code
         src: go-packages/meep-couch
@@ -938,6 +953,11 @@ repo:
         src: go-packages/meep-gis-cache
         # supports linting
         lint: true
+      meep-gis-engine-client:
+        # location of source code
+        src: go-packages/meep-gis-engine-client
+        # supports linting
+        lint: false
       meep-http-logger:
         # location of source code
         src: go-packages/meep-http-logger
@@ -993,6 +1013,11 @@ repo:
         src: go-packages/meep-net-char-mgr
         # supports linting
         lint: true
+      meep-pdu-session-store:
+        # location of source code
+        src: go-packages/meep-pdu-session-store
+        # supports linting
+        lint: true
       meep-redis:
         # location of source code
         src: go-packages/meep-redis
@@ -1018,6 +1043,11 @@ repo:
         src: go-packages/meep-sandbox-store
         # supports linting
         lint: true
+      meep-service-mgmt-client:
+        # location of source code
+        src: go-packages/meep-service-mgmt-client
+        # supports linting
+        lint: false
       meep-sessions:
         # location of source code
         src: go-packages/meep-sessions
@@ -1028,6 +1058,11 @@ repo:
         src: go-packages/meep-subscriptions
         # supports linting
         lint: true
+      meep-swagger-api-mgr:
+        # location of source code
+        src: go-packages/meep-swagger-api-mgr
+        # supports linting
+        lint: true
       meep-users:
         # location of source code
         src: go-packages/meep-users
@@ -1036,11 +1071,6 @@ repo:
       meep-wais-client:
         # location of source code
         src: go-packages/meep-wais-client
-        # supports linting
-        lint: false
-      meep-ams-client:
-        # location of source code
-        src: go-packages/meep-ams-client
         # supports linting
         lint: false
       meep-watchdog:
@@ -1056,6 +1086,21 @@ repo:
 
     # Javascript Packages
     js-packages:
+      meep-app-support-client:
+        # location of source code
+        src: js-packages/meep-app-support-client
+        # supports linting
+        lint: false
+      meep-auth-svc-client:
+        # location of source code
+        src: js-packages/meep-auth-svc-client
+        # supports linting
+        lint: false
+      meep-gis-engine-client:
+        # location of source code
+        src: js-packages/meep-gis-engine-client
+        # supports linting
+        lint: false
       meep-metrics-engine-client:
         # location of source code
         src: js-packages/meep-metrics-engine-client
@@ -1074,5 +1119,10 @@ repo:
       meep-sandbox-ctrl-client:
         # location of source code
         src: js-packages/meep-sandbox-ctrl-client
+        # supports linting
+        lint: false
+      meep-service-mgmt-client:
+        # location of source code
+        src: js-packages/meep-service-mgmt-client
         # supports linting
         lint: false
