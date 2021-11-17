@@ -61,7 +61,7 @@ const (
 
 // MQ payload fields
 const (
-	mqfieldAppId   string = "id"
+	mqFieldAppId   string = "id"
 	mqFieldPersist string = "persist"
 )
 
@@ -180,12 +180,12 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgAppUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
-		appId := msg.Payload[mqfieldAppId]
+		appId := msg.Payload[mqFieldAppId]
 		_ = updateAppInfo(appId)
 	case mq.MsgAppRemove:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
-		appId := msg.Payload[mqfieldAppId]
+		appId := msg.Payload[mqFieldAppId]
 		_ = terminateAppInfo(appId)
 	case mq.MsgAppFlush:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
@@ -642,6 +642,9 @@ func deleteAppInstance(appId string) {
 	// Flush App instance data
 	key := baseKey + "app:" + appId
 	_ = rc.DBFlush(key)
+
+	// Confirm App removal
+	sendAppRemoveCnf(appId)
 }
 
 func getAppInfoList() ([]map[string]string, error) {
@@ -915,4 +918,18 @@ func newAppTerminationNotifSubCfg(sub *AppTerminationNotificationSubscription, s
 		RequestWebsocketUri: false,
 	}
 	return subCfg
+}
+
+func sendAppRemoveCnf(id string) {
+	// Create message to send on MQ
+	msg := mqLocal.CreateMsg(mq.MsgAppRemoveCnf, mq.TargetAll, sandboxName)
+	msg.Payload[mqFieldAppId] = id
+
+	// Send message to inform other modules of app removal
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return
+	}
 }

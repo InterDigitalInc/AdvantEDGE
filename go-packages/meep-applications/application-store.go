@@ -270,6 +270,10 @@ func (as *ApplicationStore) deleteEntry(id string) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
+	if _, found := as.apps[id]; !found {
+		return errors.New("Entry does not exist: " + id)
+	}
+
 	// Remove from cache
 	delete(as.apps, id)
 

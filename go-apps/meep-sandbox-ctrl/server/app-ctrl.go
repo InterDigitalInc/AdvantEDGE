@@ -34,13 +34,16 @@ import (
 )
 
 // MQ payload fields
-const mqFieldAppInstanceId = "id"
-const mqFieldPersist = "persist"
+const (
+	mqFieldAppId   = "id"
+	mqFieldPersist = "persist"
+)
 
 type AppCtrl struct {
 	sandboxName string
 	appStore    *apps.ApplicationStore
 	mqLocal     *mq.MsgQueue
+	handlerId   int
 }
 
 // App Controller
@@ -74,55 +77,205 @@ func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) error {
 
 // Start App Controller
 func appCtrlRun() error {
+	var err error
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	appCtrl.handlerId, err = appCtrl.mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
 	return nil
 }
 
 // Stop App Controller
 func appCtrlStop() error {
+
+	// Unregister handler
+	if appCtrl.mqLocal != nil {
+		appCtrl.mqLocal.UnregisterHandler(appCtrl.handlerId)
+	}
 	return nil
 }
 
-func appCtrlResetAppInstances(activeModel *mod.Model) error {
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgAppRemoveCnf:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		appId := msg.Payload[mqFieldAppId]
+
+		// If process exists, remove it from the active scenario
+		activeModel := getActiveModel()
+		if activeModel != nil {
+			proc, ctx, err := getScenarioProcessById(appId, activeModel)
+			if err == nil {
+				// Prepare scenario update event
+				event := &dataModel.Event{
+					Type_: "SCENARIO-UPDATE",
+					EventScenarioUpdate: &dataModel.EventScenarioUpdate{
+						Action: "REMOVE",
+						Node: &dataModel.ScenarioNode{
+							Type_:  proc.Type_,
+							Parent: ctx.Parents[mod.PhyLoc],
+							NodeDataUnion: &dataModel.NodeDataUnion{
+								Process: proc,
+							},
+						},
+					},
+				}
+				// Process event to remove node
+				_, err = processEvent(event.Type_, event)
+				if err != nil {
+					log.Error(err.Error())
+				}
+			}
+		}
+	default:
+	}
+}
+
+func createAppInstance(proc *dataModel.Process, ctx *mod.NodeContext) (*apps.Application, error) {
+	// Determine app type
+	appType := apps.TypeUser
+	if appCtrl.appStore.IsSysApp(proc.Image) {
+		appType = apps.TypeSystem
+	}
+
+	// Create & app instance
+	app := &apps.Application{
+		Id:      proc.Id,
+		Name:    proc.Name,
+		Mep:     ctx.Parents[mod.PhyLoc],
+		Type:    appType,
+		Persist: false,
+	}
+	return app, nil
+}
+
+func setAppInstance(name string, activeModel *mod.Model) error {
+	// Get scenario Process & context
+	proc, ctx, err := getScenarioProcess(name, activeModel)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Create app instance
+	app, err := createAppInstance(proc, ctx)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Set app instance
+	err = appCtrl.appStore.Set(app)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func delAppInstance(id string) error {
+	// Validate ID
+	if id == "" {
+		return errors.New("Invalid app instance ID")
+	}
+
+	// Delete app instance
+	err := appCtrl.appStore.Del(id)
+	if err != nil {
+		log.Warn(err.Error())
+		return err
+	}
+	return nil
+}
+
+func resetAppInstances(activeModel *mod.Model) error {
 	// Flush non-persistent app instances
 	appCtrl.appStore.FlushNonPersistent()
 
-	// Create app instances for scenario processes
+	// Get active scenario app list
+	scenarioAppList, err := getScenarioAppInstanceList(activeModel)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Create app instances for scenario apps
+	for _, app := range scenarioAppList {
+		err := appCtrl.appStore.Set(app)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+	return nil
+}
+
+func getScenarioAppInstanceList(activeModel *mod.Model) ([]*apps.Application, error) {
+	var appList []*apps.Application
+
 	if activeModel != nil {
 		// Get active scenario node names
 		appNames := activeModel.GetNodeNames(mod.NodeTypeEdgeApp)
 		for _, appName := range appNames {
-			// Get App Process & context
-			appNode := activeModel.GetNode(appName)
-			if appNode == nil {
-				continue
-			}
-			appNodeCtx := activeModel.GetNodeContext(appName)
-			if appNodeCtx == nil {
-				continue
-			}
-			appProc := appNode.(*dataModel.Process)
-
-			// Determine app type
-			appType := apps.TypeUser
-			if appCtrl.appStore.IsSysApp(appProc.Image) {
-				appType = apps.TypeSystem
-			}
-
-			// Create & store app instance
-			app := &apps.Application{
-				Id:      appProc.Id,
-				Name:    appProc.Name,
-				Mep:     appNodeCtx.Parents[mod.PhyLoc],
-				Type:    appType,
-				Persist: false,
-			}
-			err := appCtrl.appStore.Set(app)
+			// Get scenario Process & context
+			proc, ctx, err := getScenarioProcess(appName, activeModel)
 			if err != nil {
 				log.Error(err.Error())
+				continue
 			}
+
+			// Create app instance
+			app, err := createAppInstance(proc, ctx)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			// Add app instance to list
+			appList = append(appList, app)
 		}
 	}
-	return nil
+	return appList, nil
+}
+
+func getScenarioProcess(name string, activeModel *mod.Model) (*dataModel.Process, *mod.NodeContext, error) {
+	// Get app node
+	node := activeModel.GetNode(name)
+	if node == nil {
+		return nil, nil, errors.New("Failed to get app node")
+	}
+	// Get App Process & context
+	proc, ok := node.(*dataModel.Process)
+	if !ok {
+		return nil, nil, errors.New("Failed to cast node as Process")
+	}
+	ctx := activeModel.GetNodeContext(proc.Name)
+	if ctx == nil {
+		return nil, nil, errors.New("Missing node context for " + proc.Name)
+	}
+	return proc, ctx, nil
+}
+
+func getScenarioProcessById(id string, activeModel *mod.Model) (*dataModel.Process, *mod.NodeContext, error) {
+	// Get app node
+	node := activeModel.GetNodeById(id)
+	if node == nil {
+		return nil, nil, errors.New("Failed to get app node")
+	}
+	// Get App Process & context
+	proc, ok := node.(*dataModel.Process)
+	if !ok {
+		return nil, nil, errors.New("Failed to cast node as Process")
+	}
+	ctx := activeModel.GetNodeContext(proc.Name)
+	if ctx == nil {
+		return nil, nil, errors.New("Missing node context for " + proc.Name)
+	}
+	return proc, ctx, nil
 }
 
 func applicationsPOST(w http.ResponseWriter, r *http.Request) {
@@ -406,10 +559,10 @@ func appStoreUpdateCb(eventType string, eventData interface{}) {
 	switch eventType {
 	case apps.EventAdd:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppUpdate, mq.TargetAll, appCtrl.sandboxName)
-		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
+		msg.Payload[mqFieldAppId] = eventData.(string)
 	case apps.EventRemove:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemove, mq.TargetAll, appCtrl.sandboxName)
-		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
+		msg.Payload[mqFieldAppId] = eventData.(string)
 	case apps.EventFlush:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppFlush, mq.TargetAll, appCtrl.sandboxName)
 		msg.Payload[mqFieldPersist] = strconv.FormatBool(eventData.(bool))

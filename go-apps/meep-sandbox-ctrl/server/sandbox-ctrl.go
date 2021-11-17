@@ -62,25 +62,25 @@ type SandboxCtrl struct {
 	sandboxStore    *ss.SandboxStore
 }
 
-const scenarioDBName = "scenarios"
-const replayDBName = "replays"
-const moduleName = "meep-sandbox-ctrl"
-const serviceName = "Sandbox Controller"
+const scenarioDBName string = "scenarios"
+const replayDBName string = "replays"
+const moduleName string = "meep-sandbox-ctrl"
+const serviceName string = "Sandbox Controller"
 
 // MQ payload fields
-const fieldSandboxName = "sandbox-name"
-const fieldScenarioName = "scenario-name"
-const fieldEventType = "event-type"
-const fieldNodeName = "node-name"
-const fieldPduSessionId = "pdu-id"
+const fieldSandboxName string = "sandbox-name"
+const fieldScenarioName string = "scenario-name"
+const fieldEventType string = "event-type"
+const fieldNodeName string = "node-name"
+const fieldPduSessionId string = "pdu-id"
 
 // Event types
 const (
-	eventTypeMobility       = "MOBILITY"
-	eventTypeNetCharUpdate  = "NETWORK-CHARACTERISTICS-UPDATE"
-	eventTypePoasInRange    = "POAS-IN-RANGE"
-	eventTypeScenarioUpdate = "SCENARIO-UPDATE"
-	eventTypePduSession     = "PDU-SESSION"
+	eventTypeMobility       string = "MOBILITY"
+	eventTypeNetCharUpdate  string = "NETWORK-CHARACTERISTICS-UPDATE"
+	eventTypePoasInRange    string = "POAS-IN-RANGE"
+	eventTypeScenarioUpdate string = "SCENARIO-UPDATE"
+	eventTypePduSession     string = "PDU-SESSION"
 )
 
 const (
@@ -312,8 +312,8 @@ func activateScenario(scenarioName string) (err error) {
 		return err
 	}
 
-	// Refresh App Instances
-	_ = appCtrlResetAppInstances(sbxCtrl.activeModel)
+	// Reset App Instances
+	_ = resetAppInstances(sbxCtrl.activeModel)
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
@@ -396,8 +396,8 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Refresh App Instances
-	_ = appCtrlResetAppInstances(sbxCtrl.activeModel)
+	// Reset App Instances
+	_ = resetAppInstances(sbxCtrl.activeModel)
 
 	_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName, redisDBAddr, influxDBAddr)
 
@@ -814,7 +814,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	_ = sbxCtrl.apiMgr.FlushMepApis()
 
 	// Flush App Instances
-	_ = appCtrlResetAppInstances(nil)
+	_ = resetAppInstances(nil)
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -852,39 +852,52 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Process Event
+	// Process event
+	httpStatus, err := processEvent(eventType, &event)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), httpStatus)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+func processEvent(eventType string, event *dataModel.Event) (int, error) {
+	var err error
 	var httpStatus int
 	var description, src, dest string
+
 	switch eventType {
 	case eventTypeMobility:
-		err, httpStatus, description = sendEventMobility(event)
+		httpStatus, description, err = sendEventMobility(event)
 		if err == nil {
 			src = event.EventMobility.ElementName
 			dest = event.EventMobility.Dest
 		}
 	case eventTypeNetCharUpdate:
-		err, httpStatus, description = sendEventNetworkCharacteristics(event)
+		httpStatus, description, err = sendEventNetworkCharacteristics(event)
 		if err == nil {
 			src = event.EventNetworkCharacteristicsUpdate.ElementName
 		}
 	case eventTypePoasInRange:
-		err, httpStatus, description = sendEventPoasInRange(event)
+		httpStatus, description, err = sendEventPoasInRange(event)
 		if err == nil {
 			src = event.EventPoasInRange.Ue
 		}
 	case eventTypeScenarioUpdate:
-		err, httpStatus, description = sendEventScenarioUpdate(event)
+		httpStatus, description, err = sendEventScenarioUpdate(event)
 	case eventTypePduSession:
-		err, httpStatus, description = sendEventPduSession(event)
+		httpStatus, description, err = sendEventPduSession(event)
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
 	}
 
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), httpStatus)
-		return
+		return httpStatus, err
 	}
 
 	// Log successful event in metric store
@@ -900,16 +913,13 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("Failed to set event metric")
 	}
-
-	// Send response
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	return http.StatusOK, nil
 }
 
-func sendEventNetworkCharacteristics(event dataModel.Event) (error, int, string) {
+func sendEventNetworkCharacteristics(event *dataModel.Event) (int, string, error) {
 	if event.EventNetworkCharacteristicsUpdate == nil {
 		err := errors.New("Malformed request: missing EventNetworkCharacteristicsUpdate")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 
 	netCharEvent := event.EventNetworkCharacteristicsUpdate
@@ -924,15 +934,15 @@ func sendEventNetworkCharacteristics(event dataModel.Event) (error, int, string)
 
 	err := sbxCtrl.activeModel.UpdateNetChar(netCharEvent, nil)
 	if err != nil {
-		return err, http.StatusInternalServerError, ""
+		return http.StatusInternalServerError, "", err
 	}
-	return nil, -1, description
+	return -1, description, nil
 }
 
-func sendEventMobility(event dataModel.Event) (error, int, string) {
+func sendEventMobility(event *dataModel.Event) (int, string, error) {
 	if event.EventMobility == nil {
 		err := errors.New("Malformed request: missing EventMobility")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 	// Retrieve target name (src) and destination parent name
 	elemName := event.EventMobility.ElementName
@@ -941,7 +951,7 @@ func sendEventMobility(event dataModel.Event) (error, int, string) {
 
 	oldNL, newNL, err := sbxCtrl.activeModel.MoveNode(elemName, destName, nil)
 	if err != nil {
-		return err, http.StatusInternalServerError, ""
+		return http.StatusInternalServerError, "", err
 	}
 	log.WithFields(log.Fields{
 		"meep.log.component": "sandbox-ctrl",
@@ -952,13 +962,13 @@ func sendEventMobility(event dataModel.Event) (error, int, string) {
 		"meep.log.dest":      elemName,
 	}).Info("Measurements log")
 
-	return nil, -1, description
+	return -1, description, nil
 }
 
-func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
+func sendEventPoasInRange(event *dataModel.Event) (int, string, error) {
 	if event.EventPoasInRange == nil {
 		err := errors.New("Malformed request: missing EventPoasInRange")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 
 	// Retrieve UE name
@@ -973,23 +983,23 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 	// Update active model
 	err := sbxCtrl.activeModel.UpdatePoasInRange(ueName, poasInRange, nil)
 	if err != nil {
-		return err, http.StatusNotFound, ""
+		return http.StatusNotFound, "", err
 	}
-	return nil, -1, description
+	return -1, description, nil
 }
 
 // sendEventScenarioUpdate - Process a scenario update event
-func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
+func sendEventScenarioUpdate(event *dataModel.Event) (int, string, error) {
 	var err error
 	var description string
 
 	if event.EventScenarioUpdate == nil {
 		err := errors.New("Malformed request: missing EventScenarioUpdate")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 	if event.EventScenarioUpdate.Node == nil {
 		err := errors.New("Malformed request: missing Node")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 
 	// Get node name
@@ -1001,29 +1011,39 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
 			description = "Added node [" + nodeName + "]"
+			if mod.IsProc(event.EventScenarioUpdate.Node.Type_) {
+				_ = setAppInstance(nodeName, sbxCtrl.activeModel)
+			}
 		}
 	case mod.ScenarioModify:
 		err = sbxCtrl.activeModel.ModifyScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
 			description = "Modified node [" + nodeName + "]"
+			if mod.IsProc(event.EventScenarioUpdate.Node.Type_) {
+				_ = setAppInstance(nodeName, sbxCtrl.activeModel)
+			}
 		}
 	case mod.ScenarioRemove:
+		nodeId := sbxCtrl.activeModel.GetNodeId(nodeName)
 		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
 			description = "Removed node [" + nodeName + "]"
+			if mod.IsProc(event.EventScenarioUpdate.Node.Type_) {
+				_ = delAppInstance(nodeId)
+			}
 		}
 	default:
 		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
 	}
 
 	if err != nil {
-		return err, http.StatusInternalServerError, ""
+		return http.StatusInternalServerError, "", err
 	}
-	return nil, -1, description
+	return -1, description, nil
 }
 
 // sendEventPduSession - Process a PDU Session event
-func sendEventPduSession(event dataModel.Event) (error, int, string) {
+func sendEventPduSession(event *dataModel.Event) (int, string, error) {
 	var err error
 	var code int
 	var description string
@@ -1031,12 +1051,12 @@ func sendEventPduSession(event dataModel.Event) (error, int, string) {
 	// Validate request
 	if event.EventPduSession == nil {
 		err = errors.New("Malformed request: missing EventPduSession")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 	pduSession := event.EventPduSession.PduSession
 	if pduSession == nil {
 		err = errors.New("Malformed request: missing PduSession")
-		return err, http.StatusBadRequest, ""
+		return http.StatusBadRequest, "", err
 	}
 
 	// Perform necessary action on scenario
@@ -1056,7 +1076,7 @@ func sendEventPduSession(event dataModel.Event) (error, int, string) {
 		code = http.StatusInternalServerError
 	}
 
-	return err, code, description
+	return code, description, err
 }
 
 // Retrieve element name from type-specific structure
@@ -1584,4 +1604,8 @@ func activeScenarioUpdateCb(eventType string, userData interface{}) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+}
+
+func getActiveModel() *mod.Model {
+	return sbxCtrl.activeModel
 }

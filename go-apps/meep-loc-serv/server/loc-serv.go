@@ -3880,28 +3880,6 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 		if sendAppTerminationWhenDone {
 			_ = sendTerminationConfirmation(serviceAppInstanceId)
 		}
-
-		// Remove node from active scenario
-		event := scc.Event{
-			Type_: "SCENARIO-UPDATE",
-			EventScenarioUpdate: &scc.EventScenarioUpdate{
-				Action: "REMOVE",
-				Node: &scc.ScenarioNode{
-					Type_:  "EDGE-APP",
-					Parent: mepName,
-					NodeDataUnion: &scc.NodeDataUnion{
-						Process: &scc.Process{
-							Type_: "EDGE-APP",
-							Name:  instanceName,
-						},
-					},
-				},
-			},
-		}
-		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-		if err != nil {
-			log.Error(err)
-		}
 	}()
 
 	w.WriteHeader(http.StatusNoContent)
