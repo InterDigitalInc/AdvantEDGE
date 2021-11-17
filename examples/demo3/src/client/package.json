@@ -1,7 +1,7 @@
 {
   "name": "mec_demo_3_api",
   "version": "0.0.1",
-  "description": "This_section_describes_use_case_for_demo_3_that_the_user_can_accomplish_using_the_MEC_Sandbox_APIs_from_a_MEC_application",
+  "description": "This_section_describes_how_to_use_AdvantEdge_mec_services_with_a_scenario_demonstrating_use_case_1___3",
   "license": "Apache 2.0",
   "main": "src/index.js",
   "scripts": {

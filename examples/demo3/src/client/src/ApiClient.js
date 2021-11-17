@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes use-case for demo 3 that the user can accomplish using the MEC Sandbox APIs from a MEC application
+ * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
  *
  * OpenAPI spec version: 0.0.1
  *

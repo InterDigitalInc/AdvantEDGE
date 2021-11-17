@@ -26,6 +26,10 @@ import (
 	"net/http"
 )
 
+func RegisterAppMecPlatformPost(w http.ResponseWriter, r *http.Request) {
+	registerAppMecPlatformPost(w, r)
+}
+
 func InfoAmsLogsGet(w http.ResponseWriter, r *http.Request) {
 	amsLogsGet(w, r)
 }

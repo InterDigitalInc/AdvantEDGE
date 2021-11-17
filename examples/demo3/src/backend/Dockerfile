@@ -12,7 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian
+FROM debian:9.6-slim
+
+
+# Some ENV variables
+ENV SERVICE_NAME = "demo3"
+
 COPY ./demo-server /demo-server
 COPY ./static /static
-ENTRYPOINT ["/demo-server"]
+COPY entrypoint.sh / 
+COPY app_instance.yaml /
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -12,21 +12,25 @@ echo ">>> Dockerizing Demo Server"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-# Copy frontend to bin folder
+# Copy frontend to demo-server folder
 rm -r $DEMOBIN/static
 mkdir -p $DEMOBIN/static
 
 # Copy frontend to static folder
 echo ">>> Copying Demo Server"
 cp -Rf $BASEDIR/bin/demo-frontend/* $DEMOBIN/static
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+# Copy Dockerfile & config to bin folder
 cp $BASEDIR/src/backend/Dockerfile $DEMOBIN
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+cp $BASEDIR/src/backend/app_instance.yaml $DEMOBIN
+cp $BASEDIR/entrypoint.sh $DEMOBIN
+
 
 # Dockerize demo 
-# cd $DEMOBIN
-# docker build --no-cache --rm -t meep-docker-registry:30001/demo-server3 .
-# docker push meep-docker-registry:30001/demo-server3
+cd $DEMOBIN
+docker build --no-cache --rm -t meep-docker-registry:30001/demo3 .
+docker push meep-docker-registry:30001/demo3
+cd $BASEDIR
 
 echo ""
 echo ">>> Demo Service dockerize completed"

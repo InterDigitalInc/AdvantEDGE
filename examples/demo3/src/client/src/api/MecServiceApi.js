@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes use-case for demo 3 that the user can accomplish using the MEC Sandbox APIs from a MEC application
+ * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
  *
  * OpenAPI spec version: 0.0.1
  *
@@ -62,6 +62,45 @@
 
 
     /**
+     * Callback function to receive the result of the amsCreatePOST operation.
+     * @callback module:api/MecServiceApi~amsCreatePOSTCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Create a new application mobility service resource
+     * @param {module:api/MecServiceApi~amsCreatePOSTCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.amsCreatePOST = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/service/ams/create', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
      * Callback function to receive the result of the amsSubscriptionPOST operation.
      * @callback module:api/MecServiceApi~amsSubscriptionPOSTCallback
      * @param {String} error Error message, if any.
@@ -95,84 +134,6 @@
 
       return this.apiClient.callApi(
         '/ams/subscriptions', 'POST',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the serviceCreatePost operation.
-     * @callback module:api/MecServiceApi~serviceCreatePostCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * This method creates a mec service on mec platform
-     * @param {module:api/MecServiceApi~serviceCreatePostCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.serviceCreatePost = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/service/create', 'POST',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the serviceDeleteDelete operation.
-     * @callback module:api/MecServiceApi~serviceDeleteDeleteCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
-     * @param {module:api/MecServiceApi~serviceDeleteDeleteCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.serviceDeleteDelete = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/service/delete', 'DELETE',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes use-case for demo 3 that the user can accomplish using the MEC Sandbox APIs from a MEC application
+ * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
  *
  * OpenAPI spec version: 0.0.1
  *
@@ -49,48 +49,30 @@
 
   describe('(package)', function() {
     describe('MecServiceApi', function() {
+      describe('amsCreatePOST', function() {
+        it('should call amsCreatePOST successfully', function(done) {
+          // TODO: uncomment amsCreatePOST call
+          /*
+
+          instance.amsCreatePOST(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('amsSubscriptionPOST', function() {
         it('should call amsSubscriptionPOST successfully', function(done) {
           // TODO: uncomment amsSubscriptionPOST call
           /*
 
           instance.amsSubscriptionPOST(function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('serviceCreatePost', function() {
-        it('should call serviceCreatePost successfully', function(done) {
-          // TODO: uncomment serviceCreatePost call
-          /*
-
-          instance.serviceCreatePost(function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('serviceDeleteDelete', function() {
-        it('should call serviceDeleteDelete successfully', function(done) {
-          // TODO: uncomment serviceDeleteDelete call
-          /*
-
-          instance.serviceDeleteDelete(function(error, data, response) {
             if (error) {
               done(error);
               return;

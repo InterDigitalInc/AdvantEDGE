@@ -15,7 +15,7 @@
  *
  * MEC Demo 3 API
  *
- * This section describes use case 3 - 5 that the user can accomplish using the MEC Sandbox APIs from a MEC application
+ * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
  *
  * API version: 0.0.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -60,31 +60,51 @@ func NewRouter() *mux.Router {
 var routes = Routes{
 
 	Route{
-		"ServiceCreatePost",
-		strings.ToUpper("Post"),
-		"/service/create",
-		ServiceCreatePost,
-	},
-
-	Route{
 		"RegisterAppMecPlatformPost",
 		strings.ToUpper("Post"),
-		"/register/app/{mecPlatform}",
+		"/register/app",
 		RegisterAppMecPlatformPost,
 	},
 
 	Route{
-		"ServiceDeleteDelete",
-		strings.ToUpper("Delete"),
-		"/service/delete",
-		ServiceDeleteDelete,
+		"InfoApplicationMecPlatformGet",
+		strings.ToUpper("Get"),
+		"/info/application",
+		InfoApplicationMecPlatformGet,
 	},
 
 	Route{
-		"ServicesDiscoverPost",
-		strings.ToUpper("Post"),
-		"/services/discover",
-		ServicesDiscoverPost,
+		"InfoLogsGet",
+		strings.ToUpper("Get"),
+		"/info/logs",
+		InfoLogsGet,
+	},
+
+	Route{
+		"InfoAmsLogsGet",
+		strings.ToUpper("Get"),
+		"/info/ams/logs",
+		InfoAmsLogsGet,
+	},
+
+	Route{
+		"ServiceAmsUpdateDevicePut",
+		strings.ToUpper("Put"),
+		"/service/ams/update/{device}",
+		ServiceAmsUpdateDevicePut,
+	},
+	Route{
+		"ServiceAmsDeleteDeviceDelete",
+		strings.ToUpper("Delete"),
+		"/service/ams/delete/{device}",
+		ServiceAmsDeleteDeviceDelete,
+	},
+
+	Route{
+		"InfoApplicationMecPlatformDeleteDelete",
+		strings.ToUpper("Delete"),
+		"/info/application/delete",
+		InfoApplicationMecPlatformDeleteDelete,
 	},
 
 	Route{
@@ -100,18 +120,7 @@ var routes = Routes{
 		"/application/termination",
 		TerminateNotificatonPOST,
 	},
-	Route{
-		"AmsCreatePOST",
-		strings.ToUpper("post"),
-		"/service/ams/create",
-		AmsCreatePOST,
-	},
-	Route{
-		"AmsSubscriptionPOST",
-		strings.ToUpper("post"),
-		"/ams/subscriptions",
-		AmsSubscriptionPOST,
-	},
+
 	Route{
 		"AmsNotificationPOST",
 		strings.ToUpper("post"),
@@ -124,40 +133,24 @@ var routes = Routes{
 		"/services/callback/incoming-context",
 		ContextTransferPOST,
 	},
+
 	Route{
-		"InfoApplicationMecPlatformGet",
-		strings.ToUpper("Get"),
-		"/info/application/{mecPlatform}",
-		InfoApplicationMecPlatformGet,
+		"ServicesDiscoverPost",
+		strings.ToUpper("Post"),
+		"/services/discover",
+		ServicesDiscoverPost,
+	},
+
+	Route{
+		"AmsCreatePOST",
+		strings.ToUpper("post"),
+		"/service/ams/create",
+		AmsCreatePOST,
 	},
 	Route{
-		"InfoLogsGet",
-		strings.ToUpper("Get"),
-		"/info/logs",
-		InfoLogsGet,
-	},
-	Route{
-		"InfoAmsLogsGet",
-		strings.ToUpper("Get"),
-		"/info/ams/logs",
-		InfoAmsLogsGet,
-	},
-	Route{
-		"InfoApplicationMecPlatformDeleteDelete",
-		strings.ToUpper("Delete"),
-		"/info/application/{mecPlatform}/delete",
-		InfoApplicationMecPlatformDeleteDelete,
-	},
-	Route{
-		"ServiceAmsUpdateDevicePut",
-		strings.ToUpper("Put"),
-		"/service/ams/update/{device}",
-		ServiceAmsUpdateDevicePut,
-	},
-	Route{
-		"ServiceAmsDeleteDeviceDelete",
-		strings.ToUpper("Delete"),
-		"/service/ams/delete/{device}",
-		ServiceAmsDeleteDeviceDelete,
+		"AmsSubscriptionPOST",
+		strings.ToUpper("post"),
+		"/ams/subscriptions",
+		AmsSubscriptionPOST,
 	},
 }

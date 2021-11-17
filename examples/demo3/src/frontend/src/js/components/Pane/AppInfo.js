@@ -2,31 +2,16 @@ import React from "react";
 import { Typography } from "@rmwc/typography";
 import "@material/typography/dist/mdc.typography.css";
 import { Elevation } from "@rmwc/elevation";
-// import { Grid, GridCell } from "@rmwc/grid";
 import Title from "@/js/components/Title";
 import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
-//import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 
-// import css
-import "@/css/pane.module.css";
-import { element } from "prop-types";
 
-export default function Activitypane({ height, data }) {
+export default function Activitypane({ data }) {
   function discoveredService(services) {
     if (services) {
       const resp = services.map((element) => {
         return (
-          // <Typography style={{ display: "block" }}>
-          //   {element.serName}
-          //   &nbsp;&nbsp;&nbsp;
-          //   {element.serInstanceId}
-          //   &nbsp;&nbsp;&nbsp;
-          //   {element.version}
-          //   &nbsp;&nbsp;&nbsp;
-          //   <Link href={element.link}> {" -- Link "}</Link>
-
           <Grid container>
             <Grid Paper xs={3}>
               {element.serName}
@@ -41,35 +26,22 @@ export default function Activitypane({ height, data }) {
             <Grid Paper xs={2}>
               <Link href={element.link}> {" -- Link "}</Link>
             </Grid>
-          </Grid>
-
-          /*       {/* <GridCell span="3">{element.serName}</GridCell>
-
-            <GridCell span="6" style={{ marginBottom: "-5px" }}>
-              {` Id: `}
-              {element.serInstanceId}
-            </GridCell>
-            <GridCell span="1"> {element.version}</GridCell>
-            <GridCell span="2">
-            
-            </GridCell> */
-          /* </Typography> */
+          </Grid> 
         );
       });
       if (resp) return resp;
     }
   }
 
-  // TODO: Add logic for termination
   const computeData = (data) => {
     return (
-      <div
-        style={{
-          height: "100vh",
-          display: "block",
-          wordWrap: "break-word",
-          overflowY: "auto",
-        }}
+      <div 
+      style={{
+        height: "100vh",
+        display: "block",
+        wordWrap: "break-word",
+        overflowY: "auto",
+      }}
       >
         <Title>Application Instance</Title>
         <Typography theme="primary" use="subtitle2">
@@ -80,7 +52,6 @@ export default function Activitypane({ height, data }) {
             Name: {data?.name ? data.name : "N/A"}
           </Typography>
         </div>
-
         <Typography use="caption">
           Url: {data?.url ? data.url : "N/A"}
         </Typography>

@@ -1,6 +1,0 @@
-# Demo 3 Configurations
-sandbox: ''
-appid: '374acd24-6ffa-43e5-922d-1865382e3e59'
-localurl: ''
-port: ':8093'
-service: 'demo3' 

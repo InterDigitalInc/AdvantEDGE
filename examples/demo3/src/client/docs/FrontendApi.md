@@ -5,10 +5,10 @@ All URIs are relative to *https://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**infoAmsLogsGet**](FrontendApi.md#infoAmsLogsGet) | **GET** /info/ams/logs | Retrieve ams log on a registered app instance
-[**infoApplicationMecPlatformDeleteDelete**](FrontendApi.md#infoApplicationMecPlatformDeleteDelete) | **DELETE** /info/application/{mecPlatform}/delete | Delete app instance info resources
-[**infoApplicationMecPlatformGet**](FrontendApi.md#infoApplicationMecPlatformGet) | **GET** /info/application/{mecPlatform} | Retrieve app instance info
+[**infoApplicationMecPlatformDeleteDelete**](FrontendApi.md#infoApplicationMecPlatformDeleteDelete) | **DELETE** /info/application/delete | Delete app instance info resources
+[**infoApplicationMecPlatformGet**](FrontendApi.md#infoApplicationMecPlatformGet) | **GET** /info/application | Retrieve app instance info
 [**infoLogsGet**](FrontendApi.md#infoLogsGet) | **GET** /info/logs | Retrieve activity log on a registered app instance
-[**registerAppMecPlatformPost**](FrontendApi.md#registerAppMecPlatformPost) | **POST** /register/app/{mecPlatform} | Register mec platform
+[**registerAppMecPlatformPost**](FrontendApi.md#registerAppMecPlatformPost) | **POST** /register/app | Register user application on platform
 [**serviceAmsDeleteDeviceDelete**](FrontendApi.md#serviceAmsDeleteDeviceDelete) | **DELETE** /service/ams/delete/{device} | Delete AMS device in the AMS service resource
 [**serviceAmsUpdateDevicePut**](FrontendApi.md#serviceAmsUpdateDevicePut) | **PUT** /service/ams/update/{device} | Updates the AMS resource
 
@@ -61,7 +61,7 @@ No authorization required
 
 <a name="infoApplicationMecPlatformDeleteDelete"></a>
 # **infoApplicationMecPlatformDeleteDelete**
-> infoApplicationMecPlatformDeleteDelete(mecPlatform)
+> infoApplicationMecPlatformDeleteDelete()
 
 Delete app instance info resources
 
@@ -73,9 +73,6 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.FrontendApi();
 
-var mecPlatform = null; // Object | MEC platform where the application instance is running
-
-
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -83,14 +80,11 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.infoApplicationMecPlatformDeleteDelete(mecPlatform, callback);
+apiInstance.infoApplicationMecPlatformDeleteDelete(callback);
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **mecPlatform** | [**Object**](.md)| MEC platform where the application instance is running | 
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -107,7 +101,7 @@ No authorization required
 
 <a name="infoApplicationMecPlatformGet"></a>
 # **infoApplicationMecPlatformGet**
-> infoApplicationMecPlatformGet(mecPlatform)
+> infoApplicationMecPlatformGet()
 
 Retrieve app instance info
 
@@ -119,9 +113,6 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.FrontendApi();
 
-var mecPlatform = null; // Object | MEC platform where the application instance is running
-
-
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -129,14 +120,11 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.infoApplicationMecPlatformGet(mecPlatform, callback);
+apiInstance.infoApplicationMecPlatformGet(callback);
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **mecPlatform** | [**Object**](.md)| MEC platform where the application instance is running | 
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -199,20 +187,17 @@ No authorization required
 
 <a name="registerAppMecPlatformPost"></a>
 # **registerAppMecPlatformPost**
-> registerAppMecPlatformPost(mecPlatform)
+> registerAppMecPlatformPost()
 
-Register mec platform
+Register user application on platform
 
-This will register app instance with mec platform
+This method registers application on a mec platform sending acknowledgement, subscriptions, and services.
 
 ### Example
 ```javascript
 var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.FrontendApi();
-
-var mecPlatform = null; // Object | MEC platform where the application instance is running
-
 
 var callback = function(error, data, response) {
   if (error) {
@@ -221,14 +206,11 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.registerAppMecPlatformPost(mecPlatform, callback);
+apiInstance.registerAppMecPlatformPost(callback);
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **mecPlatform** | [**Object**](.md)| MEC platform where the application instance is running | 
+This endpoint does not need any parameter.
 
 ### Return type
 

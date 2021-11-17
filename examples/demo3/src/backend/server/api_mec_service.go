@@ -27,14 +27,6 @@ import (
 	"net/http"
 )
 
-func ServiceCreatePost(w http.ResponseWriter, r *http.Request) {
-	servicePOST(w, r)
-}
-
-func ServiceDeleteDelete(w http.ResponseWriter, r *http.Request) {
-	serviceDELETE(w, r)
-}
-
 func ServicesDiscoverPost(w http.ResponseWriter, r *http.Request) {
 	servicesSubscriptionPOST(w, r)
 }
@@ -49,8 +41,4 @@ func AmsSubscriptionPOST(w http.ResponseWriter, r *http.Request) {
 
 func ContextTransferPOST(w http.ResponseWriter, r *http.Request) {
 	stateTransferPOST(w, r)
-}
-
-func RegisterAppMecPlatformPost(w http.ResponseWriter, r *http.Request) {
-	registerAppMecPlatformPost(w, r)
 }

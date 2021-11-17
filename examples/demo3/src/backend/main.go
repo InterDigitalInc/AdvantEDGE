@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -34,28 +35,28 @@ func main() {
 	)
 
 	// Check command arguments for configuration path
-	// for _, arg := range os.Args {
-	// 	if strings.HasPrefix(arg, ".") {
-	// 		envPath = arg
-	// 	}
-	// }
+	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, ".") {
+			envPath = arg
+		}
+	}
 
 	// Parse filename from path
-	// resp := strings.LastIndex(envPath, "/")
-	// if resp == -1 {
-	// 	log.Fatal("Error parsing command invalid/missing configuration path")
-	// }
+	resp := strings.LastIndex(envPath, "/")
+	if resp == -1 {
+		log.Fatal("Error parsing command invalid/missing configuration path")
+	}
 
 	// Save parsed filename & remove filename from filepath
-	// envName = envPath[resp+1:]
-	// envPath = envPath[:resp]
+	envName = envPath[resp+1:]
+	envPath = envPath[:resp]
 
 	run = true
 
 	go func() {
 
-		// Configure demo 3
-		_, err := server.Init(envPath, envName)
+		// Configure demo 3 & initialize
+		port, err := server.Init(envPath, envName)
 		if err != nil {
 			log.Fatal("Failed to initalize Demo 3 ", err)
 		}
@@ -67,7 +68,7 @@ func main() {
 		router := server.NewRouter()
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
-		log.Fatal(http.ListenAndServe(":8093", handlers.CORS(methods, header)(router)))
+		log.Fatal(http.ListenAndServe(port, handlers.CORS(methods, header)(router)))
 		run = false
 
 	}()
@@ -81,13 +82,14 @@ func main() {
 	}()
 
 	go func() {
-		// Listen for demo 3 channel
+		// Listen for demo 3 done channel
+		// TODO: what happens when app is shut down & pod behaviour
 		<-done
 		run = false
 	}()
 
 	for {
-		// Invoke graceful termination upon program kill or demo 3 err
+		// Invoke graceful termination upon program kill
 		if !run {
 			server.Terminate()
 			break

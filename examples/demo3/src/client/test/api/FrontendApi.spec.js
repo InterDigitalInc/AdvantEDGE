@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes use-case for demo 3 that the user can accomplish using the MEC Sandbox APIs from a MEC application
+ * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
  *
  * OpenAPI spec version: 0.0.1
  *
@@ -70,11 +70,10 @@
       });
       describe('infoApplicationMecPlatformDeleteDelete', function() {
         it('should call infoApplicationMecPlatformDeleteDelete successfully', function(done) {
-          // TODO: uncomment, update parameter values for infoApplicationMecPlatformDeleteDelete call
+          // TODO: uncomment infoApplicationMecPlatformDeleteDelete call
           /*
-          var mecPlatform = null;
 
-          instance.infoApplicationMecPlatformDeleteDelete(mecPlatform, function(error, data, response) {
+          instance.infoApplicationMecPlatformDeleteDelete(function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -89,11 +88,10 @@
       });
       describe('infoApplicationMecPlatformGet', function() {
         it('should call infoApplicationMecPlatformGet successfully', function(done) {
-          // TODO: uncomment, update parameter values for infoApplicationMecPlatformGet call
+          // TODO: uncomment infoApplicationMecPlatformGet call
           /*
-          var mecPlatform = null;
 
-          instance.infoApplicationMecPlatformGet(mecPlatform, function(error, data, response) {
+          instance.infoApplicationMecPlatformGet(function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -127,11 +125,10 @@
       });
       describe('registerAppMecPlatformPost', function() {
         it('should call registerAppMecPlatformPost successfully', function(done) {
-          // TODO: uncomment, update parameter values for registerAppMecPlatformPost call
+          // TODO: uncomment registerAppMecPlatformPost call
           /*
-          var mecPlatform = null;
 
-          instance.registerAppMecPlatformPost(mecPlatform, function(error, data, response) {
+          instance.registerAppMecPlatformPost(function(error, data, response) {
             if (error) {
               done(error);
               return;

@@ -12,13 +12,10 @@ fi
 BINDIR=$1
 mkdir -p $BINDIR
 
-# # Set GO env variables
-# GOOS=linux
-
-# Create vendor folder
-# cd $BASEDIR
-# go mod vendor
+# Copy config file to bin
+cp $BASEDIR/util/app_instance.yaml $BINDIR/demo-server
 
 # Build demo App server
 cd $BASEDIR
+
 go build -o $BINDIR/demo-server .

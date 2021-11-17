@@ -11,8 +11,11 @@ if grep -q '\"warning\": \"^3.' "package-lock.json"; then
     exit
 fi
 
+# Build Rest API JS Client
+$BASEDIR/../client/build.sh
+
 # Build Web UI Distribution using Webpack config
 cd $BASEDIR
-# npm ci
+npm ci
 rm -r $BASEDIR/dist
 npm run build -- --output-path=$BASEDIR/../../bin/demo-frontend

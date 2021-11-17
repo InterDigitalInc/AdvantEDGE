@@ -1,0 +1,6 @@
+mode: 'sandbox'
+sandbox: 'http://'
+mecplatform: 'mep2'
+appid: 'cb7a6606-4718-46fd-b19e-78c915726bb2'
+localurl: 'http://'
+port: ':8094'

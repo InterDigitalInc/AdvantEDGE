@@ -7,11 +7,16 @@ import (
 // Config stores all configuration of Demo 3
 // The values are read by viper from a config file or env file
 type Config struct {
+	Mode          string `mapstructure: mode`
 	SandboxUrl    string `mapstructure:"sandbox"`
+	MecPlatform   string `mapstructure: "mecplatform"`
+	SandboxName   string `mapstructure:"sandboxname"`
 	AppInstanceId string `mapstructure:"appid"`
 	Localurl      string `mapstructure:"localurl"`
 	Port          string `mapstructure:"port"`
-	ServiceName   string `mapstructure:"service"`
+	//SbxController string `mapstructure:sandboxcontrollerurl`
+	// EnablementUrl string `mapstructure:meepenablementurl`
+	// MecIp string `mapstructure:mecip`
 }
 
 // LoadConfig reads configuration from a environment variable specified by path

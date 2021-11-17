@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes use-case for demo 3 that the user can accomplish using the MEC Sandbox APIs from a MEC application
+ * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
  *
  * OpenAPI spec version: 0.0.1
  *
@@ -119,20 +119,13 @@
     /**
      * Delete app instance info resources
      * This method deletes a specific app instance info on a mec platform triggering graceful termination
-     * @param {Object} mecPlatform MEC platform where the application instance is running
      * @param {module:api/FrontendApi~infoApplicationMecPlatformDeleteDeleteCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.infoApplicationMecPlatformDeleteDelete = function(mecPlatform, callback) {
+    this.infoApplicationMecPlatformDeleteDelete = function(callback) {
       var postBody = null;
-
-      // verify the required parameter 'mecPlatform' is set
-      if (mecPlatform === undefined || mecPlatform === null) {
-        throw new Error("Missing the required parameter 'mecPlatform' when calling infoApplicationMecPlatformDeleteDelete");
-      }
 
 
       var pathParams = {
-        'mecPlatform': mecPlatform
       };
       var queryParams = {
       };
@@ -149,7 +142,7 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/info/application/{mecPlatform}/delete', 'DELETE',
+        '/info/application/delete', 'DELETE',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
@@ -166,20 +159,13 @@
     /**
      * Retrieve app instance info
      * This method retrieves a specific app instance info on a mec platform to display on demo frontend
-     * @param {Object} mecPlatform MEC platform where the application instance is running
      * @param {module:api/FrontendApi~infoApplicationMecPlatformGetCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.infoApplicationMecPlatformGet = function(mecPlatform, callback) {
+    this.infoApplicationMecPlatformGet = function(callback) {
       var postBody = null;
-
-      // verify the required parameter 'mecPlatform' is set
-      if (mecPlatform === undefined || mecPlatform === null) {
-        throw new Error("Missing the required parameter 'mecPlatform' when calling infoApplicationMecPlatformGet");
-      }
 
 
       var pathParams = {
-        'mecPlatform': mecPlatform
       };
       var queryParams = {
       };
@@ -196,7 +182,7 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/info/application/{mecPlatform}', 'GET',
+        '/info/application', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
@@ -258,22 +244,15 @@
      */
 
     /**
-     * Register mec platform
-     * This will register app instance with mec platform
-     * @param {Object} mecPlatform MEC platform where the application instance is running
+     * Register user application on platform
+     * This method registers application on a mec platform sending acknowledgement, subscriptions, and services.
      * @param {module:api/FrontendApi~registerAppMecPlatformPostCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.registerAppMecPlatformPost = function(mecPlatform, callback) {
+    this.registerAppMecPlatformPost = function(callback) {
       var postBody = null;
-
-      // verify the required parameter 'mecPlatform' is set
-      if (mecPlatform === undefined || mecPlatform === null) {
-        throw new Error("Missing the required parameter 'mecPlatform' when calling registerAppMecPlatformPost");
-      }
 
 
       var pathParams = {
-        'mecPlatform': mecPlatform
       };
       var queryParams = {
       };
@@ -290,7 +269,7 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/register/app/{mecPlatform}', 'POST',
+        '/register/app', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
