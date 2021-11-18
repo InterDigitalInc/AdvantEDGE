@@ -88,6 +88,8 @@ const (
 	PduSessionRemove string = "REMOVE"
 )
 
+const redisDBTable int = 0
+
 // Declare as variables to enable overwrite in test
 var couchDBAddr string = "http://meep-couchdb-svc-couchdb.default.svc.cluster.local:5984/"
 var redisDBAddr string = "meep-redis-master.default.svc.cluster.local:6379"

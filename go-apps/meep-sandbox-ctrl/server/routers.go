@@ -297,4 +297,11 @@ var routes = Routes{
 		"/sandbox-ctrl/v1/events/{type}",
 		SendEvent,
 	},
+
+	Route{
+		"ServicesGET",
+		strings.ToUpper("Get"),
+		"/sandbox-ctrl/v1/services",
+		ServicesGET,
+	},
 }

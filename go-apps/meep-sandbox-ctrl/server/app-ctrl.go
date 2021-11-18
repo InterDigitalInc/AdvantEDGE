@@ -23,20 +23,17 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
-)
-
-// MQ payload fields
-const (
-	mqFieldAppId   = "id"
-	mqFieldPersist = "persist"
 )
 
 type AppCtrl struct {
@@ -44,7 +41,14 @@ type AppCtrl struct {
 	appStore    *apps.ApplicationStore
 	mqLocal     *mq.MsgQueue
 	handlerId   int
+	rc          *redis.Connector
 }
+
+// MQ payload fields
+const (
+	mqFieldAppId   = "id"
+	mqFieldPersist = "persist"
+)
 
 // App Controller
 var appCtrl *AppCtrl
@@ -57,6 +61,14 @@ func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) error {
 	appCtrl = new(AppCtrl)
 	appCtrl.sandboxName = sandboxName
 	appCtrl.mqLocal = mqLocal
+
+	// Connect to Redis DB
+	appCtrl.rc, err = redis.NewConnector(redisDBAddr, redisDBTable)
+	if err != nil {
+		log.Error("Failed connection to Redis DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB")
 
 	// Create Application Store
 	cfg := &apps.ApplicationStoreCfg{
@@ -460,6 +472,86 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func servicesGET(w http.ResponseWriter, r *http.Request) {
+	log.Info("servicesGET")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// Validate & retrieve query parameters
+	u, _ := url.Parse(r.URL.String())
+	q := u.Query()
+	validParams := []string{"appInstanceId"}
+	err := validateQueryParams(q, validParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	appId := q.Get("appInstanceId")
+
+	// Check if app instance exists
+	if appId != "" {
+		_, err = appCtrl.appStore.Get(appId)
+		if err != nil {
+			http.Error(w, "Invalid App instance ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Retrieve service info list if scenario is active
+	serviceInfoList := []*dataModel.ServiceInfo{}
+	activeModel := getActiveModel()
+	if activeModel != nil {
+		// Create key match string
+		baseKey := dkm.GetKeyRoot(appCtrl.sandboxName) + "app-enablement:mep:*:"
+		var keyMatchStr string
+		if appId == "" {
+			keyMatchStr = baseKey + "app:*:svc:*"
+		} else {
+			keyMatchStr = baseKey + "app:" + appId + ":svc:*"
+		}
+
+		// Get list of services registered to app enablement service
+		err = appCtrl.rc.ForEachJSONEntry(keyMatchStr, populateServiceInfoList, &serviceInfoList)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Send response
+	jsonResponse, err := json.Marshal(serviceInfoList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {
+	// Get query params & userlist from user data
+	serviceInfoList := sInfoList.(*[]*dataModel.ServiceInfo)
+	if serviceInfoList == nil {
+		return errors.New("ServiceInfoList not found")
+	}
+
+	// Use entry key only to avoid dependency on MEC011 packages
+	// Obtain app instance id & service instance id from key
+	fields := strings.Split(strings.TrimPrefix(key, dkm.GetKeyRoot(appCtrl.sandboxName)+"app-enablement:mep:"), ":")
+	if len(fields) != 5 {
+		return nil
+	}
+
+	// Add service info to list
+	serviceInfo := &dataModel.ServiceInfo{
+		AppId: fields[2],
+		Id:    fields[4],
+	}
+	*serviceInfoList = append(*serviceInfoList, serviceInfo)
+	return nil
 }
 
 // Get a new unique app instance
