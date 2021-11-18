@@ -1065,38 +1065,6 @@ definitions:
           $ref: '#/definitions/ServicePort'
     description: Service object
     example: {}
-  ServiceInfo:
-    description: MEC Service information
-    type: object
-    properties:
-      appId:
-        description: Application Instance UUID
-        type: string
-      id:
-        description: Service Instance UUID
-        type: string
-      name:
-        description: Service name
-        type: string
-      catId:
-        description: Service category identifier
-        type: string
-      catName:
-        description: Service category name
-        type: string
-      state:
-        description: Service state
-        type: string
-        enum:
-          - ACTIVE
-          - INACTIVE
-    example:
-      appId: '00afec52-f0b6-464e-a660-33568c0975b9'
-      id: 'b8a203be-ac81-45a6-8d88-fdb1f8f5393b'
-      name: 'MyServiceName'
-      catId: 'id12345'
-      catName: 'MyServiceCategory'
-      state: 'ACTIVE'
   ServicePort:
     type: object
     properties:

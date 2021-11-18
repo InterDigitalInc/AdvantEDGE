@@ -1,0 +1,14 @@
+# AdvantEdgeMecServiceManagementApi.GrantType
+
+## Enum
+
+
+* `AUTHORIZATION_CODE` (value: `"OAUTH2_AUTHORIZATION_CODE"`)
+
+* `IMPLICIT_GRANT` (value: `"OAUTH2_IMPLICIT_GRANT"`)
+
+* `RESOURCE_OWNER` (value: `"OAUTH2_RESOURCE_OWNER"`)
+
+* `CLIENT_CREDENTIALS` (value: `"OAUTH2_CLIENT_CREDENTIALS"`)
+
+

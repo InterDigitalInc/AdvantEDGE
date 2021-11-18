@@ -1,4 +1,4 @@
-# AdvantEdgeMecApplicationSupportApi.ProblemDetails
+# AdvantEdgeMecServiceManagementApi.ProblemDetails
 
 ## Properties
 Name | Type | Description | Notes

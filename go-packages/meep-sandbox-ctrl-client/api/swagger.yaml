@@ -1251,33 +1251,6 @@ paths:
           description: "Unauthorized"
         404:
           description: "Not Found"
-  /services:
-    get:
-      tags:
-      - "Services"
-      description: "This method retrieves registered MEC application services."
-      operationId: "Services_GET"
-      parameters:
-      - name: "appInstanceId"
-        in: "query"
-        description: "MEC application instance identifier"
-        required: false
-        type: "string"
-        x-exportParamName: "AppInstanceId"
-        x-optionalDataType: "String"
-      responses:
-        200:
-          description: "OK"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/ServiceInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
 definitions:
   Scenario:
     type: "object"
@@ -2362,38 +2335,6 @@ definitions:
       name: "MyAppName"
       mepName: "mep1"
       type: "USER"
-  ServiceInfo:
-    type: "object"
-    properties:
-      appId:
-        type: "string"
-        description: "Application Instance UUID"
-      id:
-        type: "string"
-        description: "Service Instance UUID"
-      name:
-        type: "string"
-        description: "Service name"
-      catId:
-        type: "string"
-        description: "Service category identifier"
-      catName:
-        type: "string"
-        description: "Service category name"
-      state:
-        type: "string"
-        description: "Service state"
-        enum:
-        - "ACTIVE"
-        - "INACTIVE"
-    description: "MEC Service information"
-    example:
-      appId: "00afec52-f0b6-464e-a660-33568c0975b9"
-      id: "b8a203be-ac81-45a6-8d88-fdb1f8f5393b"
-      name: "MyServiceName"
-      catId: "id12345"
-      catName: "MyServiceCategory"
-      state: "ACTIVE"
 parameters:
   Body.ActivationInfo:
     in: "body"
@@ -2479,14 +2420,6 @@ parameters:
     required: true
     type: "string"
     x-exportParamName: "UeName"
-  Query.AppInstanceId:
-    name: "appInstanceId"
-    in: "query"
-    description: "MEC application instance identifier"
-    required: false
-    type: "string"
-    x-exportParamName: "AppInstanceId"
-    x-optionalDataType: "String"
   Query.AppName:
     name: "app"
     in: "query"

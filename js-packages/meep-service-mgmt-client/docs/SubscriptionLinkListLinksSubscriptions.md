@@ -1,4 +1,4 @@
-# AdvantEdgeMecApplicationSupportApi.SubscriptionLinkListLinksSubscriptions
+# AdvantEdgeMecServiceManagementApi.SubscriptionLinkListLinksSubscriptions
 
 ## Properties
 Name | Type | Description | Notes

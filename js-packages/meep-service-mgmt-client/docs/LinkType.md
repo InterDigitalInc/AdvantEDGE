@@ -1,4 +1,4 @@
-# AdvantEdgeMecApplicationSupportApi.LinkType
+# AdvantEdgeMecServiceManagementApi.LinkType
 
 ## Properties
 Name | Type | Description | Notes

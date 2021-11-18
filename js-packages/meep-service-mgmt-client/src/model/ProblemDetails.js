@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * AdvantEDGE MEC Service Management API
+ * MEC Service Management Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below).
  *
  * OpenAPI spec version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -37,10 +37,10 @@
     module.exports = factory(require('../ApiClient'));
   } else {
     // Browser globals (root is window)
-    if (!root.AdvantEdgeMecApplicationSupportApi) {
-      root.AdvantEdgeMecApplicationSupportApi = {};
+    if (!root.AdvantEdgeMecServiceManagementApi) {
+      root.AdvantEdgeMecServiceManagementApi = {};
     }
-    root.AdvantEdgeMecApplicationSupportApi.ProblemDetails = factory(root.AdvantEdgeMecApplicationSupportApi.ApiClient);
+    root.AdvantEdgeMecServiceManagementApi.ProblemDetails = factory(root.AdvantEdgeMecServiceManagementApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';

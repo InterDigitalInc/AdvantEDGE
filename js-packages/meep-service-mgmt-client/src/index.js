@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * AdvantEDGE MEC Service Management API
+ * MEC Service Management Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below).
  *
  * OpenAPI spec version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -31,23 +31,23 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AppReadyConfirmation', 'model/AppTerminationConfirmation', 'model/AppTerminationNotification', 'model/AppTerminationNotificationLinks', 'model/AppTerminationNotificationSubscription', 'model/AppTerminationNotificationSubscriptionLinks', 'model/CurrentTime', 'model/DestinationInterface', 'model/DnsRule', 'model/LinkType', 'model/OperationActionType', 'model/ProblemDetails', 'model/SubscriptionLinkList', 'model/SubscriptionLinkListLinks', 'model/SubscriptionLinkListLinksSubscriptions', 'model/TimingCaps', 'model/TimingCapsNtpServers', 'model/TimingCapsPtpMasters', 'model/TimingCapsTimeStamp', 'model/TrafficFilter', 'model/TrafficRule', 'model/TunnelInfo', 'api/MecAppSupportApi', 'api/UnsupportedApi'], factory);
+    define(['ApiClient', 'model/CategoryRef', 'model/CategoryRefs', 'model/EndPointInfoAddresses', 'model/EndPointInfoAddressesAddresses', 'model/EndPointInfoAlternative', 'model/EndPointInfoUris', 'model/GrantType', 'model/LinkType', 'model/LocalityType', 'model/OAuth2Info', 'model/OneOfServiceInfoPost', 'model/OneOfTransportInfoEndpoint', 'model/ProblemDetails', 'model/SecurityInfo', 'model/Self', 'model/SerAvailabilityNotificationSubscription', 'model/SerAvailabilityNotificationSubscriptionFilteringCriteria', 'model/SerInstanceId', 'model/SerInstanceIds', 'model/SerName', 'model/SerNames', 'model/SerializerType', 'model/ServiceAvailabilityNotification', 'model/ServiceAvailabilityNotificationServiceReferences', 'model/ServiceInfo', 'model/ServiceInfoPost', 'model/ServiceState', 'model/ServiceStates', 'model/Subscription', 'model/SubscriptionLinkList', 'model/SubscriptionLinkListLinks', 'model/SubscriptionLinkListLinksSubscriptions', 'model/TransportInfo', 'model/TransportType', 'api/MecServiceMgmtApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/AppReadyConfirmation'), require('./model/AppTerminationConfirmation'), require('./model/AppTerminationNotification'), require('./model/AppTerminationNotificationLinks'), require('./model/AppTerminationNotificationSubscription'), require('./model/AppTerminationNotificationSubscriptionLinks'), require('./model/CurrentTime'), require('./model/DestinationInterface'), require('./model/DnsRule'), require('./model/LinkType'), require('./model/OperationActionType'), require('./model/ProblemDetails'), require('./model/SubscriptionLinkList'), require('./model/SubscriptionLinkListLinks'), require('./model/SubscriptionLinkListLinksSubscriptions'), require('./model/TimingCaps'), require('./model/TimingCapsNtpServers'), require('./model/TimingCapsPtpMasters'), require('./model/TimingCapsTimeStamp'), require('./model/TrafficFilter'), require('./model/TrafficRule'), require('./model/TunnelInfo'), require('./api/MecAppSupportApi'), require('./api/UnsupportedApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/CategoryRef'), require('./model/CategoryRefs'), require('./model/EndPointInfoAddresses'), require('./model/EndPointInfoAddressesAddresses'), require('./model/EndPointInfoAlternative'), require('./model/EndPointInfoUris'), require('./model/GrantType'), require('./model/LinkType'), require('./model/LocalityType'), require('./model/OAuth2Info'), require('./model/OneOfServiceInfoPost'), require('./model/OneOfTransportInfoEndpoint'), require('./model/ProblemDetails'), require('./model/SecurityInfo'), require('./model/Self'), require('./model/SerAvailabilityNotificationSubscription'), require('./model/SerAvailabilityNotificationSubscriptionFilteringCriteria'), require('./model/SerInstanceId'), require('./model/SerInstanceIds'), require('./model/SerName'), require('./model/SerNames'), require('./model/SerializerType'), require('./model/ServiceAvailabilityNotification'), require('./model/ServiceAvailabilityNotificationServiceReferences'), require('./model/ServiceInfo'), require('./model/ServiceInfoPost'), require('./model/ServiceState'), require('./model/ServiceStates'), require('./model/Subscription'), require('./model/SubscriptionLinkList'), require('./model/SubscriptionLinkListLinks'), require('./model/SubscriptionLinkListLinksSubscriptions'), require('./model/TransportInfo'), require('./model/TransportType'), require('./api/MecServiceMgmtApi'));
   }
-}(function(ApiClient, AppReadyConfirmation, AppTerminationConfirmation, AppTerminationNotification, AppTerminationNotificationLinks, AppTerminationNotificationSubscription, AppTerminationNotificationSubscriptionLinks, CurrentTime, DestinationInterface, DnsRule, LinkType, OperationActionType, ProblemDetails, SubscriptionLinkList, SubscriptionLinkListLinks, SubscriptionLinkListLinksSubscriptions, TimingCaps, TimingCapsNtpServers, TimingCapsPtpMasters, TimingCapsTimeStamp, TrafficFilter, TrafficRule, TunnelInfo, MecAppSupportApi, UnsupportedApi) {
+}(function(ApiClient, CategoryRef, CategoryRefs, EndPointInfoAddresses, EndPointInfoAddressesAddresses, EndPointInfoAlternative, EndPointInfoUris, GrantType, LinkType, LocalityType, OAuth2Info, OneOfServiceInfoPost, OneOfTransportInfoEndpoint, ProblemDetails, SecurityInfo, Self, SerAvailabilityNotificationSubscription, SerAvailabilityNotificationSubscriptionFilteringCriteria, SerInstanceId, SerInstanceIds, SerName, SerNames, SerializerType, ServiceAvailabilityNotification, ServiceAvailabilityNotificationServiceReferences, ServiceInfo, ServiceInfoPost, ServiceState, ServiceStates, Subscription, SubscriptionLinkList, SubscriptionLinkListLinks, SubscriptionLinkListLinksSubscriptions, TransportInfo, TransportType, MecServiceMgmtApi) {
   'use strict';
 
   /**
-   * MEC_Application_Support_Service_is_AdvantEDGEs_implementation_of__ETSI_MEC_ISG_MEC011_Application_Enablement_API_httpswww_etsi_orgdeliveretsi_gsMEC001_09901102_01_01_60gs_MEC011v020101p_pdf_p_Copyright__c_ETSI_2017_httpsforge_etsi_orgetsi_forge_copyright_notice_txt_pMicro_servicebr_meep_app_enablement_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_app_enablementserverapp_support_pType__UsagebrEdge_Service_used_by_edge_applications_that_want_to_get_information_about_applications_in_the_network_pNotebrAdvantEDGE_supports_a_selected_subset_of_Application_Support_API_endpoints__see_below_.<br>
+   * MEC_Service_Management_Service_is_AdvantEDGEs_implementation_of__ETSI_MEC_ISG_MEC011_Application_Enablement_API_httpswww_etsi_orgdeliveretsi_gsMEC001_09901102_01_01_60gs_MEC011v020101p_pdf_p_Copyright__c_ETSI_2017_httpsforge_etsi_orgetsi_forge_copyright_notice_txt_pMicro_servicebr_meep_app_enablement_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_app_enablementserverservice_mgmt_pType__UsagebrEdge_Service_used_by_edge_applications_that_want_to_get_information_about_services_in_the_network_pNotebrAdvantEDGE_supports_all_of_Service_Management_API_endpoints__see_below_.<br>
    * The <code>index</code> module provides access to constructors for all the classes which comprise the public API.
    * <p>
    * An AMD (recommended!) or CommonJS application will generally do something equivalent to the following:
    * <pre>
-   * var AdvantEdgeMecApplicationSupportApi = require('index'); // See note below*.
-   * var xxxSvc = new AdvantEdgeMecApplicationSupportApi.XxxApi(); // Allocate the API class we're going to use.
-   * var yyyModel = new AdvantEdgeMecApplicationSupportApi.Yyy(); // Construct a model instance.
+   * var AdvantEdgeMecServiceManagementApi = require('index'); // See note below*.
+   * var xxxSvc = new AdvantEdgeMecServiceManagementApi.XxxApi(); // Allocate the API class we're going to use.
+   * var yyyModel = new AdvantEdgeMecServiceManagementApi.Yyy(); // Construct a model instance.
    * yyyModel.someProperty = 'someValue';
    * ...
    * var zzz = xxxSvc.doSomething(yyyModel); // Invoke the service.
@@ -59,8 +59,8 @@
    * <p>
    * A non-AMD browser application (discouraged) might do something like this:
    * <pre>
-   * var xxxSvc = new AdvantEdgeMecApplicationSupportApi.XxxApi(); // Allocate the API class we're going to use.
-   * var yyy = new AdvantEdgeMecApplicationSupportApi.Yyy(); // Construct a model instance.
+   * var xxxSvc = new AdvantEdgeMecServiceManagementApi.XxxApi(); // Allocate the API class we're going to use.
+   * var yyy = new AdvantEdgeMecServiceManagementApi.Yyy(); // Construct a model instance.
    * yyyModel.someProperty = 'someValue';
    * ...
    * var zzz = xxxSvc.doSomething(yyyModel); // Invoke the service.
@@ -77,65 +77,150 @@
      */
     ApiClient: ApiClient,
     /**
-     * The AppReadyConfirmation model constructor.
-     * @property {module:model/AppReadyConfirmation}
+     * The CategoryRef model constructor.
+     * @property {module:model/CategoryRef}
      */
-    AppReadyConfirmation: AppReadyConfirmation,
+    CategoryRef: CategoryRef,
     /**
-     * The AppTerminationConfirmation model constructor.
-     * @property {module:model/AppTerminationConfirmation}
+     * The CategoryRefs model constructor.
+     * @property {module:model/CategoryRefs}
      */
-    AppTerminationConfirmation: AppTerminationConfirmation,
+    CategoryRefs: CategoryRefs,
     /**
-     * The AppTerminationNotification model constructor.
-     * @property {module:model/AppTerminationNotification}
+     * The EndPointInfoAddresses model constructor.
+     * @property {module:model/EndPointInfoAddresses}
      */
-    AppTerminationNotification: AppTerminationNotification,
+    EndPointInfoAddresses: EndPointInfoAddresses,
     /**
-     * The AppTerminationNotificationLinks model constructor.
-     * @property {module:model/AppTerminationNotificationLinks}
+     * The EndPointInfoAddressesAddresses model constructor.
+     * @property {module:model/EndPointInfoAddressesAddresses}
      */
-    AppTerminationNotificationLinks: AppTerminationNotificationLinks,
+    EndPointInfoAddressesAddresses: EndPointInfoAddressesAddresses,
     /**
-     * The AppTerminationNotificationSubscription model constructor.
-     * @property {module:model/AppTerminationNotificationSubscription}
+     * The EndPointInfoAlternative model constructor.
+     * @property {module:model/EndPointInfoAlternative}
      */
-    AppTerminationNotificationSubscription: AppTerminationNotificationSubscription,
+    EndPointInfoAlternative: EndPointInfoAlternative,
     /**
-     * The AppTerminationNotificationSubscriptionLinks model constructor.
-     * @property {module:model/AppTerminationNotificationSubscriptionLinks}
+     * The EndPointInfoUris model constructor.
+     * @property {module:model/EndPointInfoUris}
      */
-    AppTerminationNotificationSubscriptionLinks: AppTerminationNotificationSubscriptionLinks,
+    EndPointInfoUris: EndPointInfoUris,
     /**
-     * The CurrentTime model constructor.
-     * @property {module:model/CurrentTime}
+     * The GrantType model constructor.
+     * @property {module:model/GrantType}
      */
-    CurrentTime: CurrentTime,
-    /**
-     * The DestinationInterface model constructor.
-     * @property {module:model/DestinationInterface}
-     */
-    DestinationInterface: DestinationInterface,
-    /**
-     * The DnsRule model constructor.
-     * @property {module:model/DnsRule}
-     */
-    DnsRule: DnsRule,
+    GrantType: GrantType,
     /**
      * The LinkType model constructor.
      * @property {module:model/LinkType}
      */
     LinkType: LinkType,
     /**
-     * The OperationActionType model constructor.
-     * @property {module:model/OperationActionType}
+     * The LocalityType model constructor.
+     * @property {module:model/LocalityType}
      */
-    OperationActionType: OperationActionType,
+    LocalityType: LocalityType,
+    /**
+     * The OAuth2Info model constructor.
+     * @property {module:model/OAuth2Info}
+     */
+    OAuth2Info: OAuth2Info,
+    /**
+     * The OneOfServiceInfoPost model constructor.
+     * @property {module:model/OneOfServiceInfoPost}
+     */
+    OneOfServiceInfoPost: OneOfServiceInfoPost,
+    /**
+     * The OneOfTransportInfoEndpoint model constructor.
+     * @property {module:model/OneOfTransportInfoEndpoint}
+     */
+    OneOfTransportInfoEndpoint: OneOfTransportInfoEndpoint,
     /**
      * The ProblemDetails model constructor.
      * @property {module:model/ProblemDetails}
      */
     ProblemDetails: ProblemDetails,
+    /**
+     * The SecurityInfo model constructor.
+     * @property {module:model/SecurityInfo}
+     */
+    SecurityInfo: SecurityInfo,
+    /**
+     * The Self model constructor.
+     * @property {module:model/Self}
+     */
+    Self: Self,
+    /**
+     * The SerAvailabilityNotificationSubscription model constructor.
+     * @property {module:model/SerAvailabilityNotificationSubscription}
+     */
+    SerAvailabilityNotificationSubscription: SerAvailabilityNotificationSubscription,
+    /**
+     * The SerAvailabilityNotificationSubscriptionFilteringCriteria model constructor.
+     * @property {module:model/SerAvailabilityNotificationSubscriptionFilteringCriteria}
+     */
+    SerAvailabilityNotificationSubscriptionFilteringCriteria: SerAvailabilityNotificationSubscriptionFilteringCriteria,
+    /**
+     * The SerInstanceId model constructor.
+     * @property {module:model/SerInstanceId}
+     */
+    SerInstanceId: SerInstanceId,
+    /**
+     * The SerInstanceIds model constructor.
+     * @property {module:model/SerInstanceIds}
+     */
+    SerInstanceIds: SerInstanceIds,
+    /**
+     * The SerName model constructor.
+     * @property {module:model/SerName}
+     */
+    SerName: SerName,
+    /**
+     * The SerNames model constructor.
+     * @property {module:model/SerNames}
+     */
+    SerNames: SerNames,
+    /**
+     * The SerializerType model constructor.
+     * @property {module:model/SerializerType}
+     */
+    SerializerType: SerializerType,
+    /**
+     * The ServiceAvailabilityNotification model constructor.
+     * @property {module:model/ServiceAvailabilityNotification}
+     */
+    ServiceAvailabilityNotification: ServiceAvailabilityNotification,
+    /**
+     * The ServiceAvailabilityNotificationServiceReferences model constructor.
+     * @property {module:model/ServiceAvailabilityNotificationServiceReferences}
+     */
+    ServiceAvailabilityNotificationServiceReferences: ServiceAvailabilityNotificationServiceReferences,
+    /**
+     * The ServiceInfo model constructor.
+     * @property {module:model/ServiceInfo}
+     */
+    ServiceInfo: ServiceInfo,
+    /**
+     * The ServiceInfoPost model constructor.
+     * @property {module:model/ServiceInfoPost}
+     */
+    ServiceInfoPost: ServiceInfoPost,
+    /**
+     * The ServiceState model constructor.
+     * @property {module:model/ServiceState}
+     */
+    ServiceState: ServiceState,
+    /**
+     * The ServiceStates model constructor.
+     * @property {module:model/ServiceStates}
+     */
+    ServiceStates: ServiceStates,
+    /**
+     * The Subscription model constructor.
+     * @property {module:model/Subscription}
+     */
+    Subscription: Subscription,
     /**
      * The SubscriptionLinkList model constructor.
      * @property {module:model/SubscriptionLinkList}
@@ -152,50 +237,20 @@
      */
     SubscriptionLinkListLinksSubscriptions: SubscriptionLinkListLinksSubscriptions,
     /**
-     * The TimingCaps model constructor.
-     * @property {module:model/TimingCaps}
+     * The TransportInfo model constructor.
+     * @property {module:model/TransportInfo}
      */
-    TimingCaps: TimingCaps,
+    TransportInfo: TransportInfo,
     /**
-     * The TimingCapsNtpServers model constructor.
-     * @property {module:model/TimingCapsNtpServers}
+     * The TransportType model constructor.
+     * @property {module:model/TransportType}
      */
-    TimingCapsNtpServers: TimingCapsNtpServers,
+    TransportType: TransportType,
     /**
-     * The TimingCapsPtpMasters model constructor.
-     * @property {module:model/TimingCapsPtpMasters}
+     * The MecServiceMgmtApi service constructor.
+     * @property {module:api/MecServiceMgmtApi}
      */
-    TimingCapsPtpMasters: TimingCapsPtpMasters,
-    /**
-     * The TimingCapsTimeStamp model constructor.
-     * @property {module:model/TimingCapsTimeStamp}
-     */
-    TimingCapsTimeStamp: TimingCapsTimeStamp,
-    /**
-     * The TrafficFilter model constructor.
-     * @property {module:model/TrafficFilter}
-     */
-    TrafficFilter: TrafficFilter,
-    /**
-     * The TrafficRule model constructor.
-     * @property {module:model/TrafficRule}
-     */
-    TrafficRule: TrafficRule,
-    /**
-     * The TunnelInfo model constructor.
-     * @property {module:model/TunnelInfo}
-     */
-    TunnelInfo: TunnelInfo,
-    /**
-     * The MecAppSupportApi service constructor.
-     * @property {module:api/MecAppSupportApi}
-     */
-    MecAppSupportApi: MecAppSupportApi,
-    /**
-     * The UnsupportedApi service constructor.
-     * @property {module:api/UnsupportedApi}
-     */
-    UnsupportedApi: UnsupportedApi
+    MecServiceMgmtApi: MecServiceMgmtApi
   };
 
   return exports;

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * AdvantEDGE MEC Service Management API
+ * MEC Service Management Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below).
  *
  * OpenAPI spec version: 2.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -37,9 +37,9 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.AdvantEdgeMecApplicationSupportApi);
+    factory(root.expect, root.AdvantEdgeMecServiceManagementApi);
   }
-}(this, function(expect, AdvantEdgeMecApplicationSupportApi) {
+}(this, function(expect, AdvantEdgeMecServiceManagementApi) {
   'use strict';
 
   var instance;
@@ -47,12 +47,12 @@
   describe('(package)', function() {
     describe('ProblemDetails', function() {
       beforeEach(function() {
-        instance = new AdvantEdgeMecApplicationSupportApi.ProblemDetails();
+        instance = new AdvantEdgeMecServiceManagementApi.ProblemDetails();
       });
 
       it('should create an instance of ProblemDetails', function() {
         // TODO: update the code to test ProblemDetails
-        expect(instance).to.be.a(AdvantEdgeMecApplicationSupportApi.ProblemDetails);
+        expect(instance).to.be.a(AdvantEdgeMecServiceManagementApi.ProblemDetails);
       });
 
       it('should have the property type (base name: "type")', function() {

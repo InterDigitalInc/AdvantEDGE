@@ -148,7 +148,6 @@ Class | Method | HTTP request | Description
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**playReplayFile**](docs/EventReplayApi.md#playReplayFile) | **POST** /replay/{name}/play | Execute a replay file present in the platform store
 *AdvantEdgeSandboxControllerRestApi.EventReplayApi* | [**stopReplayFile**](docs/EventReplayApi.md#stopReplayFile) | **POST** /replay/{name}/stop | Stop execution of a replay file
 *AdvantEdgeSandboxControllerRestApi.EventsApi* | [**sendEvent**](docs/EventsApi.md#sendEvent) | **POST** /events/{type} | Send events to the deployed scenario
-*AdvantEdgeSandboxControllerRestApi.ServicesApi* | [**servicesGET**](docs/ServicesApi.md#servicesGET) | **GET** /services | 
 
 
 ## Documentation for Models
@@ -201,7 +200,6 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeSandboxControllerRestApi.ScenarioConfig](docs/ScenarioConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.ScenarioNode](docs/ScenarioNode.md)
  - [AdvantEdgeSandboxControllerRestApi.ServiceConfig](docs/ServiceConfig.md)
- - [AdvantEdgeSandboxControllerRestApi.ServiceInfo](docs/ServiceInfo.md)
  - [AdvantEdgeSandboxControllerRestApi.ServicePort](docs/ServicePort.md)
  - [AdvantEdgeSandboxControllerRestApi.Zone](docs/Zone.md)
  - [AdvantEdgeSandboxControllerRestApi.Zones](docs/Zones.md)
