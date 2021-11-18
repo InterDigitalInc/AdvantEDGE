@@ -12,9 +12,6 @@ fi
 BINDIR=$1
 mkdir -p $BINDIR
 
-# Copy config file to bin
-cp $BASEDIR/util/app_instance.yaml $BINDIR/demo-server
-
 # Build demo App server
 cd $BASEDIR
 
