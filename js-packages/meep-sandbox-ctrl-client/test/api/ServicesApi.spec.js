@@ -73,14 +73,6 @@
               expect(data.appId).to.be("");
               expect(data.id).to.be.a('string');
               expect(data.id).to.be("");
-              expect(data.name).to.be.a('string');
-              expect(data.name).to.be("");
-              expect(data.catId).to.be.a('string');
-              expect(data.catId).to.be("");
-              expect(data.catName).to.be.a('string');
-              expect(data.catName).to.be("");
-              expect(data.state).to.be.a('string');
-              expect(data.state).to.be("ACTIVE");
             }
 
             done();

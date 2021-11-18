@@ -1065,6 +1065,22 @@ definitions:
           $ref: '#/definitions/ServicePort'
     description: Service object
     example: {}
+  ServiceInfo:
+    description: MEC Service information
+    type: object
+    required:
+      - appId
+      - id
+    properties:
+      appId:
+        description: Application Instance UUID
+        type: string
+      id:
+        description: Service Instance UUID
+        type: string
+    example:
+      appId: '00afec52-f0b6-464e-a660-33568c0975b9'
+      id: 'b8a203be-ac81-45a6-8d88-fdb1f8f5393b'
   ServicePort:
     type: object
     properties:

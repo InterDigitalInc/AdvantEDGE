@@ -56,8 +56,12 @@
    * MEC Service information
    * @alias module:model/ServiceInfo
    * @class
+   * @param appId {String} Application Instance UUID
+   * @param id {String} Service Instance UUID
    */
-  var exports = function() {
+  var exports = function(appId, id) {
+    this.appId = appId;
+    this.id = id;
   };
 
   /**
@@ -74,14 +78,6 @@
         obj.appId = ApiClient.convertToType(data['appId'], 'String');
       if (data.hasOwnProperty('id'))
         obj.id = ApiClient.convertToType(data['id'], 'String');
-      if (data.hasOwnProperty('name'))
-        obj.name = ApiClient.convertToType(data['name'], 'String');
-      if (data.hasOwnProperty('catId'))
-        obj.catId = ApiClient.convertToType(data['catId'], 'String');
-      if (data.hasOwnProperty('catName'))
-        obj.catName = ApiClient.convertToType(data['catName'], 'String');
-      if (data.hasOwnProperty('state'))
-        obj.state = ApiClient.convertToType(data['state'], 'String');
     }
     return obj;
   }
@@ -97,50 +93,6 @@
    * @member {String} id
    */
   exports.prototype.id = undefined;
-
-  /**
-   * Service name
-   * @member {String} name
-   */
-  exports.prototype.name = undefined;
-
-  /**
-   * Service category identifier
-   * @member {String} catId
-   */
-  exports.prototype.catId = undefined;
-
-  /**
-   * Service category name
-   * @member {String} catName
-   */
-  exports.prototype.catName = undefined;
-
-  /**
-   * Service state
-   * @member {module:model/ServiceInfo.StateEnum} state
-   */
-  exports.prototype.state = undefined;
-
-
-  /**
-   * Allowed values for the <code>state</code> property.
-   * @enum {String}
-   * @readonly
-   */
-  exports.StateEnum = {
-    /**
-     * value: "ACTIVE"
-     * @const
-     */
-    ACTIVE: "ACTIVE",
-
-    /**
-     * value: "INACTIVE"
-     * @const
-     */
-    INACTIVE: "INACTIVE"
-  };
 
   return exports;
 

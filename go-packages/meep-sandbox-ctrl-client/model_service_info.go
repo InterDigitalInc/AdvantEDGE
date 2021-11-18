@@ -27,15 +27,7 @@ package client
 // MEC Service information
 type ServiceInfo struct {
 	// Application Instance UUID
-	AppId string `json:"appId,omitempty"`
+	AppId string `json:"appId"`
 	// Service Instance UUID
-	Id string `json:"id,omitempty"`
-	// Service name
-	Name string `json:"name,omitempty"`
-	// Service category identifier
-	CatId string `json:"catId,omitempty"`
-	// Service category name
-	CatName string `json:"catName,omitempty"`
-	// Service state
-	State string `json:"state,omitempty"`
+	Id string `json:"id"`
 }
