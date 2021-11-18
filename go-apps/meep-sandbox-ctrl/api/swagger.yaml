@@ -21,7 +21,6 @@ tags:
 - name: "Event Replay"
 - name: "Connectivity"
 - name: "Applications"
-- name: "Services"
 consumes:
 - "application/json"
 produces:

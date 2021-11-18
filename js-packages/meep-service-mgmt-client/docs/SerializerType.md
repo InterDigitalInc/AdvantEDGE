@@ -7,6 +7,6 @@
 
 * `XML` (value: `"XML"`)
 
-* `PROTOBUF3` (value: `"PROTOBUF3"`)
+* `pROTOBUF3` (value: `"PROTOBUF3"`)
 
 

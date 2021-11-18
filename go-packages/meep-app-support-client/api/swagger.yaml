@@ -1,13 +1,13 @@
 openapi: 3.0.2
 info:
   title: AdvantEDGE MEC Application Support API
-  description: MEC Application Support Service is AdvantEDGE's implementation of [ETSI
-    MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)
-    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-    <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support)
-    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about applications in the network <p>**Note**<br>AdvantEDGE supports
-    a selected subset of Application Support API endpoints (see below).
+  description: "MEC Application Support Service is AdvantEDGE's implementation of\
+    \ [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)\
+    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about applications in the network <p>**Note**<br>AdvantEDGE supports\
+    \ a selected subset of Application Support API endpoints (see below)."
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -16,7 +16,7 @@ info:
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 2.1.1
 externalDocs:
-  description: ETSI GS MEC011 Application Enablement API, V2.1.1
+  description: "ETSI GS MEC011 Application Enablement API, V2.1.1"
   url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
 servers:
 - url: https://localhost/sandboxname/mec_app_support/v1
@@ -198,8 +198,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: Precondition Failed. It is used when a condition has failed
-            during conditional requests,  e.g. when using ETags to avoid write conflicts.
+          description: "Precondition Failed. It is used when a condition has failed\
+            \ during conditional requests,  e.g. when using ETags to avoid write conflicts."
           content:
             application/problem+json:
               schema:
@@ -322,7 +322,7 @@ paths:
     put:
       tags:
       - unsupported
-      description: This method activates, de-activates or updates a traffic rule.
+      description: "This method activates, de-activates or updates a traffic rule."
       operationId: ApplicationsDnsRule_PUT
       parameters:
       - name: appInstanceId
@@ -377,8 +377,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: Precondition Failed. It is used when a condition has failed
-            during conditional requests,  e.g. when using ETags to avoid write conflicts.
+          description: "Precondition Failed. It is used when a condition has failed\
+            \ during conditional requests,  e.g. when using ETags to avoid write conflicts."
           content:
             application/problem+json:
               schema:
@@ -387,9 +387,9 @@ paths:
     get:
       tags:
       - mec_app_support
-      description: The GET method may be used to request information about all subscriptions
-        for this requestor. Upon success, the response contains entity body with all
-        the subscriptions for the requestor.
+      description: "The GET method may be used to request information about all subscriptions\
+        \ for this requestor. Upon success, the response contains entity body with\
+        \ all the subscriptions for the requestor."
       operationId: ApplicationsSubscriptions_GET
       parameters:
       - name: appInstanceId
@@ -403,8 +403,8 @@ paths:
           type: string
       responses:
         "200":
-          description: Upon success, a response body containing the list of links
-            to the requested subscriptions is returned.
+          description: "Upon success, a response body containing the list of links\
+            \ to the requested subscriptions is returned."
           content:
             application/json:
               schema:
@@ -438,9 +438,10 @@ paths:
     post:
       tags:
       - mec_app_support
-      description: The POST method may be used to create a new subscription. One example
-        use case is to create a new subscription to the MEC service availability notifications.
-        Upon success, the response contains entity body describing the created subscription.
+      description: "The POST method may be used to create a new subscription. One\
+        \ example use case is to create a new subscription to the MEC service availability\
+        \ notifications. Upon success, the response contains entity body describing\
+        \ the created subscription."
       operationId: ApplicationsSubscriptions_POST
       parameters:
       - name: appInstanceId
@@ -503,9 +504,9 @@ paths:
     get:
       tags:
       - mec_app_support
-      description: The GET method requests information about a subscription for this
-        requestor. Upon success, the response contains entity body with the subscription
-        for the requestor.
+      description: "The GET method requests information about a subscription for this\
+        \ requestor. Upon success, the response contains entity body with the subscription\
+        \ for the requestor."
       operationId: ApplicationsSubscription_GET
       parameters:
       - name: appInstanceId
@@ -527,8 +528,8 @@ paths:
           type: string
       responses:
         "200":
-          description: Upon success, a response body containing the requested subscription
-            is returned.
+          description: "Upon success, a response body containing the requested subscription\
+            \ is returned."
           content:
             application/json:
               schema:
@@ -640,9 +641,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "409":
-          description: Conflict. The operation cannot be executed currently, due to
-            a conflict with  the state of the resource. Typically, this is because
-            the application  instance resource is in NOT_INSTANTIATED state.
+          description: "Conflict. The operation cannot be executed currently, due\
+            \ to a conflict with  the state of the resource. Typically, this is because\
+            \ the application  instance resource is in NOT_INSTANTIATED state."
           content:
             application/problem+json:
               schema:
@@ -697,9 +698,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "409":
-          description: Conflict. The operation cannot be executed currently, due to
-            a conflict with  the state of the resource. Typically, this is because
-            the application  instance resource is in NOT_INSTANTIATED state.
+          description: "Conflict. The operation cannot be executed currently, due\
+            \ to a conflict with  the state of the resource. Typically, this is because\
+            \ the application  instance resource is in NOT_INSTANTIATED state."
           content:
             application/problem+json:
               schema:
@@ -803,10 +804,10 @@ components:
       properties:
         operationAction:
           $ref: '#/components/schemas/OperationActionType'
-      description: This type represents the information that the MEC application instance
-        provides to the MEC platform when informing it that the application has completed
-        its application level related terminate/stop actions, e.g. retention of application
-        state in the case of stop.
+      description: "This type represents the information that the MEC application\
+        \ instance provides to the MEC platform when informing it that the application\
+        \ has completed its application level related terminate/stop actions, e.g.\
+        \ retention of application state in the case of stop."
     AppTerminationNotification:
       required:
       - _links
@@ -871,13 +872,13 @@ components:
       properties:
         seconds:
           type: integer
-          description: The seconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC
+          description: "The seconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC"
           format: uint32
         nanoSeconds:
           type: integer
-          description: The nanoseconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC
+          description: "The nanoseconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC"
           format: uint32
         timeSourceStatus:
           type: string
@@ -916,10 +917,10 @@ components:
         dstIpAddress:
           type: string
           description: IP address of the remote destination
-      description: This type represents the destination interface. If the action is
-        FORWARD_DECAPSULATED, FORWARD_ENCAPSULATED or PASSTHROUGH one value shall
-        be provided. If the action is DUPLICATE_DECAPSULATED or DUPLICATE_ENCAPSULATED,
-        two values shall be provided. If the action is DROP, no value shall be provided.
+      description: "This type represents the destination interface. If the action\
+        \ is FORWARD_DECAPSULATED, FORWARD_ENCAPSULATED or PASSTHROUGH one value shall\
+        \ be provided. If the action is DUPLICATE_DECAPSULATED or DUPLICATE_ENCAPSULATED,\
+        \ two values shall be provided. If the action is DROP, no value shall be provided."
       example:
         interfaceType: TUNNEL
         dstIpAddress: dstIpAddress
@@ -1019,7 +1020,7 @@ components:
           format: uri
         title:
           type: string
-          description: A short, human-readable summary of the problem type
+          description: "A short, human-readable summary of the problem type"
         status:
           type: integer
           description: The HTTP status code for this occurrence of the problem
@@ -1081,19 +1082,19 @@ components:
       properties:
         srcAddress:
           type: array
-          description: An IP address or a range of IP address. For IPv4, the IP address
-            could be an IP address plus mask, or an individual IP address, or a range
-            of IP addresses. For IPv6, the IP address could be an IP prefix, or a
-            range of IP prefixes.
+          description: "An IP address or a range of IP address. For IPv4, the IP address\
+            \ could be an IP address plus mask, or an individual IP address, or a\
+            \ range of IP addresses. For IPv6, the IP address could be an IP prefix,\
+            \ or a range of IP prefixes."
           items:
             type: string
             description: Identify the traffic ip address.
         dstAddress:
           type: array
-          description: An IP address or a range of IP address. For IPv4, the IP address
-            could be an IP address plus mask, or an individual IP address, or a range
-            of IP addresses. For IPv6, the IP address could be an IP prefix, or a
-            range of IP prefixes.
+          description: "An IP address or a range of IP address. For IPv4, the IP address\
+            \ could be an IP address plus mask, or an individual IP address, or a\
+            \ range of IP addresses. For IPv6, the IP address could be an IP prefix,\
+            \ or a range of IP prefixes."
           items:
             type: string
             description: Identify the traffic ip address.
@@ -1216,8 +1217,8 @@ components:
           - PACKET
         priority:
           type: integer
-          description: Priority of this traffic rule. If traffic rule conflicts, the
-            one with higher priority take precedence
+          description: "Priority of this traffic rule. If traffic rule conflicts,\
+            \ the one with higher priority take precedence"
           format: uint32
         trafficFilter:
           type: array
@@ -1366,6 +1367,7 @@ components:
         self:
           $ref: '#/components/schemas/LinkType'
       description: Self-referring URI.
+      readOnly: true
       example:
         self:
           href: http://example.com/aeiou
@@ -1417,13 +1419,13 @@ components:
       properties:
         seconds:
           type: integer
-          description: The seconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC
+          description: "The seconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC"
           format: uint32
         nanoSeconds:
           type: integer
-          description: The nanoseconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC
+          description: "The nanoseconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC"
           format: uint32
       description: time
       example:
@@ -1451,13 +1453,13 @@ components:
           description: NTP server address
         minPollingInterval:
           type: integer
-          description: Minimum poll interval for NTP messages, in seconds as a power
-            of two. Range 3...17
+          description: "Minimum poll interval for NTP messages, in seconds as a power\
+            \ of two. Range 3...17"
           format: uint32
         maxPollingInterval:
           type: integer
-          description: Maximum poll interval for NTP messages, in seconds as a power
-            of two. Range 3...17
+          description: "Maximum poll interval for NTP messages, in seconds as a power\
+            \ of two. Range 3...17"
           format: uint32
         localPriority:
           type: integer
@@ -1538,8 +1540,8 @@ components:
             DnsRule:
               $ref: '#/components/examples/DnsRule'
     ApplicationsSubscriptions200:
-      description: Upon success, a response body containing the list of links to the
-        requested subscriptions is returned.
+      description: "Upon success, a response body containing the list of links to\
+        \ the requested subscriptions is returned."
       content:
         application/json:
           schema:
@@ -1570,8 +1572,8 @@ components:
         delIndividualmecAppSuptApiSubscription:
           $ref: '#/components/links/DelIndividualmecAppSuptApiSubscription'
     ApplicationsSubscription200:
-      description: Upon success, a response body containing the requested subscription
-        is returned.
+      description: "Upon success, a response body containing the requested subscription\
+        \ is returned."
       content:
         application/json:
           schema:
@@ -1648,16 +1650,16 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "409":
-      description: Conflict. The operation cannot be executed currently, due to a
-        conflict with  the state of the resource. Typically, this is because the application  instance
-        resource is in NOT_INSTANTIATED state.
+      description: "Conflict. The operation cannot be executed currently, due to a\
+        \ conflict with  the state of the resource. Typically, this is because the\
+        \ application  instance resource is in NOT_INSTANTIATED state."
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "412":
-      description: Precondition Failed. It is used when a condition has failed during
-        conditional requests,  e.g. when using ETags to avoid write conflicts.
+      description: "Precondition Failed. It is used when a condition has failed during\
+        \ conditional requests,  e.g. when using ETags to avoid write conflicts."
       content:
         application/problem+json:
           schema:
@@ -1821,62 +1823,62 @@ components:
       operationId: As_ApplicationsDnsRule_GET
       parameters:
         dnsRuleId: $response.body#/dnsRuleId
-      description: The `dnsRuleId` value returned in the response can be used as the
-        `dnsRuleId` parameter in `GET /applications/{appInstanceId}/dns_rules/{dnsRuleId}`
+      description: "The `dnsRuleId` value returned in the response can be used as\
+        \ the `dnsRuleId` parameter in `GET /applications/{appInstanceId}/dns_rules/{dnsRuleId}`"
     PutIndividualMeDNSRule:
       operationId: As_ApplicationsDnsRule_PUT
       parameters:
         dnsRuleId: $response.body#/dnsRuleId
-      description: The `dnsRuleId` value returned in the response can be used as the
-        `dnsRuleId` parameter in `PUT /applications/{appInstanceId}/dns_rules/{dnsRuleId}`
+      description: "The `dnsRuleId` value returned in the response can be used as\
+        \ the `dnsRuleId` parameter in `PUT /applications/{appInstanceId}/dns_rules/{dnsRuleId}`"
     GetIndividualMeTrafficRule:
       operationId: As_ApplicationsTrafficRule_GET
       parameters:
         trafficRuleId: $response.body#/trafficRuleId
-      description: The `trafficRuleId` value returned in the response can be used
-        as the `trafficRuleId` parameter in `GET /applications/{appInstanceId}/traffic_rules/{trafficRuleId}`
+      description: "The `trafficRuleId` value returned in the response can be used\
+        \ as the `trafficRuleId` parameter in `GET /applications/{appInstanceId}/traffic_rules/{trafficRuleId}`"
     PutIndividualMeTrafficRule:
       operationId: As_ApplicationsTrafficRule_PUT
       parameters:
         trafficRuleId: $response.body#/trafficRuleId
-      description: The `trafficRuleId` value returned in the response can be used
-        as the `trafficRuleId` parameter in `PUT /applications/{appInstanceId}/traffic_rules/{trafficRuleId}`
+      description: "The `trafficRuleId` value returned in the response can be used\
+        \ as the `trafficRuleId` parameter in `PUT /applications/{appInstanceId}/traffic_rules/{trafficRuleId}`"
     GetIndividualmecAppSuptApiSubscription:
       operationId: As_ApplicationsSubscription_GET
       parameters:
-        description: regex = \/mec_app_support\/v1\/applications\/.*\/subscriptions\/.*\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_app_support\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /.*\\/(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an\
+          \ attribute within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
     DelIndividualmecAppSuptApiSubscription:
       operationId: As_ApplicationsSubscription_DELETE
       parameters:
-        description: regex = \/mec_app_support\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_app_support\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an attribute\
+          \ within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
     GetIndividualmecAppSuptApiSubscriptionLinkList:
       operationId: As_ApplicationsSubscription_GET
       parameters:
-        description: regex = \/mec_app_support\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_app_support\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an attribute\
+          \ within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
     DelIndividualmecAppSuptApiSubscriptionLinkList:
       operationId: As_ApplicationsSubscription_DELETE
       parameters:
-        description: regex = \/mec_app_support\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_app_support\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an attribute\
+          \ within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
   callbacks:
     AppTerminationNotification:
       '{$request.body#/callbackReference}':
@@ -1890,5 +1892,5 @@ components:
             $ref: '#/components/requestBodies/AppTerminationNotification'
           responses:
             "200":
-              description: Expected responses from callback consumer, if it accepts
-                the callback
+              description: "Expected responses from callback consumer, if it accepts\
+                \ the callback"

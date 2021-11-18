@@ -15,9 +15,9 @@ Name | Type | Description | Notes
 ## Enum: IpAddressTypeEnum
 
 
-* `V6` (value: `"IP_V6"`)
+* `v6` (value: `"IP_V6"`)
 
-* `V4` (value: `"IP_V4"`)
+* `v4` (value: `"IP_V4"`)
 
 
 
