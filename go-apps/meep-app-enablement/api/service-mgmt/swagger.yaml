@@ -1033,7 +1033,7 @@ components:
           example:
             subscriptionType: 'SerAvailabilityNotificationSubscription'
             callbackReference: "http://my.callback.com/mec_service_mgmt_ser_availabilities/some-id"
-            filterCriteria:
+            filteringCriteria:
               serNames:
                 - 'myRnis'
               states:

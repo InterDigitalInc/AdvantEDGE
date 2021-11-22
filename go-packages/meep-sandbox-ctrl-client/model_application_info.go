@@ -29,11 +29,11 @@ type ApplicationInfo struct {
 	// Application Instance UUID
 	Id string `json:"id,omitempty"`
 	// Application name
-	Name  string            `json:"name"`
-	Type_ *ApplicationType  `json:"type,omitempty"`
-	State *ApplicationState `json:"state,omitempty"`
+	Name string `json:"name"`
 	// MEP Name where application instance is running
 	MepName string `json:"mepName"`
-	// Application Version
-	Version string `json:"version,omitempty"`
+	// Application Type
+	Type_ string `json:"type,omitempty"`
+	// Reserved for internal platform usage
+	Persist bool `json:"persist,omitempty"`
 }

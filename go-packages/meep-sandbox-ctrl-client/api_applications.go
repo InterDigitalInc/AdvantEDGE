@@ -298,18 +298,16 @@ This method retrieves information about a list of mec application resources.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *ApplicationsGETOpts - Optional Parameters:
      * @param "App" (optional.String) -  Filter by application name
-     * @param "State" (optional.String) -  Filter by application state
-     * @param "Type_" (optional.String) -  Filter by application type
      * @param "Mep" (optional.String) -  Filter by MEP name
+     * @param "Type_" (optional.String) -  Filter by application type
 
 @return []ApplicationInfo
 */
 
 type ApplicationsGETOpts struct {
 	App   optional.String
-	State optional.String
-	Type_ optional.String
 	Mep   optional.String
+	Type_ optional.String
 }
 
 func (a *ApplicationsApiService) ApplicationsGET(ctx context.Context, localVarOptionals *ApplicationsGETOpts) ([]ApplicationInfo, *http.Response, error) {
@@ -331,14 +329,11 @@ func (a *ApplicationsApiService) ApplicationsGET(ctx context.Context, localVarOp
 	if localVarOptionals != nil && localVarOptionals.App.IsSet() {
 		localVarQueryParams.Add("app", parameterToString(localVarOptionals.App.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.State.IsSet() {
-		localVarQueryParams.Add("state", parameterToString(localVarOptionals.State.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Mep.IsSet() {
+		localVarQueryParams.Add("mep", parameterToString(localVarOptionals.Mep.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Type_.IsSet() {
 		localVarQueryParams.Add("type", parameterToString(localVarOptionals.Type_.Value(), ""))
-	}
-	if localVarOptionals != nil && localVarOptionals.Mep.IsSet() {
-		localVarQueryParams.Add("mep", parameterToString(localVarOptionals.Mep.Value(), ""))
 	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{"application/json"}

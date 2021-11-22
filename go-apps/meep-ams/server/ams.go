@@ -33,6 +33,7 @@ import (
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ams/sbi"
 	asc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-app-support-client"
+	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -62,7 +63,8 @@ var sbxCtrlUrl string = "http://meep-sandbox-ctrl"
 var adjSubscriptionMap = map[int]*AdjacentAppInfoSubscription{}
 var mpSubscriptionMap = map[int]*MobilityProcedureSubscription{}
 var subscriptionExpiryMap = map[int][]int{}
-var appInfoMap = map[string]*scc.ApplicationInfo{}
+var appMap = map[string]*apps.Application{}
+var appStore *apps.ApplicationStore
 
 var currentStoreName = ""
 
@@ -141,6 +143,7 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
+var appTermSubId string
 var appEnablementServiceId string
 var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
@@ -287,6 +290,19 @@ func Init() (err error) {
 	}
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB, App Mobility service table")
+
+	// Create Application Store
+	cfg := &apps.ApplicationStoreCfg{
+		Name:      moduleName,
+		Namespace: sandboxName,
+		RedisAddr: redisAddr,
+	}
+	appStore, err = apps.NewApplicationStore(cfg)
+	if err != nil {
+		log.Error("Failed to connect to Application Store. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Application Store")
 
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{
@@ -497,12 +513,13 @@ func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
 	appInfo.Name = serviceCategory
+	appInfo.Type_ = "SYSTEM"
 	appInfo.MepName = mepName
-	appInfo.Version = serviceAppVersion
-	appType := scc.SYSTEM_ApplicationType
-	appInfo.Type_ = &appType
-	state := scc.INITIALIZED_ApplicationState
-	appInfo.State = &state
+	if mepName == defaultMepName {
+		appInfo.Persist = true
+	} else {
+		appInfo.Persist = false
+	}
 	response, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
@@ -596,13 +613,28 @@ func sendTerminationConfirmation(appInstanceId string) error {
 }
 
 func subscribeAppTermination(appInstanceId string) error {
-	var subscription asc.AppTerminationNotificationSubscription
-	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
-	subscription.AppInstanceId = appInstanceId
-	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + amsBasePath + appTerminationPath
-	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	var sub asc.AppTerminationNotificationSubscription
+	sub.SubscriptionType = "AppTerminationNotificationSubscription"
+	sub.AppInstanceId = appInstanceId
+	if mepName == defaultMepName {
+		sub.CallbackReference = "http://" + moduleName + "/" + amsBasePath + appTerminationPath
+	} else {
+		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + amsBasePath + appTerminationPath
+	}
+	subscription, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
+		return err
+	}
+	appTermSubLink := subscription.Links.Self.Href
+	appTermSubId = appTermSubLink[strings.LastIndex(appTermSubLink, "/")+1:]
+	return nil
+}
+
+func unsubscribeAppTermination(appInstanceId string, subId string) error {
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subId)
+	if err != nil {
+		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
 	}
 	return nil
@@ -627,34 +659,34 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		//delete any registration it made
-		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate
-		// since it believes it never registered
-		//_ = unsubscribeAppTermination(serviceAppInstanceId)
+		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
-		//send scenario update with a deletion
-		var event scc.Event
-		var eventScenarioUpdate scc.EventScenarioUpdate
-		var process scc.Process
-		var nodeDataUnion scc.NodeDataUnion
-		var node scc.ScenarioNode
+		// Delete subscriptions
+		_ = unsubscribeAppTermination(serviceAppInstanceId, appTermSubId)
 
-		process.Name = instanceName
-		process.Type_ = "EDGE-APP"
+		// Confirm App termination if necessary
+		if sendAppTerminationWhenDone {
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}
 
-		nodeDataUnion.Process = &process
-
-		node.Type_ = "EDGE-APP"
-		node.Parent = mepName
-		node.NodeDataUnion = &nodeDataUnion
-
-		eventScenarioUpdate.Node = &node
-		eventScenarioUpdate.Action = "REMOVE"
-
-		event.EventScenarioUpdate = &eventScenarioUpdate
-		event.Type_ = "SCENARIO-UPDATE"
-
+		// Remove node from active scenario
+		event := scc.Event{
+			Type_: "SCENARIO-UPDATE",
+			EventScenarioUpdate: &scc.EventScenarioUpdate{
+				Action: "REMOVE",
+				Node: &scc.ScenarioNode{
+					Type_:  "EDGE-APP",
+					Parent: mepName,
+					NodeDataUnion: &scc.NodeDataUnion{
+						Process: &scc.Process{
+							Type_: "EDGE-APP",
+							Name:  instanceName,
+						},
+					},
+				},
+			},
+		}
 		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 		if err != nil {
 			log.Error(err)
@@ -671,30 +703,13 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func hasApplicationInfoChanged(appInfo1 *scc.ApplicationInfo, appInfo2 *scc.ApplicationInfo) bool {
-	if appInfo1 != nil || appInfo2 != nil {
-		if appInfo1 == nil && appInfo2 != nil {
-			return true
-		}
-		if appInfo1 != nil && appInfo2 == nil {
-			return true
-		}
-		if appInfo1.Id != appInfo2.Id {
-			return true
-		}
-		if appInfo1.Name != appInfo2.Name {
-			return true
-		}
-		if appInfo1.MepName != appInfo2.MepName {
-			return true
-		}
-		if appInfo1.Version != appInfo2.Version {
-			return true
-		}
-		if string(*appInfo1.Type_) != string(*appInfo2.Type_) {
-			return true
-		}
-		if string(*appInfo1.State) != string(*appInfo2.State) {
+func hasAppChanged(app1 *apps.Application, app2 *apps.Application) bool {
+	if app1 != nil || app2 != nil {
+		if (app1 == nil && app2 != nil) ||
+			(app1 != nil && app2 == nil) ||
+			(app1.Id != app2.Id) ||
+			(app1.Name != app2.Name) ||
+			(app1.Mep != app2.Mep) {
 			return true
 		}
 	}
@@ -714,12 +729,12 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 			//verifying every criteria of the filter
 			//loop through all appIds
 			//find service category of subscription
-			appInfoReference := appInfoMap[sub.FilterCriteria.AppInstanceId]
-			if appInfoReference != nil {
+			appReference := appMap[sub.FilterCriteria.AppInstanceId]
+			if appReference != nil {
 				//check if changes related to the same service category
 				match := false
 				for _, appName := range appNames {
-					if appName == appInfoReference.Name {
+					if appName == appReference.Name {
 						match = true
 						break
 					}
@@ -737,12 +752,12 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 					timeStamp.Seconds = int32(seconds)
 
 					notif.TimeStamp = &timeStamp
-					//find all the appInfo with same name but omit the one that was used for subscription
-					for _, appInfo := range appInfoMap {
-						if appInfo != nil {
-							if appInfo.Name == appInfoReference.Name && appInfo.Id != appInfoReference.Id {
+					//find all the app with same name but omit the one that was used for subscription
+					for _, app := range appMap {
+						if app != nil {
+							if app.Name == appReference.Name && app.Id != appReference.Id {
 								var adjAppInfo AdjacentAppInfoNotificationAdjacentAppInfo
-								adjAppInfo.AppInstanceId = appInfo.Id
+								adjAppInfo.AppInstanceId = app.Id
 								notif.AdjacentAppInfo = append(notif.AdjacentAppInfo, adjAppInfo)
 							}
 						}
@@ -760,11 +775,12 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 
 func checkPeriodicTrigger() {
 
+	// PATCH: Update appStore with DB contents periodically.
+	//        Eventually, should sync with DB only when notified of a DB change.
+	appStore.Refresh()
+
 	// Retrieve current list of app instance IDs
-	if sbxCtrlClient == nil {
-		return
-	}
-	appInfoList, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsGET(context.TODO(), nil)
+	appList, err := appStore.GetAll()
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
 		return
@@ -773,22 +789,22 @@ func checkPeriodicTrigger() {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Update appInfo map & get list of updated entries
+	// Update app map & get list of updated entries
 	updatedApps := []string{}
-	for _, appInfo := range appInfoList {
-		oldAppInfo, found := appInfoMap[appInfo.Id]
-		if !found || hasApplicationInfoChanged(oldAppInfo, &appInfo) {
-			newAppInfo := appInfo
-			updatedApps = append(updatedApps, newAppInfo.Name)
-			appInfoMap[appInfo.Id] = &newAppInfo
+	for _, app := range appList {
+		oldApp, found := appMap[app.Id]
+		if !found || hasAppChanged(oldApp, app) {
+			newApp := app
+			updatedApps = append(updatedApps, newApp.Name)
+			appMap[app.Id] = newApp
 		}
 	}
 
 	// Remove deleted applications
 	appsToRemove := []string{}
-	for id, appInfo := range appInfoMap {
+	for id, app := range appMap {
 		found := false
-		for _, app := range appInfoList {
+		for _, app := range appList {
 			if id == app.Id {
 				found = true
 				break
@@ -796,13 +812,13 @@ func checkPeriodicTrigger() {
 		}
 		if !found {
 			appsToRemove = append(appsToRemove, id)
-			updatedApps = append(updatedApps, appInfo.Name)
+			updatedApps = append(updatedApps, app.Name)
 		}
 	}
 
 	// Delete removed apps from app info map
 	for _, id := range appsToRemove {
-		delete(appInfoMap, id)
+		delete(appMap, id)
 	}
 
 	// Check subscriptions
@@ -877,7 +893,7 @@ func isMatchAdjFilterCriteriaAppInsId(filterCriteria interface{}, appId string) 
 	}
 	//name is the serviceCategory and the must be different appIds
 	if appId != filter.AppInstanceId {
-		return (appInfoMap[filter.AppInstanceId].Name == appInfoMap[appId].Name)
+		return (appMap[filter.AppInstanceId].Name == appMap[appId].Name)
 	}
 	return false
 }
@@ -986,19 +1002,19 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.TimeStamp = &timeStamp
 				notif.MobilityStatus = 1 //only supporting 1 = INTERHOST_MOVEOUT_TRIGGERED
 				//find appId of the registered app in the target mep or take directly if we are the mep
-				appInfo := appInfoMap[appId]
-				if appInfo == nil {
+				app := appMap[appId]
+				if app == nil {
 					continue
 				}
-				appId := appInfo.Id
-				appName := appInfo.Name
+				appId := app.Id
+				appName := app.Name
 				targetAppId := ""
-				if mepId == appInfo.MepName {
+				if mepId == app.Mep {
 					targetAppId = appId
 				} else {
-					for _, appInfoFromMap := range appInfoMap {
-						if appInfoFromMap.Name == appName && appInfoFromMap.MepName == mepId {
-							targetAppId = appInfoFromMap.Id
+					for _, appFromMap := range appMap {
+						if appFromMap.Name == appName && appFromMap.Mep == mepId {
+							targetAppId = appFromMap.Id
 							break
 						}
 					}
@@ -1591,7 +1607,7 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate App Instance ID
-	if registrationInfo.ServiceConsumerId.AppInstanceId != "" && appInfoMap[registrationInfo.ServiceConsumerId.AppInstanceId] == nil {
+	if registrationInfo.ServiceConsumerId.AppInstanceId != "" && appMap[registrationInfo.ServiceConsumerId.AppInstanceId] == nil {
 		log.Error("App Instance Id does not exist.")
 		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
 		return
@@ -1835,7 +1851,7 @@ func cleanUp() {
 	adjSubscriptionMap = map[int]*AdjacentAppInfoSubscription{}
 	mpSubscriptionMap = map[int]*MobilityProcedureSubscription{}
 	subscriptionExpiryMap = map[int][]int{}
-	appInfoMap = map[string]*scc.ApplicationInfo{}
+	appMap = map[string]*apps.Application{}
 
 	updateStoreName("")
 }
@@ -1909,8 +1925,8 @@ func updateDeviceInfo(address string, zoneId string, procList []string) {
 
 			for _, appInstanceId := range appInstanceIdsList.AppInstanceIds {
 				// Only send notifications for AppInstanceIDs in the source MEP coverage area
-				if appInfo, found := appInfoMap[appInstanceId]; found {
-					if appInfo.MepName == mepZonesMap[oldZoneId] {
+				if app, found := appMap[appInstanceId]; found {
+					if app.Mep == mepZonesMap[oldZoneId] {
 						checkMpNotificationRegisteredSubscriptions(appInstanceId, &assocId, mepZonesMap[zoneId])
 					}
 				}

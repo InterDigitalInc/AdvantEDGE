@@ -22,8 +22,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func convertAppTerminationNotificationSubscriptionToJson(appTerm *AppTerminationNotificationSubscription) string {
-	jsonInfo, err := json.Marshal(*appTerm)
+func convertAppTerminationNotifSubToJson(obj *AppTerminationNotificationSubscription) string {
+	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
@@ -31,8 +31,26 @@ func convertAppTerminationNotificationSubscriptionToJson(appTerm *AppTermination
 	return string(jsonInfo)
 }
 
-func convertProblemDetailsToJson(problemDetails *ProblemDetails) string {
-	jsonInfo, err := json.Marshal(*problemDetails)
+func convertAppTerminationNotifToJson(obj *AppTerminationNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertProblemDetailsToJson(obj *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
+	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""

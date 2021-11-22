@@ -67,28 +67,22 @@
         // expect(instance.name).to.be(expectedValueLiteral);
       });
 
-      it('should have the property type (base name: "type")', function() {
-        // TODO: update the code to test the property type
-        expect(instance).to.have.property('type');
-        // expect(instance.type).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property state (base name: "state")', function() {
-        // TODO: update the code to test the property state
-        expect(instance).to.have.property('state');
-        // expect(instance.state).to.be(expectedValueLiteral);
-      });
-
       it('should have the property mepName (base name: "mepName")', function() {
         // TODO: update the code to test the property mepName
         expect(instance).to.have.property('mepName');
         // expect(instance.mepName).to.be(expectedValueLiteral);
       });
 
-      it('should have the property version (base name: "version")', function() {
-        // TODO: update the code to test the property version
-        expect(instance).to.have.property('version');
-        // expect(instance.version).to.be(expectedValueLiteral);
+      it('should have the property type (base name: "type")', function() {
+        // TODO: update the code to test the property type
+        expect(instance).to.have.property('type');
+        // expect(instance.type).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property persist (base name: "persist")', function() {
+        // TODO: update the code to test the property persist
+        expect(instance).to.have.property('persist');
+        // expect(instance.persist).to.be(expectedValueLiteral);
       });
 
     });

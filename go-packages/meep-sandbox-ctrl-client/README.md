@@ -55,8 +55,6 @@ Class | Method | HTTP request | Description
 
  - [ActivationInfo](docs/ActivationInfo.md)
  - [ApplicationInfo](docs/ApplicationInfo.md)
- - [ApplicationState](docs/ApplicationState.md)
- - [ApplicationType](docs/ApplicationType.md)
  - [CellularDomainConfig](docs/CellularDomainConfig.md)
  - [CellularPoaConfig](docs/CellularPoaConfig.md)
  - [ConnectivityConfig](docs/ConnectivityConfig.md)

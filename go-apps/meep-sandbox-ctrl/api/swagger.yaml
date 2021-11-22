@@ -1120,15 +1120,12 @@ paths:
         type: "string"
         x-exportParamName: "App"
         x-optionalDataType: "String"
-      - name: "state"
+      - name: "mep"
         in: "query"
-        description: "Filter by application state"
+        description: "Filter by MEP name"
         required: false
         type: "string"
-        enum:
-        - "READY"
-        - "INITIALIZED"
-        x-exportParamName: "State"
+        x-exportParamName: "Mep"
         x-optionalDataType: "String"
       - name: "type"
         in: "query"
@@ -1139,13 +1136,6 @@ paths:
         - "USER"
         - "SYSTEM"
         x-exportParamName: "Type_"
-        x-optionalDataType: "String"
-      - name: "mep"
-        in: "query"
-        description: "Filter by MEP name"
-        required: false
-        type: "string"
-        x-exportParamName: "Mep"
         x-optionalDataType: "String"
       responses:
         200:
@@ -2326,38 +2316,24 @@ definitions:
       name:
         type: "string"
         description: "Application name"
-      type:
-        $ref: "#/definitions/ApplicationType"
-      state:
-        $ref: "#/definitions/ApplicationState"
       mepName:
         type: "string"
         description: "MEP Name where application instance is running"
-      version:
+      type:
         type: "string"
-        description: "Application Version"
+        description: "Application Type"
+        enum:
+        - "USER"
+        - "SYSTEM"
+      persist:
+        type: "boolean"
+        description: "Reserved for internal platform usage"
     description: "MEC Application instance information"
     example:
       id: "00afec52-f0b6-464e-a660-33568c0975b9"
       name: "MyAppName"
-      type: "USER"
-      state: "INITIALIZED"
       mepName: "mep1"
-      version: "v1.0.0"
-  ApplicationType:
-    type: "string"
-    description: "Application Type"
-    example: "USER"
-    enum:
-    - "USER"
-    - "SYSTEM"
-  ApplicationState:
-    type: "string"
-    description: "Application State"
-    example: "INITIALIZED"
-    enum:
-    - "READY"
-    - "INITIALIZED"
+      type: "USER"
 parameters:
   Body.ActivationInfo:
     in: "body"
@@ -2450,17 +2426,6 @@ parameters:
     required: false
     type: "string"
     x-exportParamName: "App"
-    x-optionalDataType: "String"
-  Query.AppState:
-    name: "state"
-    in: "query"
-    description: "Filter by application state"
-    required: false
-    type: "string"
-    enum:
-    - "READY"
-    - "INITIALIZED"
-    x-exportParamName: "State"
     x-optionalDataType: "String"
   Query.AppType:
     name: "type"

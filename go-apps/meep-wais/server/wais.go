@@ -97,6 +97,7 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
+var appTermSubId string
 var appEnablementServiceId string
 var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
@@ -387,13 +388,14 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = serviceCategory //instanceName
+	appInfo.Name = serviceCategory
+	appInfo.Type_ = "SYSTEM"
 	appInfo.MepName = mepName
-	appInfo.Version = serviceAppVersion
-	appType := scc.SYSTEM_ApplicationType
-	appInfo.Type_ = &appType
-	state := scc.INITIALIZED_ApplicationState
-	appInfo.State = &state
+	if mepName == defaultMepName {
+		appInfo.Persist = true
+	} else {
+		appInfo.Persist = false
+	}
 	response, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
@@ -490,10 +492,25 @@ func subscribeAppTermination(appInstanceId string) error {
 	var sub asc.AppTerminationNotificationSubscription
 	sub.SubscriptionType = "AppTerminationNotificationSubscription"
 	sub.AppInstanceId = appInstanceId
-	sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + waisBasePath + appTerminationPath
-	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
+	if mepName == defaultMepName {
+		sub.CallbackReference = "http://" + moduleName + "/" + waisBasePath + appTerminationPath
+	} else {
+		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + waisBasePath + appTerminationPath
+	}
+	subscription, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
+		return err
+	}
+	appTermSubLink := subscription.Links.Self.Href
+	appTermSubId = appTermSubLink[strings.LastIndex(appTermSubLink, "/")+1:]
+	return nil
+}
+
+func unsubscribeAppTermination(appInstanceId string, subId string) error {
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subId)
+	if err != nil {
+		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
 	}
 	return nil
@@ -518,38 +535,40 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		//delete any registration it made
+		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
-		//send scenario update with a deletion
-		var event scc.Event
-		var eventScenarioUpdate scc.EventScenarioUpdate
-		var process scc.Process
-		var nodeDataUnion scc.NodeDataUnion
-		var node scc.ScenarioNode
-		process.Name = instanceName
-		process.Type_ = "EDGE-APP"
-		nodeDataUnion.Process = &process
-		node.Type_ = "EDGE-APP"
-		node.Parent = mepName
-		node.NodeDataUnion = &nodeDataUnion
-		eventScenarioUpdate.Node = &node
-		eventScenarioUpdate.Action = "REMOVE"
-		event.EventScenarioUpdate = &eventScenarioUpdate
-		event.Type_ = "SCENARIO-UPDATE"
+		// Delete subscriptions
+		_ = unsubscribeAppTermination(serviceAppInstanceId, appTermSubId)
 
+		// Confirm App termination if necessary
+		if sendAppTerminationWhenDone {
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
+		}
+
+		// Remove node from active scenario
+		event := scc.Event{
+			Type_: "SCENARIO-UPDATE",
+			EventScenarioUpdate: &scc.EventScenarioUpdate{
+				Action: "REMOVE",
+				Node: &scc.ScenarioNode{
+					Type_:  "EDGE-APP",
+					Parent: mepName,
+					NodeDataUnion: &scc.NodeDataUnion{
+						Process: &scc.Process{
+							Type_: "EDGE-APP",
+							Name:  instanceName,
+						},
+					},
+				},
+			},
+		}
 		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 		if err != nil {
 			log.Error(err)
 		}
 	}()
 
-	if sendAppTerminationWhenDone {
-		go func() {
-			//ignore any error and delete yourself anyway
-			_ = sendTerminationConfirmation(serviceAppInstanceId)
-		}()
-	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -637,7 +656,7 @@ func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, 
 
 func checkAllStaDataRateNotification(staId *StaIdentity, dataRateDl int32, dataRateUl int32) {
 	// Get subscription list
-	subList, err := subMgr.GetSubscriptionList(instanceId, STA_DATA_RATE_SUBSCRIPTION)
+	subList, err := subMgr.GetFilteredSubscriptions(instanceId, STA_DATA_RATE_SUBSCRIPTION)
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -850,7 +869,7 @@ func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32
 
 func checkAllAssocStaNotification(staMacIds []string, apMacId string) {
 	// Get subscription list
-	subList, err := subMgr.GetSubscriptionList(instanceId, ASSOC_STA_SUBSCRIPTION)
+	subList, err := subMgr.GetFilteredSubscriptions(instanceId, ASSOC_STA_SUBSCRIPTION)
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -956,7 +975,7 @@ func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request
 			subscriptionType = MEASUREMENT_REPORT_SUBSCRIPTION
 		}
 	}
-	subList, err := subMgr.GetSubscriptionList(instanceId, subscriptionType)
+	subList, err := subMgr.GetFilteredSubscriptions(instanceId, subscriptionType)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1402,6 +1421,7 @@ func newAssocStaSubscriptionCfg(sub *AssocStaSubscription, subId string) *sm.Sub
 		Id:                  subId,
 		AppId:               instanceId,
 		Type:                ASSOC_STA_SUBSCRIPTION,
+		Self:                sub.Links.Self.Href,
 		NotifyUrl:           sub.CallbackReference,
 		ExpiryTime:          expiryTime,
 		PeriodicInterval:    sub.NotificationPeriod,

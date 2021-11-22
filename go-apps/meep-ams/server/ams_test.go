@@ -28,11 +28,10 @@ import (
 	"testing"
 	"time"
 
+	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	//met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 
 	"github.com/gorilla/mux"
 )
@@ -900,8 +899,8 @@ func testServicesPost(t *testing.T) string {
 	 ******************************/
 
 	//creating the appInfoMap so that the POST returns a valid response
-	var appInfo scc.ApplicationInfo
-	appInfoMap["myapp"] = &appInfo
+	var app apps.Application
+	appMap["myapp"] = &app
 
 	rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), nil, nil, http.StatusCreated, AppMobilityServicePOST)
 	if err != nil {
@@ -962,8 +961,8 @@ func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string 
 
 	if expectSuccess {
 		//creating the appInfoMap so that the POST returns a valid response
-		var appInfo scc.ApplicationInfo
-		appInfoMap["myapp"] = &appInfo
+		var app apps.Application
+		appMap["myapp"] = &app
 
 		rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), vars, nil, http.StatusOK, AppMobilityServiceByIdPUT)
 		if err != nil {
