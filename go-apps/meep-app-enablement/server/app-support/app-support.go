@@ -775,7 +775,7 @@ func updateAppInfo(appId string) error {
 	}
 
 	// If MEP instance, ignore non-local apps
-	if mepName != globalMepName && app.Mep != mepName {
+	if mepName != globalMepName && app.Node != mepName {
 		return nil
 	}
 
@@ -783,7 +783,7 @@ func updateAppInfo(appId string) error {
 	appInfo := make(map[string]string)
 	appInfo[fieldAppId] = appId
 	appInfo[fieldName] = app.Name
-	appInfo[fieldMep] = app.Mep
+	appInfo[fieldMep] = app.Node
 	appInfo[fieldType] = app.Type
 	appInfo[fieldPersist] = strconv.FormatBool(app.Persist)
 	appInfo[fieldState] = APP_STATE_INITIALIZED

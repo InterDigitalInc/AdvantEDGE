@@ -521,7 +521,7 @@ func getAppInstanceId() (id string, err error) {
 	appInfo.Id = instanceId
 	appInfo.Name = serviceCategory
 	appInfo.Type_ = "SYSTEM"
-	appInfo.MepName = mepName
+	appInfo.NodeName = mepName
 	if mepName == defaultMepName {
 		appInfo.Persist = true
 	} else {
@@ -988,11 +988,11 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				appId := app.Id
 				appName := app.Name
 				targetAppId := ""
-				if mepId == app.Mep {
+				if mepId == app.Node {
 					targetAppId = appId
 				} else {
 					for _, appFromMap := range appMap {
-						if appFromMap.Name == appName && appFromMap.Mep == mepId {
+						if appFromMap.Name == appName && appFromMap.Node == mepId {
 							targetAppId = appFromMap.Id
 							break
 						}
@@ -1905,7 +1905,7 @@ func updateDeviceInfo(address string, zoneId string, procList []string) {
 			for _, appInstanceId := range appInstanceIdsList.AppInstanceIds {
 				// Only send notifications for AppInstanceIDs in the source MEP coverage area
 				if app, found := appMap[appInstanceId]; found {
-					if app.Mep == mepZonesMap[oldZoneId] {
+					if app.Node == mepZonesMap[oldZoneId] {
 						checkMpNotificationRegisteredSubscriptions(appInstanceId, &assocId, mepZonesMap[zoneId])
 					}
 				}

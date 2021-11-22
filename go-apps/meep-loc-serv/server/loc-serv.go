@@ -474,7 +474,7 @@ func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
 	appInfo.Name = serviceCategory
-	appInfo.MepName = mepName
+	appInfo.NodeName = mepName
 	appInfo.Type_ = "SYSTEM"
 	if mepName == defaultMepName {
 		appInfo.Persist = true
