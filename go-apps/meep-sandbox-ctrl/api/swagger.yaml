@@ -2170,13 +2170,16 @@ definitions:
         - "MODIFY"
       node:
         $ref: "#/definitions/ScenarioNode"
+      gracePeriod:
+        type: "integer"
+        description: "Grace period in seconds before forcefully removing node"
     description: "Scenario Update Event object.<br> Specifies a scenario update action\
       \ to perform on the provided node.\n<p>Supported Actions: <li>ADD - Add node\
       \ to scenario. Only the provided node is added; child nodes in node data are\
       \ ignored. <li>REMOVE - Remove node from scenario. Only node name is required\
-      \ in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario\
+      \ in node data for this action; parent is ignored.  <li>MODIFY - Modifies scenario\
       \ node.\n<p>NOTE: Current backend implementation supports only PhysicalLocation\
-      \ & Process network elements."
+      \ & Process network elements. <p>NOTE: If a g"
     example: {}
   ScenarioNode:
     type: "object"

@@ -23,9 +23,11 @@
 
 package model
 
-// Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided node. <p>Supported Actions: <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored. <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only PhysicalLocation & Process network elements.
+// Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided node. <p>Supported Actions: <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored. <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.  <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only PhysicalLocation & Process network elements. <p>NOTE: If a g
 type EventScenarioUpdate struct {
 	// Action to perform on provided scenario node
 	Action string        `json:"action,omitempty"`
 	Node   *ScenarioNode `json:"node,omitempty"`
+	// Grace period in seconds before forcefully removing node
+	GracePeriod int32 `json:"gracePeriod,omitempty"`
 }
