@@ -887,16 +887,41 @@ func amsSendService(appInstanceId string, device string) (string, error) {
 // Add a device in ams resource
 // Return ams id for update ams
 func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device string) (ams.RegistrationInfo, error) {
-	var associateId ams.AssociateId
-	associateId.Type_ = 1
-	associateId.Value = device
+	// var associateId ams.AssociateId
+	// associateId.Type_ = 1
+	// associateId.Value = device
 
-	registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
+	// registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
+	// 	AssociateId:             &associateId,
+	// 	AppMobilityServiceLevel: 3,
+	// })
+
+	// static registeration body
+
+	associateId := ams.AssociateId{
+		Type_: 1,
+		Value: "10.2",
+	}
+
+	var devices []ams.RegistrationInfoDeviceInformation
+	terminalDevice := ams.RegistrationInfoDeviceInformation{
 		AssociateId:             &associateId,
-		AppMobilityServiceLevel: 3,
-	})
+		AppMobilityServiceLevel: 1,
+		ContextTransferState:    0,
+	}
+	devices = append(devices, terminalDevice)
 
-	registerationInfo, resp, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
+	serviceConsumerId := ams.RegistrationInfoServiceConsumerId{
+		AppInstanceId: instanceName,
+	}
+
+	body := ams.RegistrationInfo{
+		AppMobilityServiceId: amsId,
+		DeviceInformation:    devices,
+		ServiceConsumerId:    &serviceConsumerId,
+	}
+
+	registerationInfo, resp, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), body, amsId)
 	if err != nil {
 		log.Error("resp status", resp, err)
 		return registerationBody, err
