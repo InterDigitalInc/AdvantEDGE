@@ -19,7 +19,7 @@ definitions:
     type: object
     required:
       - name
-      - mepName
+      - nodeName
     properties:
       id:
         description: Application Instance UUID
@@ -27,8 +27,8 @@ definitions:
       name:
         description: Application name
         type: string
-      mepName:
-        description: MEP Name where application instance is running
+      nodeName:
+        description: Name of node where application instance is running
         type: string
       type:
         description: Application Type
@@ -42,7 +42,7 @@ definitions:
     example:
       id: '00afec52-f0b6-464e-a660-33568c0975b9'
       name: 'MyAppName'
-      mepName: 'mep1'
+      nodeName: 'node1'
       type: 'USER'
   CellularDomainConfig:
     type: object

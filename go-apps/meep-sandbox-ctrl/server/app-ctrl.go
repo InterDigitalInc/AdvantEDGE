@@ -159,7 +159,7 @@ func createAppInstance(proc *dataModel.Process, ctx *mod.NodeContext) (*apps.App
 	app := &apps.Application{
 		Id:      proc.Id,
 		Name:    proc.Name,
-		Mep:     ctx.Parents[mod.PhyLoc],
+		Node:    ctx.Parents[mod.PhyLoc],
 		Type:    appType,
 		Persist: false,
 	}
@@ -430,7 +430,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	// Validate & retrieve query parameters
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
-	validParams := []string{"app", "mep", "type"}
+	validParams := []string{"app", "node", "type"}
 	err := validateQueryParams(q, validParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -438,7 +438,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appName := q.Get("app")
-	mepName := q.Get("mep")
+	nodeName := q.Get("node")
 	appType := q.Get("type")
 
 	// Get application list
@@ -454,7 +454,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	for _, app := range appList {
 		// Filter using query params
 		if (appName != "" && app.Name != appName) ||
-			(mepName != "" && app.Mep != mepName) ||
+			(nodeName != "" && app.Node != nodeName) ||
 			(appType != "" && app.Type != appType) {
 			continue
 		}
@@ -602,8 +602,8 @@ func validateAppInfo(appInfo *dataModel.ApplicationInfo, appInstanceId string) e
 	if appInfo.Name == "" {
 		return errors.New("Mandatory Name not present")
 	}
-	if appInfo.MepName == "" {
-		return errors.New("Mandatory MEP Name not present")
+	if appInfo.NodeName == "" {
+		return errors.New("Mandatory Node Name not present")
 	}
 
 	// Set default App type if missing
@@ -624,11 +624,11 @@ func convertApplicationInfoToJson(appInfo *dataModel.ApplicationInfo) string {
 
 func convertAppToApplicationInfo(app *apps.Application) *dataModel.ApplicationInfo {
 	appInfo := &dataModel.ApplicationInfo{
-		Id:      app.Id,
-		Name:    app.Name,
-		MepName: app.Mep,
-		Type_:   app.Type,
-		Persist: app.Persist,
+		Id:       app.Id,
+		Name:     app.Name,
+		NodeName: app.Node,
+		Type_:    app.Type,
+		Persist:  app.Persist,
 	}
 	return appInfo
 }
@@ -637,7 +637,7 @@ func convertApplicationInfoToApp(appInfo *dataModel.ApplicationInfo) *apps.Appli
 	app := &apps.Application{
 		Id:      appInfo.Id,
 		Name:    appInfo.Name,
-		Mep:     appInfo.MepName,
+		Node:    appInfo.NodeName,
 		Type:    appInfo.Type_,
 		Persist: appInfo.Persist,
 	}

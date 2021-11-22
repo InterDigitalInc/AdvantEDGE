@@ -42,6 +42,7 @@ import (
 	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 
+	"github.com/go-test/deep"
 	"github.com/gorilla/mux"
 )
 
@@ -688,14 +689,8 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func hasAppChanged(app1 *apps.Application, app2 *apps.Application) bool {
-	if app1 != nil || app2 != nil {
-		if (app1 == nil && app2 != nil) ||
-			(app1 != nil && app2 == nil) ||
-			(app1.Id != app2.Id) ||
-			(app1.Name != app2.Name) ||
-			(app1.Mep != app2.Mep) {
-			return true
-		}
+	if diff := deep.Equal(app1, app2); diff != nil {
+		return true
 	}
 	return false
 }
@@ -759,8 +754,8 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 
 func checkPeriodicTrigger() {
 
-	// PATCH: Update appStore with DB contents periodically.
-	//        Eventually, should sync with DB only when notified of a DB change.
+	// Update appStore with DB contents periodically.
+	// Eventually, should sync with DB only when notified of a DB change.
 	appStore.Refresh()
 
 	// Retrieve current list of app instance IDs

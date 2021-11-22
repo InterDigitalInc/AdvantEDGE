@@ -57,11 +57,11 @@
    * @alias module:model/ApplicationInfo
    * @class
    * @param name {String} Application name
-   * @param mepName {String} MEP Name where application instance is running
+   * @param nodeName {String} Name of node where application instance is running
    */
-  var exports = function(name, mepName) {
+  var exports = function(name, nodeName) {
     this.name = name;
-    this.mepName = mepName;
+    this.nodeName = nodeName;
   };
 
   /**
@@ -78,8 +78,8 @@
         obj.id = ApiClient.convertToType(data['id'], 'String');
       if (data.hasOwnProperty('name'))
         obj.name = ApiClient.convertToType(data['name'], 'String');
-      if (data.hasOwnProperty('mepName'))
-        obj.mepName = ApiClient.convertToType(data['mepName'], 'String');
+      if (data.hasOwnProperty('nodeName'))
+        obj.nodeName = ApiClient.convertToType(data['nodeName'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
       if (data.hasOwnProperty('persist'))
@@ -101,10 +101,10 @@
   exports.prototype.name = undefined;
 
   /**
-   * MEP Name where application instance is running
-   * @member {String} mepName
+   * Name of node where application instance is running
+   * @member {String} nodeName
    */
-  exports.prototype.mepName = undefined;
+  exports.prototype.nodeName = undefined;
 
   /**
    * Application Type

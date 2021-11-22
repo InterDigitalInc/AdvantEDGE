@@ -1116,27 +1116,27 @@ paths:
       parameters:
       - name: "app"
         in: "query"
-        description: "Filter by application name"
+        description: "Application name"
         required: false
         type: "string"
         x-exportParamName: "App"
         x-optionalDataType: "String"
-      - name: "mep"
-        in: "query"
-        description: "Filter by MEP name"
-        required: false
-        type: "string"
-        x-exportParamName: "Mep"
-        x-optionalDataType: "String"
       - name: "type"
         in: "query"
-        description: "Filter by application type"
+        description: "Application type"
         required: false
         type: "string"
         enum:
         - "USER"
         - "SYSTEM"
         x-exportParamName: "Type_"
+        x-optionalDataType: "String"
+      - name: "nodeName"
+        in: "query"
+        description: "Node name"
+        required: false
+        type: "string"
+        x-exportParamName: "NodeName"
         x-optionalDataType: "String"
       responses:
         200:
@@ -2335,8 +2335,8 @@ definitions:
   ApplicationInfo:
     type: "object"
     required:
-    - "mepName"
     - "name"
+    - "nodeName"
     properties:
       id:
         type: "string"
@@ -2344,9 +2344,9 @@ definitions:
       name:
         type: "string"
         description: "Application name"
-      mepName:
+      nodeName:
         type: "string"
-        description: "MEP Name where application instance is running"
+        description: "Name of node where application instance is running"
       type:
         type: "string"
         description: "Application Type"
@@ -2360,7 +2360,7 @@ definitions:
     example:
       id: "00afec52-f0b6-464e-a660-33568c0975b9"
       name: "MyAppName"
-      mepName: "mep1"
+      nodeName: "node1"
       type: "USER"
   ServiceInfo:
     type: "object"
@@ -2474,7 +2474,7 @@ parameters:
   Query.AppName:
     name: "app"
     in: "query"
-    description: "Filter by application name"
+    description: "Application name"
     required: false
     type: "string"
     x-exportParamName: "App"
@@ -2482,7 +2482,7 @@ parameters:
   Query.AppType:
     name: "type"
     in: "query"
-    description: "Filter by application type"
+    description: "Application type"
     required: false
     type: "string"
     enum:
@@ -2517,14 +2517,6 @@ parameters:
     type: "boolean"
     x-exportParamName: "ExcludeChildren"
     x-optionalDataType: "Bool"
-  Query.MepName:
-    name: "mep"
-    in: "query"
-    description: "Filter by MEP name"
-    required: false
-    type: "string"
-    x-exportParamName: "Mep"
-    x-optionalDataType: "String"
   Query.Minimize:
     name: "minimize"
     in: "query"
@@ -2561,6 +2553,14 @@ parameters:
     required: false
     type: "string"
     x-exportParamName: "Node"
+    x-optionalDataType: "String"
+  Query.NodeName:
+    name: "nodeName"
+    in: "query"
+    description: "Node name"
+    required: false
+    type: "string"
+    x-exportParamName: "NodeName"
     x-optionalDataType: "String"
   Query.PduSessionId:
     name: "id"

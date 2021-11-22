@@ -67,10 +67,10 @@
         // expect(instance.name).to.be(expectedValueLiteral);
       });
 
-      it('should have the property mepName (base name: "mepName")', function() {
-        // TODO: update the code to test the property mepName
-        expect(instance).to.have.property('mepName');
-        // expect(instance.mepName).to.be(expectedValueLiteral);
+      it('should have the property nodeName (base name: "nodeName")', function() {
+        // TODO: update the code to test the property nodeName
+        expect(instance).to.have.property('nodeName');
+        // expect(instance.nodeName).to.be(expectedValueLiteral);
       });
 
       it('should have the property type (base name: "type")', function() {

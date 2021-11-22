@@ -32,7 +32,7 @@ const appMgrKey string = "apps:"
 const (
 	fieldId      string = "id"
 	fieldName    string = "name"
-	fieldMep     string = "mep"
+	fieldNode    string = "node"
 	fieldType    string = "type"
 	fieldPersist string = "persist"
 )
@@ -49,8 +49,8 @@ const (
 type Application struct {
 	Id      string
 	Name    string
-	Mep     string
 	Type    string
+	Node    string
 	Persist bool
 }
 
@@ -111,8 +111,8 @@ func (as *ApplicationStore) Set(app *Application) error {
 	if app.Name == "" {
 		return errors.New("Missing App Name")
 	}
-	if app.Mep == "" {
-		return errors.New("Missing MEP Name")
+	if app.Node == "" {
+		return errors.New("Missing Node Name")
 	}
 	if app.Type == "" {
 		return errors.New("Missing App Type")
@@ -248,7 +248,7 @@ func (as *ApplicationStore) setEntry(app *Application) error {
 	entry := make(map[string]interface{})
 	entry[fieldId] = app.Id
 	entry[fieldName] = app.Name
-	entry[fieldMep] = app.Mep
+	entry[fieldNode] = app.Node
 	entry[fieldType] = app.Type
 	entry[fieldPersist] = strconv.FormatBool(app.Persist)
 
@@ -309,7 +309,7 @@ func createApplication(entry map[string]string) *Application {
 	app := new(Application)
 	app.Id = entry[fieldId]
 	app.Name = entry[fieldName]
-	app.Mep = entry[fieldMep]
+	app.Node = entry[fieldNode]
 	app.Type = entry[fieldType]
 	persist, err := strconv.ParseBool(entry[fieldPersist])
 	if err != nil {
