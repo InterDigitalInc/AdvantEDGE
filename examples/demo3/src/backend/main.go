@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -28,35 +28,26 @@ func init() {
 
 func main() {
 	var (
-		envName string
-		envPath string
-		run     bool
-		done    chan bool
+		dir      string
+		fileName string
+		run      bool = true
+		done     chan bool
 	)
 
-	// Check command arguments for configuration path
-	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, ".") {
-			envPath = arg
-		}
+	// First element in os.Args is always the program name
+	// Require at least 2 arugments to have a file name argument
+	if len(os.Args) < 2 {
+		log.Fatal("Missing parameter, provide file name!")
 	}
 
-	// Parse filename from path
-	resp := strings.LastIndex(envPath, "/")
-	if resp == -1 {
-		log.Fatal("Error parsing command invalid/missing configuration path")
-	}
-
-	// Save parsed filename & remove filename from filepath
-	envName = envPath[resp+1:]
-	envPath = envPath[:resp]
-
-	run = true
+	// Read configuration file path in command line arugments
+	configPath := os.Args[1]
+	dir = filepath.Dir(configPath)
+	fileName = filepath.Base(configPath)
 
 	go func() {
 
-		// Configure demo 3 & initialize
-		port, err := server.Init(envPath, envName)
+		port, err := server.Init(dir, fileName)
 		if err != nil {
 			log.Fatal("Failed to initalize Demo 3 ", err)
 		}
@@ -70,9 +61,9 @@ func main() {
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(port, handlers.CORS(methods, header)(router)))
 		run = false
-
 	}()
 
+	// Listen for SIGKILL
 	go func() {
 		sigchan := make(chan os.Signal, 10)
 		signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -81,9 +72,8 @@ func main() {
 		run = false
 	}()
 
+	// Listen for demo 3 error exit program
 	go func() {
-		// Listen for demo 3 done channel
-		// TODO: what happens when app is shut down & pod behaviour
 		<-done
 		run = false
 	}()
@@ -91,6 +81,7 @@ func main() {
 	for {
 		// Invoke graceful termination upon program kill
 		if !run {
+			log.Info("Invoking demo 3 graceful termination")
 			server.Terminate()
 			break
 		}

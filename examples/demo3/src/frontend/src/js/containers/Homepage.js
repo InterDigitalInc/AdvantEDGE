@@ -44,7 +44,7 @@ export default function Homepage() {
 
   var basepath; 
   if (process.env.ENVIRONMENT === 'SANDBOX') {
-    basepath = process.env.URL;
+    basepath = 'http://' + process.env.URL;
   } else {
     basepath = 'http://' + location.host + location.pathname;
   }
@@ -124,7 +124,6 @@ export default function Homepage() {
             console.log(error);
           } else {
             setAppLog(response.body);
-            console.log(response.body);
           }
         });
       }, 1000);
@@ -164,12 +163,14 @@ export default function Homepage() {
 
   const removeAmsDevice = async (device) => {
     let mutableArray = terminalDevices;
-    const result = mutableArray.filter(e => e != device );
+    
     appInfoApi.serviceAmsDeleteDeviceDelete(device, (err, data, resp) => {
       if (err != null) {
         console.log(err);
+      } else {
+        const result = mutableArray.filter(e => e != device );
+        setTerminalDevices(result);
       }
-      setTerminalDevices(result);
     });
   };
 
@@ -180,8 +181,9 @@ export default function Homepage() {
       appInfoApi.serviceAmsUpdateDevicePut(textValue, (err, data, resp) => {
         if (err != null) {
           console.log(err);
+        } else {
+          setTerminalDevices(e => [... e, textValue]); 
         }
-        setTerminalDevices(e => [... e, textValue]); 
       });
     }      
   };

@@ -108,7 +108,8 @@ var usingDevices []string                      // List of devices using this ins
 var terminalDevices map[string]string          // Devices registered in ams
 var terminalDeviceState = make(map[string]int) // Devices registered in ams and their state
 
-// Initalize ticker using interval of 1 second to poll mec services and increment terminal device state using this instance by 1
+// Initiaze ticker to poll mec services and increment terminal device state every second
+// It modifies discovered services & state of terminal device using this instance
 // Stop ticker if deregister app
 func startTicker() {
 	intervalTicker = time.NewTicker(1 * time.Second)
@@ -154,36 +155,59 @@ func startTicker() {
 
 				demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
 
-				// Store into map with service name key and url value
+				// Store into map by service name key and url value
 				mecServicesMap[tempService.SerName] = tempService.Link
 			}
 		}
 	}()
 }
 
-// Init - Demo Service initalization using config & client packages
+// Initialize app info from config & apply client package
 func Init(envPath string, envName string) (port string, err error) {
 
-	// Initalize config
+	// Initialize config
+	var config util.Config
+
 	log.Info("Using config values from ", envPath, "/", envName)
-	config, err := util.LoadConfig(envPath, envName)
+	config, err = util.LoadConfig(envPath, envName)
 	if err != nil {
-		log.Fatal("Failed finding config ", err)
+		log.Fatal("Fail to load configuration file ", err)
 	}
 
-	// Set configuration variables from app_instance yaml
 	// check if app is running externally or on advantedge
 	if config.Mode == "sandbox" {
 		environment = "sandbox"
 		mecUrl = config.SandboxUrl
+
+		if !strings.HasPrefix(mecUrl, "http://") {
+			mecUrl = "http://" + mecUrl
+		}
+		if !strings.HasSuffix(mecUrl, "/") {
+			mecUrl = strings.TrimSuffix(mecUrl, "/")
+		}
+
 		localPort = config.Port
+
 		localUrl = config.Localurl
+
 	} else if config.Mode == "advantedge" {
 		environment = "advantedge"
 		localPort = ":80"
-		localUrl = "http://" + config.Localurl
+		localUrl = config.Localurl
+
 	} else {
-		log.Fatal("Check your config mode should be set to advantedge or sandbox")
+		log.Fatal("Config field mode should be set to advantedge or sandbox")
+	}
+
+	if !strings.HasPrefix(localPort, ":") {
+		localPort = ":" + localPort
+	}
+
+	if !strings.HasPrefix(localUrl, "http://") {
+		localUrl = "http://" + localUrl
+	}
+	if !strings.HasSuffix(localUrl, "/") {
+		localUrl = strings.TrimSuffix(localUrl, "/")
 	}
 
 	// Load mec platform name & host url
@@ -210,7 +234,7 @@ func Init(envPath string, envName string) (port string, err error) {
 
 	// Setup application support client & service management client
 	// If running on advantedge prepend mecplatform name to static endpoint
-	// If running on sandbox prepend mec sandbox url to a static endpoint
+	// If running on sandbox set callback url by prepend mec sandbox url to a static endpoint
 	appSupportClientCfg := asc.NewConfiguration()
 	srvMgmtClientCfg := smc.NewConfiguration()
 	if environment == "advantedge" {
@@ -247,7 +271,8 @@ func Init(envPath string, envName string) (port string, err error) {
 	return localPort, nil
 }
 
-// If app running on advantedge create mec resource return application info
+// Create a mec resource on platform
+// return app id
 func getAppInstanceId() (id string, err error) {
 	var appInfo sbx.ApplicationInfo
 	appInfo.Name = serviceCategory
@@ -504,7 +529,7 @@ func serviceAmsUpdateDevicePut(w http.ResponseWriter, r *http.Request) {
 		_, amsUpdateError := amsAddDevice(amsResourceId, amsResource, device)
 		if amsUpdateError != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not update ams")
+			fmt.Fprintf(w, "Could not add ams device")
 			return
 		}
 
@@ -529,7 +554,7 @@ func serviceAmsUpdateDevicePut(w http.ResponseWriter, r *http.Request) {
 		_, updateAmsError := updateAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId, device, amsSubscription)
 		if updateAmsError != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not update ams subscription")
+			fmt.Fprintf(w, "Could not add ams subscription")
 			return
 		}
 
@@ -617,7 +642,7 @@ func serviceAmsDeleteDeviceDelete(w http.ResponseWriter, r *http.Request) {
 	// Update AMS subscription
 	_, amsSubscriptionErr := updateAmsSubscription(tempId, "", amsSubscriptionResp)
 	if amsSubscriptionErr != nil {
-		log.Error("Failed to update ams subscription", err)
+		log.Error("Failed to delete ams subscription", err)
 	}
 	w.WriteHeader(http.StatusOK)
 
@@ -848,8 +873,6 @@ func amsSendService(appInstanceId string, device string) (string, error) {
 
 	if err != nil {
 		log.Error(err)
-
-		log.Info("damn iot i")
 		return "", err
 	}
 
@@ -871,12 +894,11 @@ func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device s
 	registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
 		AssociateId:             &associateId,
 		AppMobilityServiceLevel: 3,
-		ContextTransferState:    0,
 	})
 
-	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
+	registerationInfo, resp, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
 	if err != nil {
-		log.Error(err)
+		log.Error("resp status", resp, err)
 		return registerationBody, err
 	}
 
@@ -980,7 +1002,7 @@ func sendReadyConfirmation(appInstanceId string) error {
 
 // Client request to retrieve list of mec service resources on sandbox
 func getMecServices() ([]smc.ServiceInfo, error) {
-	log.Debug("Sending request to mec platform get service resources api ")
+	// log.Debug("Sending request to mec platform get service resources api ")
 	appServicesResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
 		log.Error("Failed to fetch services on mec platform ", resp.Status)
@@ -1001,7 +1023,7 @@ func getMecServices() ([]smc.ServiceInfo, error) {
 
 // Client request to create a mec-service resource
 func registerService(appInstanceId string, callBackUrl string) (smc.ServiceInfo, error) {
-	log.Debug("Sending request to mec platform post service resource api ")
+	//log.Debug("Sending request to mec platform post service resource api ")
 	var srvInfo smc.ServiceInfoPost
 	//serName
 	srvInfo.SerName = serviceCategory
@@ -1048,8 +1070,8 @@ func registerService(appInstanceId string, callBackUrl string) (smc.ServiceInfo,
 		log.Error("Failed to register service resource on mec app enablement registry: ", resp.Status)
 		return appServicesPostResponse, err
 	}
-	log.Info("LOCALURL: " + localUrl + localPort)
-	log.Info(serviceCategory, " service resource created with instance id: ", appServicesPostResponse.SerInstanceId)
+	// log.Info("LOCALURL: " + localUrl + localPort)
+	// log.Info(serviceCategory, " service resource created with instance id: ", appServicesPostResponse.SerInstanceId)
 	appEnablementServiceId = appServicesPostResponse.SerInstanceId
 	return appServicesPostResponse, nil
 }
