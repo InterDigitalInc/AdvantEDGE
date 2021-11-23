@@ -46,9 +46,12 @@ type AppCtrl struct {
 
 // MQ payload fields
 const (
-	mqFieldAppId   = "id"
-	mqFieldPersist = "persist"
+	mqFieldAppId       = "id"
+	mqFieldPersist     = "persist"
+	mqFieldGracePeriod = "gracePeriod"
 )
+
+const defaultGracePeriod int = 10
 
 // App Controller
 var appCtrl *AppCtrl
@@ -117,33 +120,7 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgAppRemoveCnf:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appId := msg.Payload[mqFieldAppId]
-
-		// If process exists, remove it from the active scenario
-		activeModel := getActiveModel()
-		if activeModel != nil {
-			proc, ctx, err := getScenarioProcessById(appId, activeModel)
-			if err == nil {
-				// Prepare scenario update event
-				event := &dataModel.Event{
-					Type_: "SCENARIO-UPDATE",
-					EventScenarioUpdate: &dataModel.EventScenarioUpdate{
-						Action: "REMOVE",
-						Node: &dataModel.ScenarioNode{
-							Type_:  proc.Type_,
-							Parent: ctx.Parents[mod.PhyLoc],
-							NodeDataUnion: &dataModel.NodeDataUnion{
-								Process: proc,
-							},
-						},
-					},
-				}
-				// Process event to remove node
-				_, err = processEvent(event.Type_, event)
-				if err != nil {
-					log.Error(err.Error())
-				}
-			}
-		}
+		removeNodeConfirm(appId)
 	default:
 	}
 }
@@ -182,7 +159,7 @@ func setAppInstance(name string, activeModel *mod.Model) error {
 	}
 
 	// Set app instance
-	err = appCtrl.appStore.Set(app)
+	err = appCtrl.appStore.Set(app, nil)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -190,14 +167,14 @@ func setAppInstance(name string, activeModel *mod.Model) error {
 	return nil
 }
 
-func delAppInstance(id string) error {
+func delAppInstance(id string, gracePeriod int) error {
 	// Validate ID
 	if id == "" {
 		return errors.New("Invalid app instance ID")
 	}
 
 	// Delete app instance
-	err := appCtrl.appStore.Del(id)
+	err := appCtrl.appStore.Del(id, &gracePeriod)
 	if err != nil {
 		log.Warn(err.Error())
 		return err
@@ -207,7 +184,7 @@ func delAppInstance(id string) error {
 
 func resetAppInstances(activeModel *mod.Model) error {
 	// Flush non-persistent app instances
-	appCtrl.appStore.FlushNonPersistent()
+	appCtrl.appStore.FlushNonPersistent(nil)
 
 	// Get active scenario app list
 	scenarioAppList, err := getScenarioAppInstanceList(activeModel)
@@ -218,7 +195,7 @@ func resetAppInstances(activeModel *mod.Model) error {
 
 	// Create app instances for scenario apps
 	for _, app := range scenarioAppList {
-		err := appCtrl.appStore.Set(app)
+		err := appCtrl.appStore.Set(app, nil)
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -257,24 +234,6 @@ func getScenarioAppInstanceList(activeModel *mod.Model) ([]*apps.Application, er
 func getScenarioProcess(name string, activeModel *mod.Model) (*dataModel.Process, *mod.NodeContext, error) {
 	// Get app node
 	node := activeModel.GetNode(name)
-	if node == nil {
-		return nil, nil, errors.New("Failed to get app node")
-	}
-	// Get App Process & context
-	proc, ok := node.(*dataModel.Process)
-	if !ok {
-		return nil, nil, errors.New("Failed to cast node as Process")
-	}
-	ctx := activeModel.GetNodeContext(proc.Name)
-	if ctx == nil {
-		return nil, nil, errors.New("Missing node context for " + proc.Name)
-	}
-	return proc, ctx, nil
-}
-
-func getScenarioProcessById(id string, activeModel *mod.Model) (*dataModel.Process, *mod.NodeContext, error) {
-	// Get app node
-	node := activeModel.GetNodeById(id)
 	if node == nil {
 		return nil, nil, errors.New("Failed to get app node")
 	}
@@ -330,7 +289,7 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create new App instance
-	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo))
+	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo), nil)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -373,7 +332,7 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Override entry in DB
-	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo))
+	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo), nil)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -414,7 +373,8 @@ func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
 	appId := vars["appInstanceId"]
 
 	// Flush App instance data
-	err := appCtrl.appStore.Del(appId)
+	gracePeriod := defaultGracePeriod
+	err := appCtrl.appStore.Del(appId, &gracePeriod)
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -644,7 +604,7 @@ func convertApplicationInfoToApp(appInfo *dataModel.ApplicationInfo) *apps.Appli
 	return app
 }
 
-func appStoreUpdateCb(eventType string, eventData interface{}) {
+func appStoreUpdateCb(eventType string, eventData interface{}, userData interface{}) {
 	var msg *mq.Msg
 
 	// Create message to send on MQ
@@ -655,6 +615,11 @@ func appStoreUpdateCb(eventType string, eventData interface{}) {
 	case apps.EventRemove:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemove, mq.TargetAll, appCtrl.sandboxName)
 		msg.Payload[mqFieldAppId] = eventData.(string)
+		gracePeriodStr := "0"
+		if gracePeriod, ok := userData.(*int); ok && gracePeriod != nil {
+			gracePeriodStr = strconv.Itoa(*gracePeriod)
+		}
+		msg.Payload[mqFieldGracePeriod] = gracePeriodStr
 	case apps.EventFlush:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppFlush, mq.TargetAll, appCtrl.sandboxName)
 		msg.Payload[mqFieldPersist] = strconv.FormatBool(eventData.(bool))

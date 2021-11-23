@@ -57,7 +57,7 @@ type Application struct {
 type ApplicationStoreCfg struct {
 	Name      string
 	Namespace string
-	UpdateCb  func(eventType string, eventData interface{})
+	UpdateCb  func(eventType string, eventData interface{}, userData interface{})
 	RedisAddr string
 }
 
@@ -65,7 +65,7 @@ type ApplicationStore struct {
 	apps     map[string]*Application
 	rc       *redis.Connector
 	keyRoot  string
-	updateCb func(eventType string, eventData interface{})
+	updateCb func(eventType string, eventData interface{}, userData interface{})
 	mutex    sync.Mutex
 }
 
@@ -100,7 +100,7 @@ func NewApplicationStore(cfg *ApplicationStoreCfg) (as *ApplicationStore, err er
 }
 
 // Set - Create or update app entry in DB
-func (as *ApplicationStore) Set(app *Application) error {
+func (as *ApplicationStore) Set(app *Application, userData interface{}) error {
 	// Validate application
 	if app == nil {
 		return errors.New("nil application")
@@ -126,7 +126,7 @@ func (as *ApplicationStore) Set(app *Application) error {
 
 	// Invoke application update callback
 	if as.updateCb != nil {
-		as.updateCb(EventAdd, app.Id)
+		as.updateCb(EventAdd, app.Id, userData)
 	}
 	return nil
 }
@@ -157,7 +157,7 @@ func (as *ApplicationStore) GetAll() ([]*Application, error) {
 }
 
 // Del - Remove application with provided id
-func (as *ApplicationStore) Del(id string) error {
+func (as *ApplicationStore) Del(id string, userData interface{}) error {
 	// Delete entry
 	err := as.deleteEntry(id)
 	if err != nil {
@@ -166,13 +166,13 @@ func (as *ApplicationStore) Del(id string) error {
 
 	// Invoke application update callback
 	if as.updateCb != nil {
-		as.updateCb(EventRemove, id)
+		as.updateCb(EventRemove, id, userData)
 	}
 	return nil
 }
 
 // FlushAll - Remove all Application Store entries
-func (as *ApplicationStore) FlushNonPersistent() {
+func (as *ApplicationStore) FlushNonPersistent(userData interface{}) {
 	// Get app list
 	appList, err := as.GetAll()
 	if err != nil {
@@ -190,19 +190,19 @@ func (as *ApplicationStore) FlushNonPersistent() {
 	// Invoke application update callback
 	if as.updateCb != nil {
 		flushPersistent := false
-		as.updateCb(EventFlush, flushPersistent)
+		as.updateCb(EventFlush, flushPersistent, userData)
 	}
 }
 
 // FlushAll - Remove all Application Store entries
-func (as *ApplicationStore) Flush() {
+func (as *ApplicationStore) Flush(userData interface{}) {
 	// Delete all entries
 	_ = as.deleteAllEntries()
 
 	// Invoke application update callback
 	if as.updateCb != nil {
 		flushPersistent := true
-		as.updateCb(EventFlush, flushPersistent)
+		as.updateCb(EventFlush, flushPersistent, userData)
 	}
 }
 

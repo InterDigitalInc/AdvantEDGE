@@ -26,6 +26,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -48,18 +49,20 @@ type Scenario struct {
 }
 
 type SandboxCtrl struct {
-	sandboxName     string
-	mqGlobal        *mq.MsgQueue
-	mqLocal         *mq.MsgQueue
-	apiMgr          *sam.SwaggerApiMgr
-	scenarioStore   *couch.Connector
-	replayStore     *couch.Connector
-	modelCfg        mod.ModelCfg
-	activeModel     *mod.Model
-	metricStore     *met.MetricStore
-	replayMgr       *replay.ReplayMgr
-	pduSessionStore *pss.PduSessionStore
-	sandboxStore    *ss.SandboxStore
+	sandboxName       string
+	mqGlobal          *mq.MsgQueue
+	mqLocal           *mq.MsgQueue
+	apiMgr            *sam.SwaggerApiMgr
+	scenarioStore     *couch.Connector
+	replayStore       *couch.Connector
+	modelCfg          mod.ModelCfg
+	activeModel       *mod.Model
+	metricStore       *met.MetricStore
+	replayMgr         *replay.ReplayMgr
+	pduSessionStore   *pss.PduSessionStore
+	sandboxStore      *ss.SandboxStore
+	gracefulRemoveMap map[string]chan bool
+	mutex             sync.Mutex
 }
 
 const scenarioDBName string = "scenarios"
@@ -104,6 +107,7 @@ func Init() (err error) {
 
 	// Create new Sandbox Controller
 	sbxCtrl = new(SandboxCtrl)
+	sbxCtrl.gracefulRemoveMap = make(map[string]chan bool)
 
 	// Retrieve Sandbox name from environment variable
 	sbxCtrl.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
@@ -1006,6 +1010,7 @@ func sendEventScenarioUpdate(event *dataModel.Event) (int, string, error) {
 
 	// Get node name
 	nodeName := getScenarioNodeName(event.EventScenarioUpdate.Node)
+	isProc := mod.IsProc(event.EventScenarioUpdate.Node.Type_)
 
 	// Perform necessary action on scenario
 	switch event.EventScenarioUpdate.Action {
@@ -1013,7 +1018,7 @@ func sendEventScenarioUpdate(event *dataModel.Event) (int, string, error) {
 		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
 			description = "Added node [" + nodeName + "]"
-			if mod.IsProc(event.EventScenarioUpdate.Node.Type_) {
+			if isProc {
 				_ = setAppInstance(nodeName, sbxCtrl.activeModel)
 			}
 		}
@@ -1021,18 +1026,20 @@ func sendEventScenarioUpdate(event *dataModel.Event) (int, string, error) {
 		err = sbxCtrl.activeModel.ModifyScenarioNode(event.EventScenarioUpdate.Node, nodeName)
 		if err == nil {
 			description = "Modified node [" + nodeName + "]"
-			if mod.IsProc(event.EventScenarioUpdate.Node.Type_) {
+			if isProc {
 				_ = setAppInstance(nodeName, sbxCtrl.activeModel)
 			}
 		}
 	case mod.ScenarioRemove:
 		nodeId := sbxCtrl.activeModel.GetNodeId(nodeName)
-		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node, nodeName)
+		gracePeriod := int(event.EventScenarioUpdate.GracePeriod)
+		if gracePeriod > 0 {
+			err = removeNodeGracefully(nodeId, nodeName, event.EventScenarioUpdate.Node, gracePeriod)
+		} else {
+			err = removeNode(nodeId, nodeName, event.EventScenarioUpdate.Node)
+		}
 		if err == nil {
 			description = "Removed node [" + nodeName + "]"
-			if mod.IsProc(event.EventScenarioUpdate.Node.Type_) {
-				_ = delAppInstance(nodeId)
-			}
 		}
 	default:
 		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
@@ -1605,6 +1612,80 @@ func activeScenarioUpdateCb(eventType string, userData interface{}) {
 	err := sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
+	}
+}
+
+func removeNode(nodeId string, nodeName string, node *dataModel.ScenarioNode) error {
+	// Remove scenario node
+	err := sbxCtrl.activeModel.RemoveScenarioNode(node, nodeName)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Delete app instance
+	if mod.IsProc(node.Type_) {
+		_ = delAppInstance(nodeId, 0)
+	}
+	return nil
+}
+
+func removeNodeGracefully(nodeId string, nodeName string, node *dataModel.ScenarioNode, gracePeriod int) error {
+	sbxCtrl.mutex.Lock()
+	defer sbxCtrl.mutex.Unlock()
+
+	if mod.IsProc(node.Type_) {
+		// Make sure graceful remove is not already in progress
+		if _, found := sbxCtrl.gracefulRemoveMap[nodeId]; found {
+			return errors.New("Graceful Remove already in progress for nodeId: " + nodeId)
+		}
+
+		// Create Graceful remove channel
+		gracefulRemoveChannel := make(chan bool)
+		sbxCtrl.gracefulRemoveMap[nodeId] = gracefulRemoveChannel
+
+		// Start goroutine to wait for app termination confirmation or timeout
+		go func() {
+			select {
+			case <-gracefulRemoveChannel:
+			case <-time.After(time.Duration(gracePeriod) * time.Second):
+				sbxCtrl.mutex.Lock()
+				delete(sbxCtrl.gracefulRemoveMap, nodeId)
+				sbxCtrl.mutex.Unlock()
+			}
+
+			// Remove scenario node immediately
+			err := sbxCtrl.activeModel.RemoveScenarioNode(node, nodeName)
+			if err != nil {
+				log.Error(err.Error())
+			}
+		}()
+
+		// Trigger graceful app termination
+		_ = delAppInstance(nodeId, gracePeriod)
+	} else {
+		// Nothing to wait for, remove scenario node immediately
+		err := sbxCtrl.activeModel.RemoveScenarioNode(node, nodeName)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	return nil
+}
+
+func removeNodeConfirm(appId string) {
+	sbxCtrl.mutex.Lock()
+	defer sbxCtrl.mutex.Unlock()
+
+	// Process removal confirmation (only if expected)
+	if gracefulRemoveChannel, found := sbxCtrl.gracefulRemoveMap[appId]; found {
+		gracefulRemoveChannel <- true
+		delete(sbxCtrl.gracefulRemoveMap, appId)
+	} else {
+		log.Warn("Unexpected remove node confirmation")
+		return
 	}
 }
 

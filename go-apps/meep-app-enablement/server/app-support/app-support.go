@@ -79,7 +79,7 @@ var basePath string
 var baseKey string
 var subMgr *subs.SubscriptionMgr
 var appStore *apps.ApplicationStore
-var gracefulTerminateMap = map[string]*time.Ticker{}
+var gracefulTerminateMap = map[string]chan bool{}
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -283,17 +283,12 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Check if Confirm Termination was expected
-	gracefulTerminateTicker, found := gracefulTerminateMap[appId]
+	// Verify that confirmation is epxected
+	gracefulTerminateChannel, found := gracefulTerminateMap[appId]
 	if !found {
-		mutex.Unlock()
 		log.Error("Unexpected App Confirmation Termination Notification")
 		http.Error(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
 		return
-	} else {
-		// Stop & delete ticker
-		gracefulTerminateTicker.Stop()
-		delete(gracefulTerminateMap, appId)
 	}
 
 	// Retrieve Termination Confirmation data
@@ -320,8 +315,9 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Delete App Instance
-	deleteAppInstance(appId)
+	// Confirm termination
+	gracefulTerminateChannel <- true
+	delete(gracefulTerminateMap, appId)
 
 	// Send response
 	w.WriteHeader(http.StatusNoContent)
@@ -830,8 +826,8 @@ func terminateAppInfo(appId string) error {
 
 		// Start graceful timeout timer prior to sending the app termination notification
 		mutex.Lock()
-		gracefulTerminateTicker := time.NewTicker(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second)
-		gracefulTerminateMap[appId] = gracefulTerminateTicker
+		gracefulTerminateChannel := make(chan bool)
+		gracefulTerminateMap[appId] = gracefulTerminateChannel
 		mutex.Unlock()
 
 		go func(sub *subs.Subscription) {
@@ -842,18 +838,17 @@ func terminateAppInfo(appId string) error {
 			}
 
 			// Wait for app termination confirmation or timeout
-			for range gracefulTerminateTicker.C {
+			select {
+			case <-gracefulTerminateChannel:
+				log.Debug("Termination confirmation received for: ", appId)
+			case <-time.After(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second):
 				mutex.Lock()
-				if gracefulTerminateTicker, found := gracefulTerminateMap[appId]; found {
-					log.Info("Graceful timeout expiry for ", appId, "---", gracefulTerminateTicker)
-					gracefulTerminateTicker.Stop()
-					delete(gracefulTerminateMap, appId)
-				}
+				delete(gracefulTerminateMap, appId)
 				mutex.Unlock()
-
-				// Delete App instance if timer expires before receiving a termination confirmation
-				deleteAppInstance(appId)
 			}
+
+			// Delete App instance
+			deleteAppInstance(appId)
 		}(sub)
 	}
 
