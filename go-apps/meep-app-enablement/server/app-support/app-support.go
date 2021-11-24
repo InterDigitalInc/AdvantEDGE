@@ -283,7 +283,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Verify that confirmation is epxected
+	// Verify that confirmation is expected
 	gracefulTerminateChannel, found := gracefulTerminateMap[appId]
 	if !found {
 		log.Error("Unexpected App Confirmation Termination Notification")
