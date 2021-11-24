@@ -30,12 +30,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'api/FrontendApi', 'api/MecServiceApi', 'api/NotificationApi'], factory);
+    define(['ApiClient', 'api/FrontendApi', 'api/NotificationApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./api/FrontendApi'), require('./api/MecServiceApi'), require('./api/NotificationApi'));
+    module.exports = factory(require('./ApiClient'), require('./api/FrontendApi'), require('./api/NotificationApi'));
   }
-}(function(ApiClient, FrontendApi, MecServiceApi, NotificationApi) {
+}(function(ApiClient, FrontendApi, NotificationApi) {
   'use strict';
 
   /**
@@ -80,11 +80,6 @@
      * @property {module:api/FrontendApi}
      */
     FrontendApi: FrontendApi,
-    /**
-     * The MecServiceApi service constructor.
-     * @property {module:api/MecServiceApi}
-     */
-    MecServiceApi: MecServiceApi,
     /**
      * The NotificationApi service constructor.
      * @property {module:api/NotificationApi}

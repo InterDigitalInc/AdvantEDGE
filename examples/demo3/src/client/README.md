@@ -97,7 +97,7 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var api = new MecDemo3Api.FrontendApi()
 
-var numLogs = null; // {Object} Represent number of logs to retrieve
+var device = null; // {Object} Delete device from AMS service resource
 
 
 var callback = function(error, data, response) {
@@ -107,7 +107,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-api.infoAmsLogsGet(numLogs, callback);
+api.deleteAmsDevice(device, callback);
 
 ```
 
@@ -117,19 +117,17 @@ All URIs are relative to *https://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*MecDemo3Api.FrontendApi* | [**infoAmsLogsGet**](docs/FrontendApi.md#infoAmsLogsGet) | **GET** /info/ams/logs | Retrieve ams log on a registered app instance
-*MecDemo3Api.FrontendApi* | [**infoApplicationMecPlatformDeleteDelete**](docs/FrontendApi.md#infoApplicationMecPlatformDeleteDelete) | **DELETE** /info/application/delete | Delete app instance info resources
-*MecDemo3Api.FrontendApi* | [**infoApplicationMecPlatformGet**](docs/FrontendApi.md#infoApplicationMecPlatformGet) | **GET** /info/application | Retrieve app instance info
-*MecDemo3Api.FrontendApi* | [**infoLogsGet**](docs/FrontendApi.md#infoLogsGet) | **GET** /info/logs | Retrieve activity log on a registered app instance
-*MecDemo3Api.FrontendApi* | [**registerAppMecPlatformPost**](docs/FrontendApi.md#registerAppMecPlatformPost) | **POST** /register/app | Register user application on platform
-*MecDemo3Api.FrontendApi* | [**serviceAmsDeleteDeviceDelete**](docs/FrontendApi.md#serviceAmsDeleteDeviceDelete) | **DELETE** /service/ams/delete/{device} | Delete AMS device in the AMS service resource
-*MecDemo3Api.FrontendApi* | [**serviceAmsUpdateDevicePut**](docs/FrontendApi.md#serviceAmsUpdateDevicePut) | **PUT** /service/ams/update/{device} | Updates the AMS resource
-*MecDemo3Api.MecServiceApi* | [**amsCreatePOST**](docs/MecServiceApi.md#amsCreatePOST) | **POST** /service/ams/create | 
-*MecDemo3Api.MecServiceApi* | [**amsSubscriptionPOST**](docs/MecServiceApi.md#amsSubscriptionPOST) | **POST** /ams/subscriptions | 
-*MecDemo3Api.MecServiceApi* | [**servicesDiscoverPost**](docs/MecServiceApi.md#servicesDiscoverPost) | **POST** /services/discover | 
-*MecDemo3Api.NotificationApi* | [**notificationPOST**](docs/NotificationApi.md#notificationPOST) | **POST** /services/callback/service-availability | MEC011 service availability notification
-*MecDemo3Api.NotificationApi* | [**servicesCallbackAmseventPost**](docs/NotificationApi.md#servicesCallbackAmseventPost) | **POST** /services/callback/amsevent | MEC021 ams notifcation
-*MecDemo3Api.NotificationApi* | [**terminateNotificatonPOST**](docs/NotificationApi.md#terminateNotificatonPOST) | **POST** /application/termination | MEC011 app termination notification
+*MecDemo3Api.FrontendApi* | [**deleteAmsDevice**](docs/FrontendApi.md#deleteAmsDevice) | **DELETE** /service/ams/delete/{device} | Delete an AMS device
+*MecDemo3Api.FrontendApi* | [**deregister**](docs/FrontendApi.md#deregister) | **DELETE** /info/application/delete | Deregister with MEC Platform and delete associated resources
+*MecDemo3Api.FrontendApi* | [**getActivityLogs**](docs/FrontendApi.md#getActivityLogs) | **GET** /info/logs | Returns activity logs
+*MecDemo3Api.FrontendApi* | [**getAmsDevices**](docs/FrontendApi.md#getAmsDevices) | **GET** /info/ams | Returns the list of AMS Devices
+*MecDemo3Api.FrontendApi* | [**getPlatformInfo**](docs/FrontendApi.md#getPlatformInfo) | **GET** /info/application | Returns the application dynamic information
+*MecDemo3Api.FrontendApi* | [**register**](docs/FrontendApi.md#register) | **POST** /register/app | Register with MEC Platform and create necessary resources
+*MecDemo3Api.FrontendApi* | [**updateAmsDevices**](docs/FrontendApi.md#updateAmsDevices) | **PUT** /service/ams/update/{device} | Updates the list of AMS devices
+*MecDemo3Api.NotificationApi* | [**amsNotificationCallback**](docs/NotificationApi.md#amsNotificationCallback) | **POST** /services/callback/amsevent | Callback endpoint for AMS Notifications
+*MecDemo3Api.NotificationApi* | [**appTerminationNotificationCallback**](docs/NotificationApi.md#appTerminationNotificationCallback) | **POST** /application/termination | Callback endpoint for MEC011 app-termination notifications
+*MecDemo3Api.NotificationApi* | [**contextTransferNotificationCallback**](docs/NotificationApi.md#contextTransferNotificationCallback) | **POST** /application/transfer | Callback endpoint for MEC021 context-state transfer notification
+*MecDemo3Api.NotificationApi* | [**serviceAvailNotificationCallback**](docs/NotificationApi.md#serviceAvailNotificationCallback) | **POST** /services/callback/service-availability | Callback endpoint for MEC011 Notifications
 
 
 ## Documentation for Models

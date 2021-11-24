@@ -71,7 +71,7 @@ export default function Homepage() {
 
   // Inital loading 
   useEffect(() => {
-    appInfoApi.infoApplicationMecPlatformGet((error, data, response) => {
+    appInfoApi.getPlatformInfo((error, data, response) => {
       if (error !== null) {
         console.log(error);
       } else {
@@ -80,12 +80,13 @@ export default function Homepage() {
     });
   }, []);
 
+ 
   // If app is registered & added terminal device
   // Perform polling on ams 
   useEffect(() => {
-    if (registered && amsStart) {
+    if (registered ) {
       const interval = setInterval(() => {
-        appInfoApi.infoAmsLogsGet(20000, (error, data, response) => {
+        appInfoApi.getAmsDevices( (error, data, response) => {
           if (error !== null) {
             console.log(error);
           } else {
@@ -95,14 +96,14 @@ export default function Homepage() {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [amsLog, amsStart, registered]);
+  }, [amsLog, registered]);
 
   // If app is registered or app info changes
   // Perform polling on app info
   useEffect(() => {
     if (registered) {
       const interval = setInterval(() => {
-        appInfoApi.infoApplicationMecPlatformGet((error, data, response) => {
+        appInfoApi.getPlatformInfo((error, data, response) => {
           if (error != null) {
             console.log(error);
           } else {
@@ -119,7 +120,7 @@ export default function Homepage() {
   useEffect(() => {
     if (registered) {
       const interval = setInterval(() => {
-        appInfoApi.infoLogsGet(2000, (error, data, response) => {
+        appInfoApi.getActivityLogs((error, data, response) => {
           if (error != null) {
             console.log(error);
           } else {
@@ -138,18 +139,18 @@ export default function Homepage() {
     setAmsLog([]);
     setRegisteration(false);
     setTerminalDevices([]);
-    appInfoApi.infoApplicationMecPlatformDeleteDelete((err, data, resp) => {
+    appInfoApi.deregister((err, data, resp) => {
       if (err != null) {
         console.log(err);
       }
-      appInfoApi.infoLogsGet(40, (error, data, response) => {
+      appInfoApi.getActivityLogs( (error, data, response) => {
         if (error != null) {
           console.log(error);
         } else {
           setAppLog(response.body);
         }
       });
-      appInfoApi.infoApplicationMecPlatformGet((error, data, response) => {
+      appInfoApi.getPlatformInfo((error, data, response) => {
         if (error != null) {
           console.log(error);
         } else {
@@ -164,7 +165,7 @@ export default function Homepage() {
   const removeAmsDevice = async (device) => {
     let mutableArray = terminalDevices;
     
-    appInfoApi.serviceAmsDeleteDeviceDelete(device, (err, data, resp) => {
+    appInfoApi.deleteAmsDevice(device, (err, data, resp) => {
       if (err != null) {
         console.log(err);
       } else {
@@ -178,7 +179,7 @@ export default function Homepage() {
     let devices = terminalDevices;
     let deviceMap = new Set(devices);
     if (!deviceMap.has(textValue)) {
-      appInfoApi.serviceAmsUpdateDevicePut(textValue, (err, data, resp) => {
+      appInfoApi.updateAmsDevices(textValue, (err, data, resp) => {
         if (err != null) {
           console.log(err);
         } else {
@@ -208,7 +209,7 @@ export default function Homepage() {
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
                   onClick={() => {
-                    appInfoApi.registerAppMecPlatformPost(
+                    appInfoApi.register(
                       (err, data, resp) => {
                         if (err != null) {
                           console.log(err);

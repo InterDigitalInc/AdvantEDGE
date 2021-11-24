@@ -33,6 +33,7 @@ import (
 
 	server "github.com/InterDigitalInc/AdvantEDGE/example/demo3/src/server"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	"github.com/gorilla/handlers"
 )
 
 // Initalize customized logger
@@ -71,7 +72,9 @@ func main() {
 
 		// Start demo 3 server
 		router := server.NewRouter()
-		log.Fatal(http.ListenAndServe(port, router))
+		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
+		header := handlers.AllowedHeaders([]string{"content-type"})
+		log.Fatal(http.ListenAndServe(port, handlers.CORS(methods, header)(router)))
 		run = false
 	}()
 

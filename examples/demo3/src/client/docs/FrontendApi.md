@@ -4,234 +4,22 @@ All URIs are relative to *https://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**infoAmsLogsGet**](FrontendApi.md#infoAmsLogsGet) | **GET** /info/ams/logs | Retrieve ams log on a registered app instance
-[**infoApplicationMecPlatformDeleteDelete**](FrontendApi.md#infoApplicationMecPlatformDeleteDelete) | **DELETE** /info/application/delete | Delete app instance info resources
-[**infoApplicationMecPlatformGet**](FrontendApi.md#infoApplicationMecPlatformGet) | **GET** /info/application | Retrieve app instance info
-[**infoLogsGet**](FrontendApi.md#infoLogsGet) | **GET** /info/logs | Retrieve activity log on a registered app instance
-[**registerAppMecPlatformPost**](FrontendApi.md#registerAppMecPlatformPost) | **POST** /register/app | Register user application on platform
-[**serviceAmsDeleteDeviceDelete**](FrontendApi.md#serviceAmsDeleteDeviceDelete) | **DELETE** /service/ams/delete/{device} | Delete AMS device in the AMS service resource
-[**serviceAmsUpdateDevicePut**](FrontendApi.md#serviceAmsUpdateDevicePut) | **PUT** /service/ams/update/{device} | Updates the AMS resource
+[**deleteAmsDevice**](FrontendApi.md#deleteAmsDevice) | **DELETE** /service/ams/delete/{device} | Delete an AMS device
+[**deregister**](FrontendApi.md#deregister) | **DELETE** /info/application/delete | Deregister with MEC Platform and delete associated resources
+[**getActivityLogs**](FrontendApi.md#getActivityLogs) | **GET** /info/logs | Returns activity logs
+[**getAmsDevices**](FrontendApi.md#getAmsDevices) | **GET** /info/ams | Returns the list of AMS Devices
+[**getPlatformInfo**](FrontendApi.md#getPlatformInfo) | **GET** /info/application | Returns the application dynamic information
+[**register**](FrontendApi.md#register) | **POST** /register/app | Register with MEC Platform and create necessary resources
+[**updateAmsDevices**](FrontendApi.md#updateAmsDevices) | **PUT** /service/ams/update/{device} | Updates the list of AMS devices
 
 
-<a name="infoAmsLogsGet"></a>
-# **infoAmsLogsGet**
-> infoAmsLogsGet(numLogs)
+<a name="deleteAmsDevice"></a>
+# **deleteAmsDevice**
+> deleteAmsDevice(device)
 
-Retrieve ams log on a registered app instance
+Delete an AMS device
 
-This method retrieves ams log for a mec app displaying context state transfer
-
-### Example
-```javascript
-var MecDemo3Api = require('mec_demo_3_api');
-
-var apiInstance = new MecDemo3Api.FrontendApi();
-
-var numLogs = null; // Object | Represent number of logs to retrieve
-
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully.');
-  }
-};
-apiInstance.infoAmsLogsGet(numLogs, callback);
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **numLogs** | [**Object**](.md)| Represent number of logs to retrieve | 
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-<a name="infoApplicationMecPlatformDeleteDelete"></a>
-# **infoApplicationMecPlatformDeleteDelete**
-> infoApplicationMecPlatformDeleteDelete()
-
-Delete app instance info resources
-
-This method deletes a specific app instance info on a mec platform triggering graceful termination
-
-### Example
-```javascript
-var MecDemo3Api = require('mec_demo_3_api');
-
-var apiInstance = new MecDemo3Api.FrontendApi();
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully.');
-  }
-};
-apiInstance.infoApplicationMecPlatformDeleteDelete(callback);
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-<a name="infoApplicationMecPlatformGet"></a>
-# **infoApplicationMecPlatformGet**
-> infoApplicationMecPlatformGet()
-
-Retrieve app instance info
-
-This method retrieves a specific app instance info on a mec platform to display on demo frontend
-
-### Example
-```javascript
-var MecDemo3Api = require('mec_demo_3_api');
-
-var apiInstance = new MecDemo3Api.FrontendApi();
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully.');
-  }
-};
-apiInstance.infoApplicationMecPlatformGet(callback);
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-<a name="infoLogsGet"></a>
-# **infoLogsGet**
-> infoLogsGet(numLogs)
-
-Retrieve activity log on a registered app instance
-
-This method retrieves demo activity log for a registered app instance
-
-### Example
-```javascript
-var MecDemo3Api = require('mec_demo_3_api');
-
-var apiInstance = new MecDemo3Api.FrontendApi();
-
-var numLogs = null; // Object | Represent number of logs to retrieve
-
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully.');
-  }
-};
-apiInstance.infoLogsGet(numLogs, callback);
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **numLogs** | [**Object**](.md)| Represent number of logs to retrieve | 
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-<a name="registerAppMecPlatformPost"></a>
-# **registerAppMecPlatformPost**
-> registerAppMecPlatformPost()
-
-Register user application on platform
-
-This method registers application on a mec platform sending acknowledgement, subscriptions, and services.
-
-### Example
-```javascript
-var MecDemo3Api = require('mec_demo_3_api');
-
-var apiInstance = new MecDemo3Api.FrontendApi();
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully.');
-  }
-};
-apiInstance.registerAppMecPlatformPost(callback);
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-<a name="serviceAmsDeleteDeviceDelete"></a>
-# **serviceAmsDeleteDeviceDelete**
-> serviceAmsDeleteDeviceDelete(device)
-
-Delete AMS device in the AMS service resource
-
-Create a new application mobility service for the service requester & create subscription to ams.
+Delete an AMS device
 
 ### Example
 ```javascript
@@ -249,7 +37,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.serviceAmsDeleteDeviceDelete(device, callback);
+apiInstance.deleteAmsDevice(device, callback);
 ```
 
 ### Parameters
@@ -271,13 +59,213 @@ No authorization required
  - **Content-Type**: Not defined
  - **Accept**: Not defined
 
-<a name="serviceAmsUpdateDevicePut"></a>
-# **serviceAmsUpdateDevicePut**
-> serviceAmsUpdateDevicePut(device)
+<a name="deregister"></a>
+# **deregister**
+> deregister()
 
-Updates the AMS resource
+Deregister with MEC Platform and delete associated resources
 
-Update mobility service with device info
+Deregister with MEC Platform and delete associated resources
+
+### Example
+```javascript
+var MecDemo3Api = require('mec_demo_3_api');
+
+var apiInstance = new MecDemo3Api.FrontendApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.deregister(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a name="getActivityLogs"></a>
+# **getActivityLogs**
+> getActivityLogs()
+
+Returns activity logs
+
+Returns activity logs
+
+### Example
+```javascript
+var MecDemo3Api = require('mec_demo_3_api');
+
+var apiInstance = new MecDemo3Api.FrontendApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.getActivityLogs(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a name="getAmsDevices"></a>
+# **getAmsDevices**
+> getAmsDevices()
+
+Returns the list of AMS Devices
+
+Returns the list of AMS Devices
+
+### Example
+```javascript
+var MecDemo3Api = require('mec_demo_3_api');
+
+var apiInstance = new MecDemo3Api.FrontendApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.getAmsDevices(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a name="getPlatformInfo"></a>
+# **getPlatformInfo**
+> getPlatformInfo()
+
+Returns the application dynamic information
+
+Returns the application dynamic information
+
+### Example
+```javascript
+var MecDemo3Api = require('mec_demo_3_api');
+
+var apiInstance = new MecDemo3Api.FrontendApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.getPlatformInfo(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a name="register"></a>
+# **register**
+> register()
+
+Register with MEC Platform and create necessary resources
+
+Register with MEC Platform and create necessary resources
+
+### Example
+```javascript
+var MecDemo3Api = require('mec_demo_3_api');
+
+var apiInstance = new MecDemo3Api.FrontendApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.register(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a name="updateAmsDevices"></a>
+# **updateAmsDevices**
+> updateAmsDevices(device)
+
+Updates the list of AMS devices
+
+Updates the list of AMS devices
 
 ### Example
 ```javascript
@@ -295,7 +283,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.serviceAmsUpdateDevicePut(device, callback);
+apiInstance.updateAmsDevices(device, callback);
 ```
 
 ### Parameters

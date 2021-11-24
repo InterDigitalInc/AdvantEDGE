@@ -26,7 +26,7 @@ package server
 type ApplicationInstanceSubscriptions struct {
 	AppTerminationSubscription *ApplicationInstanceAppTerminationSubscription `json:"AppTerminationSubscription,omitempty"`
 
-	SerAvailabilitySubscription *ApplicationInstanceSerAvailabilitySubscription `json:"SerAvailabilitySubscription:,omitempty"`
+	SerAvailabilitySubscription *ApplicationInstanceSerAvailabilitySubscription `json:"SerAvailabilitySubscription,omitempty"`
 
 	AmsLinkListSubscription *ApplicationInstanceAmsLinkListSubscription `json:"AmsLinkListSubscription,omitempty"`
 }

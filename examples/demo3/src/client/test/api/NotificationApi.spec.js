@@ -49,12 +49,12 @@
 
   describe('(package)', function() {
     describe('NotificationApi', function() {
-      describe('notificationPOST', function() {
-        it('should call notificationPOST successfully', function(done) {
-          // TODO: uncomment notificationPOST call
+      describe('amsNotificationCallback', function() {
+        it('should call amsNotificationCallback successfully', function(done) {
+          // TODO: uncomment amsNotificationCallback call
           /*
 
-          instance.notificationPOST(function(error, data, response) {
+          instance.amsNotificationCallback(function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -67,12 +67,12 @@
           done();
         });
       });
-      describe('servicesCallbackAmseventPost', function() {
-        it('should call servicesCallbackAmseventPost successfully', function(done) {
-          // TODO: uncomment servicesCallbackAmseventPost call
+      describe('appTerminationNotificationCallback', function() {
+        it('should call appTerminationNotificationCallback successfully', function(done) {
+          // TODO: uncomment appTerminationNotificationCallback call
           /*
 
-          instance.servicesCallbackAmseventPost(function(error, data, response) {
+          instance.appTerminationNotificationCallback(function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -85,12 +85,30 @@
           done();
         });
       });
-      describe('terminateNotificatonPOST', function() {
-        it('should call terminateNotificatonPOST successfully', function(done) {
-          // TODO: uncomment terminateNotificatonPOST call
+      describe('contextTransferNotificationCallback', function() {
+        it('should call contextTransferNotificationCallback successfully', function(done) {
+          // TODO: uncomment contextTransferNotificationCallback call
           /*
 
-          instance.terminateNotificatonPOST(function(error, data, response) {
+          instance.contextTransferNotificationCallback(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('serviceAvailNotificationCallback', function() {
+        it('should call serviceAvailNotificationCallback successfully', function(done) {
+          // TODO: uncomment serviceAvailNotificationCallback call
+          /*
+
+          instance.serviceAvailNotificationCallback(function(error, data, response) {
             if (error) {
               done(error);
               return;

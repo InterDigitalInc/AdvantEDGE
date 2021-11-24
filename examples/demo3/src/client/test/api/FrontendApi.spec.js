@@ -49,105 +49,13 @@
 
   describe('(package)', function() {
     describe('FrontendApi', function() {
-      describe('infoAmsLogsGet', function() {
-        it('should call infoAmsLogsGet successfully', function(done) {
-          // TODO: uncomment, update parameter values for infoAmsLogsGet call
-          /*
-          var numLogs = null;
-
-          instance.infoAmsLogsGet(numLogs, function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('infoApplicationMecPlatformDeleteDelete', function() {
-        it('should call infoApplicationMecPlatformDeleteDelete successfully', function(done) {
-          // TODO: uncomment infoApplicationMecPlatformDeleteDelete call
-          /*
-
-          instance.infoApplicationMecPlatformDeleteDelete(function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('infoApplicationMecPlatformGet', function() {
-        it('should call infoApplicationMecPlatformGet successfully', function(done) {
-          // TODO: uncomment infoApplicationMecPlatformGet call
-          /*
-
-          instance.infoApplicationMecPlatformGet(function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('infoLogsGet', function() {
-        it('should call infoLogsGet successfully', function(done) {
-          // TODO: uncomment, update parameter values for infoLogsGet call
-          /*
-          var numLogs = null;
-
-          instance.infoLogsGet(numLogs, function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('registerAppMecPlatformPost', function() {
-        it('should call registerAppMecPlatformPost successfully', function(done) {
-          // TODO: uncomment registerAppMecPlatformPost call
-          /*
-
-          instance.registerAppMecPlatformPost(function(error, data, response) {
-            if (error) {
-              done(error);
-              return;
-            }
-
-            done();
-          });
-          */
-          // TODO: uncomment and complete method invocation above, then delete this line and the next:
-          done();
-        });
-      });
-      describe('serviceAmsDeleteDeviceDelete', function() {
-        it('should call serviceAmsDeleteDeviceDelete successfully', function(done) {
-          // TODO: uncomment, update parameter values for serviceAmsDeleteDeviceDelete call
+      describe('deleteAmsDevice', function() {
+        it('should call deleteAmsDevice successfully', function(done) {
+          // TODO: uncomment, update parameter values for deleteAmsDevice call
           /*
           var device = null;
 
-          instance.serviceAmsDeleteDeviceDelete(device, function(error, data, response) {
+          instance.deleteAmsDevice(device, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -160,13 +68,103 @@
           done();
         });
       });
-      describe('serviceAmsUpdateDevicePut', function() {
-        it('should call serviceAmsUpdateDevicePut successfully', function(done) {
-          // TODO: uncomment, update parameter values for serviceAmsUpdateDevicePut call
+      describe('deregister', function() {
+        it('should call deregister successfully', function(done) {
+          // TODO: uncomment deregister call
+          /*
+
+          instance.deregister(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getActivityLogs', function() {
+        it('should call getActivityLogs successfully', function(done) {
+          // TODO: uncomment getActivityLogs call
+          /*
+
+          instance.getActivityLogs(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getAmsDevices', function() {
+        it('should call getAmsDevices successfully', function(done) {
+          // TODO: uncomment getAmsDevices call
+          /*
+
+          instance.getAmsDevices(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getPlatformInfo', function() {
+        it('should call getPlatformInfo successfully', function(done) {
+          // TODO: uncomment getPlatformInfo call
+          /*
+
+          instance.getPlatformInfo(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('register', function() {
+        it('should call register successfully', function(done) {
+          // TODO: uncomment register call
+          /*
+
+          instance.register(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('updateAmsDevices', function() {
+        it('should call updateAmsDevices successfully', function(done) {
+          // TODO: uncomment, update parameter values for updateAmsDevices call
           /*
           var device = null;
 
-          instance.serviceAmsUpdateDevicePut(device, function(error, data, response) {
+          instance.updateAmsDevices(device, function(error, data, response) {
             if (error) {
               done(error);
               return;

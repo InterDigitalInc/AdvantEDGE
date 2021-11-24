@@ -22,7 +22,7 @@ cp -Rf $BASEDIR/bin/demo-frontend/* $DEMOBIN/static
 
 # Copy Dockerfile & config to bin folder
 cp $BASEDIR/src/backend/Dockerfile $DEMOBIN
-cp $BASEDIR/src/backend/app_instance.yaml $DEMOBIN
+# cp $BASEDIR/src/backend/app_instance.yaml $DEMOBIN
 cp $BASEDIR/entrypoint.sh $DEMOBIN
 
 

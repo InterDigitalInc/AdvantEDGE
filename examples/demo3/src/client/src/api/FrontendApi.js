@@ -62,239 +62,25 @@
 
 
     /**
-     * Callback function to receive the result of the infoAmsLogsGet operation.
-     * @callback module:api/FrontendApi~infoAmsLogsGetCallback
+     * Callback function to receive the result of the deleteAmsDevice operation.
+     * @callback module:api/FrontendApi~deleteAmsDeviceCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Retrieve ams log on a registered app instance
-     * This method retrieves ams log for a mec app displaying context state transfer
-     * @param {Object} numLogs Represent number of logs to retrieve
-     * @param {module:api/FrontendApi~infoAmsLogsGetCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.infoAmsLogsGet = function(numLogs, callback) {
-      var postBody = null;
-
-      // verify the required parameter 'numLogs' is set
-      if (numLogs === undefined || numLogs === null) {
-        throw new Error("Missing the required parameter 'numLogs' when calling infoAmsLogsGet");
-      }
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-        'numLogs': numLogs,
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/info/ams/logs', 'GET',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the infoApplicationMecPlatformDeleteDelete operation.
-     * @callback module:api/FrontendApi~infoApplicationMecPlatformDeleteDeleteCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * Delete app instance info resources
-     * This method deletes a specific app instance info on a mec platform triggering graceful termination
-     * @param {module:api/FrontendApi~infoApplicationMecPlatformDeleteDeleteCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.infoApplicationMecPlatformDeleteDelete = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/info/application/delete', 'DELETE',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the infoApplicationMecPlatformGet operation.
-     * @callback module:api/FrontendApi~infoApplicationMecPlatformGetCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * Retrieve app instance info
-     * This method retrieves a specific app instance info on a mec platform to display on demo frontend
-     * @param {module:api/FrontendApi~infoApplicationMecPlatformGetCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.infoApplicationMecPlatformGet = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/info/application', 'GET',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the infoLogsGet operation.
-     * @callback module:api/FrontendApi~infoLogsGetCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * Retrieve activity log on a registered app instance
-     * This method retrieves demo activity log for a registered app instance
-     * @param {Object} numLogs Represent number of logs to retrieve
-     * @param {module:api/FrontendApi~infoLogsGetCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.infoLogsGet = function(numLogs, callback) {
-      var postBody = null;
-
-      // verify the required parameter 'numLogs' is set
-      if (numLogs === undefined || numLogs === null) {
-        throw new Error("Missing the required parameter 'numLogs' when calling infoLogsGet");
-      }
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-        'numLogs': numLogs,
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/info/logs', 'GET',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the registerAppMecPlatformPost operation.
-     * @callback module:api/FrontendApi~registerAppMecPlatformPostCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * Register user application on platform
-     * This method registers application on a mec platform sending acknowledgement, subscriptions, and services.
-     * @param {module:api/FrontendApi~registerAppMecPlatformPostCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.registerAppMecPlatformPost = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/register/app', 'POST',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the serviceAmsDeleteDeviceDelete operation.
-     * @callback module:api/FrontendApi~serviceAmsDeleteDeviceDeleteCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * Delete AMS device in the AMS service resource
-     * Create a new application mobility service for the service requester & create subscription to ams.
+     * Delete an AMS device
+     * Delete an AMS device
      * @param {Object} device Delete device from AMS service resource
-     * @param {module:api/FrontendApi~serviceAmsDeleteDeviceDeleteCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/FrontendApi~deleteAmsDeviceCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.serviceAmsDeleteDeviceDelete = function(device, callback) {
+    this.deleteAmsDevice = function(device, callback) {
       var postBody = null;
 
       // verify the required parameter 'device' is set
       if (device === undefined || device === null) {
-        throw new Error("Missing the required parameter 'device' when calling serviceAmsDeleteDeviceDelete");
+        throw new Error("Missing the required parameter 'device' when calling deleteAmsDevice");
       }
 
 
@@ -323,25 +109,225 @@
     }
 
     /**
-     * Callback function to receive the result of the serviceAmsUpdateDevicePut operation.
-     * @callback module:api/FrontendApi~serviceAmsUpdateDevicePutCallback
+     * Callback function to receive the result of the deregister operation.
+     * @callback module:api/FrontendApi~deregisterCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Updates the AMS resource
-     * Update mobility service with device info
-     * @param {Object} device Start AMS service resource to track device name
-     * @param {module:api/FrontendApi~serviceAmsUpdateDevicePutCallback} callback The callback function, accepting three arguments: error, data, response
+     * Deregister with MEC Platform and delete associated resources
+     * Deregister with MEC Platform and delete associated resources
+     * @param {module:api/FrontendApi~deregisterCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.serviceAmsUpdateDevicePut = function(device, callback) {
+    this.deregister = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/info/application/delete', 'DELETE',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the getActivityLogs operation.
+     * @callback module:api/FrontendApi~getActivityLogsCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Returns activity logs
+     * Returns activity logs
+     * @param {module:api/FrontendApi~getActivityLogsCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.getActivityLogs = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/info/logs', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the getAmsDevices operation.
+     * @callback module:api/FrontendApi~getAmsDevicesCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Returns the list of AMS Devices
+     * Returns the list of AMS Devices
+     * @param {module:api/FrontendApi~getAmsDevicesCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.getAmsDevices = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/info/ams', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the getPlatformInfo operation.
+     * @callback module:api/FrontendApi~getPlatformInfoCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Returns the application dynamic information
+     * Returns the application dynamic information
+     * @param {module:api/FrontendApi~getPlatformInfoCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.getPlatformInfo = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/info/application', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the register operation.
+     * @callback module:api/FrontendApi~registerCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Register with MEC Platform and create necessary resources
+     * Register with MEC Platform and create necessary resources
+     * @param {module:api/FrontendApi~registerCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.register = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/register/app', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the updateAmsDevices operation.
+     * @callback module:api/FrontendApi~updateAmsDevicesCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Updates the list of AMS devices
+     * Updates the list of AMS devices
+     * @param {Object} device Start AMS service resource to track device name
+     * @param {module:api/FrontendApi~updateAmsDevicesCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.updateAmsDevices = function(device, callback) {
       var postBody = null;
 
       // verify the required parameter 'device' is set
       if (device === undefined || device === null) {
-        throw new Error("Missing the required parameter 'device' when calling serviceAmsUpdateDevicePut");
+        throw new Error("Missing the required parameter 'device' when calling updateAmsDevices");
       }
 
 

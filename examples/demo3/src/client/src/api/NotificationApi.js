@@ -62,59 +62,19 @@
 
 
     /**
-     * Callback function to receive the result of the notificationPOST operation.
-     * @callback module:api/NotificationApi~notificationPOSTCallback
+     * Callback function to receive the result of the amsNotificationCallback operation.
+     * @callback module:api/NotificationApi~amsNotificationCallbackCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * MEC011 service availability notification
-     * .
-     * @param {module:api/NotificationApi~notificationPOSTCallback} callback The callback function, accepting three arguments: error, data, response
+     * Callback endpoint for AMS Notifications
+     * Callback endpoint for AMS Notifications
+     * @param {module:api/NotificationApi~amsNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.notificationPOST = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = [];
-      var returnType = null;
-
-      return this.apiClient.callApi(
-        '/services/callback/service-availability', 'POST',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the servicesCallbackAmseventPost operation.
-     * @callback module:api/NotificationApi~servicesCallbackAmseventPostCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * MEC021 ams notifcation
-     * Handle Application Mobility Service notifications.
-     * @param {module:api/NotificationApi~servicesCallbackAmseventPostCallback} callback The callback function, accepting three arguments: error, data, response
-     */
-    this.servicesCallbackAmseventPost = function(callback) {
+    this.amsNotificationCallback = function(callback) {
       var postBody = null;
 
 
@@ -142,19 +102,19 @@
     }
 
     /**
-     * Callback function to receive the result of the terminateNotificatonPOST operation.
-     * @callback module:api/NotificationApi~terminateNotificatonPOSTCallback
+     * Callback function to receive the result of the appTerminationNotificationCallback operation.
+     * @callback module:api/NotificationApi~appTerminationNotificationCallbackCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * MEC011 app termination notification
-     * .
-     * @param {module:api/NotificationApi~terminateNotificatonPOSTCallback} callback The callback function, accepting three arguments: error, data, response
+     * Callback endpoint for MEC011 app-termination notifications
+     * Callback endpoint for MEC011 app-termination notifications
+     * @param {module:api/NotificationApi~appTerminationNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.terminateNotificatonPOST = function(callback) {
+    this.appTerminationNotificationCallback = function(callback) {
       var postBody = null;
 
 
@@ -176,6 +136,86 @@
 
       return this.apiClient.callApi(
         '/application/termination', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the contextTransferNotificationCallback operation.
+     * @callback module:api/NotificationApi~contextTransferNotificationCallbackCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Callback endpoint for MEC021 context-state transfer notification
+     * Callback endpoint for MEC021 context-state transfer notification
+     * @param {module:api/NotificationApi~contextTransferNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.contextTransferNotificationCallback = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/application/transfer', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the serviceAvailNotificationCallback operation.
+     * @callback module:api/NotificationApi~serviceAvailNotificationCallbackCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Callback endpoint for MEC011 Notifications
+     * Callback endpoint for MEC011 Notifications
+     * @param {module:api/NotificationApi~serviceAvailNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.serviceAvailNotificationCallback = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = [];
+      var accepts = [];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/services/callback/service-availability', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

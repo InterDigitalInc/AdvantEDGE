@@ -21,7 +21,6 @@ ENV SERVICE_NAME = "demo3"
 COPY ./demo-server /demo-server
 COPY ./static /static
 COPY entrypoint.sh / 
-COPY app_instance.yaml /
 
 RUN chmod +x /entrypoint.sh
 

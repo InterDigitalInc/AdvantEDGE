@@ -127,4 +127,11 @@ var routes = Routes{
 		"/services/callback/service-availability",
 		ServiceAvailNotificationCallback,
 	},
+
+	Route{
+		"ContextTransferNotificationCallback",
+		strings.ToUpper("Post"),
+		"/application/transfer",
+		ContextTransferNotificationCallback,
+	},
 }
