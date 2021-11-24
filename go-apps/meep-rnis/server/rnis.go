@@ -484,7 +484,7 @@ func startRegistrationTicker() {
 		for range registrationTicker.C {
 			// Get Application instance ID
 			if serviceAppInstanceId == "" {
-				// If global service, request an app instance ID from Sandbox Controller
+				// If a sandbox service, request an app instance ID from Sandbox Controller
 				// Otherwise use the scenario-provisioned instance ID
 				if mepName == defaultMepName {
 					var err error
