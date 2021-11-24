@@ -94,6 +94,9 @@ func Init(sandbox string, mep string, host *url.URL, msgQueue *mq.MsgQueue, glob
 	mutex = globalMutex
 	mepName = mep
 
+	// Initialize app info cache
+	appInfoMap = make(map[string]map[string]string)
+
 	// Set base path & base storage key
 	if mepName == globalMepName {
 		basePath = "/" + sandboxName + "/" + appSupportBasePath
