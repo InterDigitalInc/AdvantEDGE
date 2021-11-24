@@ -904,7 +904,7 @@ func (m *Model) GetNode(name string) (node interface{}) {
 
 // GetNodeById - Get a node by its id
 // 		Returned value is of type interface{}
-//    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
+//    Returned node may be nil
 func (m *Model) GetNodeById(id string) (node interface{}) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
