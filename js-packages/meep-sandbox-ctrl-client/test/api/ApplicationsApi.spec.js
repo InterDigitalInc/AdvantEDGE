@@ -86,8 +86,8 @@
             expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
-            expect(data.mepName).to.be.a('string');
-            expect(data.mepName).to.be("");
+            expect(data.nodeName).to.be.a('string');
+            expect(data.nodeName).to.be("");
             expect(data.type).to.be.a('string');
             expect(data.type).to.be("USER");
             expect(data.persist).to.be.a('boolean');
@@ -108,7 +108,7 @@
           var applicationInfo = new AdvantEdgeSandboxControllerRestApi.ApplicationInfo();
           applicationInfo.id = "";
           applicationInfo.name = "";
-          applicationInfo.mepName = "";
+          applicationInfo.nodeName = "";
           applicationInfo.type = "USER";
           applicationInfo.persist = false;
 
@@ -123,8 +123,8 @@
             expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
-            expect(data.mepName).to.be.a('string');
-            expect(data.mepName).to.be("");
+            expect(data.nodeName).to.be.a('string');
+            expect(data.nodeName).to.be("");
             expect(data.type).to.be.a('string');
             expect(data.type).to.be("USER");
             expect(data.persist).to.be.a('boolean');
@@ -143,8 +143,8 @@
           /*
           var opts = {};
           opts.app = "app_example";
-          opts.mep = "mep_example";
           opts.type = "type_example";
+          opts.nodeName = "nodeName_example";
 
           instance.applicationsGET(opts, function(error, data, response) {
             if (error) {
@@ -162,8 +162,8 @@
               expect(data.id).to.be("");
               expect(data.name).to.be.a('string');
               expect(data.name).to.be("");
-              expect(data.mepName).to.be.a('string');
-              expect(data.mepName).to.be("");
+              expect(data.nodeName).to.be.a('string');
+              expect(data.nodeName).to.be("");
               expect(data.type).to.be.a('string');
               expect(data.type).to.be("USER");
               expect(data.persist).to.be.a('boolean');
@@ -184,7 +184,7 @@
           var applicationInfo = new AdvantEdgeSandboxControllerRestApi.ApplicationInfo();
           applicationInfo.id = "";
           applicationInfo.name = "";
-          applicationInfo.mepName = "";
+          applicationInfo.nodeName = "";
           applicationInfo.type = "USER";
           applicationInfo.persist = false;
 
@@ -199,8 +199,8 @@
             expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
-            expect(data.mepName).to.be.a('string');
-            expect(data.mepName).to.be("");
+            expect(data.nodeName).to.be.a('string');
+            expect(data.nodeName).to.be("");
             expect(data.type).to.be.a('string');
             expect(data.type).to.be("USER");
             expect(data.persist).to.be.a('boolean');

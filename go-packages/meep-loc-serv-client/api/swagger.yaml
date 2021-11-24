@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
   title: AdvantEDGE Location Service REST API
-  description: Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013
-    Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
-    <p>The API is based on the Open Mobile Alliance's specification RESTful Network
-    API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-    <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
-    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about Users (UE) and Zone locations <p>**Note**<br>AdvantEDGE supports
-    all of Location API endpoints (see below).
+  description: "Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013\
+    \ Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)\
+    \ <p>The API is based on the Open Mobile Alliance's specification RESTful Network\
+    \ API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about Users (UE) and Zone locations <p>**Note**<br>AdvantEDGE supports\
+    \ all of Location API endpoints (see below)."
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -43,7 +43,7 @@ paths:
         x-exportParamName: Requester
       - name: address
         in: query
-        description: address of users (e.g. "sip" URI, "tel" URI, "acr" URI)
+        description: "address of users (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)"
         required: true
         style: form
         explode: true
@@ -80,41 +80,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InlineTerminalDistance'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -152,7 +152,7 @@ paths:
         x-exportParamName: AccessPointId
       - name: address
         in: query
-        description: address of users (e.g. "sip" URI, "tel" URI, "acr" URI)
+        description: "address of users (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)"
         required: false
         style: form
         explode: true
@@ -169,41 +169,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InlineUserList'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -225,41 +225,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InlineZoneList'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -291,41 +291,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InlineZoneInfo'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -351,8 +351,8 @@ paths:
         x-exportParamName: ZoneId
       - name: interestRealm
         in: query
-        description: Interest realm of access point (e.g. geographical area, a type
-          of industry etc.).
+        description: "Interest realm of access point (e.g. geographical area, a type\
+          \ of industry etc.)."
         required: false
         style: form
         explode: true
@@ -367,41 +367,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InlineAccessPointList'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -442,41 +442,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/InlineAccessPointInfo'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -568,41 +568,41 @@ paths:
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -612,8 +612,8 @@ paths:
           '{$request.body#/circleNotificationSubscription.callbackReference.notifyURL}':
             post:
               summary: Callback POST used to send a notification
-              description: Notification from Location service, content based on subscription
-                type
+              description: "Notification from Location service, content based on subscription\
+                \ type"
               operationId: circleNotificationPOST
               requestBody:
                 description: Subscription notification
@@ -624,7 +624,7 @@ paths:
                     example:
                       subscriptionNotification:
                         enteringLeavingCriteria: Entering
-                        isFinalNotification: false,
+                        isFinalNotification: "false,"
                         link:
                           rel: CircleNotificationSubscription
                           href: http://meAppServer.example.com/location/v2/subscriptions/area/circle/sub123
@@ -654,8 +654,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -687,41 +687,41 @@ paths:
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -736,8 +736,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -792,55 +792,56 @@ paths:
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
@@ -854,7 +855,7 @@ paths:
                     detail: The target area for the request is considered too large
                     instance: /meAppClient.example.com/77777/msgs/abc
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -869,8 +870,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -882,27 +883,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -997,41 +998,41 @@ paths:
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1041,8 +1042,8 @@ paths:
           '{$request.body#/distanceNotificationSubscription.callbackReference.notifyURL}':
             post:
               summary: Callback POST used to send a notification
-              description: Notification from Location service, content based on subscription
-                type
+              description: "Notification from Location service, content based on subscription\
+                \ type"
               operationId: distanceNotificationPOST
               requestBody:
                 description: Subscription notification
@@ -1053,7 +1054,7 @@ paths:
                     example:
                       subscriptionNotification:
                         distanceCriteria: AllWithinDistance
-                        isFinalNotification: false,
+                        isFinalNotification: "false,"
                         link:
                           rel: DistanceNotificationSubscription
                           href: http://meAppServer.example.com/location/v2/subscriptions/distance/sub123
@@ -1093,8 +1094,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1127,41 +1128,41 @@ paths:
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1176,8 +1177,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1234,55 +1235,56 @@ paths:
                   trackingAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
@@ -1296,7 +1298,7 @@ paths:
                     detail: The target area for the request is considered too large
                     instance: /meAppClient.example.com/77777/msgs/abc
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1311,8 +1313,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1324,27 +1326,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1420,41 +1422,41 @@ paths:
                   requestedAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1464,8 +1466,8 @@ paths:
           '{$request.body#/periodicNotificationSubscription.callbackReference.notifyURL}':
             post:
               summary: Callback POST used to send a notification
-              description: Notification from Location service, content based on subscription
-                type
+              description: "Notification from Location service, content based on subscription\
+                \ type"
               operationId: periodicNotificationPOST
               requestBody:
                 description: Subscription notification
@@ -1475,7 +1477,7 @@ paths:
                       $ref: '#/components/schemas/InlineSubscriptionNotification'
                     example:
                       subscriptionNotification:
-                        isFinalNotification: false,
+                        isFinalNotification: "false,"
                         link:
                           rel: PeriodicNotificationSubscription
                           href: http://meAppServer.example.com/location/v2/subscriptions/periodic/sub123
@@ -1505,8 +1507,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1533,41 +1535,41 @@ paths:
                   requestedAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1582,8 +1584,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1628,55 +1630,56 @@ paths:
                   requestedAccuracy: 10
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
@@ -1690,7 +1693,7 @@ paths:
                     detail: The target area for the request is considered too large
                     instance: /meAppClient.example.com/77777/msgs/abc
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1705,8 +1708,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1718,27 +1721,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1816,41 +1819,41 @@ paths:
                   - Transferring
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1860,8 +1863,8 @@ paths:
           '{$request.body#/userTrackingSubscription.callbackReference.notifyURL}':
             post:
               summary: Callback POST used to send a notification
-              description: Notification from Location service, content based on subscription
-                type
+              description: "Notification from Location service, content based on subscription\
+                \ type"
               operationId: userTrackingNotificationPOST
               requestBody:
                 description: Subscription notification
@@ -1898,8 +1901,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -1924,41 +1927,41 @@ paths:
                   - Transferring
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -1973,8 +1976,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2015,55 +2018,56 @@ paths:
                   - Transferring
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
@@ -2077,7 +2081,7 @@ paths:
                     detail: The target area for the request is considered too large
                     instance: /meAppClient.example.com/77777/msgs/abc
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2092,8 +2096,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2105,27 +2109,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2203,41 +2207,41 @@ paths:
                   - Transferring
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2247,8 +2251,8 @@ paths:
           '{$request.body#/zonalTrafficSubscription.callbackReference.notifyURL}':
             post:
               summary: Callback POST used to send a notification
-              description: Notification from Location service, content based on subscription
-                type
+              description: "Notification from Location service, content based on subscription\
+                \ type"
               operationId: zonalTrafficNotificationPOST
               requestBody:
                 description: Subscription notification
@@ -2285,8 +2289,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2311,41 +2315,41 @@ paths:
                   - Transferring
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2360,8 +2364,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2402,55 +2406,56 @@ paths:
                   - Transferring
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
@@ -2464,7 +2469,7 @@ paths:
                     detail: The target area for the request is considered too large
                     instance: /meAppClient.example.com/77777/msgs/abc
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2479,8 +2484,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2492,27 +2497,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2586,41 +2591,41 @@ paths:
                   - Serviceable
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2630,8 +2635,8 @@ paths:
           '{$request.body#/zoneStatusSubscription.callbackReference.notifyURL}':
             post:
               summary: Callback POST used to send a notification
-              description: Notification from Location service, content based on subscription
-                type
+              description: "Notification from Location service, content based on subscription\
+                \ type"
               operationId: zoneStatusNotificationPOST
               requestBody:
                 description: Subscription notification
@@ -2668,8 +2673,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2695,41 +2700,41 @@ paths:
                   - Serviceable
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2744,8 +2749,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2788,55 +2793,56 @@ paths:
                   - Serviceable
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
@@ -2850,7 +2856,7 @@ paths:
                     detail: The target area for the request is considered too large
                     instance: /meAppClient.example.com/77777/msgs/abc
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -2865,8 +2871,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Subscription Identifier, specifically the "self" returned in
-          the subscription request
+        description: "Subscription Identifier, specifically the \"self\" returned\
+          \ in the subscription request"
         required: true
         style: simple
         explode: false
@@ -2878,27 +2884,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -3115,10 +3121,10 @@ components:
       properties:
         callbackData:
           type: string
-          description: Data the application can register with the server when subscribing
-            to notifications, and that are passed back unchanged in each of the related
-            notifications. These data can be used by the application in the processing
-            of the notification, e.g. for correlation purposes.
+          description: "Data the application can register with the server when subscribing\
+            \ to notifications, and that are passed back unchanged in each of the\
+            \ related notifications. These data can be used by the application in\
+            \ the processing of the notification, e.g. for correlation purposes."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         notificationFormat:
@@ -3147,8 +3153,8 @@ components:
       properties:
         address:
           type: array
-          description: Address of terminals to monitor (e.g. "sip" URI, "tel" URI,
-            "acr" URI)
+          description: "Address of terminals to monitor (e.g. \"sip\" URI, \"tel\"\
+            \ URI, \"acr\" URI)"
           items:
             type: string
           x-etsi-mec-cardinality: 1..N
@@ -3168,19 +3174,19 @@ components:
           x-etsi-mec-origin-type: string
         count:
           type: integer
-          description: Maximum number of notifications per individual address. For
-            no maximum, either do not include this element or specify a value of zero.
-            Default value is 0.
+          description: "Maximum number of notifications per individual address. For\
+            \ no maximum, either do not include this element or specify a value of\
+            \ zero. Default value is 0."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         duration:
           type: integer
-          description: Period of time (in seconds) notifications are provided for.
-            If set to “0” (zero), a default duration time, which is specified by the
-            service policy, will be used. If the parameter is omitted, the notifications
-            will continue until the maximum duration time, which is specified by the
-            service policy, unless the notifications are stopped by deletion of subscription
-            for notifications.
+          description: "Period of time (in seconds) notifications are provided for.\
+            \ If set to “0” (zero), a default duration time, which is specified by\
+            \ the service policy, will be used. If the parameter is omitted, the notifications\
+            \ will continue until the maximum duration time, which is specified by\
+            \ the service policy, unless the notifications are stopped by deletion\
+            \ of subscription for notifications."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         enteringLeavingCriteria:
@@ -3218,8 +3224,8 @@ components:
           x-etsi-mec-origin-type: float
         requester:
           type: string
-          description: Identifies the entity that is requesting the information (e.g.
-            "sip" URI, "tel" URI, "acr" URI)
+          description: "Identifies the entity that is requesting the information (e.g.\
+            \ \"sip\" URI, \"tel\" URI, \"acr\" URI)"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
         resourceURL:
@@ -3233,8 +3239,8 @@ components:
           format: float
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: float
-      description: A type containing data for notifications, when the area is defined
-        as a circle.
+      description: "A type containing data for notifications, when the area is defined\
+        \ as a circle."
       example:
         requester: requester
         trackingAccuracy: 7.0614014
@@ -3307,9 +3313,9 @@ components:
           x-etsi-mec-origin-type: string
         count:
           type: integer
-          description: Maximum number of notifications per individual address. For
-            no maximum, either do not include this element or specify a value of zero.
-            Default value is 0.
+          description: "Maximum number of notifications per individual address. For\
+            \ no maximum, either do not include this element or specify a value of\
+            \ zero. Default value is 0."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         criteria:
@@ -3322,12 +3328,12 @@ components:
           x-etsi-mec-origin-type: float
         duration:
           type: integer
-          description: Period of time (in seconds) notifications are provided for.
-            If set to “0” (zero), a default duration time, which is specified by the
-            service policy, will be used. If the parameter is omitted, the notifications
-            will continue until the maximum duration time, which is specified by the
-            service policy, unless the notifications are stopped by deletion of subscription
-            for notifications.
+          description: "Period of time (in seconds) notifications are provided for.\
+            \ If set to “0” (zero), a default duration time, which is specified by\
+            \ the service policy, will be used. If the parameter is omitted, the notifications\
+            \ will continue until the maximum duration time, which is specified by\
+            \ the service policy, unless the notifications are stopped by deletion\
+            \ of subscription for notifications."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         frequency:
@@ -3345,25 +3351,26 @@ components:
           x-etsi-mec-origin-type: Link
         monitoredAddress:
           type: array
-          description: Contains addresses of devices to monitor (e.g., 'sip' URI,
-            'tel' URI, 'acr' URI)
+          description: "Contains addresses of devices to monitor (e.g., 'sip' URI,\
+            \ 'tel' URI, 'acr' URI)"
           items:
             type: string
           x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: anyURI
         referenceAddress:
           type: array
-          description: Indicates address of each device that will be used as reference
-            devices from which the distances towards monitored devices indicated in
-            the Addresses will be monitored (e.g., 'sip' URI, 'tel' URI, 'acr' URI)
+          description: "Indicates address of each device that will be used as reference\
+            \ devices from which the distances towards monitored devices indicated\
+            \ in the Addresses will be monitored (e.g., 'sip' URI, 'tel' URI, 'acr'\
+            \ URI)"
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: anyURI
         requester:
           type: string
-          description: Identifies the entity that is requesting the information (e.g.
-            "sip" URI, "tel" URI, "acr" URI)
+          description: "Identifies the entity that is requesting the information (e.g.\
+            \ \"sip\" URI, \"tel\" URI, \"acr\" URI)"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
         resourceURL:
@@ -3377,8 +3384,8 @@ components:
           format: float
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: float
-      description: A type containing data for distance subscription, with reference
-        to other devices.
+      description: "A type containing data for distance subscription, with reference\
+        \ to other devices."
       example:
         requester: requester
         trackingAccuracy: 7.386282
@@ -3431,22 +3438,22 @@ components:
       properties:
         accuracy:
           type: integer
-          description: Horizontal accuracy / (semi-major) uncertainty of location
-            provided in meters, as defined in [14]. Present only if "shape" equals
-            4, 5 or 6
+          description: "Horizontal accuracy / (semi-major) uncertainty of location\
+            \ provided in meters, as defined in [14]. Present only if \"shape\" equals\
+            \ 4, 5 or 6"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracyAltitude:
           type: integer
-          description: Altitude accuracy / uncertainty of location provided in meters,
-            as defined in [14]. Present only if "shape" equals 3 or 4
+          description: "Altitude accuracy / uncertainty of location provided in meters,\
+            \ as defined in [14]. Present only if \"shape\" equals 3 or 4"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracySemiMinor:
           type: integer
-          description: Horizontal accuracy / (semi-major) uncertainty of location
-            provided in meters, as defined in [14]. Present only if "shape" equals
-            4, 5 or 6
+          description: "Horizontal accuracy / (semi-major) uncertainty of location\
+            \ provided in meters, as defined in [14]. Present only if \"shape\" equals\
+            \ 4, 5 or 6"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         altitude:
@@ -3457,9 +3464,9 @@ components:
           x-etsi-mec-origin-type: Float
         confidence:
           type: integer
-          description: Confidence by which the position of a target entity is known
-            to be within the shape description, expressed as a percentage and defined
-            in [14]. Present only if "shape" equals 1, 4 or 6
+          description: "Confidence by which the position of a target entity is known\
+            \ to be within the shape description, expressed as a percentage and defined\
+            \ in [14]. Present only if \"shape\" equals 1, 4 or 6"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         includedAngle:
@@ -3475,8 +3482,8 @@ components:
         latitude:
           minItems: 1
           type: array
-          description: Location latitude, expressed in the range -90° to +90°. Cardinality
-            greater than one only if "shape" equals 7.
+          description: "Location latitude, expressed in the range -90° to +90°. Cardinality\
+            \ greater than one only if \"shape\" equals 7."
           items:
             type: number
             format: float
@@ -3485,8 +3492,8 @@ components:
         longitude:
           minItems: 1
           type: array
-          description: Location longitude, expressed in the range -180° to +180°.
-            Cardinality greater than one only if "shape" equals 7.
+          description: "Location longitude, expressed in the range -180° to +180°\
+            . Cardinality greater than one only if \"shape\" equals 7."
           items:
             type: number
             format: float
@@ -3499,17 +3506,18 @@ components:
           x-etsi-mec-origin-type: UnsignedInt
         orientationMajorAxis:
           type: integer
-          description: Angle of orientation of the major axis, expressed in the range
-            0° to 180°, as defined in [14]. Present only if "shape" equals 4 or 6
+          description: "Angle of orientation of the major axis, expressed in the range\
+            \ 0° to 180°, as defined in [14]. Present only if \"shape\" equals 4 or\
+            \ 6"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         shape:
           type: integer
-          description: 'Shape information, as detailed in [14], associated with the
-            reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT
-            <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID
-            <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE
-            <p>7 = POLYGON'
+          description: "Shape information, as detailed in [14], associated with the\
+            \ reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT\
+            \ <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID\
+            \ <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE\
+            \ <p>7 = POLYGON"
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum_inlined
         timestamp:
@@ -3563,8 +3571,8 @@ components:
         circleNotificationSubscription:
           minItems: 0
           type: array
-          description: Collection of CircleNotificationSubscription elements, see
-            note 2.
+          description: "Collection of CircleNotificationSubscription elements, see\
+            \ note 2."
           items:
             $ref: '#/components/schemas/CircleNotificationSubscription'
           x-etsi-mec-cardinality: 0.. N
@@ -3572,8 +3580,8 @@ components:
         distanceNotificationSubscription:
           minItems: 0
           type: array
-          description: Collection of DistanceNotificationSubscription elements, see
-            note 2.
+          description: "Collection of DistanceNotificationSubscription elements, see\
+            \ note 2."
           items:
             $ref: '#/components/schemas/DistanceNotificationSubscription'
           x-etsi-mec-cardinality: 0.. N
@@ -3581,22 +3589,23 @@ components:
         periodicNotificationSubscription:
           minItems: 0
           type: array
-          description: Collection of PeriodicNotificationSubscription elements, see
-            note 2.
+          description: "Collection of PeriodicNotificationSubscription elements, see\
+            \ note 2."
           items:
             $ref: '#/components/schemas/PeriodicNotificationSubscription'
           x-etsi-mec-cardinality: 0.. N
           x-etsi-mec-origin-type: PeriodicNotificationSubscription
         resourceURL:
           type: string
-          description: Self-referring URL, see note 1.
+          description: "Self-referring URL, see note 1."
           format: uri
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: AnyURI
         userTrackingSubscription:
           minItems: 0
           type: array
-          description: Collection of UserTrackingSubscription elements, see note 1.
+          description: "Collection of UserTrackingSubscription elements, see note\
+            \ 1."
           items:
             $ref: '#/components/schemas/UserTrackingSubscription'
           x-etsi-mec-cardinality: 0.. N
@@ -3604,7 +3613,8 @@ components:
         zonalTrafficSubscription:
           minItems: 0
           type: array
-          description: Collection of ZonalTrafficSubscription elements, see note 1.
+          description: "Collection of ZonalTrafficSubscription elements, see note\
+            \ 1."
           items:
             $ref: '#/components/schemas/ZonalTrafficSubscription'
           x-etsi-mec-cardinality: 0.. N
@@ -3612,7 +3622,7 @@ components:
         zoneStatusSubscription:
           minItems: 0
           type: array
-          description: Collection of ZoneStatusSubscription elements, see note 1.
+          description: "Collection of ZoneStatusSubscription elements, see note 1."
           items:
             $ref: '#/components/schemas/ZoneStatusSubscription'
           x-etsi-mec-cardinality: 0.. N
@@ -3812,8 +3822,8 @@ components:
       properties:
         address:
           type: array
-          description: Address of terminals to monitor (e.g. "sip" URI, "tel" URI,
-            "acr" URI)
+          description: "Address of terminals to monitor (e.g. \"sip\" URI, \"tel\"\
+            \ URI, \"acr\" URI)"
           items:
             type: string
           x-etsi-mec-cardinality: 1..N
@@ -3828,12 +3838,12 @@ components:
           x-etsi-mec-origin-type: string
         duration:
           type: integer
-          description: Period of time (in seconds) notifications are provided for.
-            If set to “0” (zero), a default duration time, which is specified by the
-            service policy, will be used. If the parameter is omitted, the notifications
-            will continue until the maximum duration time, which is specified by the
-            service policy, unless the notifications are stopped by deletion of subscription
-            for notifications.
+          description: "Period of time (in seconds) notifications are provided for.\
+            \ If set to “0” (zero), a default duration time, which is specified by\
+            \ the service policy, will be used. If the parameter is omitted, the notifications\
+            \ will continue until the maximum duration time, which is specified by\
+            \ the service policy, unless the notifications are stopped by deletion\
+            \ of subscription for notifications."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         frequency:
@@ -3856,8 +3866,8 @@ components:
           x-etsi-mec-origin-type: int
         requester:
           type: string
-          description: Identifies the entity that is requesting the information (e.g.
-            "sip" URI, "tel" URI, "acr" URI)
+          description: "Identifies the entity that is requesting the information (e.g.\
+            \ \"sip\" URI, \"tel\" URI, \"acr\" URI)"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
         resourceURL:
@@ -3904,7 +3914,7 @@ components:
           x-etsi-mec-origin-type: Uint32
         title:
           type: string
-          description: A short, human-readable summary of the problem type
+          description: "A short, human-readable summary of the problem type"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         type:
@@ -3928,13 +3938,14 @@ components:
       properties:
         messageId:
           type: string
-          description: Message identifier, either with prefix SVC or with prefix POL
+          description: "Message identifier, either with prefix SVC or with prefix\
+            \ POL"
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
         text:
           type: string
-          description: Message text, with replacement variables marked with %n, where
-            n is an index into the list of <variables> elements, starting at 1
+          description: "Message text, with replacement variables marked with %n, where\
+            \ n is an index into the list of <variables> elements, starting at 1"
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
         variables:
@@ -4024,9 +4035,9 @@ components:
           x-etsi-mec-origin-type: integer
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
-      description: A type containing information about the distance from a terminal
-        to a location or between two terminals, in addition the accuracy and a timestamp
-        of the information are provided.
+      description: "A type containing information about the distance from a terminal\
+        \ to a location or between two terminals, in addition the accuracy and a timestamp\
+        \ of the information are provided."
       example:
         distance: 6
         accuracy: 0
@@ -4041,8 +4052,8 @@ components:
       properties:
         address:
           type: string
-          description: Address of the terminal to which the location information applies
-            (e.g., 'sip' URI, 'tel' URI, 'acr' URI).
+          description: "Address of the terminal to which the location information\
+            \ applies (e.g., 'sip' URI, 'tel' URI, 'acr' URI)."
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: anyURI
         currentLocation:
@@ -4051,8 +4062,8 @@ components:
           $ref: '#/components/schemas/ServiceError'
         locationRetrievalStatus:
           $ref: '#/components/schemas/RetrievalStatus'
-      description: A type containing device address, retrieval status and location
-        information.
+      description: "A type containing device address, retrieval status and location\
+        \ information."
     TerminalLocationList:
       type: array
       description: Collection of the terminal locations.
@@ -4068,15 +4079,15 @@ components:
       properties:
         nanoSeconds:
           type: integer
-          description: The nanoseconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC.
+          description: "The nanoseconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC."
           format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         seconds:
           type: integer
-          description: The seconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC.
+          description: "The seconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC."
           format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
@@ -4101,14 +4112,14 @@ components:
       properties:
         accessPointId:
           type: string
-          description: The identity of the access point the user is currently on,
-            see note 1.
+          description: "The identity of the access point the user is currently on,\
+            \ see note 1."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         address:
           type: string
-          description: Address of user (e.g. 'sip' URI, 'tel' URI, 'acr' URI) currently
-            on the access point, see note 1.
+          description: "Address of user (e.g. 'sip' URI, 'tel' URI, 'acr' URI) currently\
+            \ on the access point, see note 1."
           format: uri
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: AnyURI
@@ -4119,23 +4130,23 @@ components:
           x-etsi-mec-origin-type: String
         contextLocationInfo:
           type: string
-          description: Contextual information of a user location (e.g. aisle, floor,
-            room number, etc.).
+          description: "Contextual information of a user location (e.g. aisle, floor,\
+            \ room number, etc.)."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         locationInfo:
           $ref: '#/components/schemas/LocationInfo'
         resourceURL:
           type: string
-          description: Self-referring URL, see note 1.
+          description: "Self-referring URL, see note 1."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
         zoneId:
           type: string
-          description: The identity of the zone the user is currently within, see
-            note 1.
+          description: "The identity of the zone the user is currently within, see\
+            \ note 1."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
       example:
@@ -4276,7 +4287,8 @@ components:
       properties:
         address:
           type: string
-          description: Address of user (e.g. "sip" URI, "tel" URI, "acr" URI) to monitor
+          description: "Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)\
+            \ to monitor"
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: anyURI
         callbackReference:
@@ -4294,9 +4306,9 @@ components:
           x-etsi-mec-origin-type: anyURI
         userEventCriteria:
           type: array
-          description: List of user event values to generate notifications for (these
-            apply to address specified). If this element is missing, a notification
-            is requested to be generated for any change in user event.
+          description: "List of user event values to generate notifications for (these\
+            \ apply to address specified). If this element is missing, a notification\
+            \ is requested to be generated for any change in user event."
           items:
             $ref: '#/components/schemas/UserEventType'
           x-etsi-mec-cardinality: 0..N
@@ -4321,13 +4333,15 @@ components:
       properties:
         address:
           type: string
-          description: Address of user (e.g. "sip" URI, "tel" URI, "acr" URI) to monitor
+          description: "Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)\
+            \ to monitor"
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: anyURI
         callbackData:
           type: string
-          description: CallBackData if passed by the application during the associated
-            ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
+          description: "CallBackData if passed by the application during the associated\
+            \ ZonalTrafficSubscription and UserTrackingSubscription operation. See\
+            \ [REST_NetAPI_Common]."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         currentAccessPointId:
@@ -4337,8 +4351,8 @@ components:
           x-etsi-mec-origin-type: string
         interestRealm:
           type: string
-          description: Interest realm of access point (e.g. geographical area, a type
-            of industry etc.).
+          description: "Interest realm of access point (e.g. geographical area, a\
+            \ type of industry etc.)."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         link:
@@ -4381,21 +4395,21 @@ components:
           x-etsi-mec-origin-type: string
         duration:
           type: integer
-          description: Period (in seconds) of time notifications are provided for.
-            If set to "0" (zero), a default duration time, which is specified by the
-            service policy, will be used. If the parameter is omitted, the notifications
-            will continue until the maximum duration time, which is specified by the
-            service policy, unless the notifications are stopped by deletion of subscription
-            for notifications. This element MAY be given by the client during resource
-            creation in order to signal the desired lifetime of the subscription.
-            The server MUST return in this element the   period of time for which
-            the subscription will still be valid.
+          description: "Period (in seconds) of time notifications are provided for.\
+            \ If set to \"0\" (zero), a default duration time, which is specified\
+            \ by the service policy, will be used. If the parameter is omitted, the\
+            \ notifications will continue until the maximum duration time, which is\
+            \ specified by the service policy, unless the notifications are stopped\
+            \ by deletion of subscription for notifications. This element MAY be given\
+            \ by the client during resource creation in order to signal the desired\
+            \ lifetime of the subscription. The server MUST return in this element\
+            \ the   period of time for which the subscription will still be valid."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: unsignedInt
         interestRealm:
           type: array
-          description: Interest realm of access point (e.g. geographical area, a type
-            of industry etc.).
+          description: "Interest realm of access point (e.g. geographical area, a\
+            \ type of industry etc.)."
           items:
             type: string
           x-etsi-mec-cardinality: 0..N
@@ -4407,10 +4421,10 @@ components:
           x-etsi-mec-origin-type: anyURI
         userEventCriteria:
           type: array
-          description: List of user event values to generate notifications for (these
-            apply to zone identifier or all interest realms within zone identifier
-            specified). If this element is missing, a notification is requested to
-            be generated for any change in user event.
+          description: "List of user event values to generate notifications for (these\
+            \ apply to zone identifier or all interest realms within zone identifier\
+            \ specified). If this element is missing, a notification is requested\
+            \ to be generated for any change in user event."
           items:
             $ref: '#/components/schemas/UserEventType'
           x-etsi-mec-cardinality: 0..N
@@ -4516,8 +4530,8 @@ components:
           x-etsi-mec-origin-type: string
         callbackData:
           type: string
-          description: CallBackData if passed by the application during the associated
-            ZoneStatusSubscription operation. See [REST_NetAPI_Common].
+          description: "CallBackData if passed by the application during the associated\
+            \ ZoneStatusSubscription operation. See [REST_NetAPI_Common]."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         link:
@@ -5238,41 +5252,42 @@ components:
       properties:
         bearing:
           type: integer
-          description: Bearing, expressed in the range 0° to 360°, as defined in [14].
+          description: "Bearing, expressed in the range 0° to 360°, as defined in\
+            \ [14]."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UnsignedInt
         horizontalSpeed:
           type: integer
-          description: Horizontal speed, expressed in km/h and defined in [14].
+          description: "Horizontal speed, expressed in km/h and defined in [14]."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: UnsignedInt
         uncertainty:
           type: integer
-          description: Horizontal uncertainty, as defined in [14]. Present only if
-            "velocityType" equals 3 or 4
+          description: "Horizontal uncertainty, as defined in [14]. Present only if\
+            \ \"velocityType\" equals 3 or 4"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         velocityType:
           type: integer
-          description: 'Velocity information, as detailed in [14], associated with
-            the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL
-            <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT'
+          description: "Velocity information, as detailed in [14], associated with\
+            \ the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL\
+            \ <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT"
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum_inlined
         verticalSpeed:
           type: integer
-          description: Vertical speed, expressed in km/h and defined in [14]. Present
-            only if "velocityType" equals 2 or 4
+          description: "Vertical speed, expressed in km/h and defined in [14]. Present\
+            \ only if \"velocityType\" equals 2 or 4"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Int
         verticalUncertainty:
           type: integer
-          description: Vertical uncertainty, as defined in [14]. Present only if "velocityType"
-            equals 4
+          description: "Vertical uncertainty, as defined in [14]. Present only if\
+            \ \"velocityType\" equals 4"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
-      description: Structure with attributes relating to the target entity’s velocity,
-        as defined in [14].
+      description: "Structure with attributes relating to the target entity’s velocity,\
+        \ as defined in [14]."
       example:
         verticalUncertainty: 4
         horizontalSpeed: 1
@@ -5296,70 +5311,70 @@ components:
     "204":
       description: No Content
     "400":
-      description: 'Bad Request : used to indicate that incorrect parameters were
-        passed to the request.'
+      description: "Bad Request : used to indicate that incorrect parameters were\
+        \ passed to the request."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "401":
-      description: 'Unauthorized :  used when the client did not submit credentials.'
+      description: "Unauthorized :  used when the client did not submit credentials."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "403":
-      description: 'Forbidden :  operation is not allowed given the current status
-        of the resource.'
+      description: "Forbidden :  operation is not allowed given the current status\
+        \ of the resource."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "404":
-      description: 'Not Found :  used when a client provided a URI that cannot be
-        mapped to a valid resource URI.'
+      description: "Not Found :  used when a client provided a URI that cannot be\
+        \ mapped to a valid resource URI."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "406":
-      description: 'Not Acceptable : used to indicate that the server cannot provide
-        the any of the content formats supported by the client.'
+      description: "Not Acceptable : used to indicate that the server cannot provide\
+        \ the any of the content formats supported by the client."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "412":
-      description: 'Precondition failed :  used when a condition has failed during
-        conditional requests, e.g. when using ETags to avoid write conflicts when
-        using PUT'
+      description: "Precondition failed :  used when a condition has failed during\
+        \ conditional requests, e.g. when using ETags to avoid write conflicts when\
+        \ using PUT"
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "414":
-      description: 'URI Too Long : used to indicate that the server is refusing to
-        process the request because the request URI is longer than the server is willing
-        or able to process.'
+      description: "URI Too Long : used to indicate that the server is refusing to\
+        \ process the request because the request URI is longer than the server is\
+        \ willing or able to process."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "415":
-      description: 'Unsupported Media Type :  used to indicate that the server or
-        the client does not support the content type of the entity body.'
+      description: "Unsupported Media Type :  used to indicate that the server or\
+        \ the client does not support the content type of the entity body."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "422":
-      description: 'Unprocessable Entity : used to indicate that the server understands
-        the content type of the request entity and that the syntax of the request
-        entity is correct but that the server is unable to process the contained instructions.
-        This error condition can occur if an JSON request body is syntactically correct
-        but semantically incorrect, for example if the target area for the request
-        is considered too large. This error condition can also occur if the capabilities
-        required by the request are not supported.'
+      description: "Unprocessable Entity : used to indicate that the server understands\
+        \ the content type of the request entity and that the syntax of the request\
+        \ entity is correct but that the server is unable to process the contained\
+        \ instructions. This error condition can occur if an JSON request body is\
+        \ syntactically correct but semantically incorrect, for example if the target\
+        \ area for the request is considered too large. This error condition can also\
+        \ occur if the capabilities required by the request are not supported."
       content:
         application/json:
           schema:
@@ -5373,7 +5388,7 @@ components:
                 detail: The target area for the request is considered too large
                 instance: /meAppClient.example.com/77777/msgs/abc
     "429":
-      description: 'Too Many Requests : used when a rate limiter has triggered.'
+      description: "Too Many Requests : used when a rate limiter has triggered."
       content:
         application/json:
           schema:
@@ -5392,8 +5407,8 @@ components:
     Path.SubscrId:
       name: subscriptionId
       in: path
-      description: Subscription Identifier, specifically the "self" returned in the
-        subscription request
+      description: "Subscription Identifier, specifically the \"self\" returned in\
+        \ the subscription request"
       required: true
       style: simple
       explode: false
@@ -5426,7 +5441,7 @@ components:
     Query.Address:
       name: address
       in: query
-      description: address of users (e.g. "sip" URI, "tel" URI, "acr" URI)
+      description: "address of users (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)"
       required: false
       style: form
       explode: true
@@ -5438,7 +5453,7 @@ components:
     Query.AddressMandatory:
       name: address
       in: query
-      description: address of users (e.g. "sip" URI, "tel" URI, "acr" URI)
+      description: "address of users (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)"
       required: true
       style: form
       explode: true
@@ -5450,8 +5465,8 @@ components:
     Query.InterestRealm:
       name: interestRealm
       in: query
-      description: Interest realm of access point (e.g. geographical area, a type
-        of industry etc.).
+      description: "Interest realm of access point (e.g. geographical area, a type\
+        \ of industry etc.)."
       required: false
       style: form
       explode: true

@@ -236,6 +236,7 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.process.placementId = "";
           replayFile.events[0].event.eventScenarioUpdate.node.parent = "";
           replayFile.events[0].event.eventScenarioUpdate.node.children = [""];
+          replayFile.events[0].event.eventScenarioUpdate.gracePeriod = 0;
           replayFile.events[0].event.eventPduSession = new AdvantEdgeSandboxControllerRestApi.EventPduSession();
           replayFile.events[0].event.eventPduSession.action = "ADD";
           replayFile.events[0].event.eventPduSession.pduSession = new AdvantEdgeSandboxControllerRestApi.PDUSession();
@@ -806,6 +807,8 @@
                           expect(data).to.be("");
                         }
                       }
+                    expect(data.event.eventScenarioUpdate.gracePeriod).to.be.a('number');
+                    expect(data.event.eventScenarioUpdate.gracePeriod).to.be(0);
                   expect(data.event.eventPduSession).to.be.a(AdvantEdgeSandboxControllerRestApi.EventPduSession);
                         expect(data.event.eventPduSession.action).to.be.a('string');
                     expect(data.event.eventPduSession.action).to.be("ADD");

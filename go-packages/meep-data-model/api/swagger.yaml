@@ -19,7 +19,7 @@ definitions:
     type: object
     required:
       - name
-      - mepName
+      - nodeName
     properties:
       id:
         description: Application Instance UUID
@@ -27,8 +27,8 @@ definitions:
       name:
         description: Application name
         type: string
-      mepName:
-        description: MEP Name where application instance is running
+      nodeName:
+        description: Name of node where application instance is running
         type: string
       type:
         description: Application Type
@@ -42,7 +42,7 @@ definitions:
     example:
       id: '00afec52-f0b6-464e-a660-33568c0975b9'
       name: 'MyAppName'
-      mepName: 'mep1'
+      nodeName: 'node1'
       type: 'USER'
   CellularDomainConfig:
     type: object
@@ -328,7 +328,9 @@ definitions:
       <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.
       <li>MODIFY - Modifies scenario node.
 
-      <p>NOTE: Current backend implementation supports only PhysicalLocation & Process network elements.
+      <p>NOTES:
+      <li>Current backend implementation supports only PhysicalLocation & Process network elements.
+      <li>Grace period only applies when removing a node. Default value is 0, triggering an immediate node removal.
     properties:
       action:
         type: string
@@ -339,6 +341,9 @@ definitions:
           - MODIFY
       node:
         $ref: '#/definitions/ScenarioNode'
+      gracePeriod:
+        type: integer
+        description: Grace period in seconds before forcefully removing node
     example: {}
   EventPduSession:
     type: object
@@ -1065,6 +1070,22 @@ definitions:
           $ref: '#/definitions/ServicePort'
     description: Service object
     example: {}
+  ServiceInfo:
+    description: MEC Service information
+    type: object
+    required:
+      - appId
+      - id
+    properties:
+      appId:
+        description: Application Instance UUID
+        type: string
+      id:
+        description: Service Instance UUID
+        type: string
+    example:
+      appId: '00afec52-f0b6-464e-a660-33568c0975b9'
+      id: 'b8a203be-ac81-45a6-8d88-fdb1f8f5393b'
   ServicePort:
     type: object
     properties:

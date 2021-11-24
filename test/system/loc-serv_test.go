@@ -84,44 +84,44 @@ func Test_loc_serv_load_scenarios(t *testing.T) {
 }
 
 func Test_periodic_success(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        initialiseLocServTest()
-        defer clearUpLocServTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
-        referenceAddress := []string{"ue1"}
+	referenceAddress := []string{"ue1"}
 	frequency := int32(1)
-        //don't care about initial position
-        geMoveAssetCoordinates(referenceAddress[0], 7.413917, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
+	//don't care about initial position
+	geMoveAssetCoordinates(referenceAddress[0], 7.413917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        //subscription to test
-        err := locServSubscriptionPeriodic(referenceAddress, locServServerUrl, frequency)
-        if err != nil {
-                t.Fatal("Subscription failed: ", err)
-        }
+	//subscription to test
+	err := locServSubscriptionPeriodic(referenceAddress, locServServerUrl, frequency)
+	if err != nil {
+		t.Fatal("Subscription failed: ", err)
+	}
 
-        //wait to receive few notifications
-        time.Sleep(2500 * time.Millisecond)
+	//wait to receive few notifications
+	time.Sleep(2500 * time.Millisecond)
 
-        //only check the first one, the same one is repeated every second
+	//only check the first one, the same one is repeated every second
 	//hard to say if the period should cover 2 or 3 response... based on the timer timing
-        if len(httpReqBody) == 2 || len(httpReqBody) == 3 {
-                var body locServClient.InlineSubscriptionNotification
-                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                errStr := validatePeriodicSubscriptionNotification(body.SubscriptionNotification, referenceAddress[0])
-                if errStr != "" {
-                        printHttpReqBody()
-                        t.Fatalf(errStr)
-                }
-        } else {
-                printHttpReqBody()
-                t.Fatalf("Number of expected notifications not received")
-        }
+	if len(httpReqBody) == 2 || len(httpReqBody) == 3 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validatePeriodicSubscriptionNotification(body.SubscriptionNotification, referenceAddress[0])
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
 }
 
 func Test_all_within_distance_success(t *testing.T) {
@@ -472,181 +472,177 @@ func Test_any_beyond_distance_fail(t *testing.T) {
 }
 
 func Test_leaving_area_areaCircle_success(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        initialiseLocServTest()
-        defer clearUpLocServTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
-        testAddress := []string{"ue1"}
-        criteria := locServClient.LEAVING_EnteringLeavingCriteria
-        latitude := float32(43.733505)
-        longitude := float32(7.414917)
-        radius := float32(100.0)
+	testAddress := []string{"ue1"}
+	criteria := locServClient.LEAVING_EnteringLeavingCriteria
+	latitude := float32(43.733505)
+	longitude := float32(7.414917)
+	radius := float32(100.0)
 
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
 
-        //moving to initial position
-        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
-        time.Sleep(2000 * time.Millisecond)
+	//subscription to test
+	err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
 
-        //subscription to test
-        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
-        if err != nil {
-                t.Fatalf("Subscription failed")
-        }
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	log.Info("moving asset in")
+	geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        log.Info("moving asset in")
-        geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
+	log.Info("moving asset out")
+	geMoveAssetCoordinates(testAddress[0], 7.484917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        log.Info("moving asset out")
-        geMoveAssetCoordinates(testAddress[0], 7.484917, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
-
-       if len(httpReqBody) == 1 {
-                var body locServClient.InlineSubscriptionNotification
-                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                errStr := validateCircleSubscriptionNotification(body.SubscriptionNotification, testAddress[0])
-                if errStr != "" {
-                        printHttpReqBody()
-                        t.Fatalf(errStr)
-                }
-        } else {
-                printHttpReqBody()
-                t.Fatalf("Number of expected notifications not received")
-        }
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateCircleSubscriptionNotification(body.SubscriptionNotification, testAddress[0])
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
 }
 
 func Test_leaving_area_areaCircle_fail(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        initialiseLocServTest()
-        defer clearUpLocServTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
-        testAddress := []string{"ue1"}
-        criteria := locServClient.LEAVING_EnteringLeavingCriteria
-        latitude := float32(43.733505)
-        longitude := float32(7.414917)
-        radius := float32(100.0)
+	testAddress := []string{"ue1"}
+	criteria := locServClient.LEAVING_EnteringLeavingCriteria
+	latitude := float32(43.733505)
+	longitude := float32(7.414917)
+	radius := float32(100.0)
 
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
 
-        //moving to initial position
-        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
-        time.Sleep(2000 * time.Millisecond)
+	//subscription to test
+	err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
 
-        //subscription to test
-        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
-        if err != nil {
-                t.Fatalf("Subscription failed")
-        }
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	log.Info("moving asset in")
+	geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        log.Info("moving asset in")
-        geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
+	log.Info("moving asset still in")
+	geMoveAssetCoordinates(testAddress[0], 7.414927, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        log.Info("moving asset still in")
-        geMoveAssetCoordinates(testAddress[0], 7.414927, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
-
-        if len(httpReqBody) >= 1 {
-                printHttpReqBody()
-                t.Fatalf("Notification received")
-        }
+	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
+		t.Fatalf("Notification received")
+	}
 }
 
 func Test_entering_area_areaCircle_success(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        initialiseLocServTest()
-        defer clearUpLocServTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
-        testAddress := []string{"ue1"}
-        criteria := locServClient.ENTERING_EnteringLeavingCriteria
-        latitude := float32(43.733505)
-        longitude := float32(7.414917)
-        radius := float32(100.0)
+	testAddress := []string{"ue1"}
+	criteria := locServClient.ENTERING_EnteringLeavingCriteria
+	latitude := float32(43.733505)
+	longitude := float32(7.414917)
+	radius := float32(100.0)
 
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
 
-        //moving to initial position
-        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
-        time.Sleep(2000 * time.Millisecond)
+	//subscription to test
+	err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
 
-        //subscription to test
-        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
-        if err != nil {
-                t.Fatalf("Subscription failed")
-        }
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        log.Info("moving asset")
-        geMoveAssetCoordinates(testAddress[0], 7.414917, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
-
-       if len(httpReqBody) == 1 {
-                var body locServClient.InlineSubscriptionNotification
-                err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                errStr := validateCircleSubscriptionNotification(body.SubscriptionNotification, testAddress[0])
-                if errStr != "" {
-                        printHttpReqBody()
-                        t.Fatalf(errStr)
-                }
-        } else {
-                printHttpReqBody()
-                t.Fatalf("Number of expected notifications not received")
-        }
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineSubscriptionNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateCircleSubscriptionNotification(body.SubscriptionNotification, testAddress[0])
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
 }
 
 func Test_entering_area_areaCircle_fail(t *testing.T) {
-        fmt.Println("--- ", t.Name())
-        log.MeepTextLogInit(t.Name())
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
 
-        initialiseLocServTest()
-        defer clearUpLocServTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
-        testAddress := []string{"ue1"}
-        criteria := locServClient.ENTERING_EnteringLeavingCriteria
-        latitude := float32(43.733505)
-        longitude := float32(7.414917)
-        radius := float32(50.0)
+	testAddress := []string{"ue1"}
+	criteria := locServClient.ENTERING_EnteringLeavingCriteria
+	latitude := float32(43.733505)
+	longitude := float32(7.414917)
+	radius := float32(50.0)
 
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
 
-        //moving to initial position
-        geMoveAssetCoordinates(testAddress[0], 0.0, 0.0)
-        time.Sleep(2000 * time.Millisecond)
+	//subscription to test
+	err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
 
-        //subscription to test
-        err := locServSubscriptionAreaCircle(testAddress, &criteria, latitude, longitude, radius, locServServerUrl, false)
-        if err != nil {
-                t.Fatalf("Subscription failed")
-        }
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress[0], 8.414917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
 
-        log.Info("moving asset")
-        geMoveAssetCoordinates(testAddress[0], 8.414917, 43.733505)
-        time.Sleep(2000 * time.Millisecond)
-
-        if len(httpReqBody) >= 1 {
-                printHttpReqBody()
-                t.Fatalf("Notification received")
-        }
+	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
+		t.Fatalf("Notification received")
+	}
 }
 
 func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
@@ -668,8 +664,8 @@ func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 		t.Fatal("Subscription failed: ", err)
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.415917, 43.733505)
@@ -711,8 +707,8 @@ func Test_4g_to_4g_diff_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
@@ -764,8 +760,8 @@ func Test_4g_to_5g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
@@ -807,8 +803,8 @@ func Test_4g_to_wifi_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
@@ -850,8 +846,8 @@ func Test_4g_to_generic_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
@@ -893,8 +889,8 @@ func Test_4g_to_none_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -936,8 +932,8 @@ func Test_5g_to_5g_same_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.421917, 43.733505)
@@ -979,8 +975,8 @@ func Test_5g_to_5g_diff_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
@@ -1032,8 +1028,8 @@ func Test_5g_to_4g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
@@ -1075,8 +1071,8 @@ func Test_5g_to_wifi_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.735005)
@@ -1118,8 +1114,8 @@ func Test_5g_to_generic_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.732005)
@@ -1161,8 +1157,8 @@ func Test_5g_to_none_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -1204,8 +1200,8 @@ func Test_wifi_to_wifi_same_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.427917, 43.733505)
@@ -1247,8 +1243,8 @@ func Test_wifi_to_wifi_diff_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
@@ -1300,8 +1296,8 @@ func Test_wifi_to_5g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
@@ -1343,8 +1339,8 @@ func Test_wifi_to_4g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.735005)
@@ -1386,8 +1382,8 @@ func Test_wifi_to_generic_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.732005)
@@ -1429,8 +1425,8 @@ func Test_wifi_to_none_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -1472,8 +1468,8 @@ func Test_generic_to_generic_same_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.433917, 43.733505)
@@ -1515,8 +1511,8 @@ func Test_generic_to_generic_diff_zone_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.435917, 43.733505)
@@ -1568,8 +1564,8 @@ func Test_generic_to_wifi_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
@@ -1611,8 +1607,8 @@ func Test_generic_to_4g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.735005)
@@ -1654,8 +1650,8 @@ func Test_generic_to_5g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.732005)
@@ -1697,8 +1693,8 @@ func Test_generic_to_none_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -1740,8 +1736,8 @@ func Test_none_to_4g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
@@ -1783,8 +1779,8 @@ func Test_none_to_5g_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
@@ -1826,8 +1822,8 @@ func Test_none_to_wifi_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
@@ -1869,8 +1865,8 @@ func Test_none_to_generic_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
@@ -1912,8 +1908,8 @@ func Test_none_to_none_userTracking(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 1.0, 1.0)
@@ -1945,8 +1941,8 @@ func Test_4g_to_4g_same_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.415917, 43.733505)
@@ -1989,8 +1985,8 @@ func Test_4g_to_4g_diff_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
@@ -2033,8 +2029,8 @@ func Test_4g_to_5g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
@@ -2077,8 +2073,8 @@ func Test_4g_to_wifi_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
@@ -2121,8 +2117,8 @@ func Test_4g_to_generic_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
@@ -2165,8 +2161,8 @@ func Test_4g_to_none_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -2209,8 +2205,8 @@ func Test_5g_to_5g_same_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.421917, 43.733505)
@@ -2253,8 +2249,8 @@ func Test_5g_to_5g_diff_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
@@ -2297,8 +2293,8 @@ func Test_5g_to_4g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
@@ -2341,8 +2337,8 @@ func Test_5g_to_wifi_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.735005)
@@ -2385,8 +2381,8 @@ func Test_5g_to_generic_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.732005)
@@ -2429,8 +2425,8 @@ func Test_5g_to_none_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -2474,8 +2470,8 @@ func Test_wifi_to_wifi_same_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.427917, 43.733505)
@@ -2518,8 +2514,8 @@ func Test_wifi_to_wifi_diff_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
@@ -2562,8 +2558,8 @@ func Test_wifi_to_5g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
@@ -2606,8 +2602,8 @@ func Test_wifi_to_4g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.735005)
@@ -2650,8 +2646,8 @@ func Test_wifi_to_generic_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.732005)
@@ -2694,8 +2690,8 @@ func Test_wifi_to_none_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -2738,8 +2734,8 @@ func Test_generic_to_generic_same_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.433917, 43.733505)
@@ -2782,8 +2778,8 @@ func Test_generic_to_generic_diff_zone_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.435917, 43.733505)
@@ -2826,8 +2822,8 @@ func Test_generic_to_wifi_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
@@ -2870,8 +2866,8 @@ func Test_generic_to_4g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.735005)
@@ -2914,8 +2910,8 @@ func Test_generic_to_5g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.732005)
@@ -2958,8 +2954,8 @@ func Test_generic_to_none_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
@@ -3002,8 +2998,8 @@ func Test_none_to_4g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
@@ -3046,8 +3042,8 @@ func Test_none_to_5g_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
@@ -3090,8 +3086,8 @@ func Test_none_to_wifi_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
@@ -3134,8 +3130,8 @@ func Test_none_to_generic_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
@@ -3178,8 +3174,8 @@ func Test_none_to_none_zonalTraffic(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 1.0, 1.0)
@@ -3213,8 +3209,8 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.413917, 43.733505)
@@ -3330,8 +3326,8 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.419917, 43.733505)
@@ -3447,8 +3443,8 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.425917, 43.733505)
@@ -3564,8 +3560,8 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.431917, 43.733505)
@@ -3682,8 +3678,8 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	//moving to each different type of POA
@@ -3763,8 +3759,8 @@ func Test_zoneStatus_zone_AP_threshold(t *testing.T) {
 		t.Fatalf("Subscription failed")
 	}
 
-        //wait to make sure the subscription got registered
-        time.Sleep(1500 * time.Millisecond)
+	//wait to make sure the subscription got registered
+	time.Sleep(1500 * time.Millisecond)
 
 	log.Info("moving asset")
 	//moving to one POA and triggering a AP threshold, so 1 notification for AP threshold
@@ -3945,30 +3941,30 @@ func locServSubscriptionDistance(monitoredAddress []string, referenceAddress []s
 
 func locServSubscriptionAreaCircle(address []string, criteria *locServClient.EnteringLeavingCriteria, latitude float32, longitude float32, radius float32, callbackReference string, checkImmediate bool) error {
 
-        areaCircleSubscription := locServClient.CircleNotificationSubscription{address, &locServClient.CallbackReference{"", nil, callbackReference}, checkImmediate, "", 0, 0, criteria, 1, latitude, nil, longitude, radius, "", "", 1}
-        inlineCircleNotificationSubscription := locServClient.InlineCircleNotificationSubscription{&areaCircleSubscription}
+	areaCircleSubscription := locServClient.CircleNotificationSubscription{address, &locServClient.CallbackReference{"", nil, callbackReference}, checkImmediate, "", 0, 0, criteria, 1, latitude, nil, longitude, radius, "", "", 1}
+	inlineCircleNotificationSubscription := locServClient.InlineCircleNotificationSubscription{&areaCircleSubscription}
 
-        _, _, err := locServAppClient.LocationApi.AreaCircleSubPOST(context.TODO(), inlineCircleNotificationSubscription)
-        if err != nil {
-                log.Error("Failed to send subscription: ", err)
-                return err
-        }
+	_, _, err := locServAppClient.LocationApi.AreaCircleSubPOST(context.TODO(), inlineCircleNotificationSubscription)
+	if err != nil {
+		log.Error("Failed to send subscription: ", err)
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 func locServSubscriptionPeriodic(referenceAddress []string, callbackReference string, frequency int32) error {
 
-        periodicSubscription := locServClient.PeriodicNotificationSubscription{referenceAddress, &locServClient.CallbackReference{"", nil, callbackReference}, "", 0, frequency, nil, 1, "", ""}
-        inlinePeriodicNotificationSubscription := locServClient.InlinePeriodicNotificationSubscription{&periodicSubscription}
+	periodicSubscription := locServClient.PeriodicNotificationSubscription{referenceAddress, &locServClient.CallbackReference{"", nil, callbackReference}, "", 0, frequency, nil, 1, "", ""}
+	inlinePeriodicNotificationSubscription := locServClient.InlinePeriodicNotificationSubscription{&periodicSubscription}
 
-        _, _, err := locServAppClient.LocationApi.PeriodicSubPOST(context.TODO(), inlinePeriodicNotificationSubscription)
-        if err != nil {
-                log.Error("Failed to send subscription: ", err)
-                return err
-        }
+	_, _, err := locServAppClient.LocationApi.PeriodicSubPOST(context.TODO(), inlinePeriodicNotificationSubscription)
+	if err != nil {
+		log.Error("Failed to send subscription: ", err)
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 func validateZonalPresenceNotification(zonalPresenceNotification *locServClient.ZonalPresenceNotification, expectedAddress string, expectedZoneId string, expectedCurrentAccessPointId string, expectedPreviousAccessPointId string, expectedUserEventType locServClient.UserEventType) string {
@@ -4024,19 +4020,18 @@ func validateDistanceSubscriptionNotification(subscriptionNotification *locServC
 
 func validateCircleSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
 
-        if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
-                return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
-        }
-
-        return ""
-}
-
-func validatePeriodicSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
-
-        if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
-                return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
-        }
+	if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
+		return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
+	}
 
 	return ""
 }
 
+func validatePeriodicSubscriptionNotification(subscriptionNotification *locServClient.SubscriptionNotification, expectedTerminalAddress string) string {
+
+	if subscriptionNotification.TerminalLocation[0].Address != expectedTerminalAddress {
+		return ("Terminal location address of notification not as expected: " + subscriptionNotification.TerminalLocation[0].Address + " instead of " + expectedTerminalAddress)
+	}
+
+	return ""
+}

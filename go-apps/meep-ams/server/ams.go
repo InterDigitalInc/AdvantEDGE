@@ -42,6 +42,7 @@ import (
 	scc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 
+	"github.com/go-test/deep"
 	"github.com/gorilla/mux"
 )
 
@@ -450,12 +451,18 @@ func startRegistrationTicker() {
 		registrationSent := false
 		subscriptionSent := false
 		for range registrationTicker.C {
-			// Get Application instance ID if not already available
+			// Get Application instance ID
 			if serviceAppInstanceId == "" {
-				var err error
-				serviceAppInstanceId, err = getAppInstanceId()
-				if err != nil || serviceAppInstanceId == "" {
-					continue
+				// If global service, request an app instance ID from Sandbox Controller
+				// Otherwise use the scenario-provisioned instance ID
+				if mepName == defaultMepName {
+					var err error
+					serviceAppInstanceId, err = getAppInstanceId()
+					if err != nil || serviceAppInstanceId == "" {
+						continue
+					}
+				} else {
+					serviceAppInstanceId = instanceId
 				}
 			}
 
@@ -514,7 +521,7 @@ func getAppInstanceId() (id string, err error) {
 	appInfo.Id = instanceId
 	appInfo.Name = serviceCategory
 	appInfo.Type_ = "SYSTEM"
-	appInfo.MepName = mepName
+	appInfo.NodeName = mepName
 	if mepName == defaultMepName {
 		appInfo.Persist = true
 	} else {
@@ -669,28 +676,6 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 		if sendAppTerminationWhenDone {
 			_ = sendTerminationConfirmation(serviceAppInstanceId)
 		}
-
-		// Remove node from active scenario
-		event := scc.Event{
-			Type_: "SCENARIO-UPDATE",
-			EventScenarioUpdate: &scc.EventScenarioUpdate{
-				Action: "REMOVE",
-				Node: &scc.ScenarioNode{
-					Type_:  "EDGE-APP",
-					Parent: mepName,
-					NodeDataUnion: &scc.NodeDataUnion{
-						Process: &scc.Process{
-							Type_: "EDGE-APP",
-							Name:  instanceName,
-						},
-					},
-				},
-			},
-		}
-		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-		if err != nil {
-			log.Error(err)
-		}
 	}()
 
 	if sendAppTerminationWhenDone {
@@ -704,14 +689,8 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func hasAppChanged(app1 *apps.Application, app2 *apps.Application) bool {
-	if app1 != nil || app2 != nil {
-		if (app1 == nil && app2 != nil) ||
-			(app1 != nil && app2 == nil) ||
-			(app1.Id != app2.Id) ||
-			(app1.Name != app2.Name) ||
-			(app1.Mep != app2.Mep) {
-			return true
-		}
+	if diff := deep.Equal(app1, app2); diff != nil {
+		return true
 	}
 	return false
 }
@@ -775,8 +754,8 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(appNames []string) {
 
 func checkPeriodicTrigger() {
 
-	// PATCH: Update appStore with DB contents periodically.
-	//        Eventually, should sync with DB only when notified of a DB change.
+	// Update appStore with DB contents periodically.
+	// Eventually, should sync with DB only when notified of a DB change.
 	appStore.Refresh()
 
 	// Retrieve current list of app instance IDs
@@ -1009,11 +988,11 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				appId := app.Id
 				appName := app.Name
 				targetAppId := ""
-				if mepId == app.Mep {
+				if mepId == app.Node {
 					targetAppId = appId
 				} else {
 					for _, appFromMap := range appMap {
-						if appFromMap.Name == appName && appFromMap.Mep == mepId {
+						if appFromMap.Name == appName && appFromMap.Node == mepId {
 							targetAppId = appFromMap.Id
 							break
 						}
@@ -1926,7 +1905,7 @@ func updateDeviceInfo(address string, zoneId string, procList []string) {
 			for _, appInstanceId := range appInstanceIdsList.AppInstanceIds {
 				// Only send notifications for AppInstanceIDs in the source MEP coverage area
 				if app, found := appMap[appInstanceId]; found {
-					if app.Mep == mepZonesMap[oldZoneId] {
+					if app.Node == mepZonesMap[oldZoneId] {
 						checkMpNotificationRegisteredSubscriptions(appInstanceId, &assocId, mepZonesMap[zoneId])
 					}
 				}

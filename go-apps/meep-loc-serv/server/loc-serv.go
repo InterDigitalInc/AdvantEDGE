@@ -405,12 +405,18 @@ func startRegistrationTicker() {
 		subscriptionSent := false
 
 		for range registrationTicker.C {
-			// Get Application instance ID if not already available
+			// Get Application instance ID
 			if serviceAppInstanceId == "" {
-				var err error
-				serviceAppInstanceId, err = getAppInstanceId()
-				if err != nil || serviceAppInstanceId == "" {
-					continue
+				// If a sandbox service, request an app instance ID from Sandbox Controller
+				// Otherwise use the scenario-provisioned instance ID
+				if mepName == defaultMepName {
+					var err error
+					serviceAppInstanceId, err = getAppInstanceId()
+					if err != nil || serviceAppInstanceId == "" {
+						continue
+					}
+				} else {
+					serviceAppInstanceId = instanceId
 				}
 			}
 
@@ -468,7 +474,7 @@ func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
 	appInfo.Name = serviceCategory
-	appInfo.MepName = mepName
+	appInfo.NodeName = mepName
 	appInfo.Type_ = "SYSTEM"
 	if mepName == defaultMepName {
 		appInfo.Persist = true
@@ -3873,28 +3879,6 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 		// Confirm App termination if necessary
 		if sendAppTerminationWhenDone {
 			_ = sendTerminationConfirmation(serviceAppInstanceId)
-		}
-
-		// Remove node from active scenario
-		event := scc.Event{
-			Type_: "SCENARIO-UPDATE",
-			EventScenarioUpdate: &scc.EventScenarioUpdate{
-				Action: "REMOVE",
-				Node: &scc.ScenarioNode{
-					Type_:  "EDGE-APP",
-					Parent: mepName,
-					NodeDataUnion: &scc.NodeDataUnion{
-						Process: &scc.Process{
-							Type_: "EDGE-APP",
-							Name:  instanceName,
-						},
-					},
-				},
-			},
-		}
-		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-		if err != nil {
-			log.Error(err)
 		}
 	}()
 

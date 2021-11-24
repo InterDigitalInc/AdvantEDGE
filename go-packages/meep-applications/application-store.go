@@ -19,6 +19,7 @@ package applications
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"sync"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -31,7 +32,7 @@ const appMgrKey string = "apps:"
 const (
 	fieldId      string = "id"
 	fieldName    string = "name"
-	fieldMep     string = "mep"
+	fieldNode    string = "node"
 	fieldType    string = "type"
 	fieldPersist string = "persist"
 )
@@ -48,15 +49,15 @@ const (
 type Application struct {
 	Id      string
 	Name    string
-	Mep     string
 	Type    string
+	Node    string
 	Persist bool
 }
 
 type ApplicationStoreCfg struct {
 	Name      string
 	Namespace string
-	UpdateCb  func(eventType string, eventData interface{})
+	UpdateCb  func(eventType string, eventData interface{}, userData interface{})
 	RedisAddr string
 }
 
@@ -64,9 +65,11 @@ type ApplicationStore struct {
 	apps     map[string]*Application
 	rc       *redis.Connector
 	keyRoot  string
-	updateCb func(eventType string, eventData interface{})
+	updateCb func(eventType string, eventData interface{}, userData interface{})
 	mutex    sync.Mutex
 }
+
+var SysAppNames []string = []string{"meep-app-enablement", "meep-ams", "meep-loc-serv", "meep-rnis", "meep-wais"}
 
 // NewApplicationStore - Creates and initialize an Application Store instance
 func NewApplicationStore(cfg *ApplicationStoreCfg) (as *ApplicationStore, err error) {
@@ -97,7 +100,7 @@ func NewApplicationStore(cfg *ApplicationStoreCfg) (as *ApplicationStore, err er
 }
 
 // Set - Create or update app entry in DB
-func (as *ApplicationStore) Set(app *Application) error {
+func (as *ApplicationStore) Set(app *Application, userData interface{}) error {
 	// Validate application
 	if app == nil {
 		return errors.New("nil application")
@@ -108,8 +111,8 @@ func (as *ApplicationStore) Set(app *Application) error {
 	if app.Name == "" {
 		return errors.New("Missing App Name")
 	}
-	if app.Mep == "" {
-		return errors.New("Missing MEP Name")
+	if app.Node == "" {
+		return errors.New("Missing Node Name")
 	}
 	if app.Type == "" {
 		return errors.New("Missing App Type")
@@ -123,7 +126,7 @@ func (as *ApplicationStore) Set(app *Application) error {
 
 	// Invoke application update callback
 	if as.updateCb != nil {
-		as.updateCb(EventAdd, app.Id)
+		as.updateCb(EventAdd, app.Id, userData)
 	}
 	return nil
 }
@@ -154,7 +157,7 @@ func (as *ApplicationStore) GetAll() ([]*Application, error) {
 }
 
 // Del - Remove application with provided id
-func (as *ApplicationStore) Del(id string) error {
+func (as *ApplicationStore) Del(id string, userData interface{}) error {
 	// Delete entry
 	err := as.deleteEntry(id)
 	if err != nil {
@@ -163,13 +166,13 @@ func (as *ApplicationStore) Del(id string) error {
 
 	// Invoke application update callback
 	if as.updateCb != nil {
-		as.updateCb(EventRemove, id)
+		as.updateCb(EventRemove, id, userData)
 	}
 	return nil
 }
 
 // FlushAll - Remove all Application Store entries
-func (as *ApplicationStore) FlushNonPersistent() {
+func (as *ApplicationStore) FlushNonPersistent(userData interface{}) {
 	// Get app list
 	appList, err := as.GetAll()
 	if err != nil {
@@ -187,19 +190,19 @@ func (as *ApplicationStore) FlushNonPersistent() {
 	// Invoke application update callback
 	if as.updateCb != nil {
 		flushPersistent := false
-		as.updateCb(EventFlush, flushPersistent)
+		as.updateCb(EventFlush, flushPersistent, userData)
 	}
 }
 
 // FlushAll - Remove all Application Store entries
-func (as *ApplicationStore) Flush() {
+func (as *ApplicationStore) Flush(userData interface{}) {
 	// Delete all entries
 	_ = as.deleteAllEntries()
 
 	// Invoke application update callback
 	if as.updateCb != nil {
 		flushPersistent := true
-		as.updateCb(EventFlush, flushPersistent)
+		as.updateCb(EventFlush, flushPersistent, userData)
 	}
 }
 
@@ -227,6 +230,16 @@ func (as *ApplicationStore) Refresh() {
 	}
 }
 
+func (as *ApplicationStore) IsSysApp(appName string) bool {
+	name := appName[strings.LastIndex(appName, "/")+1:]
+	for _, sysAppName := range SysAppNames {
+		if sysAppName == name {
+			return true
+		}
+	}
+	return false
+}
+
 func (as *ApplicationStore) setEntry(app *Application) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
@@ -235,7 +248,7 @@ func (as *ApplicationStore) setEntry(app *Application) error {
 	entry := make(map[string]interface{})
 	entry[fieldId] = app.Id
 	entry[fieldName] = app.Name
-	entry[fieldMep] = app.Mep
+	entry[fieldNode] = app.Node
 	entry[fieldType] = app.Type
 	entry[fieldPersist] = strconv.FormatBool(app.Persist)
 
@@ -256,6 +269,10 @@ func (as *ApplicationStore) setEntry(app *Application) error {
 func (as *ApplicationStore) deleteEntry(id string) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
+
+	if _, found := as.apps[id]; !found {
+		return errors.New("Entry does not exist: " + id)
+	}
 
 	// Remove from cache
 	delete(as.apps, id)
@@ -292,7 +309,7 @@ func createApplication(entry map[string]string) *Application {
 	app := new(Application)
 	app.Id = entry[fieldId]
 	app.Name = entry[fieldName]
-	app.Mep = entry[fieldMep]
+	app.Node = entry[fieldNode]
 	app.Type = entry[fieldType]
 	persist, err := strconv.ParseBool(entry[fieldPersist])
 	if err != nil {

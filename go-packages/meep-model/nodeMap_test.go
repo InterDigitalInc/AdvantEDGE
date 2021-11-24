@@ -54,7 +54,7 @@ func TestNodeMapDomains(t *testing.T) {
 		context := make(map[string]string)
 		context["pl"] = "phyLoc"
 		context["nl"] = "netLoc"
-		nm.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, scenario.Deployment, context))
+		nm.AddNode(NewNode(domain.Id, domain.Name, domain.Type_, domain, &domain.Zones, scenario.Deployment, context))
 		////fmt.Printf("  domain%d: object @ %p\n%+v\n", i, &scenario.Deployment.Domains[i], domain)
 		////fmt.Printf("  domain%d: child @ %p\n%+v\n", i, &domain.Zones, domain.Zones)
 		////fmt.Printf("  domain%d: parent @ %p\n%+v\n", i, scenario.Deployment, *scenario.Deployment)
@@ -140,7 +140,7 @@ func TestNodeMapZone(t *testing.T) {
 		context := make(map[string]string)
 		context["pl"] = "phyLoc"
 		context["nl"] = "netLoc"
-		nm.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, context))
+		nm.AddNode(NewNode(zone.Id, zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, context))
 		//fmt.Printf("  zone%d: object @ %p\n%+v\n", i, zone, *zone)
 		//fmt.Printf("  zone%d: child @ %p\n%+v\n", i, &zone.NetworkLocations, zone.NetworkLocations)
 		//fmt.Printf("  zone%d: parent @ %p\n%+v\n", i, domain, *domain)
@@ -216,7 +216,7 @@ func TestNodeMapNetworkLocation(t *testing.T) {
 		context := make(map[string]string)
 		context["pl"] = "phyLoc"
 		context["nl"] = "netLoc"
-		nm.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, context))
+		nm.AddNode(NewNode(nl.Id, nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, context))
 		//fmt.Printf("  nl%d: object @ %p\n%+v\n", i, nl, *nl)
 		//fmt.Printf("  nl%d: child @ %p\n%+v\n", i, &nl.PhysicalLocations, nl.PhysicalLocations)
 		//fmt.Printf("  nl%d: parent @ %p\n%+v\n", i, zone, *zone)
@@ -292,7 +292,7 @@ func TestNodeMapPhysicalLocation(t *testing.T) {
 		context := make(map[string]string)
 		context["pl"] = "phyLoc"
 		context["nl"] = "netLoc"
-		nm.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, context))
+		nm.AddNode(NewNode(pl.Id, pl.Name, pl.Type_, pl, &pl.Processes, nl, context))
 		//fmt.Printf("  nl%d: object @ %p\n%+v\n", i, pl, *pl)
 		//fmt.Printf("  nl%d: child @ %p\n%+v\n", i, &pl.Processes, pl.Processes)
 		//fmt.Printf("  nl%d: parent @ %p\n%+v\n", i, nl, *nl)
@@ -368,7 +368,7 @@ func TestNodeMapProcess(t *testing.T) {
 		context := make(map[string]string)
 		context["pl"] = "phyLoc"
 		context["nl"] = "netLoc"
-		nm.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, context))
+		nm.AddNode(NewNode(proc.Id, proc.Name, proc.Type_, proc, nil, pl, context))
 		//fmt.Printf("  nl%d: object @ %p\n%+v\n", i, proc, *proc)
 		//fmt.Printf("  nl%d: child @ nil\n%+v\n", i, nil)
 		//fmt.Printf("  nl%d: parent @ %p\n%+v\n", i, pl, *pl)

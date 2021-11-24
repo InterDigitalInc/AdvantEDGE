@@ -61,7 +61,7 @@ const (
 
 // MQ payload fields
 const (
-	mqfieldAppId   string = "id"
+	mqFieldAppId   string = "id"
 	mqFieldPersist string = "persist"
 )
 
@@ -79,7 +79,7 @@ var basePath string
 var baseKey string
 var subMgr *subs.SubscriptionMgr
 var appStore *apps.ApplicationStore
-var gracefulTerminateMap = map[string]*time.Ticker{}
+var gracefulTerminateMap = map[string]chan bool{}
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -180,12 +180,12 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgAppUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
-		appId := msg.Payload[mqfieldAppId]
+		appId := msg.Payload[mqFieldAppId]
 		_ = updateAppInfo(appId)
 	case mq.MsgAppRemove:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
-		appId := msg.Payload[mqfieldAppId]
+		appId := msg.Payload[mqFieldAppId]
 		_ = terminateAppInfo(appId)
 	case mq.MsgAppFlush:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
@@ -283,17 +283,12 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Check if Confirm Termination was expected
-	gracefulTerminateTicker, found := gracefulTerminateMap[appId]
+	// Verify that confirmation is expected
+	gracefulTerminateChannel, found := gracefulTerminateMap[appId]
 	if !found {
-		mutex.Unlock()
 		log.Error("Unexpected App Confirmation Termination Notification")
 		http.Error(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
 		return
-	} else {
-		// Stop & delete ticker
-		gracefulTerminateTicker.Stop()
-		delete(gracefulTerminateMap, appId)
 	}
 
 	// Retrieve Termination Confirmation data
@@ -320,8 +315,9 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Delete App Instance
-	deleteAppInstance(appId)
+	// Confirm termination
+	gracefulTerminateChannel <- true
+	delete(gracefulTerminateMap, appId)
 
 	// Send response
 	w.WriteHeader(http.StatusNoContent)
@@ -642,6 +638,9 @@ func deleteAppInstance(appId string) {
 	// Flush App instance data
 	key := baseKey + "app:" + appId
 	_ = rc.DBFlush(key)
+
+	// Confirm App removal
+	sendAppRemoveCnf(appId)
 }
 
 func getAppInfoList() ([]map[string]string, error) {
@@ -772,7 +771,7 @@ func updateAppInfo(appId string) error {
 	}
 
 	// If MEP instance, ignore non-local apps
-	if mepName != globalMepName && app.Mep != mepName {
+	if mepName != globalMepName && app.Node != mepName {
 		return nil
 	}
 
@@ -780,7 +779,7 @@ func updateAppInfo(appId string) error {
 	appInfo := make(map[string]string)
 	appInfo[fieldAppId] = appId
 	appInfo[fieldName] = app.Name
-	appInfo[fieldMep] = app.Mep
+	appInfo[fieldMep] = app.Node
 	appInfo[fieldType] = app.Type
 	appInfo[fieldPersist] = strconv.FormatBool(app.Persist)
 	appInfo[fieldState] = APP_STATE_INITIALIZED
@@ -827,8 +826,8 @@ func terminateAppInfo(appId string) error {
 
 		// Start graceful timeout timer prior to sending the app termination notification
 		mutex.Lock()
-		gracefulTerminateTicker := time.NewTicker(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second)
-		gracefulTerminateMap[appId] = gracefulTerminateTicker
+		gracefulTerminateChannel := make(chan bool)
+		gracefulTerminateMap[appId] = gracefulTerminateChannel
 		mutex.Unlock()
 
 		go func(sub *subs.Subscription) {
@@ -839,18 +838,17 @@ func terminateAppInfo(appId string) error {
 			}
 
 			// Wait for app termination confirmation or timeout
-			for range gracefulTerminateTicker.C {
+			select {
+			case <-gracefulTerminateChannel:
+				log.Debug("Termination confirmation received for: ", appId)
+			case <-time.After(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second):
 				mutex.Lock()
-				if gracefulTerminateTicker, found := gracefulTerminateMap[appId]; found {
-					log.Info("Graceful timeout expiry for ", appId, "---", gracefulTerminateTicker)
-					gracefulTerminateTicker.Stop()
-					delete(gracefulTerminateMap, appId)
-				}
+				delete(gracefulTerminateMap, appId)
 				mutex.Unlock()
-
-				// Delete App instance if timer expires before receiving a termination confirmation
-				deleteAppInstance(appId)
 			}
+
+			// Delete App instance
+			deleteAppInstance(appId)
 		}(sub)
 	}
 
@@ -872,6 +870,18 @@ func flushApps(persist bool) error {
 
 	// Delete App instances
 	for _, appInfo := range appInfoList {
+
+		// Ignore persistent apps unless required
+		if !persist {
+			appPersist, err := strconv.ParseBool(appInfo[fieldPersist])
+			if err != nil {
+				appPersist = false
+			}
+			if appPersist {
+				continue
+			}
+		}
+
 		// Get app instance ID
 		appId := appInfo[fieldAppId]
 		if appId == "" {
@@ -903,4 +913,18 @@ func newAppTerminationNotifSubCfg(sub *AppTerminationNotificationSubscription, s
 		RequestWebsocketUri: false,
 	}
 	return subCfg
+}
+
+func sendAppRemoveCnf(id string) {
+	// Create message to send on MQ
+	msg := mqLocal.CreateMsg(mq.MsgAppRemoveCnf, mq.TargetAll, sandboxName)
+	msg.Payload[mqFieldAppId] = id
+
+	// Send message to inform other modules of app removal
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return
+	}
 }

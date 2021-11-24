@@ -5,7 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | Application Instance UUID | [optional] 
 **name** | **String** | Application name | 
-**mepName** | **String** | MEP Name where application instance is running | 
+**nodeName** | **String** | Name of node where application instance is running | 
 **type** | **String** | Application Type | [optional] 
 **persist** | **Boolean** | Reserved for internal platform usage | [optional] 
 

@@ -902,6 +902,34 @@ func (m *Model) GetNode(name string) (node interface{}) {
 	return node
 }
 
+// GetNodeById - Get a node by its id
+// 		Returned value is of type interface{}
+//    Returned node may be nil
+func (m *Model) GetNodeById(id string) (node interface{}) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	node = nil
+	n := m.nodeMap.idMap[id]
+	if n != nil {
+		node = n.object
+	}
+	return node
+}
+
+// GetNodeId - Get a node ID by its name
+func (m *Model) GetNodeId(name string) (id string) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	id = ""
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		id = n.id
+	}
+	return id
+}
+
 // GetNodeType - Get a node by its name
 func (m *Model) GetNodeType(name string) (typ string) {
 	m.lock.RLock()
@@ -1196,7 +1224,7 @@ func (m *Model) parseNodes() (err error) {
 		if m.scenario.Deployment != nil {
 			deployment := m.scenario.Deployment
 			deploymentCtx := NewNodeContext(m.scenario.Name, "", "", "", "")
-			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, deploymentCtx))
+			m.nodeMap.AddNode(NewNode(m.scenario.Id, m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, deploymentCtx))
 			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
 			if deployment.Connectivity != nil {
 				m.connectivityModel = deployment.Connectivity.Model
@@ -1207,7 +1235,7 @@ func (m *Model) parseNodes() (err error) {
 				domain := &m.scenario.Deployment.Domains[iDomain]
 				deploymentCtx.AddChild(domain.Name, Domain)
 				domainCtx := NewNodeContext(m.scenario.Name, domain.Name, "", "", "")
-				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, domainCtx))
+				m.nodeMap.AddNode(NewNode(domain.Id, domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, domainCtx))
 				m.networkGraph.AddNode(domain.Name, "", false)
 
 				// Zones
@@ -1216,7 +1244,7 @@ func (m *Model) parseNodes() (err error) {
 					deploymentCtx.AddChild(zone.Name, Zone)
 					domainCtx.AddChild(zone.Name, Zone)
 					zoneCtx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, "", "")
-					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, zoneCtx))
+					m.nodeMap.AddNode(NewNode(zone.Id, zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, zoneCtx))
 					m.networkGraph.AddNode(zone.Name, domain.Name, IsDefaultZone(zone.Type_))
 
 					// Network Locations
@@ -1226,7 +1254,7 @@ func (m *Model) parseNodes() (err error) {
 						domainCtx.AddChild(nl.Name, NetLoc)
 						zoneCtx.AddChild(nl.Name, NetLoc)
 						nlCtx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, "")
-						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, nlCtx))
+						m.nodeMap.AddNode(NewNode(nl.Id, nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, nlCtx))
 						m.networkGraph.AddNode(nl.Name, zone.Name, IsDefaultNetLoc(nl.Type_))
 
 						// Physical Locations
@@ -1237,7 +1265,7 @@ func (m *Model) parseNodes() (err error) {
 							zoneCtx.AddChild(pl.Name, PhyLoc)
 							nlCtx.AddChild(pl.Name, PhyLoc)
 							plCtx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
-							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, plCtx))
+							m.nodeMap.AddNode(NewNode(pl.Id, pl.Name, pl.Type_, pl, &pl.Processes, nl, plCtx))
 							m.networkGraph.AddNode(pl.Name, nl.Name, false)
 
 							// Processes
@@ -1249,7 +1277,7 @@ func (m *Model) parseNodes() (err error) {
 								nlCtx.AddChild(proc.Name, Proc)
 								plCtx.AddChild(proc.Name, Proc)
 								procCtx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
-								m.nodeMap.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, procCtx))
+								m.nodeMap.AddNode(NewNode(proc.Id, proc.Name, proc.Type_, proc, nil, pl, procCtx))
 								m.networkGraph.AddNode(proc.Name, pl.Name, false)
 
 								// Update service map for external processes

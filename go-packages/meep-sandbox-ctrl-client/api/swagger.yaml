@@ -21,6 +21,7 @@ tags:
 - name: "Event Replay"
 - name: "Connectivity"
 - name: "Applications"
+- name: "Services"
 consumes:
 - "application/json"
 produces:
@@ -1115,27 +1116,27 @@ paths:
       parameters:
       - name: "app"
         in: "query"
-        description: "Filter by application name"
+        description: "Application name"
         required: false
         type: "string"
         x-exportParamName: "App"
         x-optionalDataType: "String"
-      - name: "mep"
-        in: "query"
-        description: "Filter by MEP name"
-        required: false
-        type: "string"
-        x-exportParamName: "Mep"
-        x-optionalDataType: "String"
       - name: "type"
         in: "query"
-        description: "Filter by application type"
+        description: "Application type"
         required: false
         type: "string"
         enum:
         - "USER"
         - "SYSTEM"
         x-exportParamName: "Type_"
+        x-optionalDataType: "String"
+      - name: "nodeName"
+        in: "query"
+        description: "Node name"
+        required: false
+        type: "string"
+        x-exportParamName: "NodeName"
         x-optionalDataType: "String"
       responses:
         200:
@@ -1246,6 +1247,33 @@ paths:
       responses:
         204:
           description: "No Content"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+  /services:
+    get:
+      tags:
+      - "Services"
+      description: "This method retrieves registered MEC application services."
+      operationId: "Services_GET"
+      parameters:
+      - name: "appInstanceId"
+        in: "query"
+        description: "MEC application instance identifier"
+        required: false
+        type: "string"
+        x-exportParamName: "AppInstanceId"
+        x-optionalDataType: "String"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/ServiceInfo"
+        400:
+          description: "Bad Request"
         401:
           description: "Unauthorized"
         404:
@@ -2142,13 +2170,17 @@ definitions:
         - "MODIFY"
       node:
         $ref: "#/definitions/ScenarioNode"
+      gracePeriod:
+        type: "integer"
+        description: "Grace period in seconds before forcefully removing node"
     description: "Scenario Update Event object.<br> Specifies a scenario update action\
       \ to perform on the provided node.\n<p>Supported Actions: <li>ADD - Add node\
       \ to scenario. Only the provided node is added; child nodes in node data are\
       \ ignored. <li>REMOVE - Remove node from scenario. Only node name is required\
       \ in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario\
-      \ node.\n<p>NOTE: Current backend implementation supports only PhysicalLocation\
-      \ & Process network elements."
+      \ node.\n<p>NOTES: <li>Current backend implementation supports only PhysicalLocation\
+      \ & Process network elements. <li>Grace period only applies when removing a\
+      \ node. Default value is 0, triggering an immediate node removal."
     example: {}
   ScenarioNode:
     type: "object"
@@ -2307,8 +2339,8 @@ definitions:
   ApplicationInfo:
     type: "object"
     required:
-    - "mepName"
     - "name"
+    - "nodeName"
     properties:
       id:
         type: "string"
@@ -2316,9 +2348,9 @@ definitions:
       name:
         type: "string"
         description: "Application name"
-      mepName:
+      nodeName:
         type: "string"
-        description: "MEP Name where application instance is running"
+        description: "Name of node where application instance is running"
       type:
         type: "string"
         description: "Application Type"
@@ -2332,8 +2364,24 @@ definitions:
     example:
       id: "00afec52-f0b6-464e-a660-33568c0975b9"
       name: "MyAppName"
-      mepName: "mep1"
+      nodeName: "node1"
       type: "USER"
+  ServiceInfo:
+    type: "object"
+    required:
+    - "appId"
+    - "id"
+    properties:
+      appId:
+        type: "string"
+        description: "Application Instance UUID"
+      id:
+        type: "string"
+        description: "Service Instance UUID"
+    description: "MEC Service information"
+    example:
+      appId: "00afec52-f0b6-464e-a660-33568c0975b9"
+      id: "b8a203be-ac81-45a6-8d88-fdb1f8f5393b"
 parameters:
   Body.ActivationInfo:
     in: "body"
@@ -2419,10 +2467,18 @@ parameters:
     required: true
     type: "string"
     x-exportParamName: "UeName"
+  Query.AppInstanceId:
+    name: "appInstanceId"
+    in: "query"
+    description: "MEC application instance identifier"
+    required: false
+    type: "string"
+    x-exportParamName: "AppInstanceId"
+    x-optionalDataType: "String"
   Query.AppName:
     name: "app"
     in: "query"
-    description: "Filter by application name"
+    description: "Application name"
     required: false
     type: "string"
     x-exportParamName: "App"
@@ -2430,7 +2486,7 @@ parameters:
   Query.AppType:
     name: "type"
     in: "query"
-    description: "Filter by application type"
+    description: "Application type"
     required: false
     type: "string"
     enum:
@@ -2465,14 +2521,6 @@ parameters:
     type: "boolean"
     x-exportParamName: "ExcludeChildren"
     x-optionalDataType: "Bool"
-  Query.MepName:
-    name: "mep"
-    in: "query"
-    description: "Filter by MEP name"
-    required: false
-    type: "string"
-    x-exportParamName: "Mep"
-    x-optionalDataType: "String"
   Query.Minimize:
     name: "minimize"
     in: "query"
@@ -2509,6 +2557,14 @@ parameters:
     required: false
     type: "string"
     x-exportParamName: "Node"
+    x-optionalDataType: "String"
+  Query.NodeName:
+    name: "nodeName"
+    in: "query"
+    description: "Node name"
+    required: false
+    type: "string"
+    x-exportParamName: "NodeName"
     x-optionalDataType: "String"
   Query.PduSessionId:
     name: "id"

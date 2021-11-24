@@ -23,35 +23,55 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
-
-// MQ payload fields
-const mqFieldAppInstanceId = "id"
-const mqFieldPersist = "persist"
 
 type AppCtrl struct {
 	sandboxName string
 	appStore    *apps.ApplicationStore
 	mqLocal     *mq.MsgQueue
+	handlerId   int
+	rc          *redis.Connector
 }
+
+// MQ payload fields
+const (
+	mqFieldAppId       = "id"
+	mqFieldPersist     = "persist"
+	mqFieldGracePeriod = "gracePeriod"
+)
+
+const defaultGracePeriod int = 10
 
 // App Controller
 var appCtrl *AppCtrl
 
 // Initialize App Controller
-func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) (err error) {
+func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) error {
+	var err error
 
 	// Create new App Controller
 	appCtrl = new(AppCtrl)
 	appCtrl.sandboxName = sandboxName
 	appCtrl.mqLocal = mqLocal
+
+	// Connect to Redis DB
+	appCtrl.rc, err = redis.NewConnector(redisDBAddr, redisDBTable)
+	if err != nil {
+		log.Error("Failed connection to Redis DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB")
 
 	// Create Application Store
 	cfg := &apps.ApplicationStoreCfg{
@@ -71,19 +91,162 @@ func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) (err error) {
 }
 
 // Start App Controller
-func appCtrlRun() (err error) {
+func appCtrlRun() error {
+	var err error
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	appCtrl.handlerId, err = appCtrl.mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
 	return nil
 }
 
 // Stop App Controller
-func appCtrlStop() (err error) {
+func appCtrlStop() error {
+
+	// Unregister handler
+	if appCtrl.mqLocal != nil {
+		appCtrl.mqLocal.UnregisterHandler(appCtrl.handlerId)
+	}
 	return nil
 }
 
-// Flush App instances
-func appCtrlFlushAppInstances() (err error) {
-	appCtrl.appStore.FlushNonPersistent()
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgAppRemoveCnf:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		appId := msg.Payload[mqFieldAppId]
+		removeNodeConfirm(appId)
+	default:
+	}
+}
+
+func createAppInstance(proc *dataModel.Process, ctx *mod.NodeContext) (*apps.Application, error) {
+	// Determine app type
+	appType := apps.TypeUser
+	if appCtrl.appStore.IsSysApp(proc.Image) {
+		appType = apps.TypeSystem
+	}
+
+	// Create & app instance
+	app := &apps.Application{
+		Id:      proc.Id,
+		Name:    proc.Name,
+		Node:    ctx.Parents[mod.PhyLoc],
+		Type:    appType,
+		Persist: false,
+	}
+	return app, nil
+}
+
+func setAppInstance(name string, activeModel *mod.Model) error {
+	// Get scenario Process & context
+	proc, ctx, err := getScenarioProcess(name, activeModel)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Create app instance
+	app, err := createAppInstance(proc, ctx)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Set app instance
+	err = appCtrl.appStore.Set(app, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
 	return nil
+}
+
+func delAppInstance(id string, gracePeriod int) error {
+	// Validate ID
+	if id == "" {
+		return errors.New("Invalid app instance ID")
+	}
+
+	// Delete app instance
+	err := appCtrl.appStore.Del(id, &gracePeriod)
+	if err != nil {
+		log.Warn(err.Error())
+		return err
+	}
+	return nil
+}
+
+func resetAppInstances(activeModel *mod.Model) error {
+	// Flush non-persistent app instances
+	appCtrl.appStore.FlushNonPersistent(nil)
+
+	// Get active scenario app list
+	scenarioAppList, err := getScenarioAppInstanceList(activeModel)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Create app instances for scenario apps
+	for _, app := range scenarioAppList {
+		err := appCtrl.appStore.Set(app, nil)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+	return nil
+}
+
+func getScenarioAppInstanceList(activeModel *mod.Model) ([]*apps.Application, error) {
+	var appList []*apps.Application
+
+	if activeModel != nil {
+		// Get active scenario node names
+		appNames := activeModel.GetNodeNames(mod.NodeTypeEdgeApp)
+		for _, appName := range appNames {
+			// Get scenario Process & context
+			proc, ctx, err := getScenarioProcess(appName, activeModel)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			// Create app instance
+			app, err := createAppInstance(proc, ctx)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			// Add app instance to list
+			appList = append(appList, app)
+		}
+	}
+	return appList, nil
+}
+
+func getScenarioProcess(name string, activeModel *mod.Model) (*dataModel.Process, *mod.NodeContext, error) {
+	// Get app node
+	node := activeModel.GetNode(name)
+	if node == nil {
+		return nil, nil, errors.New("Failed to get app node")
+	}
+	// Get App Process & context
+	proc, ok := node.(*dataModel.Process)
+	if !ok {
+		return nil, nil, errors.New("Failed to cast node as Process")
+	}
+	ctx := activeModel.GetNodeContext(proc.Name)
+	if ctx == nil {
+		return nil, nil, errors.New("Missing node context for " + proc.Name)
+	}
+	return proc, ctx, nil
 }
 
 func applicationsPOST(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +289,7 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create new App instance
-	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo))
+	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo), nil)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -169,7 +332,7 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Override entry in DB
-	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo))
+	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo), nil)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -210,7 +373,8 @@ func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
 	appId := vars["appInstanceId"]
 
 	// Flush App instance data
-	err := appCtrl.appStore.Del(appId)
+	gracePeriod := defaultGracePeriod
+	err := appCtrl.appStore.Del(appId, &gracePeriod)
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -226,7 +390,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	// Validate & retrieve query parameters
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
-	validParams := []string{"app", "mep", "type"}
+	validParams := []string{"app", "node", "type"}
 	err := validateQueryParams(q, validParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -234,7 +398,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appName := q.Get("app")
-	mepName := q.Get("mep")
+	nodeName := q.Get("node")
 	appType := q.Get("type")
 
 	// Get application list
@@ -250,7 +414,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	for _, app := range appList {
 		// Filter using query params
 		if (appName != "" && app.Name != appName) ||
-			(mepName != "" && app.Mep != mepName) ||
+			(nodeName != "" && app.Node != nodeName) ||
 			(appType != "" && app.Type != appType) {
 			continue
 		}
@@ -268,6 +432,86 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func servicesGET(w http.ResponseWriter, r *http.Request) {
+	log.Info("servicesGET")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// Validate & retrieve query parameters
+	u, _ := url.Parse(r.URL.String())
+	q := u.Query()
+	validParams := []string{"appInstanceId"}
+	err := validateQueryParams(q, validParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	appId := q.Get("appInstanceId")
+
+	// Check if app instance exists
+	if appId != "" {
+		_, err = appCtrl.appStore.Get(appId)
+		if err != nil {
+			http.Error(w, "Invalid App instance ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Retrieve service info list if scenario is active
+	serviceInfoList := []*dataModel.ServiceInfo{}
+	activeModel := getActiveModel()
+	if activeModel != nil {
+		// Create key match string
+		baseKey := dkm.GetKeyRoot(appCtrl.sandboxName) + "app-enablement:mep:*:"
+		var keyMatchStr string
+		if appId == "" {
+			keyMatchStr = baseKey + "app:*:svc:*"
+		} else {
+			keyMatchStr = baseKey + "app:" + appId + ":svc:*"
+		}
+
+		// Get list of services registered to app enablement service
+		err = appCtrl.rc.ForEachJSONEntry(keyMatchStr, populateServiceInfoList, &serviceInfoList)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Send response
+	jsonResponse, err := json.Marshal(serviceInfoList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {
+	// Get query params & userlist from user data
+	serviceInfoList := sInfoList.(*[]*dataModel.ServiceInfo)
+	if serviceInfoList == nil {
+		return errors.New("ServiceInfoList not found")
+	}
+
+	// Use entry key only to avoid dependency on MEC011 packages
+	// Obtain app instance id & service instance id from key
+	fields := strings.Split(strings.TrimPrefix(key, dkm.GetKeyRoot(appCtrl.sandboxName)+"app-enablement:mep:"), ":")
+	if len(fields) != 5 {
+		return nil
+	}
+
+	// Add service info to list
+	serviceInfo := &dataModel.ServiceInfo{
+		AppId: fields[2],
+		Id:    fields[4],
+	}
+	*serviceInfoList = append(*serviceInfoList, serviceInfo)
+	return nil
 }
 
 // Get a new unique app instance
@@ -318,8 +562,8 @@ func validateAppInfo(appInfo *dataModel.ApplicationInfo, appInstanceId string) e
 	if appInfo.Name == "" {
 		return errors.New("Mandatory Name not present")
 	}
-	if appInfo.MepName == "" {
-		return errors.New("Mandatory MEP Name not present")
+	if appInfo.NodeName == "" {
+		return errors.New("Mandatory Node Name not present")
 	}
 
 	// Set default App type if missing
@@ -340,11 +584,11 @@ func convertApplicationInfoToJson(appInfo *dataModel.ApplicationInfo) string {
 
 func convertAppToApplicationInfo(app *apps.Application) *dataModel.ApplicationInfo {
 	appInfo := &dataModel.ApplicationInfo{
-		Id:      app.Id,
-		Name:    app.Name,
-		MepName: app.Mep,
-		Type_:   app.Type,
-		Persist: app.Persist,
+		Id:       app.Id,
+		Name:     app.Name,
+		NodeName: app.Node,
+		Type_:    app.Type,
+		Persist:  app.Persist,
 	}
 	return appInfo
 }
@@ -353,24 +597,29 @@ func convertApplicationInfoToApp(appInfo *dataModel.ApplicationInfo) *apps.Appli
 	app := &apps.Application{
 		Id:      appInfo.Id,
 		Name:    appInfo.Name,
-		Mep:     appInfo.MepName,
+		Node:    appInfo.NodeName,
 		Type:    appInfo.Type_,
 		Persist: appInfo.Persist,
 	}
 	return app
 }
 
-func appStoreUpdateCb(eventType string, eventData interface{}) {
+func appStoreUpdateCb(eventType string, eventData interface{}, userData interface{}) {
 	var msg *mq.Msg
 
 	// Create message to send on MQ
 	switch eventType {
 	case apps.EventAdd:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppUpdate, mq.TargetAll, appCtrl.sandboxName)
-		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
+		msg.Payload[mqFieldAppId] = eventData.(string)
 	case apps.EventRemove:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemove, mq.TargetAll, appCtrl.sandboxName)
-		msg.Payload[mqFieldAppInstanceId] = eventData.(string)
+		msg.Payload[mqFieldAppId] = eventData.(string)
+		gracePeriodStr := "0"
+		if gracePeriod, ok := userData.(*int); ok && gracePeriod != nil {
+			gracePeriodStr = strconv.Itoa(*gracePeriod)
+		}
+		msg.Payload[mqFieldGracePeriod] = gracePeriodStr
 	case apps.EventFlush:
 		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppFlush, mq.TargetAll, appCtrl.sandboxName)
 		msg.Payload[mqFieldPersist] = strconv.FormatBool(eventData.(bool))

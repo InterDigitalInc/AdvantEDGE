@@ -69,6 +69,8 @@ type APIClient struct {
 	EventReplayApi *EventReplayApiService
 
 	EventsApi *EventsApiService
+
+	ServicesApi *ServicesApiService
 }
 
 type service struct {
@@ -92,6 +94,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.ConnectivityApi = (*ConnectivityApiService)(&c.common)
 	c.EventReplayApi = (*EventReplayApiService)(&c.common)
 	c.EventsApi = (*EventsApiService)(&c.common)
+	c.ServicesApi = (*ServicesApiService)(&c.common)
 
 	return c
 }
