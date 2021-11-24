@@ -82,7 +82,7 @@ func init() {
 	serverUrl = hostUrlStr + ":" + httpListenerPort
 }
 
-func initialiseAppEnablementTest() {
+func initialiseMecAppEnablementTest() {
 	log.Info("activating Scenario")
 	err := activateScenario("app-enablement-system-test")
 	if err != nil {
@@ -90,13 +90,13 @@ func initialiseAppEnablementTest() {
 	}
 	time.Sleep(30000 * time.Millisecond)
 	if isAutomationReady(true, 10, 0) {
-		geAutomationUpdate(true, false, true, true)
+		_ = geAutomationUpdate(true, false, true, true)
 	}
 }
 
 func clearUpAppEnablementTest() {
 	log.Info("terminating Scenario")
-	terminateScenario()
+	_ = terminateScenario()
 	time.Sleep(5000 * time.Millisecond)
 }
 
@@ -112,9 +112,12 @@ func Test_App_Enablement_load_scenarios(t *testing.T) {
 }
 
 func appSupportSubscription(appInstanceId string, callbackReference string) error {
-
-	subscription := asc.AppTerminationNotificationSubscription{"AppTerminationNotificationSubscription", callbackReference, nil, appInstanceId}
-
+	subscription := asc.AppTerminationNotificationSubscription{
+		SubscriptionType:  "AppTerminationNotificationSubscription",
+		CallbackReference: callbackReference,
+		Links:             nil,
+		AppInstanceId:     appInstanceId,
+	}
 	_, _, err := appSupClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
 		log.Error("Failed to send subscription: ", err)
@@ -130,7 +133,12 @@ func servAvailSubscription(appInstanceId string, callbackReference string, serNa
 	var serNames []string
 	serNames = append(serNames, serName)
 	filter.SerNames = &serNames
-	subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
+	subscription := smc.SerAvailabilityNotificationSubscription{
+		SubscriptionType:  "SerAvailabilityNotificationSubscription",
+		CallbackReference: callbackReference,
+		Links:             nil,
+		FilteringCriteria: &filter,
+	}
 
 	_, _, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	if err != nil {
@@ -141,45 +149,59 @@ func servAvailSubscription(appInstanceId string, callbackReference string, serNa
 	return nil
 }
 
-func terminateApp(instanceId string) error {
+func terminateMecApp(instanceName string, mepName string, id string) error {
 
-	_, err := sccCtrlClient.ApplicationsApi.ApplicationsAppInstanceIdDELETE(context.TODO(), instanceId)
+	//send scenario update with a remove
+	event := scc.Event{
+		Type_: "SCENARIO-UPDATE",
+		EventScenarioUpdate: &scc.EventScenarioUpdate{
+			Action:      "REMOVE",
+			GracePeriod: 10,
+			Node: &scc.ScenarioNode{
+				Type_:  "EDGE-APP",
+				Parent: mepName,
+				NodeDataUnion: &scc.NodeDataUnion{
+					Process: &scc.Process{
+						Name:  instanceName,
+						Type_: "EDGE-APP",
+						Id:    id,
+					},
+				},
+			},
+		},
+	}
+	_, err := sccCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 	if err != nil {
-		log.Error("Failed to Terminate an edge application: ", err)
+		log.Error("Failed to Start an edge application: ", err)
 		return err
 	}
 
 	return nil
 }
 
-func initialiseApp(instanceName string, mepName string, id string, img string, environment string) error {
+func initialiseMecApp(instanceName string, mepName string, id string, img string, environment string) error {
 
 	//send scenario update with an add
-	var event scc.Event
-	var eventScenarioUpdate scc.EventScenarioUpdate
-	var process scc.Process
-	var netChar scc.NetworkCharacteristics
-	var nodeDataUnion scc.NodeDataUnion
-	var node scc.ScenarioNode
-
-	process.Name = instanceName
-	process.Type_ = "EDGE-APP"
-	process.Id = id
-	process.Image = img
-	process.Environment = environment
-	process.NetChar = &netChar
-	nodeDataUnion.Process = &process
-
-	node.Type_ = "EDGE-APP"
-	node.Parent = mepName
-	node.NodeDataUnion = &nodeDataUnion
-
-	eventScenarioUpdate.Node = &node
-	eventScenarioUpdate.Action = "ADD"
-
-	event.EventScenarioUpdate = &eventScenarioUpdate
-	event.Type_ = "SCENARIO-UPDATE"
-
+	event := scc.Event{
+		Type_: "SCENARIO-UPDATE",
+		EventScenarioUpdate: &scc.EventScenarioUpdate{
+			Action: "ADD",
+			Node: &scc.ScenarioNode{
+				Type_:  "EDGE-APP",
+				Parent: mepName,
+				NodeDataUnion: &scc.NodeDataUnion{
+					Process: &scc.Process{
+						Name:        instanceName,
+						Type_:       "EDGE-APP",
+						Id:          id,
+						Image:       img,
+						Environment: environment,
+						NetChar:     &scc.NetworkCharacteristics{},
+					},
+				},
+			},
+		},
+	}
 	_, err := sccCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
 	if err != nil {
 		log.Error("Failed to Start an edge application: ", err)
@@ -193,16 +215,18 @@ func Test_App_Enablement_notification_termination(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseAppEnablementTest()
+	initialiseMecAppEnablementTest()
 	defer clearUpAppEnablementTest()
 
 	const instanceId = "meep-rnis-instanceId"
+	const appName = "mec012-1"
+	const mepName = "mep1"
 	//subscription is automatic by the rnis but sending a second one to catch the notification
-	appSupportSubscription(instanceId, serverUrl)
+	_ = appSupportSubscription(instanceId, serverUrl)
 	//wait to make sure the subscription was processed
 	time.Sleep(2000 * time.Millisecond)
 
-	terminateApp(instanceId)
+	_ = terminateMecApp(appName, mepName, instanceId)
 
 	//wait to make sure the periodic timer got triggered
 	time.Sleep(5000 * time.Millisecond)
@@ -235,9 +259,11 @@ func Test_App_Enablement_notification_get_services(t *testing.T) {
 	const newImg = "meep-docker-registry:30001/meep-rnis"
 	const newEnv = "MEEP_SCOPE_OF_LOCALITY=MEC_SYSTEM,MEEP_CONSUMED_LOCAL_ONLY=false"
 	const removeInstanceId = "meep-rnis-instanceId"
+	const removeAppName = "mec012-1"
+	const removeMepName = "mep1"
 	const totalNbOfServices = 7 //including the global services
 	const totalNbOfServicesInScenario = 3
-	initialiseAppEnablementTest()
+	initialiseMecAppEnablementTest()
 	defer clearUpAppEnablementTest()
 
 	//wait to make sure the subscription was processed
@@ -252,7 +278,7 @@ func Test_App_Enablement_notification_get_services(t *testing.T) {
 		t.Fatalf("Number of expected services not received")
 	}
 
-	terminateApp(removeInstanceId)
+	_ = terminateMecApp(removeAppName, removeMepName, removeInstanceId)
 
 	//wait to make sure the periodic timer got triggered
 	time.Sleep(20000 * time.Millisecond)
@@ -262,11 +288,11 @@ func Test_App_Enablement_notification_get_services(t *testing.T) {
 		t.Fatalf("Failed to get subscriptions")
 	}
 
-	if len(srvInfo) != totalNbOfServicesInScenario - 1 && len(srvInfo) != totalNbOfServices - 1 {
+	if len(srvInfo) != totalNbOfServicesInScenario-1 && len(srvInfo) != totalNbOfServices-1 {
 		t.Fatalf("Number of expected services not received")
 	}
 
-	initialiseApp(newName, newMepName, newId, newImg, newEnv)
+	_ = initialiseMecApp(newName, newMepName, newId, newImg, newEnv)
 	//wait to make sure the subscription was processed
 	time.Sleep(30000 * time.Millisecond)
 
@@ -284,18 +310,20 @@ func Test_App_Enablement_notification_service_availability(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseAppEnablementTest()
+	initialiseMecAppEnablementTest()
 	defer clearUpAppEnablementTest()
 
 	const instanceId = "meep-location-instanceId"
 	const instanceIdToRemove = "meep-rnis-instanceId"
+	const appNameToRemove = "mec012-1"
+	const mepNameToRemove = "mep1"
 	const serviceNameToTrack = "mec012-1"
 	//subscription is automatic by the location service but sending a second one, should get 2 notifications as a result
-	servAvailSubscription(instanceId, serverUrl, serviceNameToTrack)
+	_ = servAvailSubscription(instanceId, serverUrl, serviceNameToTrack)
 	//wait to make sure the subscription was processed
 	time.Sleep(2000 * time.Millisecond)
 
-	terminateApp(instanceIdToRemove)
+	_ = terminateMecApp(appNameToRemove, mepNameToRemove, instanceIdToRemove)
 
 	//wait to make sure the periodic timer got triggered
 	time.Sleep(2000 * time.Millisecond)
