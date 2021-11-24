@@ -1,5 +1,5 @@
 version: 1.8.0
-name: demo3-scenarioss
+name: demo3-distributed-mep
 deployment:
     netChar:
         latency: 50

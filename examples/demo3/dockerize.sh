@@ -8,7 +8,7 @@ DEMOBIN=$BASEDIR/bin/demo-server
 
 echo ""
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-echo ">>> Dockerizing Demo Server"
+echo ">>> Dockerizing Demo3 Server"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
@@ -26,14 +26,14 @@ cp $BASEDIR/src/backend/app_instance.yaml $DEMOBIN
 cp $BASEDIR/entrypoint.sh $DEMOBIN
 
 
-# Dockerize demo 
+echo ">>> Dockerizing"
 cd $DEMOBIN
 docker build --no-cache --rm -t meep-docker-registry:30001/demo3 .
 docker push meep-docker-registry:30001/demo3
 cd $BASEDIR
 
 echo ""
-echo ">>> Demo Service dockerize completed"
+echo ">>> Done"
 
 
 

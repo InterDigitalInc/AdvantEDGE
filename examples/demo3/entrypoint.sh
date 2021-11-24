@@ -1,14 +1,12 @@
 #!/bin/bash
 set -e
 
-{   
-    printf "mode: advantedge \n"
-    printf "sandbox: \n"
-    printf "mecplatform: ${MEEP_MEP_NAME} \n"
-    printf "appid:  \n"
-    printf "localurl: ${MEEP_POD_NAME}  \n"
-    printf "port: "
-} <~/>app_instance.yaml
+echo "mode: advantedge" > app_instance.yaml
+echo "sandbox:" >> app_instance.yaml
+echo "mecplatform: ${MEEP_MEP_NAME}" >> app_instance.yaml
+echo "appid:" >> app_instance.yaml
+echo "localurl: ${MEEP_POD_NAME}" >> app_instance.yaml
+echo "port:" >> app_instance.yaml
 
 # Start service
 exec /demo-server ./app_instance.yaml

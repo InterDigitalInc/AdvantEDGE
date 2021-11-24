@@ -1,0 +1,14 @@
+# This file defines the configuration of Demo3 edge application
+
+# Required to define if application will run on MEC Sandbox or AdvantEDGE. Expected Values: sandbox or advantedge
+mode: 'sandbox'
+# Field to define MEC platform URL that app will run on. Example: http://{Mec_IP_Address}/{Sandbox_name}/{Mep_name}/
+sandbox: 'http://'
+# Field to define MEC platform name. Example: mep1
+mecplatform: 'mep1'
+# Field to define user-application ID that can be generated using MEC Sandbox frontend
+appid: '<UUID>'
+# Local I.P address application will run on 
+localurl: 'http://'
+# Port number of user-application example: port: '8093'
+port: '<port>'

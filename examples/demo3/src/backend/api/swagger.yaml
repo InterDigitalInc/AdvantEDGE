@@ -1,7 +1,8 @@
 openapi: 3.0.2
 info:
   title: MEC Demo 3 API
-  description: This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
+  description: This section describes how to use AdvantEdge mec services with a scenario
+    demonstrating use-case 1 - 3
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
@@ -12,10 +13,10 @@ paths:
   /register/app:
     post:
       tags:
-        - frontend
-      operationId: RegisterAppMecPlatformPost
-      summary: Register user application on platform
-      description: This method registers application on a mec platform sending acknowledgement, subscriptions, and services.
+      - frontend
+      summary: Register with MEC Platform and create necessary resources
+      description: Register with MEC Platform and create necessary resources
+      operationId: Register
       responses:
         "200":
           description: Uppon success, a response body containing the app instance
@@ -33,14 +34,13 @@ paths:
     get:
       tags:
       - frontend
-      operationId: InfoApplicationMecPlatformGet
-      summary: Retrieve app instance info
-      description: This method retrieves a specific app instance info on a mec platform
-        to display on demo frontend
+      summary: Returns the application dynamic information
+      description: Returns the application dynamic information
+      operationId: GetPlatformInfo
       responses:
         "200":
-          description: Uppon success, a response body containing the app instance
-            info is returned
+          description: Upon success, a response body containing the app instance info
+            is returned
           content:
             application/problem+json:
               schema:
@@ -54,18 +54,9 @@ paths:
     get:
       tags:
       - frontend
-      operationId: InfoLogsGet
-      summary: Retrieve activity log on a registered app instance
-      description: This method retrieves demo activity log for a registered app instance
-      parameters:
-      - name: numLogs
-        in: query
-        description: Represent number of logs to retrieve
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: integer
+      summary: Returns activity logs
+      description: Returns activity logs
+      operationId: GetActivityLogs
       responses:
         "200":
           description: Uppon success, a response body containing logs of demo activities
@@ -75,23 +66,13 @@ paths:
             were passed to the request.
         "404":
           description: Not found
-  /info/ams/logs:
+  /info/ams:
     get:
       tags:
       - frontend
-      operationId: InfoAmsLogsGet
-      summary: Retrieve ams log on a registered app instance
-      description: This method retrieves ams log for a mec app displaying context
-        state transfer
-      parameters:
-      - name: numLogs
-        in: query
-        description: Represent number of logs to retrieve
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: integer
+      summary: Returns the list of AMS Devices
+      description: Returns the list of AMS Devices
+      operationId: GetAmsDevices
       responses:
         "200":
           description: Uppon success, a response body containing the list of ams log
@@ -105,9 +86,9 @@ paths:
     put:
       tags:
       - frontend
-      operationId: ServiceAmsUpdateDevicePut
-      summary: Updates the AMS resource
-      description: Update mobility service with device info
+      summary: Updates the list of AMS devices
+      description: Updates the list of AMS devices
+      operationId: UpdateAmsDevices
       parameters:
       - name: device
         in: path
@@ -128,10 +109,9 @@ paths:
     delete:
       tags:
       - frontend
-      operationId: ServiceAmsDeleteDeviceDelete
-      summary: Delete AMS device in the AMS service resource
-      description: Create a new application mobility service for the service requester
-        & create subscription to ams.
+      summary: Delete an AMS device
+      description: Delete an AMS device
+      operationId: DeleteAmsDevice
       parameters:
       - name: device
         in: path
@@ -152,9 +132,9 @@ paths:
     delete:
       tags:
       - frontend
-      operationId: InfoApplicationMecPlatformDeleteDelete
-      description: This method deletes a specific app instance info on a mec platform triggering graceful termination
-      summary: Delete app instance info resources
+      summary: Deregister with MEC Platform and delete associated resources
+      description: Deregister with MEC Platform and delete associated resources
+      operationId: Deregister
       responses:
         "200":
           description: OK
@@ -163,25 +143,13 @@ paths:
             were passed to the request.
         "404":
           description: Not found
-  /services/discover:
-    post:
-      tags:
-      - mec_service
-      description: This method retrieves information about a list of mec service resources
-        & subscribes to service availability notification subscription
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad request
-        "404":
-          description: Not found
   /services/callback/amsevent:
     post:
       tags:
       - notification
-      summary: MEC021 ams notifcation
-      description: Handle Application Mobility Service notifications.
+      summary: Callback endpoint for AMS Notifications
+      description: Callback endpoint for AMS Notifications
+      operationId: AmsNotificationCallback
       requestBody:
         description: Subscription notification
         content:
@@ -196,39 +164,13 @@ paths:
           description: Bad request
         "404":
           description: Not found
-  /service/ams/create:
-    post:
-      tags:
-      - mec_service
-      description: Create a new application mobility service resource
-      operationId: AmsCreatePOST
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad request
-        "404":
-          description: Not found
-  /ams/subscriptions:
-    post:
-      tags:
-      - mec_service
-      description: Create a new subscription to Application Mobility Service notifications.
-      operationId: AmsSubscriptionPOST
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad request
-        "404":
-          description: Not found
   /services/callback/service-availability:
     post:
       tags:
       - notification
-      summary: MEC011 service availability notification
-      description: "."
-      operationId: NotificationPOST
+      summary: Callback endpoint for MEC011 Notifications
+      description: Callback endpoint for MEC011 Notifications
+      operationId: ServiceAvailNotificationCallback
       requestBody:
         description: service availability notification details
         content:
@@ -247,9 +189,9 @@ paths:
     post:
       tags:
       - notification
-      summary: MEC011 app termination notification
-      description: "."
-      operationId: TerminateNotificatonPOST
+      summary: Callback endpoint for MEC011 app-termination notifications
+      description: Callback endpoint for MEC011 app-termination notifications
+      operationId: AppTerminationNotificationCallback
       requestBody:
         description: app termination notification details
         content:
@@ -339,7 +281,7 @@ components:
           consumedLocalOnly: true
         url: url
         mecTerminated: true
-    ApplicationInstance_subscriptions_AppTerminationSubscription:
+    ApplicationInstance_AppTerminationSubscription:
       type: object
       properties:
         subId:
@@ -349,7 +291,7 @@ components:
         termination/stop.
       example:
         subId: subId
-    ApplicationInstance_subscriptions_SerAvailabilitySubscription:
+    ApplicationInstance_SerAvailabilitySubscription:
       type: object
       properties:
         subId:
@@ -359,7 +301,7 @@ components:
         services.
       example:
         subId: subId
-    ApplicationInstance_subscriptions_AmsLinkListSubscription:
+    ApplicationInstance_AmsLinkListSubscription:
       type: object
       properties:
         subId:
@@ -384,11 +326,11 @@ components:
       type: object
       properties:
         AppTerminationSubscription:
-          $ref: '#/components/schemas/ApplicationInstance_subscriptions_AppTerminationSubscription'
+          $ref: '#/components/schemas/ApplicationInstance_AppTerminationSubscription'
         'SerAvailabilitySubscription:':
-          $ref: '#/components/schemas/ApplicationInstance_subscriptions_SerAvailabilitySubscription'
+          $ref: '#/components/schemas/ApplicationInstance_SerAvailabilitySubscription'
         AmsLinkListSubscription:
-          $ref: '#/components/schemas/ApplicationInstance_subscriptions_AmsLinkListSubscription'
+          $ref: '#/components/schemas/ApplicationInstance_AmsLinkListSubscription'
       description: List of ams subscription unique to device and their id
       example:
         'SerAvailabilitySubscription:':
@@ -662,9 +604,3 @@ components:
           - STATE_CHANGED
           - ATTRIBUTES_CHANGED
       description: List of links to services whose availability has changed.
-    MobilityProcedureSubscription__links:
-      type: object
-      properties:
-        self:
-          $ref: '#/components/schemas/LinkType'
-    
