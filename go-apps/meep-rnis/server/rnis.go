@@ -576,46 +576,34 @@ func deregisterService(appInstanceId string, serviceId string) error {
 }
 
 func registerService(appInstanceId string) error {
-	var srvInfo smc.ServiceInfoPost
-	//serName
-	srvInfo.SerName = instanceName
-	//version
-	srvInfo.Version = serviceAppVersion
-	//state
+	// Build Service Info
 	state := smc.ACTIVE_ServiceState
-	srvInfo.State = &state
-	//serializer
 	serializer := smc.JSON_SerializerType
-	srvInfo.Serializer = &serializer
-
-	//transportInfo
-	var transportInfo smc.TransportInfo
-	transportInfo.Id = "sandboxTransport"
-	transportInfo.Name = "REST"
 	transportType := smc.REST_HTTP_TransportType
-	transportInfo.Type_ = &transportType
-	transportInfo.Protocol = "HTTP"
-	transportInfo.Version = "2.0"
-	var endpoint smc.OneOfTransportInfoEndpoint
-	endpointPath := hostUrl.String() + basePath
-	endpoint.Uris = append(endpoint.Uris, endpointPath)
-	transportInfo.Endpoint = &endpoint
-	srvInfo.TransportInfo = &transportInfo
-
-	//serCategory
-	var category smc.CategoryRef
-	category.Href = "catalogueHref"
-	category.Id = "rniId"
-	category.Name = serviceCategory
-	category.Version = "v2"
-	srvInfo.SerCategory = &category
-
-	//scopeOfLocality
 	localityType := smc.LocalityType(scopeOfLocality)
-	srvInfo.ScopeOfLocality = &localityType
-
-	//consumedLocalOnly
-	srvInfo.ConsumedLocalOnly = consumedLocalOnly
+	srvInfo := smc.ServiceInfoPost{
+		SerName:           instanceName,
+		Version:           serviceAppVersion,
+		State:             &state,
+		Serializer:        &serializer,
+		ScopeOfLocality:   &localityType,
+		ConsumedLocalOnly: consumedLocalOnly,
+		TransportInfo: &smc.TransportInfo{
+			Id:       "sandboxTransport",
+			Name:     "REST",
+			Type_:    &transportType,
+			Protocol: "HTTP",
+			Version:  "2.0",
+			Endpoint: &smc.OneOfTransportInfoEndpoint{},
+		},
+		SerCategory: &smc.CategoryRef{
+			Href:    "catalogueHref",
+			Id:      "rniId",
+			Name:    serviceCategory,
+			Version: "v2",
+		},
+	}
+	srvInfo.TransportInfo.Endpoint.Uris = append(srvInfo.TransportInfo.Endpoint.Uris, hostUrl.String()+basePath)
 
 	appServicesPostResponse, _, err := svcMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {

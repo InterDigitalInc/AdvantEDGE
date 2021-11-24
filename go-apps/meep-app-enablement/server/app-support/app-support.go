@@ -53,7 +53,7 @@ const serviceName = "App Enablement Service"
 const (
 	fieldAppId   string = "id"
 	fieldName    string = "name"
-	fieldMep     string = "mep"
+	fieldNode    string = "node"
 	fieldType    string = "type"
 	fieldPersist string = "persist"
 	fieldState   string = "state"
@@ -79,6 +79,7 @@ var basePath string
 var baseKey string
 var subMgr *subs.SubscriptionMgr
 var appStore *apps.ApplicationStore
+var appInfoMap map[string]map[string]string
 var gracefulTerminateMap = map[string]chan bool{}
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +161,7 @@ func Run() (err error) {
 	}
 
 	// Update app info with latest apps from application store
-	err = refreshAllAppInfo()
+	err = refreshApps()
 	if err != nil {
 		log.Error("Failed to sync & process apps with error: ", err.Error())
 		return err
@@ -181,12 +182,12 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
 		appId := msg.Payload[mqFieldAppId]
-		_ = updateAppInfo(appId)
+		_, _ = updateApp(appId)
 	case mq.MsgAppRemove:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
 		appId := msg.Payload[mqFieldAppId]
-		_ = terminateAppInfo(appId)
+		_ = terminateApp(appId)
 	case mq.MsgAppFlush:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
@@ -209,7 +210,7 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Make sure App instance exists
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getApp(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -264,7 +265,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	defer mutex.Unlock()
 
 	// Get App instance
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getApp(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -317,7 +318,6 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 
 	// Confirm termination
 	gracefulTerminateChannel <- true
-	delete(gracefulTerminateMap, appId)
 
 	// Send response
 	w.WriteHeader(http.StatusNoContent)
@@ -332,7 +332,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getApp(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -419,7 +419,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance info
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getApp(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -469,7 +469,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance info
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getApp(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -525,7 +525,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance info
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getApp(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -643,7 +643,7 @@ func deleteAppInstance(appId string) {
 	sendAppRemoveCnf(appId)
 }
 
-func getAppInfoList() ([]map[string]string, error) {
+func getAppList() ([]map[string]string, error) {
 	var appInfoList []map[string]string
 
 	// Get all applications from DB
@@ -670,29 +670,17 @@ func populateAppInfo(key string, entry map[string]string, userData interface{}) 
 	return nil
 }
 
-func getAppInfo(appId string) (map[string]string, error) {
-	var appInfo map[string]string
+// func getApp(appId string) (map[string]string, error) {
+// 	var appInfo map[string]string
 
-	// Get app instance from local MEP only
-	key := baseKey + "app:" + appId + ":info"
-	appInfo, err := rc.GetEntry(key)
-	if err != nil || len(appInfo) == 0 {
-		return nil, errors.New("App Instance not found")
-	}
-	return appInfo, nil
-}
-
-func setAppInfo(appInfo map[string]string) error {
-	// Copy app info
-	entry := make(map[string]interface{}, len(appInfo))
-	for k, v := range appInfo {
-		entry[k] = v
-	}
-
-	// Store entry
-	key := baseKey + "app:" + appInfo[fieldAppId] + ":info"
-	return rc.SetEntry(key, entry)
-}
+// 	// Get app instance from local MEP only
+// 	key := baseKey + "app:" + appId + ":info"
+// 	appInfo, err := rc.GetEntry(key)
+// 	if err != nil || len(appInfo) == 0 {
+// 		return nil, errors.New("App Instance not found")
+// 	}
+// 	return appInfo, nil
+// }
 
 func validateAppInfo(appInfo map[string]string) (int, string, error) {
 	// Make sure App is in ready state
@@ -705,19 +693,89 @@ func validateAppInfo(appInfo map[string]string) (int, string, error) {
 	return http.StatusOK, "", nil
 }
 
-func refreshAllAppInfo() error {
+func newAppInfo(app *apps.Application) (map[string]string, error) {
+	// Validate app
+	if app == nil {
+		return nil, errors.New("nil application")
+	}
+
+	// Create App Info
+	appInfo := make(map[string]string)
+	appInfo[fieldAppId] = app.Id
+	appInfo[fieldName] = app.Name
+	appInfo[fieldNode] = app.Node
+	appInfo[fieldType] = app.Type
+	appInfo[fieldPersist] = strconv.FormatBool(app.Persist)
+	appInfo[fieldState] = APP_STATE_INITIALIZED
+	return appInfo, nil
+}
+
+func setAppInfo(appInfo map[string]string) error {
+	appId, found := appInfo[fieldAppId]
+	if !found || appId == "" {
+		return errors.New("Missing app instance id")
+	}
+
+	// Convert value type to interface{} before storing app info
+	entry := make(map[string]interface{}, len(appInfo))
+	for k, v := range appInfo {
+		entry[k] = v
+	}
+
+	// Store entry
+	key := baseKey + "app:" + appId + ":info"
+	err := rc.SetEntry(key, entry)
+	if err != nil {
+		return err
+	}
+
+	// Cache entry
+	appInfoMap[appId] = appInfo
+
+	return nil
+}
+
+func delAppInfo(appInfo map[string]string) error {
+	appId := appInfo[fieldAppId]
+
+	// Clear graceful termination
+	delete(gracefulTerminateMap, appId)
+
+	// Remove from cache
+	delete(appInfoMap, appId)
+
+	// Delete app instance
+	deleteAppInstance(appId)
+
+	return nil
+}
+
+func refreshApps() error {
 	// Refresh app store
 	appStore.Refresh()
 
-	// Get App store app list
-	appList, err := appStore.GetAll()
+	// Get full App store app list
+	fullAppList, err := appStore.GetAll()
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
 
-	// Get App info list
-	appInfoList, err := getAppInfoList()
+	// If MEP instance, ignore non-local apps
+	appList := make([]*apps.Application, 0)
+	for _, app := range fullAppList {
+		if mepName != globalMepName && app.Node != mepName {
+			log.Debug("Ignoring update on non-local MEP for app: ", app.Id)
+			continue
+		}
+		appList = append(appList, app)
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Retrieve app info list from DB
+	appInfoList, err := getAppList()
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -727,73 +785,92 @@ func refreshAllAppInfo() error {
 	for _, app := range appList {
 		found := false
 		for _, appInfo := range appInfoList {
-			if app.Id == appInfo[fieldAppId] {
-				found = true
-				break
-			}
-		}
-		// Create App Info if not present
-		if !found {
-			err := updateAppInfo(app.Id)
-			if err != nil {
-				log.Error(err.Error())
-			}
-		}
-	}
-
-	// Get list of deleted App info
-	for _, appInfo := range appInfoList {
-		found := false
-		for _, app := range appList {
 			if appInfo[fieldAppId] == app.Id {
 				found = true
 				break
 			}
 		}
-		// Terminate App Info if not present
 		if !found {
-			err := terminateAppInfo(appInfo[fieldAppId])
+			appInfo, err := newAppInfo(app)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			err = setAppInfo(appInfo)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+		}
+	}
+
+	// Remove deleted app info
+	for _, appInfo := range appInfoList {
+		found := false
+		for _, app := range appList {
+			if app.Id == appInfo[fieldAppId] {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err := delAppInfo(appInfo)
 			if err != nil {
 				log.Error(err.Error())
 			}
 		}
 	}
-
 	return nil
 }
 
-func updateAppInfo(appId string) error {
+func getApp(appId string) (map[string]string, error) {
+	appInfo, found := appInfoMap[appId]
+	if !found {
+		return nil, errors.New("App Instance not found")
+	}
+	return appInfo, nil
+}
+
+func updateApp(appId string) (map[string]string, error) {
 	// Get App information from app store
 	app, err := appStore.Get(appId)
 	if err != nil {
 		log.Error(err.Error())
-		return err
+		return nil, err
 	}
 
 	// If MEP instance, ignore non-local apps
 	if mepName != globalMepName && app.Node != mepName {
-		return nil
+		return nil, errors.New("Ignoring app update on other MEP")
 	}
 
-	// Update App Info
-	appInfo := make(map[string]string)
-	appInfo[fieldAppId] = appId
-	appInfo[fieldName] = app.Name
-	appInfo[fieldMep] = app.Node
-	appInfo[fieldType] = app.Type
-	appInfo[fieldPersist] = strconv.FormatBool(app.Persist)
-	appInfo[fieldState] = APP_STATE_INITIALIZED
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	// Store App Info
-	return setAppInfo(appInfo)
-}
-
-func terminateAppInfo(appId string) error {
-	// Get App instance info; ignore request if not found
-	_, err := getAppInfo(appId)
+	appInfo, err := newAppInfo(app)
 	if err != nil {
 		log.Error(err.Error())
-		return err
+		return nil, err
+	}
+	err = setAppInfo(appInfo)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	// Store App Info
+	return appInfo, nil
+}
+
+func terminateApp(appId string) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Get App info
+	appInfo, found := appInfoMap[appId]
+	if !found {
+		return errors.New("App info not found for: " + appId)
 	}
 
 	// Get subscriptions for App instance
@@ -825,10 +902,8 @@ func terminateAppInfo(appId string) error {
 		}
 
 		// Start graceful timeout timer prior to sending the app termination notification
-		mutex.Lock()
 		gracefulTerminateChannel := make(chan bool)
 		gracefulTerminateMap[appId] = gracefulTerminateChannel
-		mutex.Unlock()
 
 		go func(sub *subs.Subscription) {
 			log.Info("Sending App Termination notification (" + sub.Cfg.Id + ") for " + appId)
@@ -840,37 +915,41 @@ func terminateAppInfo(appId string) error {
 			// Wait for app termination confirmation or timeout
 			select {
 			case <-gracefulTerminateChannel:
+				mutex.Lock()
+				defer mutex.Unlock()
 				log.Debug("Termination confirmation received for: ", appId)
+
 			case <-time.After(time.Duration(DEFAULT_GRACEFUL_TIMEOUT) * time.Second):
 				mutex.Lock()
+				defer mutex.Unlock()
 				delete(gracefulTerminateMap, appId)
-				mutex.Unlock()
 			}
 
-			// Delete App instance
-			deleteAppInstance(appId)
+			// Delete App
+			err = delAppInfo(appInfo)
+			if err != nil {
+				log.Error(err.Error())
+			}
 		}(sub)
 	}
 
 	// Delete App instance immediately if no graceful termination subscription
 	if !gracefulTermination {
-		deleteAppInstance(appId)
+		err := delAppInfo(appInfo)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	return nil
 }
 
 func flushApps(persist bool) error {
-	// Get App list
-	appInfoList, err := getAppInfoList()
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	// Delete App instances
-	for _, appInfo := range appInfoList {
-
+	for appId, appInfo := range appInfoMap {
 		// Ignore persistent apps unless required
 		if !persist {
 			appPersist, err := strconv.ParseBool(appInfo[fieldPersist])
@@ -882,20 +961,14 @@ func flushApps(persist bool) error {
 			}
 		}
 
-		// Get app instance ID
-		appId := appInfo[fieldAppId]
-		if appId == "" {
-			log.Error("Missing AppInstanceId")
-			continue
-		}
-
 		// No need for graceful termination when flushing apps
-		mutex.Lock()
 		delete(gracefulTerminateMap, appId)
-		mutex.Unlock()
 
-		// Delete app instance
-		deleteAppInstance(appId)
+		// Delete app info
+		err := delAppInfo(appInfo)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 	return nil
 }
