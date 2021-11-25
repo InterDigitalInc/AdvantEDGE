@@ -1240,12 +1240,13 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 	}
 
 	// Create subscription link list
-	self := new(LinkType)
-	self.Href = hostUrl.String() + basePath + "subscriptions"
-	link := new(SubscriptionLinkListLinks)
-	link.Self = self
-	subscriptionLinkList := new(SubscriptionLinkList)
-	subscriptionLinkList.Links = link
+	subscriptionLinkList := &SubscriptionLinkList{
+		Links: &SubscriptionLinkListLinks{
+			Self: &LinkType{
+				Href: hostUrl.String() + basePath + "subscriptions",
+			},
+		},
+	}
 
 	// Find subscriptions by type
 	subscriptionType := ""
@@ -1256,7 +1257,7 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 			subscriptionType = ADJACENT_APP_INFO_SUBSCRIPTION
 		}
 	}
-	subList, err := subMgr.GetFilteredSubscriptions(instanceId, subscriptionType)
+	subList, err := subMgr.GetFilteredSubscriptions("", subscriptionType)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
