@@ -670,7 +670,7 @@ func serviceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		state = "UNACTIVE"
 	}
 	log.Info(notification.ServiceReferences[0].SerName + " " + msg + " (" + state + ")")
-
+	appActivityLogs = append(appActivityLogs, mep+" Event: Service Availability change, "+notification.ServiceReferences[0].SerName+" service "+msg+" [200]")
 	w.WriteHeader(http.StatusOK)
 
 }
