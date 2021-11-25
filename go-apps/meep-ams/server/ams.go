@@ -683,6 +683,9 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
+		// Wait to allow app termination response to be sent
+		time.Sleep(20 * time.Millisecond)
+
 		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
@@ -694,13 +697,6 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 			_ = sendTerminationConfirmation(serviceAppInstanceId)
 		}
 	}()
-
-	if sendAppTerminationWhenDone {
-		go func() {
-			//ignore any error and delete yourself anyway
-			_ = sendTerminationConfirmation(serviceAppInstanceId)
-		}()
-	}
 
 	w.WriteHeader(http.StatusNoContent)
 }

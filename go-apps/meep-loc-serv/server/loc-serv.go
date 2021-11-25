@@ -3858,6 +3858,9 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 
 	//using a go routine to quickly send the response to the requestor
 	go func() {
+		// Wait to allow app termination response to be sent
+		time.Sleep(20 * time.Millisecond)
+
 		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
