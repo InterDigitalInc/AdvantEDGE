@@ -139,6 +139,38 @@ func (rc *Connector) GetEntry(key string) (map[string]string, error) {
 	return fields, nil
 }
 
+// ForEachKey - Search for matching keys and run handler for each key
+func (rc *Connector) ForEachKey(keyMatchStr string, keyHandler func(string, interface{}) error, userData interface{}) error {
+	var cursor uint64
+	var err error
+
+	// Process in chunks of 50 matching entries to optimize processing speed & memory
+	for {
+		var keys []string
+		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
+		if err != nil {
+			log.Debug("ERROR: ", err)
+			break
+		}
+
+		if len(keys) > 0 {
+			for i := 0; i < len(keys); i++ {
+				// Invoke handler to process key
+				err = keyHandler(keys[i], userData)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// Stop searching if cursor is back at beginning
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
+}
+
 // ForEachEntry - Search for matching keys and run handler for each entry
 func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
 	var cursor uint64

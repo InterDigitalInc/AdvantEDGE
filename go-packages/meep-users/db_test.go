@@ -33,26 +33,30 @@ const (
 	provider1 = ""
 	provider2 = "provider2"
 	provider3 = "provider3"
+	provider4 = "provider4"
 
 	username0 = ""
 	username1 = "user1"
 	username2 = "user2"
 	username3 = "user3"
+	username4 = "user4"
 
-	password0 = ""
 	password1 = "123"                                                                                                  //3 chars
 	password2 = "gie[rh[iuhberieg"                                                                                     //16 chars
 	password3 = "efbiwerbfiwferbirgfbiuqrfgbdrfgjnbqairbqifhrbeqi[frb[rifhb[qirfbq]]]qaef[048FERGerwWRGG]FASF03404924" // 100 chars
+	password4 = ""
 
 	role0 = "invalid-role"
-	role1 = "user"
-	role2 = "user"
-	role3 = "admin"
+	role1 = RoleUser
+	role2 = RoleUser
+	role3 = RoleAdmin
+	role4 = RoleUser
 
 	sboxname0 = "123456789012345" // more than 11 chars
 	sboxname1 = "sbox-1"
 	sboxname2 = "sbox-2"
 	sboxname3 = "sbox-3"
+	sboxname4 = "sbox-4"
 )
 
 func TestConnector(t *testing.T) {
@@ -137,10 +141,6 @@ func TestPostgisCreateUser(t *testing.T) {
 
 	fmt.Println("Create Invalid users")
 	err = pc.CreateUser(provider1, username0, password1, role1, sboxname1)
-	if err == nil {
-		t.Fatalf("user creation should have failed")
-	}
-	err = pc.CreateUser(provider1, username1, password0, role1, sboxname1)
 	if err == nil {
 		t.Fatalf("user creation should have failed")
 	}
@@ -235,9 +235,36 @@ func TestPostgisCreateUser(t *testing.T) {
 		t.Fatalf("Wrong user authentication")
 	}
 
+	err = pc.CreateUser(provider4, username4, password4, role4, sboxname4)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	user, err = pc.GetUser(provider4, username4)
+	if err != nil || user == nil {
+		t.Fatalf("Failed to get user")
+	}
+	if user.Provider != provider4 || user.Username != username4 || user.Role != role4 || user.Sboxname != sboxname4 {
+		t.Fatalf("Wrong user data")
+	}
+	if user.Password == password4 {
+		t.Fatalf("Password not encrypted")
+	}
+	valid, err = pc.IsValidUser(provider4, username4)
+	if err != nil || !valid {
+		t.Fatalf("Failed to validate user")
+	}
+	valid, err = pc.AuthenticateUser(provider4, username4, password4)
+	if err != nil || !valid {
+		t.Fatalf("Failed to authenticate user")
+	}
+	valid, err = pc.AuthenticateUser(provider4, username4, password3)
+	if err != nil || valid {
+		t.Fatalf("Wrong user authentication")
+	}
+
 	// Verify all additions worked
 	userMap, err = pc.GetUsers()
-	if err != nil || len(userMap) != 3 {
+	if err != nil || len(userMap) != 4 {
 		t.Fatalf("Error getting all users")
 	}
 	user, found := userMap[pc.GetUserKey(provider1, username1)]
@@ -259,6 +286,13 @@ func TestPostgisCreateUser(t *testing.T) {
 		t.Fatalf("User not found")
 	}
 	if user.Provider != provider3 || user.Username != username3 || user.Role != role3 || user.Sboxname != sboxname3 {
+		t.Fatalf("Wrong user data")
+	}
+	user, found = userMap[pc.GetUserKey(provider4, username4)]
+	if !found {
+		t.Fatalf("User not found")
+	}
+	if user.Provider != provider4 || user.Username != username4 || user.Role != role4 || user.Sboxname != sboxname4 {
 		t.Fatalf("Wrong user data")
 	}
 

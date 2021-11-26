@@ -203,15 +203,14 @@ func (pc *Connector) DeleteTable(tableName string) (err error) {
 
 // CreateUser - Create new user
 func (pc *Connector) CreateUser(provider string, username string, password string, role string, sboxname string) (err error) {
-	// Validate input
+	// Default to Local Provider
 	if provider == "" {
 		provider = ProviderLocal
 	}
+
+	// Validate input
 	if username == "" {
 		return errors.New("Missing username")
-	}
-	if password == "" {
-		return errors.New("Missing password")
 	}
 	if role == "" {
 		role = RoleUser

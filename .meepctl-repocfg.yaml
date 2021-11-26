@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.8.2
+version: 1.8.3
 repo:
   name: AdvantEDGE
 
@@ -151,6 +151,31 @@ repo:
         enabled: false
         # archive object store configuration secret
         secret: meep-thanos-archive-objstore-config
+
+    # Garbage Collection configuration
+    gc:
+      # enable garbage collection
+      enabled: true
+      # garbage collection interval (duration string)
+      interval: 4h
+      # run garbage collection on start
+      run-on-start: true
+      # Redis configuration
+      redis:
+        # enable redis garbage collection
+        enabled: true
+      # Influx configuration
+      influx:
+        # enable influx garbage collection
+        enabled: false
+        # list of databases that must not be removed
+        exceptions:
+        #   - my_db_to_keep
+        #   - my_other_db_to_keep
+      # Postgis configuration
+      postgis:
+        # enable postgis garbage collection
+        enabled: false
 
     # Default monitoring dashboards
     dashboards:
@@ -941,6 +966,11 @@ repo:
       meep-data-model:
         # location of source code
         src: go-packages/meep-data-model
+        # supports linting
+        lint: true
+      meep-gc:
+        # location of source code
+        src: go-packages/meep-gc
         # supports linting
         lint: true
       meep-gis-asset-mgr:

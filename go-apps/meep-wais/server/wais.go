@@ -1396,6 +1396,7 @@ func newAssocStaSubscriptionCfg(sub *AssocStaSubscription, subId string) *sm.Sub
 		Id:                  subId,
 		AppId:               instanceId,
 		Type:                ASSOC_STA_SUBSCRIPTION,
+		NotifType:           ASSOC_STA_NOTIFICATION,
 		Self:                sub.Links.Self.Href,
 		NotifyUrl:           sub.CallbackReference,
 		ExpiryTime:          expiryTime,

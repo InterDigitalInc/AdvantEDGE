@@ -47,7 +47,7 @@ spec:
           env:
             {{- range $key, $value := .Values.image.env }}
             - name: {{ $key }}
-              value: {{ $value | quote }}
+              value: {{ $value }}
             {{- end }}
             {{- range $key, $value := .Values.image.envSecret }}
             - name: {{ $key }}

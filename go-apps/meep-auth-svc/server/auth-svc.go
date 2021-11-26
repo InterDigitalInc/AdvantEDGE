@@ -1111,6 +1111,14 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 					return "", false, "", err, http.StatusInternalServerError
 				}
 			}
+
+			// Create new user & store sandbox name for next use
+			if user == nil {
+				err = authSvc.userStore.CreateUser(provider, username, "", role, sandboxName)
+				if err != nil {
+					log.Error("Failed to create user with err: ", err.Error())
+				}
+			}
 		}
 
 		// Create new session
