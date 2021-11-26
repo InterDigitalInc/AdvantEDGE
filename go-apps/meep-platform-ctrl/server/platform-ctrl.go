@@ -23,6 +23,9 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,6 +33,7 @@ import (
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gc"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -43,11 +47,12 @@ type Scenario struct {
 }
 
 type PlatformCtrl struct {
-	scenarioStore *couch.Connector
-	rc            *redis.Connector
-	sandboxStore  *ss.SandboxStore
-	mqGlobal      *mq.MsgQueue
-	apiMgr        *sam.SwaggerApiMgr
+	scenarioStore    *couch.Connector
+	rc               *redis.Connector
+	sandboxStore     *ss.SandboxStore
+	mqGlobal         *mq.MsgQueue
+	apiMgr           *sam.SwaggerApiMgr
+	garbageCollector *gc.GarbageCollector
 }
 
 const scenarioDBName = "scenarios"
@@ -63,6 +68,7 @@ const fieldScenarioName = "scenario-name"
 // Declare as variables to enable overwrite in test
 var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
 var redisDBAddr = "meep-redis-master:6379"
+var influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 // Platform Controller
 var pfmCtrl *PlatformCtrl
@@ -76,6 +82,89 @@ func Init() (err error) {
 
 	// Create new Platform Controller
 	pfmCtrl = new(PlatformCtrl)
+
+	// Retrieve Garbage collection configuration from environment variables
+	gcEnabledStr := strings.TrimSpace(os.Getenv("MEEP_GC_ENABLED"))
+	gcEnabled, err := strconv.ParseBool(gcEnabledStr)
+	if err != nil {
+		gcEnabled = false
+	}
+	log.Info("MEEP_GC_ENABLED: ", gcEnabledStr)
+	if gcEnabled {
+
+		// Retrieve & parse GC Interval from environment variable
+		interval := strings.TrimSpace(os.Getenv("MEEP_GC_INTERVAL"))
+		if interval == "" {
+			err = errors.New("MEEP_GC_INTERVAL variable not set")
+			log.Error(err.Error())
+			return err
+		}
+		duration, err := time.ParseDuration(interval)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+		log.Info("MEEP_GC_INTERVAL: ", interval)
+
+		// Retrieve run-on-start flag from environment variable
+		runOnStartStr := strings.TrimSpace(os.Getenv("MEEP_GC_RUN_ON_START"))
+		runOnStart, err := strconv.ParseBool(runOnStartStr)
+		if err == nil {
+			runOnStart = false
+		}
+		log.Info("MEEP_GC_RUN_ON_START: ", runOnStartStr)
+
+		// Retrieve Redis enabled flag from environment variable
+		redisEnabledStr := strings.TrimSpace(os.Getenv("MEEP_GC_REDIS_ENABLED"))
+		redisEnabled, err := strconv.ParseBool(redisEnabledStr)
+		if err != nil {
+			redisEnabled = false
+		}
+		log.Info("MEEP_GC_REDIS_ENABLED: ", redisEnabledStr)
+
+		// Retrieve Redis enabled flag from environment variable
+		influxEnabledStr := strings.TrimSpace(os.Getenv("MEEP_GC_INFLUX_ENABLED"))
+		influxEnabled, err := strconv.ParseBool(influxEnabledStr)
+		if err != nil {
+			influxEnabled = false
+		}
+		log.Info("MEEP_GC_INFLUX_ENABLED: ", influxEnabledStr)
+
+		// Retrieve Influx exceptions list from environment variable
+		influxExceptions := make([]string, 0)
+		influxExceptionsStr := strings.TrimSpace(os.Getenv("MEEP_GC_INFLUX_EXCEPTIONS"))
+		log.Info("MEEP_GC_INFLUX_EXCEPTIONS: ", influxExceptionsStr)
+		if influxExceptionsStr != "" {
+			influxExceptions = strings.Split(influxExceptionsStr, ",")
+		}
+
+		// Retrieve Redis enabled flag from environment variable
+		postgisEnabledStr := strings.TrimSpace(os.Getenv("MEEP_GC_POSTGIS_ENABLED"))
+		postgisEnabled, err := strconv.ParseBool(postgisEnabledStr)
+		if err != nil {
+			postgisEnabled = false
+		}
+		log.Info("MEEP_GC_POSTGIS_ENABLED: ", postgisEnabledStr)
+
+		// Create Garbage Collector
+		gcCfg := gc.GarbageCollectorCfg{
+			Redis:            redisEnabled,
+			RedisAddr:        redisDBAddr,
+			RedisTable:       0,
+			Influx:           influxEnabled,
+			InfluxAddr:       influxDBAddr,
+			InfluxExceptions: influxExceptions,
+			Postgis:          postgisEnabled,
+			RunOnStart:       runOnStart,
+			Interval:         duration,
+		}
+		pfmCtrl.garbageCollector, err = gc.NewGarbageCollector(gcCfg)
+		if err != nil {
+			log.Error("Failed to create Garbage Collector with error: ", err.Error())
+			return err
+		}
+		log.Info("Garbage Collector created")
+	}
 
 	// Create message queue
 	pfmCtrl.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisDBAddr)
@@ -150,6 +239,17 @@ func Init() (err error) {
 
 // Run Starts the Platform Controller
 func Run() (err error) {
+
+	// Start Garbage Collector
+	if pfmCtrl.garbageCollector != nil {
+		err = pfmCtrl.garbageCollector.Start()
+		if err != nil {
+			log.Error("Failed to start Garbage Collector with error: ", err.Error())
+			return err
+		}
+		log.Info("Garbage Collector started")
+	}
+
 	// Start Swagger API Manager (provider & aggregator)
 	err = pfmCtrl.apiMgr.Start(true, true)
 	if err != nil {
@@ -167,9 +267,14 @@ func Stop() {
 		return
 	}
 
+	// Stop Swagger API Manager
 	if pfmCtrl.apiMgr != nil {
-		// Stop Swagger API Manager
 		_ = pfmCtrl.apiMgr.Stop()
+	}
+
+	// Stop Garbage Collector
+	if pfmCtrl.garbageCollector != nil {
+		_ = pfmCtrl.garbageCollector.Stop()
 	}
 }
 

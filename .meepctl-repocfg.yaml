@@ -152,6 +152,30 @@ repo:
         # archive object store configuration secret
         secret: meep-thanos-archive-objstore-config
 
+    # Garbage Collection configuration
+    gc:
+      # enable garbage collection
+      enabled: true
+      # garbage collection interval (duration string)
+      interval: 1m
+      # run garbage collection on startup
+      run-on-startup: true
+      # Redis configuration
+      redis:
+        # enable redis garbage collection
+        enabled: true
+      # Influx configuration
+      influx:
+        # enable influx garbage collection
+        enabled: true
+        # list of databases that must not be removed
+        exceptions:
+          - my_db_to_keep
+      # Postgis configuration
+      postgis:
+        # enable postgis garbage collection
+        enabled: true
+
     # Default monitoring dashboards
     dashboards:
       network-metrics-point-to-point: dashboards/network-metrics-point-to-point.json

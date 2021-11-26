@@ -6,6 +6,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gc v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
@@ -27,6 +28,7 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch => ../../go-packages/meep-couch
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr => ../../go-packages/meep-data-key-mgr
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model => ../../go-packages/meep-data-model
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gc => ../../go-packages/meep-gc
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics => ../../go-packages/meep-metrics
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model => ../../go-packages/meep-model
