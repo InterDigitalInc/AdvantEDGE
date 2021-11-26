@@ -6069,7 +6069,7 @@ func testSubscriptionAssocStaPost(t *testing.T) (string, string) {
 	 ******************************/
 	self := respBody.Links.Self.Href
 	fmt.Println("self: " + self)
-	var subId = self[strings.LastIndex(self, "/")+1:]
+	subId := self[strings.LastIndex(self, "/")+1:]
 	fmt.Println("subId: " + subId)
 	expectedLinkType := LinkType{respBody.Links.Self.Href}
 	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &apId, callBackRef, nil /*&expectedExpiry*/, &trigger, 0, false, ASSOC_STA_SUBSCRIPTION, nil}

@@ -24,7 +24,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -493,7 +493,7 @@ const influxTestAddr = "http://localhost:30986"
 const testScenarioName = "testScenario"
 
 var m *mod.Model
-var mqLocal *mq.MsgQueue
+var mqLocalTest *mq.MsgQueue
 
 /*
 func TestNotImplemented(t *testing.T) {
@@ -523,16 +523,16 @@ func TestSuccessSubscriptionMobilityProcedure(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 	//post
-	expectedGetResp := testSubscriptionMobilityProcedurePost(t)
+	subId, expectedGetResp := testSubscriptionMobilityProcedurePost(t)
 
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, subId, expectedGetResp)
 	//put
-	expectedGetResp = testSubscriptionMobilityProcedurePut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	expectedGetResp = testSubscriptionMobilityProcedurePut(t, subId, true)
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, subId, expectedGetResp)
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	testSubscriptionDelete(t, subId, true)
 	terminateScenario()
 }
 
@@ -555,13 +555,13 @@ func TestFailSubscriptionMobilityProcedure(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+	testSubscriptionGet(t, "invalidSubId", "")
 
 	//put
-	_ = testSubscriptionMobilityProcedurePut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	_ = testSubscriptionMobilityProcedurePut(t, "invalidSubId", false)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	testSubscriptionDelete(t, "invalidSubId", false)
 
 	terminateScenario()
 }
@@ -582,15 +582,15 @@ func TestSuccessSubscriptionAdj(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 	//post
-	expectedGetResp := testSubscriptionAdjPost(t)
+	subId, expectedGetResp := testSubscriptionAdjPost(t)
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, subId, expectedGetResp)
 	//put
-	expectedGetResp = testSubscriptionAdjPut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	expectedGetResp = testSubscriptionAdjPut(t, subId, true)
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, subId, expectedGetResp)
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	testSubscriptionDelete(t, subId, true)
 	terminateScenario()
 }
 
@@ -613,13 +613,13 @@ func TestFailSubscriptionAdj(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//get
-	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+	testSubscriptionGet(t, "invalidSubId", "")
 
 	//put
-	_ = testSubscriptionAdjPut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	_ = testSubscriptionAdjPut(t, "invalidSubId", false)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+	testSubscriptionDelete(t, "invalidSubId", false)
 	terminateScenario()
 }
 
@@ -642,19 +642,19 @@ func TestSubscriptionsListGet(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//post
-	_ = testSubscriptionMobilityProcedurePost(t)
-	_ = testSubscriptionMobilityProcedurePost(t)
-	_ = testSubscriptionAdjPost(t)
-	_ = testSubscriptionAdjPost(t)
+	subId1, _ := testSubscriptionMobilityProcedurePost(t)
+	subId2, _ := testSubscriptionMobilityProcedurePost(t)
+	subId3, _ := testSubscriptionAdjPost(t)
+	subId4, _ := testSubscriptionAdjPost(t)
 
 	//get list
 	testSubscriptionListGet(t)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-4), true)
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-3), true)
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-2), true)
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	testSubscriptionDelete(t, subId1, true)
+	testSubscriptionDelete(t, subId2, true)
+	testSubscriptionDelete(t, subId3, true)
+	testSubscriptionDelete(t, subId4, true)
 
 	terminateScenario()
 }
@@ -675,15 +675,15 @@ func TestSuccessServices(t *testing.T) {
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
 	//post
-	expectedGetResp := testServicesPost(t)
+	svcId, expectedGetResp := testServicesPost(t)
 	//get
-	testServicesGet(t, strconv.Itoa(nextServiceIdAvailable-1), expectedGetResp)
+	testServicesGet(t, svcId, expectedGetResp)
 	//put
-	expectedGetResp = testServicesPut(t, strconv.Itoa(nextServiceIdAvailable-1), true)
+	expectedGetResp = testServicesPut(t, svcId, true)
 	//get
-	testServicesGet(t, strconv.Itoa(nextServiceIdAvailable-1), expectedGetResp)
+	testServicesGet(t, svcId, expectedGetResp)
 	//delete
-	testServicesDelete(t, strconv.Itoa(nextServiceIdAvailable-1), true)
+	testServicesDelete(t, svcId, true)
 	terminateScenario()
 }
 
@@ -706,13 +706,13 @@ func TestFailServices(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//get
-	testServicesGet(t, strconv.Itoa(nextServiceIdAvailable), "")
+	testServicesGet(t, "invalidSvcId", "")
 
 	//put
-	_ = testServicesPut(t, strconv.Itoa(nextServiceIdAvailable), false)
+	_ = testServicesPut(t, "invalidSvcId", false)
 
 	//delete
-	testServicesDelete(t, strconv.Itoa(nextServiceIdAvailable), false)
+	testServicesDelete(t, "invalidSvcId", false)
 
 	terminateScenario()
 }
@@ -765,15 +765,15 @@ func TestServicesListGet(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//post
-	_ = testServicesPost(t)
-	_ = testServicesPost(t)
+	svcId1, _ := testServicesPost(t)
+	svcId2, _ := testServicesPost(t)
 
 	//get list
 	testServicesListGet(t)
 
 	//delete
-	testServicesDelete(t, strconv.Itoa(nextServiceIdAvailable-2), true)
-	testServicesDelete(t, strconv.Itoa(nextServiceIdAvailable-1), true)
+	testServicesDelete(t, svcId1, true)
+	testServicesDelete(t, svcId2, true)
 
 	terminateScenario()
 }
@@ -840,6 +840,7 @@ func testSubscriptionListGet(t *testing.T) {
 
 	rr, err := sendRequest(http.MethodGet, "/subscriptions", nil, nil, nil, http.StatusOK, SubGET)
 	if err != nil {
+		fmt.Println("err: " + err.Error())
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -857,7 +858,7 @@ func testSubscriptionListGet(t *testing.T) {
 	}
 }
 
-func testServicesPost(t *testing.T) string {
+func testServicesPost(t *testing.T) (string, string) {
 
 	/******************************
 	 * expected response section
@@ -865,13 +866,15 @@ func testServicesPost(t *testing.T) string {
 	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
 	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION, ContextTransferState_NOT_TRANSFERRED}
 	expectedDeviceInfo := []RegistrationInfoDeviceInformation{expectedDeviceInfo1}
-	expectedRegistrationInfo := RegistrationInfo{strconv.Itoa(nextServiceIdAvailable), expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myapp", ""}}
-	//expectedExpiry := TimeStamp{0, 1998599770}
-
-	expectedResponseStr, err := json.Marshal(expectedRegistrationInfo)
-	if err != nil {
-		t.Fatalf(err.Error())
+	expectedRegistrationInfo := RegistrationInfo{
+		DeviceInformation: expectedDeviceInfo,
+		ExpiryTime:        0,
+		ServiceConsumerId: &RegistrationInfoServiceConsumerId{
+			AppInstanceId: "myApp",
+			MepId:         "",
+		},
 	}
+	//expectedExpiry := TimeStamp{0, 1998599770}
 
 	/******************************
 	 * request vars section
@@ -898,10 +901,6 @@ func testServicesPost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
-	//creating the appInfoMap so that the POST returns a valid response
-	var app apps.Application
-	appMap["myapp"] = &app
-
 	rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), nil, nil, http.StatusCreated, AppMobilityServicePOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -912,10 +911,16 @@ func testServicesPost(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+
+	expectedRegistrationInfo.AppMobilityServiceId = respBody.AppMobilityServiceId
+	expectedResponseStr, err := json.Marshal(expectedRegistrationInfo)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	if rr != string(expectedResponseStr) {
 		t.Fatalf("Failed to get expected response")
 	}
-	return string(expectedResponseStr)
+	return respBody.AppMobilityServiceId, string(expectedResponseStr)
 }
 
 func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string {
@@ -926,7 +931,7 @@ func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string 
 	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
 	expectedDeviceInfo1 := RegistrationInfoDeviceInformation{&expectedAssocId1, AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION, ContextTransferState_NOT_TRANSFERRED}
 	expectedDeviceInfo := []RegistrationInfoDeviceInformation{expectedDeviceInfo1}
-	expectedRegistrationInfo := RegistrationInfo{serviceId, expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myapp", ""}}
+	expectedRegistrationInfo := RegistrationInfo{serviceId, expectedDeviceInfo, 0, &RegistrationInfoServiceConsumerId{"myApp", ""}}
 	//expectedExpiry := TimeStamp{0, 1998599770}
 
 	expectedResponseStr, err := json.Marshal(expectedRegistrationInfo)
@@ -960,10 +965,6 @@ func testServicesPut(t *testing.T, serviceId string, expectSuccess bool) string 
 	 ******************************/
 
 	if expectSuccess {
-		//creating the appInfoMap so that the POST returns a valid response
-		var app apps.Application
-		appMap["myapp"] = &app
-
 		rr, err := sendRequest(http.MethodPost, "/services", bytes.NewBuffer(body), vars, nil, http.StatusOK, AppMobilityServiceByIdPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1104,7 +1105,7 @@ func testServicesDeregister(t *testing.T, serviceId string, expectSuccess bool) 
 	}
 }
 */
-func testSubscriptionMobilityProcedurePost(t *testing.T) string {
+func testSubscriptionMobilityProcedurePost(t *testing.T) (string, string) {
 
 	/******************************
 	 * expected response section
@@ -1113,14 +1114,6 @@ func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 	expectedAssocId := []AssociateId{expectedAssocId1}
 	expectedFilter := MobilityProcedureSubscriptionFilterCriteria{"myApp", expectedAssocId, []int32{MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := MobilityProcedureSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
-
-	expectedResponseStr, err := json.Marshal(expectedResponse)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
 
 	/******************************
 	 * request vars section
@@ -1148,8 +1141,10 @@ func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
+	fmt.Println("body: " + string(body))
 	rr, err := sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubPOST)
 	if err != nil {
+		fmt.Println("err: " + err.Error())
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -1158,10 +1153,25 @@ func testSubscriptionMobilityProcedurePost(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	self := respBody.Links.Self.Href
+	fmt.Println("self: " + self)
+	subId := self[strings.LastIndex(self, "/")+1:]
+	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + subId}
+	//expectedExpiry := TimeStamp{0, 1998599770}
+	expectedResponse := MobilityProcedureSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, MOBILITY_PROCEDURE_SUBSCRIPTION}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("subId: " + subId)
 	if rr != string(expectedResponseStr) {
 		t.Fatalf("Failed to get expected response")
 	}
-	return string(expectedResponseStr)
+	return subId, string(expectedResponseStr)
 }
 
 func testSubscriptionMobilityProcedurePut(t *testing.T, subscriptionId string, expectSuccess bool) string {
@@ -1309,21 +1319,13 @@ func testSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess b
 	}
 }
 
-func testSubscriptionAdjPost(t *testing.T) string {
+func testSubscriptionAdjPost(t *testing.T) (string, string) {
 
 	/******************************
 	 * expected response section
 	 ******************************/
 	expectedFilter := AdjacentAppInfoSubscriptionFilterCriteria{"myApp"}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := AdjacentAppInfoSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, ADJACENT_APP_INFO_SUBSCRIPTION}
-
-	expectedResponseStr, err := json.Marshal(expectedResponse)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
 
 	/******************************
 	 * request vars section
@@ -1358,10 +1360,25 @@ func testSubscriptionAdjPost(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	self := respBody.Links.Self.Href
+	fmt.Println("self: " + self)
+	subId := self[strings.LastIndex(self, "/")+1:]
+	fmt.Println("subId: " + subId)
+	expectedLinkType := LinkType{"/" + testScenarioName + "/amsi/v1/subscriptions/" + subId}
+	//expectedExpiry := TimeStamp{0, 1998599770}
+	expectedResponse := AdjacentAppInfoSubscription{&AdjacentAppInfoSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, ADJACENT_APP_INFO_SUBSCRIPTION}
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	if rr != string(expectedResponseStr) {
 		t.Fatalf("Failed to get expected response")
 	}
-	return string(expectedResponseStr)
+	return subId, string(expectedResponseStr)
 }
 
 func testSubscriptionAdjPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
@@ -1779,10 +1796,10 @@ func TestAdjGet(t *testing.T) {
 */
 
 func terminateScenario() {
-	if mqLocal != nil {
+	if mqLocalTest != nil {
 		_ = Stop()
-		msg := mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testScenarioName)
-		err := mqLocal.SendMsg(msg)
+		msg := mqLocalTest.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testScenarioName)
+		err := mqLocalTest.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
 		}
@@ -1804,8 +1821,8 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
-		err = mqLocal.SendMsg(msg)
+		msg := mqLocalTest.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		err = mqLocalTest.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
 		}
@@ -1819,8 +1836,8 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
-		err = mqLocal.SendMsg(msg)
+		msg := mqLocalTest.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		err = mqLocalTest.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
 		}
@@ -1834,8 +1851,8 @@ func updateScenario(testUpdate string) {
 			log.Error("Error sending mobility event")
 		}
 
-		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
-		err = mqLocal.SendMsg(msg)
+		msg := mqLocalTest.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		err = mqLocalTest.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
 		}
@@ -1872,13 +1889,14 @@ func initialiseScenario(testScenario string) {
 	}
 
 	// Create message queue
-	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(testScenarioName), "test-mod", testScenarioName, redisAddr)
+	mqLocalTest, err = mq.NewMsgQueue(mq.GetLocalName(testScenarioName), "test-mod", testScenarioName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return
 	}
 	log.Info("Message Queue created")
 
+	// Set active scenario
 	fmt.Println("Set Model")
 	err = m.SetScenario([]byte(testScenario))
 	if err != nil {
@@ -1892,15 +1910,33 @@ func initialiseScenario(testScenario string) {
 		return
 	}
 
-	msg := mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, testScenarioName)
-	err = mqLocal.SendMsg(msg)
+	msg := mqLocalTest.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, testScenarioName)
+	err = mqLocalTest.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message: ", err)
 		return
 	}
 
-	time.Sleep(100 * time.Millisecond)
+	// Set application
+	app := &apps.Application{
+		Id:      "myApp",
+		Name:    "myAppName",
+		Type:    "USER",
+		Node:    "mep1",
+		Persist: false,
+	}
+	err = appStore.Set(app, nil)
+	if err != nil {
+		log.Error("Failed to set app: ", err)
+		return
+	}
+	err = refreshApps()
+	if err != nil {
+		log.Error("Failed to refresh apps: ", err)
+		return
+	}
 
+	time.Sleep(100 * time.Millisecond)
 }
 
 func sendRequest(method string, url string, body io.Reader, vars map[string]string, query map[string]string, code int, f http.HandlerFunc) (string, error) {
