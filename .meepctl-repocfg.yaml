@@ -157,7 +157,7 @@ repo:
       # enable garbage collection
       enabled: true
       # garbage collection interval (duration string)
-      interval: 1m
+      interval: 4h
       # run garbage collection on start
       run-on-start: true
       # Redis configuration
@@ -167,7 +167,7 @@ repo:
       # Influx configuration
       influx:
         # enable influx garbage collection
-        enabled: true
+        enabled: false
         # list of databases that must not be removed
         exceptions:
         #   - my_db_to_keep
@@ -175,7 +175,7 @@ repo:
       # Postgis configuration
       postgis:
         # enable postgis garbage collection
-        enabled: true
+        enabled: false
 
     # Default monitoring dashboards
     dashboards:
