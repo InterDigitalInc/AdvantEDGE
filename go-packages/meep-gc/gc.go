@@ -54,9 +54,9 @@ type GarbageCollector struct {
 const maxRetryCount = 2
 
 var exceptionList []string = []string{
-	"-internal",
-	"global-sandbox-metrics",
-	"global-session-metrics",
+	"_internal",
+	"global_sandbox_metrics",
+	"global_session_metrics",
 }
 
 // NewGarbageCollector - Creates and initialize a Garbage Collector instance
@@ -277,7 +277,7 @@ func (gc *GarbageCollector) gcInfluxData() {
 		// Ignore DB names from default exception list
 		match := false
 		for _, exception := range exceptionList {
-			if dbNameDashes == exception {
+			if dbName == exception {
 				match = true
 				break
 			}
@@ -288,7 +288,7 @@ func (gc *GarbageCollector) gcInfluxData() {
 
 		// Ignore DB names from user-provided exception list
 		for _, exception := range gc.cfg.InfluxExceptions {
-			if dbNameDashes == exception {
+			if dbName == exception {
 				match = true
 				break
 			}
@@ -310,11 +310,11 @@ func (gc *GarbageCollector) gcInfluxData() {
 
 		// Flush database if no match found
 		log.Info("Clearing inactive Influx database: ", dbName)
-		// q = influx.NewQuery("DROP DATABASE "+dbName, "", "")
-		// _, err := (*gc.influxClient).Query(q)
-		// if err != nil {
-		// 	log.Error("Failed to drop influx database with error: ", err.Error())
-		// }
+		q = influx.NewQuery("DROP DATABASE "+dbName, "", "")
+		_, err := (*gc.influxClient).Query(q)
+		if err != nil {
+			log.Error("Failed to drop influx database with error: ", err.Error())
+		}
 	}
 }
 

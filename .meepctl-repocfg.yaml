@@ -158,8 +158,8 @@ repo:
       enabled: true
       # garbage collection interval (duration string)
       interval: 1m
-      # run garbage collection on startup
-      run-on-startup: true
+      # run garbage collection on start
+      run-on-start: true
       # Redis configuration
       redis:
         # enable redis garbage collection
@@ -170,7 +170,8 @@ repo:
         enabled: true
         # list of databases that must not be removed
         exceptions:
-          - my_db_to_keep
+        #   - my_db_to_keep
+        #   - my_other_db_to_keep
       # Postgis configuration
       postgis:
         # enable postgis garbage collection

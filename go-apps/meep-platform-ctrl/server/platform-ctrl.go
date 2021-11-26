@@ -109,7 +109,7 @@ func Init() (err error) {
 		// Retrieve run-on-start flag from environment variable
 		runOnStartStr := strings.TrimSpace(os.Getenv("MEEP_GC_RUN_ON_START"))
 		runOnStart, err := strconv.ParseBool(runOnStartStr)
-		if err == nil {
+		if err != nil {
 			runOnStart = false
 		}
 		log.Info("MEEP_GC_RUN_ON_START: ", runOnStartStr)
