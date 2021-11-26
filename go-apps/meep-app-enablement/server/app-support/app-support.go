@@ -981,6 +981,7 @@ func newAppTerminationNotifSubCfg(sub *AppTerminationNotificationSubscription, s
 		Id:                  subId,
 		AppId:               appId,
 		Type:                APP_TERMINATION_NOTIF_SUB_TYPE,
+		NotifType:           APP_TERMINATION_NOTIF_TYPE,
 		Self:                sub.Links.Self.Href,
 		NotifyUrl:           sub.CallbackReference,
 		ExpiryTime:          nil,

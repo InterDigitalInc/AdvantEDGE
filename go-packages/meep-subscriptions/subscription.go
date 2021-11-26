@@ -33,6 +33,7 @@ type SubscriptionCfg struct {
 	Id                  string     `json:"id"`
 	AppId               string     `json:"appId"`
 	Type                string     `json:"subType"`
+	NotifType           string     `json:"notifType"`
 	Self                string     `json:"self"`
 	NotifyUrl           string     `json:"notifyUrl"`
 	ExpiryTime          *time.Time `json:"expiryTime"`
@@ -233,10 +234,10 @@ func (sub *Subscription) sendNotification(notif []byte, sandbox string, service 
 		_ = httpLog.LogTx(notifUrl, notifMethod, string(notif), notifResp, startTime)
 		if notifErr != nil {
 			log.Error(notifErr)
-			met.ObserveNotification(sandbox, service, string(notif), notifUrl, nil, duration)
+			met.ObserveNotification(sandbox, service, sub.Cfg.NotifType, notifUrl, nil, duration)
 			return notifErr
 		}
-		met.ObserveNotification(sandbox, service, string(notif), notifUrl, notifResp, duration)
+		met.ObserveNotification(sandbox, service, sub.Cfg.NotifType, notifUrl, notifResp, duration)
 	} else {
 		if notifErr != nil {
 			log.Error(notifErr)
