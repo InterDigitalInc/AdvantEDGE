@@ -1,15 +1,15 @@
-const path = require("path");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const dotenv = require("dotenv");
-const webpack = require("webpack");
+const path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const dotenv = require('dotenv');
+const webpack = require('webpack');
 
 var extractPlugin = new ExtractTextPlugin({
-  filename: "bundle.css",
+  filename: 'bundle.css'
 });
 
 var htmlPlugin = new HtmlWebpackPlugin({
-  template: "src/index.html",
+  template: 'src/index.html'
 });
 
 module.exports = (env) => {
@@ -23,17 +23,17 @@ module.exports = (env) => {
   }, {});
 
   return {
-    mode: "development",
-    entry: ["./src/js/demo-controller.js"],
+    mode: 'development',
+    entry: ['./src/js/demo-controller.js'],
     output: {
-      path: path.resolve(__dirname, "dist"),
-      filename: "bundle.js",
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.js'
     },
     resolve: {
-      extensions: [".js", ".json"],
+      extensions: ['.js', '.json'],
       alias: {
-        "@": path.resolve("src"),
-      },
+        '@': path.resolve('src')
+      }
     },
     module: {
       rules: [
@@ -41,72 +41,72 @@ module.exports = (env) => {
           test: /\.(js|jsx)$/,
           exclude: /node_modules/,
           use: {
-            loader: "babel-loader",
+            loader: 'babel-loader',
             options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
-            },
-          },
+              presets: ['@babel/preset-env', '@babel/preset-react']
+            }
+          }
         },
         {
           parser: {
-            amd: false,
-          },
+            amd: false
+          }
         },
         {
           test: /\.css$/,
           use: extractPlugin.extract({
-            use: ["css-loader"],
-          }),
+            use: ['css-loader']
+          })
         },
         {
           test: /\.(png|svg|jpg|gif)$/,
           use: [
             {
-              loader: "file-loader",
+              loader: 'file-loader',
               options: {
-                name: "[name].[ext]",
-                outputPath: "img",
-                publicPath: "img",
-              },
-            },
-          ],
+                name: '[name].[ext]',
+                outputPath: 'img',
+                publicPath: 'img'
+              }
+            }
+          ]
         },
         {
           test: /\.scss$/,
           use: extractPlugin.extract({
             use: [
               {
-                loader: "css-loader",
+                loader: 'css-loader'
               },
               {
-                loader: "sass-loader",
+                loader: 'sass-loader',
                 options: {
                   includePaths: [
-                    "./node_modules/material-components-web/node_modules",
-                    "./node_modules",
-                  ],
-                },
-              },
-            ],
-          }),
-        },
-      ],
+                    './node_modules/material-components-web/node_modules',
+                    './node_modules'
+                  ]
+                }
+              }
+            ]
+          })
+        }
+      ]
     },
     plugins: [
       htmlPlugin,
       extractPlugin,
       new webpack.DefinePlugin({
-        __VERSION__: JSON.stringify("v0.0.0"),
+        __VERSION__: JSON.stringify('v0.0.0')
       }),
-      new webpack.DefinePlugin(envKeys),
+      new webpack.DefinePlugin(envKeys)
     ],
     devServer: {
       proxy: {
-        "/": {
-          target: "http://" + (env ? env.MEEP_HOST : ""),
-          secure: false,
-        },
-      },
-    },
+        '/': {
+          target: 'http://' + (env ? env.MEEP_HOST : ''),
+          secure: false
+        }
+      }
+    }
   };
 };

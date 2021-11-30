@@ -5,9 +5,10 @@ import (
 )
 
 type Config struct {
-	Mode          string `mapstructure: mode`
+	Mode          string `mapstructure:"mode"`
 	SandboxUrl    string `mapstructure:"sandbox"`
-	MecPlatform   string `mapstructure: "mecplatform"`
+	HttpsOnly     bool   `mapstructure:"https"`
+	MecPlatform   string `mapstructure:"mecplatform"`
 	SandboxName   string `mapstructure:"sandboxname"`
 	AppInstanceId string `mapstructure:"appid"`
 	Localurl      string `mapstructure:"localurl"`

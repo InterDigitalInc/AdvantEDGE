@@ -49,10 +49,9 @@ func main() {
 		done     chan bool
 	)
 
-	// First element in os.Args is always the program name
-	// Require at least 2 arugments to have a file name argument
 	if len(os.Args) < 2 {
-		log.Fatal("Missing parameter, provide file name!")
+		// no config argument
+		log.Fatal("Missing parameter, require file path to configurations!")
 	}
 
 	// Read configuration file path in command line arugments
@@ -67,7 +66,7 @@ func main() {
 			log.Fatal("Failed to initalize Demo 3 ", err)
 		}
 
-		// Start demo 3 ticker
+		// Channel sync pass channel listen for app termination
 		server.Run(done)
 
 		// Start demo 3 server
@@ -90,6 +89,7 @@ func main() {
 	// Listen for demo 3 error exit program
 	go func() {
 		<-done
+		log.Info("Waiting to shut down program !")
 		run = false
 	}()
 

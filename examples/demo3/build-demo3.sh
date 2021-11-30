@@ -11,8 +11,6 @@ echo ">>> Building Demo Service Frontend"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-
-$BASEDIR/src/client/build.sh
 $BASEDIR/src/frontend/build.sh
 
 DEMOBIN=$BASEDIR/bin/demo-server

@@ -37,7 +37,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Util
 var mutex sync.Mutex
 var intervalTicker *time.Ticker
 var done chan bool
@@ -98,23 +97,22 @@ var amsSubscriptionId string
 var terminationSubscriptionId string
 
 // Ams state
-var usingDevices []string                      // List of devices using this instance that will increment state
-var terminalDevices map[string]string          // Devices registered in ams
-var terminalDeviceState = make(map[string]int) // Devices registered in ams and their state
+var trackDevices []string                      // Devices currently using instance with incremental state
+var terminalDevices map[string]string          // All devices registered under ams
+var terminalDeviceState = make(map[string]int) // All devices registered under ams and their state
 
 // Initiaze ticker to poll mec services and increment terminal device state every second
 // It modifies discovered services & state of terminal device using this instance
-// Stop ticker if deregister app
+// Stop ticker if deregister app or receive err
 func startTicker() {
 	intervalTicker = time.NewTicker(1 * time.Second)
 	go func() {
 		for range intervalTicker.C {
-			// Increment counter in terminal device state
-			for _, device := range usingDevices {
-				counter := terminalDeviceState[device]
-				terminalDeviceState[device] = counter + 1
-				counterString := strconv.Itoa(terminalDeviceState[device])
-				terminalDevices[device] = device + " using this instance" + "(state=" + counterString + ")"
+			// Increment every terminal device state by 1
+			for _, device := range trackDevices {
+				terminalDeviceState[device] += 1
+				stateAsString := strconv.Itoa(terminalDeviceState[device])
+				terminalDevices[device] = device + " using this instance" + "(state=" + stateAsString + ")"
 			}
 
 			// Error handling if cannot retrieve mec services
@@ -124,7 +122,8 @@ func startTicker() {
 				intervalTicker = nil
 				log.Error("Error polling mec services")
 				// Display on activity log
-				appActivityLogs = append(appActivityLogs, "Error retrieving mec services app will now shut down!")
+				appActivityLogs = append(appActivityLogs, "Cannot retrieve mec services app will now shut down, please restart scenario!")
+
 				// Terminate graceful shutdown
 				Terminate()
 
@@ -136,7 +135,9 @@ func startTicker() {
 			// Clean discovered services
 			demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
 
-			// Store discovered service name into app info model & map to lookup service url by name in O(1)
+			// Store discovered service name into app info model
+			// Store service as a map using service name as key and url as value
+			// to lookup url using service name in O(1)
 			mecServicesMap = make(map[string]string)
 			var tempService ApplicationInstanceDiscoveredServices
 			for _, e := range discoveredServices {
@@ -148,20 +149,16 @@ func startTicker() {
 
 				demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
 
-				// Store into map by service name key and url value
 				mecServicesMap[tempService.SerName] = tempService.Link
 			}
 		}
 	}()
 }
 
-// Initialize app info from config & apply client package
+// Initialize app info apply configurations & configure client package
 func Init(envPath string, envName string) (port string, err error) {
-
-	// Initialize config
 	var config util.Config
-
-	log.Info("Using config values from ", envPath, "/", envName)
+	log.Info("Using config values from  ", envPath, "/", envName)
 	config, err = util.LoadConfig(envPath, envName)
 	if err != nil {
 		log.Fatal("Fail to load configuration file ", err)
@@ -170,17 +167,24 @@ func Init(envPath string, envName string) (port string, err error) {
 	// check if app is running externally or on advantedge
 	if config.Mode == "sandbox" {
 		environment = "sandbox"
-		mecUrl = config.SandboxUrl
 
-		if !strings.HasPrefix(mecUrl, "http://") {
-			mecUrl = "http://" + mecUrl
+		mecUrl = config.SandboxUrl
+		// check if mec url is running behind https
+		if config.HttpsOnly {
+			if !strings.HasPrefix(mecUrl, "https://") {
+				mecUrl = "https://" + mecUrl
+			}
+		} else {
+			if !strings.HasPrefix(mecUrl, "http://") {
+				mecUrl = "http://" + mecUrl
+			}
 		}
+
 		if !strings.HasSuffix(mecUrl, "/") {
 			mecUrl = strings.TrimSuffix(mecUrl, "/")
 		}
 
 		localPort = config.Port
-
 		localUrl = config.Localurl
 
 	} else if config.Mode == "advantedge" {
@@ -519,7 +523,7 @@ func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
 		orderedAmsAdded = append(orderedAmsAdded, device)
 
 		// Default device status & state set to 0
-		usingDevices = append(usingDevices, device)
+		trackDevices = append(trackDevices, device)
 		terminalDeviceState[device] = 0
 
 		// Update ams subscription
@@ -583,14 +587,14 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 	// Update terminal device state using this instance
 	delete(terminalDeviceState, device)
 	// Remove device from terminal devices using this instances no longer incrementing state
-	for i, v := range usingDevices {
+	for i, v := range trackDevices {
 		if v == device {
-			if i < len(usingDevices)-1 {
-				usingDevices = append(usingDevices[:i], usingDevices[i+1:]...)
+			if i < len(trackDevices)-1 {
+				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
 
 			} else {
 				// if device is last element
-				usingDevices = usingDevices[:len(usingDevices)-1]
+				trackDevices = trackDevices[:len(trackDevices)-1]
 
 			}
 		}
@@ -708,13 +712,13 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	targetDevice := amsNotification.AssociateId[0].Value
 
 	// Remove device from terminal devices using this instances no longer incrementing state
-	for i, v := range usingDevices {
+	for i, v := range trackDevices {
 		if v == targetDevice {
-			if i < len(usingDevices)-1 {
-				usingDevices = append(usingDevices[:i], usingDevices[i+1:]...)
+			if i < len(trackDevices)-1 {
+				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
 			} else {
 				// if device is last element
-				usingDevices = usingDevices[:len(usingDevices)-1]
+				trackDevices = trackDevices[:len(trackDevices)-1]
 			}
 		}
 
@@ -791,7 +795,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&targetContextState)
 	counter := strconv.Itoa(targetContextState.Counter)
 	if err != nil {
-		appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+"context (state="+counter+") [500]")
+		appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [500]")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -817,7 +821,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 		orderedAmsAdded = append(orderedAmsAdded, targetContextState.Device)
 
 		// Default device status & state set to 0
-		usingDevices = append(usingDevices, targetContextState.Device)
+		trackDevices = append(trackDevices, targetContextState.Device)
 		terminalDeviceState[targetContextState.Device] = targetContextState.Counter
 
 		// Update ams subscription
@@ -842,7 +846,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+"context (state="+counter+") [200]")
 
 	// Update ams pane
-	usingDevices = append(usingDevices, targetContextState.Device)
+	trackDevices = append(trackDevices, targetContextState.Device)
 	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
 
 	w.WriteHeader(http.StatusOK)
@@ -988,7 +992,7 @@ func amsDeleteDevice(amsId string, registerationBody ams.RegistrationInfo, devic
 		return registerationBody, err
 	}
 
-	appActivityLogs = append(appActivityLogs, "==== Remove AMS device ("+device+") ["+status+"]")
+	appActivityLogs = append(appActivityLogs, "=== Remove AMS device ("+device+") ["+status+"]")
 	return registerationBody, nil
 
 }
@@ -1043,9 +1047,9 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 
 // Client request to notify mec platform of mec app
 func sendReadyConfirmation(appInstanceId string) error {
-	log.Debug("Sending request to mec platform indicate app is ready api")
 	var appReady asc.AppReadyConfirmation
 	appReady.Indication = "READY"
+	log.Info(appSupportClientPath)
 	resp, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
@@ -1060,20 +1064,15 @@ func sendReadyConfirmation(appInstanceId string) error {
 
 // Client request to retrieve list of mec service resources on sandbox
 func getMecServices() ([]smc.ServiceInfo, error) {
-	// log.Debug("Sending request to mec platform get service resources api ")
-	appServicesResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
+	appServicesResponse, _, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
-		log.Error("Failed to fetch services on mec platform ", resp.Status)
+		log.Error("Failed to fetch services on mec platform ", err)
 		return nil, err
 	}
-
-	//log.Info("Returning available mec service resources on mec platform")
 
 	// Store mec services name & url as map for ams retrival
 	for i := 0; i < len(appServicesResponse); i++ {
 		mecServicesMap[appServicesResponse[i].SerName] = appServicesResponse[i].TransportInfo.Endpoint.Uris[0]
-		//log.Info(appServicesResponse[i].SerName, " URL: ", appServicesResponse[i].TransportInfo.Endpoint.Uris[0])
-
 	}
 
 	return appServicesResponse, nil
@@ -1081,20 +1080,14 @@ func getMecServices() ([]smc.ServiceInfo, error) {
 
 // Client request to create a mec-service resource
 func registerService(appInstanceId string, callBackUrl string) (smc.ServiceInfo, error) {
-	//log.Debug("Sending request to mec platform post service resource api ")
 	var srvInfo smc.ServiceInfoPost
-	//serName
 	srvInfo.SerName = serviceCategory
-	//version
 	srvInfo.Version = serviceAppVersion
-	//state
 	state := smc.ACTIVE_ServiceState
 	srvInfo.State = &state
-	//serializer
 	serializer := smc.JSON_SerializerType
 	srvInfo.Serializer = &serializer
 
-	//transportInfo
 	var transportInfo smc.TransportInfo
 	transportInfo.Id = "transport"
 	transportInfo.Name = "REST"
@@ -1109,7 +1102,6 @@ func registerService(appInstanceId string, callBackUrl string) (smc.ServiceInfo,
 	transportInfo.Endpoint = &endpoint
 	srvInfo.TransportInfo = &transportInfo
 
-	//serCategory
 	var category smc.CategoryRef
 	category.Href = "catalogueHref"
 	category.Id = "amsId"
@@ -1117,19 +1109,14 @@ func registerService(appInstanceId string, callBackUrl string) (smc.ServiceInfo,
 	category.Version = "v1"
 	srvInfo.SerCategory = &category
 
-	//scopeOfLocality
 	localityType := smc.LocalityType(scopeOfLocality)
 	srvInfo.ScopeOfLocality = &localityType
-
-	//consumedLocalOnly
 	srvInfo.ConsumedLocalOnly = consumedLocalOnly
 	appServicesPostResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register service resource on mec app enablement registry: ", resp.Status)
 		return appServicesPostResponse, err
 	}
-	// log.Info("LOCALURL: " + localUrl + localPort)
-	// log.Info(serviceCategory, " service resource created with instance id: ", appServicesPostResponse.SerInstanceId)
 	appEnablementServiceId = appServicesPostResponse.SerInstanceId
 	return appServicesPostResponse, nil
 }
@@ -1210,7 +1197,6 @@ func subscribeAppTermination(appInstanceId string, callBackReference string) (st
 
 // Client request to delete a mec-service resource
 func unregisterService(appInstanceId string, serviceId string) error {
-	//log.Debug("Sending request to mec platform delete service api")
 	resp, err := srvMgmtClient.MecServiceMgmtApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
@@ -1275,9 +1261,8 @@ func deleteAmsSubscription(subscriptionId string) error {
 	return nil
 }
 
-// Channel sync for terminating app
+// Channel sync consume channel listen for app termination
 func Run(msg chan bool) {
-
 	done = msg
 }
 
@@ -1296,7 +1281,7 @@ func Terminate() {
 
 		// empty ams state
 		terminalDeviceState = make(map[string]int)
-		usingDevices = []string{}
+		trackDevices = []string{}
 		orderedAmsAdded = []string{}
 		terminalDevices = make(map[string]string)
 
