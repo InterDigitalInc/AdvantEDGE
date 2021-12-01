@@ -58,7 +58,8 @@ import {
   PAGE_HOME_INDEX,
   PAGE_CONFIGURE_INDEX,
   IDC_DIALOG_SIGN_IN,
-  IDC_DIALOG_SESSION_TERMINATED
+  IDC_DIALOG_SESSION_TERMINATED,
+  ELEMENT_TYPE_EDGE_APP
 } from '../meep-constants';
 
 import {
@@ -112,6 +113,8 @@ import {
 
 import {
   FIELD_CONNECTIVITY_MODEL,
+  FIELD_TYPE,
+  FIELD_IMAGE,
   getElemByName,
   getElemFieldVal
 } from '../util/elem-utils';
@@ -335,6 +338,19 @@ class MeepContainer extends Component {
       .get(`${basepathMonEngine}/states?long=true&type=scenario&sandbox=${this.props.sandbox}`)
       .then(res => {
         var scenarioPodsPhases = res.data.podStatus;
+
+        // Add app instance ID for Edge Apps
+        if (this.props.exec && this.props.exec.table && this.props.exec.table.entries) {
+          for (var i in scenarioPodsPhases) {
+            var scenarioPod = scenarioPodsPhases[i];
+            var elem = getElemByName(this.props.exec.table.entries, scenarioPod.name);
+            let elemType = getElemFieldVal(elem, FIELD_TYPE);
+            let elemImage = getElemFieldVal(elem, FIELD_IMAGE);
+            if (elem && elemType === ELEMENT_TYPE_EDGE_APP && !elemImage.endsWith('meep-app-enablement')) {
+              scenarioPodsPhases[i].id = elem.id;
+            }
+          }
+        }
         this.props.changeScenarioPodsPhases(scenarioPodsPhases);
       })
       .catch(() => {

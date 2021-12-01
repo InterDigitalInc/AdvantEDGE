@@ -242,29 +242,22 @@ func (gc *GarbageCollector) getSandboxFromKey(key string, userData interface{}) 
 }
 
 func (gc *GarbageCollector) gcInfluxData() {
-	// Get list of influx database names
-	dbNameMap := make(map[string]bool)
-	q := influx.NewQuery("SHOW DATABASES", "", "")
-	response, err := (*gc.influxClient).Query(q)
+	// Get map of influx database names
+	dbNameMap, err := gc.getInfluxDbNames()
 	if err != nil {
 		log.Error("Failed to retrieve influx databases with error: ", err.Error())
 		return
 	}
-	values, err := getResponseValues(response)
+
+	// Get map of previously deployed sandbox names
+	prevSboxMap, err := gc.getInfluxSandboxNames()
 	if err != nil {
-		log.Error("Failed to process influx response with error: ", err.Error())
+		log.Error("Failed to retrieve sandbox names with error: ", err.Error())
 		return
-	}
-	for _, val := range values {
-		if dbName, found := val["name"]; found {
-			if dbNameStr, ok := dbName.(string); ok {
-				dbNameMap[dbNameStr] = true
-			}
-		}
 	}
 
 	// Get map of active sandboxes
-	activeSbxMap, err := gc.getActiveSandboxMap()
+	activeSboxMap, err := gc.getActiveSandboxMap()
 	if err != nil {
 		return
 	}
@@ -287,6 +280,7 @@ func (gc *GarbageCollector) gcInfluxData() {
 		}
 
 		// Ignore DB names from user-provided exception list
+		match = false
 		for _, exception := range gc.cfg.InfluxExceptions {
 			if dbName == exception {
 				match = true
@@ -298,7 +292,8 @@ func (gc *GarbageCollector) gcInfluxData() {
 		}
 
 		// Ignore DB names with active sandbox prefix match
-		for sbxName := range activeSbxMap {
+		match = false
+		for sbxName := range activeSboxMap {
 			if sbxName != "" && strings.HasPrefix(dbNameDashes, sbxName+"-") {
 				match = true
 				break
@@ -308,9 +303,21 @@ func (gc *GarbageCollector) gcInfluxData() {
 			continue
 		}
 
+		// Make sure database is associated with a previous sandbox name
+		match = false
+		for sbxName := range prevSboxMap {
+			if sbxName != "" && strings.HasPrefix(dbNameDashes, sbxName+"-") {
+				match = true
+				break
+			}
+		}
+		if !match {
+			continue
+		}
+
 		// Flush database if no match found
 		log.Info("Clearing inactive Influx database: ", dbName)
-		q = influx.NewQuery("DROP DATABASE "+dbName, "", "")
+		q := influx.NewQuery("DROP DATABASE "+dbName, "", "")
 		_, err := (*gc.influxClient).Query(q)
 		if err != nil {
 			log.Error("Failed to drop influx database with error: ", err.Error())
@@ -318,7 +325,51 @@ func (gc *GarbageCollector) gcInfluxData() {
 	}
 }
 
-func getResponseValues(response *influx.Response) ([]map[string]interface{}, error) {
+func (gc *GarbageCollector) getInfluxDbNames() (map[string]bool, error) {
+	dbNameMap := make(map[string]bool)
+
+	q := influx.NewQuery("SHOW DATABASES", "", "")
+	response, err := (*gc.influxClient).Query(q)
+	if err != nil {
+		return nil, err
+	}
+	values, err := gc.getResponseValues(response)
+	if err != nil {
+		return nil, err
+	}
+	for _, val := range values {
+		if dbName, found := val["name"]; found {
+			if dbNameStr, ok := dbName.(string); ok {
+				dbNameMap[dbNameStr] = true
+			}
+		}
+	}
+	return dbNameMap, nil
+}
+
+func (gc *GarbageCollector) getInfluxSandboxNames() (map[string]bool, error) {
+	sboxNameMap := make(map[string]bool)
+
+	q := influx.NewQuery("SELECT DISTINCT(sboxname) FROM sbox", "global_sandbox_metrics", "")
+	response, err := (*gc.influxClient).Query(q)
+	if err != nil {
+		return nil, err
+	}
+	values, err := gc.getResponseValues(response)
+	if err != nil {
+		return nil, err
+	}
+	for _, val := range values {
+		if dbName, found := val["distinct"]; found {
+			if dbNameStr, ok := dbName.(string); ok && dbNameStr != "" {
+				sboxNameMap[dbNameStr] = true
+			}
+		}
+	}
+	return sboxNameMap, nil
+}
+
+func (gc *GarbageCollector) getResponseValues(response *influx.Response) ([]map[string]interface{}, error) {
 	values := make([]map[string]interface{}, 0)
 	if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
 		row := response.Results[0].Series[0]
