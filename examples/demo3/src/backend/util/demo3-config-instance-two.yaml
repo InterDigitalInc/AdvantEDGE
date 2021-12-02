@@ -5,12 +5,12 @@ mode: 'sandbox'
 # Set url of mec platform. Example field format: http://{MEC_IP_ADDRESS}/{SANDBOX_NAME}/{MEP_NAME}/ 
 sandbox: 'http://'
 # Set if sandbox url uses https. Expected fields: true | false 
-https: false 
+https: false
 # Set the mec platform name demo-3 will run on. Example field: mep1
-mecplatform: ''
+mecplatform: 'mep2'
 # Set user-application ID that is generated on MEC Sandbox frontend. Example field format: 7930ba6d-4581-444c-b966-3312517f3a51
 appid: ''
 # Set host address of demo-3. 
 localurl: 'http://'
 # Set host port number of demo-3. Example field: '8093'
-port: '8093'
+port: '8094'

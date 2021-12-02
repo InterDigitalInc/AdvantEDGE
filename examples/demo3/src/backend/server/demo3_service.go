@@ -55,7 +55,7 @@ var sbxCtrlUrl string = "http://meep-sandbox-ctrl"
 var amsClient *ams.APIClient
 var amsResourceId string
 var amsTargetId string
-var orderedAmsAdded = []string{} // ordered terminal device added
+var orderedAmsAdded = []string{}
 
 // Api edge case handling
 var svcSubscriptionSent bool
@@ -118,8 +118,6 @@ func startTicker() {
 			// Error handling if cannot retrieve mec services
 			discoveredServices, err := getMecServices()
 			if err != nil {
-				intervalTicker.Stop()
-				intervalTicker = nil
 				log.Error("Error polling mec services")
 				// Display on activity log
 				appActivityLogs = append(appActivityLogs, "Cannot retrieve mec services app will now shut down, please restart scenario!")
@@ -211,7 +209,7 @@ func Init(envPath string, envName string) (port string, err error) {
 	mep = config.MecPlatform
 
 	// If running internally in advantedge create a mec application resource else
-	// set configuration variable from mec frontend app id
+	// Apply config for app id, mec url path
 	if environment == "advantedge" {
 		sandBoxClientCfg := sbx.NewConfiguration()
 		sandBoxClientCfg.BasePath = sbxCtrlUrl + "/sandbox-ctrl/v1"
@@ -240,7 +238,6 @@ func Init(envPath string, envName string) (port string, err error) {
 	} else {
 		appSupportClientCfg.BasePath = mecUrl + "/mec_app_support/v1"
 		srvMgmtClientCfg.BasePath = mecUrl + "/mec_service_mgmt/v1"
-		demoRegisteratonStatus = strconv.Itoa(200)
 	}
 	// Create app enablement client
 	appSupportClient = asc.NewAPIClient(appSupportClientCfg)
@@ -265,6 +262,9 @@ func Init(envPath string, envName string) (port string, err error) {
 	// Prepend url & port store in callbackurl
 	callBackUrl = localUrl + localPort
 
+	// Store registeration status
+
+	demoRegisteratonStatus = strconv.Itoa(200)
 	log.Info("Starting Demo 3 instance on Port=", localPort, " using app instance id=", instanceName, " mec platform=", mep)
 	return localPort, nil
 }
@@ -559,15 +559,6 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	device := vars["device"]
 
-	// Check if ams is available
-	// amsUrl := mecServicesMap["mec021-1"]
-	// if amsUrl == "" {
-	// 	log.Info("Could not find ams services from available services ")
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	fmt.Fprintf(w, "Could not find ams services, enable AMS first")
-	// 	return
-	// }
-
 	// Get AMS Resource
 	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
 	if err != nil {
@@ -638,7 +629,6 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 
 // RESP API delete application by deleting all resources
 func demo3Deregister(w http.ResponseWriter, r *http.Request) {
-
 	Terminate()
 	appEnablementEnabled = false
 	w.WriteHeader(http.StatusOK)
@@ -711,6 +701,14 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	amsTargetId = amsNotification.TargetAppInfo.AppInstanceId
 	targetDevice := amsNotification.AssociateId[0].Value
 
+	// Find ams target service resource url using mec011
+	serviceInfo, _, serviceErr := srvMgmtClient.MecServiceMgmtApi.AppServicesGET(context.TODO(), amsTargetId, nil)
+	if serviceErr != nil {
+		log.Debug("Failed to get target app mec service resource on mec platform", serviceErr.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	// Remove device from terminal devices using this instances no longer incrementing state
 	for i, v := range trackDevices {
 		if v == targetDevice {
@@ -725,14 +723,6 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	counter := strconv.Itoa(terminalDeviceState[targetDevice])
-
-	// Find ams target service resource url using mec011
-	serviceInfo, _, serviceErr := srvMgmtClient.MecServiceMgmtApi.AppServicesGET(context.TODO(), amsTargetId, nil)
-	if serviceErr != nil {
-		log.Debug("Failed to get target app mec service resource on mec platform", serviceErr.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
 	// Transfer only if ams target service is found
 	// Update Activity Logs
@@ -1131,8 +1121,7 @@ func subscribeAvailability(appInstanceId string, callbackReference string) (stri
 	serAvailabilityNotificationSubscription, resp, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
-		log.Error("Failed to send service subscription: ", resp.Status)
-		log.Info("line 1114", status)
+		log.Error("Failed to send service subscription: ", err)
 		appActivityLogs = append(appActivityLogs, "Subscribe to service-availability notification ["+status+"]")
 		return "", err
 	}
@@ -1159,7 +1148,7 @@ func confirmTerminate(appInstanceId string) {
 	resp, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmTerminationPOST(context.TODO(), terminationBody, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
-		log.Error("Failed to send confirm termination ", resp.Status)
+		log.Error("Failed to send confirm termination ", err)
 	} else {
 		log.Info("Confirm Terminated")
 	}
@@ -1176,7 +1165,7 @@ func subscribeAppTermination(appInstanceId string, callBackReference string) (st
 	appTerminationResponse, resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationBody, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
-		log.Error("Failed to send termination subscription: ", resp.Status)
+		log.Error("Failed to send termination subscription: ", err)
 		appActivityLogs = append(appActivityLogs, "Subscribe to app-termination notification ["+status+"]")
 		return "", err
 	}
@@ -1200,10 +1189,13 @@ func unregisterService(appInstanceId string, serviceId string) error {
 	resp, err := srvMgmtClient.MecServiceMgmtApi.AppServicesServiceIdDELETE(context.TODO(), appInstanceId, serviceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
+		log.Error("Failed to send request to delete service resource on mec platform ", err)
+
 		appActivityLogs = append(appActivityLogs, "Delete Demo3 service ["+status+"]")
-		log.Debug("Failed to send request to delete service resource on mec platform ", resp.Status)
+
 		return err
 	}
+
 	appActivityLogs = append(appActivityLogs, "Delete Demo3 service ["+status+"]")
 	return nil
 }
