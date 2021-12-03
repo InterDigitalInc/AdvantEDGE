@@ -672,7 +672,7 @@ class IDCMap extends Component {
       // Parse mec application state on current popup
       var appInstances = [];
       for (var i = 0; i < appInstanceTable.length ; i++) {
-        if (appInstanceTable[i].mepName === marker.options.meep.compute.id) {
+        if (appInstanceTable[i].nodeName === marker.options.meep.compute.id) {
           appInstances.push(appInstanceTable[i]);
         }
       }
@@ -693,7 +693,7 @@ class IDCMap extends Component {
       msg += 'applications: <br>';
       if (appInstances) {
         sortedAppInstances.forEach(elem => {
-          msg += '<li>' + elem.name + ' ' + '(id: ' + elem.id.substring(0,6) + '...' + elem.id.substring(elem.id.length - 6,elem.id.length + 1) + ')'   + '<br>';
+          msg += '<li>' + elem.name + ' ' + '(id: ' + elem.id.substring(0,8) + '...)' + '<br>';
         });
       }
       msg += 'location: ' + this.getLocationStr(latlng);
