@@ -1714,7 +1714,8 @@ func refreshTrackedDevCtxOwner(appName string) {
 		targetAppIds, found := deviceTargetMap[address]
 		if !found {
 			// Get target app instances for device
-			targetAppIds, err := getTargetApps(appName, address)
+			var err error
+			targetAppIds, err = getTargetApps(appName, address)
 			if err != nil {
 				log.Error(err.Error())
 				continue

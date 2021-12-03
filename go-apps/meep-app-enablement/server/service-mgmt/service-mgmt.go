@@ -1338,7 +1338,7 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 		}
 		serAvailabilityRef := ServiceAvailabilityNotificationServiceReferences{
 			Link: &LinkType{
-				Href: hostUrl.String() + basePath + "applications/" + sInfo.SerInstanceId,
+				Href: hostUrl.String() + basePath + "services/" + sInfo.SerInstanceId,
 			},
 			SerName:       sInfo.SerName,
 			SerInstanceId: sInfo.SerInstanceId,
