@@ -45,14 +45,14 @@ The following steps need to be done prior to running demo 3
 | 1. Login via the MEC Sandbox frontend |  |
 | 2. Select a network to deploy in the user sandbox |  |
 | 3a. Pre-configure MEC Application named `demo3-config.yaml` under Demo 3 backend directory refer to - [File Structure](#file-structure)  | Fill configuration fields <br> `mode:  'sandbox' `| 
-| 3b. Pre-configure MEC Application `sandbox` with Application Enablement service endpoints | Example: <br> `sandbox: 'https://try-mec.etsi.org/<my-sandbox-key>/<mep-host>'` <br> MEC Application will learn MEC services availability via mep host interface
-| 3c. Pre-configure MEC Application `https` if sandbox url is using https and `mepplatform` with mec platform name demo-3 will run on |  Example: <br> `https: 'false'` <br> `mecplatform: 'mep1' `| 
+| 3b. Pre-configure MEC Application `sandbox` with API service endpoints <br> Example: `sandbox: 'https://try-mec.etsi.org/<my-sandbox-key>/<mep-host>'`  | The endpoint should include up to mep host name as MEC Application will learn MEC services availability via mep host interface
+| 3c. Pre-configure MEC Application `https` if sandbox url is using https and `mecplatform` with mec platform name demo-3 is on. <br> Example: `https: false` <br> `mecplatform: 'mep1' ` | mecplatform uses the same value as mep host name part of sandbox API service endpoint
 | 3d. Pre-configure MEC Application `appid` with an Application Instance ID (e.g. appInstanceId) | 
-| 3e. Pre-configure MEC Application `localurl` with your I.P address and `port` to indicate port number that demo3 server will run at | `localurl: 'http://<my-ip-address>'` <br> `port: '<my-port-number>'` 
+| 3e. Pre-configure MEC Application `localurl` with your I.P address and `port` to indicate port number that demo3 server will run at. <br> Example: `localurl: 'http://<my-ip-address>'` <br> `port: '<my-port-number>'`  | 
 | 4. Optional: If running a dual mep scenario on MEC sandbox. The above steps needs to be repeated to run a seperate instance of demo 3 application by applying configurations into `demo3-config-instance-two.yaml` |  | 
 
 How configuration is expected :
-```sh .env
+```shell
 # This file defines the configuration of Demo3 edge application. All fields are required to run demo-3 on MEC Sandbox 
 
 # Set where mec application is running either on MEC Sandbox or AdvantEDGE. Expected fields: sandbox | advantedge
@@ -69,45 +69,21 @@ appid: ''
 localurl: 'http://{local-url}/'
 # Set host port number of demo-3. Example field: '8093'
 port: '8093'
-
 ```
 
-### Build Demo 3 Server
+### Build Demo 3
+1. Build _demo-server_ binaries from source code:
+```
+cd ~/AdvantEDGE/examples/demo3/
+./build-demo3.sh
+```
+2. Execute Demo3 binaries passing argument of the path to configuration file
+```
+cd  ~/AdvantEDGE/examples/demo3/bin/demo-server
+./demo-server ../../src/backend/util/demo3-config
+```
+3. Open the browser at the port specified in configuration to launch Demo 3 frontend
 
-```shell
-# Build demo 3 backend binary 
-cd AdvantEdge/examples/demo3/src/backend
-go build -o demo-server .
-go run demo-server mep1.yaml
-```
-
-### Build Demo 3 Frontend 
-1. Change directories to demo 3 frontend
-```
-cd ~/AdvantEDGE/examples/demo3/src/frontend
-```
-2. Install dependencies
-```
-npm i 
-```
-3. Repeat above step by installing dependencies for frontend client package
-```
-cd ~/AdvantEDGE/examples/demo3/src/client
-npm i 
-```
-4. Set up your .env file with values of where demo 3 backend is served  
-```
-cd AdvantEdge/examples/demo3/src
-# Modify .env
-# Apply configurations 
-ENVIRONMENT=SANDBOX
-URL=http://<my-ip-address>:<my-demo3-port-number>
-```
-5. Run demo 3 in development mode or build into binaries
-```
-npm run build:dev
-npm run build
-```
 
 ## Demo 3 AdvantEdge Procedure
 
