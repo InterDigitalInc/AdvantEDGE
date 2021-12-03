@@ -23,8 +23,6 @@ import { TextField } from '@rmwc/textfield';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-
-
 // custom package
 import Header from '@/js/components/Layout/Header';
 import ActivityPane from '@/js/components/Pane/AppInfo';
@@ -37,19 +35,15 @@ import * as demoSvcRestApiClient from '../../../../client/src/index.js';
 // import css
 import '@/css/global.css';
 
-
 export default function Homepage() {
-  // MEEP Demo REST API JS Client 
+  // MEEP Demo REST API JS Client
   // Configure server url based on environmental variable externally or preset internally
 
-  var basepath; 
-  if (process.env.ENVIRONMENT === 'SANDBOX') {
-    basepath = 'http://' + process.env.URL;
-  } else {
-    basepath = 'http://' + location.host + location.pathname;
-  }
+  var basepath;
+ 
+  basepath = 'http://' + location.host + location.pathname;
   
-  
+
   demoSvcRestApiClient.ApiClient.instance.basePath = basepath.replace(
     /\/+$/,
     ''
@@ -66,10 +60,9 @@ export default function Homepage() {
   const [registered, setRegisteration] = useState(false);
   const [start, setStart] = useState(false);
   const [modal, setModal] = useState(false);
-  const [amsStart, setAmsStart] = useState(false);
   const [amsModal, setAmsModal] = useState(false);
 
-  // Inital loading 
+  // Inital loading
   useEffect(() => {
     appInfoApi.getPlatformInfo((error, data, response) => {
       if (error !== null) {
@@ -80,13 +73,16 @@ export default function Homepage() {
     });
   }, []);
 
- 
+  var i = 0;
   // If app is registered & added terminal device
-  // Perform polling on ams 
+  // Perform polling on ams
   useEffect(() => {
-    if (registered ) {
+    if (registered) {
+      i++;
+      console.log(i);
       const interval = setInterval(() => {
-        appInfoApi.getAmsDevices( (error, data, response) => {
+        console.log('hi');
+        appInfoApi.getAmsDevices((error, data, response) => {
           if (error !== null) {
             console.log(error);
           } else {
@@ -102,6 +98,7 @@ export default function Homepage() {
   // Perform polling on app info
   useEffect(() => {
     if (registered) {
+      console.log('bye  ');
       const interval = setInterval(() => {
         appInfoApi.getPlatformInfo((error, data, response) => {
           if (error != null) {
@@ -116,9 +113,10 @@ export default function Homepage() {
   }, [appInfo, registered]);
 
   // If app is registered or activity log changes
-  // Peform polling activity logs 
+  // Peform polling activity logs
   useEffect(() => {
     if (registered) {
+      console.log('zzz');
       const interval = setInterval(() => {
         appInfoApi.getActivityLogs((error, data, response) => {
           if (error != null) {
@@ -132,7 +130,7 @@ export default function Homepage() {
     }
   }, [appLog, registered]);
 
-  // Stop polling app info 
+  // Stop polling app info
   // Turn registeration to false + clean activity info + one request to app info + one request to ams
   const deRegisterapp = async () => {
     setAppInfo({});
@@ -143,7 +141,7 @@ export default function Homepage() {
       if (err != null) {
         console.log(err);
       }
-      appInfoApi.getActivityLogs( (error, data, response) => {
+      appInfoApi.getActivityLogs((error, data, response) => {
         if (error != null) {
           console.log(error);
         } else {
@@ -164,12 +162,12 @@ export default function Homepage() {
 
   const removeAmsDevice = async (device) => {
     let mutableArray = terminalDevices;
-    
+
     appInfoApi.deleteAmsDevice(device, (err, data, resp) => {
       if (err != null) {
         console.log(err);
       } else {
-        const result = mutableArray.filter(e => e != device );
+        const result = mutableArray.filter((e) => e != device);
         setTerminalDevices(result);
       }
     });
@@ -183,24 +181,23 @@ export default function Homepage() {
         if (err != null) {
           console.log(err);
         } else {
-          setTerminalDevices(e => [... e, textValue]); 
+          setTerminalDevices((e) => [...e, textValue]);
         }
       });
-    }      
+    }
   };
 
   return (
     <ThemeProvider theme={theme}>
-      <div className="ui-background" style={{ height: '100%' }}>
+      <div>
         <Header></Header>
-        <Container maxWidth="100vw" sx={{ mt: 2, mb: 4 }}>
+        <Container maxWidth="100vw" sx={{ mt: 2 }}>
           <Grid style={styles.headlineGrid}>
             <GridCell span="5">
               <ActivityPane data={appInfo}></ActivityPane>
             </GridCell>
             <GridCell span="2">
               <div>
-            
                 <Button
                   outlined
                   color="themecolor"
@@ -209,21 +206,18 @@ export default function Homepage() {
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
                   onClick={() => {
-                    appInfoApi.register(
-                      (err, data, resp) => {
-                        if (err != null) {
-                          console.log(err);
-                        } else {
-                          setAppInfo(resp.body);
-                          setRegisteration(true);
-                        }
+                    appInfoApi.register((err, data, resp) => {
+                      if (err !== null) {
+                        console.log(err);
+                      } else {
+                        setAppInfo(resp.body);
+                        setRegisteration(true);
                       }
-                    );
+                    });
                   }}
                 >
-                Register Application
+                  Register Application
                 </Button>
-            
               </div>
               <div>
                 <Button
@@ -237,7 +231,7 @@ export default function Homepage() {
                     setStart(true);
                   }}
                 >
-                De-Register Application
+                  De-Register Application
                 </Button>
 
                 <Dialog
@@ -247,10 +241,10 @@ export default function Homepage() {
                   }}
                 >
                   <DialogTitle theme="primary" style={styles.title}>
-                  Confirm
+                    Confirm
                   </DialogTitle>
                   <DialogContent>
-                  Clear Mec Resource for Mec Application Demo 3?
+                    Clear Mec Resource for Mec Application Demo 3?
                   </DialogContent>
                   <DialogActions>
                     <DialogButton action="close">Cancel</DialogButton>
@@ -259,7 +253,7 @@ export default function Homepage() {
                       isDefaultAction
                       onClick={deRegisterapp}
                     >
-                    Confirm
+                      Confirm
                     </DialogButton>
                   </DialogActions>
                 </Dialog>
@@ -277,7 +271,7 @@ export default function Homepage() {
                     setModal(true);
                   }}
                 >
-                Add AMS Device
+                  Add AMS Device
                 </Button>
               </div>
               <Dialog
@@ -300,12 +294,11 @@ export default function Homepage() {
                   <DialogButton
                     action="accept"
                     isDefaultAction
-                    onClick={(e) => {
-                      setAmsStart(true);
+                    onClick={() => {
                       addTerminalDevices();
                     }}
                   >
-                  Confirm
+                    Confirm
                   </DialogButton>
                 </DialogActions>
               </Dialog>
@@ -320,7 +313,7 @@ export default function Homepage() {
                   setAmsModal(true);
                 }}
               >
-              Remove AMS Device
+                Remove AMS Device
               </Button>
 
               <Dialog
@@ -330,7 +323,7 @@ export default function Homepage() {
                 }}
               >
                 <DialogTitle theme="primary" style={styles.title}>
-                Confirm
+                  Confirm
                 </DialogTitle>
                 <DialogContent>Delete device from AMS Resource?</DialogContent>
                 <TextField
@@ -348,14 +341,14 @@ export default function Homepage() {
                     isDefaultAction
                     onClick={() => removeAmsDevice(textValue)}
                   >
-                  Confirm
+                    Confirm
                   </DialogButton>
                 </DialogActions>
               </Dialog>
             </GridCell>
-            <GridCell span="5">
+            <GridCell span="5" className={{ height: '100vh' }}>
               <LogPane data={appLog}></LogPane>
-              <AmsPane data={amsLog} style={{ marginTop: '5px' }}></AmsPane>
+              <AmsPane data={amsLog}></AmsPane>
             </GridCell>
           </Grid>
         </Container>
@@ -376,6 +369,6 @@ const styles = {
 
 const theme = createTheme({
   palette: {
-    themecolor: palette.augmentColor({ color: { main: '#379DD8'} })
+    themecolor: palette.augmentColor({ color: { main: '#379DD8' } })
   }
 });

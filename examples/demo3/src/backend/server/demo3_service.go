@@ -116,39 +116,39 @@ func startTicker() {
 			}
 
 			// Error handling if cannot retrieve mec services
-			discoveredServices, err := getMecServices()
-			if err != nil {
-				log.Error("Error polling mec services")
-				// Display on activity log
-				appActivityLogs = append(appActivityLogs, "Cannot retrieve mec services app will now shut down, please restart scenario!")
+			// discoveredServices, err := getMecServices()
+			// if err != nil {
+			// 	log.Error("Error polling mec services")
+			// 	// Display on activity log
+			// 	appActivityLogs = append(appActivityLogs, "Cannot retrieve mec services app will now shut down, please restart scenario!")
 
-				// Terminate graceful shutdown
-				Terminate()
+			// 	// Terminate graceful shutdown
+			// 	Terminate()
 
-				// Kill program
-				done <- true
-				return
-			}
+			// 	// Kill program
+			// 	done <- true
+			// 	return
+			// }
 
 			// Clean discovered services
-			demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
+			// demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
 
 			// Store discovered service name into app info model
 			// Store service as a map using service name as key and url as value
 			// to lookup url using service name in O(1)
-			mecServicesMap = make(map[string]string)
-			var tempService ApplicationInstanceDiscoveredServices
-			for _, e := range discoveredServices {
-				tempService.SerName = e.SerName
-				tempService.SerInstanceId = e.SerInstanceId
-				tempService.ConsumedLocalOnly = e.ConsumedLocalOnly
-				tempService.Link = e.TransportInfo.Endpoint.Uris[0]
-				tempService.Version = e.TransportInfo.Version
+			// mecServicesMap = make(map[string]string)
+			// var tempService ApplicationInstanceDiscoveredServices
+			// for _, e := range discoveredServices {
+			// 	tempService.SerName = e.SerName
+			// 	tempService.SerInstanceId = e.SerInstanceId
+			// 	tempService.ConsumedLocalOnly = e.ConsumedLocalOnly
+			// 	tempService.Link = e.TransportInfo.Endpoint.Uris[0]
+			// 	tempService.Version = e.TransportInfo.Version
 
-				demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
+			// 	demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
 
-				mecServicesMap[tempService.SerName] = tempService.Link
-			}
+			// 	mecServicesMap[tempService.SerName] = tempService.Link
+			// }
 		}
 	}()
 }
@@ -167,6 +167,7 @@ func Init(envPath string, envName string) (port string, err error) {
 		environment = "sandbox"
 
 		mecUrl = config.SandboxUrl
+
 		// check if mec url is running behind https
 		if config.HttpsOnly {
 			if !strings.HasPrefix(mecUrl, "https://") {
@@ -178,7 +179,7 @@ func Init(envPath string, envName string) (port string, err error) {
 			}
 		}
 
-		if !strings.HasSuffix(mecUrl, "/") {
+		if strings.HasSuffix(mecUrl, "/") {
 			mecUrl = strings.TrimSuffix(mecUrl, "/")
 		}
 
@@ -201,7 +202,7 @@ func Init(envPath string, envName string) (port string, err error) {
 	if !strings.HasPrefix(localUrl, "http://") {
 		localUrl = "http://" + localUrl
 	}
-	if !strings.HasSuffix(localUrl, "/") {
+	if strings.HasSuffix(localUrl, "/") {
 		localUrl = strings.TrimSuffix(localUrl, "/")
 	}
 
@@ -310,6 +311,41 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		// Check if app is successfully registered
 		appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application ["+demoRegisteratonStatus+"]")
 
+		var err error
+
+		// Register demo app service
+		registeredService, errors := registerService(instanceName, callBackUrl)
+		if errors != nil {
+			appActivityLogs = append(appActivityLogs, "Error registering MEC service")
+			http.Error(w, errors.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			serviceRegistered = true
+		}
+
+		discoveredServices, err := getMecServices()
+		if err != nil {
+
+		}
+		demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
+
+		// Store discovered service name into app info model
+		// Store service as a map using service name as key and url as value
+		// to lookup url using service name in O(1)
+		mecServicesMap = make(map[string]string)
+		var tempService ApplicationInstanceDiscoveredServices
+		for _, e := range discoveredServices {
+			tempService.SerName = e.SerName
+			tempService.SerInstanceId = e.SerInstanceId
+			tempService.ConsumedLocalOnly = e.ConsumedLocalOnly
+			tempService.Link = e.TransportInfo.Endpoint.Uris[0]
+			tempService.Version = e.TransportInfo.Version
+
+			demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
+
+			mecServicesMap[tempService.SerName] = tempService.Link
+		}
+
 		// Send confirm ready
 		confirmErr := sendReadyConfirmation(instanceName)
 		if confirmErr != nil {
@@ -333,6 +369,7 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 
 		// Subscribe to service availability
 		svcCallBackReference := callBackUrl + "/services/callback/service-availability"
+
 		svcSubscriptionId, err := subscribeAvailability(instanceName, svcCallBackReference)
 		if err == nil {
 			svcSubscriptionSent = true
@@ -342,16 +379,6 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		var serSubscription ApplicationInstanceSerAvailabilitySubscription
 		serSubscription.SubId = svcSubscriptionId
 		subscriptions.SerAvailabilitySubscription = &serSubscription
-
-		// Register demo app service
-		registeredService, errors := registerService(instanceName, callBackUrl)
-		if errors != nil {
-			appActivityLogs = append(appActivityLogs, "Error registering MEC service")
-			http.Error(w, errors.Error(), http.StatusInternalServerError)
-			return
-		} else {
-			serviceRegistered = true
-		}
 
 		// Store demo app service into app info model
 		var serviceLocality = LocalityType(scopeOfLocality)
@@ -636,11 +663,18 @@ func demo3Deregister(w http.ResponseWriter, r *http.Request) {
 
 // REST API handle service subscription callback notification
 func serviceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
+
 	// Decode request body
 	var notification smc.ServiceAvailabilityNotification
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&notification)
-	// Parse request param to show on logs
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error Decoding Notification")
+	}
+	log.Info("Received service availability notification")
+
 	msg := ""
 	if notification.ServiceReferences[0].ChangeType == "ADDED" {
 		msg = "Available"
@@ -648,14 +682,37 @@ func serviceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		msg = "Unavailable"
 	}
 
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		appActivityLogs = append(appActivityLogs, mep+" Event: Service Availability change, "+notification.ServiceReferences[0].SerName+" service "+msg+" [500]")
-		return
-	}
+	if msg == "Available" {
+		// Retrieve MEC service by serviceId
+		serviceId := notification.ServiceReferences[0].SerInstanceId
+		svcInfo, _, err := srvMgmtClient.MecServiceMgmtApi.ServicesServiceIdGET(context.TODO(), serviceId)
+		if err != nil {
+			log.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error Retrieving MEC Services")
+			appActivityLogs = append(appActivityLogs, mep+" Event: Service Availability change, "+notification.ServiceReferences[0].SerName+" service "+msg+" [500]")
+		}
 
-	log.Info("Received service availability notification")
+		// Update Discovered Service
+		tempService := ApplicationInstanceDiscoveredServices{
+			SerName:           svcInfo.SerName,
+			SerInstanceId:     svcInfo.SerInstanceId,
+			ConsumedLocalOnly: svcInfo.ConsumedLocalOnly,
+			Link:              svcInfo.TransportInfo.Endpoint.Uris[0],
+			Version:           svcInfo.TransportInfo.Version,
+		}
+		demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
+		mecServicesMap[tempService.SerName] = tempService.Link
+	} else {
+		// Remove Service from Discovered Service
+		for i, e := range demoAppInfo.DiscoveredServices {
+			if e.SerName == notification.ServiceReferences[0].SerName {
+				demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices[:i], demoAppInfo.DiscoveredServices[i+1:]...)
+				return
+			}
+		}
+		delete(mecServicesMap, notification.ServiceReferences[0].SerName)
+	}
 
 	state := ""
 	if *notification.ServiceReferences[0].State == smc.ACTIVE_ServiceState {
@@ -1281,7 +1338,7 @@ func Terminate() {
 			//Delete app subscriptions
 			err := delAppTerminationSubscription(instanceName, demoAppInfo.Subscriptions.AppTerminationSubscription.SubId)
 			if err == nil {
-				log.Info("Delete App-termination subscription")
+				log.Info("Deleted App-termination subscription")
 				demoAppInfo.Subscriptions.AppTerminationSubscription.SubId = ""
 				appTerminationSent = false
 			}
@@ -1290,9 +1347,7 @@ func Terminate() {
 			if svcSubscriptionSent {
 				err := delsubscribeAvailability(instanceName, demoAppInfo.Subscriptions.SerAvailabilitySubscription.SubId)
 				if err == nil {
-					log.Info("line 1050")
-
-					log.Info("Delete Service-avail subscription")
+					log.Info("Deleted Service-avail subscription")
 					svcSubscriptionSent = false
 					demoAppInfo.Subscriptions.SerAvailabilitySubscription.SubId = ""
 				}
@@ -1303,7 +1358,7 @@ func Terminate() {
 				err := unregisterService(instanceName, appEnablementServiceId)
 				if err == nil {
 
-					log.Info("Delete Demo3 service")
+					log.Info("Deleted Demo3 service")
 					serviceRegistered = false
 					demoAppInfo.OfferedService = nil
 				}
@@ -1314,7 +1369,7 @@ func Terminate() {
 				err := delAmsService(amsResourceId)
 				if err == nil {
 
-					log.Info("Delete AMS resource")
+					log.Info("Deleted AMS resource")
 					amsServiceCreated = false
 					demoAppInfo.AmsResource = false
 				}
@@ -1326,7 +1381,7 @@ func Terminate() {
 				err := deleteAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
 				if err == nil {
 
-					log.Info("Delete AMS subscription")
+					log.Info("Deleted AMS subscription")
 					demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId = ""
 					amsSubscriptionSent = false
 				}
