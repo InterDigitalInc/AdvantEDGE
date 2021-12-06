@@ -57,16 +57,15 @@ var amsResourceId string
 var amsTargetId string
 var orderedAmsAdded = []string{}
 
-// Api edge case handling
 var svcSubscriptionSent bool
 var appTerminationSent bool
 var serviceRegistered bool
 var amsSubscriptionSent bool
 var amsServiceCreated bool
+var terminated bool
+var terminateNotification bool
+var appEnablementEnabled bool
 
-var terminated bool = false
-var terminateNotification bool = false
-var appEnablementEnabled bool = false
 var demoRegisteratonStatus string
 
 // Config fields
@@ -101,74 +100,38 @@ var trackDevices []string                      // Devices currently using instan
 var terminalDevices map[string]string          // All devices registered under ams
 var terminalDeviceState = make(map[string]int) // All devices registered under ams and their state
 
-// Initiaze ticker to poll mec services and increment terminal device state every second
-// It modifies discovered services & state of terminal device using this instance
-// Stop ticker if deregister app or receive err
+// Initiaze ticker to increment terminal device state every second
 func startTicker() {
 	intervalTicker = time.NewTicker(1 * time.Second)
 	go func() {
 		for range intervalTicker.C {
-			// Increment every terminal device state by 1
+			// Increment terminal device state by 1
 			for _, device := range trackDevices {
 				terminalDeviceState[device] += 1
 				stateAsString := strconv.Itoa(terminalDeviceState[device])
 				terminalDevices[device] = device + " using this instance" + "(state=" + stateAsString + ")"
 			}
-
-			// Error handling if cannot retrieve mec services
-			// discoveredServices, err := getMecServices()
-			// if err != nil {
-			// 	log.Error("Error polling mec services")
-			// 	// Display on activity log
-			// 	appActivityLogs = append(appActivityLogs, "Cannot retrieve mec services app will now shut down, please restart scenario!")
-
-			// 	// Terminate graceful shutdown
-			// 	Terminate()
-
-			// 	// Kill program
-			// 	done <- true
-			// 	return
-			// }
-
-			// Clean discovered services
-			// demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
-
-			// Store discovered service name into app info model
-			// Store service as a map using service name as key and url as value
-			// to lookup url using service name in O(1)
-			// mecServicesMap = make(map[string]string)
-			// var tempService ApplicationInstanceDiscoveredServices
-			// for _, e := range discoveredServices {
-			// 	tempService.SerName = e.SerName
-			// 	tempService.SerInstanceId = e.SerInstanceId
-			// 	tempService.ConsumedLocalOnly = e.ConsumedLocalOnly
-			// 	tempService.Link = e.TransportInfo.Endpoint.Uris[0]
-			// 	tempService.Version = e.TransportInfo.Version
-
-			// 	demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
-
-			// 	mecServicesMap[tempService.SerName] = tempService.Link
-			// }
 		}
 	}()
 }
 
-// Initialize app info apply configurations & configure client package
+// Init - Config & Client Package initialization
 func Init(envPath string, envName string) (port string, err error) {
+
+	// Retrieve environmental variable
 	var config util.Config
 	log.Info("Using config values from  ", envPath, "/", envName)
 	config, err = util.LoadConfig(envPath, envName)
 	if err != nil {
-		log.Fatal("Fail to load configuration file ", err)
+		log.Fatal("Failed to load configuration file: ", err)
 	}
 
-	// check if app is running externally or on advantedge
+	// Retrieve environment
 	if config.Mode == "sandbox" {
 		environment = "sandbox"
-
+		// mecUrl is the url of the sandbox system
 		mecUrl = config.SandboxUrl
-
-		// check if mec url is running behind https
+		// Configure mecUrl to use https
 		if config.HttpsOnly {
 			if !strings.HasPrefix(mecUrl, "https://") {
 				mecUrl = "https://" + mecUrl
@@ -192,13 +155,13 @@ func Init(envPath string, envName string) (port string, err error) {
 		localUrl = config.Localurl
 
 	} else {
-		log.Fatal("Config field mode should be set to advantedge or sandbox")
+		log.Fatal("Missing field for mode, should be set to advantedge or sandbox")
 	}
 
+	// Retrieve mec demo3 url & port
 	if !strings.HasPrefix(localPort, ":") {
 		localPort = ":" + localPort
 	}
-
 	if !strings.HasPrefix(localUrl, "http://") {
 		localUrl = "http://" + localUrl
 	}
@@ -206,11 +169,10 @@ func Init(envPath string, envName string) (port string, err error) {
 		localUrl = strings.TrimSuffix(localUrl, "/")
 	}
 
-	// Load mec platform name & host url
+	// Retrieve mec platform name
 	mep = config.MecPlatform
 
-	// If running internally in advantedge create a mec application resource else
-	// Apply config for app id, mec url path
+	// If demo3 starts on advantedge then create a mec application resource
 	if environment == "advantedge" {
 		sandBoxClientCfg := sbx.NewConfiguration()
 		sandBoxClientCfg.BasePath = sbxCtrlUrl + "/sandbox-ctrl/v1"
@@ -218,10 +180,9 @@ func Init(envPath string, envName string) (port string, err error) {
 		if sandBoxClient == nil {
 			return "", errors.New("Failed to create Sandbox Controller REST API client")
 		}
-		// Create app resource & retrieve app id
 		instanceId, err := getAppInstanceId()
 		if err != nil {
-			log.Error("Failed to register mec application resource", err)
+			return "", errors.New("Failed to register mec application resource")
 		}
 		instanceName = instanceId
 	} else {
@@ -229,8 +190,6 @@ func Init(envPath string, envName string) (port string, err error) {
 	}
 
 	// Setup application support client & service management client
-	// If running on advantedge prepend mecplatform name to static endpoint
-	// If running on sandbox set callback url by prepend mec sandbox url to a static endpoint
 	appSupportClientCfg := asc.NewConfiguration()
 	srvMgmtClientCfg := smc.NewConfiguration()
 	if environment == "advantedge" {
@@ -253,25 +212,23 @@ func Init(envPath string, envName string) (port string, err error) {
 		return "", errors.New("Failed to create App Enablement Service Management REST API client")
 	}
 
-	// Store configuration variables in demo app info object
+	// Prepend url & port into callbackurl
+	callBackUrl = localUrl + localPort
+
+	// Initialize demo3 app info
 	demoAppInfo.Config = envName
 	demoAppInfo.Url = mecUrl
 	demoAppInfo.Name = mep
 	demoAppInfo.Id = instanceName
-	demoAppInfo.Ip = localUrl + localPort
+	demoAppInfo.Ip = callBackUrl
 
-	// Prepend url & port store in callbackurl
-	callBackUrl = localUrl + localPort
-
-	// Store registeration status
-
-	demoRegisteratonStatus = strconv.Itoa(200)
+	// Update status
+	demoRegisteratonStatus = "200"
 	log.Info("Starting Demo 3 instance on Port=", localPort, " using app instance id=", instanceName, " mec platform=", mep)
 	return localPort, nil
 }
 
-// Create a mec resource on platform
-// return app id
+// Create a mec resource on platform then return app id
 func getAppInstanceId() (id string, err error) {
 	var appInfo sbx.ApplicationInfo
 	appInfo.Name = serviceCategory
@@ -281,53 +238,52 @@ func getAppInstanceId() (id string, err error) {
 	appInfo.Type_ = &appType
 	state := sbx.INITIALIZED_ApplicationState
 	appInfo.State = &state
-	response, resp, err := sandBoxClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
+	response, _, err := sandBoxClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
+		demoRegisteratonStatus = "500"
 		log.Error("Failed to get App Instance ID with error: ", err)
 		return "", err
 	}
 	// Store app activity log demo3 application successfully registered
-	demoRegisteratonStatus = strconv.Itoa(resp.StatusCode)
 
 	return response.Id, nil
 }
 
-// REST API - Starts ticker for polling
-// Send confirm ready & create ams resource & subscriptions & service
-// Returns app info static state
+// REST API - Demo3 confirm acknowledgement, create ams resource & subscriptions & mec service
 func demo3Register(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Start app registeration ticker counter & initiate polling
+	// Start app registeration ticker counter
 	if !appEnablementEnabled {
 		startTicker()
 		time.Sleep(time.Second)
 
-		// If app is restarted, re-initialize ams resource & app activity log
+		// If app is restarted, clean app activity & terminal devices & discovered services
 		appActivityLogs = []string{}
 		terminalDevices = make(map[string]string)
+		demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
 
-		// Check if app is successfully registered
 		appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application ["+demoRegisteratonStatus+"]")
 
 		var err error
 
 		// Register demo app service
-		registeredService, errors := registerService(instanceName, callBackUrl)
-		if errors != nil {
-			appActivityLogs = append(appActivityLogs, "Error registering MEC service")
-			http.Error(w, errors.Error(), http.StatusInternalServerError)
+		registeredService, err := registerService(instanceName, callBackUrl)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		} else {
 			serviceRegistered = true
 		}
 
+		// Retrieve mec services
 		discoveredServices, err := getMecServices()
 		if err != nil {
-
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
 
 		// Store discovered service name into app info model
 		// Store service as a map using service name as key and url as value
@@ -340,17 +296,15 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 			tempService.ConsumedLocalOnly = e.ConsumedLocalOnly
 			tempService.Link = e.TransportInfo.Endpoint.Uris[0]
 			tempService.Version = e.TransportInfo.Version
-
 			demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
-
 			mecServicesMap[tempService.SerName] = tempService.Link
 		}
 
 		// Send confirm ready
-		confirmErr := sendReadyConfirmation(instanceName)
-		if confirmErr != nil {
+		err = sendReadyConfirmation(instanceName)
+		if err != nil {
 			// Add to activity log for error indicator
-			http.Error(w, confirmErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		demoAppInfo.MecReady = true
@@ -446,9 +400,7 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 
 // REST API retrieve app instance info
 func demo3GetPlatformInfo(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	// Send resp
 	jsonResponse, err := json.Marshal(demoAppInfo)
 	if err != nil {
@@ -463,13 +415,9 @@ func demo3GetPlatformInfo(w http.ResponseWriter, r *http.Request) {
 // REST API retrieve activity logs
 func demo3GetActivityLogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	var resp []string
-	// Retrieve newest logs
-
 	for i := len(appActivityLogs) - 1; i >= 0; i-- {
 		lineNumber := strconv.Itoa(i)
-
 		resp = append(resp, lineNumber+". "+appActivityLogs[i])
 	}
 
@@ -1113,13 +1061,8 @@ func sendReadyConfirmation(appInstanceId string) error {
 func getMecServices() ([]smc.ServiceInfo, error) {
 	appServicesResponse, _, err := srvMgmtClient.MecServiceMgmtApi.ServicesGET(context.TODO(), nil)
 	if err != nil {
-		log.Error("Failed to fetch services on mec platform ", err)
+		log.Error("Failed to retrieve mec services on platform ", err)
 		return nil, err
-	}
-
-	// Store mec services name & url as map for ams retrival
-	for i := 0; i < len(appServicesResponse); i++ {
-		mecServicesMap[appServicesResponse[i].SerName] = appServicesResponse[i].TransportInfo.Endpoint.Uris[0]
 	}
 
 	return appServicesResponse, nil
@@ -1159,9 +1102,9 @@ func registerService(appInstanceId string, callBackUrl string) (smc.ServiceInfo,
 	localityType := smc.LocalityType(scopeOfLocality)
 	srvInfo.ScopeOfLocality = &localityType
 	srvInfo.ConsumedLocalOnly = consumedLocalOnly
-	appServicesPostResponse, resp, err := srvMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
+	appServicesPostResponse, _, err := srvMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
-		log.Error("Failed to register service resource on mec app enablement registry: ", resp.Status)
+		log.Error("Failed to register service resource on mec app enablement registry: ", err)
 		return appServicesPostResponse, err
 	}
 	appEnablementServiceId = appServicesPostResponse.SerInstanceId
