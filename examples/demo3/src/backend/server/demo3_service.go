@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -172,6 +173,23 @@ func Init(envPath string, envName string) (port string, err error) {
 	// Retrieve mec platform name
 	mep = config.MecPlatform
 
+	// Setup application support client & service management client
+	appSupportClientCfg := asc.NewConfiguration()
+	srvMgmtClientCfg := smc.NewConfiguration()
+	if environment == "advantedge" {
+		if mep != "" {
+			appSupportClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_app_support/v1"
+			srvMgmtClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_service_mgmt/v1"
+		} else {
+			appSupportClientCfg.BasePath = "http://meep-app-enablement/mec_app_support/v1"
+			srvMgmtClientCfg.BasePath = "http://meep-app-enablement/mec_service_mgmt/v1"
+			mep = os.Getenv("MEEP_MEP_NAME")
+		}
+	} else {
+		appSupportClientCfg.BasePath = mecUrl + "/mec_app_support/v1"
+		srvMgmtClientCfg.BasePath = mecUrl + "/mec_service_mgmt/v1"
+	}
+
 	// If demo3 starts on advantedge then create a mec application resource
 	if environment == "advantedge" {
 		sandBoxClientCfg := sbx.NewConfiguration()
@@ -189,16 +207,6 @@ func Init(envPath string, envName string) (port string, err error) {
 		instanceName = config.AppInstanceId
 	}
 
-	// Setup application support client & service management client
-	appSupportClientCfg := asc.NewConfiguration()
-	srvMgmtClientCfg := smc.NewConfiguration()
-	if environment == "advantedge" {
-		appSupportClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_app_support/v1"
-		srvMgmtClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_service_mgmt/v1"
-	} else {
-		appSupportClientCfg.BasePath = mecUrl + "/mec_app_support/v1"
-		srvMgmtClientCfg.BasePath = mecUrl + "/mec_service_mgmt/v1"
-	}
 	// Create app enablement client
 	appSupportClient = asc.NewAPIClient(appSupportClientCfg)
 	appSupportClientPath = appSupportClientCfg.BasePath
