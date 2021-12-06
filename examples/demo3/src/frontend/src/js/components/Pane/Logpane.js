@@ -5,7 +5,7 @@ import Title from '@/js/components/Title';
 import '@material/typography/dist/mdc.typography.css';
 export default function LogPane({ data }) {
   // Generate data
-  function createData(data) {
+  function renderActivity(data) {
     if (data) {
       return data.map((element) => {
         return (
@@ -26,7 +26,7 @@ export default function LogPane({ data }) {
       >
         <Title>Activity Logs</Title>
         <div style={{ height: '45vh', overflowX: 'auto', overflowY: 'auto', whiteSpace: 'nowrap'}}>
-          {createData(data)}
+          {renderActivity(data)}
         </div>
       </Elevation>
     </div>

@@ -6,7 +6,7 @@ import Title from '@/js/components/Title';
 import '@material/typography/dist/mdc.typography.css';
 export default function AmsPane({ data }) {
   // Generate data
-  function createData(data) { 
+  function renderAms(data) { 
     if (data) {
       return data.map((element) => {
         return (
@@ -32,7 +32,7 @@ export default function AmsPane({ data }) {
         >
           <Title>AMS Terminal Device</Title>
           <div style={{ height: '45vh', overflowY: 'auto' }}>
-            {createData(data)}
+            {renderAms(data)}
           </div>
         </Grid>
       </Elevation>

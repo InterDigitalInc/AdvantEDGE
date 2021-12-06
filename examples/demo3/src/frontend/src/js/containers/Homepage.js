@@ -66,25 +66,24 @@ export default function Homepage() {
   useEffect(() => {
     appInfoApi.getPlatformInfo((error, data, response) => {
       if (error !== null) {
-        console.log(error);
+        // console.log(error);
       } else {
         setAppInfo(response.body);
       }
     });
   }, []);
 
-  var i = 0;
+
   // If app is registered & added terminal device
   // Perform polling on ams
   useEffect(() => {
     if (registered) {
-      i++;
-      console.log(i);
+    
       const interval = setInterval(() => {
-        console.log('hi');
+
         appInfoApi.getAmsDevices((error, data, response) => {
           if (error !== null) {
-            console.log(error);
+            // console.log(error);
           } else {
             setAmsLog(response.body);
           }
@@ -98,11 +97,11 @@ export default function Homepage() {
   // Perform polling on app info
   useEffect(() => {
     if (registered) {
-      console.log('bye  ');
+   
       const interval = setInterval(() => {
         appInfoApi.getPlatformInfo((error, data, response) => {
-          if (error != null) {
-            console.log(error);
+          if (error !== null) {
+            //      console.log(error);
           } else {
             setAppInfo(response.body);
           }
@@ -116,11 +115,10 @@ export default function Homepage() {
   // Peform polling activity logs
   useEffect(() => {
     if (registered) {
-      console.log('zzz');
       const interval = setInterval(() => {
         appInfoApi.getActivityLogs((error, data, response) => {
-          if (error != null) {
-            console.log(error);
+          if (error !== null) {
+            //console.log(error);
           } else {
             setAppLog(response.body);
           }
@@ -138,19 +136,19 @@ export default function Homepage() {
     setRegisteration(false);
     setTerminalDevices([]);
     appInfoApi.deregister((err, data, resp) => {
-      if (err != null) {
-        console.log(err);
+      if (err !== null) {
+        // console.log(err);
       }
       appInfoApi.getActivityLogs((error, data, response) => {
-        if (error != null) {
-          console.log(error);
+        if (error !== null) {
+        //  console.log(error);
         } else {
           setAppLog(response.body);
         }
       });
       appInfoApi.getPlatformInfo((error, data, response) => {
-        if (error != null) {
-          console.log(error);
+        if (error !==null) {
+          // console.log(error);
         } else {
           setAppInfo(response.body);
         }
@@ -164,8 +162,8 @@ export default function Homepage() {
     let mutableArray = terminalDevices;
 
     appInfoApi.deleteAmsDevice(device, (err, data, resp) => {
-      if (err != null) {
-        console.log(err);
+      if (err !== null) {
+        // console.log(err);
       } else {
         const result = mutableArray.filter((e) => e != device);
         setTerminalDevices(result);
@@ -178,8 +176,8 @@ export default function Homepage() {
     let deviceMap = new Set(devices);
     if (!deviceMap.has(textValue)) {
       appInfoApi.updateAmsDevices(textValue, (err, data, resp) => {
-        if (err != null) {
-          console.log(err);
+        if (err !== null) {
+          // console.log(err);
         } else {
           setTerminalDevices((e) => [...e, textValue]);
         }
@@ -208,7 +206,7 @@ export default function Homepage() {
                   onClick={() => {
                     appInfoApi.register((err, data, resp) => {
                       if (err !== null) {
-                        console.log(err);
+                        // console.log(err);
                       } else {
                         setAppInfo(resp.body);
                         setRegisteration(true);
