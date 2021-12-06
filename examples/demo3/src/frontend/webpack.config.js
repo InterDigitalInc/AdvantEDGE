@@ -1,7 +1,6 @@
 const path = require('path');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const dotenv = require('dotenv');
 const webpack = require('webpack');
 
 var extractPlugin = new ExtractTextPlugin({
@@ -12,16 +11,8 @@ var htmlPlugin = new HtmlWebpackPlugin({
   template: 'src/index.html'
 });
 
-module.exports = (env) => {
-  // call dotenv and it will return an Object with a parsed key
-  const environmentalVariable = dotenv.config().parsed;
-
-  // reduce it to a nice object, the same as before
-  const envKeys = Object.keys(environmentalVariable).reduce((prev, next) => {
-    prev[`process.env.${next}`] = JSON.stringify(environmentalVariable[next]);
-    return prev;
-  }, {});
-
+module.exports = () => {
+ 
   return {
     mode: 'development',
     entry: ['./src/js/demo-controller.js'],
@@ -97,16 +88,8 @@ module.exports = (env) => {
       extractPlugin,
       new webpack.DefinePlugin({
         __VERSION__: JSON.stringify('v0.0.0')
-      }),
-      new webpack.DefinePlugin(envKeys)
-    ],
-    devServer: {
-      proxy: {
-        '/': {
-          target: 'http://' + (env ? env.MEEP_HOST : ''),
-          secure: false
-        }
-      }
-    }
+      })
+    ]
+   
   };
 };

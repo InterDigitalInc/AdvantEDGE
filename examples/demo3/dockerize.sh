@@ -25,7 +25,6 @@ cp $BASEDIR/src/backend/Dockerfile $DEMOBIN
 # cp $BASEDIR/src/backend/app_instance.yaml $DEMOBIN
 cp $BASEDIR/entrypoint.sh $DEMOBIN
 
-
 echo ">>> Dockerizing"
 cd $DEMOBIN
 docker build --no-cache --rm -t meep-docker-registry:30001/demo3 .
@@ -34,7 +33,3 @@ cd $BASEDIR
 
 echo ""
 echo ">>> Done"
-
-
-
-
