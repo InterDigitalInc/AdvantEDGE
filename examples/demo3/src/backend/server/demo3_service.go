@@ -266,17 +266,14 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 
 		appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application ["+demoRegisteratonStatus+"]")
 
-		var err error
-
-		// Register demo app service
-		registeredService, err := registerService(instanceName, callBackUrl)
+		// Send confirm ready
+		err := sendReadyConfirmation(instanceName)
 		if err != nil {
-			log.Error(err.Error())
+			// Add to activity log for error indicator
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
-		} else {
-			serviceRegistered = true
 		}
+		demoAppInfo.MecReady = true
 
 		// Retrieve mec services
 		discoveredServices, err := getMecServices()
@@ -299,15 +296,6 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 			demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices, tempService)
 			mecServicesMap[tempService.SerName] = tempService.Link
 		}
-
-		// Send confirm ready
-		err = sendReadyConfirmation(instanceName)
-		if err != nil {
-			// Add to activity log for error indicator
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		demoAppInfo.MecReady = true
 
 		// Subscribe to app termination
 		appTerminationReference := localUrl + localPort + "/application/termination"
@@ -333,6 +321,15 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		var serSubscription ApplicationInstanceSerAvailabilitySubscription
 		serSubscription.SubId = svcSubscriptionId
 		subscriptions.SerAvailabilitySubscription = &serSubscription
+
+		// Register demo app service
+		registeredService, err := registerService(instanceName, callBackUrl)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			serviceRegistered = true
+		}
 
 		// Store demo app service into app info model
 		var serviceLocality = LocalityType(scopeOfLocality)
@@ -528,11 +525,39 @@ func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Remove terminal device if exists then return true
+// Otherwise return false
+func removeAmsDeviceHelper(device string) bool {
+
+	// Remove device state
+	delete(terminalDeviceState, device)
+
+	for i, v := range trackDevices {
+		if v == device {
+			if i < len(trackDevices)-1 {
+				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
+				return true
+			}
+			trackDevices = trackDevices[:len(trackDevices)-1]
+			return true
+		}
+	}
+
+	return false
+}
+
 // REST API delete ams service resource by device
 func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 	// Path parameters
 	vars := mux.Vars(r)
 	device := vars["device"]
+
+	deviceExist := removeAmsDeviceHelper(device)
+	if !deviceExist {
+		appActivityLogs = append(appActivityLogs, "==== Remove AMS device ("+device+") [404]")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Get AMS Resource
 	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
@@ -550,27 +575,11 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update terminal device state using this instance
-	delete(terminalDeviceState, device)
-	// Remove device from terminal devices using this instances no longer incrementing state
-	for i, v := range trackDevices {
-		if v == device {
-			if i < len(trackDevices)-1 {
-				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
-
-			} else {
-				// if device is last element
-				trackDevices = trackDevices[:len(trackDevices)-1]
-
-			}
-		}
-	}
-
+	// Update ams terminal device ordered added
 	for i := 0; i < len(orderedAmsAdded); i++ {
 		if orderedAmsAdded[i] == device && i < len(orderedAmsAdded)-1 {
 			orderedAmsAdded = append(orderedAmsAdded[:i], orderedAmsAdded[i+1:]...)
 		} else if orderedAmsAdded[i] == device {
-
 			orderedAmsAdded = orderedAmsAdded[:len(orderedAmsAdded)-1]
 		}
 	}
