@@ -142,7 +142,7 @@ paths:
               $ref: '#/components/schemas/RegistrationInfo'
             example:
               deviceInformation:
-              - appMobilityServiceLevel: 1
+              - appMobilityServiceLevel: 3
                 associateId:
                   type: 1
                   value: 10.100.0.3
@@ -286,7 +286,7 @@ paths:
             example:
               appMobilityServiceId: appMobilityServiceId
               deviceInformation:
-              - appMobilityServiceLevel: 1
+              - appMobilityServiceLevel: 3
                 associateId:
                   type: 1
                   value: 10.100.0.3

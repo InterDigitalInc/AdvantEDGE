@@ -114,3 +114,22 @@ func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
 	}
 	return string(jsonInfo)
 }
+
+func convertDevInfoToJson(obj *DevInfo) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+// func convertJsonToDevInfo(jsonInfo string) *DevInfo {
+// 	var obj DevInfo
+// 	err := json.Unmarshal([]byte(jsonInfo), &obj)
+// 	if err != nil {
+// 		log.Error(err.Error())
+// 		return nil
+// 	}
+// 	return &obj
+// }

@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -45,8 +46,16 @@ import (
 	smc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client"
 	subs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-subscriptions"
 
+	"github.com/go-test/deep"
 	"github.com/gorilla/mux"
 )
+
+type AppInfo map[string]string
+type DevInfo struct {
+	Address        string
+	PreferredNodes [][]string
+}
+type TrackedDevInfo map[string]string
 
 const moduleName = "meep-ams"
 const amsBasePath = "amsi/v1/"
@@ -74,13 +83,15 @@ const (
 	mqFieldPersist string = "persist"
 )
 
+// Device Info fields
 const (
 	FieldAssociateId      string = "associateId"
 	FieldServiceLevel     string = "serviceLevel"
 	FieldCtxTransferState string = "contextTransferState"
 	FieldMobilitySvcId    string = "mobilityServiceId"
 	FieldAppInstanceId    string = "appInstanceId"
-	FieldZoneId           string = "zoneId"
+	FieldSvcId            string = "svcId"
+	FieldCtxOwner         string = "contextOwner"
 )
 
 const (
@@ -122,10 +133,9 @@ var hostUrl *url.URL
 var instanceId string
 var instanceName string
 var sandboxName string
-var mepName string = defaultMepName
+var amsMepName string = defaultMepName
 var scopeOfLocality string = defaultScopeOfLocality
 var consumedLocalOnly bool = defaultConsumedLocalOnly
-var locality []string
 var basePath string
 var baseKey string
 var mutex sync.Mutex
@@ -139,8 +149,15 @@ var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
 var sbxCtrlClient *scc.APIClient
 var registrationTicker *time.Ticker
-var mepZonesMap map[string]string
-var appInfoMap map[string]map[string]string
+
+// k = appInstanceId
+var appInfoMap map[string]AppInfo
+
+// k = assocId (device address)
+var devInfoMap map[string]*DevInfo
+
+// k1 = AM service id; k2 = assocId (device address)
+var trackedDevInfoMap map[string]map[string]TrackedDevInfo
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -150,8 +167,10 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 // Init - App Mobility Service initialization
 func Init() (err error) {
 
-	// Initialize app info cache
-	appInfoMap = make(map[string]map[string]string)
+	// Initialize variables
+	appInfoMap = make(map[string]AppInfo)
+	devInfoMap = make(map[string]*DevInfo)
+	trackedDevInfoMap = make(map[string]map[string]TrackedDevInfo)
 
 	// Retrieve Instance ID from environment variable if present
 	instanceIdEnv := strings.TrimSpace(os.Getenv("MEEP_INSTANCE_ID"))
@@ -194,9 +213,9 @@ func Init() (err error) {
 	// Get MEP name
 	mepNameEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_NAME"))
 	if mepNameEnv != "" {
-		mepName = mepNameEnv
+		amsMepName = mepNameEnv
 	}
-	log.Info("MEEP_MEP_NAME: ", mepName)
+	log.Info("MEEP_MEP_NAME: ", amsMepName)
 
 	// Get App Enablement URL
 	appEnablementEnabled = false
@@ -224,35 +243,13 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_CONSUMED_LOCAL_ONLY: ", consumedLocalOnly)
 
-	// Get locality
-	localityEnv := strings.TrimSpace(os.Getenv("MEEP_LOCALITY"))
-	if localityEnv != "" {
-		locality = strings.Split(localityEnv, ":")
-	}
-	log.Info("MEEP_LOCALITY: ", locality)
-
-	// Get Mep coverage
-	mepZonesMap = make(map[string]string)
-	mepCoverageEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_COVERAGE"))
-	if mepCoverageEnv != "" {
-		allMepCoverage := strings.Split(mepCoverageEnv, "/")
-		for _, mepCoverage := range allMepCoverage {
-			mepZones := strings.Split(mepCoverage, ":")
-			for index, mepZone := range mepZones {
-				if index != 0 {
-					mepZonesMap[mepZone] = mepZones[0]
-				}
-			}
-		}
-	}
-
 	// Set base path & base storage key
-	if mepName == defaultMepName {
+	if amsMepName == defaultMepName {
 		basePath = "/" + sandboxName + "/" + amsBasePath
 		baseKey = dkm.GetKeyRoot(sandboxName) + amsKey + ":mep-global:"
 	} else {
-		basePath = "/" + sandboxName + "/" + mepName + "/" + amsBasePath
-		baseKey = dkm.GetKeyRoot(sandboxName) + amsKey + ":mep:" + mepName + ":"
+		basePath = "/" + sandboxName + "/" + amsMepName + "/" + amsBasePath
+		baseKey = dkm.GetKeyRoot(sandboxName) + amsKey + ":mep:" + amsMepName + ":"
 	}
 
 	// Create message queue
@@ -289,7 +286,7 @@ func Init() (err error) {
 	subMgrCfg := &subs.SubscriptionMgrCfg{
 		Module:         moduleName,
 		Sandbox:        sandboxName,
-		Mep:            mepName,
+		Mep:            amsMepName,
 		Service:        serviceName,
 		Basekey:        baseKey,
 		MetricsEnabled: true,
@@ -310,14 +307,13 @@ func Init() (err error) {
 		ModuleName:     moduleName,
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
-		Locality:       locality,
 		DeviceInfoCb:   updateDeviceInfo,
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
 	}
 
-	if mepName != defaultMepName {
-		sbiCfg.MepName = mepName
+	if amsMepName != defaultMepName {
+		sbiCfg.MepName = amsMepName
 	}
 	err = sbi.Init(sbiCfg)
 	if err != nil {
@@ -376,6 +372,9 @@ func Run() (err error) {
 		return err
 	}
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	// Update app info with latest apps from application store
 	err = refreshApps()
 	if err != nil {
@@ -408,6 +407,9 @@ func Stop() (err error) {
 func msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
 	case mq.MsgAppUpdate:
+		mutex.Lock()
+		defer mutex.Unlock()
+
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
 		appId := msg.Payload[mqFieldAppId]
@@ -419,10 +421,16 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 			break
 		}
 
+		// Refresh tracked device context owner
+		refreshTrackedDevCtxOwner(appInfo[fieldName])
+
 		// Check for adjacent app notif subscriptions
-		checkAdjAppInfoNotificationRegisteredSubscriptions(appInfo[fieldName])
+		sendAdjAppInfoNotifications(appInfo[fieldName])
 
 	case mq.MsgAppRemove:
+		mutex.Lock()
+		defer mutex.Unlock()
+
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
 		appId := msg.Payload[mqFieldAppId]
@@ -442,10 +450,16 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 			break
 		}
 
+		// Refresh tracked device context owner
+		refreshTrackedDevCtxOwner(appInfo[fieldName])
+
 		// Check for adjacent app notif subscriptions
-		checkAdjAppInfoNotificationRegisteredSubscriptions(appName)
+		sendAdjAppInfoNotifications(appName)
 
 	case mq.MsgAppFlush:
+		mutex.Lock()
+		defer mutex.Unlock()
+
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		appStore.Refresh()
 
@@ -484,7 +498,7 @@ func startRegistrationTicker() {
 			if serviceAppInstanceId == "" {
 				// If global service, request an app instance ID from Sandbox Controller
 				// Otherwise use the scenario-provisioned instance ID
-				if mepName == defaultMepName {
+				if amsMepName == defaultMepName {
 					var err error
 					serviceAppInstanceId, err = getAppInstanceId()
 					if err != nil || serviceAppInstanceId == "" {
@@ -550,8 +564,8 @@ func getAppInstanceId() (id string, err error) {
 	appInfo.Id = instanceId
 	appInfo.Name = serviceCategory
 	appInfo.Type_ = "SYSTEM"
-	appInfo.NodeName = mepName
-	if mepName == defaultMepName {
+	appInfo.NodeName = amsMepName
+	if amsMepName == defaultMepName {
 		appInfo.Persist = true
 	} else {
 		appInfo.Persist = false
@@ -640,10 +654,10 @@ func subscribeAppTermination(appInstanceId string) error {
 	var sub asc.AppTerminationNotificationSubscription
 	sub.SubscriptionType = "AppTerminationNotificationSubscription"
 	sub.AppInstanceId = appInstanceId
-	if mepName == defaultMepName {
+	if amsMepName == defaultMepName {
 		sub.CallbackReference = "http://" + moduleName + "/" + amsBasePath + appTerminationPath
 	} else {
-		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + amsBasePath + appTerminationPath
+		sub.CallbackReference = "http://" + amsMepName + "-" + moduleName + "/" + amsBasePath + appTerminationPath
 	}
 	subscription, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
@@ -701,7 +715,7 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func checkAdjAppInfoNotificationRegisteredSubscriptions(updatedAppName string) {
+func sendAdjAppInfoNotifications(updatedAppName string) {
 	// Get subscription list
 	subList, err := subMgr.GetFilteredSubscriptions("", ADJACENT_APP_INFO_SUBSCRIPTION)
 	if err != nil {
@@ -754,7 +768,7 @@ func checkAdjAppInfoNotificationRegisteredSubscriptions(updatedAppName string) {
 	}
 }
 
-func checkMpNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, mepName string) {
+func sendMpNotifications(currentAppId string, targetAppId string, assocId *AssociateId) {
 	// Get subscription list
 	subList, err := subMgr.GetFilteredSubscriptions("", MOBILITY_PROCEDURE_SUBSCRIPTION)
 	if err != nil {
@@ -771,7 +785,7 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 		}
 
 		// Filter by app instance ID
-		if subOrig.FilterCriteria.AppInstanceId != appId {
+		if subOrig.FilterCriteria.AppInstanceId != currentAppId {
 			continue
 		}
 
@@ -796,25 +810,6 @@ func checkMpNotificationRegisteredSubscriptions(appId string, assocId *Associate
 		}
 
 		// Ignore mobility status filter
-
-		// Get tracked device, if any
-		dev, err := getTrackedDev(assocId.Value, appId, mepName)
-		if err != nil {
-			log.Warn(err.Error())
-			continue
-		}
-
-		// Check if device mobility is allowed
-		if dev[FieldServiceLevel] == strconv.Itoa(int(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED)) {
-			continue
-		}
-
-		// Determine target app ID
-		targetAppId, err := getTargetApp(appId, mepName)
-		if err != nil {
-			log.Warn(err.Error())
-			continue
-		}
 
 		// Prepare notification
 		notif := MobilityProcedureNotification{
@@ -1309,11 +1304,6 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Service Consumer Id parameter should contain either AppInstanceId or MepId", http.StatusBadRequest)
 		return
 	}
-	if mepId != "" && mepId != mepName {
-		log.Error("This is not a possible value. Cannot track movements to other MEP.")
-		http.Error(w, "MepId must match current MEP. Cannot track movements in other MEPs.", http.StatusBadRequest)
-		return
-	}
 	for _, deviceInfo := range regInfo.DeviceInformation {
 		if deviceInfo.AssociateId == nil {
 			log.Error("AssociateId is a mandatory parameter if deviceInformation is present.")
@@ -1321,13 +1311,19 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if appId != "" {
-		_, err := getApp(appId)
-		if err != nil {
-			log.Error("App Instance Id does not exist.")
-			http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
-			return
-		}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Use App Id as consumer Id (set it to mepId if necessary)
+	if appId == "" {
+		appId = mepId
+	}
+	appInfo, err := getApp(appId)
+	if err != nil {
+		log.Error("App Instance Id does not exist.")
+		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
+		return
 	}
 
 	// Get & set a new app mobility service ID
@@ -1340,12 +1336,15 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	regInfo.AppMobilityServiceId = svcId
 
 	// Create new AMS resource
-	err = createService(appId, mepId, svcId, &regInfo)
+	err = createService(appId, svcId, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Refresh tracked device context owner
+	refreshTrackedDevCtxOwner(appInfo[fieldName])
 
 	// Send response
 	w.WriteHeader(http.StatusCreated)
@@ -1358,7 +1357,7 @@ func appMobilityServiceByIdGET(w http.ResponseWriter, r *http.Request) {
 	svcId := vars["appMobilityServiceId"]
 
 	// Get AMS resource by ID
-	key := baseKey + "svc:" + svcId
+	key := baseKey + "svc:" + svcId + ":info"
 	jsonData, _ := rc.JSONGetEntry(key, ".")
 	if jsonData == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -1400,9 +1399,18 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ServiceId passed in parameters not matching the serviceId in the RegistrationInfo", http.StatusBadRequest)
 		return
 	}
-	if mepId != "" && mepId != mepName {
-		log.Error("This is not a possible value. Cannot track movements to other MEP.")
-		http.Error(w, "MepId must match current MEP. Cannot track movements in other MEPs.", http.StatusBadRequest)
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Use App Id as consumer Id (set it to mepId if necessary)
+	if appId == "" {
+		appId = mepId
+	}
+	appInfo, err := getApp(appId)
+	if err != nil {
+		log.Error("App Instance Id does not exist.")
+		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
 		return
 	}
 
@@ -1415,12 +1423,15 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create new AMS resource
-	err = createService(appId, mepId, svcId, &regInfo)
+	err = createService(appId, svcId, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Refresh tracked device context owner
+	refreshTrackedDevCtxOwner(appInfo[fieldName])
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
@@ -1431,6 +1442,9 @@ func appMobilityServiceByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	svcId := vars["appMobilityServiceId"]
+
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	// Delete previous service & devices
 	statusCode, err := deleteServiceById(svcId)
@@ -1449,7 +1463,7 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 
 	// Get all AMS resources
 	regInfoList := make([]RegistrationInfo, 0)
-	key := baseKey + "svc:*"
+	key := baseKey + "svc:*:info"
 	err := rc.ForEachJSONEntry(key, populateRegInfoList, &regInfoList)
 	if err != nil {
 		log.Error(err.Error())
@@ -1487,6 +1501,9 @@ func populateRegInfoList(key string, jsonEntry string, response interface{}) err
 func cleanUp() {
 	log.Info("Terminate all")
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	// Flush subscriptions
 	_ = subMgr.DeleteAllSubscriptions()
 
@@ -1494,24 +1511,45 @@ func cleanUp() {
 	rc.DBFlush(baseKey)
 
 	// Reset metrics store name
-	updateStoreName("")
+	setStoreName("")
+
+	// Clear cached data
+	appInfoMap = make(map[string]AppInfo)
+	devInfoMap = make(map[string]*DevInfo)
+	trackedDevInfoMap = make(map[string]map[string]TrackedDevInfo)
 }
 
 func updateStoreName(storeName string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Set updated store name
+	setStoreName(storeName)
+
+	// Update app info with latest apps from application store
+	if storeName != "" {
+		err := refreshApps()
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+}
+
+func setStoreName(storeName string) {
 	if currentStoreName != storeName {
 		currentStoreName = storeName
 
 		logComponent := moduleName
-		if mepName != defaultMepName {
-			logComponent = moduleName + "-" + mepName
+		if amsMepName != defaultMepName {
+			logComponent = moduleName + "-" + amsMepName
 		}
 		_ = httpLog.ReInit(logComponent, sandboxName, storeName, redisAddr, influxAddr)
 	}
 }
 
-func createService(appId string, mepId string, svcId string, regInfo *RegistrationInfo) error {
+func createService(appId string, svcId string, regInfo *RegistrationInfo) error {
 	// Store new AMS resource
-	key := baseKey + "svc:" + svcId
+	key := baseKey + "svc:" + svcId + ":info"
 	err := rc.JSONSetEntry(key, ".", convertRegistrationInfoToJson(regInfo))
 	if err != nil {
 		return err
@@ -1519,19 +1557,15 @@ func createService(appId string, mepId string, svcId string, regInfo *Registrati
 
 	// Create tracked devices
 	for _, devInfo := range regInfo.DeviceInformation {
-		dev := make(map[string]interface{})
+		dev := make(map[string]string)
 		dev[FieldAssociateId] = devInfo.AssociateId.Value
 		dev[FieldServiceLevel] = strconv.Itoa(int(devInfo.AppMobilityServiceLevel))
 		dev[FieldCtxTransferState] = strconv.Itoa(int(devInfo.ContextTransferState))
 		dev[FieldMobilitySvcId] = svcId
-		dev[FieldAppInstanceId] = ""
-		if appId != "" {
-			dev[FieldAppInstanceId] = appId
-			key = baseKey + "app:" + appId + ":dev:" + devInfo.AssociateId.Value
-		} else {
-			key = baseKey + "mepId:" + mepId + ":dev:" + devInfo.AssociateId.Value
-		}
-		err = rc.SetEntry(key, dev)
+		dev[FieldAppInstanceId] = appId
+		dev[FieldSvcId] = svcId
+		dev[FieldCtxOwner] = ""
+		err = setTrackedDevInfo(dev)
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -1541,7 +1575,7 @@ func createService(appId string, mepId string, svcId string, regInfo *Registrati
 
 func deleteServiceById(svcId string) (int, error) {
 	// Get AMS resource by ID
-	key := baseKey + "svc:" + svcId
+	key := baseKey + "svc:" + svcId + ":info"
 	jsonData, _ := rc.JSONGetEntry(key, ".")
 	if jsonData == "" {
 		return http.StatusNotFound, errors.New("Service not found")
@@ -1555,98 +1589,224 @@ func deleteServiceById(svcId string) (int, error) {
 	}
 
 	// Delete devices
-	appId := regInfo.ServiceConsumerId.AppInstanceId
-	mepId := regInfo.ServiceConsumerId.MepId
 	for _, devInfo := range regInfo.DeviceInformation {
-		assocId := devInfo.AssociateId.Value
-		if appId != "" {
-			key = baseKey + "app:" + appId + ":dev:" + assocId
-			_ = rc.DelEntry(key)
-		} else {
-			key = baseKey + "mepId:" + mepId + ":dev:" + assocId
-			_ = rc.DelEntry(key)
-		}
+		address := devInfo.AssociateId.Value
+		_ = delTrackedDevInfo(svcId, address)
 	}
 	return http.StatusOK, nil
 }
 
-func updateDeviceInfo(address string, zoneId string, procList []string) {
-
-	// Get previous device location
-	var prevZoneId string
-	dev, err := getDev(address)
-	if err == nil {
-		prevZoneId = dev[FieldZoneId]
-	}
-
-	// Ignore update if device location has not changed
-	if zoneId == prevZoneId {
+func updateDeviceInfo(address string, preferredNodes [][]string) {
+	// Validate request
+	if address == "" {
+		log.Error("Missing device address")
 		return
 	}
 
-	// Set new device location
-	dev = make(map[string]string)
-	dev[FieldAssociateId] = address
-	dev[FieldZoneId] = zoneId
-	err = setDev(address, dev)
-	if err != nil {
-		log.Error(err.Error())
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Remove device if necessary
+	if preferredNodes == nil {
+		_ = delDevInfo(address)
 		return
 	}
 
-	// Send notifications if device transitions across MEP coverage areas
-	if mepZonesMap[zoneId] != mepZonesMap[prevZoneId] {
+	// Create new device info if it does not exist
+	currentDevInfo, err := getDev(address)
+	if err != nil || currentDevInfo == nil {
+		// Create new device info
+		devInfo := new(DevInfo)
+		devInfo.Address = address
+		devInfo.PreferredNodes = make([][]string, len(preferredNodes))
+		for i := range preferredNodes {
+			devInfo.PreferredNodes[i] = make([]string, len(preferredNodes[i]))
+			copy(devInfo.PreferredNodes[i], preferredNodes[i])
+		}
 
-		// Find all affected app instances
-		appIdList := make([]string, 0)
-		key := baseKey + "app:*:dev:" + address
-		err := rc.ForEachEntry(key, populateAppIdList, &appIdList)
+		// Store new device info
+		err = setDevInfo(devInfo)
 		if err != nil {
-			log.Error(err)
+			log.Error(err.Error())
 			return
 		}
-		// If no apps found, seach for whole mep
-		if len(appIdList) == 0 {
-			key = baseKey + "mepId:*:dev:" + address
-			err = rc.ForEachEntry(key, populateAppIdList, &appIdList)
+
+	} else {
+		// Ignore update if preferred nodes list has not changed
+		diff := deep.Equal(currentDevInfo.PreferredNodes, preferredNodes)
+		if diff == nil {
+			return
+		}
+
+		// Update device info
+		newDevInfo := new(DevInfo)
+		newDevInfo.Address = address
+		newDevInfo.PreferredNodes = make([][]string, len(preferredNodes))
+		for i := range preferredNodes {
+			newDevInfo.PreferredNodes[i] = make([]string, len(preferredNodes[i]))
+			copy(newDevInfo.PreferredNodes[i], preferredNodes[i])
+		}
+
+		// Store updated device info
+		err = setDevInfo(newDevInfo)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	// Determine impacted applications
+	impactedApps := make(map[string]bool)
+	for _, infoMap := range trackedDevInfoMap {
+		trackedDev, found := infoMap[address]
+		if found && trackedDev != nil {
+			// Get App info
+			appId := trackedDev[FieldAppInstanceId]
+			appInfo, err := getApp(appId)
 			if err != nil {
-				log.Error(err)
-				return
+				log.Error(err.Error())
+				continue
 			}
-			appIdList = append(appIdList, procList...)
+
+			// Add app name to impacted app map
+			appName := appInfo[fieldName]
+			if appName != "" {
+				impactedApps[appName] = true
+			}
+		}
+	}
+
+	// For each app, refresh tracked device context owner
+	for appName := range impactedApps {
+		refreshTrackedDevCtxOwner(appName)
+	}
+}
+
+func refreshTrackedDevCtxOwner(appName string) {
+	// Get matching tracked devices
+	matchingTrackedDevList := []TrackedDevInfo{}
+	for _, infoMap := range trackedDevInfoMap {
+		for _, trackedDev := range infoMap {
+			// Get App info
+			appId := trackedDev[FieldAppInstanceId]
+			appInfo, err := getApp(appId)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			// Add to impacted dev list if App name matches
+			if appName == appInfo[fieldName] {
+				matchingTrackedDevList = append(matchingTrackedDevList, trackedDev)
+			}
+		}
+	}
+
+	// For each matching tracked device, check if context transfer is required & allowed
+	deviceTargetMap := make(map[string][]string)
+	for _, trackedDev := range matchingTrackedDevList {
+		// Make sure device mobility is allowed
+		if trackedDev[FieldServiceLevel] == strconv.Itoa(int(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED)) {
+			continue
 		}
 
-		// Create assoc ID
-		assocId := AssociateId{
-			Type_: 1, //ipv4 address
-			Value: address,
+		// Determine target MEC Apps
+		address := trackedDev[FieldAssociateId]
+		targetAppIds, found := deviceTargetMap[address]
+		if !found {
+			// Get target app instances for device
+			var err error
+			targetAppIds, err = getTargetApps(appName, address)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			// Add device-specific target App instance list to map
+			deviceTargetMap[address] = make([]string, len(targetAppIds))
+			copy(deviceTargetMap[address], targetAppIds)
+		}
+		if len(targetAppIds) == 0 {
+			log.Error("No valid target App Instances")
+			continue
 		}
 
-		mutex.Lock()
-		defer mutex.Unlock()
+		// Determine if context transfer is required
+		currentAppId := trackedDev[FieldCtxOwner]
+		targetAppId := ""
 
-		// TODO -- Determine when & how to send notifications for MEP instances
+		if currentAppId == "" {
+			// No need for context transfer on initial assignment
+			// Set & Store target App ID as context owner
+			// Use first available target App instance
+			targetAppId = targetAppIds[0]
+			trackedDev[FieldCtxOwner] = targetAppId
+			err := setTrackedDevInfo(trackedDev)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+		} else {
+			// Perform context transfer only if current App is no longer a valid target
+			ctxTransferRequired := true
+			for _, targetAppId := range targetAppIds {
+				if targetAppId == currentAppId {
+					ctxTransferRequired = false
+					break
+				}
+			}
 
-		for _, appId := range appIdList {
-			// Only send notifications for AppInstanceIDs in the source MEP coverage area
-			if appInfo, found := appInfoMap[appId]; found {
-				if appInfo[fieldNode] == mepZonesMap[prevZoneId] {
-					checkMpNotificationRegisteredSubscriptions(appId, &assocId, mepZonesMap[zoneId])
+			if ctxTransferRequired {
+				// Set & Store target App ID as context owner
+				// Use first available target App instance
+				targetAppId = targetAppIds[0]
+				trackedDev[FieldCtxOwner] = targetAppIds[0]
+				err := setTrackedDevInfo(trackedDev)
+				if err != nil {
+					log.Error(err.Error())
+					continue
+				}
+
+				// Send MP Notification for subscriptions to current MEC App
+				// NOTE: Only send for notifications for the source AM service dtracked devices
+				if trackedDev[FieldAppInstanceId] == currentAppId {
+					assocId := AssociateId{
+						Type_: 1, //ipv4 address
+						Value: address,
+					}
+					sendMpNotifications(currentAppId, targetAppId, &assocId)
 				}
 			}
 		}
 	}
 }
 
-func populateAppIdList(key string, entry map[string]string, data interface{}) error {
-	appIdList := data.(*[]string)
-	if appIdList == nil {
-		return errors.New("appIdList not defined")
+func getTargetApps(appName string, address string) ([]string, error) {
+	// Get device info using provided address
+	devInfo, err := getDev(address)
+	if err != nil {
+		return nil, err
 	}
-	if appId, found := entry[FieldAppInstanceId]; found && appId != "" {
-		*appIdList = append(*appIdList, appId)
+
+	// Determine target app instances using prioritized node list
+	targetAppIds := []string{}
+	for _, nodeList := range devInfo.PreferredNodes {
+		for _, node := range nodeList {
+			// Check all App instances for a matching app name & edge node
+			// NOTE: no app instance state verification is made to make sure service is ready
+			for appId, appInfo := range appInfoMap {
+				if appInfo[fieldName] == appName && appInfo[fieldNode] == node {
+					targetAppIds = append(targetAppIds, appId)
+				}
+			}
+		}
+
+		// Return if at least 1 valid target is found
+		if len(targetAppIds) > 0 {
+			// Sort returned list alphabetically
+			sort.Strings(targetAppIds)
+			return targetAppIds, nil
+		}
 	}
-	return nil
+	return nil, errors.New("Failed to find a valid target app instance")
 }
 
 func ExpiredSubscriptionCb(sub *subs.Subscription) {
@@ -1716,7 +1876,7 @@ func getAppInfoList() ([]map[string]string, error) {
 	var appInfoList []map[string]string
 
 	// Get all applications from DB
-	keyMatchStr := baseKey + "app:*:info"
+	keyMatchStr := baseKey + "app:*"
 	err := rc.ForEachEntry(keyMatchStr, populateAppInfo, &appInfoList)
 	if err != nil {
 		log.Error("Failed to get app info list with error: ", err.Error())
@@ -1743,7 +1903,7 @@ func populateAppInfo(key string, entry map[string]string, userData interface{}) 
 // 	var appInfo map[string]string
 
 // 	// Get app instance from local MEP only
-// 	key := baseKey + "app:" + appId + ":info"
+// 	key := baseKey + "app:" + appId
 // 	appInfo, err := rc.GetEntry(key)
 // 	if err != nil || len(appInfo) == 0 {
 // 		return nil, errors.New("App Instance not found")
@@ -1780,7 +1940,7 @@ func setAppInfo(appInfo map[string]string) error {
 	}
 
 	// Store entry
-	key := baseKey + "app:" + appId + ":info"
+	key := baseKey + "app:" + appId
 	err := rc.SetEntry(key, entry)
 	if err != nil {
 		return err
@@ -1792,9 +1952,7 @@ func setAppInfo(appInfo map[string]string) error {
 	return nil
 }
 
-func delAppInfo(appInfo map[string]string) error {
-	appId := appInfo[fieldAppId]
-
+func delAppInfo(appId string) error {
 	// Delete app support subscriptions
 	err := subMgr.DeleteFilteredSubscriptions(appId, "")
 	if err != nil {
@@ -1825,9 +1983,6 @@ func refreshApps() error {
 	// Current MEC021 implementation:
 	// - Each instance has a separate DB with full app & network visibility
 	// - No filtering of app instances running on other MEC Platforms
-
-	mutex.Lock()
-	defer mutex.Unlock()
 
 	// Retrieve app info list from DB
 	appInfoList, err := getAppInfoList()
@@ -1869,7 +2024,7 @@ func refreshApps() error {
 			}
 		}
 		if !found {
-			err := delAppInfo(appInfo)
+			err := delAppInfo(appInfo[fieldAppId])
 			if err != nil {
 				log.Error(err.Error())
 			}
@@ -1898,9 +2053,6 @@ func updateApp(appId string) (map[string]string, error) {
 	// - Each instance has a separate DB with full app & network visibility
 	// - No filtering of app instances running on other MEC Platforms
 
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	// Store App Info
 	appInfo, err := newAppInfo(app)
 	if err != nil {
@@ -1916,9 +2068,6 @@ func updateApp(appId string) (map[string]string, error) {
 }
 
 func terminateApp(appId string) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	// Get App info
 	appInfo, found := appInfoMap[appId]
 	if !found {
@@ -1926,7 +2075,7 @@ func terminateApp(appId string) error {
 	}
 
 	// Delete app info
-	err := delAppInfo(appInfo)
+	err := delAppInfo(appInfo[fieldAppId])
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -1948,7 +2097,7 @@ func flushApps(persist bool) error {
 		}
 
 		// Delete app info
-		err := delAppInfo(appInfo)
+		err := delAppInfo(appInfo[fieldAppId])
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -1956,67 +2105,133 @@ func flushApps(persist bool) error {
 	return nil
 }
 
-func getDev(address string) (map[string]string, error) {
-	// First get device by app ID
-	key := baseKey + "dev:" + address
-	entry, err := rc.GetEntry(key)
-	if err != nil || len(entry) == 0 {
-		return nil, errors.New("Device not found")
+func getDev(address string) (*DevInfo, error) {
+	devInfo, found := devInfoMap[address]
+	if !found {
+		return nil, errors.New("Dev Info not found")
 	}
-	return entry, nil
+	return devInfo, nil
 }
 
-func setDev(address string, devInfo map[string]string) error {
-	// Convert value type to interface{} before storing dev info
-	entry := make(map[string]interface{}, len(devInfo))
-	for k, v := range devInfo {
-		entry[k] = v
-	}
+// func getDevInfo(address string) (*DevInfo, error) {
+// 	key := baseKey + "dev:" + address
+// 	jsonData, _ := rc.JSONGetEntry(key, ".")
+// 	if jsonData == "" {
+// 		return nil, errors.New("Device not found")
+// 	}
+// 	return convertJsonToDevInfo(jsonData), nil
+// }
 
-	// First get device by app ID
-	key := baseKey + "dev:" + address
-	err := rc.SetEntry(key, entry)
+func setDevInfo(devInfo *DevInfo) error {
+	if devInfo == nil {
+		return errors.New("devInfo == nil")
+	}
+	// Store device info
+	key := baseKey + "dev:" + devInfo.Address
+	err := rc.JSONSetEntry(key, ".", convertDevInfoToJson(devInfo))
 	if err != nil {
-		log.Error(err.Error())
 		return err
 	}
+
+	// Cache entry
+	devInfoMap[devInfo.Address] = devInfo
+
 	return nil
 }
 
-func getTrackedDev(address string, appId string, mepId string) (map[string]string, error) {
-	// First get device by app ID
-	key := baseKey + "app:" + appId + ":dev:" + address
-	entry, err := rc.GetEntry(key)
-	if err != nil || len(entry) == 0 {
-		// Otherwise, get device by mep ID
-		key = baseKey + "mepId:" + mepId + ":dev:" + address
-		entry, err = rc.GetEntry(key)
-		if err != nil || len(entry) == 0 {
-			return nil, errors.New("Failed to find device: " + address)
-		}
-	}
-	return entry, nil
+func delDevInfo(address string) error {
+	// Remove from cache
+	delete(devInfoMap, address)
+
+	// Flush App instance data
+	key := baseKey + "dev:" + address
+	_ = rc.DBFlush(key)
+
+	return nil
 }
 
-func getTargetApp(appId string, mepId string) (string, error) {
-	// Get source app
-	srcAppInfo, err := getApp(appId)
+// func getTrackedDev(svcId string, address string) (map[string]string, error) {
+// 	_, found := trackedDevInfoMap[svcId]
+// 	if found {
+// 		trackedDevInfo, found := trackedDevInfoMap[svcId][address]
+// 		if found {
+// 			return trackedDevInfo, nil
+// 		}
+// 	}
+// 	return nil, errors.New("Tracked device not found")
+// }
+
+// func getTrackedDevInfoList() ([]TrackedDevInfo, error) {
+// 	var trackedDevInfoList []TrackedDevInfo
+
+// 	// Get all tracked devices from DB
+// 	keyMatchStr := baseKey + "svc:*:dev:*"
+// 	err := rc.ForEachEntry(keyMatchStr, populateTrackedDevInfo, &trackedDevInfoList)
+// 	if err != nil {
+// 		log.Error("Failed to get tracked device info list with error: ", err.Error())
+// 		return nil, err
+// 	}
+// 	return trackedDevInfoList, nil
+// }
+
+// func populateTrackedDevInfo(key string, entry map[string]string, userData interface{}) error {
+// 	trackedDevInfoList := userData.(*[]TrackedDevInfo)
+
+// 	// Copy entry
+// 	trackedDevInfo := make(TrackedDevInfo, len(entry))
+// 	for k, v := range entry {
+// 		trackedDevInfo[k] = v
+// 	}
+
+// 	// Add app info to list
+// 	*trackedDevInfoList = append(*trackedDevInfoList, trackedDevInfo)
+// 	return nil
+// }
+
+func setTrackedDevInfo(trackedDevInfo TrackedDevInfo) error {
+	svcId, found := trackedDevInfo[FieldSvcId]
+	if !found || svcId == "" {
+		return errors.New("Missing AM service id")
+	}
+	address, found := trackedDevInfo[FieldAssociateId]
+	if !found || address == "" {
+		return errors.New("Missing associate id")
+	}
+
+	// Convert value type to interface{} before storing app info
+	entry := make(map[string]interface{}, len(trackedDevInfo))
+	for k, v := range trackedDevInfo {
+		entry[k] = v
+	}
+
+	// Store entry
+	key := baseKey + "svc:" + svcId + ":dev:" + address
+	err := rc.SetEntry(key, entry)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	// If local mep, return source app ID
-	if srcAppInfo[fieldNode] == mepId {
-		return appId, nil
+	// Cache entry
+	_, found = trackedDevInfoMap[svcId]
+	if !found {
+		trackedDevInfoMap[svcId] = make(map[string]TrackedDevInfo)
+	}
+	trackedDevInfoMap[svcId][address] = trackedDevInfo
+
+	return nil
+}
+
+func delTrackedDevInfo(svcId string, address string) error {
+	// Remove from cache
+	if _, found := trackedDevInfoMap[svcId]; found {
+		delete(trackedDevInfoMap[svcId], address)
 	}
 
-	// Find target app with matching name & target mep
-	for _, targetAppInfo := range appInfoMap {
-		if targetAppInfo[fieldName] == srcAppInfo[fieldName] && targetAppInfo[fieldNode] == mepId {
-			return targetAppInfo[fieldAppId], nil
-		}
-	}
-	return "", errors.New("Failed to find a valid target app")
+	// Flush App instance data
+	key := baseKey + "svc:" + svcId + ":dev:" + address
+	_ = rc.DBFlush(key)
+
+	return nil
 }
 
 func validateQueryParams(params url.Values, validParamList []string) bool {

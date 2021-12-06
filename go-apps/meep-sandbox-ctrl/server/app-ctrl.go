@@ -132,10 +132,17 @@ func createAppInstance(proc *dataModel.Process, ctx *mod.NodeContext) (*apps.App
 		appType = apps.TypeSystem
 	}
 
+	// If group name is present, use it as application name
+	// Otherwise, use process name
+	appName := proc.Name
+	if proc.ServiceConfig != nil && proc.ServiceConfig.MeSvcName != "" {
+		appName = proc.ServiceConfig.MeSvcName
+	}
+
 	// Create & app instance
 	app := &apps.Application{
 		Id:      proc.Id,
-		Name:    proc.Name,
+		Name:    appName,
 		Node:    ctx.Parents[mod.PhyLoc],
 		Type:    appType,
 		Persist: false,
@@ -390,7 +397,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	// Validate & retrieve query parameters
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
-	validParams := []string{"app", "node", "type"}
+	validParams := []string{"app", "nodeName", "type"}
 	err := validateQueryParams(q, validParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -398,7 +405,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appName := q.Get("app")
-	nodeName := q.Get("node")
+	nodeName := q.Get("nodeName")
 	appType := q.Get("type")
 
 	// Get application list

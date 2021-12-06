@@ -379,8 +379,10 @@ describe('Scenario Execution', function () {
     type(meep.MEEP_DLG_SAVE_REPLAY_NAME, name);
     type(meep.MEEP_DLG_SAVE_REPLAY_DESCRIPTION, desc);
     click(meep.MEEP_DLG_SAVE_REPLAY, 'Ok');
-    cy.wait(1000);
+    cy.wait(2000);
     //no way to check except by executing auto-replay test that gets the file
+    //click away from auto-replay pane to make sure drop-down menu is correctly populated
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY);
     cy.wait(1000);
     select(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES, name);
