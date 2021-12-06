@@ -715,11 +715,25 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	amsTargetId = amsNotification.TargetAppInfo.AppInstanceId
 	targetDevice := amsNotification.AssociateId[0].Value
 
-	// Find ams target service resource url using mec011
+	// Retrieve all mec service on target ams application
 	serviceInfo, _, serviceErr := srvMgmtClient.MecServiceMgmtApi.AppServicesGET(context.TODO(), amsTargetId, nil)
 	if serviceErr != nil {
 		log.Debug("Failed to get target app mec service resource on mec platform", serviceErr.Error())
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Verify demo3 service exists
+	var notifyUrl string
+	for i := 0; i < len(serviceInfo); i++ {
+		if serviceInfo[i].SerName == serviceCategory {
+			notifyUrl = serviceInfo[i].TransportInfo.Endpoint.Uris[0]
+		}
+	}
+
+	// If demo3 service does not exists return
+	if notifyUrl == "" {
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
@@ -741,14 +755,6 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	// Transfer only if ams target service is found
 	// Update Activity Logs
 	log.Info("AMS event received for ", amsNotification.AssociateId[0].Value, " moved to app ", amsTargetId)
-
-	// Verify service exists
-	var notifyUrl string
-	for i := 0; i < len(serviceInfo); i++ {
-		if serviceInfo[i].SerName == serviceCategory {
-			notifyUrl = serviceInfo[i].TransportInfo.Endpoint.Uris[0]
-		}
-	}
 
 	if notifyUrl != "" {
 
@@ -847,7 +853,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+"context (state="+counter+") [200]")
+	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
 
 	// Update ams pane
 	trackDevices = append(trackDevices, targetContextState.Device)
