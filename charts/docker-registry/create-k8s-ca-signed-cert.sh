@@ -94,6 +94,7 @@ metadata:
 spec:
   groups:
   - system:authenticated
+  signerName: kubernetes.io/kubelet-serving
   request: $(cat ${certdir}/${service}.csr | base64 | tr -d '\n')
   usages:
   - digital signature
