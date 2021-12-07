@@ -20,12 +20,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 
 	"github.com/ghodss/yaml"
@@ -42,7 +44,6 @@ const meepOrigin = "scenario"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
-const fieldScenarioName = "scenario-name"
 
 var (
 	runtimeScheme = runtime.NewScheme()
@@ -83,15 +84,103 @@ func init() {
 // Message Queue handler
 func msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
-	case mq.MsgScenarioActivate:
+	case mq.MsgScenarioActivate, mq.MsgScenarioUpdate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		activeScenarioNames[msg.Payload[fieldSandboxName]] = msg.Payload[fieldScenarioName]
+		err := refreshSandboxData(msg.Payload[fieldSandboxName])
+		if err != nil {
+			log.Error(err.Error())
+		}
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		activeScenarioNames[msg.Payload[fieldSandboxName]] = ""
+		err := flushSandboxData(msg.Payload[fieldSandboxName])
+		if err != nil {
+			log.Error(err.Error())
+		}
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
+}
+
+func refreshSandboxData(sbxName string) error {
+	// Validate params
+	if sbxName == "" {
+		return errors.New("Missing sandbox name")
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Get sandbox data
+	sbxData, found := sbxDataMap[sbxName]
+	if !found {
+		// Create new sandbox data if it does not exist
+		sbxData = new(SandboxData)
+
+		// Create new active scenario model
+		modelCfg := mod.ModelCfg{
+			Name:      sbxName,
+			Namespace: sbxName,
+			Module:    moduleName,
+			UpdateCb:  nil,
+			DbAddr:    "",
+		}
+		var err error
+		sbxData.ActiveScenario, err = mod.NewModel(modelCfg)
+		if err != nil {
+			return errors.New("Failed to create model: " + err.Error())
+		}
+
+		// Add new sandbox data to map
+		sbxDataMap[sbxName] = sbxData
+	}
+
+	// Obtain latest scenario
+	sbxData.ActiveScenario.UpdateScenario()
+
+	// Refresh scenario name
+	sbxData.ScenarioName = sbxData.ActiveScenario.GetScenarioName()
+
+	// Refresh app instance ID map
+	sbxData.AppIdMap = make(map[string]string)
+
+	return nil
+}
+
+func flushSandboxData(sbxName string) error {
+	// Validate params
+	if sbxName == "" {
+		return errors.New("Missing sandbox name")
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Make sure sandbox data exists
+	_, found := sbxDataMap[sbxName]
+	if !found {
+		return errors.New("Sandbox data not found for: " + sbxName)
+	}
+
+	// Delete sandbox data
+	delete(sbxDataMap, sbxName)
+
+	return nil
+}
+
+func getScenarioName(sbxName string) string {
+	// Validate params
+	if sbxName == "" {
+		return ""
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Get scenario name from sandbox data
+	if sbxData, found := sbxDataMap[sbxName]; found {
+		return sbxData.ScenarioName
+	}
+	return ""
 }
 
 func loadConfig(configFile string) (*Config, error) {
@@ -114,6 +203,9 @@ func isScenarioResource(name string, scenarioName string) bool {
 func getPlatformPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
 	var patchOps []patchOperation
 
+	// Get scenario name
+	scenarioName := getScenarioName(sandboxName)
+
 	// Add env vars to sidecar containers
 	var envVars []corev1.EnvVar
 	var envVar corev1.EnvVar
@@ -124,7 +216,7 @@ func getPlatformPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, me
 	envVar.Value = sandboxName
 	envVars = append(envVars, envVar)
 	envVar.Name = "MEEP_SCENARIO_NAME"
-	envVar.Value = activeScenarioNames[sandboxName]
+	envVar.Value = scenarioName
 	envVars = append(envVars, envVar)
 
 	var sidecarContainers []corev1.Container
@@ -147,7 +239,7 @@ func getPlatformPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, me
 	newLabels["meepApp"] = meepAppName
 	newLabels["meepOrigin"] = meepOrigin
 	newLabels["meepSandbox"] = sandboxName
-	newLabels["meepScenario"] = activeScenarioNames[sandboxName]
+	newLabels["meepScenario"] = scenarioName
 	newLabels["processId"] = meepAppName
 	patchOps = append(patchOps, updateLabels(template.ObjectMeta.Labels, newLabels, "/spec/template/metadata/labels")...)
 
@@ -250,8 +342,11 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	req := ar.Request
 	log.Info("Mutate request Name[", req.Name, "] Kind[", req.Kind, "] Namespace[", req.Namespace, "]")
 
+	// Get scenario name
+	scenarioName := getScenarioName(req.Namespace)
+
 	// Ignore if no active scenario
-	if activeScenarioNames[req.Namespace] == "" {
+	if scenarioName == "" {
 		log.Info("No active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
@@ -304,7 +399,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	}
 
 	// Determine if resource is part of the active scenario
-	if !isScenarioResource(releaseName, activeScenarioNames[req.Namespace]) {
+	if !isScenarioResource(releaseName, scenarioName) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
