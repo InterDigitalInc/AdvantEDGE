@@ -1,5 +1,5 @@
 ## nginx configuration
-## Ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/index.md
+## Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/index.md
 ##
 
 ## Overrides for generated resource names
@@ -10,13 +10,23 @@
 controller:
   name: controller
   image:
-    repository: k8s.gcr.io/ingress-nginx/controller
-    tag: "v0.44.0"
-    digest: sha256:3dd0fac48073beaca2d67a78c746c7593f9c575168a17139a9955a82c63c4b9a
+    registry: k8s.gcr.io
+    image: ingress-nginx/controller
+    # for backwards compatibility consider setting the full image url via the repository value below
+    # use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
+    # repository:
+    tag: "v1.1.0"
+    digest: sha256:f766669fdcf3dc26347ed273a55e754b427eb4411ee075a53f30718b4499076a
     pullPolicy: IfNotPresent
     # www-data -> uid 101
     runAsUser: 101
     allowPrivilegeEscalation: true
+
+  # Use an existing PSP instead of creating one
+  existingPsp: ""
+
+  # Configures the controller container name
+  containerName: controller
 
   # Configures the ports the nginx-controller listens on
   containerPort:
@@ -30,7 +40,7 @@ controller:
   ##
   configAnnotations: {}
 
-  # Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/customization/custom-headers
+  # Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/custom-headers
   proxySetHeaders: {}
 
   # Will add custom headers before sending response traffic to the client according to: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#add-headers
@@ -38,6 +48,9 @@ controller:
 
   # Optionally customize the pod dnsConfig.
   dnsConfig: {}
+
+  # Optionally customize the pod hostname.
+  hostname: {}
 
   # Optionally change this to ClusterFirstWithHostNet in case you have 'hostNetwork: true'.
   # By default, while using host network, name resolution uses the host's DNS. If you wish nginx-controller
@@ -47,6 +60,20 @@ controller:
   # Bare-metal considerations via the host network https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#via-the-host-network
   # Ingress status was blank because there is no Service exposing the NGINX Ingress controller in a configuration using the host network, the default --publish-service flag used in standard cloud setups does not apply
   reportNodeInternalIp: false
+
+  # Process Ingress objects without ingressClass annotation/ingressClassName field
+  # Overrides value for --watch-ingress-without-class flag of the controller binary
+  # Defaults to false
+  watchIngressWithoutClass: false
+
+  # Process IngressClass per name (additionally as per spec.controller)
+  ingressClassByName: false
+
+  # This configuration defines if Ingress Controller should allow users to set
+  # their own *-snippet annotations, otherwise this is forbidden / dropped
+  # when users add those annotations.
+  # Global snippets in ConfigMap are still respected
+  allowSnippetAnnotations: true
 
   # Required for use with CNI based kubernetes installations (such as ones set up by kubeadm),
   # since CNI and hostport don't mix yet. Can be deprecated once https://github.com/kubernetes/kubernetes/issues/23920
@@ -66,9 +93,18 @@ controller:
   ##
   electionID: ingress-controller-leader
 
-  ## Name of the ingress class to route through this controller
-  ##
-  ingressClass: nginx
+  # This section refers to the creation of the IngressClass resource
+  # IngressClass resources are supported since k8s >= 1.18 and required since k8s >= 1.19
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: false
+    controllerValue: "k8s.io/ingress-nginx"
+
+    # Parameters is a link to a custom resource containing additional
+    # configuration for the controller. This is optional if the controller
+    # does not require extra parameters.
+    parameters: {}
 
   # labels to add to the pod container metadata
   podLabels: {}
@@ -100,23 +136,26 @@ controller:
   ##
   scope:
     enabled: false
-    namespace: ""   # defaults to .Release.Namespace
+    namespace: ""   # defaults to $(POD_NAMESPACE)
+    # When scope.enabled == false, instead of watching all namespaces, we watching namespaces whose labels
+    #   only match with namespaceSelector. Format like foo=bar. Defaults to empty, means watching all namespaces.
+    namespaceSelector: ""
 
   ## Allows customization of the configmap / nginx-configmap namespace
   ##
-  configMapNamespace: ""   # defaults to .Release.Namespace
+  configMapNamespace: ""   # defaults to $(POD_NAMESPACE)
 
   ## Allows customization of the tcp-services-configmap
   ##
   tcp:
-    configMapNamespace: ""   # defaults to .Release.Namespace
+    configMapNamespace: ""   # defaults to $(POD_NAMESPACE)
     ## Annotations to be added to the tcp config configmap
     annotations: {}
 
   ## Allows customization of the udp-services-configmap
   ##
   udp:
-    configMapNamespace: ""   # defaults to .Release.Namespace
+    configMapNamespace: ""   # defaults to $(POD_NAMESPACE)
     ## Annotations to be added to the udp config configmap
     annotations: {}
 
@@ -150,7 +189,7 @@ controller:
   annotations: {}
   #  keel.sh/pollSchedule: "@every 60m"
 
-  ## Labels to be added to the controller Deployment or DaemonSet
+  ## Labels to be added to the controller Deployment or DaemonSet and other resources that do not have option to specify labels
   ##
   labels: {}
   #  keel.sh/policy: patch
@@ -247,24 +286,49 @@ controller:
   ## Liveness and readiness probe values
   ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
   ##
+  # startupProbe:
+  #   httpGet:
+  #     # should match container.healthCheckPath
+  #     path: "/healthz"
+  #     port: 10254
+  #     scheme: HTTP
+  #   initialDelaySeconds: 5
+  #   periodSeconds: 5
+  #   timeoutSeconds: 2
+  #   successThreshold: 1
+  #   failureThreshold: 5
   livenessProbe:
+    httpGet:
+      # should match container.healthCheckPath
+      path: "/healthz"
+      port: 10254
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
     failureThreshold: 5
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    successThreshold: 1
-    timeoutSeconds: 1
-    port: 10254
   readinessProbe:
-    failureThreshold: 3
+    httpGet:
+      # should match container.healthCheckPath
+      path: "/healthz"
+      port: 10254
+      scheme: HTTP
     initialDelaySeconds: 10
     periodSeconds: 10
-    successThreshold: 1
     timeoutSeconds: 1
-    port: 10254
+    successThreshold: 1
+    failureThreshold: 3
+
 
   # Path of the health check endpoint. All requests received on the port defined by
   # the healthz-port parameter are forwarded internally to this path.
   healthCheckPath: "/healthz"
+
+  # Address to bind the health check endpoint.
+  # It is better to set this option to the internal node address
+  # if the ingress nginx controller is running in the hostNetwork: true mode.
+  healthCheckHost: ""
 
   ## Annotations to be added to controller pods
   ##
@@ -293,6 +357,19 @@ controller:
     maxReplicas: 11
     targetCPUUtilizationPercentage: 50
     targetMemoryUtilizationPercentage: 50
+    behavior: {}
+      # scaleDown:
+      #   stabilizationWindowSeconds: 300
+      #  policies:
+      #   - type: Pods
+      #     value: 1
+      #     periodSeconds: 180
+      # scaleUp:
+      #   stabilizationWindowSeconds: 300
+      #   policies:
+      #   - type: Pods
+      #     value: 2
+      #     periodSeconds: 60
 
   autoscalingTemplate: []
   # Custom or additional autoscaling metrics
@@ -357,6 +434,14 @@ controller:
   service:
     enabled: true
 
+    ## If enabled is adding an appProtocol option for Kubernetes service. An appProtocol field replacing annotations that were
+    ## using for setting a backend protocol. Here is an example for AWS: service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    ## It allows choosing the protocol for each backend specified in the Kubernetes service.
+    ## See the following GitHub issue for more details about the purpose: https://github.com/kubernetes/kubernetes/issues/40244
+    ## Will be ignored for Kubernetes versions older than 1.20
+    ##
+    appProtocol: true
+
     annotations: {}
     labels: {}
     # clusterIP: ""
@@ -372,19 +457,30 @@ controller:
     enableHttp: true
     enableHttps: true
 
-    ## Set external traffic policy to: "Local" to preserve source IP on
-    ## providers supporting it
+    ## Set external traffic policy to: "Local" to preserve source IP on providers supporting it.
     ## Ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
     # externalTrafficPolicy: ""
 
-    # Must be either "None" or "ClientIP" if set. Kubernetes will default to "None".
-    # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+    ## Must be either "None" or "ClientIP" if set. Kubernetes will default to "None".
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
     # sessionAffinity: ""
 
-    # specifies the health check node port (numeric port number) for the service. If healthCheckNodePort isn’t specified,
-    # the service controller allocates a port from your cluster’s NodePort range.
-    # Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    ## Specifies the health check node port (numeric port number) for the service. If healthCheckNodePort isn’t specified,
+    ## the service controller allocates a port from your cluster’s NodePort range.
+    ## Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
     # healthCheckNodePort: 0
+
+    ## Represents the dual-stack-ness requested or required by this Service. Possible values are
+    ## SingleStack, PreferDualStack or RequireDualStack.
+    ## The ipFamilies and clusterIPs fields depend on the value of this field.
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/
+    ipFamilyPolicy: "SingleStack"
+
+    ## List of IP families (e.g. IPv4, IPv6) assigned to the service. This field is usually assigned automatically
+    ## based on cluster configuration and the ipFamilyPolicy field.
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/
+    ipFamilies:
+      - IPv4
 
     ports:
       http: 80
@@ -408,6 +504,9 @@ controller:
       https: ""
       tcp: {}
       udp: {}
+
+    external:
+      enabled: true
 
     ## Enables an additional internal load balancer (besides the external one).
     ## Annotations are mandatory for the load balancer to come up. Varies with the cloud service.
@@ -467,6 +566,11 @@ controller:
 
   admissionWebhooks:
     annotations: {}
+    # ignore-check.kube-linter.io/no-read-only-rootfs: "This deployment needs write access to root filesystem".
+
+    ## Additional annotations to the admission webhooks.
+    ## These annotations will be added to the ValidatingWebhookConfiguration and
+    ## the Jobs Spec of the admission webhooks.
     enabled: false
     failurePolicy: Fail
     # timeoutSeconds: 10
@@ -475,6 +579,11 @@ controller:
     key: "/usr/local/certificates/key"
     namespaceSelector: {}
     objectSelector: {}
+    ## Labels to be added to admission webhooks
+    labels: {}
+
+    # Use an existing PSP instead of creating one
+    existingPsp: ""
 
     service:
       annotations: {}
@@ -485,18 +594,38 @@ controller:
       servicePort: 443
       type: ClusterIP
 
+    createSecretJob:
+      resources: {}
+        # limits:
+        #   cpu: 10m
+        #   memory: 20Mi
+        # requests:
+        #   cpu: 10m
+        #   memory: 20Mi
+
+    patchWebhookJob:
+      resources: {}
+
     patch:
       enabled: true
       image:
-        repository: docker.io/jettech/kube-webhook-certgen
-        tag: v1.5.1
+        registry: k8s.gcr.io
+        image: ingress-nginx/kube-webhook-certgen
+        # for backwards compatibility consider setting the full image url via the repository value below
+        # use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
+        # repository:
+        tag: v1.1.1
+        digest: sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
         pullPolicy: IfNotPresent
       ## Provide a priority class name to the webhook patching job
       ##
       priorityClassName: ""
       podAnnotations: {}
-      nodeSelector: {}
+      nodeSelector:
+        kubernetes.io/os: linux
       tolerations: []
+      ## Labels to be added to patch job resources
+      labels: {}
       runAsUser: 2000
 
   metrics:
@@ -526,6 +655,8 @@ controller:
     serviceMonitor:
       enabled: true
       additionalLabels: {}
+      # The label to use to retrieve the job name from.
+      # jobLabel: "app.kubernetes.io/name"
       namespace: ""
       namespaceSelector: {}
       # Default: scrape .Release.Namespace only
@@ -535,6 +666,7 @@ controller:
       scrapeInterval: 30s
       # honorLabels: true
       targetLabels: []
+      relabelings: []
       metricRelabelings: []
 
     prometheusRule:
@@ -603,7 +735,11 @@ defaultBackend:
 
   name: defaultbackend
   image:
-    repository: k8s.gcr.io/defaultbackend-amd64
+    registry: k8s.gcr.io
+    image: defaultbackend-amd64
+    # for backwards compatibility consider setting the full image url via the repository value below
+    # use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
+    # repository:
     tag: "1.5"
     pullPolicy: IfNotPresent
     # nobody user -> uid 65534
@@ -611,6 +747,9 @@ defaultBackend:
     runAsNonRoot: true
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
+
+  # Use an existing PSP instead of creating one
+  existingPsp: ""
 
   extraArgs: {}
 
@@ -656,6 +795,12 @@ defaultBackend:
   ##
   podSecurityContext: {}
 
+  ## Security Context policies for controller main container.
+  ## See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for
+  ## notes on enabling and using sysctls
+  ##
+  containerSecurityContext: {}
+
   # labels to add to the pod container metadata
   podLabels: {}
   #  key: value
@@ -663,7 +808,8 @@ defaultBackend:
   ## Node labels for default backend pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/os: linux
 
   ## Annotations to be added to default backend pods
   ##
@@ -692,6 +838,7 @@ defaultBackend:
   #    emptyDir: {}
 
   autoscaling:
+    annotations: {}
     enabled: false
     minReplicas: 1
     maxReplicas: 2
@@ -714,8 +861,10 @@ defaultBackend:
     type: ClusterIP
 
   priorityClassName: ""
+  ## Labels to be added to the default backend resources
+  labels: {}
 
-## Enable RBAC as per https://github.com/kubernetes/ingress/tree/master/examples/rbac/nginx and https://github.com/kubernetes/ingress/issues/266
+## Enable RBAC as per https://github.com/kubernetes/ingress-nginx/blob/main/docs/deploy/rbac.md and https://github.com/kubernetes/ingress-nginx/issues/266
 rbac:
   create: true
   scope: false
@@ -736,18 +885,18 @@ imagePullSecrets: []
 # - name: secretName
 
 # TCP service key:value pairs
-# Ref: https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/tcp
+# Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
 ##
 tcp: {}
 #  8080: "default/example-tcp-svc:9000"
 
 # UDP service key:value pairs
-# Ref: https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/udp
+# Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
 ##
 udp: {}
 #  53: "kube-system/kube-dns:53"
 
 # A base64ed Diffie-Hellman parameter
 # This can be generated with: openssl dhparam 4096 2> /dev/null | base64
-# Ref: https://github.com/krmichel/ingress-nginx/blob/master/docs/examples/customization/ssl-dh-param
+# Ref: https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/ssl-dh-param
 dhParam:
