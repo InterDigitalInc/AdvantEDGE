@@ -7,6 +7,10 @@ metadata:
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
+{{- if .Values.alertmanager.annotations }}
+  annotations:
+{{ toYaml .Values.alertmanager.annotations | indent 4 }}
+{{- end }}
 spec:
 {{- if .Values.alertmanager.alertmanagerSpec.image }}
   image: {{ .Values.alertmanager.alertmanagerSpec.image.repository }}:{{ .Values.alertmanager.alertmanagerSpec.image.tag }}
@@ -19,7 +23,7 @@ spec:
   listenLocal: {{ .Values.alertmanager.alertmanagerSpec.listenLocal }}
   serviceAccountName: {{ template "kube-prometheus-stack.alertmanager.serviceAccountName" . }}
 {{- if .Values.alertmanager.alertmanagerSpec.externalUrl }}
-  externalUrl: "{{ .Values.alertmanager.alertmanagerSpec.externalUrl }}"
+  externalUrl: "{{ tpl .Values.alertmanager.alertmanagerSpec.externalUrl . }}"
 {{- else if and .Values.alertmanager.ingress.enabled .Values.alertmanager.ingress.hosts }}
   externalUrl: "http://{{ tpl (index .Values.alertmanager.ingress.hosts 0) . }}{{ .Values.alertmanager.alertmanagerSpec.routePrefix }}"
 {{- else }}
@@ -87,7 +91,7 @@ spec:
         labelSelector:
           matchExpressions:
             - {key: app, operator: In, values: [alertmanager]}
-            - {key: prometheus, operator: In, values: [{{ template "kube-prometheus-stack.fullname" . }}-alertmanager]}
+            - {key: alertmanager, operator: In, values: [{{ template "kube-prometheus-stack.fullname" . }}-alertmanager]}
 {{- else if eq .Values.alertmanager.alertmanagerSpec.podAntiAffinity "soft" }}
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -97,12 +101,15 @@ spec:
           labelSelector:
             matchExpressions:
               - {key: app, operator: In, values: [alertmanager]}
-              - {key: prometheus, operator: In, values: [{{ template "kube-prometheus-stack.fullname" . }}-alertmanager]}
-{{- end }}
+              - {key: alertmanager, operator: In, values: [{{ template "kube-prometheus-stack.fullname" . }}-alertmanager]}
 {{- end }}
 {{- if .Values.alertmanager.alertmanagerSpec.tolerations }}
   tolerations:
 {{ toYaml .Values.alertmanager.alertmanagerSpec.tolerations | indent 4 }}
+{{- end }}
+{{- if .Values.alertmanager.alertmanagerSpec.topologySpreadConstraints }}
+  topologySpreadConstraints:
+{{ toYaml .Values.alertmanager.alertmanagerSpec.topologySpreadConstraints | indent 4 }}
 {{- end }}
 {{- if .Values.global.imagePullSecrets }}
   imagePullSecrets:
@@ -138,4 +145,5 @@ spec:
 {{- end }}
 {{- if .Values.alertmanager.alertmanagerSpec.forceEnableClusterMode }}
   forceEnableClusterMode: {{ .Values.alertmanager.alertmanagerSpec.forceEnableClusterMode }}
+{{- end }}
 {{- end }}

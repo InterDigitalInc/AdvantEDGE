@@ -1,5 +1,5 @@
 {{- /*
-Generated from 'node-exporter' group from https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/master/manifests/prometheus-rules.yaml
+Generated from 'node-exporter' group from https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/main/manifests/node-exporter-prometheusRule.yaml
 Do not change in-place! In order to change this file first read following link:
 https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack/hack
 */ -}}
@@ -216,7 +216,7 @@ spec:
 {{- end }}
     - alert: NodeClockSkewDetected
       annotations:
-        message: Clock on {{`{{`}} $labels.instance {{`}}`}} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.
+        description: Clock on {{`{{`}} $labels.instance {{`}}`}} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.
         runbook_url: {{ .Values.defaultRules.runbookUrl }}alert-name-nodeclockskewdetected
         summary: Clock skew detected.
       expr: |-
@@ -239,7 +239,7 @@ spec:
 {{- end }}
     - alert: NodeClockNotSynchronising
       annotations:
-        message: Clock on {{`{{`}} $labels.instance {{`}}`}} is not synchronising. Ensure NTP is configured on this host.
+        description: Clock on {{`{{`}} $labels.instance {{`}}`}} is not synchronising. Ensure NTP is configured on this host.
         runbook_url: {{ .Values.defaultRules.runbookUrl }}alert-name-nodeclocknotsynchronising
         summary: Clock not synchronising.
       expr: |-
@@ -269,9 +269,39 @@ spec:
         description: At least one device in RAID array on {{`{{`}} $labels.instance {{`}}`}} failed. Array '{{`{{`}} $labels.device {{`}}`}}' needs attention and possibly a disk swap.
         runbook_url: {{ .Values.defaultRules.runbookUrl }}alert-name-noderaiddiskfailure
         summary: Failed device in RAID array
-      expr: node_md_disks{state="fail"} > 0
+      expr: node_md_disks{state="failed"} > 0
       labels:
         severity: warning
+{{- if .Values.defaultRules.additionalRuleLabels }}
+{{ toYaml .Values.defaultRules.additionalRuleLabels | indent 8 }}
+{{- end }}
+    - alert: NodeFileDescriptorLimit
+      annotations:
+        description: File descriptors limit at {{`{{`}} $labels.instance {{`}}`}} is currently at {{`{{`}} printf "%.2f" $value {{`}}`}}%.
+        runbook_url: {{ .Values.defaultRules.runbookUrl }}alert-name-nodefiledescriptorlimit
+        summary: Kernel is predicted to exhaust file descriptors limit soon.
+      expr: |-
+        (
+          node_filefd_allocated{job="node-exporter"} * 100 / node_filefd_maximum{job="node-exporter"} > 70
+        )
+      for: 15m
+      labels:
+        severity: warning
+{{- if .Values.defaultRules.additionalRuleLabels }}
+{{ toYaml .Values.defaultRules.additionalRuleLabels | indent 8 }}
+{{- end }}
+    - alert: NodeFileDescriptorLimit
+      annotations:
+        description: File descriptors limit at {{`{{`}} $labels.instance {{`}}`}} is currently at {{`{{`}} printf "%.2f" $value {{`}}`}}%.
+        runbook_url: {{ .Values.defaultRules.runbookUrl }}alert-name-nodefiledescriptorlimit
+        summary: Kernel is predicted to exhaust file descriptors limit soon.
+      expr: |-
+        (
+          node_filefd_allocated{job="node-exporter"} * 100 / node_filefd_maximum{job="node-exporter"} > 90
+        )
+      for: 15m
+      labels:
+        severity: critical
 {{- if .Values.defaultRules.additionalRuleLabels }}
 {{ toYaml .Values.defaultRules.additionalRuleLabels | indent 8 }}
 {{- end }}

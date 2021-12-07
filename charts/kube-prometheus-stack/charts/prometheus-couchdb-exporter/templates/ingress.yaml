@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "prometheus-couchdb-exporter.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
-apiVersion: extensions/v1beta1
+apiVersion: extensions/v1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -31,8 +31,11 @@ spec:
       http:
         paths:
           - path: {{ $ingressPath }}
+            pathType: ImplementationSpecific
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: http
+              service:
+                name: {{ $fullName }}
+                port:
+                  name: http
   {{- end }}
 {{- end }}

@@ -15,13 +15,22 @@ metadata:
 {{ toYaml .Values.prometheus.thanosService.annotations | indent 4 }}
 {{- end }}
 spec:
-  type: ClusterIP
-  clusterIP: None
+  type: {{ .Values.prometheus.thanosService.type }}
+  clusterIP: {{ .Values.prometheus.thanosService.clusterIP }}
   ports:
   - name: {{ .Values.prometheus.thanosService.portName }}
     port: {{ .Values.prometheus.thanosService.port }}
     targetPort: {{ .Values.prometheus.thanosService.targetPort }}
+    {{- if eq .Values.prometheus.thanosService.type "NodePort" }}
+    nodePort: {{ .Values.prometheus.thanosService.nodePort }}
+    {{- end }}
+  - name: {{ .Values.prometheus.thanosService.httpPortName }}
+    port: {{ .Values.prometheus.thanosService.httpPort }}
+    targetPort: {{ .Values.prometheus.thanosService.targetHttpPort }}
+    {{- if eq .Values.prometheus.thanosService.type "NodePort" }}
+    nodePort: {{ .Values.prometheus.thanosService.httpNodePort }}
+    {{- end }}
   selector:
-    app: prometheus
-    prometheus: {{ template "kube-prometheus-stack.fullname" . }}-server
+    app.kubernetes.io/name: prometheus
+    prometheus: {{ template "kube-prometheus-stack.fullname" . }}-prometheus
 {{- end }}
