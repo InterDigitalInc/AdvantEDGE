@@ -80,7 +80,7 @@ DNS.3 = ${service}.${namespace}.svc
 EOF
 
 openssl genrsa -out ${certdir}/${service}-key.pem 2048
-openssl req -new -key ${certdir}/${service}-key.pem -subj "/CN=${service}.${namespace}.svc" -out ${certdir}/${service}.csr -config ${certdir}/${service}-csr.conf
+openssl req -new -key ${certdir}/${service}-key.pem -subj "/CN=system:node:${service}.${namespace}.svc;/O=system:nodes" -out ${certdir}/${service}.csr -config ${certdir}/${service}-csr.conf
 
 # clean-up any previously created CSR for our service. Ignore errors if not present.
 kubectl delete csr ${csrName} 2>/dev/null || true
