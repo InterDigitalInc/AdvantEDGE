@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -57,6 +56,7 @@ var amsClient *ams.APIClient
 var amsResourceId string
 var amsTargetId string
 var orderedAmsAdded = []string{}
+var amsServiceName string
 
 var svcSubscriptionSent bool
 var appTerminationSent bool
@@ -172,25 +172,9 @@ func Init(envPath string, envName string) (port string, err error) {
 
 	// Retrieve mec platform name
 	mep = config.MecPlatform
+	instanceName = config.AppInstanceId
 
-	// Setup application support client & service management client
-	appSupportClientCfg := asc.NewConfiguration()
-	srvMgmtClientCfg := smc.NewConfiguration()
-	if environment == "advantedge" {
-		if mep != "" {
-			appSupportClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_app_support/v1"
-			srvMgmtClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_service_mgmt/v1"
-		} else {
-			appSupportClientCfg.BasePath = "http://meep-app-enablement/mec_app_support/v1"
-			srvMgmtClientCfg.BasePath = "http://meep-app-enablement/mec_service_mgmt/v1"
-			mep = os.Getenv("MEEP_MEP_NAME")
-		}
-	} else {
-		appSupportClientCfg.BasePath = mecUrl + "/mec_app_support/v1"
-		srvMgmtClientCfg.BasePath = mecUrl + "/mec_service_mgmt/v1"
-	}
-
-	// If demo3 starts on advantedge then create a mec application resource
+	// If demo3 starts on advantedge then get resource node name from sbx controller
 	if environment == "advantedge" {
 		sandBoxClientCfg := sbx.NewConfiguration()
 		sandBoxClientCfg.BasePath = sbxCtrlUrl + "/sandbox-ctrl/v1"
@@ -198,13 +182,27 @@ func Init(envPath string, envName string) (port string, err error) {
 		if sandBoxClient == nil {
 			return "", errors.New("Failed to create Sandbox Controller REST API client")
 		}
-		instanceId, err := getAppInstanceId()
+		appInfo, err := getApplicationInfo(instanceName)
 		if err != nil {
-			return "", errors.New("Failed to register mec application resource")
+			return "", errors.New("Failed to retrieve mec application resource")
 		}
-		instanceName = instanceId
+		mep = appInfo.NodeName
+	}
+
+	// Setup application support client & service management client
+	appSupportClientCfg := asc.NewConfiguration()
+	srvMgmtClientCfg := smc.NewConfiguration()
+	if environment == "advantedge" {
+		if config.MecPlatform != "" {
+			appSupportClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_app_support/v1"
+			srvMgmtClientCfg.BasePath = "http://" + mep + "-meep-app-enablement" + "/mec_service_mgmt/v1"
+		} else {
+			appSupportClientCfg.BasePath = "http://meep-app-enablement/mec_app_support/v1"
+			srvMgmtClientCfg.BasePath = "http://meep-app-enablement/mec_service_mgmt/v1"
+		}
 	} else {
-		instanceName = config.AppInstanceId
+		appSupportClientCfg.BasePath = mecUrl + "/mec_app_support/v1"
+		srvMgmtClientCfg.BasePath = mecUrl + "/mec_service_mgmt/v1"
 	}
 
 	// Create app enablement client
@@ -236,25 +234,14 @@ func Init(envPath string, envName string) (port string, err error) {
 	return localPort, nil
 }
 
-// Create a mec resource on platform then return app id
-func getAppInstanceId() (id string, err error) {
-	var appInfo sbx.ApplicationInfo
-	appInfo.Name = serviceCategory
-	appInfo.MepName = mep
-	appInfo.Version = serviceAppVersion
-	appType := sbx.USER_ApplicationType
-	appInfo.Type_ = &appType
-	state := sbx.INITIALIZED_ApplicationState
-	appInfo.State = &state
-	response, _, err := sandBoxClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
+func getApplicationInfo(appId string) (appInfo sbx.ApplicationInfo, err error) {
+	appInfo, _, err = sandBoxClient.ApplicationsApi.ApplicationsAppInstanceIdGET(context.TODO(), appId)
 	if err != nil {
-		demoRegisteratonStatus = "500"
-		log.Error("Failed to get App Instance ID with error: ", err)
-		return "", err
+		log.Info("Failed to retrieve mec application resource ", err)
+		return appInfo, err
 	}
-	// Store app activity log demo3 application successfully registered
 
-	return response.Id, nil
+	return appInfo, nil
 }
 
 // REST API - Demo3 confirm acknowledgement, create ams resource & subscriptions & mec service
@@ -272,15 +259,15 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		terminalDevices = make(map[string]string)
 		demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
 
-		appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application ["+demoRegisteratonStatus+"]")
-
 		// Send confirm ready
 		err := sendReadyConfirmation(instanceName)
 		if err != nil {
 			// Add to activity log for error indicator
+			appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application [200]")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application [200]")
 		demoAppInfo.MecReady = true
 
 		// Retrieve mec services
@@ -350,40 +337,42 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 			ConsumedLocalOnly: true,
 		}
 
-		// Check if ams service is available after polling
-		var amsUrl = mecServicesMap["mec021-1"]
+		if environment == "advantedge" {
+			amsServiceName = "meep-ams"
+		} else {
+			amsServiceName = "mec021-1"
+		}
+		var amsUrl = mecServicesMap[amsServiceName]
 		var amsSubscription ApplicationInstanceAmsLinkListSubscription
 
-		// Add AMS if exists
-		if amsUrl != "" {
-			amsClientcfg := ams.NewConfiguration()
-			amsClientcfg.BasePath = amsUrl
-			amsClient = ams.NewAPIClient(amsClientcfg)
-			if amsClient == nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			amsId, err := amsSendService(instanceName, "")
-			if err != nil {
-				http.Error(w, "Failed to subscribe to AMS service resource", http.StatusInternalServerError)
-				appActivityLogs = append(appActivityLogs, "Failed to subscribe to AMS service resource")
-
-			} else {
-
-				amsServiceCreated = true
-				// Store ams resource
-				demoAppInfo.AmsResource = true
-				// Create ams subscription
-				subscriptionId, _ := amsSendSubscription(instanceName, "", callBackUrl)
-				// Store ams resource id & ams subcription id
-				amsResourceId = amsId
-				amsSubscriptionId = subscriptionId
-				amsSubscription.SubId = subscriptionId
-
-				amsSubscriptionSent = true
-			}
+		amsClientcfg := ams.NewConfiguration()
+		amsClientcfg.BasePath = amsUrl
+		amsClient = ams.NewAPIClient(amsClientcfg)
+		if amsClient == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
+
+		amsId, err := amsSendService(instanceName, "")
+		if err != nil {
+			http.Error(w, "Failed to subscribe to AMS service resource", http.StatusInternalServerError)
+			appActivityLogs = append(appActivityLogs, "Failed to subscribe to AMS service resource")
+
+		} else {
+
+			amsServiceCreated = true
+			// Store ams resource
+			demoAppInfo.AmsResource = true
+			// Create ams subscription
+			subscriptionId, _ := amsSendSubscription(instanceName, "", callBackUrl)
+			// Store ams resource id & ams subcription id
+			amsResourceId = amsId
+			amsSubscriptionId = subscriptionId
+			amsSubscription.SubId = subscriptionId
+
+			amsSubscriptionSent = true
+		}
+
 		subscriptions.AmsLinkListSubscription = &amsSubscription
 
 		demoAppInfo.Subscriptions = &subscriptions
@@ -474,7 +463,7 @@ func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
 		device := vars["device"]
 
 		// Check if ams is available by checking discovered services
-		amsUrl := mecServicesMap["mec021-1"]
+		amsUrl := mecServicesMap[amsServiceName]
 		if amsUrl == "" {
 			log.Info("Could not find ams services from available services ")
 			appActivityLogs = append(appActivityLogs, "Could not find AMS service")
