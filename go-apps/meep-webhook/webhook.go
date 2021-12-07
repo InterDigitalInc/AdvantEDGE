@@ -142,6 +142,14 @@ func refreshSandboxData(sbxName string) error {
 
 	// Refresh app instance ID map
 	sbxData.AppIdMap = make(map[string]string)
+	appTypeList := []string{mod.NodeTypeEdgeApp}
+	appNameList := sbxData.ActiveScenario.GetNodeNames(appTypeList...)
+	for _, appName := range appNameList {
+		appId := sbxData.ActiveScenario.GetNodeId(appName)
+		if appId != "" {
+			sbxData.AppIdMap[appName] = appId
+		}
+	}
 
 	return nil
 }
@@ -183,6 +191,24 @@ func getScenarioName(sbxName string) string {
 	return ""
 }
 
+func getAppId(sbxName string, appName string) string {
+	// Validate params
+	if sbxName == "" || appName == "" {
+		return ""
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Get scenario name from sandbox data
+	if sbxData, found := sbxDataMap[sbxName]; found {
+		if appId, found := sbxData.AppIdMap[appName]; found {
+			return appId
+		}
+	}
+	return ""
+}
+
 func loadConfig(configFile string) (*Config, error) {
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
@@ -205,12 +231,16 @@ func getPlatformPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, me
 
 	// Get scenario name
 	scenarioName := getScenarioName(sandboxName)
+	meepAppId := getAppId(sandboxName, meepAppName)
 
 	// Add env vars to sidecar containers
 	var envVars []corev1.EnvVar
 	var envVar corev1.EnvVar
 	envVar.Name = "MEEP_POD_NAME"
 	envVar.Value = meepAppName
+	envVars = append(envVars, envVar)
+	envVar.Name = "MEEP_APP_ID"
+	envVar.Value = meepAppId
 	envVars = append(envVars, envVar)
 	envVar.Name = "MEEP_SANDBOX_NAME"
 	envVar.Value = sandboxName
