@@ -2,7 +2,7 @@
 {{- $serviceName := include "open-map-tiles.fullname" . -}}
 {{- $servicePort := .Values.service.port -}}
 {{- $path := .Values.ingress.path -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "open-map-tiles.fullname" . }}
@@ -25,9 +25,12 @@ spec:
         paths:
           {{- range $path := .paths }}
           - path: {{ $path }}
+            pathType: ImplementationSpecific
             backend:
-              serviceName: {{ $serviceName }}
-              servicePort: {{ $servicePort }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
           {{- end -}}
       {{- if .name }}
       host: {{ .name }}
