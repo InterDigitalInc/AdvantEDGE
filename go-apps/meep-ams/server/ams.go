@@ -90,7 +90,6 @@ const (
 	FieldCtxTransferState string = "contextTransferState"
 	FieldMobilitySvcId    string = "mobilityServiceId"
 	FieldAppInstanceId    string = "appInstanceId"
-	FieldSvcId            string = "svcId"
 	FieldCtxOwner         string = "contextOwner"
 )
 
@@ -150,6 +149,9 @@ var svcMgmtClient *smc.APIClient
 var sbxCtrlClient *scc.APIClient
 var registrationTicker *time.Ticker
 
+// AMS Resource map
+var regInfoMap map[string]*RegistrationInfo
+
 // k = appInstanceId
 var appInfoMap map[string]AppInfo
 
@@ -168,6 +170,7 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 func Init() (err error) {
 
 	// Initialize variables
+	regInfoMap = make(map[string]*RegistrationInfo)
 	appInfoMap = make(map[string]AppInfo)
 	devInfoMap = make(map[string]*DevInfo)
 	trackedDevInfoMap = make(map[string]map[string]TrackedDevInfo)
@@ -420,12 +423,13 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 			log.Error(err.Error())
 			break
 		}
+		appName := appInfo[fieldName]
 
 		// Refresh tracked device context owner
-		refreshTrackedDevCtxOwner(appInfo[fieldName])
+		refreshTrackedDevCtxOwner(appName)
 
 		// Check for adjacent app notif subscriptions
-		sendAdjAppInfoNotifications(appInfo[fieldName])
+		sendAdjAppInfoNotifications(appName)
 
 	case mq.MsgAppRemove:
 		mutex.Lock()
@@ -444,14 +448,14 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 		appName := appInfo[fieldName]
 
 		// Terminate app
-		err = terminateApp(appId)
+		err = delAppInfo(appId)
 		if err != nil {
 			log.Error(err.Error())
 			break
 		}
 
 		// Refresh tracked device context owner
-		refreshTrackedDevCtxOwner(appInfo[fieldName])
+		refreshTrackedDevCtxOwner(appName)
 
 		// Check for adjacent app notif subscriptions
 		sendAdjAppInfoNotifications(appName)
@@ -1336,7 +1340,7 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	regInfo.AppMobilityServiceId = svcId
 
 	// Create new AMS resource
-	err = createService(appId, svcId, &regInfo)
+	err = createService(appId, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1357,14 +1361,14 @@ func appMobilityServiceByIdGET(w http.ResponseWriter, r *http.Request) {
 	svcId := vars["appMobilityServiceId"]
 
 	// Get AMS resource by ID
-	key := baseKey + "svc:" + svcId + ":info"
-	jsonData, _ := rc.JSONGetEntry(key, ".")
-	if jsonData == "" {
+	regInfo, err := getRegInfo(svcId)
+	if err != nil || regInfo == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonData))
+	fmt.Fprintf(w, convertRegistrationInfoToJson(regInfo))
 }
 
 func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
@@ -1423,7 +1427,7 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create new AMS resource
-	err = createService(appId, svcId, &regInfo)
+	err = createService(appId, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1446,13 +1450,35 @@ func appMobilityServiceByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Delete previous service & devices
+	// Get AMS Registration Info
+	regInfo, err := getRegInfo(svcId)
+	if err != nil || regInfo == nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Get impacted App name
+	appName := ""
+	appId := regInfo.ServiceConsumerId.AppInstanceId
+	if appId == "" {
+		appId = regInfo.ServiceConsumerId.MepId
+	}
+	appInfo, err := getApp(appId)
+	if err == nil && appInfo != nil {
+		appName = appInfo[fieldName]
+	}
+
+	// Delete AMS resource & its tracked devices
 	statusCode, err := deleteServiceById(svcId)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), statusCode)
 		return
 	}
+
+	// Refresh tracked device context owner
+	refreshTrackedDevCtxOwner(appName)
 
 	// Send successful response
 	w.WriteHeader(http.StatusNoContent)
@@ -1461,7 +1487,7 @@ func appMobilityServiceByIdDELETE(w http.ResponseWriter, r *http.Request) {
 func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	// Get all AMS resources
+	// Get all AMS Registration Info
 	regInfoList := make([]RegistrationInfo, 0)
 	key := baseKey + "svc:*:info"
 	err := rc.ForEachJSONEntry(key, populateRegInfoList, &regInfoList)
@@ -1478,6 +1504,7 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
 }
@@ -1547,10 +1574,9 @@ func setStoreName(storeName string) {
 	}
 }
 
-func createService(appId string, svcId string, regInfo *RegistrationInfo) error {
-	// Store new AMS resource
-	key := baseKey + "svc:" + svcId + ":info"
-	err := rc.JSONSetEntry(key, ".", convertRegistrationInfoToJson(regInfo))
+func createService(appId string, regInfo *RegistrationInfo) error {
+	// Store new AMS Registration Info resource
+	err := setRegInfo(regInfo)
 	if err != nil {
 		return err
 	}
@@ -1561,9 +1587,8 @@ func createService(appId string, svcId string, regInfo *RegistrationInfo) error 
 		dev[FieldAssociateId] = devInfo.AssociateId.Value
 		dev[FieldServiceLevel] = strconv.Itoa(int(devInfo.AppMobilityServiceLevel))
 		dev[FieldCtxTransferState] = strconv.Itoa(int(devInfo.ContextTransferState))
-		dev[FieldMobilitySvcId] = svcId
+		dev[FieldMobilitySvcId] = regInfo.AppMobilityServiceId
 		dev[FieldAppInstanceId] = appId
-		dev[FieldSvcId] = svcId
 		dev[FieldCtxOwner] = ""
 		err = setTrackedDevInfo(dev)
 		if err != nil {
@@ -1574,24 +1599,22 @@ func createService(appId string, svcId string, regInfo *RegistrationInfo) error 
 }
 
 func deleteServiceById(svcId string) (int, error) {
-	// Get AMS resource by ID
-	key := baseKey + "svc:" + svcId + ":info"
-	jsonData, _ := rc.JSONGetEntry(key, ".")
-	if jsonData == "" {
+	// Get AMS Registration Info
+	regInfo, err := getRegInfo(svcId)
+	if err != nil || regInfo == nil {
 		return http.StatusNotFound, errors.New("Service not found")
 	}
-	regInfo := convertJsonToRegistrationInfo(jsonData)
 
-	// Delete AMS resource
-	err := rc.JSONDelEntry(key, ".")
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	// Delete devices
+	// Delete AMS devices
 	for _, devInfo := range regInfo.DeviceInformation {
 		address := devInfo.AssociateId.Value
 		_ = delTrackedDevInfo(svcId, address)
+	}
+
+	// Delete AMS resource
+	err = delRegInfo(svcId)
+	if err != nil {
+		log.Error(err.Error())
 	}
 	return http.StatusOK, nil
 }
@@ -1790,11 +1813,20 @@ func getTargetApps(appName string, address string) ([]string, error) {
 	targetAppIds := []string{}
 	for _, nodeList := range devInfo.PreferredNodes {
 		for _, node := range nodeList {
-			// Check all App instances for a matching app name & edge node
-			// NOTE: no app instance state verification is made to make sure service is ready
-			for appId, appInfo := range appInfoMap {
-				if appInfo[fieldName] == appName && appInfo[fieldNode] == node {
-					targetAppIds = append(targetAppIds, appId)
+			// Search all AMS Registration Info for a matching App instance & Node
+			for _, regInfo := range regInfoMap {
+				// Get App Id
+				appId := regInfo.ServiceConsumerId.AppInstanceId
+				if appId == "" {
+					appId = regInfo.ServiceConsumerId.MepId
+				}
+
+				// Get app info
+				appInfo, err := getApp(appId)
+				if err == nil && appInfo != nil {
+					if appInfo[fieldName] == appName && appInfo[fieldNode] == node {
+						targetAppIds = append(targetAppIds, appId)
+					}
 				}
 			}
 		}
@@ -1953,10 +1985,37 @@ func setAppInfo(appInfo map[string]string) error {
 }
 
 func delAppInfo(appId string) error {
+	// Get App info
+	_, found := appInfoMap[appId]
+	if !found {
+		return errors.New("App info not found for: " + appId)
+	}
+
 	// Delete app support subscriptions
 	err := subMgr.DeleteFilteredSubscriptions(appId, "")
 	if err != nil {
 		log.Error(err.Error())
+	}
+
+	// Get list of impacted AMS Registration info
+	var regInfoToDeleteList []string
+	for _, regInfo := range regInfoMap {
+		regInfoAppId := regInfo.ServiceConsumerId.AppInstanceId
+		if regInfoAppId == "" {
+			regInfoAppId = regInfo.ServiceConsumerId.MepId
+		}
+		if regInfoAppId == appId {
+			regInfoToDeleteList = append(regInfoToDeleteList, regInfo.AppMobilityServiceId)
+		}
+	}
+
+	// Delete AMS Registration Info & Devices
+	for _, svcId := range regInfoToDeleteList {
+		// Delete  service & devices
+		_, err := deleteServiceById(svcId)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	// Remove from cache
@@ -1991,15 +2050,21 @@ func refreshApps() error {
 		return err
 	}
 
-	// Create app info for new apps
+	// Update app info
 	for _, app := range appList {
 		found := false
 		for _, appInfo := range appInfoList {
 			if appInfo[fieldAppId] == app.Id {
 				found = true
+				// Set existing app info to make sure cache is updated
+				err = setAppInfo(appInfo)
+				if err != nil {
+					log.Error(err.Error())
+				}
 				break
 			}
 		}
+		// Create & set app info for new apps
 		if !found {
 			appInfo, err := newAppInfo(app)
 			if err != nil {
@@ -2067,21 +2132,6 @@ func updateApp(appId string) (map[string]string, error) {
 	return appInfo, nil
 }
 
-func terminateApp(appId string) error {
-	// Get App info
-	appInfo, found := appInfoMap[appId]
-	if !found {
-		return errors.New("App info not found for: " + appId)
-	}
-
-	// Delete app info
-	err := delAppInfo(appInfo[fieldAppId])
-	if err != nil {
-		log.Error(err.Error())
-	}
-	return nil
-}
-
 func flushApps(persist bool) error {
 	// Delete App instances
 	for _, appInfo := range appInfoMap {
@@ -2102,6 +2152,52 @@ func flushApps(persist bool) error {
 			log.Error(err.Error())
 		}
 	}
+	return nil
+}
+
+func getRegInfo(svcId string) (*RegistrationInfo, error) {
+	regInfo, found := regInfoMap[svcId]
+	if !found {
+		return nil, errors.New("AMS Registration Info not found")
+	}
+	return regInfo, nil
+}
+
+// func getDevInfo(address string) (*DevInfo, error) {
+// 	key := baseKey + "dev:" + address
+// 	jsonData, _ := rc.JSONGetEntry(key, ".")
+// 	if jsonData == "" {
+// 		return nil, errors.New("Device not found")
+// 	}
+// 	return convertJsonToDevInfo(jsonData), nil
+// }
+
+func setRegInfo(regInfo *RegistrationInfo) error {
+	if regInfo == nil {
+		return errors.New("regInfo == nil")
+	}
+
+	// Store AMS Registration Info
+	key := baseKey + "svc:" + regInfo.AppMobilityServiceId + ":info"
+	err := rc.JSONSetEntry(key, ".", convertRegistrationInfoToJson(regInfo))
+	if err != nil {
+		return err
+	}
+
+	// Cache entry
+	regInfoMap[regInfo.AppMobilityServiceId] = regInfo
+
+	return nil
+}
+
+func delRegInfo(svcId string) error {
+	// Remove from cache
+	delete(regInfoMap, svcId)
+
+	// Flush AMS Registration Info data
+	key := baseKey + "svc:" + svcId + ":info"
+	_ = rc.DBFlush(key)
+
 	return nil
 }
 
@@ -2189,7 +2285,7 @@ func delDevInfo(address string) error {
 // }
 
 func setTrackedDevInfo(trackedDevInfo TrackedDevInfo) error {
-	svcId, found := trackedDevInfo[FieldSvcId]
+	svcId, found := trackedDevInfo[FieldMobilitySvcId]
 	if !found || svcId == "" {
 		return errors.New("Missing AM service id")
 	}

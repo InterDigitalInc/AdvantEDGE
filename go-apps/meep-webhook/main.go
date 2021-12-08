@@ -26,18 +26,27 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
+
+type SandboxData struct {
+	ScenarioName   string
+	AppIdMap       map[string]string
+	ActiveScenario *mod.Model
+}
 
 const moduleName = "meep-webhook"
 const moduleNamespace = "default"
 
 var mqGlobal *mq.MsgQueue
 var handlerId int
-var activeScenarioNames map[string]string
+var mutex sync.Mutex
+var sbxDataMap map[string]*SandboxData
 
 func main() {
 	var err error
@@ -46,7 +55,8 @@ func main() {
 	// Initialize logging
 	log.MeepJSONLogInit("meep-webhook")
 
-	activeScenarioNames = make(map[string]string)
+	// Initialize sandbox data map
+	sbxDataMap = make(map[string]*SandboxData)
 
 	// Create message queue
 	mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, "")
