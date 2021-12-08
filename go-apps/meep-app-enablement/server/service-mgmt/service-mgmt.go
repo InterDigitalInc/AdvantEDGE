@@ -462,7 +462,7 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getAppInfoAnyMep(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -495,7 +495,7 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	// Get App instance
-	appInfo, err := getAppInfo(appId)
+	appInfo, err := getAppInfoAnyMep(appId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -1018,6 +1018,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 			isLocal:           isLocal,
 			scopeOfLocality:   scopeOfLocality,
 		},
+		Services: make([]ServiceInfo, 0),
 	}
 
 	var key string
@@ -1413,6 +1414,32 @@ func getAppInfo(appId string) (map[string]string, error) {
 		return nil, errors.New("App Instance not found")
 	}
 	return appInfo, nil
+}
+
+func getAppInfoAnyMep(appId string) (map[string]string, error) {
+	var appInfoList []map[string]string
+
+	// Get app instance from any MEP
+	keyMatchStr := baseKeyAnyMep + "app:" + appId + ":info"
+	err := rc.ForEachEntry(keyMatchStr, populateAppInfo, &appInfoList)
+	if err != nil || len(appInfoList) != 1 {
+		return nil, errors.New("App Instance not found")
+	}
+	return appInfoList[0], nil
+}
+
+func populateAppInfo(key string, entry map[string]string, userData interface{}) error {
+	appInfoList := userData.(*[]map[string]string)
+
+	// Copy entry
+	appInfo := make(map[string]string, len(entry))
+	for k, v := range entry {
+		appInfo[k] = v
+	}
+
+	// Add app info to list
+	*appInfoList = append(*appInfoList, appInfo)
+	return nil
 }
 
 func validateAppInfo(appInfo map[string]string) (int, string, error) {

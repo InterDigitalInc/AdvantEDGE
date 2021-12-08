@@ -78,7 +78,6 @@ func convertAdjacentAppInfoNotificationToJson(obj *AdjacentAppInfoNotification) 
 	return string(jsonInfo)
 }
 
-
 func convertRegistrationInfoToJson(obj *RegistrationInfo) string {
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
