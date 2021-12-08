@@ -134,7 +134,6 @@ export default function Homepage() {
     setAppInfo({});
     setAmsLog([]);
     setRegisteration(false);
-    setTerminalDevices([]);
     appInfoApi.deregister((err, data, resp) => {
       if (err !== null) {
         // console.log(err);
@@ -156,34 +155,23 @@ export default function Homepage() {
     });
   };
 
-  const [terminalDevices, setTerminalDevices] = useState([]);
 
   const removeAmsDevice = async (device) => {
-    let mutableArray = terminalDevices;
-
     appInfoApi.deleteAmsDevice(device, (err, data, resp) => {
       if (err !== null) {
         // console.log(err);
-      } else {
-        const result = mutableArray.filter((e) => e != device);
-        setTerminalDevices(result);
-      }
+      } 
     });
   };
 
   const addTerminalDevices = () => {
-    let devices = terminalDevices;
-    let deviceMap = new Set(devices);
-    if (!deviceMap.has(textValue)) {
-      appInfoApi.updateAmsDevices(textValue, (err, data, resp) => {
-        if (err !== null) {
-          // console.log(err);
-        } else {
-          setTerminalDevices((e) => [...e, textValue]);
-        }
-      });
-    }
-  };
+    appInfoApi.updateAmsDevices(textValue, (err, data, resp) => {
+      if (err !== null) {
+        // console.log(err);
+      } 
+    });
+  }
+  ;
 
   return (
     <ThemeProvider theme={theme}>
