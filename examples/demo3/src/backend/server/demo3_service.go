@@ -55,7 +55,6 @@ var sbxCtrlUrl string = "http://meep-sandbox-ctrl"
 var amsClient *ams.APIClient
 var amsResourceId string
 var amsTargetId string
-var orderedAmsAdded = []string{}
 var amsServiceName string
 
 var svcSubscriptionSent bool
@@ -66,8 +65,6 @@ var amsServiceCreated bool
 var terminated bool
 var terminateNotification bool
 var appEnablementEnabled bool
-
-var demoRegisteratonStatus string
 
 // Config fields
 var mecUrl string
@@ -98,8 +95,9 @@ var terminationSubscriptionId string
 
 // Ams state
 var trackDevices []string                      // Devices currently using instance with incremental state
-var terminalDevices map[string]string          // All devices registered under ams
+var terminalDevices map[string]string          // All devices registered under ams and their message info
 var terminalDeviceState = make(map[string]int) // All devices registered under ams and their state
+var orderedAmsAdded = []string{}
 
 // Initiaze ticker to increment terminal device state every second
 func startTicker() {
@@ -124,29 +122,33 @@ func Init(envPath string, envName string) (port string, err error) {
 	log.Info("Using config values from  ", envPath, "/", envName)
 	config, err = util.LoadConfig(envPath, envName)
 	if err != nil {
-		log.Fatal("Failed to load configuration file: ", err)
+		log.Fatal("Failed to load configuration file: ", err.Error())
 	}
 
 	// Retrieve environment
+	// Sandbox config is set by user
+	// AdvantEDGE config is set by default
 	if config.Mode == "sandbox" {
 		environment = "sandbox"
-		// mecUrl is the url of the sandbox system
+		// mecUrl is url of the sandbox system
 		mecUrl = config.SandboxUrl
-		// Configure mecUrl to use https
+		// Check mecUrl if uses https
 		if config.HttpsOnly {
 			if !strings.HasPrefix(mecUrl, "https://") {
 				mecUrl = "https://" + mecUrl
 			}
-		} else {
+		} else if !config.HttpsOnly {
 			if !strings.HasPrefix(mecUrl, "http://") {
 				mecUrl = "http://" + mecUrl
+			} else {
+				// Throw err
+				log.Fatal("Missing field for https in config")
 			}
 		}
 
 		if strings.HasSuffix(mecUrl, "/") {
 			mecUrl = strings.TrimSuffix(mecUrl, "/")
 		}
-
 		localPort = config.Port
 		localUrl = config.Localurl
 
@@ -159,7 +161,7 @@ func Init(envPath string, envName string) (port string, err error) {
 		log.Fatal("Missing field for mode, should be set to advantedge or sandbox")
 	}
 
-	// Retrieve mec demo3 url & port
+	// Ret rieve mec demo3 url & port
 	if !strings.HasPrefix(localPort, ":") {
 		localPort = ":" + localPort
 	}
@@ -228,8 +230,6 @@ func Init(envPath string, envName string) (port string, err error) {
 	demoAppInfo.Id = instanceName
 	demoAppInfo.Ip = callBackUrl
 
-	// Update status
-	demoRegisteratonStatus = "200"
 	log.Info("Starting Demo 3 instance on Port=", localPort, " using app instance id=", instanceName, " mec platform=", mep)
 	return localPort, nil
 }
@@ -254,7 +254,7 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		startTicker()
 		time.Sleep(time.Second)
 
-		// If app is restarted, clean app activity & terminal devices & discovered services
+		// If app is restarted, clean app activity, AMS terminal devices, discovered services
 		appActivityLogs = []string{}
 		terminalDevices = make(map[string]string)
 		demoAppInfo.DiscoveredServices = []ApplicationInstanceDiscoveredServices{}
@@ -263,7 +263,7 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		err := sendReadyConfirmation(instanceName)
 		if err != nil {
 			// Add to activity log for error indicator
-			appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application [200]")
+			appActivityLogs = append(appActivityLogs, "=== Register Demo3 MEC Application [501]")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -453,122 +453,162 @@ func demo3GetAmsDevices(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
-// REST API add terminal device
-// Update ams service resource
+// REST API add terminal device to ams service resource
 func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	var statusCode string = "501"
 
 	if amsServiceCreated {
 		// Path parameters
 		vars := mux.Vars(r)
 		device := vars["device"]
 
-		// Check if ams is available by checking discovered services
+		// Check backend if ams resource exists
 		amsUrl := mecServicesMap[amsServiceName]
 		if amsUrl == "" {
-			log.Info("Could not find ams services from available services ")
-			appActivityLogs = append(appActivityLogs, "Could not find AMS service")
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not find ams services, enable AMS first")
+			log.Error("Could not find ams services from discovered services ")
+			appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+statusCode+"]")
+			http.Error(w, "Could not find ams service, enable AMS first", http.StatusInternalServerError)
 			return
+		}
+
+		// Check backend for duplicate ams device
+		for i := range terminalDeviceState {
+			if i == device {
+				log.Error("AMS terminal device already exists!")
+				statusCode = "200"
+				appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+statusCode+"]")
+				w.WriteHeader(http.StatusOK)
+				return
+			}
 		}
 
 		// Get AMS Resource Information
 		amsResource, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not retrieve ams resource")
+			log.Error("Could not retrieve AMS resource!", err.Error())
+			statusCode = "501"
+			appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+statusCode+"]")
+			appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource ["+statusCode+"]")
+			http.Error(w, "Could not retrieve ams resource", http.StatusInternalServerError)
 			return
 		}
 
 		// Update AMS Resource
-		_, amsUpdateError := amsAddDevice(amsResourceId, amsResource, device)
-		if amsUpdateError != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not add ams device")
+		_, err = amsAddDevice(amsResourceId, amsResource, device)
+		if err != nil {
+			log.Error("Could not add device to AMS Resource", err.Error())
+			statusCode = "501"
+			appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+statusCode+"]")
+			appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource ["+statusCode+"]")
+			http.Error(w, "Could not add device to AMS Resource", http.StatusInternalServerError)
 			return
 		}
 
 		// Add terminal device into an ordered array
 		orderedAmsAdded = append(orderedAmsAdded, device)
-
 		// Default device status & state set to 0
 		trackDevices = append(trackDevices, device)
 		terminalDeviceState[device] = 0
+		// Set status to 201
+		statusCode = "201"
+		appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+statusCode+"]")
 
-		// Update ams subscription
+		// Get ams subscription
 		amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not retrieve ams subscription")
-			appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource [500]")
+			log.Error("Failed to retrieve ams subscription!", err.Error())
+			http.Error(w, "Could not retrieve ams subscription", http.StatusInternalServerError)
+			statusCode = "501"
+			appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource ["+statusCode+"]")
 			return
 		}
 
+		// Update ams subscription
 		_, updateAmsError := updateAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId, device, amsSubscription)
 		if updateAmsError != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not add ams subscription")
-			appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource [500]")
+			log.Error("Could not add ams subscription!")
+			http.Error(w, "Could not add ams subscription", http.StatusInternalServerError)
+			appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource ["+statusCode+"]")
 			return
 		}
 
-		appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource [201]")
+		statusCode = "201"
+		appActivityLogs = append(appActivityLogs, "Add "+device+" to AMS resource ["+statusCode+"]")
 
 	} else {
-
-		appActivityLogs = append(appActivityLogs, "AMS Service not availiable currently! ")
+		appActivityLogs = append(appActivityLogs, "AMS Resource not created!")
+		http.Error(w, "AMS Resource not created!", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-// Remove terminal device if exists then return true
+// Remove terminal device from AMS if exists then return true
 // Otherwise return false
 func removeAmsDeviceHelper(device string) bool {
+	var resp bool = false
 
-	// Remove device state
-	delete(terminalDeviceState, device)
+	for i := range terminalDeviceState {
+		if i == device {
+			resp = true
+		}
+	}
 
 	for i, v := range trackDevices {
 		if v == device {
 			if i < len(trackDevices)-1 {
 				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
-				return true
 			}
 			trackDevices = trackDevices[:len(trackDevices)-1]
-			return true
 		}
 	}
 
-	return false
+	return resp
 }
 
 // REST API delete ams service resource by device
 func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	var statusCode string = "404"
+
 	// Path parameters
 	vars := mux.Vars(r)
 	device := vars["device"]
 
 	deviceExist := removeAmsDeviceHelper(device)
 	if !deviceExist {
-		appActivityLogs = append(appActivityLogs, "==== Remove AMS device ("+device+") [404]")
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Error("AMS Device does not exists, cannot remove!")
+		appActivityLogs = append(appActivityLogs, "=== Remove AMS device ("+device+") ["+statusCode+"]")
+		http.Error(w, "AMS Device does not exists, cannot remove", http.StatusInternalServerError)
 		return
 	}
 
 	// Get AMS Resource
 	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not retrieve ams resource")
+		statusCode = "501"
+		appActivityLogs = append(appActivityLogs, "=== Remove AMS device ("+device+") ["+statusCode+"]")
+		appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
+		log.Error("Failed to retrieve ams resource", err.Error())
+		http.Error(w, "Could not retrieve ams resource", http.StatusInternalServerError)
 		return
 	}
 
 	// Delete device in AMS resource
-	_, amsUpdateError := amsDeleteDevice(amsResourceId, registerationInfo, device)
-	if amsUpdateError != nil {
+	_, err = amsDeleteDevice(amsResourceId, registerationInfo, device)
+	if err != nil {
+		statusCode = "501"
+		appActivityLogs = append(appActivityLogs, "=== Remove AMS device ("+device+") ["+statusCode+"]")
+		appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not update ams")
+		fmt.Fprintf(w, "Could not delete device from ams resource")
+		log.Error("Could not delete device from ams resource", err.Error())
 		return
 	}
 
@@ -583,13 +623,21 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 
 	// Update terminal device on ams pane
 	delete(terminalDevices, device)
+	delete(terminalDeviceState, device)
+
+	statusCode = "201"
+	appActivityLogs = append(appActivityLogs, "=== Remove AMS device ("+device+") ["+statusCode+"]")
 
 	// Delete device in AMS subscription
 	tempId := demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId
 	// Get AMS subscription
 	amsSubscriptionResp, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), tempId)
 	if err != nil {
-		log.Error("Failed to retrieve ams subscription", err)
+		statusCode = "500"
+		appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
+		log.Error("Failed to retrieve ams subscription", err.Error())
+		http.Error(w, "Failed to retrieve ams subscription", http.StatusInternalServerError)
+		return
 	}
 
 	for i, v := range amsSubscriptionResp.FilterCriteria.AssociateId {
@@ -601,11 +649,16 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 	// Update AMS subscription
 	_, amsSubscriptionErr := updateAmsSubscription(tempId, "", amsSubscriptionResp)
 	if amsSubscriptionErr != nil {
+		statusCode = "500"
+		appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
 		log.Error("Failed to delete ams subscription", err)
+		http.Error(w, "Failed to delete ams subscription", http.StatusInternalServerError)
+		return
 	}
 
+	statusCode = "201"
+	appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
 	w.WriteHeader(http.StatusOK)
-
 }
 
 // RESP API delete application by deleting all resources
@@ -660,9 +713,12 @@ func serviceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Remove Service from Discovered Service
 		for i, e := range demoAppInfo.DiscoveredServices {
-			if e.SerName == notification.ServiceReferences[0].SerName {
-				demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices[:i], demoAppInfo.DiscoveredServices[i+1:]...)
-				return
+			if e.SerName == notification.ServiceReferences[0].SerName && e.SerInstanceId == notification.ServiceReferences[0].SerInstanceId {
+
+				if i < len(demoAppInfo.DiscoveredServices)-1 {
+					demoAppInfo.DiscoveredServices = append(demoAppInfo.DiscoveredServices[:i], demoAppInfo.DiscoveredServices[i+1:]...)
+				}
+				demoAppInfo.DiscoveredServices = demoAppInfo.DiscoveredServices[:len(demoAppInfo.DiscoveredServices)-1]
 			}
 		}
 		delete(mecServicesMap, notification.ServiceReferences[0].SerName)
@@ -734,7 +790,8 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Remove device from terminal devices using this instances no longer incrementing state
+	// Remove device from terminal devices using this instances so it  no longer increments state
+	// triggered when receives ams mobility notification
 	for i, v := range trackDevices {
 		if v == targetDevice {
 			if i < len(trackDevices)-1 {
@@ -952,14 +1009,11 @@ func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device s
 		AppMobilityServiceLevel: 3,
 	})
 
-	registerationInfo, resp, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
-	status := strconv.Itoa(resp.StatusCode)
+	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
 	if err != nil {
-		appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+status+"]")
-		log.Error("resp status", resp, err)
+		log.Error(err.Error())
 		return registerationBody, err
 	}
-	appActivityLogs = append(appActivityLogs, "=== Add AMS Device ("+device+") ["+status+"]")
 
 	return registerationInfo, nil
 }
@@ -991,15 +1045,13 @@ func amsDeleteDevice(amsId string, registerationBody ams.RegistrationInfo, devic
 		}
 	}
 
-	registerationBody, resp, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
-	status := strconv.Itoa(resp.StatusCode)
+	registerationBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
+
 	if err != nil {
-		appActivityLogs = append(appActivityLogs, "==== Remove AMS device ("+device+") ["+status+"]")
 		log.Error(err)
 		return registerationBody, err
 	}
 
-	appActivityLogs = append(appActivityLogs, "=== Remove AMS device ("+device+") ["+status+"]")
 	return registerationBody, nil
 
 }
@@ -1174,11 +1226,11 @@ func subscribeAppTermination(appInstanceId string, callBackReference string) (st
 	appTerminationBody.SubscriptionType = "AppTerminationNotificationSubscription"
 	appTerminationBody.CallbackReference = callBackReference
 	appTerminationBody.AppInstanceId = appInstanceId
-	appTerminationResponse, resp, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationBody, appInstanceId)
-	status := strconv.Itoa(resp.StatusCode)
+	appTerminationResponse, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), appTerminationBody, appInstanceId)
+
 	if err != nil {
 		log.Error("Failed to send termination subscription: ", err)
-		appActivityLogs = append(appActivityLogs, "Subscribe to app-termination notification ["+status+"]")
+		appActivityLogs = append(appActivityLogs, "Subscribe to app-termination notification [501]")
 		return "", err
 	}
 
@@ -1192,7 +1244,7 @@ func subscribeAppTermination(appInstanceId string, callBackReference string) (st
 
 	terminationSubscriptionId = hRefLink[idPosition+1:]
 
-	appActivityLogs = append(appActivityLogs, "Subscribe to app-termination notification ["+status+"]")
+	appActivityLogs = append(appActivityLogs, "Subscribe to app-termination notification [201]")
 	return terminationSubscriptionId, nil
 }
 
