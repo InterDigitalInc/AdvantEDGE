@@ -142,7 +142,7 @@ func refreshSandboxData(sbxName string) error {
 
 	// Refresh app instance ID map
 	sbxData.AppIdMap = make(map[string]string)
-	appTypeList := []string{mod.NodeTypeEdgeApp}
+	appTypeList := []string{mod.NodeTypeUEApp, mod.NodeTypeEdgeApp, mod.NodeTypeCloudApp}
 	appNameList := sbxData.ActiveScenario.GetNodeNames(appTypeList...)
 	for _, appName := range appNameList {
 		appId := sbxData.ActiveScenario.GetNodeId(appName)
