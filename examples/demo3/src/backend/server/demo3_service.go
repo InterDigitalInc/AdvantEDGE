@@ -251,8 +251,6 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 
 	// Start app registeration ticker counter
 	if !appEnablementEnabled {
-		startTicker()
-		time.Sleep(time.Second)
 
 		// If app is restarted, clean app activity, AMS terminal devices, discovered services
 		appActivityLogs = []string{}
@@ -378,6 +376,8 @@ func demo3Register(w http.ResponseWriter, r *http.Request) {
 		demoAppInfo.Subscriptions = &subscriptions
 
 		appEnablementEnabled = true
+
+		startTicker()
 
 	}
 
