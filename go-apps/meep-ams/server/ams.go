@@ -2050,15 +2050,21 @@ func refreshApps() error {
 		return err
 	}
 
-	// Create app info for new apps
+	// Update app info
 	for _, app := range appList {
 		found := false
 		for _, appInfo := range appInfoList {
 			if appInfo[fieldAppId] == app.Id {
 				found = true
+				// Set existing app info to make sure cache is updated
+				err = setAppInfo(appInfo)
+				if err != nil {
+					log.Error(err.Error())
+				}
 				break
 			}
 		}
+		// Create & set app info for new apps
 		if !found {
 			appInfo, err := newAppInfo(app)
 			if err != nil {
