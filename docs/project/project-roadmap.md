@@ -25,7 +25,8 @@ nav_order: 2
 |01-2021 | [1.6.1](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.6.1)| - Helm related hotfix
 |04-2021 | [1.7.0](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.7.0)| - Process lifecycle API to control containers @ scenario runtime<br>- Network reachability/connectivity to control reachability of the network @ scenario runtime<br>- Improved platform monitoring & KPIs (Prometheus)<br>- New dashboards<br>- RNIS improvements (L2Meas, measurement reports) 
 |09-2021 | [1.8.0](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.8.0)| - New MEC Service: ETSI-MEC Edge Application Enablement Service<br>- New MEC Service: ETSI-MEC Application Mobility Service<br>- Geopspatial measurements caching (distance & signal strength)<br>- Wireless Metrics dashboards in frontend<br>- Long-term metrics storage capabilities
-|12-2021 | 1.9.0| TBD
+|12-2021 | [1.8.1](https://github.com/InterDigitalInc/AdvantEDGE/releases/tag/v1.8.1)| - WebSocket subscription support in ETSI MEC WLAN Access Information Service<br>- MEC Service maintenance updates (Edge Application Enablement & Application Mobility Services)<br>- Sandbox metrics garbage collection<br>- Plaform maintenance fixes
+|04-2022 | 1.9.0| TBD
 
 ## Project Roadmap
 
