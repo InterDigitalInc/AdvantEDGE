@@ -1,0 +1,25 @@
+.helpIcon {
+  color: "#ffffff";
+}
+
+.font {
+  color: white;
+}
+
+.idcc-elevation {
+  background-color: #ffffff;
+}
+
+.icon {
+  color: "#ffffff";
+  padding: 5;
+  margin-right: 10;
+}
+
+.flex {
+  display: "flex";
+  justify-content: "center";
+  vertical-align: middle;
+  align-items: "center";
+  height: 48;
+}
