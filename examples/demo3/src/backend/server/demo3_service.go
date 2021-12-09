@@ -107,6 +107,7 @@ func startTicker() {
 			// Increment terminal device state by 1
 			for _, device := range trackDevices {
 				terminalDeviceState[device] += 1
+				log.Info(terminalDeviceState[device])
 				stateAsString := strconv.Itoa(terminalDeviceState[device])
 				terminalDevices[device] = device + " using this instance" + "(state=" + stateAsString + ")"
 			}
@@ -140,15 +141,16 @@ func Init(envPath string, envName string) (port string, err error) {
 		} else if !config.HttpsOnly {
 			if !strings.HasPrefix(mecUrl, "http://") {
 				mecUrl = "http://" + mecUrl
-			} else {
-				// Throw err
-				log.Fatal("Missing field for https in config")
 			}
+		} else {
+			// Throw err
+			log.Fatal("Missing field for https in config")
 		}
 
 		if strings.HasSuffix(mecUrl, "/") {
 			mecUrl = strings.TrimSuffix(mecUrl, "/")
 		}
+
 		localPort = config.Port
 		localUrl = config.Localurl
 
@@ -757,6 +759,9 @@ func appTerminationNotificationCallback(w http.ResponseWriter, r *http.Request) 
 // Rest API receive ams notification
 // Send context transfer state to target device url
 func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	log.Debug("Receive AMS notification")
 	var amsNotification ams.MobilityProcedureNotification
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&amsNotification)
@@ -767,21 +772,31 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 
 	amsTargetId = amsNotification.TargetAppInfo.AppInstanceId
 	targetDevice := amsNotification.AssociateId[0].Value
+	var notifyUrl string
+
+	// Find the target svc id should be same svc name as demo3
+	var targetSvcId string
+	for _, v := range demoAppInfo.DiscoveredServices {
+		if v.SerName == serviceCategory && v.SerInstanceId != demoAppInfo.OfferedService.Id {
+			log.Info("Target service id:", v.SerInstanceId)
+			targetSvcId = v.SerInstanceId
+			break
+		}
+	}
 
 	// Retrieve all mec service on target ams application
-	serviceInfo, _, serviceErr := srvMgmtClient.MecServiceMgmtApi.AppServicesGET(context.TODO(), amsTargetId, nil)
-	if serviceErr != nil {
-		log.Debug("Failed to get target app mec service resource on mec platform", serviceErr.Error())
+	serviceInfo, _, err := srvMgmtClient.MecServiceMgmtApi.ServicesServiceIdGET(context.TODO(), targetSvcId)
+	if err != nil {
+		log.Error("Failed to get target app mec service resource on mec platform", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Verify demo3 service exists
-	var notifyUrl string
-	for i := 0; i < len(serviceInfo); i++ {
-		if serviceInfo[i].SerName == serviceCategory {
-			notifyUrl = serviceInfo[i].TransportInfo.Endpoint.Uris[0]
-		}
+	// Check if svc info struct is empty
+	if (smc.ServiceInfo{} == serviceInfo) {
+		log.Error("Cannot find target service")
+	} else {
+		notifyUrl = serviceInfo.TransportInfo.Endpoint.Uris[0]
 	}
 
 	// If demo3 service does not exists return
@@ -852,6 +867,7 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 // Rest API handle context state transfer
 // Start incrementing terminal device state
 func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
+	log.Info("Recevied AMS context transfer")
 
 	var targetContextState ApplicationContextState
 
@@ -884,10 +900,6 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 		// Add terminal device into an ordered array
 		orderedAmsAdded = append(orderedAmsAdded, targetContextState.Device)
 
-		// Default device status & state set to 0
-		trackDevices = append(trackDevices, targetContextState.Device)
-		terminalDeviceState[targetContextState.Device] = targetContextState.Counter
-
 		// Update ams subscription
 		amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
 		if err != nil {
@@ -909,7 +921,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 
 	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
 
-	// Update ams pane
+	// Update ams pan// Default device status & state set to 0
 	trackDevices = append(trackDevices, targetContextState.Device)
 	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
 
