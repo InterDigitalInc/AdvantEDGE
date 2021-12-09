@@ -2,16 +2,14 @@
 
 Demo 3 demonstrates how to use AdvantEDGE mec services showcasing Application Mobility Service (AMS) and Edge Application Enablement Service API.
 
-Demo 3 compose a user MEC application that can be integrated with AdvantEDGE scenarios or MEC Sandbox. 
-
-###  Use-cases
-
-A user can deploy demo 3 as a scenario onto AdvantEDGE or as an external application to use MEC Services APIs from a MEC application
+Demo 3 is a user MEC application that can be integrated within an AdvantEDGE scenario or used as an external application with [ETSI MEC Sandbox](https://try-mec.etsi.org/). 
 
 
-Demo3 provides a GUI to interact with MEC Service APIs such as:
 
-1. Edge Platform Application Enablement allow MEC Applications to interact with the MEC System allowing Demo 3 to perform the following:
+
+Demo3 MEC Application provides a dashboard GUI that allow a user to visualize interactions with MEC Service such as:
+
+1. MEC011 - Application Enablement and Service Enablement Services:
 
 - MEC Application registration/deregistration 
 - MEC Service discovery & offering 
@@ -19,15 +17,24 @@ Demo3 provides a GUI to interact with MEC Service APIs such as:
 
 2. Application Mobility Service provides support for relocation of user context and/or application instance between MEC hosts enabling:
 
-- AMS to trigger and assists the context transfer 
-- Demo3 user-context is transferred from one instance to another user-based target mec application
+- MEC Assisted state transfer operationn
 
 
 
 ## Getting Started:
-Demo 3 can be started on MEC Sandbox or AdvantEDGE
+Demo 3 can be used with an AdvantEDGE deployment or with the ETSI MEC Sandbox public deployment.
+#### AdvantEDGE procedure overview
+- Demo3 is built and dockerized using provided bash scripts
+- Demo3 scenario (provided) is imported in AdvantEDGE
+- Demo3 scenario is deployed on AdvantEDGE
+#### MEC Sandbox procedure overview
+- Demo3 is built using provided bash scripts
+- Demo3 executable and frontend are copied to a common folder
+- A MEC Sandbox is created and configured on ETSI MEC Sandbox [site](https://try-mec.etsi.org/)
+- Demo3 configuration files (provided) are updated with your environment values
+- Demo3 application is executed and accesses the ETSI MEC Sandbox
 
-###  Sandbox Procedure
+###  Using Demo3 with ETSI MEC Sandbox
 
 - Demo 3 does not have any prior knowledge or configuration information of the MEC services offered by the MEC platform
 
@@ -35,74 +42,70 @@ The following steps need to be done prior to running demo 3
 
 | Operation: | Notes: |
 | ---------  | ------ |
+| 0a. Build demo3 server and frontend by invoking `Advantedge/example/demo3/build-demo3.sh` |  |
+| 0b. Create work directories of your choice on the system of your choosing; we'll use `~/demo3-mep1` and `~/demo3-mep2` for this example and create a folder named `static` inside each one of the folders. The structure should look like this <br>
+     ├── demo3-mep1
+          ├── static
+     ├── demo3-mep2
+          ├── static
+**IMPORTANT** ``` For this demo to work, the system running demo applications must be at a public IP address so that notifications sent by the ETSI MEC Sandbox can be received by demo applications. If the system is behind a firewall, ports will need to be opened.  ``` 
+
+|  |  |
+| ---------  | ------ |
+| 0c. For each application instance, copy Demo3 server (`/AdvantEDGE/example/demo3/bin/demo-server/demo-server`) in the work directories and copy Demo3 frontend bundle `/AdvantEDGE/example/demo3/bin/demo-frontend/*` in the static folder <br> The resulting should look like this <br>
+     ├── demo3-mep1
+          ├── demo-server
+          ├── static
+               ├── bundle.css
+               ├── bundle.js
+               ├── img
+                    ├── AdvantEDGE-logo-NoTagline_White_RGB.png
+                    ├── ID-Icon-01-idcc.svg
+                    ├── network.png
+               ├── index.html
+     ├── demo3-mep2
+          ├── demo-server
+          ├── static
+               ├── bundle.css
+               ├── bundle.js
+               ├── img
+                    ├── AdvantEDGE-logo-NoTagline_White_RGB.png
+                    ├── ID-Icon-01-idcc.svg
+                    ├── network.png
+               ├── index.html
+|  |  |                  
+| ---------  | ------ |
 | 1. Login via the MEC Sandbox frontend |  |
-| 2. Select a network to deploy in the user sandbox |  |
-| 3a. Pre-configure MEC Application named `demo3-config.yaml` under Demo 3 backend directory refer to - [File Structure](#file-structure)  | Fill configuration fields <br> `mode:  'sandbox' `| 
-| 3b. Pre-configure MEC Application `sandbox` with Application Enablement service endpoints | Example: <br> `sandbox: 'https://try-mec.etsi.org/<my-sandbox-key>/<mep-host>'` <br> MEC Application will learn MEC services availability via mep host interface
-| 3c. Pre-configure MEC Application `https` if sandbox url is using https and `mepplatform` with mec platform name demo-3 will run on |  Example: <br> `https: 'false'` <br> `mecplatform: 'mep1' `| 
-| 3d. Pre-configure MEC Application `appid` with an Application Instance ID (e.g. appInstanceId) | 
-| 3e. Pre-configure MEC Application `localurl` with your I.P address and `port` to indicate port number that demo3 server will run at | `localurl: 'http://<my-ip-address>'` <br> `port: '<my-port-number>'` 
-| 4. Optional: If running a dual mep scenario on MEC sandbox. The above steps needs to be repeated to run a seperate instance of demo 3 application by applying configurations into `demo3-config-instance-two.yaml` |  | 
+| 2. Deploy a Dual MEP scenario and create two Application Instance IDs calles `demo3`, one on MEP1 and one on MEP2 respectively |  |
+| 3. Using provided `demo3-config.yaml` template, create a configuration file for each of the MEP1 and MEP2 applications and save each configuration files in their respective work folder created in step 0 <br> The resulting structure should look like this <br>` mode: 'sandbox'` - demo3 runs against ETSI MEC Sandbox <br> ` https: true ` - ETSI MEC sandbox uses https<br>`sandbox: 'https://try-mec.testfqdn.dev/mep1' `- URL to your sandbox, this info is available in the ETSI MEC Sandbox frontend <br> `mecplatform: 'mep1'`- the MEP where the instance is running, one of your application should be mep1 and the other mep2<br> `appid: '' ` - these are created in the ETSI MEC Sandbox frontend<br> ` localurl: 'http://'` - the public IP address where demo3 instance is running<br> `port: ''` - the port number that demo3 is listening on for incoming traffic<br>
+| 4. Start the demo3 instances `./demo3-server demo3-config.yaml` -- after starting the servers, the frontend can be accessed at `<your-ip-address>:<your-port>` <br> From the frontend, demo3 can register to MEC011 and then devices present in the scenario can be added.
 
-How configuration is expected :
+Example of a configuration file
 ```sh .env
-# This file defines the configuration of Demo3 edge application. All fields are required to run demo-3 on MEC Sandbox 
-
-# Set where mec application is running either on MEC Sandbox or AdvantEDGE. Expected fields: sandbox | advantedge
+# This file defines the configuration of Demo3 edge application
+# Required to define if application will run on MEC Sandbox or AdvantEDGE. Expected Values: sandbox or advantedge
 mode: 'sandbox'
-# Set url of mec platform. Example field format: http://{MEC_IP_ADDRESS}/{SANDBOX_NAME}/{MEP_NAME}/ 
-sandbox: 'http://{mec-host}/{sandbox-key}/{platform-name}'
-# Set if sandbox url uses https. Expected fields: true | false 
-https: false 
-# Set the mec platform name demo-3 will run on. Example field: mep1
-mecplatform: ''
-# Set user-application ID that is generated on MEC Sandbox frontend. Example field format: 7930ba6d-4581-444c-b966-3312517f3a51
-appid: ''
-# Set host address of demo-3. 
-localurl: 'http://{local-url}/'
-# Set host port number of demo-3. Example field: '8093'
-port: '8093'
+# Field to define MEC platform URL that app will run on. Example: http://{Mec_IP_Address}/{Sandbox_name}/{Mep_name}/
+https: true
+sandbox: 'https://try-mec.testfqdn.dev/sbx-1234abcd/mep1'
+# Field to define MEC platform name. Example: mep1
+mecplatform: 'mep1'
+# Field to define user-application ID that can be generated using MEC Sandbox frontend
+appid: 'cd9e4234-d7b7-4d49-be64-850ca436e24c'
+# Local I.P address application will run on
+localurl: 'http://1.2.3.4'
+# Port number of user-application example: port: '8093'
+port: '31111'
 
 ```
 
-### Build Demo 3 Server
+### Build Demo 3 Server and Frontend
 
-```shell
-# Build demo 3 backend binary 
-cd AdvantEdge/examples/demo3/src/backend
-go build -o demo-server .
-go run demo-server mep1.yaml
-```
-
-### Build Demo 3 Frontend 
-1. Change directories to demo 3 frontend
-```
-cd ~/AdvantEDGE/examples/demo3/src/frontend
-```
-2. Install dependencies
-```
-npm i 
-```
-3. Repeat above step by installing dependencies for frontend client package
-```
-cd ~/AdvantEDGE/examples/demo3/src/client
-npm i 
-```
-4. Set up your .env file with values of where demo 3 backend is served  
-```
-cd AdvantEdge/examples/demo3/src
-# Modify .env
-# Apply configurations 
-ENVIRONMENT=SANDBOX
-URL=http://<my-ip-address>:<my-demo3-port-number>
-```
-5. Run demo 3 in development mode or build into binaries
-```
-npm run build:dev
-npm run build
-```
-
-## Demo 3 AdvantEdge Procedure
+``` shell
+cd AdvantEdge/examples/demo3
+./build-demo3.sh
+``` 
+###  Using Demo3 with AdvantEDGE
 
 ### Demo server & Demo frontend 
 
@@ -113,76 +116,12 @@ Demo server is a web server that will run internally in AdvantEdge as the backen
 The following steps need to be done prior to using this scenario
 
 #### Configure demo frontend and obtain binaries
+| Operation | Notes |   
+| ---------  | ------ |
+| 0. Build and dockerize demo3 by invoking `AdvantEDGE/example/demo3/build-demo3.sh` and `AdvantEDGE/example/demo3/dockerize.sh`|  |
+| 1. Import provided `demo3-scenario.yaml` in AdvantEDGE and save it | |
+| 2. Deploy `demo3-scenario` from the frontend | this scenario uses geo-localization, therefore it is necessary to provision a map as described [here](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/gis/#map-provisioning) |
 
-##### Build from source
-
-To build _demo-server_ binaries from source code:
-
-```
-cd ~/AdvantEDGE/examples/demo3/
-./build-demo3.sh
-```
-
-#### Dockerize demo applications
-
-Demo Application binaries must be dockerized (containerized) as container images in the Docker registry. This step is necessary every time the demo binaries are updated.
-
-> **NOTE:** Make sure you have deployed the AdvantEDGE dependencies (e.g. docker registry) before dockerizing the demo binaries.
-
-To generate docker images from demo binary files:
-
-```
-cd ~/AdvantEDGE/examples/demo3/
-./dockerize.sh
-```
-
-#### Using the scenario & deploy
-
-Import `demo3-scenario.yaml` under demo3 directory into AdvantEDGE as a scenario process then deploy
-
-#### Start demo 3 frontend
-
-To start the application, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`for first instance of demo 3 | `<AdvantEDGE-node-ip-address>:31112`for second instance of demo 3
-
-## File Structure
-
-A quick look at the top-level relevant files and directories in demo 3 project.
-
-    .
-    ├── backend
-         ├── server
-         ├── api
-         ├── util
-               ├── mep1.yaml
-               ├── mep2.yaml
-         ├── go.mod
-         ├── main.go
-    ├── frontend
-         ├── node_modules
-         ├── src
-              ├── js
-              ├── css
-              ├── .env
-    ├── client
-          ├── node_modules 
-          
-1.  **`/backend/server`**: This directory contains all code related to demo 3 backend
-
-2.  **`/backend/api`**: This directory will contain all open-api specification for REST API of demo 3 
-
-3.  **`./backend/util`**: This directory will contain configurations for an external demo 3 application running on MEC sandbox
-
-4.  **`./backend/util.demo3-config.yaml`**: This file will configurations for an external demo 3 application running on mep1
-
-5.  **`./backend/main.go`**: This file is the entry for launching demo 3 backend
-   
-6.  **`/frontend/node_modules`**: This directory contains all of the modules of code that your frontend depends on (npm packages) are automatically installed.
-
-7.  **`/frontend/src`**: This directory will contain all of the code related to what you will see on the front-end of your site (what you see in the browser) 
-
-8.  **`/frontend/.env.local`**: This file is used to store Environmental Variables to tell frontend where to poll resource from 
-
-9.  **`/client/node_modules`**: This directory contains all of the modules of code that your frontend client package depends on (npm packages) are automatically installed.
 
 ## Scenario composition
 

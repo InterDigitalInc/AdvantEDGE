@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
+ * Demo 3 is an edge application that can be used with AdvantEDGE or ETSI MEC Sandbox to demonstrate MEC011 and MEC021 usage
  *
  * OpenAPI spec version: 0.0.1
  *
@@ -39,7 +39,7 @@
   'use strict';
 
   /**
-   * This_section_describes_how_to_use_AdvantEdge_mec_services_with_a_scenario_demonstrating_use_case_1___3.<br>
+   * Demo_3_is_an_edge_application_that_can_be_used_with_AdvantEDGE_or_ETSI_MEC_Sandbox_to_demonstrate_MEC011_and_MEC021_usage.<br>
    * The <code>index</code> module provides access to constructors for all the classes which comprise the public API.
    * <p>
    * An AMD (recommended!) or CommonJS application will generally do something equivalent to the following:

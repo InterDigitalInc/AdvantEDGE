@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * MEC Demo 3 API
- * This section describes how to use AdvantEdge mec services with a scenario demonstrating use-case 1 - 3
+ * Demo 3 is an edge application that can be used with AdvantEDGE or ETSI MEC Sandbox to demonstrate MEC011 and MEC021 usage
  *
  * OpenAPI spec version: 0.0.1
  *
