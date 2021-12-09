@@ -34,7 +34,14 @@ These APIs allow MEC Applications to interact with the MEC System, such as:
 ## AdvantEDGE Integration
 Edge Platform Application Enablement Service is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox.
 
-To use this service, MEC applications must first obtain an application instance ID from the AdvantEDGE platform using the _Applications_ endpoints of the [Sandbox Controller API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#sandbox-api). After provisioning the application instance ID, MEC applications must use the _Application Support API_ to confirm application readiness using the following steps:
+To use this service, MEC applications must first obtain an application instance ID from the AdvantEDGE platform using one of the following methods:
+- For MEC applications configured in the deployed scenario:
+  - From the ```MEEP_APP_ID``` environment variable, or
+  - From the process table in the frontend Execution page
+- For external MEC applications not configured in the deployed scenario:
+  - From the _Applications_ endpoints of the [Sandbox Controller API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#sandbox-api)
+
+After provisioning the application instance ID, MEC applications must use the _Application Support API_ to confirm application readiness using the following procedure:
 - Confirm application readiness:
   - Send _READY_ indication using application instance ID
   - ```POST .../mec_app_support/v1/applications/{appInstanceId}/confirm_ready```
@@ -53,7 +60,7 @@ This use case applies to MEC Applications, with no prior knowledge of MEC servic
 - Monitor MEC services:
   - Subscribe for service availability change notifications
   - Provide filter criteria (e.g. names, categories, etc.) to specify which services to watch
-  - ```GET .../mec_service_mgmt/v1/applications/{appInstanceId}/subscriptions```
+  - ```POST .../mec_service_mgmt/v1/applications/{appInstanceId}/subscriptions```
 - Use MEC Services:
   - When target MEC service becomes available, MEC application uses the service
   - When target MEC service becomes unavailable, MEC application continues to monitor the service until it returns or another instance becomes available
@@ -87,4 +94,5 @@ This use case applies to MEC Applications with multiple instances running on dif
     - MEC Service instance running on MEC platform 1
     - Scope of locality set to _MEC\_HOST_ & _consumedLocalOnly_ set to _true_
     - Only MEC applications running on MEC platform 1 will be able to obtain MEC Service instance information
+    - **NOTE:** MEC applications are always local in AdvantEDGE because each sandbox deploys a single MEC platform
 
