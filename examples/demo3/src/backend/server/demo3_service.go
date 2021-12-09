@@ -917,13 +917,14 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Update ams pan// Default device status & state set to 0
+		trackDevices = append(trackDevices, targetContextState.Device)
+
 	}
 
-	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
-
-	// Update ams pan// Default device status & state set to 0
-	trackDevices = append(trackDevices, targetContextState.Device)
 	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
+
+	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
 
 	w.WriteHeader(http.StatusOK)
 }
