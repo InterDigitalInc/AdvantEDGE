@@ -858,13 +858,14 @@ func addToTrackingDevices(device string) bool {
 	return false
 }
 
-func addToAmsKey(device string) {
+func addToAmsKey(device string) bool {
 	for _, v := range orderedAmsAdded {
 		if device == v {
-			return
+			return true
 		}
 	}
 	orderedAmsAdded = append(orderedAmsAdded, device)
+	return false
 }
 
 // Rest API handle context state transfer
@@ -885,37 +886,40 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve AMS Resource
-	amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Check if device is part of ams
+	res := addToAmsKey(targetContextState.Device)
+	if !res {
+		// Retrieve AMS Resource
+		amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	// Update AMS Resource
-	_, err = amsAddDevice(amsResourceId, amsResourceBody, targetContextState.Device)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		// Update AMS Resource
+		_, err = amsAddDevice(amsResourceId, amsResourceBody, targetContextState.Device)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	// Update ams subscription
-	amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		// Update ams subscription
+		amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	_, err = updateAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId, targetContextState.Device, amsSubscription)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		_, err = updateAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId, targetContextState.Device, amsSubscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
-	addToAmsKey(targetContextState.Device)
 	addToTrackingDevices(targetContextState.Device)
 
 	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
