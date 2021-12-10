@@ -41,7 +41,7 @@ To use this service, MEC applications must first obtain an application instance 
 - For external MEC applications not configured in the deployed scenario:
   - From the _Applications_ endpoints of the [Sandbox Controller API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#sandbox-api)
 
-After provisioning the application instance ID, MEC applications must use the _Application Support API_ to confirm application readiness using the following procedure:
+After obtaining the application instance ID, MEC applications must use the _Application Support API_ to confirm application readiness using the following procedure:
 - Confirm application readiness:
   - Send _READY_ indication using application instance ID
   - ```POST .../mec_app_support/v1/applications/{appInstanceId}/confirm_ready```
