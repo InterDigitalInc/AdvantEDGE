@@ -10,7 +10,7 @@ permalink: docs/overview/edge-services/ams/
 ## Service Overview
 AdvantEDGE provides a built-in Application Mobility Service implementation that integrates with scenarios.
 
-Application Mobility Service provides support for relocation of user context between MEC hosts; application instance relocation not supported.
+Application Mobility Service provides support for relocation of user context between MEC hosts; application instance relocation is not supported.
 
 AMS defines three types of MEC application user-context transfer:
 - _Application self-controlled_ (not supported)
@@ -39,26 +39,36 @@ AMS defines three types of MEC application user-context transfer:
 ## AdvantEDGE Integration
 Application Mobility Service is implemented as a single sandbox pod within AdvantEDGE, providing service for all applications running as part of that sandbox.
 
-To use this service, MEC applications must first obtain an application instance ID from the AdvantEDGE platform using the _Applications_ endpoints of the [Sandbox Controller API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#sandbox-api). After provisioning the application instance ID, MEC applications must use the [Application Support API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#app-support-api) to confirm application readiness and optionally register for graceful termination.
+To use this service, MEC applications must first obtain an application instance ID from the AdvantEDGE platform using one of the following methods:
+- For MEC applications configured in the deployed scenario:
+  - From the ```MEEP_APP_ID``` environment variable, or
+  - From the process table in the frontend Execution page
+- For external MEC applications not configured in the deployed scenario:
+  - From the _Applications_ endpoints of the [Sandbox Controller API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#sandbox-api)
 
-Once confirmed, MEC Applications may use the Application Mobility Service to perform MEC-assisted application mobility as described in the use case below.
+After obtaining the application instance ID, MEC applications must use the [Application Support API]({{site.baseurl}}{% link docs/overview/overview-api.md %}#app-support-api) to confirm application readiness and optionally register for graceful termination. Once confirmed, MEC Applications may use the Application Mobility Service to perform MEC-assisted application mobility as described in the use case below.
+
+Note that MEC application instances must be configured to run on an edge or fog node; this can be provisioned directly in the configured scenario by placing a MEC Application under an edge/fog node, or via the mandatory _nodeName_ parameter of the _Sandbox Controller Applications_ endpoints. The Application Mobility Service implements a minimum hop-count MEC Application selection algorithm to determine which of the registered MEC application instances to use. The algorithm uses real-time terminal device locations to calculate the nearest registered MEC Application instance; it then triggers application context transfers when necessary.
 
 ### Use case for MEC-assisted application mobility
-This use case applies to MEC Applications with multiple instances running on different MEC platforms wishing to perform user context transfers with the assistance of the Application Mobility Service. MEC applications inform the service about which terminal devices to track and subscribe for Mobility Procedure notifications with details about the target application instance.
-- Start multiple MEC Application instances
+This use case applies to MEC Applications with multiple instances that wish to perform user context transfers with the assistance of the Application Mobility Service (AMS). MEC Applications register to AMS with a list of terminal devices to track, and subscribe for Mobility Procedure notifications to receive target application instance details on terminal mobility events.
+- Configure & Deploy an AMS scenario: 
+  - Must include terminal devices that move across POAs & edge/fog node coverage areas
+  - Must include multiple MEC Application instances running on different edge/fog nodes
   - Each instance must obtain a unique application instance ID & confirm application readiness
 - Register to AMS:
   - MEC Applications provide registration information (including application instance ID)
-  - Device information must be included only by the MEC application with the user context
+  - Device information should only be included by the MEC application instance with user context ownership
   - ```POST .../amsi/v1/app_mobility_services```
 - Subscribe for Mobility notifications:
-  - MEC applications with the user context must subscribe for _MobilityProcedure_ notifications
-  - Tracked device information must also be provided
-  - ```POST .../amsi/v1/app_mobility_services```
+  - MEC applications with user context ownership must subscribe for _MobilityProcedure_ notifications
+  - Tracked device information must also be provided in the subscription request
+  - ```POST .../amsi/v1/subscriptions```
 - Wait for Terminal device to trigger Mobility notification:
-  - AMS algorithm monitors terminal and trigger a mobility procedure when it transitions to the coverage area of a different MEC platform
+  - Enable terminal device mobility & movement
+  - AMS algorithm monitors terminal locations and triggers _MobilityProcedure_ notifications when there is a change in the preferred/selected MEC application instance
   - Notification includes target application information
-  - _NOTE:_ notifications are only send to MEC applications running on the source MEC platform
+  - _NOTE:_ notifications are only send to MEC applications running on the source edge/fog node
 - Perform user context transfer
   - Source MEC application instance transfers terminal device context to target MEC application instance
 - Inform AMS about transfer complete:
