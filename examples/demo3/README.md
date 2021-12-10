@@ -42,7 +42,7 @@ The following steps need to be done prior to running demo 3
 
 | Operation: | Notes: |
 | ---------  | ------ |
-| 0a. Build demo3 server and frontend by invoking `Advantedge/example/demo3/build-demo3.sh` |  |
+| 0a. Build demo3 server and frontend by invoking `Advantedge/examples/demo3/build-demo3.sh` |  |
 | 0b. Create work directories of your choice on the system of your choosing; we'll use `~/demo3-mep1` and `~/demo3-mep2` for this example and create a folder named `static` inside each one of the folders. The structure should look like this <br>
      ├── demo3-mep1
           ├── static
@@ -52,7 +52,7 @@ The following steps need to be done prior to running demo 3
 
 |  |  |
 | ---------  | ------ |
-| 0c. For each application instance, copy Demo3 server (`/AdvantEDGE/example/demo3/bin/demo-server/demo-server`) in the work directories and copy Demo3 frontend bundle `/AdvantEDGE/example/demo3/bin/demo-frontend/*` in the static folder <br> The resulting should look like this <br>
+| 0c. For each application instance, copy Demo3 server (`/AdvantEDGE/examples/demo3/bin/demo-server/demo-server`) in the work directories and copy Demo3 frontend bundle `/AdvantEDGE/example/demo3/bin/demo-frontend/*` in the static folder <br> The resulting should look like this <br>
      ├── demo3-mep1
           ├── demo-server
           ├── static
@@ -118,7 +118,7 @@ The following steps need to be done prior to using this scenario
 #### Configure demo frontend and obtain binaries
 | Operation | Notes |   
 | ---------  | ------ |
-| 0. Build and dockerize demo3 by invoking `AdvantEDGE/example/demo3/build-demo3.sh` and `AdvantEDGE/example/demo3/dockerize.sh`|  |
+| 0. Build and dockerize demo3 by invoking `AdvantEDGE/examples/demo3/build-demo3.sh` and `AdvantEDGE/examples/demo3/dockerize.sh`|  |
 | 1. Import provided `demo3-scenario.yaml` in AdvantEDGE and save it | |
 | 2. Deploy `demo3-scenario` from the frontend | this scenario uses geo-localization, therefore it is necessary to provision a map as described [here](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/gis/#map-provisioning) |
 
@@ -137,4 +137,3 @@ The scenario is composed of the following components:
   - Zone1 has 1 Edge node
   - Zone2&3 has 1 Edge node
 - 3 UEs with pre-defined route will move interchangeably from mep 1 to mep2
-
