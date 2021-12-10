@@ -60,6 +60,9 @@ sudo usermod -aG docker <your-user>
 _:exclamation: **BREAKING CHANGE** :exclamation:<br>With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**._
 
 _:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+K8s versions 1.22+ are not yet supported by AdvantEDGE due to breaking API changes; upgrade is planned but not completed._
+
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
 Current installation procedure uses Docker container runtime, which is no longer supported as of k8s version 1.22.<br>
 For more information, see the [Docker container runtime deprecation FAQ]({{site.baseurl}}{% link docs/project/project-faq.md %}#faq-2-k8s-docker-container-runtime-deprecation)._
 
