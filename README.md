@@ -2,15 +2,15 @@
 
 ------
 
-**_What's New in v1.8.0!_**
+**_What's New in v1.8.1!_**
 
-:zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service) to boost up your edge apps! :rocket:**
+:zap: **Edge native services:  [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service) fixes & improvements**
 
-:zap: **Improved network emulation & metrics: [Geospatial network KPIs](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#geospatial-subsystem) :earth_americas: provide network signal emulation based on terminal location**
+:zap: **WebSocket subscriptions: [ETSI MEC028 - WLAN Access Information Service](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#wireless-access-information-service) support for WebSocket connections**
 
-:zap: **Long term storage support: [Metrics long-term storage](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#monitoring-subsystem) :card_file_box: integration with Thanos & MinIO**
+:zap: **Data management: [Sandbox Metrics Garbage Collection](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#sandbox-subsystem) :wastebasket: to free unused resources & disk space**
 
-:zap: **General Maintenance fixes :hammer_and_wrench:**
+:zap: **General maintenance fixes :hammer_and_wrench:**
 
 :zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
