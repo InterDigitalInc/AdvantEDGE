@@ -35,6 +35,7 @@ Class | Method | HTTP request | Description
 *EventReplayApi* | [**playReplayFile**](Apis/EventReplayApi.md#playreplayfile) | **POST** /replay/{name}/play | Execute a replay file present in the platform store
 *EventReplayApi* | [**stopReplayFile**](Apis/EventReplayApi.md#stopreplayfile) | **POST** /replay/{name}/stop | Stop execution of a replay file
 *EventsApi* | [**sendEvent**](Apis/EventsApi.md#sendevent) | **POST** /events/{type} | Send events to the deployed scenario
+*ServicesApi* | [**servicesGET**](Apis/ServicesApi.md#servicesget) | **GET** /services | This method retrieves registered MEC application services.
 
 
 <a name="documentation-for-models"></a>
@@ -42,8 +43,6 @@ Class | Method | HTTP request | Description
 
  - [ActivationInfo](./Models/ActivationInfo.md)
  - [ApplicationInfo](./Models/ApplicationInfo.md)
- - [ApplicationState](./Models/ApplicationState.md)
- - [ApplicationType](./Models/ApplicationType.md)
  - [CellularDomainConfig](./Models/CellularDomainConfig.md)
  - [CellularPoaConfig](./Models/CellularPoaConfig.md)
  - [ConnectivityConfig](./Models/ConnectivityConfig.md)
@@ -90,6 +89,7 @@ Class | Method | HTTP request | Description
  - [ScenarioConfig](./Models/ScenarioConfig.md)
  - [ScenarioNode](./Models/ScenarioNode.md)
  - [ServiceConfig](./Models/ServiceConfig.md)
+ - [ServiceInfo](./Models/ServiceInfo.md)
  - [ServicePort](./Models/ServicePort.md)
  - [Zone](./Models/Zone.md)
  - [Zones](./Models/Zones.md)

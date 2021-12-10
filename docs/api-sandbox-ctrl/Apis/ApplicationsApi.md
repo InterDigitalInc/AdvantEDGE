@@ -95,7 +95,7 @@ No authorization required
 
 <a name="applicationsGET"></a>
 # **applicationsGET**
-> List applicationsGET(app, state, type, mep)
+> List applicationsGET(app, type, nodeName)
 
 
 
@@ -105,10 +105,9 @@ No authorization required
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **app** | **String**| Filter by application name | [optional] [default to null]
- **state** | **String**| Filter by application state | [optional] [default to null] [enum: READY, INITIALIZED]
- **type** | **String**| Filter by application type | [optional] [default to null] [enum: USER, SYSTEM]
- **mep** | **String**| Filter by MEP name | [optional] [default to null]
+ **app** | **String**| Application name | [optional] [default to null]
+ **type** | **String**| Application type | [optional] [default to null] [enum: USER, SYSTEM]
+ **nodeName** | **String**| Node name | [optional] [default to null]
 
 ### Return type
 

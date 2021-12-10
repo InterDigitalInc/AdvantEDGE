@@ -213,7 +213,7 @@ No authorization required
 
 <a name="subByIdGET"></a>
 # **subByIdGET**
-> oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt; subByIdGET(subscriptionId)
+> InlineSubscription subByIdGET(subscriptionId)
 
 Retrieve information about this subscription.
 
@@ -227,7 +227,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt;**](../Models/oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt;.md)
+[**InlineSubscription**](../Models/InlineSubscription.md)
 
 ### Authorization
 
@@ -240,7 +240,7 @@ No authorization required
 
 <a name="subByIdPUT"></a>
 # **subByIdPUT**
-> oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt; subByIdPUT(subscriptionId, UNKNOWN\_BASE\_TYPE)
+> InlineSubscription subByIdPUT(subscriptionId, InlineSubscription)
 
 update the existing individual subscription.
 
@@ -251,11 +251,11 @@ update the existing individual subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **subscriptionId** | **String**| Refers to created subscription, where the AMS API allocates a unique resource name for this subscription | [default to null]
- **UNKNOWN\_BASE\_TYPE** | [**UNKNOWN_BASE_TYPE**](../Models/UNKNOWN_BASE_TYPE.md)|  |
+ **InlineSubscription** | [**InlineSubscription**](../Models/InlineSubscription.md)|  |
 
 ### Return type
 
-[**oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt;**](../Models/oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt;.md)
+[**InlineSubscription**](../Models/InlineSubscription.md)
 
 ### Authorization
 
@@ -295,7 +295,7 @@ No authorization required
 
 <a name="subPOST"></a>
 # **subPOST**
-> oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt; subPOST(UNKNOWN\_BASE\_TYPE)
+> InlineSubscription subPOST(InlineSubscription)
 
 Create a new subscription to Application Mobility Service notifications.
 
@@ -305,11 +305,11 @@ Create a new subscription to Application Mobility Service notifications.
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **UNKNOWN\_BASE\_TYPE** | [**UNKNOWN_BASE_TYPE**](../Models/UNKNOWN_BASE_TYPE.md)|  |
+ **InlineSubscription** | [**InlineSubscription**](../Models/InlineSubscription.md)|  |
 
 ### Return type
 
-[**oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt;**](../Models/oneOf&lt;MobilityProcedureSubscription,AdjacentAppInfoSubscription&gt;.md)
+[**InlineSubscription**](../Models/InlineSubscription.md)
 
 ### Authorization
 
