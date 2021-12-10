@@ -10,15 +10,15 @@ permalink: /
 
 ------
 
-**_What's New in v1.8.0!_**
+**_What's New in v1.8.1!_**
 
-:zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) to boost up your edge apps! :rocket:**
+:zap: **Edge native services:  [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) fixes & improvements**
 
-:zap: **Improved network emulation & metrics:  [Geospatial network KPIs]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#geospatial-subsystem) :earth_americas: provide network signal emulation based on terminal location**
+:zap: **WebSocket subscriptions: [ETSI MEC028 - WLAN Access Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#wireless-access-information-service) support for WebSocket connections**
 
-:zap: **Long term storage support: [Metrics long-term storage]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#monitoring-subsystem) :card_file_box: integration with Thanos & MinIO**
+:zap: **Data management: [Sandbox Metrics Garbage Collection]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#sandbox-subsystem) :wastebasket: to free unused resources & disk space**
 
-:zap: **General Maintenance fixes :hammer_and_wrench:**
+:zap: **General maintenance fixes :hammer_and_wrench:**
 
 :zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
