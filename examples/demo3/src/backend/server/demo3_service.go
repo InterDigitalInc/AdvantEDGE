@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2021  InterDigital Communications, Inc
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+* Copyright (c) 2021 InterDigital Communications, Inc
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
  */
 package server
 
@@ -107,7 +107,6 @@ func startTicker() {
 			// Increment terminal device state by 1
 			for _, device := range trackDevices {
 				terminalDeviceState[device] += 1
-				log.Info(terminalDeviceState[device])
 				stateAsString := strconv.Itoa(terminalDeviceState[device])
 				terminalDevices[device] = device + " using this instance" + "(state=" + stateAsString + ")"
 			}
@@ -120,7 +119,7 @@ func Init(envPath string, envName string) (port string, err error) {
 
 	// Retrieve environmental variable
 	var config util.Config
-	log.Info("Using config values from  ", envPath, "/", envName)
+	log.Info("Using config values from ", envPath, "/", envName)
 	config, err = util.LoadConfig(envPath, envName)
 	if err != nil {
 		log.Fatal("Failed to load configuration file: ", err.Error())
@@ -766,6 +765,7 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&amsNotification)
 	if err != nil {
+		log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -774,72 +774,51 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	targetDevice := amsNotification.AssociateId[0].Value
 	var notifyUrl string
 
-	// Find the target svc id should be same svc name as demo3
-	var targetSvcId string
-	for _, v := range demoAppInfo.DiscoveredServices {
-		if v.SerName == serviceCategory && v.SerInstanceId != demoAppInfo.OfferedService.Id {
-			log.Info("Target service id:", v.SerInstanceId)
-			targetSvcId = v.SerInstanceId
-			break
-		}
-	}
-
-	// Retrieve all mec service on target ams application
-	serviceInfo, _, err := srvMgmtClient.MecServiceMgmtApi.ServicesServiceIdGET(context.TODO(), targetSvcId)
+	// Retrieve service on target ams application
+	serviceInfo, _, err := srvMgmtClient.MecServiceMgmtApi.AppServicesGET(context.TODO(), amsTargetId, nil)
 	if err != nil {
 		log.Error("Failed to get target app mec service resource on mec platform", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Check if svc info struct is empty
-	if (smc.ServiceInfo{} == serviceInfo) {
-		log.Error("Cannot find target service")
-	} else {
-		notifyUrl = serviceInfo.TransportInfo.Endpoint.Uris[0]
-	}
-
-	// If demo3 service does not exists return
-	if notifyUrl == "" {
+	// Check if service is empty
+	if len(serviceInfo) == 0 {
+		log.Error("Cannot find target service for AMS")
+		// Does not perform the transfer
 		w.WriteHeader(http.StatusOK)
 		return
+	} else {
+		notifyUrl = serviceInfo[0].TransportInfo.Endpoint.Uris[0]
 	}
-
-	// Remove device from terminal devices using this instances so it  no longer increments state
-	// triggered when receives ams mobility notification
-	for i, v := range trackDevices {
-		if v == targetDevice {
-			if i < len(trackDevices)-1 {
-				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
-			} else {
-				// if device is last element
-				trackDevices = trackDevices[:len(trackDevices)-1]
-			}
-		}
-
-	}
-
-	counter := strconv.Itoa(terminalDeviceState[targetDevice])
-
-	// Transfer only if ams target service is found
-	// Update Activity Logs
-	log.Info("AMS event received for ", amsNotification.AssociateId[0].Value, " moved to app ", amsTargetId)
 
 	if notifyUrl != "" {
-
-		// Update ams pane
-		terminalDevices[targetDevice] = amsNotification.AssociateId[0].Value + " transferred to " + amsTargetId + " (state=" + counter + ")"
+		log.Info("AMS event received for ", amsNotification.AssociateId[0].Value, " moved to app ", amsTargetId)
 
 		// Sent context transfer with ams state object
-		contextErr := sendContextTransfer(notifyUrl, amsNotification.AssociateId[0].Value, amsNotification.TargetAppInfo.AppInstanceId)
-		if contextErr != nil {
+		err = sendContextTransfer(notifyUrl, amsNotification.AssociateId[0].Value, amsNotification.TargetAppInfo.AppInstanceId)
+		if err != nil {
 			appActivityLogs = append(appActivityLogs, "AMS event: transfer "+targetDevice+" context to "+
-				amsTargetId+"[500]")
+				amsTargetId+" [500]")
 			log.Error("Failed to transfer context")
 			return
 		}
 
-		targetDevice := amsNotification.AssociateId[0].Value
+		// Remove device from terminal devices using this instances so it no longer increments state
+		for i, v := range trackDevices {
+			if v == targetDevice {
+				if i < len(trackDevices)-1 {
+					trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
+				} else {
+					// if device is last element
+					trackDevices = trackDevices[:len(trackDevices)-1]
+				}
+			}
+		}
+
+		counter := strconv.Itoa(terminalDeviceState[targetDevice])
+		// Update ams pane
+		terminalDevices[targetDevice] = amsNotification.AssociateId[0].Value + " transferred to " + amsTargetId + " (state=" + counter + ")"
 
 		// Retrieve AMS Resource Information
 		amsResource, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
@@ -856,71 +835,88 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Could not update ams")
 			return
 		}
-		appActivityLogs = append(appActivityLogs, "AMS event: transfer "+targetDevice+" context to "+
-			amsTargetId+"[200]")
 
 	}
 
+	appActivityLogs = append(appActivityLogs, "AMS event: transfer "+targetDevice+" context to "+
+		amsTargetId+" [200]")
+
 	w.WriteHeader(http.StatusOK)
+}
+
+// Add to tracking device if device not exists then return false
+// Otherwise true
+func addToTrackingDevices(device string) bool {
+	for _, v := range trackDevices {
+		if device == v {
+			return true
+		}
+	}
+
+	trackDevices = append(trackDevices, device)
+
+	return false
+}
+
+func addToAmsKey(device string) {
+	for _, v := range orderedAmsAdded {
+		if device == v {
+			return
+		}
+	}
+	orderedAmsAdded = append(orderedAmsAdded, device)
 }
 
 // Rest API handle context state transfer
 // Start incrementing terminal device state
 func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
-	log.Info("Recevied AMS context transfer")
+	mutex.Lock()
+	defer mutex.Unlock()
+	log.Info("Received AMS context transfer")
 
 	var targetContextState ApplicationContextState
-
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&targetContextState)
 	counter := strconv.Itoa(targetContextState.Counter)
 	if err != nil {
+		log.Error(err.Error())
 		appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [500]")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Add terminal device if not added
-	if _, ok := terminalDevices[targetContextState.Device]; !ok {
-		amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not retrieve ams resource")
-			return
-		}
-
-		// Update AMS Resource
-		_, amsUpdateError := amsAddDevice(amsResourceId, amsResourceBody, targetContextState.Device)
-		if amsUpdateError != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not add ams device")
-			return
-		}
-
-		// Add terminal device into an ordered array
-		orderedAmsAdded = append(orderedAmsAdded, targetContextState.Device)
-
-		// Update ams subscription
-		amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not retrieve ams subscription")
-			appActivityLogs = append(appActivityLogs, "Add "+targetContextState.Device+" to AMS resource [500]")
-			return
-		}
-
-		_, updateAmsError := updateAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId, targetContextState.Device, amsSubscription)
-		if updateAmsError != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not add ams subscription")
-			appActivityLogs = append(appActivityLogs, "Add "+targetContextState.Device+" to AMS resource [500]")
-			return
-		}
-
-		// Update ams pan// Default device status & state set to 0
-		trackDevices = append(trackDevices, targetContextState.Device)
-
+	// Retrieve AMS Resource
+	amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	// Update AMS Resource
+	_, err = amsAddDevice(amsResourceId, amsResourceBody, targetContextState.Device)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Update ams subscription
+	amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = updateAmsSubscription(demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId, targetContextState.Device, amsSubscription)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	addToAmsKey(targetContextState.Device)
+	addToTrackingDevices(targetContextState.Device)
 
 	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
 
@@ -972,15 +968,14 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 		log.Error("Failed to marshal context state ", err.Error())
 		return err
 	}
-	resp, contextErr := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonCounter))
-	status := strconv.Itoa(resp.StatusCode)
 	counter := strconv.Itoa(contextState.Counter)
-
-	if contextErr != nil {
-		log.Error(resp.Status, contextErr.Error())
-		appActivityLogs = append(appActivityLogs, "=== Send device "+device+" context (state="+counter+") ["+status+"]")
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonCounter))
+	if err != nil {
+		log.Error(err.Error())
+		appActivityLogs = append(appActivityLogs, "=== Send device "+device+" context (state="+counter+") [500]")
 		return err
 	}
+	status := strconv.Itoa(resp.StatusCode)
 
 	appActivityLogs = append(appActivityLogs, "=== Send device "+device+" context (state="+counter+") ["+status+"]")
 
