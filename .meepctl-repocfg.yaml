@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.8.3
+version: 1.8.1
 repo:
   name: AdvantEDGE
 
@@ -450,6 +450,38 @@ repo:
 
     # Go Applications
     go-apps:
+      meep-ams:
+        # location of source code
+        src: go-apps/meep-ams
+        # location of binary
+        bin: bin/meep-ams
+        # location of deployment chart
+        chart: charts/meep-ams
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-ams.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports linting
+        lint: true
+        # location of API specifications
+        api:
+          - name: 'AdvantEDGE Application Mobility REST API'
+            file: go-apps/meep-ams/api/swagger.yaml
+        # location of user supplied API specifications
+        user-api:
+        # resources available to docker container image
+        docker-data:
+          # location of entry script
+          'entrypoint.sh': go-apps/meep-ams/entrypoint.sh
       meep-app-enablement:
         # location of source code
         src: go-apps/meep-app-enablement
@@ -642,70 +674,6 @@ repo:
         docker-data:
           # location of entry script
           'entrypoint.sh': go-apps/meep-rnis/entrypoint.sh
-      meep-wais:
-        # location of source code
-        src: go-apps/meep-wais
-        # location of binary
-        bin: bin/meep-wais
-        # location of deployment chart
-        chart: charts/meep-wais
-        # user supplied value file located @ .meep/user/values (use below file name)
-        chart-user-values: meep-wais.yaml
-        # extra build flags
-        build-flags:
-          - -mod=vendor
-        # enable meepctl build
-        build: true
-        # enable meepctl dockerize
-        dockerize: true
-        # enable meepctl deploy/delete
-        deploy: true
-        # supports code coverage measurement when built in codecov mode
-        codecov: true
-        # supports linting
-        lint: true
-        # location of API specifications
-        api:
-          - name: 'AdvantEDGE WLAN Access Information REST API'
-            file: go-apps/meep-wais/api/swagger.yaml
-        # location of user supplied API specifications
-        user-api:
-        # resources available to docker container image
-        docker-data:
-          # location of entry script
-          'entrypoint.sh': go-apps/meep-wais/entrypoint.sh
-      meep-ams:
-        # location of source code
-        src: go-apps/meep-ams
-        # location of binary
-        bin: bin/meep-ams
-        # location of deployment chart
-        chart: charts/meep-ams
-        # user supplied value file located @ .meep/user/values (use below file name)
-        chart-user-values: meep-ams.yaml
-        # extra build flags
-        build-flags:
-          - -mod=vendor
-        # enable meepctl build
-        build: true
-        # enable meepctl dockerize
-        dockerize: true
-        # enable meepctl deploy/delete
-        deploy: true
-        # supports code coverage measurement when built in codecov mode
-        codecov: true
-        # supports linting
-        lint: true
-        # location of API specifications
-        api:
-          - name: 'AdvantEDGE Application Mobility REST API'
-            file: go-apps/meep-ams/api/swagger.yaml
-        # location of user supplied API specifications
-        user-api:
-        # resources available to docker container image
-        docker-data:
-          # location of entry script
-          'entrypoint.sh': go-apps/meep-ams/entrypoint.sh
       meep-sandbox-ctrl:
         # location of source code
         src: go-apps/meep-sandbox-ctrl
@@ -771,6 +739,38 @@ repo:
         codecov: false
         # supports linting
         lint: true
+      meep-wais:
+        # location of source code
+        src: go-apps/meep-wais
+        # location of binary
+        bin: bin/meep-wais
+        # location of deployment chart
+        chart: charts/meep-wais
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-wais.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports linting
+        lint: true
+        # location of API specifications
+        api:
+          - name: 'AdvantEDGE WLAN Access Information REST API'
+            file: go-apps/meep-wais/api/swagger.yaml
+        # location of user supplied API specifications
+        user-api:
+        # resources available to docker container image
+        docker-data:
+          # location of entry script
+          'entrypoint.sh': go-apps/meep-wais/entrypoint.sh
 
   #------------------------------
   #  Dependencies
@@ -1156,3 +1156,4 @@ repo:
         src: js-packages/meep-service-mgmt-client
         # supports linting
         lint: false
+
