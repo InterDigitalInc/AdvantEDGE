@@ -1,5 +1,3 @@
-~/AdvantEDGE/go-apps/meepctl/utils/config.go
-~/AdvantEDGE/go-apps/meepctl/utils/config.go
 /*
  * Copyright (c) 2019  InterDigital Communications, Inc
  *
