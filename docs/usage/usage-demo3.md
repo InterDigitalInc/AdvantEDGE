@@ -169,6 +169,8 @@ port: ''                    # the port number that demo3 is listening on for inc
 ```
 
 #### Start Demo3 instances
-Start the demo3 instances `./demo3-server demo3-config.yaml` -- after starting the servers, the frontend can be accessed at `<your-ip-address>:<your-port>`
+Start the demo3 instances `./demo3-server demo3-config.yaml`
+
+After starting the servers, the frontend can be accessed at `<your-ip-address>:<your-port>`
 
 From the frontend, Demo3 can register to MEC011 and then devices present in the scenario can be added.
