@@ -14,7 +14,7 @@ permalink: /
 
 :zap: **Improved edge native services: Multiple fixes to [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service)**
 
-:zap: **New! [Demo3 example application]({{site.baseurl}}{% link docs/usage/usage-demo3.md) to showcase MEC011 & MEC021 service API usage**
+:zap: **New! [Demo3 example application]({{site.baseurl}}{% link docs/usage/usage-demo3.md %}) to showcase MEC011 & MEC021 service API usage**
 
 :zap: **ETSI MEC028 WebSocket support: [ETSI MEC028 - WLAN Access Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#wireless-access-information-service) now supports WebSocket model for receiving notifications**
 
