@@ -41,7 +41,7 @@ The scenario includes:
 **NOTE:** To view terminal movement on a map, you must first provision maps in AdvantEDGE as described
 [here](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/gis/#map-provisioning)
 
-#### Demo server
+##### Demo server
 Demo server is a web server that interacts with the _Application Enablement_ & _Application Mobility_ services
 and maintains MEC Application instance state such as:
 - Application readiness
@@ -49,7 +49,7 @@ and maintains MEC Application instance state such as:
 - Mobility & termination subscriptions
 - Terminal device contexts (counters that continue to increment even with MEC application mobility)
 
-#### Demo frontend
+##### Demo frontend
 The frontend is an instance-specific dashboard that provides MEC application information.
 
 It provides controls to:
@@ -58,7 +58,7 @@ It provides controls to:
 
 ### Obtain demo binaries
 
-#### Build from source
+##### Build from source
 To build _demo-frontend_ & _demo-server_ from source code:
 
 ```
@@ -68,7 +68,7 @@ cd ~/AdvantEDGE/examples/demo3
 
 _**NOTE:** Binary files are created in ./bin/ folder_
 
-#### Optionally use pre-built binaries (from GitHub release)
+##### Optionally use pre-built binaries (from GitHub release)
 ```
 # Get bin folder tarball from desired release
 cd ~/AdvantEDGE/examples/demo3
@@ -101,10 +101,10 @@ Demo3 does not have prior knowledge or configuration information of the MEC serv
 
 Therefore, the following steps need to be done prior to running Demo3 application instances.
 
-#### Obtain demo binaries
+##### Obtain demo binaries
 Use the same procedure described above for Demo3 with AdvantEDGE.
 
-#### Create work directories for each Demo3 MEC application instance
+##### Create work directories for each Demo3 MEC application instance
 Create work directories of your choice on the system of your choosing; we'll use `~/demo3-mep1` and `~/demo3-mep2` for
 this example and create a folder named `static` inside each one of the folders.
 
@@ -120,7 +120,7 @@ The structure should look like this:
 notifications sent by the ETSI MEC Sandbox can be received by demo applications. If the system is behind a firewall,
 ports will need to be opened._**
 
-#### Copy demo-server to working directories
+##### Copy demo-server to working directories
 For each application instance, copy the following files to the working directories:
 - Server executable (`/AdvantEDGE/examples/demo3/bin/demo-server/demo-server`)
 - Template configuration file (`/AdvantEDGE/examples/demo3/demo3-config.yaml`)
@@ -146,7 +146,7 @@ The resulting structure should look like this:
                ├── index.html
 ```
 
-#### Create application instances in the MEC Sandbox
+##### Create application instances in the MEC Sandbox
 Login via the [ETSI MEC Sandbox](https://try-mec.etsi.org/) frontend.
 
 Deploy either of teh dual-MEP scenarios. Note that the _dual-mep-short-path_ network scenario will trigger
@@ -154,7 +154,7 @@ AMS mobility procedure notifications much quicker that the _dual-mep-4g-5g-wifi-
 
 Create two Application Instance IDs called `demo3`, one on _mep1_ and one on _mep2_ respectively.
 
-#### Edit application instance configuration files
+##### Edit application instance configuration files
 For each application instance, edit the copied template configuration file with instance-specific configuration values.
 
 The resulting configuration should look like this:
@@ -168,7 +168,7 @@ localurl: 'http://'         # the public IP address where demo3 instance is runn
 port: ''                    # the port number that demo3 is listening on for incoming traffic
 ```
 
-#### Start Demo3 instances
+##### Start Demo3 instances
 Start the demo3 instances `./demo3-server demo3-config.yaml`
 
 After starting the servers, the frontend can be accessed at `<your-ip-address>:<your-port>`
