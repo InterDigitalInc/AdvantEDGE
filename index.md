@@ -12,15 +12,17 @@ permalink: /
 
 **_What's New in v1.8.1!_**
 
-:zap: **Edge native services:  [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) fixes & improvements**
+:zap: **Improved edge native services: Multiple fixes to [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service)**
 
-:zap: **WebSocket subscriptions: [ETSI MEC028 - WLAN Access Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#wireless-access-information-service) support for WebSocket connections**
+:zap: **New! [Demo3 example application]({{site.baseurl}}{% link docs/usage/usage-demo3.md) to showcase MEC011 & MEC021 service API usage**
 
-:zap: **Data management: [Sandbox Metrics Garbage Collection]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#sandbox-subsystem) :wastebasket: to free unused resources & disk space**
+:zap: **ETSI MEC028 WebSocket support: [ETSI MEC028 - WLAN Access Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#wireless-access-information-service) now supports WebSocket model for receiving notifications**
 
-:zap: **General maintenance fixes :hammer_and_wrench:**
+:zap: **Improved sandbox data management: [Sandbox Metrics Garbage Collection]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#sandbox-subsystem) :wastebasket: can be configured to periodically recover unused sandbox disk space**
 
-:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
+:zap: **General maintenance :hammer_and_wrench:**
+
+:zap: **Don't hesitate to reach out to us by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
 ------
 
