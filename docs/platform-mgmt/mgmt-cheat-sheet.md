@@ -101,7 +101,14 @@ parameter | description | default
 `metrics.thanos.compactor.retention.resolution-1h`  | 1h downsampled data retention | `10y`
 `metrics.thanos.thanos-archive.enabled`  | Enable Thanos archive | `false`
 `metrics.thanos.thanos-archive.secret`  | Archive object store configuration secret | `meep-thanos-archive-objstore-config`
-
+`gc.enabled`  | Enable garbage collection | `true`
+`gc.interval`  | Garbage collection interval (duration string) | `4h`
+`gc.run-on-start`  | Run garbage collection on start | `true`
+`gc.redis.enabled`  | Enable Redis DB garbage collection | `true`
+`gc.influx.enabled`  | Enable Influx DB garbage collection | `false`
+`gc.influx.exceptions`  | List of databases that must not be removed | `[]`
+`gc.postgis.enabled`  | Enable PostGIS DB garbage collection | `false`
+        
 Dependency microservices and Core & Sandbox Subsystem microservices may also be modified using this configuration file. For example, specific microservices can be excluded from a platform build or deployment if not required.
 
 _**NOTE:** Modifying microservice configuration is only recommended for advanced platform users_
