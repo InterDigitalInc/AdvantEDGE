@@ -58,7 +58,7 @@ A single user or many users can create multiple sandboxes until they exhaust the
 
 ![sandbox-create2.md]({{site.baseurl}}/assets/images/sandbox-select.png)
 
-## Sandbox Data Management
+### Sandbox Data Management
 The _Monitoring Subsystem_ measures, calculates & stores scenario-specific metrics for each running sandbox.
 These metrics are stored on the AdvantEDGE host filesystem.
 
