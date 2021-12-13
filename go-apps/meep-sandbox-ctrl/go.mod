@@ -3,6 +3,7 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-sandbox-ctrl
 go 1.12
 
 require (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
@@ -23,6 +24,7 @@ require (
 )
 
 replace (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications => ../../go-packages/meep-applications
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch => ../../go-packages/meep-couch
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr => ../../go-packages/meep-data-key-mgr
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model => ../../go-packages/meep-data-model

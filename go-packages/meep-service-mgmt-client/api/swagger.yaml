@@ -1,13 +1,13 @@
 openapi: 3.0.2
 info:
   title: AdvantEDGE MEC Service Management API
-  description: MEC Service Management Service is AdvantEDGE's implementation of [ETSI
-    MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)
-    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-    <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)
-    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about services in the network <p>**Note**<br>AdvantEDGE supports all
-    of Service Management API endpoints (see below).
+  description: "MEC Service Management Service is AdvantEDGE's implementation of [ETSI\
+    \ MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)\
+    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about services in the network <p>**Note**<br>AdvantEDGE supports\
+    \ all of Service Management API endpoints (see below)."
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -16,7 +16,7 @@ info:
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 2.1.1
 externalDocs:
-  description: ETSI GS MEC011 Application Enablement API, V2.1.1
+  description: "ETSI GS MEC011 Application Enablement API, V2.1.1"
   url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
 servers:
 - url: https://localhost/sandboxname/mec_service_mgmt/v1
@@ -338,8 +338,8 @@ paths:
         $ref: '#/components/requestBodies/ServicesPost'
       responses:
         "201":
-          description: Upon success, the HTTP response shall include a Location HTTP
-            header that contains the resource URI of the created resource.
+          description: "Upon success, the HTTP response shall include a Location HTTP\
+            \ header that contains the resource URI of the created resource."
           headers:
             location:
               description: The resource URI of the created resource
@@ -487,8 +487,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: Precondition Failed. It is used when a condition has failed
-            during conditional requests,  e.g. when using ETags to avoid write conflicts.
+          description: "Precondition Failed. It is used when a condition has failed\
+            \ during conditional requests,  e.g. when using ETags to avoid write conflicts."
           content:
             application/problem+json:
               schema:
@@ -538,9 +538,9 @@ paths:
     get:
       tags:
       - mec_service_mgmt
-      description: The GET method may be used to request information about all subscriptions
-        for this requestor. Upon success, the response contains entity body with all
-        the subscriptions for the requestor.
+      description: "The GET method may be used to request information about all subscriptions\
+        \ for this requestor. Upon success, the response contains entity body with\
+        \ all the subscriptions for the requestor."
       operationId: ApplicationsSubscriptions_GET
       parameters:
       - name: appInstanceId
@@ -554,8 +554,8 @@ paths:
           type: string
       responses:
         "200":
-          description: Upon success, a response body containing the list of links
-            to the requested subscriptions is returned.
+          description: "Upon success, a response body containing the list of links\
+            \ to the requested subscriptions is returned."
           content:
             application/json:
               schema:
@@ -589,9 +589,10 @@ paths:
     post:
       tags:
       - mec_service_mgmt
-      description: The POST method may be used to create a new subscription. One example
-        use case is to create a new subscription to the MEC service availability notifications.
-        Upon success, the response contains entity body describing the created subscription.
+      description: "The POST method may be used to create a new subscription. One\
+        \ example use case is to create a new subscription to the MEC service availability\
+        \ notifications. Upon success, the response contains entity body describing\
+        \ the created subscription."
       operationId: ApplicationsSubscriptions_POST
       parameters:
       - name: appInstanceId
@@ -654,9 +655,9 @@ paths:
     get:
       tags:
       - mec_service_mgmt
-      description: The GET method requests information about a subscription for this
-        requestor. Upon success, the response contains entity body with the subscription
-        for the requestor.
+      description: "The GET method requests information about a subscription for this\
+        \ requestor. Upon success, the response contains entity body with the subscription\
+        \ for the requestor."
       operationId: ApplicationsSubscription_GET
       parameters:
       - name: appInstanceId
@@ -678,8 +679,8 @@ paths:
           type: string
       responses:
         "200":
-          description: Upon success, a response body containing the requested subscription
-            is returned.
+          description: "Upon success, a response body containing the requested subscription\
+            \ is returned."
           content:
             application/json:
               schema:
@@ -810,8 +811,8 @@ components:
           description: Unique identifier of the category
         name:
           type: string
-          description: Name of the category, example values include RNI, Location
-            & Bandwidth Management
+          description: "Name of the category, example values include RNI, Location\
+            \ & Bandwidth Management"
         version:
           type: string
           description: Category version
@@ -847,8 +848,8 @@ components:
       properties:
         alternative:
           type: object
-      description: Entry point information of the service in a format defined by an
-        implementation, or in an external specification.
+      description: "Entry point information of the service in a format defined by\
+        \ an implementation, or in an external specification."
     EndPointInfoUris:
       required:
       - uris
@@ -861,8 +862,8 @@ components:
             type: string
             description: Entry point information of the service
             format: uri
-      description: Entry point information of the service as string, formatted according
-        to URI syntax
+      description: "Entry point information of the service as string, formatted according\
+        \ to URI syntax"
     LinkType:
       type: object
       properties:
@@ -888,9 +889,9 @@ components:
       example:
         _links:
           subscriptions:
-          - rel: rel
+          - subscriptionType: subscriptionType
             href: http://example.com/aeiou
-          - rel: rel
+          - subscriptionType: subscriptionType
             href: http://example.com/aeiou
           self:
             href: /mecSerMgmtApi/example
@@ -904,7 +905,7 @@ components:
           format: uri
         title:
           type: string
-          description: A short, human-readable summary of the problem type
+          description: "A short, human-readable summary of the problem type"
         status:
           type: integer
           description: The HTTP status code for this occurrence of the problem
@@ -1050,8 +1051,8 @@ components:
       - PROTOBUF3
     LocalityType:
       type: string
-      description: The scope of locality as expressed by "consumedLocalOnly" and "isLocal".
-        If absent, defaults to MEC_HOST
+      description: "The scope of locality as expressed by \"consumedLocalOnly\" and\
+        \ \"isLocal\". If absent, defaults to MEC_HOST"
       enum:
       - MEC_SYSTEM
       - MEC_HOST
@@ -1068,8 +1069,8 @@ components:
     ServiceStates:
       minItems: 0
       type: array
-      description: States of the services about which to report events. If the event
-        is  a state change, this filter represents the state after the change.
+      description: "States of the services about which to report events. If the event\
+        \ is  a state change, this filter represents the state after the change."
       items:
         $ref: '#/components/schemas/ServiceState'
       x-schema-name: ServiceStates
@@ -1116,10 +1117,11 @@ components:
           $ref: '#/components/schemas/ServiceState'
         transportId:
           type: string
-          description: Identifier of the platform-provided transport to be used by
-            the service. Valid identifiers may be obtained using the "Transport information
-            query" procedure. May be present in POST requests to signal the use of
-            a platform-provided transport for the service, and shall be absent otherwise.
+          description: "Identifier of the platform-provided transport to be used by\
+            \ the service. Valid identifiers may be obtained using the \"Transport\
+            \ information query\" procedure. May be present in POST requests to signal\
+            \ the use of a platform-provided transport for the service, and shall\
+            \ be absent otherwise."
           writeOnly: true
         transportInfo:
           $ref: '#/components/schemas/TransportInfo'
@@ -1295,19 +1297,21 @@ components:
     SubscriptionLinkList__links_subscriptions:
       required:
       - href
-      - rel
+      - subscriptionType
       type: object
       properties:
         href:
           type: string
           description: URI referring to a resource
           format: uri
-        rel:
+        subscriptionType:
           type: string
-          description: The value shall be se to SerAvailabilityNotificationSubscription.
+          description: Type of the subscription. The values are as defined in the
+            "subscriptionType" attribute for each different Mp1 event subscription
+            data type.
       description: A link to a subscription.
       example:
-        rel: rel
+        subscriptionType: subscriptionType
         href: http://example.com/aeiou
     SubscriptionLinkList__links:
       required:
@@ -1324,14 +1328,19 @@ components:
       description: Self-referring URI.
       example:
         subscriptions:
-        - rel: rel
+        - subscriptionType: subscriptionType
           href: http://example.com/aeiou
-        - rel: rel
+        - subscriptionType: subscriptionType
           href: http://example.com/aeiou
         self:
           href: /mecSerMgmtApi/example
     SerAvailabilityNotificationSubscription_filteringCriteria:
       type: object
+      not:
+        required:
+        - serCategories
+        - serInstanceIds
+        - serNames
       properties:
         serInstanceIds:
           $ref: '#/components/schemas/SerInstanceIds'
@@ -1345,9 +1354,9 @@ components:
           type: boolean
           description: Indicate whether the service is located in the same locality
             (as defined by scopeOfLocality) as the consuming MEC application.
-      description: Filtering criteria to match services for which events are requested
-        to be reported. If absent, matches all services. All child attributes are
-        combined with the logical  "AND" operation.
+      description: "Filtering criteria to match services for which events are requested\
+        \ to be reported. If absent, matches all services. All child attributes are\
+        \ combined with the logical  \"AND\" operation."
       example:
         serNames:
         - serNames
@@ -1399,8 +1408,8 @@ components:
       description: List of links to services whose availability has changed.
   responses:
     ApplicationsSubscriptions200:
-      description: Upon success, a response body containing the list of links to the
-        requested subscriptions is returned.
+      description: "Upon success, a response body containing the list of links to\
+        \ the requested subscriptions is returned."
       content:
         application/json:
           schema:
@@ -1431,8 +1440,8 @@ components:
         delIndividualmecSerMgmtApiSubscription:
           $ref: '#/components/links/DelIndividualmecSerMgmtApiSubscription'
     ApplicationsSubscription200:
-      description: Upon success, a response body containing the requested subscription
-        is returned.
+      description: "Upon success, a response body containing the requested subscription\
+        \ is returned."
       content:
         application/json:
           schema:
@@ -1454,8 +1463,8 @@ components:
         putIndividualmecService:
           $ref: '#/components/links/PutIndividualmecService'
     Services201:
-      description: Upon success, the HTTP response shall include a Location HTTP header
-        that contains the resource URI of the created resource.
+      description: "Upon success, the HTTP response shall include a Location HTTP\
+        \ header that contains the resource URI of the created resource."
       headers:
         location:
           description: The resource URI of the created resource
@@ -1523,16 +1532,16 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "409":
-      description: Conflict. The operation cannot be executed currently, due to a
-        conflict with  the state of the resource. Typically, this is because the application  instance
-        resource is in NOT_INSTANTIATED state.
+      description: "Conflict. The operation cannot be executed currently, due to a\
+        \ conflict with  the state of the resource. Typically, this is because the\
+        \ application  instance resource is in NOT_INSTANTIATED state."
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "412":
-      description: Precondition Failed. It is used when a condition has failed during
-        conditional requests,  e.g. when using ETags to avoid write conflicts.
+      description: "Precondition Failed. It is used when a condition has failed during\
+        \ conditional requests,  e.g. when using ETags to avoid write conflicts."
       content:
         application/problem+json:
           schema:
@@ -1687,7 +1696,7 @@ components:
           example:
             subscriptionType: SerAvailabilityNotificationSubscription
             callbackReference: http://my.callback.com/mec_service_mgmt_ser_availabilities/some-id
-            filterCriteria:
+            filteringCriteria:
               serNames:
               - myRnis
               states:
@@ -1751,57 +1760,57 @@ components:
       operationId: Sm_ServicesServiceId_GET
       parameters:
         serviceId: $response.body#/serviceId
-      description: The `serviceId` value returned in the response can be used as the
-        `serviceId` parameter in `GET /services/{serviceId}`
+      description: "The `serviceId` value returned in the response can be used as\
+        \ the `serviceId` parameter in `GET /services/{serviceId}`"
     PutIndividualmecService:
       operationId: Sm_ServicesServiceId_PUT
       parameters:
         serviceId: $response.body#/serviceId
-      description: The `serviceId` value returned in the response can be used as the
-        `serviceId` parameter in `PUT /services/{serviceId}`
+      description: "The `serviceId` value returned in the response can be used as\
+        \ the `serviceId` parameter in `PUT /services/{serviceId}`"
     GetTransportInfo:
       operationId: Sm_AppServices_POST
       parameters:
         transportId: $response.body#/0/id
-      description: The `id` value returned in the response can be used as the `transportId`
-        parameter in `POST /applications/{appInstanceId}/services`. The first transport
-        is provided as the link as wildcards are not supported
+      description: "The `id` value returned in the response can be used as the `transportId`\
+        \ parameter in `POST /applications/{appInstanceId}/services`. The first transport\
+        \ is provided as the link as wildcards are not supported"
     GetIndividualmecSerMgmtApiSubscription:
       operationId: Sm_ApplicationsSubscription_GET
       parameters:
-        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/.*\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_service_mgmt\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /.*\\/(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an\
+          \ attribute within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
     DelIndividualmecSerMgmtApiSubscription:
       operationId: Sm_ApplicationsSubscription_DELETE
       parameters:
-        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_service_mgmt\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an attribute\
+          \ within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
     GetIndividualmecSerMgmtApiSubscriptionLinkList:
       operationId: Sm_ApplicationsSubscription_GET
       parameters:
-        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_service_mgmt\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an attribute\
+          \ within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `GET /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
     DelIndividualmecSerMgmtApiSubscriptionLinkList:
       operationId: Sm_ApplicationsSubscription_DELETE
       parameters:
-        description: regex = \/mec_service_mgmt\/v1\/applications\/.*\/subscriptions\/(.*);subscriptionId
-          = href.match(regex)[1];// where "href" is an attribute within the subscription
-          attribute within the _links attribute
+        description: "regex = \\/mec_service_mgmt\\/v1\\/applications\\/.*\\/subscriptions\\\
+          /(.*);subscriptionId = href.match(regex)[1];// where \"href\" is an attribute\
+          \ within the subscription attribute within the _links attribute"
         subscriptionId: TBC
-      description: The `subscriptionId` value returned in the response can be used
-        as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`
+      description: "The `subscriptionId` value returned in the response can be used\
+        \ as the `subscriptionId` parameter in `DELETE /applications/{appInstanceId}/subscriptions/{subscriptionId}`"
   callbacks:
     ServiceAvailabilityNotification:
       '{$request.body#/callbackReference}':
@@ -1821,5 +1830,5 @@ components:
             $ref: '#/components/requestBodies/ServiceAvailabilityNotification'
           responses:
             "200":
-              description: Expected responses from callback consumer, if it accepts
-                the callback
+              description: "Expected responses from callback consumer, if it accepts\
+                \ the callback"

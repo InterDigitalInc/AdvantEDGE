@@ -1,0 +1,853 @@
+version: 1.8.0
+name: demo3
+deployment:
+    netChar:
+        latency: 50
+        latencyVariation: 10
+        latencyDistribution: Normal
+        throughputDl: 1000
+        throughputUl: 1000
+        throughput: null
+        packetLoss: null
+    connectivity:
+        model: OPEN
+    domains:
+        -
+            id: PUBLIC
+            name: PUBLIC
+            type: PUBLIC
+            netChar:
+                latency: 6
+                latencyVariation: 2
+                throughputDl: 1000
+                throughputUl: 1000
+                latencyDistribution: null
+                throughput: null
+                packetLoss: null
+            zones:
+                -
+                    id: PUBLIC-COMMON
+                    name: PUBLIC-COMMON
+                    type: COMMON
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
+                    networkLocations:
+                        -
+                            id: PUBLIC-COMMON-DEFAULT
+                            name: PUBLIC-COMMON-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                            geoData: null
+                            physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
+                    interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
+                    interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
+                    edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
+            interZoneLatency: null
+            interZoneLatencyVariation: null
+            interZoneThroughput: null
+            interZonePacketLoss: null
+            meta: null
+            userMeta: null
+            cellularDomainConfig: null
+        -
+            id: d28f9113-79e3-4db0-bca6-7587f5f21d56
+            name: sandbox-operator
+            type: OPERATOR-CELLULAR
+            netChar:
+                latency: 6
+                latencyVariation: 2
+                throughputDl: 1000
+                throughputUl: 1000
+                latencyDistribution: null
+                throughput: null
+                packetLoss: null
+            cellularDomainConfig:
+                mnc: '001'
+                mcc: '001'
+                defaultCellId: FFFFFFF
+            zones:
+                -
+                    id: sandbox-operator-COMMON
+                    name: sandbox-operator-COMMON
+                    type: COMMON
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
+                    networkLocations:
+                        -
+                            id: sandbox-operator-COMMON-DEFAULT
+                            name: sandbox-operator-COMMON-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                            geoData: null
+                            physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
+                    interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
+                    interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
+                    edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
+                -
+                    id: 7187ebc8-b86c-40db-9e66-a91247f0f6da
+                    name: zone1
+                    type: ZONE
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
+                    meta:
+                        display.map.color: '#E49C0C'
+                    networkLocations:
+                        -
+                            id: zone1-DEFAULT
+                            name: zone1-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            physicalLocations:
+                                -
+                                    id: c9b71df6-6bd7-427b-9456-d0e16fb7e18f
+                                    name: mep1
+                                    type: EDGE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.418648
+                                                - 43.72887
+                                        radius: null
+                                        path: null
+                                        eopMode: null
+                                        velocity: null
+                                    connected: true
+                                    dataNetwork: {dnn: null, ladn: null, ecsp: null}
+                                    processes:
+                                        -
+                                            id: 40e4eaa8-e6ae-442a-a381-bb9c666eff38
+                                            name: demo3-mep1
+                                            type: EDGE-APP
+                                            image: 'meep-docker-registry:30001/demo3'
+                                            serviceConfig:
+                                                name: demo3-mep1
+                                                meSvcName: demo3
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: 31111
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
+                                            isExternal: null
+                                            environment: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            gpuConfig: null
+                                            memoryConfig: null
+                                            cpuConfig: null
+                                            externalConfig: null
+                                            status: null
+                                            userChartLocation: null
+                                            userChartAlternateValues: null
+                                            userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                    wireless: null
+                                    wirelessType: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                                    macId: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                            geoData: null
+                        -
+                            id: 764e2562-47c2-43b4-895a-2f7fa0a0df55
+                            name: poa-4g1
+                            type: POA-4G
+                            netChar:
+                                latency: 10
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            poa4GConfig:
+                                cellId: '1010101'
+                            geoData:
+                                location:
+                                    type: Point
+                                    coordinates:
+                                        - 7.416286
+                                        - 43.730164
+                                radius: 400
+                                path: null
+                                eopMode: null
+                                velocity: null
+                            physicalLocations:
+                                -
+                                    id: 3acfc327-7236-422a-9e62-ed404708e5e9
+                                    name: 10.100.0.1
+                                    type: UE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.421962
+                                                - 43.72995
+                                        path:
+                                            type: LineString
+                                            coordinates:
+                                                -
+                                                    - 7.421962
+                                                    - 43.72995
+                                                -
+                                                    - 7.421758
+                                                    - 43.730194
+                                                -
+                                                    - 7.421501
+                                                    - 43.73027
+                                                -
+                                                    - 7.421173
+                                                    - 43.73024
+                                                -
+                                                    - 7.420857
+                                                    - 43.730076
+                                                -
+                                                    - 7.420524
+                                                    - 43.729946
+                                                -
+                                                    - 7.420235
+                                                    - 43.730103
+                                                -
+                                                    - 7.419795
+                                                    - 43.730694
+                                                -
+                                                    - 7.419242
+                                                    - 43.730927
+                                                -
+                                                    - 7.418625
+                                                    - 43.730972
+                                        eopMode: REVERSE
+                                        velocity: 10
+                                        radius: null
+                                    connected: true
+                                    wireless: true
+                                    wirelessType: 'wifi,5g,4g,other'
+                                    dataNetwork: {dnn: null, ladn: null, ecsp: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    macId: 005C0A640003
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    processes: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
+                    interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
+                    interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
+                    edgeFogPacketLoss: null
+                    userMeta: null
+                -
+                    id: 4bf53956-4996-4a92-be49-a8b82fbffa36
+                    name: zone2
+                    type: ZONE
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
+                    meta:
+                        display.map.color: '#00FF00'
+                    networkLocations:
+                        -
+                            id: zone2-DEFAULT
+                            name: zone2-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            physicalLocations:
+                                -
+                                    id: ecc0e614-a58c-458c-bbd4-5141b12f7af5
+                                    name: mep2
+                                    type: EDGE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.421136
+                                                - 43.73397
+                                        radius: null
+                                        path: null
+                                        eopMode: null
+                                        velocity: null
+                                    connected: true
+                                    dataNetwork:
+                                        dnn: edn
+                                        ladn: null
+                                        ecsp: null
+                                    processes:
+                                        -
+                                            id: 72a5362e-41a7-4eb4-ad6c-752b329041c2
+                                            name: demo3-mep2
+                                            type: EDGE-APP
+                                            image: 'meep-docker-registry:30001/demo3'
+                                            serviceConfig:
+                                                name: demo3-mep2
+                                                meSvcName: demo3
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: 31112
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
+                                            isExternal: null
+                                            environment: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            gpuConfig: null
+                                            memoryConfig: null
+                                            cpuConfig: null
+                                            externalConfig: null
+                                            status: null
+                                            userChartLocation: null
+                                            userChartAlternateValues: null
+                                            userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                    wireless: null
+                                    wirelessType: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                                    macId: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                            geoData: null
+                        -
+                            id: b58a02a0-cbf4-4e67-bc87-9eb52062cd71
+                            name: poa-4g2
+                            type: POA-4G
+                            netChar:
+                                latency: 10
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            poa4GConfig:
+                                cellId: '2020202'
+                            geoData:
+                                location:
+                                    type: Point
+                                    coordinates:
+                                        - 7.424462
+                                        - 43.731693
+                                radius: 400
+                                path: null
+                                eopMode: null
+                                velocity: null
+                            physicalLocations:
+                                -
+                                    id: ca302501-657c-4634-97ea-4650a885295c
+                                    name: 10.100.0.2
+                                    type: UE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.420685
+                                                - 43.73219
+                                        path:
+                                            type: LineString
+                                            coordinates:
+                                                -
+                                                    - 7.420685
+                                                    - 43.73219
+                                                -
+                                                    - 7.419173
+                                                    - 43.732506
+                                                -
+                                                    - 7.419076
+                                                    - 43.732475
+                                                -
+                                                    - 7.419006
+                                                    - 43.732414
+                                                -
+                                                    - 7.418899
+                                                    - 43.732403
+                                                -
+                                                    - 7.417413
+                                                    - 43.731667
+                                                -
+                                                    - 7.417236
+                                                    - 43.73166
+                                                -
+                                                    - 7.417113
+                                                    - 43.73159
+                                                -
+                                                    - 7.417139
+                                                    - 43.7315
+                                                -
+                                                    - 7.417263
+                                                    - 43.731438
+                                                -
+                                                    - 7.417429
+                                                    - 43.731503
+                                                -
+                                                    - 7.417421
+                                                    - 43.731632
+                                                -
+                                                    - 7.417496
+                                                    - 43.73167
+                                                -
+                                                    - 7.419934
+                                                    - 43.731762
+                                                -
+                                                    - 7.421298
+                                                    - 43.73187
+                                                -
+                                                    - 7.421758
+                                                    - 43.73205
+                                                -
+                                                    - 7.421463
+                                                    - 43.73206
+                                                -
+                                                    - 7.421181
+                                                    - 43.73211
+                                                -
+                                                    - 7.420929
+                                                    - 43.732162
+                                                -
+                                                    - 7.420685
+                                                    - 43.73219
+                                        eopMode: LOOP
+                                        velocity: 20
+                                        radius: null
+                                    connected: true
+                                    wireless: true
+                                    wirelessType: 'wifi,5g,4g,other'
+                                    dataNetwork: {dnn: null, ladn: null, ecsp: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    macId: 005C0A640002
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    processes: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                        -
+                            id: f35cf043-6fc5-48d3-abbf-8a264f311f9d
+                            name: poa-4g3
+                            type: POA-4G
+                            netChar:
+                                latency: 10
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            poa4GConfig:
+                                cellId: '3030303'
+                            geoData:
+                                location:
+                                    type: Point
+                                    coordinates:
+                                        - 7.420481
+                                        - 43.735188
+                                radius: 400
+                                path: null
+                                eopMode: null
+                                velocity: null
+                            physicalLocations:
+                                -
+                                    id: 697bae91-a302-4fd6-b861-46acfd83fd68
+                                    name: 10.100.0.3
+                                    type: UE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.41751
+                                                - 43.73312
+                                        path:
+                                            type: LineString
+                                            coordinates:
+                                                -
+                                                    - 7.41751
+                                                    - 43.73312
+                                                -
+                                                    - 7.416981
+                                                    - 43.732372
+                                                -
+                                                    - 7.416678
+                                                    - 43.73202
+                                                -
+                                                    - 7.416324
+                                                    - 43.731606
+                                                -
+                                                    - 7.416211
+                                                    - 43.73139
+                                                -
+                                                    - 7.416238
+                                                    - 43.731155
+                                                -
+                                                    - 7.413744
+                                                    - 43.72959
+                                                -
+                                                    - 7.413728
+                                                    - 43.72953
+                                                -
+                                                    - 7.414838
+                                                    - 43.72868
+                                                -
+                                                    - 7.415128
+                                                    - 43.728615
+                                                -
+                                                    - 7.415286
+                                                    - 43.728596
+                                                -
+                                                    - 7.415369
+                                                    - 43.728687
+                                                -
+                                                    - 7.415326
+                                                    - 43.728767
+                                                -
+                                                    - 7.415342
+                                                    - 43.72885
+                                                -
+                                                    - 7.416163
+                                                    - 43.72947
+                                                -
+                                                    - 7.416249
+                                                    - 43.729496
+                                                -
+                                                    - 7.416753
+                                                    - 43.729816
+                                                -
+                                                    - 7.416903
+                                                    - 43.729828
+                                                -
+                                                    - 7.417064
+                                                    - 43.72996
+                                                -
+                                                    - 7.41707
+                                                    - 43.73008
+                                                -
+                                                    - 7.418518
+                                                    - 43.731106
+                                                -
+                                                    - 7.420675
+                                                    - 43.731693
+                                                -
+                                                    - 7.421232
+                                                    - 43.73186
+                                                -
+                                                    - 7.422971
+                                                    - 43.732063
+                                                -
+                                                    - 7.423003
+                                                    - 43.732254
+                                                -
+                                                    - 7.422954
+                                                    - 43.7324
+                                                -
+                                                    - 7.422531
+                                                    - 43.732388
+                                                -
+                                                    - 7.422456
+                                                    - 43.732445
+                                                -
+                                                    - 7.422386
+                                                    - 43.732643
+                                                -
+                                                    - 7.421924
+                                                    - 43.73319
+                                                -
+                                                    - 7.421388
+                                                    - 43.734425
+                                                -
+                                                    - 7.418717
+                                                    - 43.734196
+                                                -
+                                                    - 7.418223
+                                                    - 43.73437
+                                                -
+                                                    - 7.41818
+                                                    - 43.73442
+                                                -
+                                                    - 7.418121
+                                                    - 43.734447
+                                                -
+                                                    - 7.418067
+                                                    - 43.734432
+                                                -
+                                                    - 7.418062
+                                                    - 43.734344
+                                                -
+                                                    - 7.417799
+                                                    - 43.733566
+                                                -
+                                                    - 7.41767
+                                                    - 43.73334
+                                                -
+                                                    - 7.41751
+                                                    - 43.73312
+                                        eopMode: LOOP
+                                        velocity: 30
+                                        radius: null
+                                    connected: true
+                                    wireless: true
+                                    wirelessType: 'wifi,5g,4g,other'
+                                    dataNetwork: {dnn: null, ladn: null, ecsp: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    macId: 005C0A640004
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    processes: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
+                    interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
+                    interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
+                    edgeFogPacketLoss: null
+                    userMeta: null
+            interZoneLatency: null
+            interZoneLatencyVariation: null
+            interZoneThroughput: null
+            interZonePacketLoss: null
+            meta: null
+            userMeta: null
+    interDomainLatency: null
+    interDomainLatencyVariation: null
+    interDomainThroughput: null
+    interDomainPacketLoss: null
+    meta: null
+    userMeta: null
+id: null
+description: null
+config: null

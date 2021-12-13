@@ -2,17 +2,19 @@
 
 ------
 
-**_What's New in v1.8.0!_**
+**_What's New in v1.8.1!_**
 
-:zap: **New edge native services:  [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service) to boost up your edge apps! :rocket:**
+:zap: **Improved edge native services: Multiple fixes to [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service)**
 
-:zap: **Improved network emulation & metrics: [Geospatial network KPIs](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#geospatial-subsystem) :earth_americas: provide network signal emulation based on terminal location**
+:zap: **New! [Demo3 example application](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-demo3) to showcase MEC011 & MEC021 service API usage**
 
-:zap: **Long term storage support: [Metrics long-term storage](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#monitoring-subsystem) :card_file_box: integration with Thanos & MinIO**
+:zap: **ETSI MEC028 WebSocket support: [ETSI MEC028 - WLAN Access Information Service](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#wireless-access-information-service) now supports WebSocket model for receiving notifications**
 
-:zap: **General Maintenance fixes :hammer_and_wrench:**
+:zap: **Improved sandbox data management: [Sandbox Metrics Garbage Collection](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#sandbox-subsystem) :wastebasket: can be configured to periodically recover unused sandbox disk space**
 
-:zap: **"_Old New_" :wink: you can still easily reach out to the team by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
+:zap: **General maintenance :hammer_and_wrench:**
+
+:zap: **Don't hesitate to reach out to us by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
 ------
 

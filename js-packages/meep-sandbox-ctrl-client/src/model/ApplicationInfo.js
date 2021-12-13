@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ApplicationState', 'model/ApplicationType'], factory);
+    define(['ApiClient'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./ApplicationState'), require('./ApplicationType'));
+    module.exports = factory(require('../ApiClient'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.ApplicationInfo = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.ApplicationState, root.AdvantEdgeSandboxControllerRestApi.ApplicationType);
+    root.AdvantEdgeSandboxControllerRestApi.ApplicationInfo = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient);
   }
-}(this, function(ApiClient, ApplicationState, ApplicationType) {
+}(this, function(ApiClient) {
   'use strict';
 
   /**
@@ -57,11 +57,11 @@
    * @alias module:model/ApplicationInfo
    * @class
    * @param name {String} Application name
-   * @param mepName {String} MEP Name where application instance is running
+   * @param nodeName {String} Name of node where application instance is running
    */
-  var exports = function(name, mepName) {
+  var exports = function(name, nodeName) {
     this.name = name;
-    this.mepName = mepName;
+    this.nodeName = nodeName;
   };
 
   /**
@@ -78,14 +78,12 @@
         obj.id = ApiClient.convertToType(data['id'], 'String');
       if (data.hasOwnProperty('name'))
         obj.name = ApiClient.convertToType(data['name'], 'String');
+      if (data.hasOwnProperty('nodeName'))
+        obj.nodeName = ApiClient.convertToType(data['nodeName'], 'String');
       if (data.hasOwnProperty('type'))
-        obj.type = ApplicationType.constructFromObject(data['type']);
-      if (data.hasOwnProperty('state'))
-        obj.state = ApplicationState.constructFromObject(data['state']);
-      if (data.hasOwnProperty('mepName'))
-        obj.mepName = ApiClient.convertToType(data['mepName'], 'String');
-      if (data.hasOwnProperty('version'))
-        obj.version = ApiClient.convertToType(data['version'], 'String');
+        obj.type = ApiClient.convertToType(data['type'], 'String');
+      if (data.hasOwnProperty('persist'))
+        obj.persist = ApiClient.convertToType(data['persist'], 'Boolean');
     }
     return obj;
   }
@@ -103,26 +101,42 @@
   exports.prototype.name = undefined;
 
   /**
-   * @member {module:model/ApplicationType} type
+   * Name of node where application instance is running
+   * @member {String} nodeName
+   */
+  exports.prototype.nodeName = undefined;
+
+  /**
+   * Application Type
+   * @member {module:model/ApplicationInfo.TypeEnum} type
    */
   exports.prototype.type = undefined;
 
   /**
-   * @member {module:model/ApplicationState} state
+   * Reserved for internal platform usage
+   * @member {Boolean} persist
    */
-  exports.prototype.state = undefined;
+  exports.prototype.persist = undefined;
+
 
   /**
-   * MEP Name where application instance is running
-   * @member {String} mepName
+   * Allowed values for the <code>type</code> property.
+   * @enum {String}
+   * @readonly
    */
-  exports.prototype.mepName = undefined;
+  exports.TypeEnum = {
+    /**
+     * value: "USER"
+     * @const
+     */
+    USER: "USER",
 
-  /**
-   * Application Version
-   * @member {String} version
-   */
-  exports.prototype.version = undefined;
+    /**
+     * value: "SYSTEM"
+     * @const
+     */
+    SYSTEM: "SYSTEM"
+  };
 
   return exports;
 

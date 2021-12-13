@@ -28,6 +28,6 @@ package client
 type SubscriptionLinkListLinksSubscriptions struct {
 	// URI referring to a resource
 	Href string `json:"href"`
-	// The value shall be se to SerAvailabilityNotificationSubscription.
-	Rel string `json:"rel"`
+	// Type of the subscription. The values are as defined in the \"subscriptionType\" attribute for each different Mp1 event subscription data type.
+	SubscriptionType string `json:"subscriptionType"`
 }

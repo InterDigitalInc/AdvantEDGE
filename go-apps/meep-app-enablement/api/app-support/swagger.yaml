@@ -518,15 +518,17 @@ components:
                 type: object
                 required:
                   - href
-                  - rel
+                  - subscriptionType
                 properties:
                   href:
                     description: URI referring to a resource
                     type: string
                     format: uri
-                  rel:
+                  subscriptionType:
                     description: >-
-                      The values shall be set to AppTerminationNotificationSubscription.
+                      Type of the subscription. The values are as defined in
+                      the "subscriptionType" attribute for each different Mp1
+                      event subscription data type.
                     type: string
     OperationActionType:
       description: Operation that is being performed on the MEC application instance.

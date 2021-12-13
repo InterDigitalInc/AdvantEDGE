@@ -30,5 +30,5 @@ type MobilityProcedureSubscriptionFilterCriteria struct {
 	// 0 to N identifiers to associate the information for specific UE(s) and flow(s).
 	AssociateId []AssociateId `json:"associateId,omitempty"`
 	// In case mobilityStatus is not included in the subscription request, the default value 1 = INTER_HOST_MOBILITY_TRIGGERED shall be used and included in the response.
-	MobilityStatus []MobilityStatus `json:"mobilityStatus,omitempty"`
+	MobilityStatus []int32 `json:"mobilityStatus,omitempty"`
 }

@@ -15,9 +15,11 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-subscriptions v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-websocket v0.0.0 // indirect
 	github.com/antihax/optional v1.0.0 // indirect
-	github.com/gorilla/handlers v1.4.0
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/prometheus/client_golang v1.9.0
 )
@@ -35,5 +37,7 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client => ../../go-packages/meep-sandbox-ctrl-client
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client => ../../go-packages/meep-service-mgmt-client
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-subscriptions => ../../go-packages/meep-subscriptions
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr => ../../go-packages/meep-swagger-api-mgr
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-websocket => ../../go-packages/meep-websocket
 )

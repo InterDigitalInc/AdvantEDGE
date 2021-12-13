@@ -17,7 +17,9 @@
 package sbi
 
 import (
-	"errors"
+	"os"
+	"sort"
+	"strings"
 	"sync"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -25,6 +27,8 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
+
+	"github.com/RyanCarrier/dijkstra"
 )
 
 type SbiCfg struct {
@@ -32,8 +36,7 @@ type SbiCfg struct {
 	SandboxName    string
 	MepName        string
 	RedisAddr      string
-	Locality       []string
-	DeviceInfoCb   func(string, string, []string)
+	DeviceInfoCb   func(string, [][]string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
 }
@@ -44,15 +47,24 @@ type AmsSbi struct {
 	mepName              string
 	localityEnabled      bool
 	locality             map[string]bool
+	zoneNodeMap          map[string]string
+	preferredNodesMap    map[string][][]string
+	nodeSelectMode       string
 	mqLocal              *mq.MsgQueue
 	handlerId            int
 	apiMgr               *sam.SwaggerApiMgr
+	networkGraph         *dijkstra.Graph
 	activeModel          *mod.Model
-	updateDeviceInfoCB   func(string, string, []string)
+	updateDeviceInfoCB   func(string, [][]string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
 	mutex                sync.Mutex
 }
+
+const (
+	NodeSelectModeStatic   string = "STATIC"
+	NodeSelectModeHopCount string = "HOP-COUNT"
+)
 
 var sbi *AmsSbi
 
@@ -67,17 +79,46 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.updateDeviceInfoCB = cfg.DeviceInfoCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
+	sbi.preferredNodesMap = make(map[string][][]string)
+	sbi.networkGraph = nil
 
-	// Fill locality map
-	if len(cfg.Locality) > 0 {
+	// Get Mep coverage
+	sbi.zoneNodeMap = make(map[string]string)
+	mepCoverageEnv := strings.TrimSpace(os.Getenv("MEEP_MEP_COVERAGE"))
+	if mepCoverageEnv != "" {
+		allMepCoverage := strings.Split(mepCoverageEnv, "/")
+		for _, mepCoverage := range allMepCoverage {
+			zones := strings.Split(mepCoverage, ":")
+			for index, zone := range zones {
+				if index != 0 {
+					sbi.zoneNodeMap[zone] = zones[0]
+				}
+			}
+		}
+	}
+	if len(sbi.zoneNodeMap) > 0 {
+		sbi.nodeSelectMode = NodeSelectModeStatic
+	} else {
+		sbi.nodeSelectMode = NodeSelectModeHopCount
+	}
+	log.Info("MEEP_MEP_COVERAGE: ", mepCoverageEnv)
+
+	// Get locality
+	var locality []string
+	localityEnv := strings.TrimSpace(os.Getenv("MEEP_LOCALITY"))
+	if localityEnv != "" {
+		locality = strings.Split(localityEnv, ":")
+	}
+	if len(locality) > 0 {
 		sbi.locality = make(map[string]bool)
-		for _, locality := range cfg.Locality {
-			sbi.locality[locality] = true
+		for _, locale := range locality {
+			sbi.locality[locale] = true
 		}
 		sbi.localityEnabled = true
 	} else {
 		sbi.localityEnabled = false
 	}
+	log.Info("MEEP_LOCALITY: ", localityEnv)
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), sbi.moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -213,6 +254,10 @@ func processActiveScenarioUpdate() {
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
 
+	// Refresh preferred nodes
+	refreshPreferredNodes()
+
+	// Update scenario name
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
 
@@ -225,25 +270,27 @@ func processActiveScenarioUpdate() {
 			continue
 		}
 
-		// Get UE locality
-		procList := []string{}
-		zone, procMap, err := getZoneProcMap(name)
-		if err != nil {
-			log.Error(err.Error())
+		// Get UE context
+		ctx := sbi.activeModel.GetNodeContext(name)
+		if ctx == nil {
+			log.Error("Error getting context for: " + name)
 			continue
-		}
-		for _, procName := range procMap {
-			procList = append(procList, procName)
 		}
 
 		// Ignore UEs in zones outside locality
-		if !isInLocality(zone) {
+		if !isInLocality(ctx.Parents[mod.Zone]) {
+			continue
+		}
+
+		// Get preferred edge node list
+		preferredNodes, found := sbi.preferredNodesMap[ctx.Parents[mod.NetLoc]]
+		if !found {
 			continue
 		}
 
 		// Add UE to list of valid UEs
 		ueNames = append(ueNames, name)
-		sbi.updateDeviceInfoCB(name, zone, procList)
+		sbi.updateDeviceInfoCB(name, preferredNodes)
 	}
 
 	// Update UEs that were removed (no longer in locality)
@@ -256,20 +303,9 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateDeviceInfoCB(prevUeName, "", nil)
+			sbi.updateDeviceInfoCB(prevUeName, nil)
 		}
 	}
-}
-
-func getZoneProcMap(name string) (zone string, procMap map[string]string, err error) {
-	ctx := sbi.activeModel.GetNodeContext(name)
-	if ctx == nil {
-		err = errors.New("Error getting context for: " + name)
-		return
-	}
-	zone = ctx.Parents[mod.Zone]
-	procMap = ctx.Children[mod.Proc]
-	return zone, procMap, nil
 }
 
 func isUeConnected(name string) bool {
@@ -290,4 +326,96 @@ func isInLocality(zone string) bool {
 		}
 	}
 	return true
+}
+
+func refreshPreferredNodes() {
+	sbi.preferredNodesMap = make(map[string][][]string)
+
+	// Get network location list
+	netLocList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
+
+	switch sbi.nodeSelectMode {
+	case NodeSelectModeStatic:
+		// Get preferred node list according to statically provisioned mapping
+		for _, netLoc := range netLocList {
+			// Get Network Location context
+			ctx := sbi.activeModel.GetNodeContext(netLoc)
+			if ctx == nil {
+				log.Error("Error getting context for: " + netLoc)
+				continue
+			}
+
+			// Get preferred node from static mapping
+			preferredNode, found := sbi.zoneNodeMap[ctx.Parents[mod.Zone]]
+			if !found {
+				log.Error("Failed to get preferred node for netLoc: " + netLoc)
+				continue
+			}
+
+			// Add to preferred node map
+			sbi.preferredNodesMap[netLoc] = [][]string{{preferredNode}}
+		}
+
+	case NodeSelectModeHopCount:
+		// Get network graph from model
+		networkGraph := sbi.activeModel.GetNetworkGraph()
+
+		// Get Edge Node list
+		nodeList := sbi.activeModel.GetNodeNames(mod.NodeTypeEdge, mod.NodeTypeFog)
+
+		// Get preferred node list according to hop count
+		for _, netLoc := range netLocList {
+			nodeDistanceMap := make(map[int][]string)
+
+			// Calculate distance to each edge node
+			for _, node := range nodeList {
+				src, err := networkGraph.GetMapping(netLoc)
+				if err != nil {
+					log.Error(err.Error())
+					continue
+				}
+				dst, err := networkGraph.GetMapping(node)
+				if err != nil {
+					log.Error(err.Error())
+					continue
+				}
+				path, err := networkGraph.Shortest(src, dst)
+				if err != nil {
+					log.Error(err.Error())
+					continue
+				}
+
+				// Add node to preferred node map
+				distance := int(path.Distance)
+				if _, found := nodeDistanceMap[distance]; !found {
+					nodeDistanceMap[distance] = []string{node}
+				} else {
+					nodeDistanceMap[distance] = append(nodeDistanceMap[distance], node)
+				}
+			}
+
+			// Order keys
+			keys := make([]int, len(nodeDistanceMap))
+			i := 0
+			for k := range nodeDistanceMap {
+				keys[i] = k
+				i++
+			}
+			sort.Ints(keys)
+
+			// Add to preferred node map
+			sbi.preferredNodesMap[netLoc] = make([][]string, len(nodeDistanceMap))
+			for i, k := range keys {
+				// Sort preferred nodes alphabetically
+				sort.Strings(nodeDistanceMap[k])
+
+				// Copy slice
+				sbi.preferredNodesMap[netLoc][i] = make([]string, len(nodeDistanceMap[k]))
+				copy(sbi.preferredNodesMap[netLoc][i], nodeDistanceMap[k])
+			}
+		}
+
+	default:
+		log.Error("Unsupported node selection mode: ", sbi.nodeSelectMode)
+	}
 }

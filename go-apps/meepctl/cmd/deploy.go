@@ -475,13 +475,30 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", authUrlAnnotation+"="+authUrl+"?svc=meep-mon-engine")
 		}
 		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList(monEngineTarget+".core-pods"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(monEngineTarget+".sandbox-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getItemList(monEngineTarget+".dependency-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getItemList(monEngineTarget+".core-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getItemList(monEngineTarget+".sandbox-pods"))
 	case "meep-platform-ctrl":
 		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
 		if authEnabled {
 			flags = utils.HelmFlags(flags, "--set", authUrlAnnotation+"="+authUrl+"?svc=meep-platform-ctrl")
+		}
+		gcTarget := "repo.deployment.gc"
+		gcEnabled := utils.RepoCfg.GetBool(gcTarget + ".enabled")
+		if gcEnabled {
+			gcInterval := utils.RepoCfg.GetString(gcTarget + ".interval")
+			gcRunOnStart := utils.RepoCfg.GetBool(gcTarget + ".run-on-start")
+			gcRedisEnabled := utils.RepoCfg.GetBool(gcTarget + ".redis.enabled")
+			gcInfluxEnabled := utils.RepoCfg.GetBool(gcTarget + ".influx.enabled")
+			gcInfluxExceptions := getItemList(gcTarget + ".influx.exceptions")
+			gcPostgisEnabled := utils.RepoCfg.GetBool(gcTarget + ".postgis.enabled")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_ENABLED=\""+strconv.FormatBool(gcEnabled)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INTERVAL="+gcInterval)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_RUN_ON_START=\""+strconv.FormatBool(gcRunOnStart)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_REDIS_ENABLED=\""+strconv.FormatBool(gcRedisEnabled)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INFLUX_ENABLED=\""+strconv.FormatBool(gcInfluxEnabled)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INFLUX_EXCEPTIONS="+gcInfluxExceptions)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_POSTGIS_ENABLED=\""+strconv.FormatBool(gcPostgisEnabled)+"\"")
 		}
 	case "meep-virt-engine":
 		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
@@ -490,7 +507,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getItemList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\""+strconv.FormatBool(httpsOnly)+"\"")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
 	case "meep-webhook":
@@ -572,14 +589,14 @@ func deploySetOmtConfig(chart string, cobraCmd *cobra.Command) {
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
-func getPodList(target string) string {
-	podListStr := ""
-	podList := utils.RepoCfg.GetStringSlice(target)
-	for _, pod := range podList {
-		if podListStr != "" {
-			podListStr += "\\,"
+func getItemList(target string) string {
+	itemListStr := ""
+	itemList := utils.RepoCfg.GetStringSlice(target)
+	for _, item := range itemList {
+		if itemListStr != "" {
+			itemListStr += "\\,"
 		}
-		podListStr += pod
+		itemListStr += item
 	}
-	return podListStr
+	return itemListStr
 }

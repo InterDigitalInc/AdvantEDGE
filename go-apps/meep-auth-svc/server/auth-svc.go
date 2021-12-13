@@ -638,7 +638,7 @@ func generateRand(n int) (string, error) {
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(data), nil
+	return base64.URLEncoding.EncodeToString(data), nil
 }
 
 func getUniqueState() (state string, err error) {
@@ -945,7 +945,7 @@ func asAuthorize(w http.ResponseWriter, r *http.Request) {
 	_ = authSvc.metricStore.SetSessionMetric(met.SesMetTypeLogin, metric)
 
 	// Get random cache buster string
-	cacheBuster, err := generateRand(10)
+	cacheBuster, err := generateRand(12)
 	if err != nil {
 		cacheBuster = ""
 	}
@@ -1109,6 +1109,14 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 				_, err := authSvc.pfmCtrlClient.SandboxControlApi.CreateSandboxWithName(context.TODO(), sandboxName, sandboxConfig)
 				if err != nil {
 					return "", false, "", err, http.StatusInternalServerError
+				}
+			}
+
+			// Create new user & store sandbox name for next use
+			if user == nil {
+				err = authSvc.userStore.CreateUser(provider, username, "", role, sandboxName)
+				if err != nil {
+					log.Error("Failed to create user with err: ", err.Error())
 				}
 			}
 		}

@@ -24,8 +24,6 @@
 package server
 
 type OneOfInlineNotification struct {
-	/*
-		AssocStaNotification
-		StaDataRateNotification
-	*/
+	/* Discriminator */
+	NotificationType string `json:"notificationType"`
 }

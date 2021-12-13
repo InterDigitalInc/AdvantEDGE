@@ -18,6 +18,7 @@ package model
 
 // Node - model node
 type Node struct {
+	id       string
 	name     string
 	nodeType string
 	object   interface{}
@@ -28,6 +29,7 @@ type Node struct {
 
 // NodeMap - Model node map
 type NodeMap struct {
+	idMap   map[string]*Node
 	nameMap map[string]*Node
 	typeMap map[string]map[string]*Node
 }
@@ -35,14 +37,16 @@ type NodeMap struct {
 // NewNodeMap - allocate a blank NodeMap
 func NewNodeMap() (nm *NodeMap) {
 	nm = new(NodeMap)
+	nm.idMap = make(map[string]*Node)
 	nm.nameMap = make(map[string]*Node)
 	nm.typeMap = make(map[string]map[string]*Node)
 	return nm
 }
 
 // NewNode - allocate a Node
-func NewNode(name string, nodeType string, object interface{}, child interface{}, parent interface{}, context interface{}) (n *Node) {
+func NewNode(id string, name string, nodeType string, object interface{}, child interface{}, parent interface{}, context interface{}) (n *Node) {
 	n = new(Node)
+	n.id = id
 	n.name = name
 	n.nodeType = nodeType
 	n.object = object
@@ -54,11 +58,17 @@ func NewNode(name string, nodeType string, object interface{}, child interface{}
 
 // AddNode - Add a node to the NodeMap
 func (nm *NodeMap) AddNode(n *Node) {
+	nm.idMap[n.id] = n
 	nm.nameMap[n.name] = n
 	if nm.typeMap[n.nodeType] == nil {
 		nm.typeMap[n.nodeType] = make(map[string]*Node)
 	}
 	nm.typeMap[n.nodeType][n.name] = n
+}
+
+// FindById - find a node using its name
+func (nm *NodeMap) FindById(id string) (n *Node) {
+	return nm.idMap[id]
 }
 
 // FindByName - find a node using its name

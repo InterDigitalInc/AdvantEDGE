@@ -77,8 +77,13 @@ const (
 	// GIS Engine
 	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
 
-	// App Enablement
-	MsgAppTerminate Message = "APP-TERMINATE"
+	// Applications
+	MsgAppUpdate    Message = "APP-UPDATE"
+	MsgAppRemove    Message = "APP-REMOVE"
+	MsgAppRemoveCnf Message = "APP-REMOVE-CNF"
+	MsgAppFlush     Message = "APP-FLUSH"
+
+	// MEC Services
 	MsgMecSvcUpdate Message = "MEC-SVC-UPDATE"
 
 	// API

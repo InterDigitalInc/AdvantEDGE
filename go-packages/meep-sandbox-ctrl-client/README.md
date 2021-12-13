@@ -49,14 +49,13 @@ Class | Method | HTTP request | Description
 *EventReplayApi* | [**PlayReplayFile**](docs/EventReplayApi.md#playreplayfile) | **Post** /replay/{name}/play | Execute a replay file present in the platform store
 *EventReplayApi* | [**StopReplayFile**](docs/EventReplayApi.md#stopreplayfile) | **Post** /replay/{name}/stop | Stop execution of a replay file
 *EventsApi* | [**SendEvent**](docs/EventsApi.md#sendevent) | **Post** /events/{type} | Send events to the deployed scenario
+*ServicesApi* | [**ServicesGET**](docs/ServicesApi.md#servicesget) | **Get** /services | 
 
 
 ## Documentation For Models
 
  - [ActivationInfo](docs/ActivationInfo.md)
  - [ApplicationInfo](docs/ApplicationInfo.md)
- - [ApplicationState](docs/ApplicationState.md)
- - [ApplicationType](docs/ApplicationType.md)
  - [CellularDomainConfig](docs/CellularDomainConfig.md)
  - [CellularPoaConfig](docs/CellularPoaConfig.md)
  - [ConnectivityConfig](docs/ConnectivityConfig.md)
@@ -103,6 +102,7 @@ Class | Method | HTTP request | Description
  - [ScenarioConfig](docs/ScenarioConfig.md)
  - [ScenarioNode](docs/ScenarioNode.md)
  - [ServiceConfig](docs/ServiceConfig.md)
+ - [ServiceInfo](docs/ServiceInfo.md)
  - [ServicePort](docs/ServicePort.md)
  - [Zone](docs/Zone.md)
  - [Zones](docs/Zones.md)

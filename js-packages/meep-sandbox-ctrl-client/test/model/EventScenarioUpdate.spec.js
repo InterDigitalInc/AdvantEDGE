@@ -67,6 +67,12 @@
         // expect(instance.node).to.be(expectedValueLiteral);
       });
 
+      it('should have the property gracePeriod (base name: "gracePeriod")', function() {
+        // TODO: update the code to test the property gracePeriod
+        expect(instance).to.have.property('gracePeriod');
+        // expect(instance.gracePeriod).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

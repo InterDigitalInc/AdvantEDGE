@@ -1,0 +1,50 @@
+{
+  "name": "meep-demo3-web-ui-js",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "webpack",
+    "build:dev": "webpack-dev-server  --port 3001 --host 10.190.115.162 --env.MEEP_HOST=localhost",
+    "build:develop": "webpack-dev-server  --port 3002 --host 10.190.115.162 --env.MEEP_HOST=localhost"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
+    "@mui/material": "^5.0.4",
+    "@mui/x-data-grid": "^5.0.0-beta.5",
+    "axios": "^0.18.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "rmwc": "^4.0.6",
+    "superagent": "^3.7.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.15.8",
+    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/runtime": "^7.15.4",
+    "@webpack-cli/serve": "^1.6.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-loader": "^8.2.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "css-loader": "^0.28.11",
+    "dotenv": "^10.0.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "file-loader": "^1.1.11",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.8.3",
+    "path": "^0.12.7",
+    "prop-types": "^15.7.2",
+    "sass-loader": "^6.0.7",
+    "webpack": "^4.4.1",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.11.0"
+  }
+}

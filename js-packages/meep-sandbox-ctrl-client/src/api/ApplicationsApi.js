@@ -219,10 +219,9 @@
     /**
      * This method retrieves information about a list of mec application resources.
      * @param {Object} opts Optional parameters
-     * @param {String} opts.app Filter by application name
-     * @param {module:model/String} opts.state Filter by application state
-     * @param {module:model/String} opts.type Filter by application type
-     * @param {String} opts.mep Filter by MEP name
+     * @param {String} opts.app Application name
+     * @param {module:model/String} opts.type Application type
+     * @param {String} opts.nodeName Node name
      * @param {module:api/ApplicationsApi~applicationsGETCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link Array.<module:model/ApplicationInfo>}
      */
@@ -235,9 +234,8 @@
       };
       var queryParams = {
         'app': opts['app'],
-        'state': opts['state'],
         'type': opts['type'],
-        'mep': opts['mep'],
+        'nodeName': opts['nodeName'],
       };
       var collectionQueryParams = {
       };

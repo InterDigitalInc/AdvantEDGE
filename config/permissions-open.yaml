@@ -770,6 +770,13 @@ default:
 #         path: '/events/{type}'
 #         method: 'POST'
 #         mode: 'allow'
+#       - name: 'ServicesGET'
+#         path: '/services'
+#         method: 'GET'
+#         mode: 'verify'
+#         roles:
+#           admin: 'allow'
+#           user: 'allow'
 #   #------------------------------
 #   #  WAI Service (Sbox)
 #   #------------------------------
@@ -804,6 +811,9 @@ default:
 #         mode: 'allow'
 #       - name: 'UserApi'
 #         path: '/user-api'
+#         mode: 'allow'
+#       - name: 'Websocket'
+#         path: '/ws'
 #         mode: 'allow'
 #     endpoints:
 #       - name: 'Index'

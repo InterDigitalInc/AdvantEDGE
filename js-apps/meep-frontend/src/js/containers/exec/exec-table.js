@@ -100,12 +100,23 @@ const execTableStyles = theme => ({
 });
 
 const execTableColumnData = [
-  { id: 'name', numeric: false, disablePadding: false, label: 'NAME' },
+  {
+    id: 'name',
+    numeric: false,
+    disablePadding: false,
+    label: 'NAME'
+  },
   {
     id: 'logicalState',
     numeric: false,
     disablePadding: false,
     label: 'STATUS'
+  },
+  {
+    id: 'id',
+    numeric: false,
+    disablePadding: false,
+    label: 'APP INSTANCE ID'
   },
   {
     id: 'serviceMaps',
@@ -246,7 +257,11 @@ class ExecTable extends Component {
                             >
                               {n.logicalState}
                             </TableCell>
+                            <TableCell component='th' scope='row'>
+                              {n.id ? n.id : 'N/A'}
+                            </TableCell>
                             <TableCell>
+                              {!n.ingressServiceMap && !n.egressServiceMap ? 'N/A' : ''}
                               {n.ingressServiceMap
                                 ? _.map(n.ingressServiceMap, sm => {
                                   return (

@@ -275,6 +275,10 @@ services:
       roles:
         admin: 'allow'
         user: 'allow'
+    fileservers:
+      - name: 'Websocket'
+        path: '/ws'
+        mode: 'allow'
   #------------------------------
   #  AMSI Service (Sbox)
   #------------------------------

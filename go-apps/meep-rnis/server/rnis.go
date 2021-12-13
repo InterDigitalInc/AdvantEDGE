@@ -209,6 +209,7 @@ var serviceAppInstanceId string
 var appEnablementUrl string
 var appEnablementEnabled bool
 var sendAppTerminationWhenDone bool = false
+var appTermSubId string
 var appEnablementServiceId string
 var appSupportClient *asc.APIClient
 var svcMgmtClient *smc.APIClient
@@ -481,12 +482,18 @@ func startRegistrationTicker() {
 		registrationSent := false
 		subscriptionSent := false
 		for range registrationTicker.C {
-			// Get Application instance ID if not already available
+			// Get Application instance ID
 			if serviceAppInstanceId == "" {
-				var err error
-				serviceAppInstanceId, err = getAppInstanceId()
-				if err != nil || serviceAppInstanceId == "" {
-					continue
+				// If a sandbox service, request an app instance ID from Sandbox Controller
+				// Otherwise use the scenario-provisioned instance ID
+				if mepName == defaultMepName {
+					var err error
+					serviceAppInstanceId, err = getAppInstanceId()
+					if err != nil || serviceAppInstanceId == "" {
+						continue
+					}
+				} else {
+					serviceAppInstanceId = instanceId
 				}
 			}
 
@@ -543,13 +550,14 @@ func stopRegistrationTicker() {
 func getAppInstanceId() (id string, err error) {
 	var appInfo scc.ApplicationInfo
 	appInfo.Id = instanceId
-	appInfo.Name = serviceCategory //instanceName
-	appInfo.MepName = mepName
-	appInfo.Version = serviceAppVersion
-	appType := scc.SYSTEM_ApplicationType
-	appInfo.Type_ = &appType
-	state := scc.INITIALIZED_ApplicationState
-	appInfo.State = &state
+	appInfo.Name = serviceCategory
+	appInfo.Type_ = "SYSTEM"
+	appInfo.NodeName = mepName
+	if mepName == defaultMepName {
+		appInfo.Persist = true
+	} else {
+		appInfo.Persist = false
+	}
 	response, _, err := sbxCtrlClient.ApplicationsApi.ApplicationsPOST(context.TODO(), appInfo)
 	if err != nil {
 		log.Error("Failed to get App Instance ID with error: ", err)
@@ -568,46 +576,34 @@ func deregisterService(appInstanceId string, serviceId string) error {
 }
 
 func registerService(appInstanceId string) error {
-	var srvInfo smc.ServiceInfoPost
-	//serName
-	srvInfo.SerName = instanceName
-	//version
-	srvInfo.Version = serviceAppVersion
-	//state
+	// Build Service Info
 	state := smc.ACTIVE_ServiceState
-	srvInfo.State = &state
-	//serializer
 	serializer := smc.JSON_SerializerType
-	srvInfo.Serializer = &serializer
-
-	//transportInfo
-	var transportInfo smc.TransportInfo
-	transportInfo.Id = "sandboxTransport"
-	transportInfo.Name = "REST"
 	transportType := smc.REST_HTTP_TransportType
-	transportInfo.Type_ = &transportType
-	transportInfo.Protocol = "HTTP"
-	transportInfo.Version = "2.0"
-	var endpoint smc.OneOfTransportInfoEndpoint
-	endpointPath := hostUrl.String() + basePath
-	endpoint.Uris = append(endpoint.Uris, endpointPath)
-	transportInfo.Endpoint = &endpoint
-	srvInfo.TransportInfo = &transportInfo
-
-	//serCategory
-	var category smc.CategoryRef
-	category.Href = "catalogueHref"
-	category.Id = "rniId"
-	category.Name = serviceCategory
-	category.Version = "v2"
-	srvInfo.SerCategory = &category
-
-	//scopeOfLocality
 	localityType := smc.LocalityType(scopeOfLocality)
-	srvInfo.ScopeOfLocality = &localityType
-
-	//consumedLocalOnly
-	srvInfo.ConsumedLocalOnly = consumedLocalOnly
+	srvInfo := smc.ServiceInfoPost{
+		SerName:           instanceName,
+		Version:           serviceAppVersion,
+		State:             &state,
+		Serializer:        &serializer,
+		ScopeOfLocality:   &localityType,
+		ConsumedLocalOnly: consumedLocalOnly,
+		TransportInfo: &smc.TransportInfo{
+			Id:       "sandboxTransport",
+			Name:     "REST",
+			Type_:    &transportType,
+			Protocol: "HTTP",
+			Version:  "2.0",
+			Endpoint: &smc.OneOfTransportInfoEndpoint{},
+		},
+		SerCategory: &smc.CategoryRef{
+			Href:    "catalogueHref",
+			Id:      "rniId",
+			Name:    serviceCategory,
+			Version: "v2",
+		},
+	}
+	srvInfo.TransportInfo.Endpoint.Uris = append(srvInfo.TransportInfo.Endpoint.Uris, hostUrl.String()+basePath)
 
 	appServicesPostResponse, _, err := svcMgmtClient.MecServiceMgmtApi.AppServicesPOST(context.TODO(), srvInfo, appInstanceId)
 	if err != nil {
@@ -643,29 +639,33 @@ func sendTerminationConfirmation(appInstanceId string) error {
 }
 
 func subscribeAppTermination(appInstanceId string) error {
-	var subscription asc.AppTerminationNotificationSubscription
-	subscription.SubscriptionType = "AppTerminationNotificationSubscription"
-	subscription.AppInstanceId = appInstanceId
-	subscription.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + rnisBasePath + appTerminationPath
-	_, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
+	var sub asc.AppTerminationNotificationSubscription
+	sub.SubscriptionType = "AppTerminationNotificationSubscription"
+	sub.AppInstanceId = appInstanceId
+	if mepName == defaultMepName {
+		sub.CallbackReference = "http://" + moduleName + "/" + rnisBasePath + appTerminationPath
+	} else {
+		sub.CallbackReference = "http://" + mepName + "-" + moduleName + "/" + rnisBasePath + appTerminationPath
+	}
+	subscription, _, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionsPOST(context.TODO(), sub, appInstanceId)
 	if err != nil {
 		log.Error("Failed to register to App Support subscription: ", err)
 		return err
 	}
+	appTermSubLink := subscription.Links.Self.Href
+	appTermSubId = appTermSubLink[strings.LastIndex(appTermSubLink, "/")+1:]
 	return nil
 }
 
-/*
-func unsubscribeAppTermination(appInstanceId string) error {
+func unsubscribeAppTermination(appInstanceId string, subId string) error {
 	//only subscribe to one subscription, so we force number to be one, couldn't be anything else
-	_, err := appSupportClient.AppSubscriptionsApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, "1")
+	_, err := appSupportClient.MecAppSupportApi.ApplicationsSubscriptionDELETE(context.TODO(), appInstanceId, subId)
 	if err != nil {
 		log.Error("Failed to unregister to App Support subscription: ", err)
 		return err
 	}
 	return nil
 }
-*/
 
 func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -686,45 +686,20 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		//delete any registration it made
-		// cannot unsubscribe otherwise, the app-enablement server fails when receiving the confirm_terminate since it believes it never registered
-		//_ = unsubscribeAppTermination(serviceAppInstanceId)
+		// Wait to allow app termination response to be sent
+		time.Sleep(20 * time.Millisecond)
+
+		// Deregister service
 		_ = deregisterService(serviceAppInstanceId, appEnablementServiceId)
 
-		//send scenario update with a deletion
-		var event scc.Event
-		var eventScenarioUpdate scc.EventScenarioUpdate
-		var process scc.Process
-		var nodeDataUnion scc.NodeDataUnion
-		var node scc.ScenarioNode
+		// Delete subscriptions
+		_ = unsubscribeAppTermination(serviceAppInstanceId, appTermSubId)
 
-		process.Name = instanceName
-		process.Type_ = "EDGE-APP"
-
-		nodeDataUnion.Process = &process
-
-		node.Type_ = "EDGE-APP"
-		node.Parent = mepName
-		node.NodeDataUnion = &nodeDataUnion
-
-		eventScenarioUpdate.Node = &node
-		eventScenarioUpdate.Action = "REMOVE"
-
-		event.EventScenarioUpdate = &eventScenarioUpdate
-		event.Type_ = "SCENARIO-UPDATE"
-
-		_, err := sbxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-		if err != nil {
-			log.Error(err)
+		// Confirm App termination if necessary
+		if sendAppTerminationWhenDone {
+			_ = sendTerminationConfirmation(serviceAppInstanceId)
 		}
 	}()
-
-	if sendAppTerminationWhenDone {
-		go func() {
-			//ignore any error and delete yourself anyway
-			_ = sendTerminationConfirmation(serviceAppInstanceId)
-		}()
-	}
 
 	w.WriteHeader(http.StatusNoContent)
 }

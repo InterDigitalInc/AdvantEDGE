@@ -377,15 +377,17 @@ components:
                 type: object
                 required:
                   - href
-                  - rel
+                  - subscriptionType
                 properties:
                   href:
                     description: URI referring to a resource
                     type: string
                     format: uri
-                  rel:
+                  subscriptionType:
                     description: >-
-                      The value shall be se to SerAvailabilityNotificationSubscription.
+                      Type of the subscription. The values are as defined in
+                      the "subscriptionType" attribute for each different Mp1
+                      event subscription data type.
                     type: string
     ProblemDetails:
       type: object
@@ -1031,8 +1033,8 @@ components:
           example:
             subscriptionType: 'SerAvailabilityNotificationSubscription'
             callbackReference: "http://my.callback.com/mec_service_mgmt_ser_availabilities/some-id"
-            filterCriteria:
-              serNames: 
+            filteringCriteria:
+              serNames:
                 - 'myRnis'
               states:
                 - 'ACTIVE'

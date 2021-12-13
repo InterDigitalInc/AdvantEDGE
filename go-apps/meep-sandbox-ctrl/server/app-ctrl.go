@@ -22,94 +22,238 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 
+	apps "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-applications"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	uuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
-const appEnablementModule = "meep-app-enablement"
-const appEnablementKey = "app-enablement"
-const ACTIVE = "ACTIVE"
-const INACTIVE = "INACTIVE"
-const APP_ENABLEMENT_DB = 0
-
-// App Info fields
-const fieldAppInstanceId = "id"
-const fieldAppName = "name"
-const fieldAppType = "type"
-const fieldMepName = "mep"
-const fieldState = "state"
-const fieldVersion = "version"
-
-// MQ payload fields
-const mqFieldAppInstanceId = "id"
-const mqFieldMepName = "mep"
-
 type AppCtrl struct {
 	sandboxName string
-	rc          *redis.Connector
+	appStore    *apps.ApplicationStore
 	mqLocal     *mq.MsgQueue
-	baseKey     string
+	handlerId   int
+	rc          *redis.Connector
 }
 
-type ApplicationData struct {
-	AppInfoList      []dataModel.ApplicationInfo
-	FilterParameters *FilterParameters
-}
+// MQ payload fields
+const (
+	mqFieldAppId       = "id"
+	mqFieldPersist     = "persist"
+	mqFieldGracePeriod = "gracePeriod"
+)
 
-type FilterParameters struct {
-	appId   string
-	appName string
-	appType string
-	state   string
-	mepName string
-}
+const defaultGracePeriod int = 10
 
 // App Controller
 var appCtrl *AppCtrl
 
 // Initialize App Controller
-func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) (err error) {
+func appCtrlInit(sandboxName string, mqLocal *mq.MsgQueue) error {
+	var err error
 
 	// Create new App Controller
 	appCtrl = new(AppCtrl)
 	appCtrl.sandboxName = sandboxName
 	appCtrl.mqLocal = mqLocal
 
-	// Set base storage key
-	appCtrl.baseKey = dkm.GetKeyRoot(sandboxName) + appEnablementKey
-
 	// Connect to Redis DB
-	appCtrl.rc, err = redis.NewConnector(redisDBAddr, APP_ENABLEMENT_DB)
+	appCtrl.rc, err = redis.NewConnector(redisDBAddr, redisDBTable)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
-	_ = appCtrl.rc.DBFlush(appCtrl.baseKey)
 	log.Info("Connected to Redis DB")
+
+	// Create Application Store
+	cfg := &apps.ApplicationStoreCfg{
+		Name:      moduleName,
+		Namespace: sandboxName,
+		UpdateCb:  appStoreUpdateCb,
+		RedisAddr: redisDBAddr,
+	}
+	appCtrl.appStore, err = apps.NewApplicationStore(cfg)
+	if err != nil {
+		log.Error("Failed to connect to Application Store. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Application Store")
 
 	return nil
 }
 
 // Start App Controller
-func appCtrlRun() (err error) {
+func appCtrlRun() error {
+	var err error
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	appCtrl.handlerId, err = appCtrl.mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
 	return nil
 }
 
 // Stop App Controller
-func appCtrlStop() (err error) {
+func appCtrlStop() error {
+
+	// Unregister handler
+	if appCtrl.mqLocal != nil {
+		appCtrl.mqLocal.UnregisterHandler(appCtrl.handlerId)
+	}
 	return nil
 }
 
-// Flush App instances
-func appCtrlFlushAppInstances() (err error) {
-	_ = appCtrl.rc.DBFlush(appCtrl.baseKey)
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgAppRemoveCnf:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		appId := msg.Payload[mqFieldAppId]
+		removeNodeConfirm(appId)
+	default:
+	}
+}
+
+func createAppInstance(proc *dataModel.Process, ctx *mod.NodeContext) (*apps.Application, error) {
+	// Determine app type
+	appType := apps.TypeUser
+	if appCtrl.appStore.IsSysApp(proc.Image) {
+		appType = apps.TypeSystem
+	}
+
+	// If group name is present, use it as application name
+	// Otherwise, use process name
+	appName := proc.Name
+	if proc.ServiceConfig != nil && proc.ServiceConfig.MeSvcName != "" {
+		appName = proc.ServiceConfig.MeSvcName
+	}
+
+	// Create & app instance
+	app := &apps.Application{
+		Id:      proc.Id,
+		Name:    appName,
+		Node:    ctx.Parents[mod.PhyLoc],
+		Type:    appType,
+		Persist: false,
+	}
+	return app, nil
+}
+
+func setAppInstance(name string, activeModel *mod.Model) error {
+	// Get scenario Process & context
+	proc, ctx, err := getScenarioProcess(name, activeModel)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Create app instance
+	app, err := createAppInstance(proc, ctx)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Set app instance
+	err = appCtrl.appStore.Set(app, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
 	return nil
+}
+
+func delAppInstance(id string, gracePeriod int) error {
+	// Validate ID
+	if id == "" {
+		return errors.New("Invalid app instance ID")
+	}
+
+	// Delete app instance
+	err := appCtrl.appStore.Del(id, &gracePeriod)
+	if err != nil {
+		log.Warn(err.Error())
+		return err
+	}
+	return nil
+}
+
+func resetAppInstances(activeModel *mod.Model) error {
+	// Flush non-persistent app instances
+	appCtrl.appStore.FlushNonPersistent(nil)
+
+	// Get active scenario app list
+	scenarioAppList, err := getScenarioAppInstanceList(activeModel)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Create app instances for scenario apps
+	for _, app := range scenarioAppList {
+		err := appCtrl.appStore.Set(app, nil)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+	return nil
+}
+
+func getScenarioAppInstanceList(activeModel *mod.Model) ([]*apps.Application, error) {
+	var appList []*apps.Application
+
+	if activeModel != nil {
+		// Get active scenario node names
+		appNames := activeModel.GetNodeNames(mod.NodeTypeEdgeApp)
+		for _, appName := range appNames {
+			// Get scenario Process & context
+			proc, ctx, err := getScenarioProcess(appName, activeModel)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			// Create app instance
+			app, err := createAppInstance(proc, ctx)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			// Add app instance to list
+			appList = append(appList, app)
+		}
+	}
+	return appList, nil
+}
+
+func getScenarioProcess(name string, activeModel *mod.Model) (*dataModel.Process, *mod.NodeContext, error) {
+	// Get app node
+	node := activeModel.GetNode(name)
+	if node == nil {
+		return nil, nil, errors.New("Failed to get app node")
+	}
+	// Get App Process & context
+	proc, ok := node.(*dataModel.Process)
+	if !ok {
+		return nil, nil, errors.New("Failed to cast node as Process")
+	}
+	ctx := activeModel.GetNodeContext(proc.Name)
+	if ctx == nil {
+		return nil, nil, errors.New("Missing node context for " + proc.Name)
+	}
+	return proc, ctx, nil
 }
 
 func applicationsPOST(w http.ResponseWriter, r *http.Request) {
@@ -132,14 +276,6 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Make sure App name is unique and does not exist
-	if appNameExists(appInfo.Name) {
-		errStr := "App Name already exists"
-		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
-		return
-	}
-
 	// Obtain a new App Instance ID if none provided
 	if appInfo.Id == "" {
 		appInstanceId, err := getNewInstanceId()
@@ -149,18 +285,18 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		appInfo.Id = appInstanceId
+	} else {
+		// Make sure App instance does not exist
+		if appInstanceExists(appInfo.Id) {
+			errStr := "AppInstanceId already exists"
+			log.Error(errStr)
+			http.Error(w, errStr, http.StatusBadRequest)
+			return
+		}
 	}
 
-	// Make sure App instance does not exist
-	if appInstanceExists(appInfo.MepName, appInfo.Id) {
-		errStr := "AppInstanceId already exists"
-		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
-		return
-	}
-
-	// create entry in DB
-	err = setAppInfo(&appInfo)
+	// Create new App instance
+	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo), nil)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -195,15 +331,15 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure App instance exists
-	if !appInstanceExists(appInfo.MepName, appInfo.Id) {
+	if !appInstanceExists(appInfo.Id) {
 		errStr := "AppInstanceId does not exist"
 		log.Error(errStr)
 		http.Error(w, errStr, http.StatusNotFound)
 		return
 	}
 
-	// override entry in DB
-	err = setAppInfo(&appInfo)
+	// Override entry in DB
+	err = appCtrl.appStore.Set(convertApplicationInfoToApp(&appInfo), nil)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -217,76 +353,37 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 }
 
 func applicationsAppInstanceIdGET(w http.ResponseWriter, r *http.Request) {
-	log.Info("applicationsByIdGET")
+	log.Info("applicationsAppInstanceIdGET")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	appInstanceId := vars["appInstanceId"]
 
 	// Get App info for requested App instance ID
-	var appData ApplicationData
-	var filterParams FilterParameters
-	filterParams.appId = appInstanceId
-	appData.FilterParameters = &filterParams
-	key := appCtrl.baseKey + ":mep:*:app:" + appInstanceId + ":info"
-	err := appCtrl.rc.ForEachEntry(key, populateAppInfoList, &appData)
+	app, err := appCtrl.appStore.Get(appInstanceId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
-	// Check if App instance was found
-	if len(appData.AppInfoList) != 1 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+	appInfo := convertAppToApplicationInfo(app)
 
 	// Send response
-	jsonResponse := convertApplicationInfoToJson(&appData.AppInfoList[0])
+	jsonResponse := convertApplicationInfoToJson(appInfo)
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
 func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
-	log.Info("applicationsByIdDELETE")
+	log.Info("applicationsAppInstanceIdDELETE")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
-	appInstanceId := vars["appInstanceId"]
+	appId := vars["appInstanceId"]
 
-	// Get App info for requested App instance ID
-	var appData ApplicationData
-	var filterParams FilterParameters
-	filterParams.appId = appInstanceId
-	appData.FilterParameters = &filterParams
-	key := appCtrl.baseKey + ":mep:*:app:" + appInstanceId + ":info"
-	err := appCtrl.rc.ForEachEntry(key, populateAppInfoList, &appData)
+	// Flush App instance data
+	gracePeriod := defaultGracePeriod
+	err := appCtrl.appStore.Del(appId, &gracePeriod)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Check if App instance was found
-	if len(appData.AppInfoList) != 1 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	appInfo := appData.AppInfoList[0]
-
-	// Inform MEP instance to terminate App instance
-	msg := appCtrl.mqLocal.CreateMsg(mq.MsgAppTerminate, appEnablementModule, appCtrl.sandboxName)
-	msg.Payload[mqFieldAppInstanceId] = appInfo.Id
-	msg.Payload[mqFieldMepName] = appInfo.MepName
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = appCtrl.mqLocal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
-
-		// TODO -- [Graceful Terminate Failure] Update App instance Service availability + Flush App Instance data
-
-		// Flush App instance data
-		key = appCtrl.baseKey + ":mep:" + appInfo.MepName + ":app:" + appInfo.Id
-		_ = appCtrl.rc.DBFlush(key)
 	}
 
 	// Send response
@@ -300,7 +397,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	// Validate & retrieve query parameters
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
-	validParams := []string{"app", "type", "state", "mep"}
+	validParams := []string{"app", "nodeName", "type"}
 	err := validateQueryParams(q, validParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -308,29 +405,33 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appName := q.Get("app")
+	nodeName := q.Get("nodeName")
 	appType := q.Get("type")
-	appState := q.Get("state")
-	mepName := q.Get("mep")
 
-	// Get filter App info list
-	var appData ApplicationData
-	var filterParameters FilterParameters
-	filterParameters.appName = appName
-	filterParameters.appType = appType
-	filterParameters.state = appState
-	filterParameters.mepName = mepName
-	appData.FilterParameters = &filterParameters
-
-	key := appCtrl.baseKey + ":mep:*:app:*:info"
-	err = appCtrl.rc.ForEachEntry(key, populateAppInfoList, &appData)
+	// Get application list
+	appList, err := appCtrl.appStore.GetAll()
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Prepare AppInfo list
+	appInfoList := make([]dataModel.ApplicationInfo, 0)
+	for _, app := range appList {
+		// Filter using query params
+		if (appName != "" && app.Name != appName) ||
+			(nodeName != "" && app.Node != nodeName) ||
+			(appType != "" && app.Type != appType) {
+			continue
+		}
+		// Append appInfo
+		appInfo := convertAppToApplicationInfo(app)
+		appInfoList = append(appInfoList, *appInfo)
+	}
+
 	// Send response
-	jsonResponse, err := json.Marshal(appData.AppInfoList)
+	jsonResponse, err := json.Marshal(appInfoList)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -340,13 +441,93 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
+func servicesGET(w http.ResponseWriter, r *http.Request) {
+	log.Info("servicesGET")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// Validate & retrieve query parameters
+	u, _ := url.Parse(r.URL.String())
+	q := u.Query()
+	validParams := []string{"appInstanceId"}
+	err := validateQueryParams(q, validParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	appId := q.Get("appInstanceId")
+
+	// Check if app instance exists
+	if appId != "" {
+		_, err = appCtrl.appStore.Get(appId)
+		if err != nil {
+			http.Error(w, "Invalid App instance ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Retrieve service info list if scenario is active
+	serviceInfoList := []*dataModel.ServiceInfo{}
+	activeModel := getActiveModel()
+	if activeModel != nil {
+		// Create key match string
+		baseKey := dkm.GetKeyRoot(appCtrl.sandboxName) + "app-enablement:mep:*:"
+		var keyMatchStr string
+		if appId == "" {
+			keyMatchStr = baseKey + "app:*:svc:*"
+		} else {
+			keyMatchStr = baseKey + "app:" + appId + ":svc:*"
+		}
+
+		// Get list of services registered to app enablement service
+		err = appCtrl.rc.ForEachJSONEntry(keyMatchStr, populateServiceInfoList, &serviceInfoList)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Send response
+	jsonResponse, err := json.Marshal(serviceInfoList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {
+	// Get query params & userlist from user data
+	serviceInfoList := sInfoList.(*[]*dataModel.ServiceInfo)
+	if serviceInfoList == nil {
+		return errors.New("ServiceInfoList not found")
+	}
+
+	// Use entry key only to avoid dependency on MEC011 packages
+	// Obtain app instance id & service instance id from key
+	fields := strings.Split(strings.TrimPrefix(key, dkm.GetKeyRoot(appCtrl.sandboxName)+"app-enablement:mep:"), ":")
+	if len(fields) != 5 {
+		return nil
+	}
+
+	// Add service info to list
+	serviceInfo := &dataModel.ServiceInfo{
+		AppId: fields[2],
+		Id:    fields[4],
+	}
+	*serviceInfoList = append(*serviceInfoList, serviceInfo)
+	return nil
+}
+
 // Get a new unique app instance
 func getNewInstanceId() (string, error) {
 	//allow 3 tries, if not return an error
 	maxNbRetries := 3
 	for try := maxNbRetries; try > 0; try-- {
 		appInstanceId := uuid.New().String()
-		if !appInstanceExists("", appInstanceId) {
+		if !appInstanceExists(appInstanceId) {
 			return appInstanceId, nil
 		}
 		try--
@@ -355,36 +536,9 @@ func getNewInstanceId() (string, error) {
 }
 
 // Validate that App Instance exists
-func appInstanceExists(mepName string, appInstanceId string) bool {
-	if mepName == "" {
-		// Get list of running App instances
-		var appData ApplicationData
-		key := appCtrl.baseKey + ":mep:*:app:" + appInstanceId + ":info"
-		err := appCtrl.rc.ForEachEntry(key, populateAppInfoList, &appData)
-		if err != nil {
-			log.Error("Failed to retrieve App information")
-			return false
-		}
-
-		// Check if App instance exists
-		for _, appInfo := range appData.AppInfoList {
-			if appInfo.Id == appInstanceId {
-				return true
-			}
-		}
-	} else {
-		// Find
-		key := appCtrl.baseKey + ":mep:" + mepName + ":app:" + appInstanceId + ":info"
-		return appCtrl.rc.EntryExists(key)
-	}
-	return false
-}
-
-// Validate that App Name exists
-func appNameExists(name string) bool {
-	//key := appCtrl.baseKey + ":mep:*:app:*:info"
-	//TODO need to check the content of each appInfo to find out
-	return false
+func appInstanceExists(appInstanceId string) bool {
+	_, err := appCtrl.appStore.Get(appInstanceId)
+	return err == nil
 }
 
 // Validate query params
@@ -415,88 +569,14 @@ func validateAppInfo(appInfo *dataModel.ApplicationInfo, appInstanceId string) e
 	if appInfo.Name == "" {
 		return errors.New("Mandatory Name not present")
 	}
-	if appInfo.MepName == "" {
-		return errors.New("Mandatory MEP Name not present")
-	}
-	if appInfo.State == nil {
-		return errors.New("Mandatory State not present")
-	}
-	switch *appInfo.State {
-	case dataModel.READY_ApplicationState, dataModel.INITIALIZED_ApplicationState:
-	default:
-		return errors.New("Mandatory State value not valid")
+	if appInfo.NodeName == "" {
+		return errors.New("Mandatory Node Name not present")
 	}
 
-	// Initialize default App Type if not provided
-	if appInfo.Type_ == nil || *appInfo.Type_ == "" {
-		appType := dataModel.USER_ApplicationType
-		appInfo.Type_ = &appType
+	// Set default App type if missing
+	if appInfo.Type_ == "" {
+		appInfo.Type_ = apps.TypeUser
 	}
-	return nil
-}
-
-// Set Application Information in DB
-func setAppInfo(appInfo *dataModel.ApplicationInfo) error {
-	fields := make(map[string]interface{})
-	fields[fieldAppInstanceId] = appInfo.Id
-	fields[fieldAppName] = appInfo.Name
-	fields[fieldAppType] = string(*appInfo.Type_)
-	fields[fieldMepName] = appInfo.MepName
-	fields[fieldState] = string(*appInfo.State)
-	fields[fieldVersion] = appInfo.Version
-
-	key := appCtrl.baseKey + ":mep:" + appInfo.MepName + ":app:" + appInfo.Id + ":info"
-	err := appCtrl.rc.SetEntry(key, fields)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func populateAppInfoList(key string, fields map[string]string, appData interface{}) error {
-	// Get query params & userlist from user data
-	data := appData.(*ApplicationData)
-	if data == nil {
-		return errors.New("AppInfoList not found in user data")
-	}
-
-	// Retrieve user info from DB
-	var appInfo dataModel.ApplicationInfo
-	appInfo.Id = fields[fieldAppInstanceId]
-	appInfo.Name = fields[fieldAppName]
-	appInfo.MepName = fields[fieldMepName]
-	appInfo.Version = fields[fieldVersion]
-	appType := dataModel.ApplicationType(fields[fieldAppType])
-	appInfo.Type_ = &appType
-	appState := dataModel.ApplicationState(fields[fieldState])
-	appInfo.State = &appState
-
-	// Filter Apps
-	if data.FilterParameters != nil {
-		// App Instance ID
-		if data.FilterParameters.appId != "" && data.FilterParameters.appId != appInfo.Id {
-			return nil
-		}
-		// App Name
-		if data.FilterParameters.appName != "" && data.FilterParameters.appName != appInfo.Name {
-			return nil
-		}
-		// App Type
-		if data.FilterParameters.appType != "" && data.FilterParameters.appType != string(*appInfo.Type_) {
-			return nil
-		}
-		// App state
-		if data.FilterParameters.state != "" && data.FilterParameters.state != string(*appInfo.State) {
-			return nil
-		}
-		// MEP name
-		if data.FilterParameters.mepName != "" && data.FilterParameters.mepName != appInfo.MepName {
-			return nil
-		}
-	}
-
-	// Add App info to list
-	data.AppInfoList = append(data.AppInfoList, appInfo)
 	return nil
 }
 
@@ -507,4 +587,58 @@ func convertApplicationInfoToJson(appInfo *dataModel.ApplicationInfo) string {
 		return ""
 	}
 	return string(jsonInfo)
+}
+
+func convertAppToApplicationInfo(app *apps.Application) *dataModel.ApplicationInfo {
+	appInfo := &dataModel.ApplicationInfo{
+		Id:       app.Id,
+		Name:     app.Name,
+		NodeName: app.Node,
+		Type_:    app.Type,
+		Persist:  app.Persist,
+	}
+	return appInfo
+}
+
+func convertApplicationInfoToApp(appInfo *dataModel.ApplicationInfo) *apps.Application {
+	app := &apps.Application{
+		Id:      appInfo.Id,
+		Name:    appInfo.Name,
+		Node:    appInfo.NodeName,
+		Type:    appInfo.Type_,
+		Persist: appInfo.Persist,
+	}
+	return app
+}
+
+func appStoreUpdateCb(eventType string, eventData interface{}, userData interface{}) {
+	var msg *mq.Msg
+
+	// Create message to send on MQ
+	switch eventType {
+	case apps.EventAdd:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppUpdate, mq.TargetAll, appCtrl.sandboxName)
+		msg.Payload[mqFieldAppId] = eventData.(string)
+	case apps.EventRemove:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppRemove, mq.TargetAll, appCtrl.sandboxName)
+		msg.Payload[mqFieldAppId] = eventData.(string)
+		gracePeriodStr := "0"
+		if gracePeriod, ok := userData.(*int); ok && gracePeriod != nil {
+			gracePeriodStr = strconv.Itoa(*gracePeriod)
+		}
+		msg.Payload[mqFieldGracePeriod] = gracePeriodStr
+	case apps.EventFlush:
+		msg = appCtrl.mqLocal.CreateMsg(mq.MsgAppFlush, mq.TargetAll, appCtrl.sandboxName)
+		msg.Payload[mqFieldPersist] = strconv.FormatBool(eventData.(bool))
+	default:
+		return
+	}
+
+	// Send message to inform other modules of app store changes
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := appCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return
+	}
 }

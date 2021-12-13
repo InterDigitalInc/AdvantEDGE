@@ -335,6 +335,15 @@ class MeepContainer extends Component {
       .get(`${basepathMonEngine}/states?long=true&type=scenario&sandbox=${this.props.sandbox}`)
       .then(res => {
         var scenarioPodsPhases = res.data.podStatus;
+
+        // Add node ID
+        if (this.props.exec && this.props.exec.table && this.props.exec.table.entries) {
+          for (var i in scenarioPodsPhases) {
+            var scenarioPod = scenarioPodsPhases[i];
+            var elem = getElemByName(this.props.exec.table.entries, scenarioPod.name);
+            scenarioPodsPhases[i].id = elem ? elem.id : '';
+          }
+        }
         this.props.changeScenarioPodsPhases(scenarioPodsPhases);
       })
       .catch(() => {

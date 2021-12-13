@@ -23,7 +23,6 @@ import (
 )
 
 func convertJsonToMobilityProcedureSubscription(jsonInfo string) *MobilityProcedureSubscription {
-
 	var obj MobilityProcedureSubscription
 	err := json.Unmarshal([]byte(jsonInfo), &obj)
 	if err != nil {
@@ -34,19 +33,24 @@ func convertJsonToMobilityProcedureSubscription(jsonInfo string) *MobilityProced
 }
 
 func convertMobilityProcedureSubscriptionToJson(obj *MobilityProcedureSubscription) string {
-
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonInfo)
 }
 
-/*
-func convertJsonToAdjacentAppInfoSubscription(jsonInfo string) *AdjacentAppInfoSubscription {
+func convertMobilityProcedureNotificationToJson(obj *MobilityProcedureNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
 
+func convertJsonToAdjacentAppInfoSubscription(jsonInfo string) *AdjacentAppInfoSubscription {
 	var obj AdjacentAppInfoSubscription
 	err := json.Unmarshal([]byte(jsonInfo), &obj)
 	if err != nil {
@@ -55,37 +59,67 @@ func convertJsonToAdjacentAppInfoSubscription(jsonInfo string) *AdjacentAppInfoS
 	}
 	return &obj
 }
-*/
 
 func convertAdjacentAppInfoSubscriptionToJson(obj *AdjacentAppInfoSubscription) string {
-
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonInfo)
 }
 
-func convertJsonToRegistrationInfo(jsonInfo string) *RegistrationInfo {
-
-	var obj RegistrationInfo
-	err := json.Unmarshal([]byte(jsonInfo), &obj)
+func convertAdjacentAppInfoNotificationToJson(obj *AdjacentAppInfoNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
-		return nil
+		return ""
 	}
-	return &obj
+	return string(jsonInfo)
 }
 
 func convertRegistrationInfoToJson(obj *RegistrationInfo) string {
-
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonInfo)
 }
+
+func convertExpiryNotificationToJson(obj *ExpiryNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertDevInfoToJson(obj *DevInfo) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+// func convertJsonToDevInfo(jsonInfo string) *DevInfo {
+// 	var obj DevInfo
+// 	err := json.Unmarshal([]byte(jsonInfo), &obj)
+// 	if err != nil {
+// 		log.Error(err.Error())
+// 		return nil
+// 	}
+// 	return &obj
+// }

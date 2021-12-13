@@ -232,6 +232,7 @@
           event.eventScenarioUpdate.node.nodeDataUnion.process.placementId = "";
           event.eventScenarioUpdate.node.parent = "";
           event.eventScenarioUpdate.node.children = [""];
+          event.eventScenarioUpdate.gracePeriod = 0;
           event.eventPduSession = new AdvantEdgeSandboxControllerRestApi.EventPduSession();
           event.eventPduSession.action = "ADD";
           event.eventPduSession.pduSession = new AdvantEdgeSandboxControllerRestApi.PDUSession();

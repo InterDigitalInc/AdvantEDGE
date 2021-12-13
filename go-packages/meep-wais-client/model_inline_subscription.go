@@ -28,9 +28,9 @@ package client
 type InlineSubscription struct {
 	Links *AssocStaSubscriptionLinks `json:"_links,omitempty"`
 	// URI selected by the service consumer to receive notifications on the subscribed WLAN Access Information Service. This shall be included both in the request and in response.
-	ApId              *ApIdentity                            `json:"apId,omitempty"`
-	CallbackReference string                                 `json:"callbackReference"`
-	ExpiryDeadline    *TimeStamp                             `json:"expiryDeadline,omitempty"`
+	ApId              *ApIdentity             `json:"apId,omitempty"`
+	CallbackReference string                  `json:"callbackReference"`
+	ExpiryDeadline    *TimeStamp              `json:"expiryDeadline,omitempty"`
 	NotificationEvent *AllOfNotificationEvent `json:"notificationEvent,omitempty"`
 	// Set for periodic notification reporting.   Value indicates the notification period in seconds.
 	NotificationPeriod int32 `json:"notificationPeriod,omitempty"`
@@ -38,4 +38,7 @@ type InlineSubscription struct {
 	StaId []StaIdentity `json:"staId,omitempty"`
 	// Shall be set to \"StaDataRateSubscription\".
 	SubscriptionType string `json:"subscriptionType"`
+	// Set to TRUE by the service consumer to request a test notification on the callbackReference URI to determine if it is reachable by the WAIS for notifications.
+	RequestTestNotification bool                `json:"requestTestNotification,omitempty"`
+	WebsockNotifConfig      *WebsockNotifConfig `json:"websockNotifConfig,omitempty"`
 }

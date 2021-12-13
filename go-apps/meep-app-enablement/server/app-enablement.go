@@ -32,7 +32,7 @@ import (
 	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 )
 
-const serviceName = "Edge Platform Application Enablement Service"
+const serviceName = "App Enablement Service"
 const moduleName = "meep-app-enablement"
 const defaultMepName = "global"
 

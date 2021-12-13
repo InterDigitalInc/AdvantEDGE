@@ -22,8 +22,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func convertServiceInfoToJson(serviceInfo *ServiceInfo) string {
-	jsonInfo, err := json.Marshal(*serviceInfo)
+func convertServiceInfoToJson(obj *ServiceInfo) string {
+	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
@@ -41,8 +41,8 @@ func convertJsonToServiceInfo(jsonInfo string) *ServiceInfo {
 	return &obj
 }
 
-func convertSerAvailabilityNotificationSubscriptionToJson(sub *SerAvailabilityNotificationSubscription) string {
-	jsonInfo, err := json.Marshal(*sub)
+func convertSerAvailabilityNotifSubToJson(obj *SerAvailabilityNotificationSubscription) string {
+	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
@@ -50,8 +50,36 @@ func convertSerAvailabilityNotificationSubscriptionToJson(sub *SerAvailabilityNo
 	return string(jsonInfo)
 }
 
-func convertProblemDetailsToJson(problemDetails *ProblemDetails) string {
-	jsonInfo, err := json.Marshal(*problemDetails)
+func convertJsonToSerAvailabilityNotifSub(jsonData string) *SerAvailabilityNotificationSubscription {
+	var obj SerAvailabilityNotificationSubscription
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertServiceAvailabilityNotifToJson(obj *ServiceAvailabilityNotification) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertProblemDetailsToJson(obj *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
+	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
