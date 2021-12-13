@@ -95,6 +95,7 @@ AdvantEDGE provides a built-in Sandbox Subsystem that allows to share the platfo
 This feature provides the following capabilities:
 - _Sandbox management_
   - Create/Delete sandboxes
+  - Manage sandbox data
 - _Scenario isolation_
   - Execute/monitor/terminate scenarios in an isolated manner
 - _Collaboration_
