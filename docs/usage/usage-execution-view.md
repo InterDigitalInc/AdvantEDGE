@@ -269,6 +269,10 @@ Closes the auto-replay event pane.
 
 ---
 ## Process Status Table
-This table is only visible when a scenario is deployed. It provides the execution status for applications in the deployed scenario. It is updated whenever an application pod state changes.
+This table is only visible when a scenario is deployed. It displays key information about applications in the deployed scenario, such as:
+- Process name
+- Application instance ID
+- Execution status
+- Ingress & egress service mappings for external applications
 
-The table also provides details about ingress & egress service mappings for external applications. Ingress & egress service mappings are prepended with 'I:' & 'E:' respectively. More details on external node service mappings are provided in the [External Nodes]({{site.baseurl}}{% link docs/overview/features/overview-external-nodes.md %}) wiki page.
+_**NOTE:** Ingress & egress service mappings are prepended with 'I:' & 'E:' respectively. More details on external node service mappings are provided in the [External Nodes]({{site.baseurl}}{% link docs/overview/features/overview-external-nodes.md %}) wiki page._

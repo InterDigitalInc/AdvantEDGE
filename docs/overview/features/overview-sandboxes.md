@@ -13,6 +13,7 @@ AdvantEDGE provides a built-in Sandbox Subsystem that allows to share the platfo
 This feature provides the following capabilities:
 - _Sandbox management_
   - Create/Delete sandboxes
+  - Manage sandbox data
 - _Scenario isolation_
   - Execute/monitor/terminate scenarios in an isolated manner
 - _Collaboration_
@@ -56,3 +57,13 @@ Selecting another sandbox using the drop-down menu switches the dashboards and d
 A single user or many users can create multiple sandboxes until they exhaust the system resources.
 
 ![sandbox-create2.md]({{site.baseurl}}/assets/images/sandbox-select.png)
+
+### Sandbox Data Management
+The _Monitoring Subsystem_ measures, calculates & stores scenario-specific metrics for each running sandbox.
+These metrics are stored on the AdvantEDGE host filesystem.
+
+The _Sandbox Subsystem_ provides configurable deployment settings to set retention periods or garbage collection
+intervals for cleaning up sandbox metrics after the sandbox has been destroyed. Metrics requiring a longer
+retention time must be moved to a long-term store.
+
+Garbage collection & long-term storage deployment configuration settings are listed [here]({{site.baseurl}}{% link docs/platform-mgmt/mgmt-cheat-sheet.md %}#deployment-configuration).

@@ -12,6 +12,7 @@ Topic | Abstract
 [Deploy](#deploy) | Deploy AdvantEDGE
 [Upgrade](#upgrade) | Upgrade AdvantEDGE
 [Test](#test) | Test AdvantEDGE
+[Code Coverage](#code-coverage) | Generate code coverage reports
 NEXT STEP: [Platform usage](#next-step) |
 
 ----
@@ -184,7 +185,7 @@ _**NOTE:** meepctl CLI tool performs a version check in the local **.meepctl-rep
 ## Test
 AdvantEDGE currently supports end-to-end testing using [Cypress](https://www.cypress.io/). This Node-based JavaScript testing tool simulates user interactions with the frontend and validates expected UI updates.
 
-This procedure
+This procedure:
 - installs Cypress
 - runs unit tests
 - runs Cypress CLI
@@ -204,6 +205,13 @@ cd AdvantEDGE/tests
 ./start-ut-env.sh
 ./run-ut.sh
 ./stop-ut-env.sh
+```
+
+### Run system tests
+```
+cd AdvantEDGE/tests/system
+export MEEP_HOST_TEST_URL="http://<host ip address>"
+go test -timeout 30m
 ```
 
 ### Run Cypress CLI
@@ -233,23 +241,23 @@ _**NOTE:** Cypress may crash if max inotify watchers is too low. To fix this run
 `echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`<br>
 See details [here](https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers)_
 
-### Code Coverage
-**(THIS SECTION IS OUTDATED - CODE COVERAGE NEEDS TO BE REWORKED)**
+----
+## Code Coverage
+_**IMPORTANT NOTE: Code coverage does not work with the latest release; a fix will be provided with the next release.**_
 
-AdvantEDGE core micro-services can be instrumented with code coverage instrumentation; when used in conjunction with Cypress or other system tests (manual or proprietary), it will provide an overview of the code coverage.
+AdvantEDGE core micro-services can be instrumented to measure code coverage; when used in conjunction with Cypress, system & manual tests, an overview of the platform code coverage can be obtained.
 
-The following is a summary of the steps to enable code coverage measurement in AdvantEDGE:
+To enable code coverage measurements in AdvantEDGE:
 - Build for code coverage: `meepctl build all --codecov`
 - Dockerize: `meepctl dockerize all`
 - Deploy for code coverage: `meepctl deploy core --codecov`
-- Execute testing - use Cypress, manual or any desired system test
+- Execute tests: _run Cypress, system or any desired manual platform tests_
 
-Once testing is completed
+Once testing is complete:
 - **Stop the micro-services gracefully**: `meepctl delete core`
-  _Build, dockerize  & deploy will instrument and execute core micro-services so they measure code coverage._
-  _When terminated gracefully, the core micro-services will store the code coverage result in the following location: `~/.meep/codecov/<micro-service-name>/codecov-<micro-service-name>.out`_
+  - _Build, dockerize & deploy will instrument and execute core micro-services so they measure code coverage._
+  - _When terminated gracefully, the core micro-services store code coverage results at the following location: `~/.meep/codecov/<micro-service-name>/codecov-<micro-service-name>.out`_
 - For convenience, code coverage reports can be generated using `meepctl test`
-
 
 ----
 ## Next Step
