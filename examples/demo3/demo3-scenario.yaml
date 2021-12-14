@@ -1,4 +1,4 @@
-version: 1.8.0
+version: 1.8.1
 name: demo3
 deployment:
     netChar:
@@ -210,11 +210,11 @@ deployment:
                                                         port: 80
                                                         externalPort: 31111
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -237,11 +237,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -342,11 +342,11 @@ deployment:
                                     wirelessType: 'wifi,5g,4g,other'
                                     dataNetwork: {dnn: null, ladn: null, ecsp: null}
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     macId: 005C0A640003
@@ -443,11 +443,11 @@ deployment:
                                                         port: 80
                                                         externalPort: 31112
                                             netChar:
+                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
-                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
@@ -470,11 +470,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     isExternal: null
@@ -605,11 +605,11 @@ deployment:
                                     wirelessType: 'wifi,5g,4g,other'
                                     dataNetwork: {dnn: null, ladn: null, ecsp: null}
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     macId: 005C0A640002
@@ -797,11 +797,11 @@ deployment:
                                     wirelessType: 'wifi,5g,4g,other'
                                     dataNetwork: {dnn: null, ladn: null, ecsp: null}
                                     netChar:
+                                        latencyDistribution: Normal
                                         throughputDl: 1000
                                         throughputUl: 1000
                                         latency: null
                                         latencyVariation: null
-                                        latencyDistribution: null
                                         throughput: null
                                         packetLoss: null
                                     macId: 005C0A640004
