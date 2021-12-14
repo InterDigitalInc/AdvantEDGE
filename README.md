@@ -6,7 +6,7 @@
 
 :zap: **Improved edge native services: Multiple fixes to [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service)**
 
-:zap: **New! [Demo3 example application](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-demo3) to showcase MEC011 & MEC021 service API usage**
+:zap: **New! [Demo3 example application](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-demo3/) to showcase MEC011 & MEC021 service API usage**
 
 :zap: **ETSI MEC028 WebSocket support: [ETSI MEC028 - WLAN Access Information Service](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#wireless-access-information-service) now supports WebSocket model for receiving notifications**
 

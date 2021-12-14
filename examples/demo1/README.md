@@ -9,4 +9,4 @@ Demo1 scenario showcases the following platform capabilities:
 - Application state transfer
 - Monitoring (demo specific dashboards)
 
-For more details, check out the [Demo1 Documentation](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-demo1)
+For more details, check out the [Demo1 Documentation](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/usage-demo1/)
