@@ -4,10 +4,9 @@ Apis/ApplicationsApi.md
 Apis/ConnectivityApi.md
 Apis/EventReplayApi.md
 Apis/EventsApi.md
+Apis/ServicesApi.md
 Models/ActivationInfo.md
 Models/ApplicationInfo.md
-Models/ApplicationState.md
-Models/ApplicationType.md
 Models/CellularDomainConfig.md
 Models/CellularPoaConfig.md
 Models/ConnectivityConfig.md
@@ -54,6 +53,7 @@ Models/Scenario.md
 Models/ScenarioConfig.md
 Models/ScenarioNode.md
 Models/ServiceConfig.md
+Models/ServiceInfo.md
 Models/ServicePort.md
 Models/Zone.md
 Models/Zones.md
