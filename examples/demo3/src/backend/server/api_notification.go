@@ -34,10 +34,10 @@ func AppTerminationNotificationCallback(w http.ResponseWriter, r *http.Request) 
 	appTerminationNotificationCallback(w, r)
 }
 
-func ServiceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
-	serviceAvailNotificationCallback(w, r)
-}
-
 func ContextTransferNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	stateTransferPOST(w, r)
+}
+
+func ServiceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
+	serviceAvailNotificationCallback(w, r)
 }
