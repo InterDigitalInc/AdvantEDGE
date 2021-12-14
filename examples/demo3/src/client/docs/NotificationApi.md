@@ -1,6 +1,6 @@
 # MecDemo3Api.NotificationApi
 
-All URIs are relative to *https://localhost*
+All URIs are relative to *http://10.190.115.162:8093*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 <a name="amsNotificationCallback"></a>
 # **amsNotificationCallback**
-> amsNotificationCallback()
+> amsNotificationCallback(body)
 
 Callback endpoint for AMS Notifications
 
@@ -24,6 +24,9 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var body = new MecDemo3Api.MobilityProcedureNotification(); // MobilityProcedureNotification | Subscription notification
+
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -31,11 +34,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.amsNotificationCallback(callback);
+apiInstance.amsNotificationCallback(body, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**MobilityProcedureNotification**](MobilityProcedureNotification.md)| Subscription notification | 
 
 ### Return type
 
@@ -47,12 +53,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 
 <a name="appTerminationNotificationCallback"></a>
 # **appTerminationNotificationCallback**
-> appTerminationNotificationCallback()
+> appTerminationNotificationCallback(body)
 
 Callback endpoint for MEC011 app-termination notifications
 
@@ -64,6 +70,9 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var body = new MecDemo3Api.AppTerminationSubscription(); // AppTerminationSubscription | app termination notification details
+
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -71,11 +80,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.appTerminationNotificationCallback(callback);
+apiInstance.appTerminationNotificationCallback(body, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**AppTerminationSubscription**](AppTerminationSubscription.md)| app termination notification details | 
 
 ### Return type
 
@@ -87,12 +99,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 
 <a name="contextTransferNotificationCallback"></a>
 # **contextTransferNotificationCallback**
-> contextTransferNotificationCallback()
+> contextTransferNotificationCallback(body)
 
 Callback endpoint for MEC021 context-state transfer notification
 
@@ -104,6 +116,9 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var body = new MecDemo3Api.ApplicationContextState(); // ApplicationContextState | app termination notification details
+
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -111,11 +126,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.contextTransferNotificationCallback(callback);
+apiInstance.contextTransferNotificationCallback(body, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**ApplicationContextState**](ApplicationContextState.md)| app termination notification details | 
 
 ### Return type
 
@@ -127,12 +145,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 
 <a name="serviceAvailNotificationCallback"></a>
 # **serviceAvailNotificationCallback**
-> serviceAvailNotificationCallback()
+> serviceAvailNotificationCallback(body)
 
 Callback endpoint for MEC011 Notifications
 
@@ -144,6 +162,9 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var body = new MecDemo3Api.ServiceAvailabilityNotification(); // ServiceAvailabilityNotification | service availability notification details
+
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -151,11 +172,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.serviceAvailNotificationCallback(callback);
+apiInstance.serviceAvailNotificationCallback(body, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**ServiceAvailabilityNotification**](ServiceAvailabilityNotification.md)| service availability notification details | 
 
 ### Return type
 
@@ -167,6 +191,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 

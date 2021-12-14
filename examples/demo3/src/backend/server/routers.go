@@ -122,16 +122,16 @@ var routes = Routes{
 	},
 
 	Route{
-		"ServiceAvailNotificationCallback",
-		strings.ToUpper("Post"),
-		"/services/callback/service-availability",
-		ServiceAvailNotificationCallback,
-	},
-
-	Route{
 		"ContextTransferNotificationCallback",
 		strings.ToUpper("Post"),
 		"/application/transfer",
 		ContextTransferNotificationCallback,
+	},
+
+	Route{
+		"ServiceAvailNotificationCallback",
+		strings.ToUpper("Post"),
+		"/services/callback/service-availability",
+		ServiceAvailNotificationCallback,
 	},
 }

@@ -267,7 +267,7 @@ components:
       example:
         mecReady: true
         subscriptions:
-          'SerAvailabilitySubscription:':
+          SerAvailabilitySubscription:
             subId: subId
           AmsLinkListSubscription:
             subId: subId
@@ -348,13 +348,13 @@ components:
       properties:
         AppTerminationSubscription:
           $ref: '#/components/schemas/ApplicationInstance_AppTerminationSubscription'
-        'SerAvailabilitySubscription:':
+        SerAvailabilitySubscription:
           $ref: '#/components/schemas/ApplicationInstance_SerAvailabilitySubscription'
         AmsLinkListSubscription:
           $ref: '#/components/schemas/ApplicationInstance_AmsLinkListSubscription'
       description: List of ams subscription unique to device and their id
       example:
-        'SerAvailabilitySubscription:':
+        SerAvailabilitySubscription:
           subId: subId
         AmsLinkListSubscription:
           subId: subId

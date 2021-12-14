@@ -878,7 +878,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	var targetContextState ApplicationContextState
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&targetContextState)
-	counter := strconv.Itoa(targetContextState.Counter)
+	counter := strconv.Itoa(int(targetContextState.Counter))
 	if err != nil {
 		log.Error(err.Error())
 		appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [500]")
@@ -922,7 +922,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	addToTrackingDevices(targetContextState.Device)
 
-	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
+	terminalDeviceState[targetContextState.Device] = int(targetContextState.Counter)
 
 	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
 
@@ -960,7 +960,7 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 
 	// Context state transfer
 	var contextState ApplicationContextState
-	contextState.Counter = terminalDeviceState[device]
+	contextState.Counter = int32(terminalDeviceState[device])
 	contextState.AppId = instanceName
 	contextState.Mep = mep
 	contextState.Device = device
@@ -972,7 +972,7 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 		log.Error("Failed to marshal context state ", err.Error())
 		return err
 	}
-	counter := strconv.Itoa(contextState.Counter)
+	counter := strconv.Itoa(int(contextState.Counter))
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonCounter))
 	if err != nil {
 		log.Error(err.Error())
@@ -1193,7 +1193,12 @@ func subscribeAvailability(appInstanceId string, callbackReference string) (stri
 	var filter smc.SerAvailabilityNotificationSubscriptionFilteringCriteria
 	filter.SerNames = nil
 	filter.IsLocal = true
-	subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
+	subscription := smc.SerAvailabilityNotificationSubscription{
+		SubscriptionType:  "SerAvailabilityNotificationSubscription",
+		CallbackReference: callbackReference,
+		Links:             nil,
+		FilteringCriteria: &filter,
+	}
 	serAvailabilityNotificationSubscription, resp, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
