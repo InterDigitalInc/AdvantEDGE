@@ -530,14 +530,14 @@ deployment:
                                             name: ue1-iperf
                                             type: UE-APP
                                             image: 'meep-docker-registry:30001/iperf-client'
-                                            commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
+                                            commandArguments: '-c, export; sleep 5; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
                                             netChar:
-                                                latencyDistribution: Normal
                                                 throughputDl: 1000
                                                 throughputUl: 1000
                                                 latency: null
                                                 latencyVariation: null
+                                                latencyDistribution: null
                                                 throughput: null
                                                 packetLoss: null
                                             isExternal: null
