@@ -153,6 +153,29 @@ default:
 # #------------------------------------------------------------------------------
 # services:
 #   #------------------------------
+#   #  AMSI Service (Sbox)
+#   #------------------------------
+#   - name: 'meep-ams'
+#     path: '/amsi/v1'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
+#       - name: 'Websocket'
+#         path: '/ws'
+#         mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
+#   #------------------------------
 #   #  MEC Application Support (Sbox)
 #   #------------------------------
 #   - name: 'meep-app-enablement'
@@ -797,27 +820,3 @@ default:
 #         path: '/'
 #         method: 'GET'
 #         mode: 'block'
-#   #------------------------------
-#   #  AMSI Service (Sbox)
-#   #------------------------------
-#   - name: 'meep-ams'
-#     path: '/amsi/v1'
-#     sbox: true
-#     default:
-#       mode: 'allow'
-#     fileservers:
-#       - name: 'Api'
-#         path: '/api'
-#         mode: 'allow'
-#       - name: 'UserApi'
-#         path: '/user-api'
-#         mode: 'allow'
-#       - name: 'Websocket'
-#         path: '/ws'
-#         mode: 'allow'
-#     endpoints:
-#       - name: 'Index'
-#         path: '/'
-#         method: 'GET'
-#         mode: 'block'
-
