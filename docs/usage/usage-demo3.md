@@ -33,7 +33,7 @@ The scenario includes:
 - 3 terminals with pre-defined routes to move interchangeably from _mep1_ to _mep2_
 
 **NOTE:** To view terminal movement on a map, you must first provision maps in AdvantEDGE as described
-[here]({{site.baseurl}}{% link docs/overview/features/gis/overview-gis.md %}#map-provisioning))
+[here]({{site.baseurl}}{% link docs/overview/features/gis/overview-gis.md %}#map-provisioning)
 
 ### Demo server
 Demo server is a web server that interacts with the _Application Enablement_ & _Application Mobility_ services
