@@ -33,7 +33,7 @@ The scenario includes:
 - 3 terminals with pre-defined routes to move interchangeably from _mep1_ to _mep2_
 
 **NOTE:** To view terminal movement on a map, you must first provision maps in AdvantEDGE as described
-[here](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/gis/#map-provisioning)
+[here]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %}#map-provisioning)
 
 ### Demo server
 Demo server is a web server that interacts with the _Application Enablement_ & _Application Mobility_ services
@@ -55,6 +55,7 @@ To use Demo3 as an AdvantEDGE scenario container:
 - Build & dockerize Demo3 server & frontend
 - Import the provided scenario _demo3-scenario.yaml_
 - Create a sandbox & deploy Demo3 scenario
+- Start Demo3 application frontend in browser
 
 ### Build from source
 To build _demo-frontend_ & _demo-server_ from source code:
@@ -85,6 +86,18 @@ To generate docker images from demo binary files:
 cd ~/AdvantEDGE/examples/demo3
 ./dockerize.sh
 ```
+
+### Deploy Demo3 scenario
+After building & dockerizing the Demo3 application, the Demo3 scenario must be imported in AdvantEDGE and deployed within a sandbox.
+
+_**IMPORTANT NOTE:** For the API calls to work correctly, the platform IP address or domain name must be properly configured in the [AdvantEDGE deployment configuration]({{site.baseurl}}{% link docs/platform-mgmt/mgmt-cheat-sheet.md %}#deployment-configuration) file._
+
+### Start Demo3 application frontend
+After deploying the Demo3 scenario, the Demo3 application frontend can be accessed as follows:
+- _demo3-mep1_: `http://<AdvantEDGE IP address>:31111`
+- _demo3-mep2_: `http://<AdvantEDGE IP address>:31112`
+
+Each Demo3 application instance provides a pre-configured frontend with controls to register/deregister the application instance to MEC011 and to track terminal devices using MEC021.
 
 ## Using Demo3 with ETSI MEC Sandbox
 To use Demo3 as an external application that interacts with the ETSI MEC Sandbox
