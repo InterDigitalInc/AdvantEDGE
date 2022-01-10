@@ -90,7 +90,7 @@ cd ~/AdvantEDGE/examples/demo3
 ### Deploy Demo3 scenario
 After building & dockerizing the Demo3 application, the Demo3 scenario must be imported in AdvantEDGE and deployed within a sandbox.
 
-_**IMPORTANT NOTE:** For the API calls to work correctly, the platform IP address or domain name must be properly configured in the [AdvantEDGE deployment configuration]({{site.baseurl}}{% link docs/platform-mgmt/mgmt-cheat-sheet.md %}#deployment-configuration) file._
+**IMPORTANT NOTE:** For the API calls to work correctly, the platform IP address or domain name must be properly configured in the [AdvantEDGE deployment configuration]({{site.baseurl}}{% link docs/platform-mgmt/mgmt-cheat-sheet.md %}#deployment-configuration) file.
 
 ### Start Demo3 application frontend
 After deploying the Demo3 scenario, the Demo3 application frontend can be accessed as follows:
