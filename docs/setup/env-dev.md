@@ -122,7 +122,7 @@ _**IMPORTANT NOTE:** Latest LTS version 12+ causes demo1 build failures (see iss
 Workaround is to install previous LTS version 10 until issue is fixed_
 
 ```
-# Retrieve & install latest LTS Node.js versions
+# Retrieve & install latest v10 Node.js versions
 nvm ls-remote | grep "Latest LTS"
 nvm install 10.16.3
 ```
@@ -130,7 +130,7 @@ nvm install 10.16.3
 ##### STEP 5 - Update NPM version bundled with Node.js
 
 ```
-npm install -g npm
+npm install -g npm@6.14.8
 ```
 
 ##### STEP 6 - Verify install
