@@ -91,8 +91,8 @@ NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows 
 Versions we use:
 
 - NVM: 0.34.0
-- Node.js: 8.11, 10.15, 10.16, 10.19, 12.19
-- npm: 6.8, 6.9, 6.11, 6.12, 6.14, 7.6
+- Node.js: 8.11, 10.15, 10.16, 10.19
+- npm: 6.8, 6.9, 6.11, 6.12, 6.14
 
 How we do it:
 
