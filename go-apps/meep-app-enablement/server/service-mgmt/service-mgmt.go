@@ -61,7 +61,6 @@ var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var APP_ENABLEMENT_DB = 0
 var rc *redis.Connector
 var mqLocal *mq.MsgQueue
-var handlerId int
 var hostUrl *url.URL
 var sandboxName string
 var mepName string
@@ -147,7 +146,7 @@ func Run() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqLocal.RegisterHandler(handler)
+	_, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -196,7 +195,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -315,7 +314,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Location", hostUrl.String()+basePath+"applications/"+appId+"/services/"+sInfo.SerInstanceId)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, convertServiceInfoToJson(sInfo))
+	fmt.Fprint(w, convertServiceInfoToJson(sInfo))
 }
 
 func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
@@ -341,7 +340,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -403,7 +402,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertServiceInfoToJson(&sInfo))
+	fmt.Fprint(w, convertServiceInfoToJson(&sInfo))
 }
 
 func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
@@ -429,7 +428,7 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -486,7 +485,7 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -519,7 +518,7 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -572,7 +571,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -659,7 +658,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Location", serAvailNotifSub.Links.Self.Href)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, jsonSub)
+	fmt.Fprint(w, jsonSub)
 }
 
 func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
@@ -684,7 +683,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -734,7 +733,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -790,7 +789,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -825,7 +824,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
+	fmt.Fprint(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func transportsGET(w http.ResponseWriter, r *http.Request) {
@@ -855,7 +854,7 @@ func transportsGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Delete App services subscriptions
@@ -1055,7 +1054,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId string) {
@@ -1098,7 +1097,7 @@ func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId 
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {

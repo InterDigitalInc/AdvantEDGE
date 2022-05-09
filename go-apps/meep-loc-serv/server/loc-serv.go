@@ -1490,7 +1490,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateUserList(key string, jsonInfo string, userData interface{}) error {
@@ -1618,7 +1618,7 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func apByIdGet(w http.ResponseWriter, r *http.Request) {
@@ -1649,7 +1649,7 @@ func apByIdGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonesGet(w http.ResponseWriter, r *http.Request) {
@@ -1675,7 +1675,7 @@ func zonesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonesByIdGet(w http.ResponseWriter, r *http.Request) {
@@ -1706,7 +1706,7 @@ func zonesByIdGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateZoneList(key string, jsonInfo string, userData interface{}) error {
@@ -1797,7 +1797,7 @@ func distanceSubListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func distanceSubGet(w http.ResponseWriter, r *http.Request) {
@@ -1828,7 +1828,7 @@ func distanceSubGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func distanceSubPost(w http.ResponseWriter, r *http.Request) {
@@ -1900,7 +1900,7 @@ func distanceSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func distanceSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2001,7 +2001,7 @@ func distanceSubPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateDistanceList(key string, jsonInfo string, userData interface{}) error {
@@ -2061,7 +2061,7 @@ func areaCircleSubListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func areaCircleSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2091,7 +2091,7 @@ func areaCircleSubGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2203,7 +2203,7 @@ func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2329,7 +2329,7 @@ func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateAreaCircleList(key string, jsonInfo string, userData interface{}) error {
@@ -2389,7 +2389,7 @@ func periodicSubListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func periodicSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2419,7 +2419,7 @@ func periodicSubGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func periodicSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2495,7 +2495,7 @@ func periodicSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func periodicSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2589,7 +2589,7 @@ func periodicSubPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populatePeriodicList(key string, jsonInfo string, userData interface{}) error {
@@ -2649,7 +2649,7 @@ func userTrackingSubListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2680,7 +2680,7 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2734,7 +2734,7 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2816,7 +2816,7 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateUserTrackingList(key string, jsonInfo string, userData interface{}) error {
@@ -2876,7 +2876,7 @@ func zonalTrafficSubListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2906,7 +2906,7 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2972,7 +2972,7 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
@@ -3054,7 +3054,7 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateZonalTrafficList(key string, jsonInfo string, userData interface{}) error {
@@ -3114,7 +3114,7 @@ func zoneStatusSubListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zoneStatusSubGet(w http.ResponseWriter, r *http.Request) {
@@ -3145,7 +3145,7 @@ func zoneStatusSubGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
@@ -3201,7 +3201,7 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
@@ -3284,7 +3284,7 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateZoneStatusList(key string, jsonInfo string, userData interface{}) error {
@@ -3835,7 +3835,7 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {

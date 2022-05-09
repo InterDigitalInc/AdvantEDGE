@@ -17,6 +17,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -760,7 +761,7 @@ func startStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app string
 			return
 		}
 		//lint:ignore SA1012 context.TODO not supported here
-		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(context.TODO(), event)
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
@@ -789,7 +790,7 @@ func completeStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app str
 			return
 		}
 		//lint:ignore SA1012 context.TODO not supported here
-		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(context.TODO(), event)
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
@@ -818,7 +819,7 @@ func cancelStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app strin
 			return
 		}
 		//lint:ignore SA1012 context.TODO not supported here
-		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
+		resp, err := appInfo.appClient.StateTransferApi.HandleEvent(context.TODO(), event)
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 		if err != nil {
 			log.Error(err.Error())
@@ -1127,7 +1128,7 @@ func processAppState(mgName string, appID string, mgAppState *mgModel.MobilityGr
 				event.AppState = appState
 				startTime := time.Now()
 				//lint:ignore SA1012 context.TODO not supported here
-				resp, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
+				resp, err := appInfo.appClient.StateTransferApi.HandleEvent(context.TODO(), event)
 				duration := float64(time.Since(startTime).Microseconds()) / 1000.0
 				if err != nil {
 					log.Error(err.Error())

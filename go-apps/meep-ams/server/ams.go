@@ -987,7 +987,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, jsonSub)
+	fmt.Fprint(w, jsonSub)
 }
 
 func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
@@ -1167,7 +1167,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, jsonSub)
+	fmt.Fprint(w, jsonSub)
 }
 
 func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
@@ -1269,7 +1269,7 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
+	fmt.Fprint(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
@@ -1340,7 +1340,7 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, convertRegistrationInfoToJson(&regInfo))
+	fmt.Fprint(w, convertRegistrationInfoToJson(&regInfo))
 }
 
 func appMobilityServiceByIdGET(w http.ResponseWriter, r *http.Request) {
@@ -1356,7 +1356,7 @@ func appMobilityServiceByIdGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertRegistrationInfoToJson(regInfo))
+	fmt.Fprint(w, convertRegistrationInfoToJson(regInfo))
 }
 
 func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
@@ -1427,7 +1427,7 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertRegistrationInfoToJson(&regInfo))
+	fmt.Fprint(w, convertRegistrationInfoToJson(&regInfo))
 }
 
 func appMobilityServiceByIdDELETE(w http.ResponseWriter, r *http.Request) {
@@ -1494,7 +1494,7 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateRegInfoList(key string, jsonEntry string, response interface{}) error {

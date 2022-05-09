@@ -44,7 +44,6 @@ const moduleName = "meep-webhook"
 const moduleNamespace = "default"
 
 var mqGlobal *mq.MsgQueue
-var handlerId int
 var mutex sync.Mutex
 var sbxDataMap map[string]*SandboxData
 
@@ -101,7 +100,7 @@ func main() {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqGlobal.RegisterHandler(handler)
+	_, err = mqGlobal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for scenario updates: ", err.Error())
 		return
