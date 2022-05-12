@@ -396,7 +396,9 @@ func processEvent(obj interface{}, reason int) {
 	monEngineInfo.MeepApp = pod.Labels["meepApp"]
 	monEngineInfo.MeepScenario = pod.Labels["meepScenario"]
 	if monEngineInfo.Release, ok = pod.Labels["release"]; !ok {
-		monEngineInfo.Release = notFoundStr
+		if monEngineInfo.Release, ok = pod.Labels["app.kubernetes.io/instance"]; !ok {
+			monEngineInfo.Release = notFoundStr
+		}
 	}
 	if monEngineInfo.MeepApp, ok = pod.Labels["meepApp"]; !ok {
 		monEngineInfo.MeepApp = notFoundStr
