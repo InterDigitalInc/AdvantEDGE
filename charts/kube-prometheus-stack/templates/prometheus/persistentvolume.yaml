@@ -1,0 +1,22 @@
+{{- if and .Values.prometheus.enabled .Values.prometheus.prometheusSpec.persistentVolume.enabled }}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-server
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-server
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  capacity:
+    storage: {{ .Values.prometheus.prometheusSpec.persistentVolume.size }}
+  accessModes:
+  {{- range .Values.prometheus.prometheusSpec.persistentVolume.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.prometheus.prometheusSpec.persistentVolume.reclaimPolicy }}
+  hostPath:
+    path: "{{.Values.prometheus.prometheusSpec.persistentVolume.location}}"
+  storageClassName: {{ template "kube-prometheus-stack.fullname" . }}-server
+{{- end }}
