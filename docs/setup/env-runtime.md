@@ -9,7 +9,7 @@ Topic | Abstract
 ------|------
 [Ansible](#ansible) | Install using **Ansible** (_beta-feature_)
 [Ubuntu](#ubuntu) | Supported OS
-[Dockers](#dockers) | Dockers installation
+[Docker](#docker) | Docker installation
 [Kubernetes](#kubernetes) | Kubernetes installation
 [Helm](#helm) | Helm installation
 [GPU Support](#gpu-support) | [Optional] To run sceanrios using GPUs
@@ -33,7 +33,7 @@ Versions we use:
 - Kernel: 4.4, 4.15, 4.18, 5.3 and 5.4
 
 ----
-## Dockers
+## Docker
 
 We typically use the convenience script procedure for the community edition from [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
@@ -57,20 +57,18 @@ sudo usermod -aG docker <your-user>
 ----
 ## Kubernetes
 
-_:exclamation: **BREAKING CHANGE** :exclamation:<br>With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**._
+_:exclamation: **BREAKING CHANGE** :exclamation:<br>
+With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**._
 
 _:exclamation: **IMPORTANT NOTE** :exclamation:<br>
-K8s versions 1.22+ are not yet supported by AdvantEDGE due to breaking API changes; upgrade is planned but not completed._
-
-_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
-Current installation procedure uses Docker container runtime, which is no longer supported as of k8s version 1.22.<br>
+With AdvantEDGE release v1.9+, Docker container runtime has been replaced by containerd to support k8s versions 1.22+.<br>
 For more information, see the [Docker container runtime deprecation FAQ]({{site.baseurl}}{% link docs/project/project-faq.md %}#faq-2-k8s-docker-container-runtime-deprecation)._
 
 We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independent/install-kubeadm/)
 
 Versions we use:
 
-- 1.19, 1.20, 1.21 <br> _(versions 1.16 used to work - not tested anymore)_
+- 1.19 to 1.24<br> _(versions 1.16 to 1.18 used to work - not tested anymore)_
 
 _**NOTE:** K8s deployment has a dependency on the node's IP address.<br>
 From our experience, it is **strongly recommended** to ensure that your platform always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
@@ -86,30 +84,43 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^/#/' /etc/fstab
 ```
 
-##### STEP 2 - Setup Docker daemon [(details)](https://kubernetes.io/docs/setup/cri/#docker)
+##### STEP 2 - Setup container runtime [(details)](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
+
+Containerd is used as the k8s container runtime.
+
+_**NOTE:** Containerd was installed during Docker installation._
+
+To install the container runtime prerequisites:
 
 ```
-# Docker was previously installed
-# Now, setup Docker daemon
-cat > ~/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
 EOF
 
-# Copy daemon config
-sudo mv ~/daemon.json /etc/docker
+sudo modprobe overlay
+sudo modprobe br_netfilter
 
-# Create systemd entry for docker daemon
-sudo mkdir -p /etc/systemd/system/docker.service.d
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
 
-# Reboot
-sudo reboot
+# Apply sysctl params without reboot
+sudo sysctl --system
+```
+
+To configure containerd:
+
+```
+# configure containerd
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+
+# restart containerd
+sudo systemctl restart containerd
 ```
 
 ##### STEP 3 - Install kubeadm, kubelet & kubectl [(details)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
@@ -139,7 +150,7 @@ EOF'
 
 # Install latest supported k8s version
 sudo apt-get update
-sudo apt-get install -y kubelet=1.19.1-00 kubeadm=1.19.1-00 kubectl=1.19.1-00 kubernetes-cni=0.8.7-00
+sudo apt-get install -y kubelet=1.24.0-00 kubeadm=1.24.0-00 kubectl=1.24.0-00 kubernetes-cni=0.8.7-00
 
 # Lock current version
 sudo apt-mark hold kubelet kubeadm kubectl
@@ -148,7 +159,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ##### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
 
 ```
-sudo kubeadm init
+sudo kubeadm init --cri-socket unix:///run/containerd/containerd.sock
 
 # Once completed, follow onscreen instructions
 mkdir -p $HOME/.kube
@@ -201,6 +212,8 @@ scp <user>@<master-ip>:~/.kube/config ~/.kube/
 
 ##### STEP 6 - Enable kubectl auto-completion
 
+_**NOTE:** This step should only be run once._
+
 ```
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 ```
@@ -223,6 +236,9 @@ sudo update-ca-certificates
 
 # Restart docker daemon
 sudo systemctl restart docker
+
+# Restart containerd daemon
+sudo systemctl restart containerd
 ```
 
 ----
@@ -232,7 +248,7 @@ We use [this](https://helm.sh/docs/intro/install/) procedure
 
 Versions we use:
 
-- 3.3 <br> _(Helm v2 deprecated)_
+- 3.3, 3.7 <br> _(Helm v2 deprecated)_
 
 _**NOTE:** Procedure is slightly different when upgrading Helm v2 to v3 versus installing Helm v3 from scratch_
 
