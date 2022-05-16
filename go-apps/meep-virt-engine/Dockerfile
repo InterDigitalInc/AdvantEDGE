@@ -18,7 +18,7 @@ COPY ./api /api
 COPY ./user-api /user-api
 COPY ./data /
 
-ENV HELM_VERSION="v3.3.1"
+ENV HELM_VERSION="v3.7.0"
 RUN mkdir -p /active \
     && apt-get update \
     && apt-get install -y wget \

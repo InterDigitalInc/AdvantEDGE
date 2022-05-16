@@ -3,14 +3,14 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-webhook
 go 1.12
 
 require (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0 // indirect
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/ghodss/yaml v1.0.0
-	k8s.io/api v0.0.0-20190430012547-97d6bb8ea5f4
-	k8s.io/apimachinery v0.0.0-20190430211124-5bae42371a56
+	github.com/onsi/ginkgo v1.16.5 // indirect
+	github.com/onsi/gomega v1.19.0 // indirect
+	k8s.io/api v0.24.0
+	k8s.io/apimachinery v0.24.0
 )
 
 replace (

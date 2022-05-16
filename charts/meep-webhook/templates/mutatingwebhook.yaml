@@ -15,6 +15,6 @@ webhooks:
         apiGroups: ["apps", ""]
         apiVersions: ["v1"]
         resources: ["deployments", "statefulsets"]
-    admissionReviewVersions: ["v1"]
+    admissionReviewVersions: ["v1beta1", "v1"]
     sideEffects: None
     failurePolicy: Ignore
