@@ -35,19 +35,36 @@ Versions we use:
 ----
 ## Docker
 
-We typically use the convenience script procedure for the community edition from [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+Containerd v1.6+ does not work with weave CNI plugin; the latest supported containerd version is therefore v1.5.11.<br>
+For more information, see issue [here](https://github.com/containernetworking/cni/issues/895)._
+
+We use the procedure for the community edition from [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
 Versions we use:
 
 - 19.03 and 20.10 <br> _(versions 17.03, 18.03, 18.09 used to work - not tested anymore)_
+- Containerd: 1.5.11 _(v1.6+ not supported)_
 
 How we do it:
 
 ```
-curl -fsSL https://get.docker.com -o get-docker.sh
+# Install dependencies
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
 
-sudo sh get-docker.sh
+# Add Docker’s official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /usr/share/keyrings/docker-archive-keyring.gpg
 
+# Set up the stable repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker engine
+sudo apt-get update
+sudo apt-get install -y docker-ce=5:20.10.14~3-0~ubuntu-bionic docker-ce-cli=5:20.10.14~3-0~ubuntu-bionic containerd.io=1.5.11-1 docker-compose-plugin
+ 
 # Add user to docker group
 sudo usermod -aG docker <your-user>
 
