@@ -104,6 +104,10 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
 
 ## Tolerations for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

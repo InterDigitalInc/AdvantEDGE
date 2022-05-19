@@ -596,6 +596,10 @@ alertmanager:
           - matchExpressions:
             - key: node-role.kubernetes.io/master
               operator: Exists
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
 
     ## If specified, the pod's tolerations.
     ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -2472,6 +2476,10 @@ prometheus:
           nodeSelectorTerms:
           - matchExpressions:
             - key: node-role.kubernetes.io/master
+              operator: Exists
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
               operator: Exists
 
 

@@ -397,6 +397,10 @@ master:
         - matchExpressions:
           - key: node-role.kubernetes.io/master
             operator: Exists
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
 
 
   ## Redis(TM) Master Service properties
@@ -546,6 +550,10 @@ slave:
         nodeSelectorTerms:
         - matchExpressions:
           - key: node-role.kubernetes.io/master
+            operator: Exists
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.kubernetes.io/control-plane
             operator: Exists
 
   ## Kubernetes Spread Constraints for pod assignment

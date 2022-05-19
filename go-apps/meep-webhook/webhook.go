@@ -372,9 +372,6 @@ func (whsvr *WebhookServer) mutate(ar *admissionv1.AdmissionReview) *admissionv1
 	req := ar.Request
 	log.Info("Mutate request Name[", req.Name, "] Kind[", req.Kind, "] Namespace[", req.Namespace, "]")
 
-	fmt.Printf("%+v\n", req)
-	log.Error("Object: ", string(req.Object.Raw))
-
 	// Get scenario name
 	scenarioName := getScenarioName(req.Namespace)
 

@@ -260,6 +260,10 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
 
 ## Additional init containers (evaluated as template)
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
