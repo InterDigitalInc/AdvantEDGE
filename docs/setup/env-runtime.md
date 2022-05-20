@@ -68,6 +68,9 @@ sudo apt-get install -y docker-ce=5:20.10.14~3-0~ubuntu-bionic docker-ce-cli=5:2
 # Add user to docker group
 sudo usermod -aG docker <your-user>
 
+# Allow user to access containerd socket 
+sudo setfacl --modify user:<your-user>:rw /run/containerd/containerd.sock
+
 # Restart shell to apply changes
 ```
 
@@ -188,6 +191,7 @@ Allow scheduling pods on master node [(details)](https://kubernetes.io/docs/setu
 
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 ```
 
 Install the network add-on [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network)
