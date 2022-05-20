@@ -37,7 +37,7 @@ We use the official [Go Programming Language install procedure](https://golang.o
 
 Versions we use:
 
-- 1.14, 1.15, 1.16, 1.1
+- 1.16 - 1.18 <br> (versions 1.14, 1.15 used to work - not tested anymore)
 
 How we do it:
 
