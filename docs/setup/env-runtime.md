@@ -239,7 +239,7 @@ On each worker node:
 sudo sysctl net.bridge.bridge-nf-call-iptables=1
 
 # Join worker node
-kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
+sudo kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
 
 # Configure the worker node
 mkdir ~/.kube
@@ -293,10 +293,10 @@ How we do it:
 ### Install Helm from scratch[(details)](https://helm.sh/docs/intro/install/)
 
 ```
-sudo snap install helm --channel=3.3/stable --classic
+sudo snap install helm --channel=3.7/stable --classic
 
 # If you have already installed helm v3, use the refresh command below to configure it to 3.3 instead
-sudo snap refresh helm --channel=3.3/stable --classic
+sudo snap refresh helm --channel=3.7/stable --classic
 ```
 
 ### Upgrade Helm v2 to v3
