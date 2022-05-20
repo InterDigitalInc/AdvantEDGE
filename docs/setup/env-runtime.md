@@ -48,6 +48,21 @@ Versions we use:
 
 How we do it:
 
+If upgrading from an older version, start by uninstalling it:
+
+```
+# Uninstall the Docker Engine, CLI, Containerd, and Docker Compose packages
+sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Delete all images, containers, and volumes
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
+
+sudo reboot
+```
+
+To install the latest supported version:
+
 ```
 # Install dependencies
 sudo apt-get update
