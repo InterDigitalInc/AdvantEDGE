@@ -79,7 +79,10 @@ echo \
 # Install Docker engine
 sudo apt-get update
 sudo apt-get install -y docker-ce=5:20.10.14~3-0~ubuntu-bionic docker-ce-cli=5:20.10.14~3-0~ubuntu-bionic containerd.io=1.5.11-1 docker-compose-plugin
- 
+
+# Lock current version
+sudo apt-mark hold docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
 # Add user to docker group
 sudo usermod -aG docker <your-user>
 
