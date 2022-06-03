@@ -309,14 +309,14 @@ sudo snap refresh helm --channel=3.7/stable --classic
 ##### STEP 2 - Install Helm v3
 
 ```
-sudo snap refresh helm --channel=3.3/stable --classic
+sudo snap refresh helm --channel=3.7/stable --classic
 ```
 
 ##### STEP 3 - Check helm installation
 
 ```
 helm version
-# Output should show version as 3.3.1
+# Output should show version as 3.7.0
 ```
 
 ##### STEP 4 - Download helm v2 to v3 plugin to get the helm v2 configuration and data
