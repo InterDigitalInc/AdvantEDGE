@@ -350,7 +350,7 @@ helm 2to3 cleanup
 
 ### NVIDIA
 
-In order for Kubernetes to be aware of available GPU resources on its nodes, each host with a GPU must install the necessary drivers and vendor-specific device plugin. Also, the docker container runtime must be changed to make the GPUs visible within the containers. More information can be found in this [blog post](https://devblogs.nvidia.com/gpu-containers-runtime/).
+In order for Kubernetes to be aware of available GPU resources on its nodes, each host with a GPU must install the necessary drivers. The NVIDIA GPU Operator must also be installed in order to configure, install & validate all other components required to enable GPUs on k8s, such as the NVIDIA container runtime, device plugin & CUDA toolkit. More information can be found in this [blog post](https://developer.nvidia.com/blog/announcing-containerd-support-for-the-nvidia-gpu-operator/).
 
 How we do it:
 
@@ -366,8 +366,8 @@ sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt update
 
 # Install the NVIDIA drivers
-# sudo apt-get install nvidia-<version>
-sudo apt-get install nvidia-415
+# sudo apt-get install nvidia-driver-<version>
+sudo apt-get install nvidia-driver-510
 ```
 
 Verify driver installation:
@@ -378,88 +378,42 @@ nvidia-smi
 
 # Sample output:
 +-----------------------------------------------------------------------------+
-| NVIDIA-SMI 415.27       Driver Version: 415.27       CUDA Version: 10.0     |
+| NVIDIA-SMI 510.73.05    Driver Version: 510.73.05    CUDA Version: 11.6     |
 |-------------------------------+----------------------+----------------------+
 | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
 | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
 |===============================+======================+======================|
-|   0  GeForce GTX 1050    Off  | 00000000:01:00.0  On |                  N/A |
-| 40%   34C    P8    N/A /  75W |    296MiB /  1999MiB |      0%      Default |
+|   0  NVIDIA GeForce ...  Off  | 00000000:17:00.0 Off |                  N/A |
+|  0%   36C    P8     2W / 190W |     99MiB /  6144MiB |      0%      Default |
+|                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
 
 +-----------------------------------------------------------------------------+
-| Processes:                                                       GPU Memory |
-|  GPU       PID   Type   Process name                             Usage      |
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
 |=============================================================================|
-|    0       983      G   /usr/lib/xorg/Xorg                           161MiB |
-|    0      7315      G   compiz                                       131MiB |
+|    0   N/A  N/A      1447      G   /usr/lib/xorg/Xorg                 39MiB |
+|    0   N/A  N/A      1690      G   /usr/bin/gnome-shell               57MiB |
 +-----------------------------------------------------------------------------+
 ```
 
-##### STEP 2 - Install NVIDIA Container Runtime
+##### STEP 2 - Install NVIDIA GPU Operator
 
-Starting with Docker 19.03, NVIDIA GPU support is included in the default _runc_ container runtime. However, the NVIDIA device plugin requires the NVIDIA container runtime. We describe how to install it here.
+The NVIDIA GPU Operator configures, installs and validates the NVIDIA container runtime, device plugin & CUDA toolkit required to support GPUs within k8s containers. We use the NVIDIA method documented [here](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#install-nvidia-gpu-operator)
 
-We use the [NVIDIA Container Runtime for Docker](https://github.com/NVIDIA/nvidia-docker) procedure.
-
-_**IMPORTANT NOTE:** For older versions of docker you must install the nvidia-docker2 runtime as described [here](https://github.com/NVIDIA/nvidia-docker#upgrading-with-nvidia-docker2-deprecated)_
-
-Install container-toolkit & nvidia-runtime, and verify _runc_ runtime GPU support:
+_**NOTE:** This procedure will take some time during first installation_
 
 ```
-# Add the package repositories
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+# Add the NVIDIA helm repository
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
 
-sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit nvidia-container-runtime
-sudo systemctl restart docker
-
-# Test nvidia-smi with the latest supported official CUDA image
-docker run --gpus all nvidia/cuda:9.0-base nvidia-smi
+# Install NVIDIA GPU Operator in Bare-metal/Passthrough with pre-installed NVIDIA drivers
+helm install gpu-operator --create-namespace nvidia/gpu-operator --set driver.enabled=false
 ```
 
-Update the default docker runtime by setting the following in `/etc/docker/daemon.json`:
-
-```
-{
-  "default-runtime": "nvidia",
-  "runtimes": {
-    "nvidia": {
-      "path": "/usr/bin/nvidia-container-runtime",
-      "runtimeArgs": [
-      ]
-    }
-  },
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
-```
-
-Restart the docker daemon & verify _nvidia_ runtime GPU support:
-
-```
-sudo systemctl restart docker
-
-# Test nvidia-smi with the latest supported official CUDA image
-docker run --rm nvidia/cuda:9.0-base nvidia-smi
-```
-
-##### STEP 3 - Install NVIDIA device plugin for Kubernetes
-
-We use the [NVIDIA Device Plugin for Kubernetes](https://github.com/nvidia/k8s-device-plugin) procedure.
-
-Install the device plugin DaemonSet using the following command:
-
-```
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta/nvidia-device-plugin.yml
-```
-
-##### STEP 4 - Deploy a scenario requiring GPU resources
+##### STEP 3 - Deploy a scenario requiring GPU resources
 
 This can be done via AdvantEDGE frontend scenario configuration by selecting the number of requested GPUs for a specific application (GPU type must be set to _NVIDIA_). The application image must include or be based on an official NVIDIA image containing the matching NVIDIA drivers. DockerHub images can be found [here](https://hub.docker.com/r/nvidia/cuda/).
 
