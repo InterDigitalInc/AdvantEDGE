@@ -1,0 +1,22 @@
+{{- if and .Values.alertmanager.enabled .Values.alertmanager.alertmanagerSpec.persistentVolume.enabled }}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  capacity:
+    storage: {{ .Values.alertmanager.alertmanagerSpec.persistentVolume.size }}
+  accessModes:
+  {{- range .Values.alertmanager.alertmanagerSpec.persistentVolume.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.alertmanager.alertmanagerSpec.persistentVolume.reclaimPolicy }}
+  hostPath:
+    path: "{{.Values.alertmanager.alertmanagerSpec.persistentVolume.location}}"
+  storageClassName: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
+{{- end }}
