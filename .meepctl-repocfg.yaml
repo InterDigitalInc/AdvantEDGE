@@ -887,17 +887,6 @@ repo:
       chart: charts/kube-state-metrics
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-kube-state-metrics.yaml
-    meep-minio:
-      # enable meepctl build -> deps are never built
-      build: false
-      # enable meepctl dockerize -> deps are never dockerized
-      dockerize: false
-      # enable meepctl deploy/delete
-      deploy: false
-      # location of deployment chart
-      chart: charts/minio
-      # user supplied value file located @ .meep/user/values (use below file name)
-      chart-user-values: meep-minio.yaml
     meep-open-map-tiles:
       # enable meepctl build -> deps are never built
       build: false
