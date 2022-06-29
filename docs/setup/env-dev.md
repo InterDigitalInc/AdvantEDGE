@@ -91,7 +91,7 @@ NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows 
 Versions we use:
 
 - NVM: 0.34.0
-- Node.js: 8.11, 10.15, 10.16, 10.19
+- Node.js: 8.11, 10.15, 10.16, 10.19, 12.19
 - npm: 6.8, 6.9, 6.11, 6.12, 6.14
 
 How we do it:
@@ -118,13 +118,10 @@ source ~/.profile
 
 ##### STEP 4 - Install Node.js (latest LTS version)
 
-_**IMPORTANT NOTE:** Latest LTS version 12+ causes demo1 build failures (see issue [here](https://github.com/InterDigitalInc/AdvantEDGE/issues/32))<br>
-Workaround is to install previous LTS version 10 until issue is fixed_
-
 ```
-# Retrieve & install latest v10 Node.js versions
+# Retrieve & install latest v12 Node.js versions
 nvm ls-remote | grep "Latest LTS"
-nvm install 10.16.3
+nvm install 12.19.0
 ```
 
 ##### STEP 5 - Update NPM version bundled with Node.js
@@ -140,8 +137,8 @@ node -v
 npm -v
 
 # Example output:
-#   v10.16.3
-#   6.12.0
+#   v12.19.0
+#   6.14.8
 ```
 
 
