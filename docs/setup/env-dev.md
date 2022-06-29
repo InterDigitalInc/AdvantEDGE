@@ -78,7 +78,7 @@ go version
 
 # Example output:
 #   /usr/local/go/bin/go
-#   go version go1.15.3 linux/amd64
+#   go version go1.18.1 linux/amd64
 ```
 
 ----
