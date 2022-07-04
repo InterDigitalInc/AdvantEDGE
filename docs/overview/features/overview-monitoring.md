@@ -26,8 +26,8 @@ This feature provides the following capabilities:
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
 - _Metrics Long-term Storage (Optional)_
-  - Long-term data retention: Thanos pushes Prometheus metrics to MinIO high-performance object store every 2 hours
-  - Daily backups: cronjob pushes InfluxDB data to MinIO object store
+  - Long-term data retention: Thanos pushes Prometheus metrics to object store every 2 hours
+  - Daily backups: cronjob pushes InfluxDB data to object store
 
 ## Micro-Services
 - _InfluxDB:_ Time-Series database - used to monitor scenario network characteristics, events & custom user metrics.
@@ -35,7 +35,6 @@ This feature provides the following capabilities:
 - _metrics-engine:_ Collects automated measurements and implements the metrics API
 - _Prometheus:_ Collects platform micro-services metrics
 - _Thanos:_ Prometheus extension for long-term metrics storage (disabled by default)
-- _MinIO:_ S3 object store for long-term metrics storage (disabled by default)
 
 ## Scenario Configuration
 No scenario configuration
@@ -122,10 +121,3 @@ Thanos components used in AdvantEDGE include:
 Thanos must be configured & deployed with an object store where long-term data is stored.
 
 _**NOTE:** Thanos is disabled by default in the AdvantEDGE deployment configuration._
-
-### MinIO
-MinIO is a high performance object storage solution that provides an Amazon Web Services S3-compatible API.
-
-In AdvantEDGE, it is used by Thanos & InfluxDB for long-term data retention.
-
-_**NOTE:** MinIO is disabled by default in the AdvantEDGE deployment configuration._
