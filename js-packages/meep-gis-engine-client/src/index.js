@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AutomationState', 'model/AutomationStateList', 'model/Distance', 'model/GeoData', 'model/GeoDataAssetList', 'model/LineString', 'model/Point', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange', 'model/GeoDataAsset', 'api/AutomationApi', 'api/GeospatialDataApi'], factory);
+    define(['ApiClient', 'model/AutomationState', 'model/AutomationStateList', 'model/CoordinatePower', 'model/CoordinatePowerList', 'model/Distance', 'model/GeoCoordinate', 'model/GeoCoordinateList', 'model/GeoData', 'model/GeoDataAssetList', 'model/LineString', 'model/Point', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange', 'model/GeoDataAsset', 'api/AutomationApi', 'api/GeospatialDataApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/AutomationState'), require('./model/AutomationStateList'), require('./model/Distance'), require('./model/GeoData'), require('./model/GeoDataAssetList'), require('./model/LineString'), require('./model/Point'), require('./model/TargetPoint'), require('./model/TargetRange'), require('./model/WithinRange'), require('./model/GeoDataAsset'), require('./api/AutomationApi'), require('./api/GeospatialDataApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/AutomationState'), require('./model/AutomationStateList'), require('./model/CoordinatePower'), require('./model/CoordinatePowerList'), require('./model/Distance'), require('./model/GeoCoordinate'), require('./model/GeoCoordinateList'), require('./model/GeoData'), require('./model/GeoDataAssetList'), require('./model/LineString'), require('./model/Point'), require('./model/TargetPoint'), require('./model/TargetRange'), require('./model/WithinRange'), require('./model/GeoDataAsset'), require('./api/AutomationApi'), require('./api/GeospatialDataApi'));
   }
-}(function(ApiClient, AutomationState, AutomationStateList, Distance, GeoData, GeoDataAssetList, LineString, Point, TargetPoint, TargetRange, WithinRange, GeoDataAsset, AutomationApi, GeospatialDataApi) {
+}(function(ApiClient, AutomationState, AutomationStateList, CoordinatePower, CoordinatePowerList, Distance, GeoCoordinate, GeoCoordinateList, GeoData, GeoDataAssetList, LineString, Point, TargetPoint, TargetRange, WithinRange, GeoDataAsset, AutomationApi, GeospatialDataApi) {
   'use strict';
 
   /**
@@ -87,10 +87,30 @@
      */
     AutomationStateList: AutomationStateList,
     /**
+     * The CoordinatePower model constructor.
+     * @property {module:model/CoordinatePower}
+     */
+    CoordinatePower: CoordinatePower,
+    /**
+     * The CoordinatePowerList model constructor.
+     * @property {module:model/CoordinatePowerList}
+     */
+    CoordinatePowerList: CoordinatePowerList,
+    /**
      * The Distance model constructor.
      * @property {module:model/Distance}
      */
     Distance: Distance,
+    /**
+     * The GeoCoordinate model constructor.
+     * @property {module:model/GeoCoordinate}
+     */
+    GeoCoordinate: GeoCoordinate,
+    /**
+     * The GeoCoordinateList model constructor.
+     * @property {module:model/GeoCoordinateList}
+     */
+    GeoCoordinateList: GeoCoordinateList,
     /**
      * The GeoData model constructor.
      * @property {module:model/GeoData}

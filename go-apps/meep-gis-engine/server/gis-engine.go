@@ -41,11 +41,16 @@ import (
 
 const serviceName = "GIS Engine"
 const moduleName = "meep-gis-engine"
-const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
-const influxAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
+
+var redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+var influxAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
+
 const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
+
+var postgisHost string = ""
+var postgisPort string = ""
 
 // Enable profiling
 const profiling = false
@@ -172,7 +177,7 @@ func Init() (err error) {
 	log.Info("Connected to GIS Cache")
 
 	// Connect to GIS Asset Manager
-	ge.assetMgr, err = am.NewAssetMgr(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")
+	ge.assetMgr, err = am.NewAssetMgr(moduleName, ge.sandboxName, postgisUser, postgisPwd, postgisHost, postgisPort)
 	if err != nil {
 		log.Error("Failed connection to GIS Asset Manager: ", err)
 		return err
@@ -279,13 +284,13 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 
 	switch msg.Message {
 	case mq.MsgScenarioActivate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		log.Info("RX MSG: ", mq.PrintMsg(msg))
 		processScenarioActivate()
 	case mq.MsgScenarioUpdate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		log.Info("RX MSG: ", mq.PrintMsg(msg))
 		processScenarioUpdate()
 	case mq.MsgScenarioTerminate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		log.Info("RX MSG: ", mq.PrintMsg(msg))
 		processScenarioTerminate()
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
@@ -293,6 +298,7 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 }
 
 func processScenarioActivate() {
+
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
@@ -342,6 +348,7 @@ func processScenarioActivate() {
 }
 
 func processScenarioUpdate() {
+
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
@@ -369,6 +376,7 @@ func processScenarioUpdate() {
 }
 
 func processScenarioTerminate() {
+
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
@@ -384,7 +392,7 @@ func processScenarioTerminate() {
 	_ = ge.assetMgr.DeleteAllCompute()
 
 	// Clear asset list
-	log.Debug("GeoData deleted for all assets")
+	log.Info("GeoData deleted for all assets")
 	ge.assets = make(map[string]*Asset)
 
 	// Flush cache
@@ -392,6 +400,7 @@ func processScenarioTerminate() {
 }
 
 func setAssets(assetList []string) {
+
 	for _, assetName := range assetList {
 		var geoData *AssetGeoData = nil
 		var err error
@@ -456,21 +465,21 @@ func removeAssets(assetList []string) {
 		delete(ge.assets, assetName)
 
 		if isUe(nodeType) {
-			log.Debug("GeoData deleted for UE: ", assetName)
+			log.Info("GeoData deleted for UE: ", assetName)
 			err := ge.assetMgr.DeleteUe(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
 		} else if isPoa(nodeType) {
-			log.Debug("GeoData deleted for POA: ", assetName)
+			log.Info("GeoData deleted for POA: ", assetName)
 			err := ge.assetMgr.DeletePoa(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
 		} else if isCompute(nodeType) {
-			log.Debug("GeoData deleted for Compute: ", assetName)
+			log.Info("GeoData deleted for Compute: ", assetName)
 			err := ge.assetMgr.DeleteCompute(assetName)
 			if err != nil {
 				log.Error(err.Error())
@@ -516,7 +525,7 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 		if err != nil {
 			return err
 		}
-		log.Debug("GeoData created for UE: ", asset.name)
+		log.Info("GeoData created for UE: ", asset.name)
 		asset.geoData = geoData
 
 	} else {
@@ -554,7 +563,7 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 			if err != nil {
 				return err
 			}
-			log.Debug("GeoData updated for UE: ", asset.name)
+			log.Info("GeoData updated for UE: ", asset.name)
 		}
 	}
 
@@ -582,7 +591,7 @@ func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) 
 		if err != nil {
 			return err
 		}
-		log.Debug("GeoData stored for POA: ", asset.name)
+		log.Info("GeoData stored for POA: ", asset.name)
 		asset.geoData = geoData
 	} else {
 		// Update Geodata
@@ -601,7 +610,7 @@ func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) 
 			if err != nil {
 				return err
 			}
-			log.Debug("GeoData created for POA: ", asset.name)
+			log.Info("GeoData created for POA: ", asset.name)
 		}
 	}
 	return nil
@@ -628,7 +637,7 @@ func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoD
 		if err != nil {
 			return err
 		}
-		log.Debug("GeoData created for Compute: ", asset.name)
+		log.Info("GeoData created for Compute: ", asset.name)
 		asset.geoData = geoData
 	} else {
 		// Update Geodata
@@ -650,7 +659,7 @@ func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoD
 			if err != nil {
 				return err
 			}
-			log.Debug("GeoData updated for Compute: ", asset.name)
+			log.Info("GeoData updated for Compute: ", asset.name)
 		}
 	}
 	return nil
@@ -990,7 +999,7 @@ func updateCache() {
 
 	if profiling {
 		proFinish = time.Now()
-		log.Debug("updateCache: ", proFinish.Sub(proStart))
+		log.Info("updateCache: ", proFinish.Sub(proStart))
 	}
 }
 
@@ -1031,7 +1040,7 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	log.Debug("Delete GeoData for asset: ", asset.name)
+	log.Info("Delete GeoData for asset: ", asset.name)
 
 	// Remove asset from DB
 	if isUe(asset.typ) {
@@ -1081,7 +1090,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	if subType != "" {
 		subTypeStr = subType
 	}
-	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "] excludePath[", excludePath, "]")
+	log.Info("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "] excludePath[", excludePath, "]")
 
 	var assetList GeoDataAssetList
 
@@ -1204,7 +1213,7 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Debug("Get Distance GeoData for asset: ", assetName)
+	log.Info("Get Distance GeoData for asset: ", assetName)
 
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
@@ -1324,7 +1333,7 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Debug("Get Within Range GeoData for asset: ", assetName)
+	log.Info("Get Within Range GeoData for asset: ", assetName)
 
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
@@ -1439,14 +1448,20 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
+
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Debug("Get GeoData for asset: ", assetName)
+	//log.Info("Get GeoData for asset: ", assetName)
 
 	// Retrieve query parameters
 	query := r.URL.Query()
+	//log.Info("geGetGeoDataByName: query: ", query)
+	if assetName == "" {
+		assetName = query.Get("assetName")
+	}
 	excludePath := query.Get("excludePath")
+	//log.Info("geGetGeoDataByName: excludePath: ", excludePath)
 
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
@@ -1548,7 +1563,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Debug("Set GeoData for asset: ", assetName)
+	log.Info("Set GeoData for asset: ", assetName)
 
 	// Retrieve Geodata to set from request body
 	var geoData GeoDataAsset
@@ -1628,6 +1643,75 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func geGetGeoDataPowerValues(w http.ResponseWriter, r *http.Request) {
+	// Retrieve coordinates to work with from request body
+	var coordinates GeoCoordinateList
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&coordinates)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var geocoordinates []am.Coordinate
+	for _, geocoordinate := range coordinates.GeoCoordinates {
+		geocoordinates = append(geocoordinates, am.Coordinate{
+			Latitude:  geocoordinate.Latitude,
+			Longitude: geocoordinate.Longitude,
+		})
+	}
+
+	coordinatesPower, err := ge.assetMgr.GetPowerValuesForCoordinates(geocoordinates)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var intCoordinatesPower CoordinatePowerList
+	for _, coordinatePower := range coordinatesPower {
+		var intCoordinatePower = CoordinatePower{
+			Latitude:  coordinatePower.Latitude,
+			Longitude: coordinatePower.Longitude,
+			Rsrq:      int32(coordinatePower.Rsrq),
+			Rsrp:      int32(coordinatePower.Rsrp),
+		}
+		if coordinatePower.PoaName != "" {
+			intCoordinatePower.PoaName = coordinatePower.PoaName
+		}
+
+		intCoordinatesPower.CoordinatesPower = append(intCoordinatesPower.CoordinatesPower, intCoordinatePower)
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(&intCoordinatesPower)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	jsonResponseStr := string(jsonResponse)
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, jsonResponseStr)
 }
 
 func (ge *GisEngine) StartSnapshotThread() error {

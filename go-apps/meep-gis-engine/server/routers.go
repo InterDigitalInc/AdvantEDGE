@@ -143,6 +143,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"GetGeoDataPowerValues",
+		strings.ToUpper("Post"),
+		"/gis/v1/geodata/cellularPower",
+		GetGeoDataPowerValues,
+	},
+
+	Route{
 		"UpdateGeoDataByName",
 		strings.ToUpper("Post"),
 		"/gis/v1/geodata/{assetName}",

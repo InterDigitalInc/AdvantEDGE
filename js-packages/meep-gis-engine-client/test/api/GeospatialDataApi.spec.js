@@ -236,6 +236,49 @@
           done();
         });
       });
+      describe('getGeoDataPowerValues', function() {
+        it('should call getGeoDataPowerValues successfully', function(done) {
+          // TODO: uncomment, update parameter values for getGeoDataPowerValues call and complete the assertions
+          /*
+          var coordinates = new AdvantEdgeGisEngineRestApi.GeoCoordinateList();
+          coordinates.geoCoordinates = [new AdvantEdgeGisEngineRestApi.GeoCoordinate()];
+          coordinates.geoCoordinates[0].latitude = 0.0;
+          coordinates.geoCoordinates[0].longitude = 0.0;
+
+          instance.getGeoDataPowerValues(coordinates, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.CoordinatePowerList);
+            {
+              let dataCtr = data.coordinatesPower;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeGisEngineRestApi.CoordinatePower);
+                expect(data.latitude).to.be.a('number');
+                expect(data.latitude).to.be(0.0);
+                expect(data.longitude).to.be.a('number');
+                expect(data.longitude).to.be(0.0);
+                expect(data.rsrq).to.be.a('number');
+                expect(data.rsrq).to.be(0);
+                expect(data.rsrp).to.be.a('number');
+                expect(data.rsrp).to.be(0);
+                expect(data.poaName).to.be.a('string');
+                expect(data.poaName).to.be("");
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('getWithinRangeByName', function() {
         it('should call getWithinRangeByName successfully', function(done) {
           // TODO: uncomment, update parameter values for getWithinRangeByName call and complete the assertions

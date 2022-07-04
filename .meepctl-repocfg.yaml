@@ -205,7 +205,6 @@ repo:
   #  Core Subsystem
   #------------------------------
   core:
-
     # Go Applications
     go-apps:
       meep-auth-svc:
@@ -305,6 +304,7 @@ repo:
           - meep-sandbox-ctrl
           - meep-tc-engine
           - meep-app-enablement
+          - meep-vis
         # location of API specifications
         api:
           - name: 'AdvantEDGE Monitoring Engine REST API'
@@ -383,6 +383,7 @@ repo:
           meep-tc-engine: charts/meep-tc-engine
           meep-app-enablement: charts/meep-app-enablement
           meep-virt-chart-templates: charts/meep-virt-chart-templates
+          meep-vis: charts/meep-vis
         # list of sandbox specific pods
         sandbox-pods:
           - meep-gis-engine
@@ -395,6 +396,7 @@ repo:
           - meep-sandbox-ctrl
           - meep-tc-engine
           - meep-app-enablement
+          - meep-vis
       meep-webhook:
         # location of source code
         src: go-apps/meep-webhook
@@ -447,7 +449,6 @@ repo:
   #  Sandbox Subsystem
   #------------------------------
   sandbox:
-
     # Go Applications
     go-apps:
       meep-ams:
@@ -771,6 +772,38 @@ repo:
         docker-data:
           # location of entry script
           'entrypoint.sh': go-apps/meep-wais/entrypoint.sh
+      meep-vis:
+        # location of source code
+        src: go-apps/meep-vis
+        # location of binary
+        bin: bin/meep-vis
+        # location of deployment chart
+        chart: charts/meep-vis
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-vis.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports linting
+        lint: true
+        # location of API specifications
+        api:
+          - name: 'AdvantEDGE V2X Information Service REST API'
+            file: go-apps/meep-vis/api/swagger.yaml
+        # location of user supplied API specifications
+        user-api:
+        # resources available to docker container image
+        docker-data:
+          # location of entry script
+          'entrypoint.sh': go-apps/meep-vis/entrypoint.sh
 
   #------------------------------
   #  Dependencies
@@ -935,7 +968,6 @@ repo:
   #  Packages
   #------------------------------
   packages:
-
     # Go Packages
     go-packages:
       meep-ams-client:
@@ -1113,9 +1145,19 @@ repo:
         src: go-packages/meep-websocket
         # supports linting
         lint: true
+      meep-vis-client:
+        # location of source code
+        src: go-packages/meep-vis-client
+        # supports linting
+        lint: false
 
     # Javascript Packages
     js-packages:
+      meep-app-support-client:
+        # location of source code
+        src: js-packages/meep-app-support-client
+        # supports linting
+        lint: false
       meep-auth-svc-client:
         # location of source code
         src: js-packages/meep-auth-svc-client
@@ -1144,5 +1186,10 @@ repo:
       meep-sandbox-ctrl-client:
         # location of source code
         src: js-packages/meep-sandbox-ctrl-client
+        # supports linting
+        lint: false
+      meep-service-mgmt-client:
+        # location of source code
+        src: js-packages/meep-service-mgmt-client
         # supports linting
         lint: false

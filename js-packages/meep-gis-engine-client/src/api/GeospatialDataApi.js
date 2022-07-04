@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Distance', 'model/GeoDataAsset', 'model/GeoDataAssetList', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange'], factory);
+    define(['ApiClient', 'model/CoordinatePowerList', 'model/Distance', 'model/GeoCoordinateList', 'model/GeoDataAsset', 'model/GeoDataAssetList', 'model/TargetPoint', 'model/TargetRange', 'model/WithinRange'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/Distance'), require('../model/GeoDataAsset'), require('../model/GeoDataAssetList'), require('../model/TargetPoint'), require('../model/TargetRange'), require('../model/WithinRange'));
+    module.exports = factory(require('../ApiClient'), require('../model/CoordinatePowerList'), require('../model/Distance'), require('../model/GeoCoordinateList'), require('../model/GeoDataAsset'), require('../model/GeoDataAssetList'), require('../model/TargetPoint'), require('../model/TargetRange'), require('../model/WithinRange'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeGisEngineRestApi) {
       root.AdvantEdgeGisEngineRestApi = {};
     }
-    root.AdvantEdgeGisEngineRestApi.GeospatialDataApi = factory(root.AdvantEdgeGisEngineRestApi.ApiClient, root.AdvantEdgeGisEngineRestApi.Distance, root.AdvantEdgeGisEngineRestApi.GeoDataAsset, root.AdvantEdgeGisEngineRestApi.GeoDataAssetList, root.AdvantEdgeGisEngineRestApi.TargetPoint, root.AdvantEdgeGisEngineRestApi.TargetRange, root.AdvantEdgeGisEngineRestApi.WithinRange);
+    root.AdvantEdgeGisEngineRestApi.GeospatialDataApi = factory(root.AdvantEdgeGisEngineRestApi.ApiClient, root.AdvantEdgeGisEngineRestApi.CoordinatePowerList, root.AdvantEdgeGisEngineRestApi.Distance, root.AdvantEdgeGisEngineRestApi.GeoCoordinateList, root.AdvantEdgeGisEngineRestApi.GeoDataAsset, root.AdvantEdgeGisEngineRestApi.GeoDataAssetList, root.AdvantEdgeGisEngineRestApi.TargetPoint, root.AdvantEdgeGisEngineRestApi.TargetRange, root.AdvantEdgeGisEngineRestApi.WithinRange);
   }
-}(this, function(ApiClient, Distance, GeoDataAsset, GeoDataAssetList, TargetPoint, TargetRange, WithinRange) {
+}(this, function(ApiClient, CoordinatePowerList, Distance, GeoCoordinateList, GeoDataAsset, GeoDataAssetList, TargetPoint, TargetRange, WithinRange) {
   'use strict';
 
   /**
@@ -52,7 +52,7 @@
    */
 
   /**
-   * Constructs a new GeospatialDataApi. 
+   * Constructs a new GeospatialDataApi.
    * @alias module:api/GeospatialDataApi
    * @class
    * @param {module:ApiClient} [apiClient] Optional API client implementation to use,
@@ -259,6 +259,53 @@
 
       return this.apiClient.callApi(
         '/geodata/{assetName}', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the getGeoDataPowerValues operation.
+     * @callback module:api/GeospatialDataApi~getGeoDataPowerValuesCallback
+     * @param {String} error Error message, if any.
+     * @param {module:model/CoordinatePowerList} data The data returned by the service call.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Get RSRQ and RSRP values for a list of coordinates
+     * Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
+     * @param {module:model/GeoCoordinateList} coordinates List of geo coordinates
+     * @param {module:api/GeospatialDataApi~getGeoDataPowerValuesCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/CoordinatePowerList}
+     */
+    this.getGeoDataPowerValues = function(coordinates, callback) {
+      var postBody = coordinates;
+
+      // verify the required parameter 'coordinates' is set
+      if (coordinates === undefined || coordinates === null) {
+        throw new Error("Missing the required parameter 'coordinates' when calling getGeoDataPowerValues");
+      }
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = CoordinatePowerList;
+
+      return this.apiClient.callApi(
+        '/geodata/cellularPower', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

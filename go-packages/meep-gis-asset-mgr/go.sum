@@ -1,4 +1,8 @@
+github.com/InterDigitalInc/AdvantEDGE v1.8.1 h1:2jZJ/Hu6IDweJifEpbOD8PP9pX03AQlZGNnrhv1Die8=
+github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0-20211214133749-f203f7ab4f1c h1:enMVVX7j6tb6KbI6Bp0iaCde1fbai8ddBefqVMmOo68=
+github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0-20211214133749-f203f7ab4f1c/go.mod h1:IAOr9MhG0XgSEMTJOt6JA4iacKrNgTZuCxk7ofjrQBs=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/lib/pq v1.5.2 h1:yTSXVswvWUOQ3k1sd7vJfDrbSl8lKuscqFJRqjC0ifw=
 github.com/lib/pq v1.5.2/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=

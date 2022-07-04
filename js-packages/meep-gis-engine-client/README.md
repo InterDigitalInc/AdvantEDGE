@@ -121,6 +121,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getAssetData**](docs/GeospatialDataApi.md#getAssetData) | **GET** /geodata | Get geospatial data
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getDistanceGeoDataByName**](docs/GeospatialDataApi.md#getDistanceGeoDataByName) | **POST** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getGeoDataByName**](docs/GeospatialDataApi.md#getGeoDataByName) | **GET** /geodata/{assetName} | Get geospatial data
+*AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getGeoDataPowerValues**](docs/GeospatialDataApi.md#getGeoDataPowerValues) | **POST** /geodata/cellularPower | Get RSRQ and RSRP values for a list of coordinates
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**getWithinRangeByName**](docs/GeospatialDataApi.md#getWithinRangeByName) | **POST** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 *AdvantEdgeGisEngineRestApi.GeospatialDataApi* | [**updateGeoDataByName**](docs/GeospatialDataApi.md#updateGeoDataByName) | **POST** /geodata/{assetName} | Create/Update geospatial data
 
@@ -129,7 +130,11 @@ Class | Method | HTTP request | Description
 
  - [AdvantEdgeGisEngineRestApi.AutomationState](docs/AutomationState.md)
  - [AdvantEdgeGisEngineRestApi.AutomationStateList](docs/AutomationStateList.md)
+ - [AdvantEdgeGisEngineRestApi.CoordinatePower](docs/CoordinatePower.md)
+ - [AdvantEdgeGisEngineRestApi.CoordinatePowerList](docs/CoordinatePowerList.md)
  - [AdvantEdgeGisEngineRestApi.Distance](docs/Distance.md)
+ - [AdvantEdgeGisEngineRestApi.GeoCoordinate](docs/GeoCoordinate.md)
+ - [AdvantEdgeGisEngineRestApi.GeoCoordinateList](docs/GeoCoordinateList.md)
  - [AdvantEdgeGisEngineRestApi.GeoData](docs/GeoData.md)
  - [AdvantEdgeGisEngineRestApi.GeoDataAssetList](docs/GeoDataAssetList.md)
  - [AdvantEdgeGisEngineRestApi.LineString](docs/LineString.md)

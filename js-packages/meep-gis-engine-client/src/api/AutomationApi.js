@@ -52,7 +52,7 @@
    */
 
   /**
-   * Constructs a new AutomationApi. 
+   * Constructs a new AutomationApi.
    * @alias module:api/AutomationApi
    * @class
    * @param {module:ApiClient} [apiClient] Optional API client implementation to use,

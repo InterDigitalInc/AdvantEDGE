@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**getAssetData**](GeospatialDataApi.md#getAssetData) | **GET** /geodata | Get geospatial data
 [**getDistanceGeoDataByName**](GeospatialDataApi.md#getDistanceGeoDataByName) | **POST** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 [**getGeoDataByName**](GeospatialDataApi.md#getGeoDataByName) | **GET** /geodata/{assetName} | Get geospatial data
+[**getGeoDataPowerValues**](GeospatialDataApi.md#getGeoDataPowerValues) | **POST** /geodata/cellularPower | Get RSRQ and RSRP values for a list of coordinates
 [**getWithinRangeByName**](GeospatialDataApi.md#getWithinRangeByName) | **POST** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 [**updateGeoDataByName**](GeospatialDataApi.md#updateGeoDataByName) | **POST** /geodata/{assetName} | Create/Update geospatial data
 
@@ -198,6 +199,52 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**GeoDataAsset**](GeoDataAsset.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getGeoDataPowerValues"></a>
+# **getGeoDataPowerValues**
+> CoordinatePowerList getGeoDataPowerValues(coordinates)
+
+Get RSRQ and RSRP values for a list of coordinates
+
+Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
+
+### Example
+```javascript
+var AdvantEdgeGisEngineRestApi = require('advant_edge_gis_engine_rest_api');
+
+var apiInstance = new AdvantEdgeGisEngineRestApi.GeospatialDataApi();
+
+var coordinates = new AdvantEdgeGisEngineRestApi.GeoCoordinateList(); // GeoCoordinateList | List of geo coordinates
+
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getGeoDataPowerValues(coordinates, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **coordinates** | [**GeoCoordinateList**](GeoCoordinateList.md)| List of geo coordinates | 
+
+### Return type
+
+[**CoordinatePowerList**](CoordinatePowerList.md)
 
 ### Authorization
 

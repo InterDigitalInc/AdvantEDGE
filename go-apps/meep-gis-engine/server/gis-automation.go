@@ -44,7 +44,6 @@ const (
 )
 
 func resetAutomation() {
-	log.Debug("Reset automation")
 
 	// Stop automation if running
 	_ = setAutomation(AutoTypeMovement, false)
@@ -102,7 +101,7 @@ func setAutomation(automationType string, state bool) (err error) {
 
 func startAutomation() {
 	if ge.automationTicker == nil {
-		log.Debug("Starting automation loop")
+		log.Info("Starting automation loop")
 		ge.automationTicker = time.NewTicker(1000 * time.Millisecond)
 		go func() {
 			for range ge.automationTicker.C {
@@ -116,11 +115,12 @@ func stopAutomation() {
 	if ge.automationTicker != nil {
 		ge.automationTicker.Stop()
 		ge.automationTicker = nil
-		log.Debug("Stopping automation loop")
+		log.Info("Stopping automation loop")
 	}
 }
 
 func runAutomation() {
+
 	var ueMap map[string]*am.Ue
 	var poaMap map[string]*am.Poa
 	var err error
@@ -146,6 +146,7 @@ func runAutomation() {
 	}
 
 	// Mobility
+	log.Info("runAutomation: ge.automation[AutoTypeMobility]: ", ge.automation[AutoTypeMobility])
 	if ge.automation[AutoTypeMobility] {
 		runAutoMobility(ueMap)
 	}
@@ -169,7 +170,7 @@ func runAutomation() {
 }
 
 func runAutoMovement() {
-	log.Debug("Auto Movement: updating UE positions")
+	log.Info("Auto Movement: updating UE positions")
 
 	// Calculate number of increments (seconds) for position update
 	currentTime := time.Now()
@@ -189,6 +190,7 @@ func runAutoMovement() {
 }
 
 func runAutoMobility(ueMap map[string]*am.Ue) {
+
 	for _, ue := range ueMap {
 		// Get stored UE info
 		ueInfo := getUeInfo(ue.Name)
@@ -418,7 +420,7 @@ func calculateThroughput(radius float32, distance float32, maxUl int32, maxDl in
 // ----------------------------  REST API  ------------------------------------
 
 func geGetAutomationState(w http.ResponseWriter, r *http.Request) {
-	log.Debug("Get all automation states")
+	log.Info("Get all automation states")
 
 	var automationList AutomationStateList
 	for automation, state := range ge.automation {
@@ -446,7 +448,6 @@ func geGetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
 	// Get automation type from request path parameters
 	vars := mux.Vars(r)
 	automationType := vars["type"]
-	log.Debug("Get automation state for type: ", automationType)
 
 	// Get automation state
 	var automationState AutomationState
@@ -476,16 +477,17 @@ func geGetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
 
 func geSetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
 	// Get automation type from request path parameters
-	vars := mux.Vars(r)
+	vars := mux.Vars(r) //returns map[] https://stackoverflow.com/questions/31371111/mux-vars-not-working
+	log.Info("geSetAutomationStateByName: vars: ", vars)
 	automationType := vars["type"]
 
 	// Retrieve requested state from query parameters
 	query := r.URL.Query()
 	automationState, _ := strconv.ParseBool(query.Get("run"))
 	if automationState {
-		log.Debug("Start automation for type: ", automationType)
+		log.Info("Start automation for type: ", automationType)
 	} else {
-		log.Debug("Stop automation for type: ", automationType)
+		log.Info("Stop automation for type: ", automationType)
 	}
 
 	// Set automation state
