@@ -1,4 +1,4 @@
-# ExpiryNotificationLinks
+# CellChangeNotificationLinks
 ## Properties
 
 Name | Type | Description | Notes

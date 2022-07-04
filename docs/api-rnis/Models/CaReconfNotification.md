@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **secondaryCellAdd** | [**List**](CaReconfNotification_secondaryCellAdd.md) |  | [optional] [default to null]
 **secondaryCellRemove** | [**List**](CaReconfNotification_secondaryCellAdd.md) |  | [optional] [default to null]
 **timeStamp** | [**TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
+**\_links** | [**CaReconfNotification__links**](CaReconfNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

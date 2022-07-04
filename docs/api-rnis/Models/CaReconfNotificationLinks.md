@@ -1,4 +1,4 @@
-# ExpiryNotificationLinks
+# CaReconfNotificationLinks
 ## Properties
 
 Name | Type | Description | Notes
