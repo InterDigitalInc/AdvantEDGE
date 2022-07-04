@@ -9,8 +9,8 @@ Name | Type | Description | Notes
 **SrcEcgi** | [***Ecgi**](Ecgi.md) |  | [default to null]
 **TempUeId** | [***CellChangeNotificationTempUeId**](CellChangeNotification_tempUeId.md) |  | [optional] [default to null]
 **TimeStamp** | [***TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
-**TrgEcgi** | [**[]Ecgi**](Ecgi.md) | E-UTRAN Cell Global Identifier of the target cell. NOTE: Cardinality N is valid only in case of statuses IN_PREPARATION, REJECTED and CANCELLED. | [default to null]
+**TrgEcgi** | [**[]Ecgi**](Ecgi.md) | E-UTRAN Cell Global Identifier of the target cell. See note. NOTE: Cardinality N is valid only in case of statuses IN_PREPARATION, REJECTED and CANCELLED. | [default to null]
+**Links** | [***CaReconfNotificationLinks**](CaReconfNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
 

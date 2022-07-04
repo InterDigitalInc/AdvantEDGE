@@ -1,4 +1,4 @@
-# \MecServiceMgmtApi
+# {{classname}}
 
 All URIs are relative to *https://localhost/sandboxname/mec_service_mgmt/v1*
 
@@ -30,11 +30,10 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **appInstanceId** | **string**| Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager. | 
- **optional** | ***AppServicesGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***MecServiceMgmtApiAppServicesGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a AppServicesGETOpts struct
-
+Optional parameters are passed through a pointer to a MecServiceMgmtApiAppServicesGETOpts struct
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
@@ -303,11 +302,10 @@ This method retrieves information about a list of mecService resources. This met
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***ServicesGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***MecServiceMgmtApiServicesGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a ServicesGETOpts struct
-
+Optional parameters are passed through a pointer to a MecServiceMgmtApiServicesGETOpts struct
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **serInstanceId** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 

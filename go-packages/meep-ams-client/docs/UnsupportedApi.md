@@ -1,12 +1,11 @@
-# \UnsupportedApi
+# {{classname}}
 
-All URIs are relative to *https://localhost/sandboxname/amsi/v1*
+All URIs are relative to *https://localhost/amsi/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**AdjAppInstGET**](UnsupportedApi.md#AdjAppInstGET) | **Get** /queries/adjacent_app_instances | Retrieve information about this subscription.
 [**AppMobilityServiceDerPOST**](UnsupportedApi.md#AppMobilityServiceDerPOST) | **Post** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
-
 
 # **AdjAppInstGET**
 > []AdjacentAppInstanceInfo AdjAppInstGET(ctx, optional)
@@ -19,17 +18,16 @@ Retrieve information about this subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***AdjAppInstGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***UnsupportedApiAdjAppInstGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a AdjAppInstGETOpts struct
-
+Optional parameters are passed through a pointer to a UnsupportedApiAdjAppInstGETOpts struct
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **filter** | **optional.String**| Attribute-based filtering parameters according to ETSI GS MEC 011 | 
+ **filter** | **optional.String**| Attribute-based filtering parameters according to ETSI GS MEC 009 | 
  **allFields** | **optional.String**| Include all complex attributes in the response. | 
- **fields** | **optional.String**| Complex attributes to be included into the response. See clause 6.18 in ETSI GS MEC 011 | 
- **excludeFields** | **optional.String**| Complex attributes to be excluded from the response.See clause 6.18 in ETSI GS MEC 011 | 
+ **fields** | **optional.String**| Complex attributes to be included into the response. See clause 6.18 in ETSI GS MEC 009 | 
+ **excludeFields** | **optional.String**| Complex attributes to be excluded from the response.See clause 6.18 in ETSI GS MEC 009 | 
  **excludeDefault** | **optional.String**| Indicates to exclude the following complex attributes from the response  See clause 6.18 in ETSI GS MEC 011 for details. | 
 
 ### Return type

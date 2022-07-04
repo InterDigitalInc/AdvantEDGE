@@ -3,13 +3,13 @@ servers:
   - url: 'https://localhost/sandboxname/mec_service_mgmt/v1'
 info:
   title: AdvantEDGE MEC Service Management API
-  version: 2.1.1
+  version: 2.2.1
   description: "MEC Service Management Service is AdvantEDGE's implementation of
-  [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)
-  <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-  <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)
-  <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network
-  <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below)."
+    [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)
+    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
+    <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)
+    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network
+    <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below)."
   license:
     name: Apache 2.0
     url: 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE'
@@ -17,8 +17,8 @@ info:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
 externalDocs:
-  description: 'ETSI GS MEC011 Application Enablement API, V2.1.1'
-  url: 'https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf'
+  description: 'ETSI GS MEC011 Application Enablement API, V2.2.1'
+  url: 'https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf'
 tags:
   - name: mec_service_mgmt
 paths:
@@ -412,6 +412,9 @@ components:
           type: string
           format: uri
           description: A URI reference that identifies the specific occurrence of the problem
+      required:
+      - status
+      - detail
     GrantType:
       description: OAuth 2.0 grant type
       type: string
@@ -423,6 +426,7 @@ components:
       example: 'OAUTH2_CLIENT_CREDENTIALS'
     OAuth2Info:
       description: Parameters related to use of OAuth 2.0
+      type: object
       required:
         - grantTypes
         - tokenEndpoint
@@ -568,6 +572,7 @@ components:
       enum:
         - ACTIVE
         - INACTIVE
+        - SUSPENDED
     ServiceStates:
       description: >-
         States of the services about which to report events. If the event is 
@@ -656,6 +661,7 @@ components:
         - state
         - transportInfo
         - serializer
+        - _links
       properties:
         serInstanceId:
           $ref: '#/components/schemas/SerInstanceId'
@@ -668,6 +674,15 @@ components:
           type: string
         state:
           $ref: '#/components/schemas/ServiceState'
+        transportId:
+          type: string
+          description: > 
+            Identifier of the platform-provided transport to be used by
+            the service. Valid identifiers may be obtained using the
+            "Transport information query" procedure. May be present
+            in POST requests to signal the use of a platform-provided
+            transport for the service, and shall be absent otherwise.
+            See note 2.
         transportInfo:
           $ref: '#/components/schemas/TransportInfo'
         serializer:
@@ -685,6 +700,21 @@ components:
             Indicate whether the service is located in the same locality (as defined
             by scopeOfLocality) as the consuming MEC application.
           type: boolean
+        livenessInterval:
+          type: integer
+          description: Interval (in seconds) between two consecutive "heartbeat" messages (see clause 8.2.10.3.3).
+                      If the service-producing application supports sending "heartbeat" messages, it shall include this attribute in the registration request. In this case, the application shall either set the value of this attribute to zero or shall use this attribute to propose a non-zero positive value for the liveness interval.
+                      If the application has provided this attribute in the request and the MEC platform requires "heartbeat" messages, the MEC platform shall return this attribute value in the HTTP responses. The MEC platform may use the value proposed in the request or may choose a different value.
+                      If the MEC platform does not require "heartbeat" messages for this service instance it shall omit the attribute in responses.
+        _links:
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              $ref: '#/components/schemas/LinkType'
+            liveness:
+              $ref: '#/components/schemas/LinkType'
       example:
         serInstanceId: 'rnisInstance1'
         serName: 'myRnis'
@@ -707,6 +737,36 @@ components:
               - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
+    ServiceLivenessInfo:
+      type: object
+      required:
+        - state
+        - timeStamp
+        - interval
+      properties:
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        timeStamp:
+          type: object
+          description: The time when the last "heartbeat" message was received by MEC platform
+          required:
+            - seconds
+            - nanoSeconds
+          properties:
+            seconds:
+              type: integer
+            nanoSeconds:
+              type: integer            
+        interval:
+          type: integer
+          description: The interval (in seconds) between two consecutive "heartbeat" messages (see clause 8.2.10.3.3) that MEC platform has determined.
+    ServiceLivenessUpdate:
+      type: object
+      required:
+        - state
+      properties:
+        state:
+          $ref: '#/components/schemas/ServiceState'
     Subscription:
       description: A link to the related subscription
       type: object
@@ -1185,5 +1245,3 @@ components:
               - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
-
-

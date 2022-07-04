@@ -40,7 +40,6 @@ Models/PeriodicNotificationSubscription.md
 Models/ProblemDetails.md
 Models/RetrievalStatus.md
 Models/ServiceError.md
-Models/SubscriptionCancellationNotification.md
 Models/SubscriptionNotification.md
 Models/TerminalDistance.md
 Models/TerminalLocation.md

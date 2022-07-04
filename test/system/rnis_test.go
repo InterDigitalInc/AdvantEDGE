@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -222,7 +222,7 @@ func Test_RNIS_periodic_nr_5g_5gNei(t *testing.T) {
 
 	testAddress := "ue1"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
-	testSrcServingNrcgi := rnisClient.NRcgi{NrcellId: "500000002", Plmn: &rnisClient.Plmn{"001", "001"}}
+	testSrcServingNrcgi := rnisClient.Nrcgi{NrcellId: "500000002", Plmn: &rnisClient.Plmn{"001", "001"}}
 	testSrcServing5GRsrp := int32(92)
 	testSrcServing5GRsrq := int32(77)
 	testSrcSCell := rnisClient.NrMeasRepUeNotificationSCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testSrcServing5GRsrp, Rsrq: testSrcServing5GRsrq}}
@@ -235,11 +235,11 @@ func Test_RNIS_periodic_nr_5g_5gNei(t *testing.T) {
 	testTrgNCell := rnisClient.NrMeasRepUeNotificationNCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgServing5GRsrp, Rsrq: testTrgServing5GRsrq}}
 	testTrgServCellMeasInfo := rnisClient.NrMeasRepUeNotificationServCellMeasInfo{Nrcgi: &testTrgServingNrcgi, SCell: &testTrgSCell, NCell: &testTrgNCell}
 
-	testTrgNeiNrcgi := "500000003" //not really a nrcgi, its the nrcellid but spec is wrong, so going along
+	testTrgNeiNrcgi := "500000003"
 	testTrgNei5GRsrp := int32(51)
 	testTrgNei5GRsrq := int32(52)
 
-	testNrNeighCellMeasInfo := rnisClient.NrMeasRepUeNotificationNrNeighCellMeasInfo{Nrcgi: testTrgNeiNrcgi, MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgNei5GRsrp, Rsrq: testTrgNei5GRsrq}}
+	testNrNeighCellMeasInfo := rnisClient.NrMeasRepUeNotificationNrNeighCellMeasInfo{Nrcgi: &rnisClient.Nrcgi{NrcellId: testTrgNeiNrcgi}, MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testTrgNei5GRsrp, Rsrq: testTrgNei5GRsrq}}
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
@@ -295,7 +295,7 @@ func Test_RNIS_periodic_nr_5g_4gNei(t *testing.T) {
 
 	testAddress := "ue1"
 	testAssociateId := rnisClient.AssociateId{Type_: 1, Value: testAddress}
-	testSrcServingNrcgi := rnisClient.NRcgi{NrcellId: "500000002", Plmn: &rnisClient.Plmn{"001", "001"}}
+	testSrcServingNrcgi := rnisClient.Nrcgi{NrcellId: "500000002", Plmn: &rnisClient.Plmn{"001", "001"}}
 	testSrcServing5GRsrp := int32(92)
 	testSrcServing5GRsrq := int32(77)
 	testSrcSCell := rnisClient.NrMeasRepUeNotificationSCell{MeasQuantityResultsSsbCell: &rnisClient.MeasQuantityResultsNr{Rsrp: testSrcServing5GRsrp, Rsrq: testSrcServing5GRsrq}}
@@ -2065,7 +2065,7 @@ func validateNrMeasRepUeNotification(notification *rnisClient.NrMeasRepUeNotific
 	if expectedNrNeighCellMeasInfo != nil {
 		if notification.NrNeighCellMeasInfo != nil || len(notification.NrNeighCellMeasInfo) > 0 {
 			if notification.NrNeighCellMeasInfo[0].Nrcgi != expectedNrNeighCellMeasInfo.Nrcgi {
-				return ("NrNeighCellMeasInfo:Nrcgi of notification not as expected: " + notification.NrNeighCellMeasInfo[0].Nrcgi + " instead of " + expectedNrNeighCellMeasInfo.Nrcgi)
+				return ("NrNeighCellMeasInfo:Nrcgi of notification not as expected: " + notification.NrNeighCellMeasInfo[0].Nrcgi.NrcellId + " instead of " + expectedNrNeighCellMeasInfo.Nrcgi.NrcellId)
 			}
 			if notification.NrNeighCellMeasInfo[0].MeasQuantityResultsSsbCell.Rsrp != expectedNrNeighCellMeasInfo.MeasQuantityResultsSsbCell.Rsrp {
 				return ("NrNeighCellMeasInfo:MeasQuantityResultsSsbCell:Rsrp of notification not as expected: " + strconv.Itoa(int(notification.NrNeighCellMeasInfo[0].MeasQuantityResultsSsbCell.Rsrp)) + " instead of " + strconv.Itoa(int(expectedNrNeighCellMeasInfo.MeasQuantityResultsSsbCell.Rsrp)))

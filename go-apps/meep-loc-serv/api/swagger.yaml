@@ -4,9 +4,9 @@ info:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
   title: AdvantEDGE Location Service REST API
-  version: 2.1.1
+  version: 2.2.1
   description: "Location Service is AdvantEDGE's implementation of
-  [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
+  [ETSI MEC ISG MEC013 Location API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf)
   <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
@@ -16,8 +16,8 @@ info:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
 externalDocs:
-  description: ETSI MEC013 V2.1.1 Location API
-  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf'
+  description: ETSI MEC013 V2.2.1 Location API
+  url: 'https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf'
 servers:
   - url: 'https://localhost/sandboxname/location/v2'
 tags:
@@ -2158,17 +2158,17 @@ components:
     LocationInfo:
       properties:
         accuracy:
-          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 4, 5 or 6
+          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in ETSI TS 123 032 [14]. Present only if "shape" equals 4, 5 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracyAltitude:
-          description: Altitude accuracy / uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 3 or 4
+          description: Altitude accuracy / uncertainty of location provided in meters, as defined in ETSI TS 123 032 [14]. Present only if "shape" equals 3 or 4
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracySemiMinor:
-          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 4, 5 or 6
+          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in ETSI TS 123 032 [14]. Present only if "shape" equals 4, 5 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
@@ -2179,7 +2179,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Float
         confidence:
-          description: Confidence by which the position of a target entity is known to be within the shape description, expressed as a percentage and defined in [14]. Present only if "shape" equals 1, 4 or 6
+          description: Confidence by which the position of a target entity is known to be within the shape description, expressed as a percentage and defined in ETSI TS 123 032 [14]. Present only if "shape" equals 1, 4 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
@@ -2217,12 +2217,12 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         orientationMajorAxis:
-          description: "Angle of orientation of the major axis, expressed in the range 0\xB0 to 180\xB0, as defined in [14]. Present only if \"shape\" equals 4 or 6"
+          description: "Angle of orientation of the major axis, expressed in the range 0\xB0 to 180\xB0, as defined in ETSI TS 123 032 [14]. Present only if \"shape\" equals 4 or 6"
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         shape:
-          description: 'Shape information, as detailed in [14], associated with the reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE <p>7 = POLYGON'
+          description: 'Shape information, as detailed in ETSI TS 123 032 [14], associated with the reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE <p>7 = POLYGON'
           type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Enum_inlined
@@ -2234,35 +2234,35 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         velocity:
-          description: "Structure with attributes relating to the target entity\u2019s velocity, as defined in [14]."
+          description: "Structure with attributes relating to the target entity\u2019s velocity, as defined in ETSI TS 123 032 [14]."
           properties:
             bearing:
-              description: "Bearing, expressed in the range 0\xB0 to 360\xB0, as defined in [14]."
+              description: "Bearing, expressed in the range 0\xB0 to 360\xB0, as defined in ETSI TS 123 032 [14]."
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: UnsignedInt
             horizontalSpeed:
-              description: Horizontal speed, expressed in km/h and defined in [14].
+              description: Horizontal speed, expressed in km/h and defined in ETSI TS 123 032 [14].
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: UnsignedInt
             uncertainty:
-              description: Horizontal uncertainty, as defined in [14]. Present only if "velocityType" equals 3 or 4
+              description: Horizontal uncertainty, as defined in ETSI TS 123 032 [14]. Present only if "velocityType" equals 3 or 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: UnsignedInt
             velocityType:
-              description: 'Velocity information, as detailed in [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT'
+              description: 'Velocity information, as detailed in ETSI TS 123 032 [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT'
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: Enum_inlined
             verticalSpeed:
-              description: Vertical speed, expressed in km/h and defined in [14]. Present only if "velocityType" equals 2 or 4
+              description: Vertical speed, expressed in km/h and defined in ETSI TS 123 032 [14]. Present only if "velocityType" equals 2 or 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: Int
             verticalUncertainty:
-              description: Vertical uncertainty, as defined in [14]. Present only if "velocityType" equals 4
+              description: Vertical uncertainty, as defined in ETSI TS 123 032 [14]. Present only if "velocityType" equals 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: UnsignedInt
@@ -2436,6 +2436,9 @@ components:
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+      required:
+      - status
+      - detail
       type: object
     RetrievalStatus:
       enum:
@@ -2466,31 +2469,6 @@ components:
       required:
       - messageId
       - text
-      type: object
-    SubscriptionCancellationNotification:
-      description: A type containing the subscription cancellation notification.
-      properties:
-        address:
-          description: Address of terminal if the error applies to an individual terminal.
-          type: string
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: anyURI
-        callbackData:
-          description: CallbackData if passed by the application in the receiptRequest element during the associated subscription operation
-          type: string
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: string
-        link:
-          description: Link to other resources that are in relationship with the resource.
-          items:
-            $ref: '#/components/schemas/Link'
-          type: array
-          x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: Link
-        reason:
-          $ref: '#/components/schemas/ServiceError'
-      required:
-      - terminalLocation
       type: object
     SubscriptionNotification:
       description: A type containing the notification subscription.
@@ -2562,13 +2540,6 @@ components:
       - address
       - locationRetrievalStatus
       type: object
-    TerminalLocationList:
-      description: Collection of the terminal locations.
-      items:
-        $ref: '#/components/schemas/TerminalLocation'
-      type: array
-      x-etsi-mec-cardinality: 1..N
-      x-etsi-mec-origin-type: TerminalLocation
     TimeStamp:
       properties:
         nanoSeconds:
@@ -2625,7 +2596,7 @@ components:
           description: Self-referring URL, see note 1.
           type: string
           x-etsi-mec-cardinality: '1'
-          x-etsi-mec-origin-type: String
+          x-etsi-mec-origin-type: AnyURI
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
         zoneId:

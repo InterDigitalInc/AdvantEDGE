@@ -1,11 +1,10 @@
-# \UnsupportedApi
+# {{classname}}
 
 All URIs are relative to *https://localhost/sandboxname/rni/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**S1BearerInfoGET**](UnsupportedApi.md#S1BearerInfoGET) | **Get** /queries/s1_bearer_info | Retrieve S1-U bearer information related to specific UE(s)
-
 
 # **S1BearerInfoGET**
 > S1BearerInfo S1BearerInfoGET(ctx, optional)
@@ -18,11 +17,10 @@ Queries information about the S1 bearer(s)
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***S1BearerInfoGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***UnsupportedApiS1BearerInfoGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a S1BearerInfoGETOpts struct
-
+Optional parameters are passed through a pointer to a UnsupportedApiS1BearerInfoGETOpts struct
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **tempUeId** | [**optional.Interface of []string**](string.md)| Comma separated list of temporary identifiers allocated for the specific UE as defined in   ETSI TS 136 413 | 

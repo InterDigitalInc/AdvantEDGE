@@ -13,7 +13,9 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-service-mgmt-client v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-client v0.0.0
 	github.com/ghodss/yaml v1.0.0
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
+	github.com/gorilla/handlers v1.4.0
+	github.com/gorilla/mux v1.7.4
+	gopkg.in/yaml.v2 v2.2.2
 )
 
 replace (

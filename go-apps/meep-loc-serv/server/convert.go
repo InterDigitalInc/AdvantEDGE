@@ -297,3 +297,12 @@ func convertStringToConnectionType(conType string) ConnectionType {
 		return CONTYPE_UNKNOWN
 	}
 }
+
+func convertProblemDetailstoJson(probdetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*probdetails)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
