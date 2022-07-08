@@ -1770,6 +1770,9 @@ func refreshTrackedDevCtxOwner(appName string) {
 		} else {
 			// Perform context transfer only if current App is no longer a valid target
 			ctxTransferRequired := true
+			if trackedDev[FieldCtxTransferState] == strconv.Itoa(int(ContextTransferState_USER_CONTEXT_TRANSFER_COMPLETED)) {
+				ctxTransferRequired = false
+			}
 			for _, targetAppId := range targetAppIds {
 				if targetAppId == currentAppId {
 					ctxTransferRequired = false
