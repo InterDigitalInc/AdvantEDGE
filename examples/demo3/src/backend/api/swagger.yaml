@@ -267,7 +267,7 @@ components:
       example:
         mecReady: true
         subscriptions:
-          SerAvailabilitySubscription:
+          'SerAvailabilitySubscription:':
             subId: subId
           AmsLinkListSubscription:
             subId: subId
@@ -348,13 +348,13 @@ components:
       properties:
         AppTerminationSubscription:
           $ref: '#/components/schemas/ApplicationInstance_AppTerminationSubscription'
-        SerAvailabilitySubscription:
+        'SerAvailabilitySubscription:':
           $ref: '#/components/schemas/ApplicationInstance_SerAvailabilitySubscription'
         AmsLinkListSubscription:
           $ref: '#/components/schemas/ApplicationInstance_AmsLinkListSubscription'
       description: List of ams subscription unique to device and their id
       example:
-        SerAvailabilitySubscription:
+        'SerAvailabilitySubscription:':
           subId: subId
         AmsLinkListSubscription:
           subId: subId
@@ -489,36 +489,29 @@ components:
             href: http://example.com/aeiou
         callbackReference: http://example.com/aeiou
     MobilityProcedureNotification:
+      title: MobilityProcedureNotification
       required:
+      - associateId
+      - links
       - mobilityStatus
       - notificationType
-      type: object
       properties:
-        associateId:
-          minItems: 0
-          type: array
-          description: 0 to N identifiers to associate the information for specific
-            UE(s) and flow(s).
-          items:
-            $ref: '#/components/schemas/AssociateId'
-          x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: AssociateId
-        mobilityStatus:
-          type: integer
-          description: "Indicate the status of the UE mobility. Values are defined\
-            \ as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.\
-            \      3 = INTERHOST_MOVEOUT_FAILED.       Other values are reserved."
-          x-etsi-mec-cardinality: "1"
         notificationType:
           type: string
-          description: Shall be set to \"MobilityProcedureNotification\".
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: String
-        targetAppInfo:
-          $ref: '#/components/schemas/MobilityProcedureNotification_targetAppInfo'
+          description: Shall be set to "MobilityProcedureNotification".
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
-      x-etsi-ref: 7.4.2
+        associateId:
+          type: array
+          description: 1 to N identifiers to associate the information for specific
+          items:
+            $ref: '#/components/schemas/AssociateId'
+        mobilityStatus:
+          $ref: '#/components/schemas/MobilityStatus'
+        targetAppInfo:
+          $ref: '#/components/schemas/MobilityProcedureNotification_targetAppInfo'
+        _links:
+          $ref: '#/components/schemas/LinkType'
     TimeStamp:
       required:
       - nanoSeconds
@@ -552,24 +545,42 @@ components:
           $ref: '#/components/schemas/CommunicationInterface'
       description: Identifiers to associate the information of target application
         instance.
+    MobilityProcedureNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: Object containing hyperlinks related to the resource.
     CommunicationInterface:
       properties:
         ipAddresses:
           type: string
     AssociateId:
+      title: AssociateId
+      required:
+      - type
+      - value
+      type: object
       properties:
         type:
-          type: integer
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Enum
+          $ref: '#/components/schemas/Type'
         value:
           type: string
           description: Value for the identifier.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: String
       example:
-        type: 0
+        type: UE_IPv4_ADDRESS
         value: value
+    Type:
+      title: Type
+      type: string
+      description: Numeric value (0-255) corresponding to specified type of identifier
+      enum:
+      - UE_IPv4_ADDRESS
+      - UE_IPV6_ADDRESS
+      - NATED_IP_ADDRESS
+      - GTP_TEID
     AppTerminationSubscription__links:
       required:
       - self

@@ -640,6 +640,13 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to retrieve ams subscription", http.StatusInternalServerError)
 		return
 	}
+	if amsSubscriptionResp.SubscriptionType == "AdjacentAppInfoSubscription" {
+		statusCode = "400"
+		appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
+		log.Error("AdjacentAppInfoSubscription not suported", err.Error())
+		http.Error(w, "AdjacentAppInfoSubscription not suported", http.StatusBadRequest)
+		return
+	}
 
 	for i, v := range amsSubscriptionResp.FilterCriteria.AssociateId {
 		if v.Value == device {
@@ -829,7 +836,7 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		_, amsUpdateError := amsUpdateDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, 1)
+		_, amsUpdateError := amsUpdateDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, ams.USER_CONTEXT_TRANSFER_COMPLETED)
 		if amsUpdateError != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not update ams")
@@ -878,7 +885,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	var targetContextState ApplicationContextState
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&targetContextState)
-	counter := strconv.Itoa(int(targetContextState.Counter))
+	counter := strconv.Itoa(targetContextState.Counter)
 	if err != nil {
 		log.Error(err.Error())
 		appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [500]")
@@ -922,7 +929,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	addToTrackingDevices(targetContextState.Device)
 
-	terminalDeviceState[targetContextState.Device] = int(targetContextState.Counter)
+	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
 
 	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
 
@@ -941,8 +948,9 @@ func updateAmsSubscription(subscriptionId string, device string, inlineSubscript
 		return inLineSubscriptionResp, nil
 	}
 
+	var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
 	associateId := ams.AssociateId{
-		Type_: 1,
+		Type_: &t_,
 		Value: device,
 	}
 	inlineSubscription.FilterCriteria.AssociateId = append(inlineSubscription.FilterCriteria.AssociateId, associateId)
@@ -960,7 +968,7 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 
 	// Context state transfer
 	var contextState ApplicationContextState
-	contextState.Counter = int32(terminalDeviceState[device])
+	contextState.Counter = terminalDeviceState[device]
 	contextState.AppId = instanceName
 	contextState.Mep = mep
 	contextState.Device = device
@@ -972,7 +980,7 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 		log.Error("Failed to marshal context state ", err.Error())
 		return err
 	}
-	counter := strconv.Itoa(int(contextState.Counter))
+	counter := strconv.Itoa(contextState.Counter)
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonCounter))
 	if err != nil {
 		log.Error(err.Error())
@@ -1013,12 +1021,16 @@ func amsSendService(appInstanceId string, device string) (string, error) {
 // Return ams id for update ams
 func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device string) (ams.RegistrationInfo, error) {
 	var associateId ams.AssociateId
-	associateId.Type_ = 1
+	var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
+	associateId.Type_ = &t_
 	associateId.Value = device
 
+	var appMobilityServiceLevel ams.AppMobilityServiceLevel = ams.WITHOUT_CONFIRMATION
+	var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED
 	registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
 		AssociateId:             &associateId,
-		AppMobilityServiceLevel: 3,
+		AppMobilityServiceLevel: &appMobilityServiceLevel,
+		ContextTransferState:    &contextTransferState,
 	})
 
 	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
@@ -1032,10 +1044,10 @@ func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device s
 
 // Update context state in ams resource to 0 or 1
 // Return ams id for update ams
-func amsUpdateDevice(amsId string, registerationBody ams.RegistrationInfo, device string, contextState int32) (ams.RegistrationInfo, error) {
+func amsUpdateDevice(amsId string, registerationBody ams.RegistrationInfo, device string, contextState ams.ContextTransferState) (ams.RegistrationInfo, error) {
 	for _, v := range registerationBody.DeviceInformation {
 		if v.AssociateId.Value == device {
-			v.ContextTransferState = contextState
+			v.ContextTransferState = &contextState
 		}
 	}
 
@@ -1080,7 +1092,8 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 
 	// Default tracking ue set to 10.100.0.3
 	var associateId ams.AssociateId
-	associateId.Type_ = 1
+	var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
+	associateId.Type_ = &t_
 	associateId.Value = device
 
 	// Filter criteria
@@ -1093,6 +1106,10 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 	inlineSubscription := ams.ConvertMobilityProcedureSubscriptionToInlineSubscription(&mobilityProcedureSubscription)
 
 	mobilitySubscription, resp, err := amsClient.AmsiApi.SubPOST(context.TODO(), *inlineSubscription)
+	if err != nil {
+		log.Error(err.Error())
+		return "", err	
+	}
 	hRefLink := mobilitySubscription.Links.Self.Href
 
 	// Find subscription id from response
@@ -1122,12 +1139,13 @@ func sendReadyConfirmation(appInstanceId string) error {
 	appReady.Indication = "READY"
 	log.Info(appSupportClientPath)
 	resp, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
-	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
-		log.Error("Failed to receive confirmation acknowlegement ", resp.Status)
-		appActivityLogs = append(appActivityLogs, "Send confirm ready ["+status+"]")
+		log.Error(err.Error())
+		//log.Error("Failed to receive confirmation acknowlegement ", resp.Status)
+		appActivityLogs = append(appActivityLogs, "Send confirm ready ["+err.Error()+"]")
 		return err
 	}
+	status := strconv.Itoa(resp.StatusCode)
 
 	appActivityLogs = append(appActivityLogs, "Send confirm ready ["+status+"]")
 	return nil
@@ -1193,12 +1211,7 @@ func subscribeAvailability(appInstanceId string, callbackReference string) (stri
 	var filter smc.SerAvailabilityNotificationSubscriptionFilteringCriteria
 	filter.SerNames = nil
 	filter.IsLocal = true
-	subscription := smc.SerAvailabilityNotificationSubscription{
-		SubscriptionType:  "SerAvailabilityNotificationSubscription",
-		CallbackReference: callbackReference,
-		Links:             nil,
-		FilteringCriteria: &filter,
-	}
+	subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
 	serAvailabilityNotificationSubscription, resp, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {

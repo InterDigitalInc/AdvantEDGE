@@ -1,6 +1,6 @@
 # MecDemo3Api.FrontendApi
 
-All URIs are relative to *http://10.190.115.162:8093*
+All URIs are relative to *https://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -27,7 +27,7 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.FrontendApi();
 
-var device = "device_example"; // String | Delete device from AMS service resource
+var device = null; // Object | Delete device from AMS service resource
 
 
 var callback = function(error, data, response) {
@@ -44,7 +44,7 @@ apiInstance.deleteAmsDevice(device, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **device** | **String**| Delete device from AMS service resource | 
+ **device** | [**Object**](.md)| Delete device from AMS service resource | 
 
 ### Return type
 
@@ -181,7 +181,7 @@ No authorization required
 
 <a name="getPlatformInfo"></a>
 # **getPlatformInfo**
-> ApplicationInstance getPlatformInfo()
+> getPlatformInfo()
 
 Returns the application dynamic information
 
@@ -197,7 +197,7 @@ var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully. Returned data: ' + data);
+    console.log('API called successfully.');
   }
 };
 apiInstance.getPlatformInfo(callback);
@@ -208,7 +208,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**ApplicationInstance**](ApplicationInstance.md)
+null (empty response body)
 
 ### Authorization
 
@@ -217,11 +217,11 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/problem+json
+ - **Accept**: Not defined
 
 <a name="register"></a>
 # **register**
-> ApplicationInstance register()
+> register()
 
 Register with MEC Platform and create necessary resources
 
@@ -237,7 +237,7 @@ var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully. Returned data: ' + data);
+    console.log('API called successfully.');
   }
 };
 apiInstance.register(callback);
@@ -248,7 +248,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**ApplicationInstance**](ApplicationInstance.md)
+null (empty response body)
 
 ### Authorization
 
@@ -257,7 +257,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/problem+json
+ - **Accept**: Not defined
 
 <a name="updateAmsDevices"></a>
 # **updateAmsDevices**
@@ -273,7 +273,7 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.FrontendApi();
 
-var device = "device_example"; // String | Start AMS service resource to track device name
+var device = null; // Object | Start AMS service resource to track device name
 
 
 var callback = function(error, data, response) {
@@ -290,7 +290,7 @@ apiInstance.updateAmsDevices(device, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **device** | **String**| Start AMS service resource to track device name | 
+ **device** | [**Object**](.md)| Start AMS service resource to track device name | 
 
 ### Return type
 

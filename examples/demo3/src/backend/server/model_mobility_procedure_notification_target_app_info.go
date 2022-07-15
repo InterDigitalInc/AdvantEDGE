@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ package server
 // Identifiers to associate the information of target application instance.
 type MobilityProcedureNotificationTargetAppInfo struct {
 	// Identifiers of the target application instance.
-	AppInstanceId string `json:"appInstanceId,omitempty"`
-
+	AppInstanceId string                  `json:"appInstanceId"`
 	CommInterface *CommunicationInterface `json:"commInterface,omitempty"`
 }

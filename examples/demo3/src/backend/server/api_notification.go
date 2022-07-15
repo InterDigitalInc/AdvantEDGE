@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ func AppTerminationNotificationCallback(w http.ResponseWriter, r *http.Request) 
 	appTerminationNotificationCallback(w, r)
 }
 
-func ContextTransferNotificationCallback(w http.ResponseWriter, r *http.Request) {
-	stateTransferPOST(w, r)
-}
-
 func ServiceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	serviceAvailNotificationCallback(w, r)
+}
+
+func ContextTransferNotificationCallback(w http.ResponseWriter, r *http.Request) {
+	stateTransferPOST(w, r)
 }
