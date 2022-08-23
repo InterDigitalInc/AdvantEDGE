@@ -22,6 +22,31 @@ consumes:
 produces:
 - "application/json"
 paths:
+  /metrics/query/seq:
+    post:
+      tags:
+      - "Metrics"
+      description: "Requests sequence diagram logs for the requested params"
+      operationId: "postSeqQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/SeqQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/SeqMetrics"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
   /metrics/query/http:
     post:
       tags:
@@ -264,6 +289,143 @@ paths:
         500:
           description: "Internal server error"
 definitions:
+  SeqQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> "
+        items:
+          $ref: "#/definitions/Tag"
+      fields:
+        type: "array"
+        description: "Requested information. Supported values:<br> NOTE: only one\
+          \ of mermaid or sdorg must be included  <li>mermaid: Mermaid format<br>\
+          \ <li>sdorg: Sequencediagram.org format<br> "
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "mermaid"
+          - "sdorg"
+      responseType:
+        type: "string"
+        description: "Queried response Type. Supported Values:<br> NOTE1: only one\
+          \ of listonly or responly may be included  NOTE2: if listonly or responly\
+          \ are not included, the response contains both the list and string  <li>listonly:\
+          \ Include only a list of sequence metrics in response<br> <li>stronly: Include\
+          \ only a concatenated string of sequence metrics in response<br> "
+        enum:
+        - "listonly"
+        - "stronly"
+      scope:
+        $ref: "#/definitions/Scope"
+    description: "Seq metrics query parameters"
+    example:
+      scope:
+        duration: "1h"
+        limit: 60
+      fields:
+      - "mermaid"
+      responseType: "listonly"
+  Tag:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "src"
+        description: "Tag name"
+      value:
+        type: "string"
+        example: "ue1-iperf"
+        description: "Tag value"
+    description: "Filtering query parameter"
+    example:
+      name: "src"
+      value: "ue1-iperf"
+  Scope:
+    type: "object"
+    properties:
+      limit:
+        type: "integer"
+        example: 60
+        description: "Maximum number of points in the response"
+      duration:
+        type: "string"
+        example: "10s"
+        description: "Length of time range (specify s for seconds, m for minutes,\
+          \ d for days)"
+    description: "Query scope (time / number of points)"
+    example:
+      duration: "10s"
+      limit: 60
+  SeqMetrics:
+    type: "object"
+    properties:
+      seqMetricList:
+        $ref: "#/definitions/SeqMetricList"
+      seqMetricString:
+        type: "string"
+        description: "String of sequence metrics"
+    example:
+      seqMetricList:
+        columns:
+        - "time"
+        - "mermaid"
+        values:
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Alice ->> Bob: Hello!"
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Bob ->> Alice: Hey"
+        name: "seq metrics"
+      seqMetricString: "seqMetricString"
+  SeqMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "seq metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/SeqMetric"
+    description: "Seq metrics query response"
+    example:
+      columns:
+      - "time"
+      - "mermaid"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Alice ->> Bob: Hello!"
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Bob ->> Alice: Hey"
+      name: "seq metrics"
+  SeqMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of Seq logs"
+      mermaid:
+        type: "string"
+        example: "Alice ->> Bob: Hello!"
+        description: "Mermaid formatted seq logs"
+      sdorg:
+        type: "string"
+        example: "Alice -> Bob: Hello!"
+        description: "Sequencediagram.org formatted seq logs"
+    description: "Sequence diagram logs"
+    example:
+      time: "2019-11-24T12:45:00-5:00"
+      mermaid: "Alice ->> Bob: Hello!"
   HttpQueryParams:
     type: "object"
     properties:
@@ -319,37 +481,6 @@ definitions:
         value: "meep-loc-serv"
       - name: "direction"
         value: "RX"
-  Tag:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-        example: "src"
-        description: "Tag name"
-      value:
-        type: "string"
-        example: "ue1-iperf"
-        description: "Tag value"
-    description: "Filtering query parameter"
-    example:
-      name: "src"
-      value: "ue1-iperf"
-  Scope:
-    type: "object"
-    properties:
-      limit:
-        type: "integer"
-        example: 60
-        description: "Maximum number of points in the response"
-      duration:
-        type: "string"
-        example: "10s"
-        description: "Length of time range (specify s for seconds, m for minutes,\
-          \ d for days)"
-    description: "Query scope (time / number of points)"
-    example:
-      duration: "10s"
-      limit: 60
   HttpMetricList:
     type: "object"
     properties:

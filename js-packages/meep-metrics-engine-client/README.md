@@ -120,6 +120,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postEventQuery**](docs/MetricsApi.md#postEventQuery) | **POST** /metrics/query/event | 
 *AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postHttpQuery**](docs/MetricsApi.md#postHttpQuery) | **POST** /metrics/query/http | 
 *AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postNetworkQuery**](docs/MetricsApi.md#postNetworkQuery) | **POST** /metrics/query/network | 
+*AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postSeqQuery**](docs/MetricsApi.md#postSeqQuery) | **POST** /metrics/query/seq | 
 *AdvantEdgeMetricsServiceRestApi.SubscriptionsApi* | [**createEventSubscription**](docs/SubscriptionsApi.md#createEventSubscription) | **POST** /metrics/subscriptions/event | 
 *AdvantEdgeMetricsServiceRestApi.SubscriptionsApi* | [**createNetworkSubscription**](docs/SubscriptionsApi.md#createNetworkSubscription) | **POST** /metrics/subscriptions/network | 
 *AdvantEdgeMetricsServiceRestApi.SubscriptionsApi* | [**deleteEventSubscriptionById**](docs/SubscriptionsApi.md#deleteEventSubscriptionById) | **DELETE** /metrics/subscriptions/event/{subscriptionId} | 
@@ -150,6 +151,10 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionList](docs/NetworkSubscriptionList.md)
  - [AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionParams](docs/NetworkSubscriptionParams.md)
  - [AdvantEdgeMetricsServiceRestApi.Scope](docs/Scope.md)
+ - [AdvantEdgeMetricsServiceRestApi.SeqMetric](docs/SeqMetric.md)
+ - [AdvantEdgeMetricsServiceRestApi.SeqMetricList](docs/SeqMetricList.md)
+ - [AdvantEdgeMetricsServiceRestApi.SeqMetrics](docs/SeqMetrics.md)
+ - [AdvantEdgeMetricsServiceRestApi.SeqQueryParams](docs/SeqQueryParams.md)
  - [AdvantEdgeMetricsServiceRestApi.Tag](docs/Tag.md)
 
 

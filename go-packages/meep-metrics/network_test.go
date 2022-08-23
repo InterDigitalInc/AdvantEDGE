@@ -60,7 +60,7 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Set store")
-	err = ms.SetStore(networkStoreName)
+	err = ms.SetStore(networkStoreName, networkStoreNamespace, true)
 	if err != nil {
 		t.Fatalf("Unable to set Store")
 	}

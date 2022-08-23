@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**postEventQuery**](MetricsApi.md#postEventQuery) | **POST** /metrics/query/event | 
 [**postHttpQuery**](MetricsApi.md#postHttpQuery) | **POST** /metrics/query/http | 
 [**postNetworkQuery**](MetricsApi.md#postNetworkQuery) | **POST** /metrics/query/network | 
+[**postSeqQuery**](MetricsApi.md#postSeqQuery) | **POST** /metrics/query/seq | 
 
 
 <a name="postEventQuery"></a>
@@ -137,6 +138,52 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**NetworkMetricList**](NetworkMetricList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="postSeqQuery"></a>
+# **postSeqQuery**
+> SeqMetrics postSeqQuery(params)
+
+
+
+Requests sequence diagram logs for the requested params
+
+### Example
+```javascript
+var AdvantEdgeMetricsServiceRestApi = require('advant_edge_metrics_service_rest_api');
+
+var apiInstance = new AdvantEdgeMetricsServiceRestApi.MetricsApi();
+
+var params = new AdvantEdgeMetricsServiceRestApi.SeqQueryParams(); // SeqQueryParams | Query parameters
+
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.postSeqQuery(params, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **params** | [**SeqQueryParams**](SeqQueryParams.md)| Query parameters | 
+
+### Return type
+
+[**SeqMetrics**](SeqMetrics.md)
 
 ### Authorization
 

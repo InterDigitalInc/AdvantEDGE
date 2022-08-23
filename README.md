@@ -54,7 +54,6 @@ AdvantEDGE provides an emulation environment, enabling experimentation with Edge
 ## How to Contribute
 If you like this project and would like to participate in its evolution, you can find information on contributing [**here**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md)
 
-If you like this project and would like to participate in its evolution, you can find information on contributing [here](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md)
 We welcome questions, feedback and improvement suggestions via [:octocat:**Discussion**](https://github.com/InterDigitalInc/AdvantEDGE/discussions) and bugs reporting via [:octocat: **Issues**](https://github.com/InterDigitalInc/AdvantEDGE/issues)
 
 Hope to hear from you...

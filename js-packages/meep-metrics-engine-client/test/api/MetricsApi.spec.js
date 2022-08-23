@@ -235,6 +235,65 @@
           done();
         });
       });
+      describe('postSeqQuery', function() {
+        it('should call postSeqQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postSeqQuery call and complete the assertions
+          /*
+          var params = new AdvantEdgeMetricsServiceRestApi.SeqQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.fields = ["mermaid"]"mermaid";
+          params.responseType = "listonly";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
+
+          instance.postSeqQuery(params, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.SeqMetrics);
+            expect(data.seqMetricList).to.be.a(AdvantEdgeMetricsServiceRestApi.SeqMetricList);
+                  expect(data.seqMetricList.name).to.be.a('string');
+              expect(data.seqMetricList.name).to.be("seq metrics");
+              {
+                let dataCtr = data.seqMetricList.columns;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a('string');
+                  expect(data).to.be("");
+                }
+              }
+              {
+                let dataCtr = data.seqMetricList.values;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.SeqMetric);
+                  expect(data.time).to.be.a('string');
+                  expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                  expect(data.mermaid).to.be.a('string');
+                  expect(data.mermaid).to.be("Alice ->> Bob: Hello!");
+                  expect(data.sdorg).to.be.a('string');
+                  expect(data.sdorg).to.be("Alice -> Bob: Hello!");
+                }
+              }
+            expect(data.seqMetricString).to.be.a('string');
+            expect(data.seqMetricString).to.be("");
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
     });
   });
 

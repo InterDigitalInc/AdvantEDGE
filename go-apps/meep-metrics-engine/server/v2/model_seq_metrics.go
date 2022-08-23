@@ -24,22 +24,9 @@
 
 package server
 
-import (
-	"net/http"
-)
+type SeqMetrics struct {
+	SeqMetricList *SeqMetricList `json:"seqMetricList,omitempty"`
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
-
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
-
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
-
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
+	// String of sequence metrics
+	SeqMetricString string `json:"seqMetricString,omitempty"`
 }
