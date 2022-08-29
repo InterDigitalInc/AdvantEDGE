@@ -16,9 +16,12 @@
 
 // import _ from 'lodash';
 import { connect } from 'react-redux';
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import mermaid from 'mermaid';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import {
+  execChangeSeqChart
+} from '../state/exec';
 
 
 // %%{init: {'theme': 'base', 'themeVariables': { 'actorBkg': '#FF9800'}}}%%
@@ -66,6 +69,9 @@ class IDCSeq extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.mermaidRef = createRef();
+
+    this.props.changeExecSeqChart(SEQ_DEFAULT);
 
     mermaid.initialize({
       startOnLoad: true,
@@ -78,13 +84,8 @@ class IDCSeq extends Component {
   }
 
   componentDidUpdate() {
-
-    // this.container.removeAttribute('data-processed')
-    // this.container.innerHTML = this.props.code.replace(
-    //   'onerror=',
-    //   'onerror&equals;'
-    // )
-
+    // Remove data-processed attribute to allow diagram refresh
+    this.mermaidRef.current.removeAttribute('data-processed');
     mermaid.init(undefined, '.seq-mermaid');
   }
 
@@ -115,15 +116,13 @@ class IDCSeq extends Component {
       <TransformWrapper>
         <TransformComponent
           wrapperStyle={{width: '100%', height: '100%'}}
-          // contentStyle={{width: '100%', height: '100%'}}
         >
           <div
-            className="seq-mermaid"
-            // height='100%'
-            // width='100%'
+            ref={this.mermaidRef}
+            className='seq-mermaid'
             data-cy={this.props.cydata}
           >
-            {SEQ_DEFAULT}
+            {this.props.execSeqChart}
           </div>
         </TransformComponent>
       </TransformWrapper>
@@ -133,13 +132,13 @@ class IDCSeq extends Component {
 
 const mapStateToProps = state => {
   return {
-    execSeq: state.exec.seq
+    execSeqChart: state.exec.seq.chart
   };
 };
 
-// const mapDispatchToProps = dispatch => {
-const mapDispatchToProps = () => {
+const mapDispatchToProps = dispatch => {
   return {
+    changeExecSeqChart: chart => dispatch(execChangeSeqChart(chart))
   };
 };
 
