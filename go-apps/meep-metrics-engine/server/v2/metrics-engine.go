@@ -250,7 +250,7 @@ func activateScenarioMetrics() {
 	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
-	err := metricStore.SetStore(activeScenarioName)
+	err := metricStore.SetStore(activeScenarioName, SandboxName, true)
 	if err != nil {
 		log.Error("Failed to set store with error: " + err.Error())
 		return
@@ -293,7 +293,7 @@ func terminateScenarioMetrics() {
 	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
-	err := metricStore.SetStore("")
+	err := metricStore.SetStore("", "", false)
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -451,11 +451,11 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 				metric.LoggerName = val
 			}
 		}
-		if values[met.HttpLoggerDirection] != nil {
-			if val, ok := values[met.HttpLoggerDirection].(string); ok {
-				metric.Direction = val
-			}
-		}
+		// if values[met.HttpLoggerDirection] != nil {
+		// 	if val, ok := values[met.HttpLoggerDirection].(string); ok {
+		// 		metric.Direction = val
+		// 	}
+		// }
 
 		if values[met.HttpLogId] != nil {
 			metric.Id = met.JsonNumToInt32(values[met.HttpLogId].(json.Number))
@@ -497,6 +497,116 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostHttpQuery")
+
+	// Retrieve sequence diagram query parameters from request body
+	var params SeqQueryParams
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Parse tags
+	tags := make(map[string]string)
+	for _, tag := range params.Tags {
+		tags[tag.Name] = tag.Value
+	}
+
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
+	}
+	// Get metrics
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(valuesArray) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNoContent)
+		return
+	}
+
+	// Prepare & send response
+	var response SeqMetrics
+	if params.ResponseType == "listonly" || params.ResponseType == "" {
+		response.SeqMetricList = &SeqMetricList{
+			Name:    "sequence metrics",
+			Columns: append(params.Fields, "time"),
+		}
+	}
+
+	for _, values := range valuesArray {
+		var metric SeqMetric
+		metric.Time = values["time"].(string)
+		if values[params.Fields[0]] != nil {
+			metricTime, err := time.Parse(time.RFC3339, metric.Time)
+			if err != nil {
+				log.Error("Failed to parse time with error: ", err.Error())
+				continue
+			}
+			t := metricTime.Format("15:04:05.000")
+			if params.Fields[0] == "mermaid" {
+				if val, ok := values["mermaid"].(string); ok {
+					val = strings.Replace(val, ":", ": ["+t+"]", 1)
+					if params.ResponseType == "listonly" || params.ResponseType == "" {
+						metric.Mermaid = val
+						response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+					}
+					if params.ResponseType == "stronly" || params.ResponseType == "" {
+						response.SeqMetricString += val + "\n"
+					}
+				}
+			}
+			if params.Fields[0] == "sdorg" {
+				if val, ok := values["sdorg"].(string); ok {
+					val = strings.Replace(val, ":", ": **["+t+"]**", 1)
+					if params.ResponseType == "listonly" || params.ResponseType == "" {
+						metric.Sdorg = val
+						response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+					}
+					if params.ResponseType == "stronly" || params.ResponseType == "" {
+						response.SeqMetricString += val + "\n"
+					}
+				}
+			}
+		}
+	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())

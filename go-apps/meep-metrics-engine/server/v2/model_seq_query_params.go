@@ -24,22 +24,17 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Seq metrics query parameters
+type SeqQueryParams struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Tag names to match in query. Supported values:<br>
+	Tags []Tag `json:"tags,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
+	// Requested information. Supported values:<br> NOTE: only one of mermaid or sdorg must be included  <li>mermaid: Mermaid format<br> <li>sdorg: Sequencediagram.org format<br>
+	Fields []string `json:"fields,omitempty"`
 
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
+	// Queried response Type. Supported Values:<br> NOTE1: only one of listonly or responly may be included  NOTE2: if listonly or stronly are not included, the response contains both the list and string  <li>listonly: Include only a list of sequence metrics in response<br> <li>stronly: Include only a concatenated string of sequence metrics in response<br>
+	ResponseType string `json:"responseType,omitempty"`
 
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
+	Scope *Scope `json:"scope,omitempty"`
 }

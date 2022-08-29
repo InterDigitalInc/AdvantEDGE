@@ -19,38 +19,52 @@ package metrics
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
+	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const HttpLogMetricName = "http"
 const HttpLoggerName = "logger_name"
-const HttpLoggerDirection = "direction"
+const HttpLoggerMsgType = "msg_type"
 const HttpLogTime = "time"
 const HttpLogId = "id"
 const HttpUrl = "url"
 const HttpLogEndpoint = "endpoint"
 const HttpMethod = "method"
+const HttpSrc = "src"
+const HttpDst = "dst"
 const HttpBody = "body"
 const HttpRespBody = "resp_body"
 const HttpRespCode = "resp_code"
 const HttpProcTime = "proc_time"
+const HttpMermaid = "mermaid"
+const HttpSdorg = "sdorg"
 
-const HttpRxDirection = "RX"
-const HttpTxDirection = "TX"
+const HttpMsgTypeRequest = "request"
+const HttpMsgTypeResponse = "response"
+const HttpMsgTypeNotification = "notification"
+
+var pduSessions map[string]string
 
 type HttpMetric struct {
 	LoggerName string
-	Direction  string
+	MsgType    string
 	Id         int32
 	Url        string
 	Endpoint   string
 	Method     string
+	Src        string
+	Dst        string
 	Body       string
 	RespBody   string
 	RespCode   string
 	ProcTime   string
 	Time       interface{}
+	Mermaid    string
+	Sdorg      string
 }
 
 // SetHttpMetric
@@ -58,22 +72,56 @@ func (ms *MetricStore) SetHttpMetric(h HttpMetric) error {
 	metricList := make([]Metric, 1)
 	metric := &metricList[0]
 	metric.Name = HttpLogMetricName
-	metric.Tags = map[string]string{HttpLoggerName: h.LoggerName, HttpLoggerDirection: h.Direction}
+	metric.Tags = map[string]string{HttpLoggerName: h.LoggerName, HttpLoggerMsgType: h.MsgType}
+	var mermaidLogs string
+	var sdorgLogs string
+	mermaidLogs, sdorgLogs = ms.FormatMetrics(h)
 	metric.Fields = map[string]interface{}{
 		HttpLogId:       h.Id,
 		HttpUrl:         h.Url,
 		HttpLogEndpoint: h.Endpoint,
 		HttpMethod:      h.Method,
+		HttpSrc:         h.Src,
+		HttpDst:         h.Dst,
 		HttpBody:        h.Body,
 		HttpRespBody:    h.RespBody,
 		HttpRespCode:    h.RespCode,
 		HttpProcTime:    h.ProcTime,
+		HttpMermaid:     mermaidLogs,
+		HttpSdorg:       sdorgLogs,
 	}
 	return ms.SetInfluxMetric(metricList)
 }
 
+func (ms *MetricStore) FormatMetrics(h HttpMetric) (mermaidLogs string, sdorgLogs string) {
+	if h.Src != "" && h.Dst != "" {
+		// Format ProcTime
+		procTime := ""
+		if h.MsgType == HttpMsgTypeResponse {
+			procDuration, err := time.ParseDuration(h.ProcTime + "us")
+			if err != nil {
+				log.Error("Failed to parse processing time with error: ", err.Error())
+			}
+			procTimeMs := float64(procDuration.Microseconds()) / 1000
+			procTime = fmt.Sprintf(" (%.2f ms)", procTimeMs)
+		}
+		//Format Endpoint
+		endpoint := h.Endpoint
+		trimStr := "/sa6/v1/"
+		pos := strings.Index(endpoint, trimStr)
+		if pos != -1 {
+			endpoint = endpoint[pos+len(trimStr):]
+		}
+
+		mermaidLogs := h.Src + " ->> " + h.Dst + ": " + endpoint + procTime
+		sdorgLogs := "\"" + h.Src + "\"" + "->" + "\"" + h.Dst + "\": " + endpoint + procTime
+		return mermaidLogs, sdorgLogs
+	}
+	return
+}
+
 // GetHttpMetric
-func (ms *MetricStore) GetHttpMetric(loggerName string, direction string, duration string, count int) (metrics []HttpMetric, err error) {
+func (ms *MetricStore) GetHttpMetric(loggerName string, msgType string, duration string, count int) (metrics []HttpMetric, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err = errors.New("Store name not specified")
@@ -85,10 +133,10 @@ func (ms *MetricStore) GetHttpMetric(loggerName string, direction string, durati
 	if loggerName != "" {
 		tags[HttpLoggerName] = loggerName
 	}
-	if direction != "" {
-		tags[HttpLoggerDirection] = direction
+	if msgType != "" {
+		tags[HttpLoggerMsgType] = msgType
 	}
-	fields := []string{HttpLogId, HttpUrl, HttpLogEndpoint, HttpMethod, HttpBody, HttpRespBody, HttpRespCode, HttpProcTime}
+	fields := []string{HttpLoggerName, HttpLoggerMsgType, HttpLogId, HttpUrl, HttpLogEndpoint, HttpMethod, HttpSrc, HttpDst, HttpBody, HttpRespBody, HttpRespCode, HttpProcTime}
 	var valuesArray []map[string]interface{}
 	valuesArray, err = ms.GetInfluxMetric(HttpLogMetricName, tags, fields, duration, count)
 	if err != nil {
@@ -99,10 +147,16 @@ func (ms *MetricStore) GetHttpMetric(loggerName string, direction string, durati
 	// Format http metrics
 	metrics = make([]HttpMetric, len(valuesArray))
 	for index, values := range valuesArray {
-		metrics[index].LoggerName = loggerName
-		metrics[index].Direction = direction
 		metrics[index].Time = values[HttpLogTime]
 		metrics[index].Id = JsonNumToInt32(values[HttpLogId].(json.Number))
+		// Tags
+		if val, ok := values[HttpLoggerName].(string); ok {
+			metrics[index].LoggerName = val
+		}
+		if val, ok := values[HttpLoggerMsgType].(string); ok {
+			metrics[index].MsgType = val
+		}
+		// Values
 		if val, ok := values[HttpUrl].(string); ok {
 			metrics[index].Url = val
 		}
@@ -111,6 +165,12 @@ func (ms *MetricStore) GetHttpMetric(loggerName string, direction string, durati
 		}
 		if val, ok := values[HttpMethod].(string); ok {
 			metrics[index].Method = val
+		}
+		if val, ok := values[HttpSrc].(string); ok {
+			metrics[index].Src = val
+		}
+		if val, ok := values[HttpDst].(string); ok {
+			metrics[index].Dst = val
 		}
 		if val, ok := values[HttpBody].(string); ok {
 			metrics[index].Body = val

@@ -24,22 +24,15 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Sequence diagram logs
+type SeqMetric struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Time of Seq logs
+	Time string `json:"time,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
+	// Mermaid formatted seq logs
+	Mermaid string `json:"mermaid,omitempty"`
 
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
-
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
+	// Sequencediagram.org formatted seq logs
+	Sdorg string `json:"sdorg,omitempty"`
 }
