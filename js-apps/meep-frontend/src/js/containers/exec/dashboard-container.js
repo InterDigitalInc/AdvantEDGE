@@ -23,6 +23,7 @@ import { Elevation } from '@rmwc/elevation';
 
 import IDCMap from '../idc-map';
 import IDCVis from '../idc-vis';
+import IDCSeq from '../idc-seq';
 import Iframe from 'react-iframe';
 
 import {
@@ -36,6 +37,7 @@ import {
   VIEW_NAME_NONE,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
+  SEQ_DIAGRAM_VIEW,
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
@@ -100,6 +102,15 @@ const ViewForName = ({
           height='100%'
           onEditElement={() => { }}
         />
+      </div>
+    );
+  }
+
+  // Handle Sequence Diagram view
+  if (viewName === SEQ_DIAGRAM_VIEW) {
+    return (
+      <div style={styles.dashboard}>
+        <IDCSeq/>
       </div>
     );
   }
@@ -260,15 +271,6 @@ class DashboardContainer extends Component {
         dashboardOptions={this.props.dashboardOptions}
       />
     );
-
-    // Populate Dashboard view list using links from monitoring tab
-    var dashboardViewsList = [
-      VIEW_NAME_NONE,
-      MAP_VIEW,
-      NET_TOPOLOGY_VIEW
-    ];
-    this.populateDashboardList(dashboardViewsList, DEFAULT_DASHBOARD_OPTIONS);
-    this.populateDashboardList(dashboardViewsList, this.props.dashboardOptions);
 
     return (
       <>

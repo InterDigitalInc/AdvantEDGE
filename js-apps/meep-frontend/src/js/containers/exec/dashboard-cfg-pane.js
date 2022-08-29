@@ -49,6 +49,7 @@ import {
   VIEW_NAME_NONE,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
+  SEQ_DIAGRAM_VIEW,
   DEFAULT_DASHBOARD_OPTIONS,
   PAGE_EXECUTE,
   EXEC_BTN_DASHBOARD_BTN_CLOSE
@@ -225,7 +226,8 @@ class DashCfgPane extends Component {
     var dashboardViewsList = [
       VIEW_NAME_NONE,
       MAP_VIEW,
-      NET_TOPOLOGY_VIEW
+      NET_TOPOLOGY_VIEW,
+      SEQ_DIAGRAM_VIEW
     ];
     this.populateDashboardList(dashboardViewsList, DEFAULT_DASHBOARD_OPTIONS);
     this.populateDashboardList(dashboardViewsList, this.props.dashboardOptions);
