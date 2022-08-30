@@ -28,6 +28,7 @@ import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-s
 import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
 import * as meepGisEngineRestApiClient from '../../../../../js-packages/meep-gis-engine-client/src/index.js';
 import * as meepAuthSvcRestApiClient from '../../../../../js-packages/meep-auth-svc-client/src/index.js';
+import * as meepMetricsEngineRestApiClient from '../../../../../js-packages/meep-metrics-engine-client/src/index.js';
 
 import MeepTopBar from '@/js/components/meep-top-bar';
 import Footer from '@/js/components/footer';
@@ -100,7 +101,8 @@ import {
   execVisFilteredData,
   execChangeReplayStatus,
   execChangeAppInstanceTable,
-  execChangeMap
+  execChangeMap,
+  execChangeSeqChart
 } from '../state/exec';
 
 import {
@@ -112,10 +114,11 @@ import {
 
 import {
   FIELD_CONNECTIVITY_MODEL,
+  FIELD_META_DISPLAY_SEQ_PARTICIPANTS,
   getElemByName,
   getElemFieldVal
 } from '../util/elem-utils';
-
+  
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
 meepPlatformCtrlRestApiClient.ApiClient.instance.basePath = basepathPlatformCtrl.replace(/\/+$/,'');
@@ -127,6 +130,8 @@ var basepathGisEngine = HOST_PATH + '/gis/v1';
 meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
 var basepathAuthSvc = HOST_PATH + '/auth/v1';
 meepAuthSvcRestApiClient.ApiClient.instance.basePath = basepathAuthSvc.replace(/\/+$/,'');
+var basepathMetricsEngine = HOST_PATH + '/metrics/v2';
+meepMetricsEngineRestApiClient.ApiClient.instance.basePath = basepathMetricsEngine.replace(/\/+$/,'');
 
 const SESSION_KEEPALIVE_INTERVAL = 600000; // 10 min
 
@@ -151,6 +156,17 @@ class MeepContainer extends Component {
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
     this.meepAuthApi = new meepAuthSvcRestApiClient.AuthApi();
     this.meepConnectivityApi = new meepSandboxCtrlRestApiClient.ConnectivityApi();
+    this.meepMetricsApi = new meepMetricsEngineRestApiClient.MetricsApi();
+
+    this.seqParticipants = '';
+    this.seqMetricsQuery = {
+      fields: ['mermaid'],
+      scope: {
+        limit: 1000,
+        duration: '1d'
+      },
+      responseType: ''
+    };
   }
 
   componentDidMount() {
@@ -241,6 +257,7 @@ class MeepContainer extends Component {
             // Only update while scenario is running
             if (this.props.execScenarioState === 'DEPLOYED') {
               this.refreshAppInstancesTable();
+              this.refreshSeq();
             }
           }
         }
@@ -501,6 +518,9 @@ class MeepContainer extends Component {
           vis.network.canvas.body.view = view;
         });
       } 
+
+      // Update sequence diagram
+      this.updateSequenceDiagram(updatedTable, scenarioName);
     }
   }
 
@@ -649,6 +669,38 @@ class MeepContainer extends Component {
   }
 
   /**
+   * Callback function to receive the result of the postSeqQuery operation.
+   * @callback module:api/MetricsApi~postSeqQueryCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/SeqMetrics} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  postSeqQueryCb(error, data) {
+    if (error !== null) {
+      return;
+    }
+
+    // Format sequence diagram
+    var seqChart = '';
+    if (data !== null) {
+      if (data.seqMetricString !== '') {
+        seqChart = 'sequenceDiagram\n' + this.seqParticipants + data.seqMetricString;
+      }
+    }
+
+    // Update sequence diagram
+    this.props.changeSeqChart(seqChart);
+  }
+
+  // Refresh Sequence Diagram
+  refreshSeq() {
+    // Query sequence diagram
+    this.meepMetricsApi.postSeqQuery(this.seqMetricsQuery, (error, data) =>
+      this.postSeqQueryCb(error, data)
+    );
+  }
+
+  /**
    * Callback function to receive the result of the getPduSessionList operation.
    * @callback module:api/ConnectivityApi~getPduSessionListCallback
    * @param {String} error Error message, if any.
@@ -682,6 +734,18 @@ class MeepContainer extends Component {
     }
   }
 
+  // Update sequence diagram
+  updateSequenceDiagram(table, scenarioName) {
+    var participants = '';
+    var metaSeqParticipants = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_META_DISPLAY_SEQ_PARTICIPANTS);
+    if (metaSeqParticipants) {
+      _.forEach(_.split(metaSeqParticipants, ','), function(value) {
+        participants += 'participant ' + value + '\n';
+      });
+    }
+    this.seqParticipants = participants;
+  }
+
   // Set sandox-specific API basepath
   setBasepath(sandboxName) {
     var sandboxPath = (sandboxName) ? '/' + sandboxName : '';
@@ -689,6 +753,8 @@ class MeepContainer extends Component {
     meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
     basepathGisEngine = HOST_PATH + sandboxPath + '/gis/v1';
     meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
+    basepathMetricsEngine = HOST_PATH + sandboxPath + '/metrics/v2';
+    meepMetricsEngineRestApiClient.ApiClient.instance.basePath = basepathMetricsEngine.replace(/\/+$/,'');
   }
 
   /**
@@ -972,7 +1038,8 @@ const mapDispatchToProps = dispatch => {
     changeSignInStatus: status => dispatch(uiChangeSignInStatus(status)),
     changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
     changeTabIndex: index => dispatch(uiChangeCurrentTab(index)),
-    changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value))
+    changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value)),
+    changeSeqChart: chart => dispatch(execChangeSeqChart(chart))
   };
 };
 

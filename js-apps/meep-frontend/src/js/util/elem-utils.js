@@ -130,6 +130,8 @@ export const FIELD_APP_THROUGHPUT_UL = 'appThroughput_Ul';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
 export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
+export const FIELD_META_DISPLAY_SEQ_PARTICIPANTS = 'metaDisplaySeqParticipants';
+
 
 export const getElemByName = (entries, name) => {
   return (entries && entries[name]) ? entries[name] : null;
@@ -250,6 +252,7 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_APP_PKT_LOSS, DEFAULT_PACKET_LOSS_APP);
   setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_COLOR, '');
   setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, '');
+  setElemFieldVal(elem, FIELD_META_DISPLAY_SEQ_PARTICIPANTS, '');
 
   return elem;
 };

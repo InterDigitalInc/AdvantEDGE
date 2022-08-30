@@ -94,6 +94,7 @@ import {
   FIELD_APP_PKT_LOSS,
   FIELD_META_DISPLAY_MAP_COLOR,
   FIELD_META_DISPLAY_MAP_ICON,
+  FIELD_META_DISPLAY_SEQ_PARTICIPANTS,
   createElem,
   getElemFieldVal,
   setElemFieldVal,
@@ -187,7 +188,8 @@ import {
 
 import {
   META_DISPLAY_MAP_COLOR,
-  META_DISPLAY_MAP_ICON
+  META_DISPLAY_MAP_ICON,
+  META_DISPLAY_SEQ_PARTICIPANTS
 } from './meta-keys';
 
 // Import images used in JS
@@ -1383,6 +1385,9 @@ export function getElementFromScenario(scenario, elementId) {
     }
     if (scenario.deployment.connectivity) {
       setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, scenario.deployment.connectivity.model || DEFAULT_CONNECTIVITY_MODEL);
+    }
+    if (scenario.deployment.meta) {
+      setElemFieldVal(elem, FIELD_META_DISPLAY_SEQ_PARTICIPANTS, scenario.deployment.meta[META_DISPLAY_SEQ_PARTICIPANTS]);
     }
     return elem;
   }
