@@ -20,3 +20,7 @@ const META_DISPLAY = 'display';
 const META_DISPLAY_MAP = META_DISPLAY + '.map';
 export const META_DISPLAY_MAP_COLOR = META_DISPLAY_MAP + '.color';
 export const META_DISPLAY_MAP_ICON = META_DISPLAY_MAP + '.icon';
+
+// Sequence Diagram Settings
+const META_DISPLAY_SEQ = META_DISPLAY + '.seq';
+export const META_DISPLAY_SEQ_PARTICIPANTS = META_DISPLAY_SEQ + '.participants';
