@@ -17,6 +17,8 @@
 import { updateObject } from '../../util/object-util';
 
 const initialState = {
+  metrics: [],
+  participants: [],
   chart: ''
 };
 
@@ -26,6 +28,24 @@ export function execChangeSeq(seq) {
   return {
     type: EXEC_CHANGE_SEQ,
     payload: seq
+  };
+}
+
+// EXEC_CHANGE_SEQ_METRICS
+const EXEC_CHANGE_SEQ_METRICS = 'EXEC_CHANGE_SEQ_METRICS';
+export function execChangeSeqMetrics(metrics) {
+  return {
+    type: EXEC_CHANGE_SEQ_METRICS,
+    payload: metrics
+  };
+}
+
+// EXEC_CHANGE_SEQ_PARTICIPANTS
+const EXEC_CHANGE_SEQ_PARTICIPANTS = 'EXEC_CHANGE_SEQ_PARTICIPANTS';
+export function execChangeSeqParticipants(participants) {
+  return {
+    type: EXEC_CHANGE_SEQ_PARTICIPANTS,
+    payload: participants
   };
 }
 
@@ -42,6 +62,10 @@ export function execSeqReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SEQ:
     return action.payload;
+  case EXEC_CHANGE_SEQ_METRICS:
+    return updateObject(state, { metrics: action.payload });
+  case EXEC_CHANGE_SEQ_PARTICIPANTS:
+    return updateObject(state, { participants: action.payload });
   case EXEC_CHANGE_SEQ_CHART:
     return updateObject(state, { chart: action.payload });
   default:

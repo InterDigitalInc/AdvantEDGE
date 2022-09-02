@@ -19,7 +19,7 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import autoBind from 'react-autobind';
 import axios from 'axios';
-import { updateObject, deepCopy } from '../util/object-util';
+import { updateObject, deepCopy, equalArrayOrdered } from '../util/object-util';
 import { ToolbarFixedAdjust } from '@rmwc/toolbar';
 
 // Import JS dependencies
@@ -102,7 +102,8 @@ import {
   execChangeReplayStatus,
   execChangeAppInstanceTable,
   execChangeMap,
-  execChangeSeqChart
+  execChangeSeqMetrics,
+  execChangeSeqParticipants
 } from '../state/exec';
 
 import {
@@ -158,14 +159,15 @@ class MeepContainer extends Component {
     this.meepConnectivityApi = new meepSandboxCtrlRestApiClient.ConnectivityApi();
     this.meepMetricsApi = new meepMetricsEngineRestApiClient.MetricsApi();
 
-    this.seqParticipants = '';
+    this.scenarioName = '';
+    this.refreshSeqMetrics = false;
+    this.resetSeqMetrics = false;
     this.seqMetricsQuery = {
       fields: ['mermaid'],
       scope: {
-        limit: 1000,
-        duration: '1d'
+        limit: 10000
       },
-      responseType: ''
+      responseType: 'listonly'
     };
   }
 
@@ -245,6 +247,10 @@ class MeepContainer extends Component {
 
   // Exec page refresh 
   startExecPageRefresh() {
+    // Initialize refresh variables
+    this.refreshSeqMetrics = true;
+
+    // Start refresh timer
     this.execPageRefreshIntervalTimer = setInterval(
       () => {
         if (this.props.page === PAGE_EXECUTE) {
@@ -520,7 +526,7 @@ class MeepContainer extends Component {
       } 
 
       // Update sequence diagram
-      this.updateSequenceDiagram(updatedTable, scenarioName);
+      this.updateSeq(updatedTable, scenarioName);
     }
   }
 
@@ -679,21 +685,53 @@ class MeepContainer extends Component {
     if (error !== null) {
       return;
     }
-
-    // Format sequence diagram
-    var seqChart = '';
-    if (data !== null) {
-      if (data.seqMetricString !== '') {
-        seqChart = 'sequenceDiagram\n' + this.seqParticipants + data.seqMetricString;
+    var newSeqMetrics = (data && data.seqMetricList && data.seqMetricList.values) ? data.seqMetricList.values : [];
+    
+    // Nothing to do if no new metrics
+    if (newSeqMetrics.length === 0) {
+      // Reset metrics if necessary
+      if (this.resetSeqMetrics) {
+        this.resetSeqMetrics = false;
+        this.props.changeSeqMetrics([]);
       }
+      return;
     }
 
-    // Update sequence diagram
-    this.props.changeSeqChart(seqChart);
+    // Merge new metrics with existing list
+    // Copy previous list if no reset 
+    var seqMetrics = [];
+    if (this.resetSeqMetrics) {
+      this.resetSeqMetrics = false;
+    } else {
+      seqMetrics = deepCopy(this.props.execSeqMetrics);
+    }
+
+    // Get latest metric
+    var lastMetric = (seqMetrics.length > 0) ? seqMetrics[seqMetrics.length - 1] : null;
+    
+    _.forEachRight(newSeqMetrics, newMetric => {
+      // Add metric to list if it is more recent than the last metric
+      // NOTE: assumes timestamps do not overlap due to nanosecond precision
+      if (!lastMetric || newMetric.time > lastMetric.time) {
+        seqMetrics.push(newMetric);
+      }
+    });
+
+    // Update metrics state
+    this.props.changeSeqMetrics(seqMetrics);
   }
 
   // Refresh Sequence Diagram
   refreshSeq() {
+    // If polling just started, refresh entire API console list
+    if (this.refreshSeqMetrics) {
+      this.seqMetricsQuery.scope.duration = '';
+      this.refreshSeqMetrics = false;
+      this.resetSeqMetrics = true;
+    } else {
+      this.seqMetricsQuery.scope.duration = '2s';
+    }
+
     // Query sequence diagram
     this.meepMetricsApi.postSeqQuery(this.seqMetricsQuery, (error, data) =>
       this.postSeqQueryCb(error, data)
@@ -734,16 +772,23 @@ class MeepContainer extends Component {
     }
   }
 
-  // Update sequence diagram
-  updateSequenceDiagram(table, scenarioName) {
-    var participants = '';
+  // Update sequence diagram participants
+  updateSeq(table, scenarioName) {
+    // Refresh participants
+    var participants = [];
     var metaSeqParticipants = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_META_DISPLAY_SEQ_PARTICIPANTS);
     if (metaSeqParticipants) {
-      _.forEach(_.split(metaSeqParticipants, ','), function(value) {
-        participants += 'participant ' + value + '\n';
-      });
+      participants = _.split(metaSeqParticipants, ',');
     }
-    this.seqParticipants = participants;
+    if (!equalArrayOrdered(participants,this.props.execSeqParticipants)) {
+      this.props.changeSeqParticipants(participants);
+    }
+
+    // Set metrics reset flag if scenario state changed
+    if (this.scenarioName !== scenarioName) {
+      this.scenarioName = scenarioName;
+      this.refreshSeqMetrics = true;
+    }
   }
 
   // Set sandox-specific API basepath
@@ -992,6 +1037,8 @@ const mapStateToProps = state => {
     exec: state.exec,
     execScenarioState: state.exec.state.scenario,
     execVis: state.exec.vis,
+    execSeqMetrics: state.exec.seq.metrics,
+    execSeqParticipants: state.exec.seq.participants,
     currentDialog: state.ui.currentDialog,
     page: state.ui.page,
     sandbox: state.ui.sandbox,
@@ -1039,7 +1086,9 @@ const mapDispatchToProps = dispatch => {
     changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
     changeTabIndex: index => dispatch(uiChangeCurrentTab(index)),
     changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value)),
-    changeSeqChart: chart => dispatch(execChangeSeqChart(chart))
+    changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
+    changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants))
+
   };
 };
 

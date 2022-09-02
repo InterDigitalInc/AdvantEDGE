@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-// import _ from 'lodash';
+import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component, createRef } from 'react';
 import mermaid from 'mermaid';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import {
-  execChangeSeqChart
-} from '../state/exec';
-
 
 class IDCSeq extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.mermaidChart = '';
     this.mermaidRef = createRef();
 
     mermaid.initialize({
@@ -43,10 +40,38 @@ class IDCSeq extends Component {
   componentDidUpdate() {
     // Remove data-processed attribute to allow diagram refresh
     this.mermaidRef.current.removeAttribute('data-processed');
-    mermaid.init(undefined, '.seq-mermaid');
+    this.mermaidRef.current.innerHTML = this.mermaidChart;
+    mermaid.init(undefined, this.mermaidRef.current);
+  }
+
+  formatSequenceChart() {
+    var seqChart = '';
+
+    // Return default diagram if no metrics available yet
+    if (this.props.execSeqMetrics.length === 0) {
+      // Default diagram
+      seqChart = 'flowchart LR\nid1(Sequence diagram waiting for metrics to display...)';
+    } else {
+      seqChart = 'sequenceDiagram\n';
+
+      // Add participants
+      _.forEach(this.props.execSeqParticipants, participant => {
+        seqChart += ('participant ' + participant + '\n');
+      });
+
+      // Add metrics
+      _.forEach(this.props.execSeqMetrics, metric => {
+        seqChart += (metric.mermaid + '\n');
+      });
+    }
+
+    this.mermaidChart = seqChart;
   }
 
   render() {
+    // Format sequence diagram
+    this.formatSequenceChart();
+
     return (
       <TransformWrapper>
         <TransformComponent
@@ -57,7 +82,7 @@ class IDCSeq extends Component {
             className='seq-mermaid'
             data-cy={this.props.cydata}
           >
-            {this.props.execSeqChart}
+            {this.mermaidChart}
           </div>
         </TransformComponent>
       </TransformWrapper>
@@ -67,13 +92,14 @@ class IDCSeq extends Component {
 
 const mapStateToProps = state => {
   return {
+    execSeqMetrics: state.exec.seq.metrics,
+    execSeqParticipants: state.exec.seq.participants,
     execSeqChart: state.exec.seq.chart
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = () => {
   return {
-    changeExecSeqChart: chart => dispatch(execChangeSeqChart(chart))
   };
 };
 
