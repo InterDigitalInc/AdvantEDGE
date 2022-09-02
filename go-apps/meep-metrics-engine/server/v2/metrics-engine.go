@@ -535,6 +535,14 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make sure only type of format is specified
+	if len(params.Fields) > 1 {
+		err := errors.New("Specify only one type of format: meraid or sdorg")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// Parse tags
 	tags := make(map[string]string)
 	for _, tag := range params.Tags {
@@ -570,8 +578,8 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 			Columns: append(params.Fields, "time"),
 		}
 	}
-
-	for _, values := range valuesArray {
+	for i := len(valuesArray) - 1; i >= 0; i-- {
+		values := valuesArray[i]
 		var metric SeqMetric
 		metric.Time = values["time"].(string)
 		if values[params.Fields[0]] != nil {
