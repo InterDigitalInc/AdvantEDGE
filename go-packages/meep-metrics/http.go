@@ -112,9 +112,10 @@ func (ms *MetricStore) FormatMetrics(h HttpMetric) (mermaidLogs string, sdorgLog
 		if pos != -1 {
 			endpoint = endpoint[pos+len(trimStr):]
 		}
-
-		mermaidLogs := h.Src + " ->> " + h.Dst + ": " + endpoint + procTime
-		sdorgLogs := "\"" + h.Src + "\"" + "->" + "\"" + h.Dst + "\": " + endpoint + procTime
+		src := strings.Replace(h.Src, "-", "_", 1)
+		dst := strings.Replace(h.Dst, "-", "_", 1)
+		mermaidLogs := src + " ->> " + dst + ": " + endpoint + procTime
+		sdorgLogs := src + " ->  " + dst + ": " + endpoint + procTime
 		return mermaidLogs, sdorgLogs
 	}
 	return
