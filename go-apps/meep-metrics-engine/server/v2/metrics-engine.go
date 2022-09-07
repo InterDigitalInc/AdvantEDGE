@@ -37,6 +37,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	sandboxCtrlClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 
 	"github.com/gorilla/mux"
@@ -60,6 +61,9 @@ const (
 	notifNetworkMetrics = "NetworkMetricsNotification"
 )
 
+const listOnly = "listonly"
+const strOnly = "stronly"
+
 var defaultDuration string = "1s"
 var defaultLimit int32 = 1
 
@@ -69,6 +73,7 @@ var nextEventSubscriptionIdAvailable int
 
 var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
+var pduSessions = map[string]string{}
 
 var SandboxName string
 var mqLocal *mq.MsgQueue
@@ -556,14 +561,25 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		duration = params.Scope.Duration
 		limit = int(params.Scope.Limit)
 	}
-	// Get metrics
+	// Get http metrics
+	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
+		met.HttpBody, met.HttpMethod)
 	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if len(valuesArray) == 0 {
+
+	// Get event metrics
+	eventMetrics, err := metricStore.GetEventMetric("MOBILITY", "", 0)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(valuesArray) == 0 && len(eventMetrics) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNoContent)
@@ -572,7 +588,8 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare & send response
 	var response SeqMetrics
-	if params.ResponseType == "listonly" || params.ResponseType == "" {
+	mobilityEventProcessed := false
+	if params.ResponseType == listOnly || params.ResponseType == "" {
 		response.SeqMetricList = &SeqMetricList{
 			Name:    "sequence metrics",
 			Columns: append(params.Fields, "time"),
@@ -589,28 +606,82 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			t := metricTime.Format("15:04:05.000")
-			if params.Fields[0] == "mermaid" {
-				if val, ok := values["mermaid"].(string); ok {
-					val = strings.Replace(val, ":", ": ["+t+"]", 1)
-					if params.ResponseType == "listonly" || params.ResponseType == "" {
-						metric.Mermaid = val
-						response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+
+			if len(eventMetrics) > 0 {
+				eventMetric := eventMetrics[len(eventMetrics)-1]
+				eventMetricTime, err := time.Parse(time.RFC3339, eventMetric.Time.(string))
+				if err != nil {
+					log.Error("Failed to parse event time with error: ", err.Error())
+					continue
+				}
+				eventSdorg := ""
+				eventMermaid := ""
+				if eventMetricTime.Before(metricTime) {
+					log.Info("metricTime: ", t)
+					log.Info("eventMetricTime: ", eventMetricTime.Format("15:04:05.000"))
+					// Close previous mobility event group if necessary
+					if mobilityEventProcessed {
+						eventSdorg += "end\n"
 					}
-					if params.ResponseType == "stronly" || params.ResponseType == "" {
-						response.SeqMetricString += val + "\n"
+					mobilityEventProcessed = true
+
+					// Create group for mobility event
+					eventDescription := eventMetric.Description
+					eventDescription = strings.Replace(eventDescription, "[", "", -1)
+					eventDescription = strings.Replace(eventDescription, "]", "", -1)
+					eventSdorg += "\ngroup Mobility Event: " + eventDescription + "\n"
+					eventMermaid += "note over event: Mobility Event: " + eventDescription + "\n"
+					if params.Fields[0] == met.HttpMermaid {
+						metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
 					}
+					if params.Fields[0] == met.HttpSdorg {
+						metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
+					}
+					// Remove processed metric from list
+					eventMetrics = eventMetrics[:len(eventMetrics)-1]
 				}
 			}
-			if params.Fields[0] == "sdorg" {
-				if val, ok := values["sdorg"].(string); ok {
-					val = strings.Replace(val, ":", ": **["+t+"]**", 1)
-					if params.ResponseType == "listonly" || params.ResponseType == "" {
-						metric.Sdorg = val
-						response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+
+			// Handle notifications
+			notifStr := ""
+			if values[met.HttpLoggerMsgType].(string) == met.HttpMsgTypeNotification {
+				// Sandbox Controller requests
+				if values[met.HttpDst].(string) == "sandbox-ctrl" {
+					// Add note for PDU Session requests
+					pduSessionPrefix := "/sandbox-ctrl/connectivity/pdu-session/"
+					if strings.HasPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix) {
+						pduSession := strings.Split(strings.TrimPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix), "/")
+						if values[met.HttpMethod] == "POST" {
+							var pduSessionInfo sandboxCtrlClient.PduSessionInfo
+							err := json.Unmarshal([]byte(values[met.HttpBody].(string)), &pduSessionInfo)
+							if err != nil {
+								log.Error(err.Error())
+								continue
+							}
+							pduSessions[pduSession[1]] = pduSessionInfo.Dnn
+							// Sequencediagram.org formatted line
+							notifStr = "note over " + values[met.HttpSrc].(string) + " :[" + t + "] Created PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + pduSessionInfo.Dnn + "\n"
+						} else if values[met.HttpMethod] == "DELETE" {
+							dnn := pduSessions[pduSession[1]]
+							// Sequencediagram.org formatted line
+							notifStr = "note over " + values[met.HttpSrc].(string) + " : [" + t + "] Terminated PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + dnn + "\n"
+						}
+						metric, response = updateSeqMetrics(notifStr, metric, params, response)
 					}
-					if params.ResponseType == "stronly" || params.ResponseType == "" {
-						response.SeqMetricString += val + "\n"
-					}
+				}
+				continue
+			}
+
+			if params.Fields[0] == met.HttpMermaid {
+				if val, ok := values[met.HttpMermaid].(string); ok {
+					val = strings.Replace(val, ":", ": ["+t+"]", 1)
+					metric, response = updateSeqMetrics(val, metric, params, response)
+				}
+			}
+			if params.Fields[0] == met.HttpSdorg {
+				if val, ok := values[met.HttpSdorg].(string); ok {
+					val = strings.Replace(val, ":", ": ["+t+"]", 1)
+					metric, response = updateSeqMetrics(val, metric, params, response)
 				}
 			}
 		}
@@ -623,6 +694,29 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func updateSeqMetrics(log string, metric SeqMetric, params SeqQueryParams, response SeqMetrics) (
+	SeqMetric, SeqMetrics) {
+	if params.Fields[0] == met.HttpMermaid && log != "" {
+		if params.ResponseType == listOnly || params.ResponseType == "" {
+			metric.Mermaid = log
+			response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+		}
+		if params.ResponseType == strOnly || params.ResponseType == "" {
+			response.SeqMetricString += log + "\n"
+		}
+	}
+	if params.Fields[0] == met.HttpSdorg && log != "" {
+		if params.ResponseType == listOnly || params.ResponseType == "" {
+			metric.Sdorg = log
+			response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+		}
+		if params.ResponseType == strOnly || params.ResponseType == "" {
+			response.SeqMetricString += log + "\n"
+		}
+	}
+	return metric, response
 }
 
 func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
