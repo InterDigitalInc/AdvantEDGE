@@ -709,7 +709,7 @@ class MeepContainer extends Component {
     // Get latest metric
     var lastMetric = (seqMetrics.length > 0) ? seqMetrics[seqMetrics.length - 1] : null;
     
-    _.forEachRight(newSeqMetrics, newMetric => {
+    _.forEach(newSeqMetrics, newMetric => {
       // Add metric to list if it is more recent than the last metric
       // NOTE: assumes timestamps do not overlap due to nanosecond precision
       if (!lastMetric || newMetric.time > lastMetric.time) {
