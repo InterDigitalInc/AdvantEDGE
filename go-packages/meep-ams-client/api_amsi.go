@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -1371,7 +1371,7 @@ func (a *AmsiApiService) SubGET(ctx context.Context, localVarOptionals *SubGETOp
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/subscriptions/"
+	localVarPath := a.client.cfg.BasePath + "/subscriptions"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -1528,7 +1528,7 @@ func (a *AmsiApiService) SubPOST(ctx context.Context, body InlineSubscription) (
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/subscriptions/"
+	localVarPath := a.client.cfg.BasePath + "/subscriptions"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -1560,6 +1560,7 @@ func (a *AmsiApiService) SubPOST(ctx context.Context, body InlineSubscription) (
 
 	localVarHttpResponse, err := a.client.callAPI(r)
 	if err != nil || localVarHttpResponse == nil {
+		fmt.Println("SubPOST: In error: ", err.Error())
 		return localVarReturnValue, localVarHttpResponse, err
 	}
 
@@ -1581,17 +1582,6 @@ func (a *AmsiApiService) SubPOST(ctx context.Context, body InlineSubscription) (
 		newErr := GenericSwaggerError{
 			body:  localVarBody,
 			error: localVarHttpResponse.Status,
-		}
-
-		if localVarHttpResponse.StatusCode == 201 {
-			var v InlineSubscription
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHttpResponse, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, localVarHttpResponse, newErr
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {

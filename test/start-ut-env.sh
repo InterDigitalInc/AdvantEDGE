@@ -35,3 +35,11 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
 helm install meep-ut-postgis --set meepOrigin="ut" --set securityContext.enabled=false --set master.service.type=NodePort --set master.service.nodePort=30432 --set persistence.enabled=false --set ingress.enabled=false $BASEDIR/../charts/postgis/
+
+echo ""
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>> Copying Grid Map File"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ""
+
+sudo cp -rf grid_map.yaml /grid_map.yaml

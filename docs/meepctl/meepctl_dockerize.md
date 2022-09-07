@@ -40,6 +40,7 @@ Valid Targets:
   * meep-tc-engine
   * meep-tc-sidecar
   * meep-virt-engine
+  * meep-vis
   * meep-wais
   * meep-webhook
 ```

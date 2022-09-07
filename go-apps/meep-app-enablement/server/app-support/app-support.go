@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,7 +215,7 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	// Make sure App instance exists
 	appInfo, err := getApp(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -225,21 +225,21 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&confirmation)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Validate App Ready params
 	if confirmation.Indication == "" {
 		log.Error("Mandatory Indication not present")
-		http.Error(w, "Mandatory Indication not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Indication not present", http.StatusBadRequest)
 		return
 	}
 	switch confirmation.Indication {
 	case "READY":
 	default:
 		log.Error("Mandatory OperationAction value not valid")
-		http.Error(w, "Mandatory OperationAction value not valid", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory OperationAction value not valid", http.StatusBadRequest)
 		return
 	}
 
@@ -250,7 +250,7 @@ func applicationsConfirmReadyPOST(w http.ResponseWriter, r *http.Request) {
 	err = setAppInfo(appInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -270,7 +270,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	// Get App instance
 	appInfo, err := getApp(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -282,7 +282,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 			w.WriteHeader(code)
 			fmt.Fprintf(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -291,7 +291,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	gracefulTerminateChannel, found := gracefulTerminateMap[appId]
 	if !found {
 		log.Error("Unexpected App Confirmation Termination Notification")
-		http.Error(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Unexpected App Confirmation Termination Notification", http.StatusBadRequest)
 		return
 	}
 
@@ -301,21 +301,21 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 	err = decoder.Decode(&confirmation)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Validate Termination Confirmation params
 	if confirmation.OperationAction == nil {
 		log.Error("Mandatory OperationAction not present")
-		http.Error(w, "Mandatory OperationAction not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory OperationAction not present", http.StatusBadRequest)
 		return
 	}
 	switch *confirmation.OperationAction {
 	case STOPPING, TERMINATING:
 	default:
 		log.Error("Mandatory OperationAction value not valid")
-		http.Error(w, "Mandatory OperationAction value not valid", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory OperationAction value not valid", http.StatusBadRequest)
 		return
 	}
 
@@ -337,7 +337,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getApp(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -349,7 +349,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(code)
 			fmt.Fprintf(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -360,29 +360,29 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&appTermNotifSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Verify mandatory properties
 	if appTermNotifSub.CallbackReference == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if appTermNotifSub.SubscriptionType != APP_TERMINATION_NOTIF_SUB_TYPE {
 		log.Error("SubscriptionType shall be AppTerminationNotificationSubscription")
-		http.Error(w, "SubscriptionType shall be AppTerminationNotificationSubscription", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionType shall be AppTerminationNotificationSubscription", http.StatusBadRequest)
 		return
 	}
 	if appTermNotifSub.AppInstanceId == "" {
 		log.Error("Mandatory AppInstanceId parameter not present")
-		http.Error(w, "Mandatory AppInstanceId parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory AppInstanceId parameter not present", http.StatusBadRequest)
 		return
 	}
 	if appTermNotifSub.AppInstanceId != appId {
 		log.Error("AppInstanceId in endpoint and in body not matching")
-		http.Error(w, "AppInstanceId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "AppInstanceId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -402,7 +402,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	_, err = subMgr.CreateSubscription(subCfg, jsonSub)
 	if err != nil {
 		log.Error("Failed to create subscription")
-		http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+		errHandlerProblemDetails(w, "Failed to create subscription", http.StatusInternalServerError)
 		return
 	}
 
@@ -424,7 +424,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	// Get App instance info
 	appInfo, err := getApp(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -436,7 +436,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(code)
 			fmt.Fprintf(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -445,7 +445,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -453,7 +453,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	if sub.Cfg.AppId != appId || sub.Cfg.Type != APP_TERMINATION_NOTIF_SUB_TYPE {
 		err = errors.New("Subscription not found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -474,7 +474,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	// Get App instance info
 	appInfo, err := getApp(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -486,7 +486,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(code)
 			fmt.Fprintf(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -495,7 +495,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -503,7 +503,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	if sub.Cfg.AppId != appId || sub.Cfg.Type != APP_TERMINATION_NOTIF_SUB_TYPE {
 		err = errors.New("Subscription not found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -511,7 +511,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	err = subMgr.DeleteSubscription(sub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -530,7 +530,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	// Get App instance info
 	appInfo, err := getApp(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -542,7 +542,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(code)
 			fmt.Fprintf(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -555,8 +555,8 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create subscription link list
-	subscriptionLinkList := &SubscriptionLinkList{
-		Links: &SubscriptionLinkListLinks{
+	subscriptionLinkList := &MecAppSuptApiSubscriptionLinkList{
+		Links: &MecAppSuptApiSubscriptionLinkListLinks{
 			Self: &LinkType{
 				Href: hostUrl.String() + basePath + "applications/" + appId + "/subscriptions",
 			},
@@ -565,8 +565,8 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	for _, sub := range subList {
 		// Create subscription reference & append it to link list
-		subscription := SubscriptionLinkListLinksSubscriptions{
-			// In v2.1.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
+		subscription := MecAppSuptApiSubscriptionLinkListLinksSubscriptions{
+			// In v2.2.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
 			SubscriptionType: APP_TERMINATION_NOTIF_SUB_TYPE,
 			Href:             sub.Cfg.Self,
 		}
@@ -575,7 +575,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
+	fmt.Fprintf(w, convertMecAppSuptApiSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func timingCapsGET(w http.ResponseWriter, r *http.Request) {
@@ -594,7 +594,7 @@ func timingCapsGET(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(timingCaps)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -616,7 +616,7 @@ func timingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(currentTime)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -1010,4 +1010,15 @@ func sendAppRemoveCnf(id string) {
 		log.Error("Failed to send message. Error: ", err.Error())
 		return
 	}
+}
+
+func errHandlerProblemDetails(w http.ResponseWriter, error string, code int) {
+	var pd ProblemDetails
+	pd.Detail = error
+	pd.Status = int32(code)
+
+	jsonResponse := convertProblemDetailstoJson(&pd)
+
+	w.WriteHeader(code)
+	fmt.Fprint(w, jsonResponse)
 }

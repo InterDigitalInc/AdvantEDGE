@@ -86,3 +86,12 @@ func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
 	}
 	return string(jsonInfo)
 }
+
+func convertProblemDetailstoJson(probdetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*probdetails)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}

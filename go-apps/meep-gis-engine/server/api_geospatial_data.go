@@ -48,6 +48,10 @@ func GetWithinRangeByName(w http.ResponseWriter, r *http.Request) {
 	geGetWithinRangeGeoDataByName(w, r)
 }
 
+func GetGeoDataPowerValues(w http.ResponseWriter, r *http.Request) {
+	geGetGeoDataPowerValues(w, r)
+}
+
 func UpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	geUpdateGeoDataByName(w, r)
 }

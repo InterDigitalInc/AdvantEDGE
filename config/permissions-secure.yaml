@@ -17,12 +17,12 @@
 #  - Fileserver names must be unique for all fileservers
 #  - Service endpoint names must be unique within a service
 #  - 'mode' is the access authorization mode
-#    -> allow: grant access 
+#    -> allow: grant access
 #    -> block: deny access
 #    -> verify: obtain session role & verify role-specific access permissions
 #  - 'roles' is a map of role permissions
-#    -> allow: grant access 
-#    -> block: deny access 
+#    -> allow: grant access
+#    -> block: deny access
 #  - Default access mode & role permissions are used when service-specific
 #    values are not provided
 #------------------------------------------------------------------------------
@@ -76,24 +76,24 @@ fileservers:
     roles:
       admin: 'allow'
       user: 'allow'
-#   #------------------------------
-#   #  Alternate Swagger UI
-#   #------------------------------
-#   - name: 'meep-alt-swagger-ui'
-#     path: '/alt/api/'
-#     mode: 'verify'
-#     roles:
-#       admin: 'allow'
-#       user: 'block'
-#   #------------------------------
-#   #  Alternate Frontend
-#   #------------------------------
-#   - name: 'meep-alt-frontend'
-#     path: '/alt/'
-#     mode: 'verify'
-#     roles:
-#       admin: 'allow'
-#       user: 'block'
+  # #------------------------------
+  # #  Alternate Swagger UI
+  # #------------------------------
+  # - name: 'meep-alt-swagger-ui'
+  #   path: '/alt/api/'
+  #   mode: 'verify'
+  #   roles:
+  #     admin: 'allow'
+  #     user: 'block'
+  # #------------------------------
+  # #  Alternate Frontend
+  # #------------------------------
+  # - name: 'meep-alt-frontend'
+  #   path: '/alt/'
+  #   mode: 'verify'
+  #   roles:
+  #     admin: 'allow'
+  #     user: 'block'
   #------------------------------
   #  Sandbox Swagger UI (Sbox)
   #------------------------------
@@ -104,16 +104,16 @@ fileservers:
     roles:
       admin: 'allow'
       user: 'allow'
-#   #------------------------------
-#   #  Sandbox Alternate Swagger UI (Sbox)
-#   #------------------------------
-#   - name: 'meep-alt-sbox-swagger-ui'
-#     path: '/alt/api/'
-#     sbox: true
-#     mode: 'verify'
-#     roles:
-#       admin: 'allow'
-#       user: 'block'
+  # #------------------------------
+  # #  Sandbox Alternate Swagger UI (Sbox)
+  # #------------------------------
+  # - name: 'meep-alt-sbox-swagger-ui'
+  #   path: '/alt/api/'
+  #   sbox: true
+  #   mode: 'verify'
+  #   roles:
+  #     admin: 'allow'
+  #     user: 'block'
   #------------------------------
   #  Frontend (Default)
   #------------------------------
@@ -162,8 +162,8 @@ services:
     default:
       mode: 'verify'
       roles:
-       admin: 'allow'
-       user: 'allow'
+        admin: 'allow'
+        user: 'allow'
   #------------------------------
   #  MEC Service Management (Sbox)
   #------------------------------
@@ -265,6 +265,17 @@ services:
         admin: 'allow'
         user: 'allow'
   #------------------------------
+  #  V2XI Service (Sbox)
+  #------------------------------
+  - name: 'meep-vis'
+    path: '/vis/v2'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+  #------------------------------
   #  WAI Service (Sbox)
   #------------------------------
   - name: 'meep-wais'
@@ -290,4 +301,3 @@ services:
       roles:
         admin: 'allow'
         user: 'allow'
-

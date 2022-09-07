@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ package server
 
 type ApplicationContextState struct {
 	// Integer representing state of device being tracked
-	Counter int32 `json:"Counter,omitempty"`
+	Counter int `json:"Counter,omitempty"`
 	// Application UUID
 	AppId string `json:"AppId,omitempty"`
 	// MEC platform name

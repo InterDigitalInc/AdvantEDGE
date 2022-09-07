@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ type UeData struct {
 	Name          string       `json:"name"`
 	ErabId        int32        `json:"erabId"`
 	Ecgi          *Ecgi        `json:"ecgi"`
-	Nrcgi         *NRcgi       `json:"nrcgi"`
+	Nrcgi         *Nrcgi       `json:"nrcgi"`
 	Qci           int32        `json:"qci"`
 	ParentPoaName string       `json:"parentPoaName"`
 	InRangePoas   []InRangePoa `json:"inRangePoas"`
@@ -175,7 +175,7 @@ type AppStats struct {
 type PoaInfo struct {
 	Type         string  `json:"type"`
 	Ecgi         Ecgi    `json:"ecgi"`
-	Nrcgi        NRcgi   `json:"nrcgi"`
+	Nrcgi        Nrcgi   `json:"nrcgi"`
 	Latency      int32   `json:"latency"`
 	ThroughputUL int32   `json:"throughputUL"`
 	ThroughputDL int32   `json:"throughputDL"`
@@ -202,7 +202,7 @@ type PlmnInfoResp struct {
 	PlmnInfoList []PlmnInfo
 }
 
-const serviceAppVersion = "2.1.1"
+const serviceAppVersion = "2.2.1"
 
 var serviceAppInstanceId string
 
@@ -675,7 +675,8 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&notification)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -713,8 +714,8 @@ func updateUeData(obj sbi.UeDataSbi) {
 	newEcgi.CellId = obj.CellId
 	newEcgi.Plmn = &plmn
 
-	var newNrcgi NRcgi
-	newNrcgi.NrcellId = obj.NrCellId
+	var newNrcgi Nrcgi
+	newNrcgi.NrCellId = obj.NrCellId
 	newNrcgi.Plmn = &plmn
 
 	var ueData UeData
@@ -755,7 +756,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 			if ueDataObj.Nrcgi != nil {
 				oldNrPlmnMnc = ueDataObj.Nrcgi.Plmn.Mnc
 				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
-				oldNrCellId = ueDataObj.Nrcgi.NrcellId
+				oldNrCellId = ueDataObj.Nrcgi.NrCellId
 			}
 			// Keep previous measurements
 			ueData.InRangePoas = ueDataObj.InRangePoas
@@ -801,7 +802,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 		//keep erabId info that was there
 		ueData.ErabId = oldErabId
 
-		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
+		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrCellId != oldNrCellId {
 			//update because nrcgi changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
 		}
@@ -850,8 +851,8 @@ func updatePoaInfo(obj sbi.PoaInfoSbi) {
 		ecgi.Plmn = &plmn
 		poaInfo.Ecgi = ecgi
 	case poaType5G:
-		var nrcgi NRcgi
-		nrcgi.NrcellId = obj.CellId
+		var nrcgi Nrcgi
+		nrcgi.NrCellId = obj.CellId
 		nrcgi.Plmn = &plmn
 		poaInfo.Nrcgi = nrcgi
 	default:
@@ -957,13 +958,13 @@ func checkForExpiredSubscriptions() {
 				expiryTimeStamp.Seconds = int32(expiryTime)
 
 				link := new(ExpiryNotificationLinks)
-				link.Self = cbRef
+				link.Subscription.Href = cbRef
 				notif.Links = link
 
 				notif.TimeStamp = &timeStamp
 				notif.ExpiryDeadline = &expiryTimeStamp
 
-				sendExpiryNotification(link.Self, notif)
+				sendExpiryNotification(link.Subscription.Href, notif)
 				_ = delSubscription(baseKey, subsIdStr, true)
 			}
 		}
@@ -1460,13 +1461,13 @@ func isMatchNrMrFilterCriteriaNrcgi(filterCriteria interface{}, newPlmn *Plmn, o
 			}
 		}
 		if matchingPlmn {
-			if nrcgi.NrcellId == "" {
+			if nrcgi.NrCellId == "" {
 				return true
 			}
-			if newCellId == nrcgi.NrcellId {
+			if newCellId == nrcgi.NrCellId {
 				return true
 			}
-			if oldCellId == nrcgi.NrcellId {
+			if oldCellId == nrcgi.NrCellId {
 				return true
 			}
 		}
@@ -1608,9 +1609,19 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.SrcEcgi = &oldEcgi
 				notif.TrgEcgi = []Ecgi{newEcgi}
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
+				notif.Links = &CaReconfNotificationLinks{
+					&LinkType{
+						Href: hostUrl.String() + basePath + "subscriptions/" + subsIdStr,
+					},
+				}
 
-				sendCcNotification(subscription.CallbackReference, notif)
-				log.Info("Cell_change Notification" + "(" + subsIdStr + ")")
+				if subscription.CallbackReference != "" {
+					sendCcNotification(subscription.CallbackReference, notif)
+					log.Info("Cell_change Notification" + "(" + subsIdStr + ")")
+				} else if subscription.WebsockNotifConfig.RequestWebsocketUri {
+					log.Error("WebSocket functionality is not implemented currently")
+					return
+				}
 			}
 		}
 	}
@@ -1681,9 +1692,19 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.Ecgi = &newEcgi
 				notif.ErabQosParameters = &erabQos
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
+				notif.Links = &CaReconfNotificationLinks{
+					&LinkType{
+						Href: hostUrl.String() + basePath + "subscriptions/" + subsIdStr,
+					},
+				}
 
-				sendReNotification(subscription.CallbackReference, notif)
-				log.Info("Rab_establishment Notification" + "(" + subsIdStr + ")")
+				if subscription.CallbackReference != "" {
+					sendReNotification(subscription.CallbackReference, notif)
+					log.Info("Rab_establishment Notification" + "(" + subsIdStr + ")")
+				} else if subscription.WebsockNotifConfig.RequestWebsocketUri {
+					log.Error("WebSocket functionality is not implemented currently")
+					return
+				}
 			}
 		}
 	}
@@ -1755,9 +1776,19 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.Ecgi = &oldEcgi
 				notif.ErabReleaseInfo = &erabRelInfo
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
+				notif.Links = &CaReconfNotificationLinks{
+					&LinkType{
+						Href: hostUrl.String() + basePath + "subscriptions/" + subsIdStr,
+					},
+				}
 
-				sendRrNotification(subscription.CallbackReference, notif)
-				log.Info("Rab_release Notification" + "(" + subsIdStr + ")")
+				if subscription.CallbackReference != "" {
+					sendRrNotification(subscription.CallbackReference, notif)
+					log.Info("Rab_release Notification" + "(" + subsIdStr + ")")
+				} else if subscription.WebsockNotifConfig.RequestWebsocketUri {
+					log.Error("WebSocket functionality is not implemented currently")
+					return
+				}
 			}
 		}
 	}
@@ -1871,19 +1902,29 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 
 							var measRepUeNotificationNrNCellInfo MeasRepUeNotificationNrNCellInfo
 							measRepUeNotificationNrNCellInfo.NrNCellPlmn = append(measRepUeNotificationNrNCellInfo.NrNCellPlmn, *poaInfo.Nrcgi.Plmn)
-							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrcellId
+							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrCellId
 							neighborCell.NrNCellInfo = append(neighborCell.NrNCellInfo, measRepUeNotificationNrNCellInfo)
 							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
 						default:
 						}
 					}
 				}
+				notif.Links = &CaReconfNotificationLinks{
+					&LinkType{
+						Href: hostUrl.String() + basePath + "subscriptions/" + subsIdStr,
+					},
+				}
 
 				if parentMeasExists {
-					log.Info("Sending RNIS notification ", subscription.CallbackReference)
-					callbackReference := subscription.CallbackReference
-					go sendMrNotification(callbackReference, notif)
-					log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+					if subscription.CallbackReference != "" {
+						log.Info("Sending RNIS notification ", subscription.CallbackReference)
+						go sendMrNotification(subscription.CallbackReference, notif)
+						log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+					} else if subscription.WebsockNotifConfig.RequestWebsocketUri {
+						log.Error("WebSocket functionality is not implemented currently")
+						err = errors.New("WebSocket functionality is not implemented currently")
+						return err
+					}
 				}
 			}
 		}
@@ -1914,7 +1955,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 		return err
 	}
 
-	if ueData.Nrcgi == nil || ueData.Nrcgi.NrcellId == "" {
+	if ueData.Nrcgi == nil || ueData.Nrcgi.NrCellId == "" {
 		//that ue is not on a 5G poa
 		return nil
 	}
@@ -1937,7 +1978,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 			if match {
 				if ueData.Nrcgi != nil {
-					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrcellId, "")
+					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrCellId, "")
 				} else {
 					match = false
 				}
@@ -2002,8 +2043,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 						switch poaInfo.Type {
 						case poaType5G:
 							var neighborCell NrMeasRepUeNotificationNrNeighCellMeasInfo
-							//not using nrcgi but nrcellId, error in the spec... but going along
-							neighborCell.Nrcgi = poaInfo.Nrcgi.NrcellId
+							neighborCell.Nrcgi = &poaInfo.Nrcgi
 							var measQuantityResultsNr MeasQuantityResultsNr
 							measQuantityResultsNr.Rsrp = poa.Rsrp
 							measQuantityResultsNr.Rsrq = poa.Rsrq
@@ -2032,12 +2072,22 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 				if report5GNeighborOnly {
 					notif.EutraNeighCellMeasInfo = nil
 				}
+				notif.Links = &CaReconfNotificationLinks{
+					&LinkType{
+						Href: hostUrl.String() + basePath + "subscriptions/" + subsIdStr,
+					},
+				}
 
 				if parentMeasExists {
-					log.Info("Sending RNIS notification ", subscription.CallbackReference)
-					callbackReference := subscription.CallbackReference
-					go sendNrMrNotification(callbackReference, notif)
-					log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+					if subscription.CallbackReference != "" {
+						log.Info("Sending RNIS notification ", subscription.CallbackReference)
+						go sendNrMrNotification(subscription.CallbackReference, notif)
+						log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+					} else if subscription.WebsockNotifConfig.RequestWebsocketUri {
+						log.Error("WebSocket functionality is not implemented currently")
+						err = errors.New("WebSocket functionality is not implemented currently")
+						return err
+					}
 				}
 			}
 		}
@@ -2175,7 +2225,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonRespDB), &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2186,7 +2236,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2197,7 +2247,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2208,7 +2258,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2219,7 +2269,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2230,7 +2280,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2244,11 +2294,11 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 
 }
 
@@ -2260,7 +2310,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2270,7 +2320,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	//mandatory parameter
 	if subscriptionCommon.CallbackReference == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2283,6 +2333,8 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	self.Href = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
 	link.Self = self
 
+	// TODO.. if required..
+
 	var jsonResponse []byte
 
 	switch subscriptionType {
@@ -2291,7 +2343,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2299,7 +2351,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaAssocHo == nil {
 			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -2310,7 +2362,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		for _, ecgi := range subscription.FilterCriteriaAssocHo.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				errHandlerProblemDetails(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -2326,7 +2378,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2334,20 +2386,20 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		if subscription.FilterCriteriaQci.Qci == 0 {
 			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
-			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
 			return
 		}
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				errHandlerProblemDetails(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -2363,7 +2415,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2371,26 +2423,26 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		if subscription.FilterCriteriaQci.Qci == 0 {
 			log.Error("Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci")
-			http.Error(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Missing or non valid value for mandatory Qci parameter in FilterCriteriaQci", http.StatusBadRequest)
 			return
 		}
 
 		if subscription.FilterCriteriaQci.ErabId == 0 {
 			log.Error("Missing or non valid value of 0 mandatory ErabId parameter in FilterCriteriaQci")
-			http.Error(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Missing or non valid value of 0 for mandatory ErabId parameter in FilterCriteriaQci", http.StatusBadRequest)
 			return
 		}
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				errHandlerProblemDetails(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -2406,7 +2458,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2414,14 +2466,14 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaAssocTri == nil {
 			log.Error("FilterCriteriaAssocTri should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocTri should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaAssocTri should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		for _, ecgi := range subscription.FilterCriteriaAssocTri.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				errHandlerProblemDetails(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -2450,7 +2502,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -2458,14 +2510,14 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaNrMrs == nil {
 			log.Error("FilterCriteriaNrMrs should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaNrMrs should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaNrMrs should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		for _, nrcgi := range subscription.FilterCriteriaNrMrs.Nrcgi {
-			if nrcgi.Plmn == nil || nrcgi.NrcellId == "" {
+			if nrcgi.Plmn == nil || nrcgi.NrCellId == "" {
 				log.Error("For non null nrcgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null nrcgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				errHandlerProblemDetails(w, "For non null nrcgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -2497,11 +2549,11 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	//processing the error of the jsonResponse
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 
 }
 
@@ -2516,7 +2568,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//extract common body part
@@ -2525,14 +2577,14 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	//mandatory parameter
 	if subscriptionCommon.CallbackReference == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 
 	link := subscriptionCommon.Links
 	if link == nil || link.Self == nil {
 		log.Error("Mandatory Link parameter not present")
-		http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Link parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2541,7 +2593,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 	if subsIdStr != subIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -2554,13 +2606,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if subscription.FilterCriteriaAssocHo == nil {
 			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -2580,13 +2632,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -2602,13 +2654,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -2624,13 +2676,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if subscription.FilterCriteriaAssocTri == nil {
 			log.Error("FilterCriteriaAssocTri should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocTri should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaAssocTri should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -2646,13 +2698,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &subscription)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if subscription.FilterCriteriaNrMrs == nil {
 			log.Error("FilterCriteriaNrMrs should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaNrMrs should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteriaNrMrs should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -2671,11 +2723,11 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	if alreadyRegistered {
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
+		fmt.Fprint(w, string(jsonResponse))
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -2694,7 +2746,7 @@ func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := delSubscription(baseKey+"subscriptions", subIdParamStr, false)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2987,7 +3039,7 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populatePlmnInfo, &response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//check if more than one plmnInfo in the array
@@ -2999,12 +3051,12 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 		jsonResponse, err := json.Marshal(response.PlmnInfoList)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
+		fmt.Fprint(w, string(jsonResponse))
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -3081,7 +3133,7 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateL2Meas, &l2MeasData)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -3090,7 +3142,7 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 	err = rc.ForEachJSONEntry(keyName, populateL2MeasPOA, &l2MeasData)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -3100,11 +3152,11 @@ func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(l2Meas)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateL2MeasPOA(key string, jsonInfo string, l2MeasData interface{}) error {
@@ -3479,7 +3531,7 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateRabInfo, &rabInfoData)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -3492,11 +3544,11 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(rabInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 
 }
 
@@ -3738,11 +3790,11 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func cleanUp() {
@@ -3786,4 +3838,15 @@ func updateStoreName(storeName string) {
 		}
 
 	}
+}
+
+func errHandlerProblemDetails(w http.ResponseWriter, error string, code int) {
+	var pd ProblemDetails
+	pd.Detail = error
+	pd.Status = int32(code)
+
+	jsonResponse := convertProblemDetailstoJson(&pd)
+
+	w.WriteHeader(code)
+	fmt.Fprint(w, jsonResponse)
 }

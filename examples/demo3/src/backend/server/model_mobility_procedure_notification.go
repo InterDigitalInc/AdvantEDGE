@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,12 @@
 package server
 
 type MobilityProcedureNotification struct {
-	// 0 to N identifiers to associate the information for specific UE(s) and flow(s).
-	AssociateId []AssociateId `json:"associateId,omitempty"`
-	// Indicate the status of the UE mobility. Values are defined as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3 = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.
-	MobilityStatus int32 `json:"mobilityStatus"`
-	// Shall be set to \\\"MobilityProcedureNotification\\\".
-	NotificationType string `json:"notificationType"`
-
-	TargetAppInfo *MobilityProcedureNotificationTargetAppInfo `json:"targetAppInfo,omitempty"`
-
-	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
+	// Shall be set to \"MobilityProcedureNotification\".
+	NotificationType string     `json:"notificationType"`
+	TimeStamp        *TimeStamp `json:"timeStamp,omitempty"`
+	// 1 to N identifiers to associate the information for specific
+	AssociateId    []AssociateId                               `json:"associateId"`
+	MobilityStatus *MobilityStatus                             `json:"mobilityStatus"`
+	TargetAppInfo  *MobilityProcedureNotificationTargetAppInfo `json:"targetAppInfo,omitempty"`
+	Links          *MobilityProcedureNotificationLinks         `json:"_links,omitempty"`
 }

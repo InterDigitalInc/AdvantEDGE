@@ -11,11 +11,12 @@ Models/CurrentTime.md
 Models/DestinationInterface.md
 Models/DnsRule.md
 Models/LinkType.md
+Models/MecAppSuptApiSubscriptionLinkList.md
+Models/MecAppSuptApiSubscriptionLinkListLinks.md
+Models/MecAppSuptApiSubscriptionLinkListSubscription.md
 Models/OperationActionType.md
 Models/ProblemDetails.md
-Models/SubscriptionLinkList.md
-Models/SubscriptionLinkListLinks.md
-Models/SubscriptionLinkListLinksSubscriptions.md
+Models/Self.md
 Models/TimingCaps.md
 Models/TimingCapsNtpServers.md
 Models/TimingCapsPtpMasters.md

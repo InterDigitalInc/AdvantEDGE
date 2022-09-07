@@ -19,32 +19,37 @@ import "./client"
 
 All URIs are relative to *https://localhost/sandboxname/gis/v1*
 
-Class | Method | HTTP request | Description
------------- | ------------- | ------------- | -------------
-*AutomationApi* | [**GetAutomationState**](docs/AutomationApi.md#getautomationstate) | **Get** /automation | Get automation state
-*AutomationApi* | [**GetAutomationStateByName**](docs/AutomationApi.md#getautomationstatebyname) | **Get** /automation/{type} | Get automation state
-*AutomationApi* | [**SetAutomationStateByName**](docs/AutomationApi.md#setautomationstatebyname) | **Post** /automation/{type} | Set automation state
-*GeospatialDataApi* | [**DeleteGeoDataByName**](docs/GeospatialDataApi.md#deletegeodatabyname) | **Delete** /geodata/{assetName} | Delete geospatial data
-*GeospatialDataApi* | [**GetAssetData**](docs/GeospatialDataApi.md#getassetdata) | **Get** /geodata | Get geospatial data
-*GeospatialDataApi* | [**GetDistanceGeoDataByName**](docs/GeospatialDataApi.md#getdistancegeodatabyname) | **Post** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
-*GeospatialDataApi* | [**GetGeoDataByName**](docs/GeospatialDataApi.md#getgeodatabyname) | **Get** /geodata/{assetName} | Get geospatial data
-*GeospatialDataApi* | [**GetWithinRangeByName**](docs/GeospatialDataApi.md#getwithinrangebyname) | **Post** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
-*GeospatialDataApi* | [**UpdateGeoDataByName**](docs/GeospatialDataApi.md#updategeodatabyname) | **Post** /geodata/{assetName} | Create/Update geospatial data
+| Class               | Method                                                                             | HTTP request                              | Description                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| *AutomationApi*     | [**GetAutomationState**](docs/AutomationApi.md#getautomationstate)                 | **Get** /automation                       | Get automation state                                                               |
+| *AutomationApi*     | [**GetAutomationStateByName**](docs/AutomationApi.md#getautomationstatebyname)     | **Get** /automation/{type}                | Get automation state                                                               |
+| *AutomationApi*     | [**SetAutomationStateByName**](docs/AutomationApi.md#setautomationstatebyname)     | **Post** /automation/{type}               | Set automation state                                                               |
+| *GeospatialDataApi* | [**DeleteGeoDataByName**](docs/GeospatialDataApi.md#deletegeodatabyname)           | **Delete** /geodata/{assetName}           | Delete geospatial data                                                             |
+| *GeospatialDataApi* | [**GetAssetData**](docs/GeospatialDataApi.md#getassetdata)                         | **Get** /geodata                          | Get geospatial data                                                                |
+| *GeospatialDataApi* | [**GetDistanceGeoDataByName**](docs/GeospatialDataApi.md#getdistancegeodatabyname) | **Post** /geodata/{assetName}/distanceTo  | Get distance between geospatial data points                                        |
+| *GeospatialDataApi* | [**GetGeoDataByName**](docs/GeospatialDataApi.md#getgeodatabyname)                 | **Get** /geodata/{assetName}              | Get geospatial data                                                                |
+| *GeospatialDataApi* | [**GetGeoDataPowerValues**](docs/GeospatialDataApi.md#getgeodatapowervalues)       | **Post** /geodata/cellularPower           | Get RSRQ and RSRP values for a list of coordinates                                 |
+| *GeospatialDataApi* | [**GetWithinRangeByName**](docs/GeospatialDataApi.md#getwithinrangebyname)         | **Post** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location |
+| *GeospatialDataApi* | [**UpdateGeoDataByName**](docs/GeospatialDataApi.md#updategeodatabyname)           | **Post** /geodata/{assetName}             | Create/Update geospatial data                                                      |
 
 
 ## Documentation For Models
 
  - [AutomationState](docs/AutomationState.md)
  - [AutomationStateList](docs/AutomationStateList.md)
+ - [CoordinatePower](docs/CoordinatePower.md)
+ - [CoordinatePowerList](docs/CoordinatePowerList.md)
  - [Distance](docs/Distance.md)
+ - [GeoCoordinate](docs/GeoCoordinate.md)
+ - [GeoCoordinateList](docs/GeoCoordinateList.md)
  - [GeoData](docs/GeoData.md)
+ - [GeoDataAsset](docs/GeoDataAsset.md)
  - [GeoDataAssetList](docs/GeoDataAssetList.md)
  - [LineString](docs/LineString.md)
  - [Point](docs/Point.md)
  - [TargetPoint](docs/TargetPoint.md)
  - [TargetRange](docs/TargetRange.md)
  - [WithinRange](docs/WithinRange.md)
- - [GeoDataAsset](docs/GeoDataAsset.md)
 
 
 ## Documentation For Authorization
@@ -54,4 +59,3 @@ Class | Method | HTTP request | Description
 ## Author
 
 AdvantEDGE@InterDigital.com
-

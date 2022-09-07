@@ -49,8 +49,17 @@ func convertProblemDetailsToJson(obj *ProblemDetails) string {
 	return string(jsonInfo)
 }
 
-func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
+func convertMecAppSuptApiSubscriptionLinkListToJson(obj *MecAppSuptApiSubscriptionLinkList) string {
 	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertProblemDetailstoJson(probdetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*probdetails)
 	if err != nil {
 		log.Error(err.Error())
 		return ""

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,6 +107,15 @@ func convertSubscriptionLinkListToJson(obj *SubscriptionLinkList) string {
 
 func convertDevInfoToJson(obj *DevInfo) string {
 	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+func convertProblemDetailstoJson(probdetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*probdetails)
 	if err != nil {
 		log.Error(err.Error())
 		return ""

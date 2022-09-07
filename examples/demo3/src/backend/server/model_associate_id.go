@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 package server
 
 type AssociateId struct {
-	Type_ int32 `json:"type,omitempty"`
+	Type_ *ModelType `json:"type"`
 	// Value for the identifier.
-	Value string `json:"value,omitempty"`
+	Value string `json:"value"`
 }

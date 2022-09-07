@@ -38,7 +38,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsDnsRulePUT"></a>
 # **applicationsDnsRulePUT**
@@ -67,7 +67,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsDnsRulesGET"></a>
 # **applicationsDnsRulesGET**
@@ -94,7 +94,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsTrafficRuleGET"></a>
 # **applicationsTrafficRuleGET**
@@ -122,7 +122,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsTrafficRulePUT"></a>
 # **applicationsTrafficRulePUT**
@@ -151,7 +151,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsTrafficRulesGET"></a>
 # **applicationsTrafficRulesGET**
@@ -178,5 +178,5 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
