@@ -52,7 +52,7 @@
    */
 
   /**
-   * Constructs a new GeospatialDataApi.
+   * Constructs a new GeospatialDataApi. 
    * @alias module:api/GeospatialDataApi
    * @class
    * @param {module:ApiClient} [apiClient] Optional API client implementation to use,
@@ -274,7 +274,7 @@
 
     /**
      * Get RSRQ and RSRP values for a list of coordinates
-     * Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
+     * Get RSRQ and RSRP values for a list of coordinates
      * @param {module:model/GeoCoordinateList} coordinates List of geo coordinates
      * @param {module:api/GeospatialDataApi~getGeoDataPowerValuesCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/CoordinatePowerList}

@@ -215,7 +215,7 @@ No authorization required
 
 Get RSRQ and RSRP values for a list of coordinates
 
-Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
+Get RSRQ and RSRP values for a list of coordinates
 
 ### Example
 ```javascript

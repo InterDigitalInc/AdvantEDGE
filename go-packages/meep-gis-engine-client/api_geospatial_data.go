@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -411,7 +411,7 @@ func (a *GeospatialDataApiService) GetGeoDataByName(ctx context.Context, assetNa
 
 /*
 GeospatialDataApiService Get RSRQ and RSRP values for a list of coordinates
-Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
+Get RSRQ and RSRP values for a list of coordinates
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param coordinates List of geo coordinates
 

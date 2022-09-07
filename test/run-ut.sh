@@ -42,6 +42,6 @@ done
 for app in "${GOAPPS[@]}" ; do
     echo "+ app: $app"
     cd $BASEDIR/../go-apps/$app
-    go test -v -count=1 ./... -cover
+    go test -count=1 ./... -cover
     echo ""
 done
