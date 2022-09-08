@@ -1,4 +1,4 @@
-# {{classname}}
+# \V2xiApi
 
 All URIs are relative to *https://localhost/sandboxname/vis/v2*
 
@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**Mec011AppTerminationPOST**](V2xiApi.md#Mec011AppTerminationPOST) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 [**PredictedQosPOST**](V2xiApi.md#PredictedQosPOST) | **Post** /provide_predicted_qos | Request the predicted QoS correspondent to potential routes of a vehicular UE.
+
 
 # **Mec011AppTerminationPOST**
 > Mec011AppTerminationPOST(ctx, body)

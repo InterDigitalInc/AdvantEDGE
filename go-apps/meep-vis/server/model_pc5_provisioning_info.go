@@ -24,7 +24,7 @@
 package server
 
 type Pc5ProvisioningInfo struct {
-	ProInfoPc5 *[]interface{} `json:"proInfoPc5"`
+	ProInfoPc5 []Pc5ProvisioningInfoProInfoPc5 `json:"proInfoPc5"`
 
 	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
 }

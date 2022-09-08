@@ -24,7 +24,7 @@
 package server
 
 type UuUnicastProvisioningInfo struct {
-	ProInfoUuUnicast *[]interface{} `json:"proInfoUuUnicast"`
+	ProInfoUuUnicast []UuUnicastProvisioningInfoProInfoUuUnicast `json:"proInfoUuUnicast"`
 
 	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
 }

@@ -284,13 +284,13 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 
 	switch msg.Message {
 	case mq.MsgScenarioActivate:
-		log.Info("RX MSG: ", mq.PrintMsg(msg))
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processScenarioActivate()
 	case mq.MsgScenarioUpdate:
-		log.Info("RX MSG: ", mq.PrintMsg(msg))
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processScenarioUpdate()
 	case mq.MsgScenarioTerminate:
-		log.Info("RX MSG: ", mq.PrintMsg(msg))
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processScenarioTerminate()
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
@@ -392,7 +392,7 @@ func processScenarioTerminate() {
 	_ = ge.assetMgr.DeleteAllCompute()
 
 	// Clear asset list
-	log.Info("GeoData deleted for all assets")
+	log.Debug("GeoData deleted for all assets")
 	ge.assets = make(map[string]*Asset)
 
 	// Flush cache
@@ -465,21 +465,21 @@ func removeAssets(assetList []string) {
 		delete(ge.assets, assetName)
 
 		if isUe(nodeType) {
-			log.Info("GeoData deleted for UE: ", assetName)
+			log.Debug("GeoData deleted for UE: ", assetName)
 			err := ge.assetMgr.DeleteUe(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
 		} else if isPoa(nodeType) {
-			log.Info("GeoData deleted for POA: ", assetName)
+			log.Debug("GeoData deleted for POA: ", assetName)
 			err := ge.assetMgr.DeletePoa(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
 		} else if isCompute(nodeType) {
-			log.Info("GeoData deleted for Compute: ", assetName)
+			log.Debug("GeoData deleted for Compute: ", assetName)
 			err := ge.assetMgr.DeleteCompute(assetName)
 			if err != nil {
 				log.Error(err.Error())
@@ -525,7 +525,7 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 		if err != nil {
 			return err
 		}
-		log.Info("GeoData created for UE: ", asset.name)
+		log.Debug("GeoData created for UE: ", asset.name)
 		asset.geoData = geoData
 
 	} else {
@@ -563,7 +563,7 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 			if err != nil {
 				return err
 			}
-			log.Info("GeoData updated for UE: ", asset.name)
+			log.Debug("GeoData updated for UE: ", asset.name)
 		}
 	}
 
@@ -591,7 +591,7 @@ func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) 
 		if err != nil {
 			return err
 		}
-		log.Info("GeoData stored for POA: ", asset.name)
+		log.Debug("GeoData stored for POA: ", asset.name)
 		asset.geoData = geoData
 	} else {
 		// Update Geodata
@@ -610,7 +610,7 @@ func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) 
 			if err != nil {
 				return err
 			}
-			log.Info("GeoData created for POA: ", asset.name)
+			log.Debug("GeoData created for POA: ", asset.name)
 		}
 	}
 	return nil
@@ -637,7 +637,7 @@ func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoD
 		if err != nil {
 			return err
 		}
-		log.Info("GeoData created for Compute: ", asset.name)
+		log.Debug("GeoData created for Compute: ", asset.name)
 		asset.geoData = geoData
 	} else {
 		// Update Geodata
@@ -659,7 +659,7 @@ func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoD
 			if err != nil {
 				return err
 			}
-			log.Info("GeoData updated for Compute: ", asset.name)
+			log.Debug("GeoData updated for Compute: ", asset.name)
 		}
 	}
 	return nil
@@ -999,7 +999,7 @@ func updateCache() {
 
 	if profiling {
 		proFinish = time.Now()
-		log.Info("updateCache: ", proFinish.Sub(proStart))
+		log.Debug("updateCache: ", proFinish.Sub(proStart))
 	}
 }
 
@@ -1040,7 +1040,7 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	log.Info("Delete GeoData for asset: ", asset.name)
+	log.Debug("Delete GeoData for asset: ", asset.name)
 
 	// Remove asset from DB
 	if isUe(asset.typ) {
@@ -1090,7 +1090,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	if subType != "" {
 		subTypeStr = subType
 	}
-	log.Info("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "] excludePath[", excludePath, "]")
+	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "] excludePath[", excludePath, "]")
 
 	var assetList GeoDataAssetList
 
@@ -1213,7 +1213,7 @@ func geGetDistanceGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Info("Get Distance GeoData for asset: ", assetName)
+	log.Debug("Get Distance GeoData for asset: ", assetName)
 
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
@@ -1333,7 +1333,7 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Info("Get Within Range GeoData for asset: ", assetName)
+	log.Debug("Get Within Range GeoData for asset: ", assetName)
 
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
@@ -1563,7 +1563,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Info("Set GeoData for asset: ", assetName)
+	log.Debug("Set GeoData for asset: ", assetName)
 
 	// Retrieve Geodata to set from request body
 	var geoData GeoDataAsset

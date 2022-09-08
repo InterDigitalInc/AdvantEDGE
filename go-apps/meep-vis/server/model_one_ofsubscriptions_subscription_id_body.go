@@ -23,9 +23,5 @@
  */
 package server
 
-type OneOfbody struct {
-	// ProvChgUuUniSubscription
-	// ProvChgUuMbmsSubscription
-	// ProvChgPc5Subscription
-	// V2xMsgSubscription
+type OneOfsubscriptionsSubscriptionIdBody struct {
 }

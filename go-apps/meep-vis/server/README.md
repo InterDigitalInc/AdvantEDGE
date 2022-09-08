@@ -1,4 +1,4 @@
-# Go API Server for swagger
+# Go API Server for server
 
 V2X Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC030 V2XI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/030/02.02.01_60/gs_MEC030v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-vis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-vis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types.
 
@@ -13,7 +13,7 @@ To see how to make this your own, look here:
 [README](https://github.com/swagger-api/swagger-codegen/blob/master/README.md)
 
 - API version: 2.2.1
-- Build date: 2022-02-14T12:42:53.611161+05:00[Asia/Karachi]
+- Build date: 2022-09-08T09:50:05.124997-04:00[America/Toronto]
 
 
 ### Running the server

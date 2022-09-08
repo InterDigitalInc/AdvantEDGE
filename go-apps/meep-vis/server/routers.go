@@ -88,20 +88,6 @@ var routes = Routes{
 	},
 
 	Route{
-		"Mec011AppTerminationPOST",
-		strings.ToUpper("Post"),
-		"/vis/v2/notifications/mec011/appTermination",
-		Mec011AppTerminationPOST,
-	},
-
-	Route{
-		"PredictedQosPOST",
-		strings.ToUpper("Post"),
-		"/vis/v2/provide_predicted_qos",
-		PredictedQosPOST,
-	},
-
-	Route{
 		"IndividualSubscriptionDELETE",
 		strings.ToUpper("Delete"),
 		"/vis/v2/subscriptions/{subscriptionId}",
@@ -162,5 +148,19 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/vis/v2/publish_v2x_message",
 		V2xMessagePOST,
+	},
+
+	Route{
+		"Mec011AppTerminationPOST",
+		strings.ToUpper("Post"),
+		"/vis/v2/notifications/mec011/appTermination",
+		Mec011AppTerminationPOST,
+	},
+
+	Route{
+		"PredictedQosPOST",
+		strings.ToUpper("Post"),
+		"/vis/v2/provide_predicted_qos",
+		PredictedQosPOST,
 	},
 }
