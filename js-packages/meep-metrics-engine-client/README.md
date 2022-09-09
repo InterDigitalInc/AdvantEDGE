@@ -97,7 +97,7 @@ var AdvantEdgeMetricsServiceRestApi = require('advant_edge_metrics_service_rest_
 
 var api = new AdvantEdgeMetricsServiceRestApi.MetricsApi()
 
-var params = new AdvantEdgeMetricsServiceRestApi.EventQueryParams(); // {EventQueryParams} Query parameters
+var params = new AdvantEdgeMetricsServiceRestApi.DataflowQueryParams(); // {DataflowQueryParams} Query parameters
 
 
 var callback = function(error, data, response) {
@@ -107,7 +107,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.postEventQuery(params, callback);
+api.postDataflowQuery(params, callback);
 
 ```
 
@@ -117,6 +117,7 @@ All URIs are relative to *https://localhost/sandboxname/metrics/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postDataflowQuery**](docs/MetricsApi.md#postDataflowQuery) | **POST** /metrics/query/dataflow | 
 *AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postEventQuery**](docs/MetricsApi.md#postEventQuery) | **POST** /metrics/query/event | 
 *AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postHttpQuery**](docs/MetricsApi.md#postHttpQuery) | **POST** /metrics/query/http | 
 *AdvantEdgeMetricsServiceRestApi.MetricsApi* | [**postNetworkQuery**](docs/MetricsApi.md#postNetworkQuery) | **POST** /metrics/query/network | 
@@ -133,6 +134,10 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
+ - [AdvantEdgeMetricsServiceRestApi.DataflowMetric](docs/DataflowMetric.md)
+ - [AdvantEdgeMetricsServiceRestApi.DataflowMetricList](docs/DataflowMetricList.md)
+ - [AdvantEdgeMetricsServiceRestApi.DataflowMetrics](docs/DataflowMetrics.md)
+ - [AdvantEdgeMetricsServiceRestApi.DataflowQueryParams](docs/DataflowQueryParams.md)
  - [AdvantEdgeMetricsServiceRestApi.EventMetric](docs/EventMetric.md)
  - [AdvantEdgeMetricsServiceRestApi.EventMetricList](docs/EventMetricList.md)
  - [AdvantEdgeMetricsServiceRestApi.EventQueryParams](docs/EventQueryParams.md)
