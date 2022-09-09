@@ -20,6 +20,8 @@ import React, { Component } from 'react';
 import autoBind from 'react-autobind';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+import { updateObject } from '../../util/object-util';
+
 import IDSelect from '../../components/helper-components/id-select';
 import DashboardContainer from './dashboard-container';
 import EventContainer from './event-container';
@@ -52,8 +54,8 @@ import {
   uiExecChangeDashCfgMode,
   uiExecChangeEventCfgMode,
   uiExecChangeCurrentEvent,
-  uiExecChangeShowApps,
-  uiExecChangeReplayFilesList
+  uiExecChangeReplayFilesList,
+  uiExecChangeSandboxCfg
 } from '../../state/ui';
 
 import {
@@ -77,6 +79,8 @@ import {
   PDU_SESSION_EVENT,
   VIEW_1,
   VIEW_2,
+  NET_TOPOLOGY_VIEW,
+  VIEW_NAME_NONE,
   EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
@@ -84,6 +88,46 @@ class ExecPageContainer extends Component {
   constructor(props) {
     super(props);
     autoBind(this);
+  }
+
+  componentDidMount() {
+    // Create sandbox view config if it does not exist
+    this.createViewCfg();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.dataTimer);
+  }
+
+  componentDidUpdate(prevProps) {
+    // Create sandbox view config if it does not exist
+    if (this.props.sandbox !== prevProps.sandbox) {
+      this.createViewCfg();
+    }
+  }
+
+  createViewCfg() {
+    const sandboxName = this.props.sandbox;
+    const sandboxCfg = this.props.sandboxCfg;
+
+    // Check if view config already exists
+    if (!sandboxName || (sandboxCfg && sandboxCfg[sandboxName] &&
+      sandboxCfg[sandboxName].dashView1 && sandboxCfg[sandboxName].dashView2)) {
+      return;
+    }
+
+    // Update sandbox config with new view configs
+    var newSandboxCfg = updateObject({}, sandboxCfg);
+    if (!newSandboxCfg[sandboxName]) {
+      newSandboxCfg[sandboxName] = {};
+    }
+    newSandboxCfg[sandboxName].dashView1 = {
+      viewType: NET_TOPOLOGY_VIEW
+    };
+    newSandboxCfg[sandboxName].dashView2 = {
+      viewType: VIEW_NAME_NONE
+    };
+    this.props.changeSandboxCfg(newSandboxCfg);
   }
 
   /**
@@ -302,13 +346,6 @@ class ExecPageContainer extends Component {
     );
   }
   
-  showApps(show) {
-    this.props.changeShowApps(show);
-    // _.defer(() => {
-    //   this.props.execVis.network.setData(this.props.execVisData);
-    // });
-  }
-
   renderDialogs() {
     return (
       <>
@@ -448,9 +485,6 @@ class ExecPageContainer extends Component {
                 <DashboardContainer
                   sandbox={this.props.sandbox}
                   scenarioName={this.props.execScenarioName}
-                  onShowAppsChanged={this.showApps}
-                  showApps={this.props.showApps}
-                  dashCfgMode={this.props.dashCfgMode}
                   onCloseDashCfg={this.onCloseDashCfg}
                 />
               </div>
@@ -490,7 +524,6 @@ class ExecPageContainer extends Component {
                   onClose={this.onCloseDashCfg}
                   sandbox={this.props.sandbox}
                   scenarioName={this.props.execScenarioName}
-                  showApps={this.props.showApps}
                 />
               </Elevation>
             </GridCell>
@@ -521,7 +554,6 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-    showApps: state.ui.execShowApps,
     // execVis: state.exec.vis,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     currentDialog: state.ui.currentDialog,
@@ -535,7 +567,8 @@ const mapStateToProps = state => {
     eventCfgMode: state.ui.eventCfgMode,
     page: state.ui.page,
     execScenarioName: state.exec.scenario.name,
-    cfgScenarioName: state.cfg.scenario.name
+    cfgScenarioName: state.cfg.scenario.name,
+    sandboxCfg: state.ui.sandboxCfg
     // execVisData: execVisFilteredData(state)
   };
 };
@@ -552,8 +585,8 @@ const mapDispatchToProps = dispatch => {
     changeEventCfgMode: val => dispatch(uiExecChangeEventCfgMode(val)), // (true or false)
     changeCurrentEvent: e => dispatch(uiExecChangeCurrentEvent(e)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
-    changeShowApps: show => dispatch(uiExecChangeShowApps(show)),
-    changeReplayFilesList: list => dispatch(uiExecChangeReplayFilesList(list))
+    changeReplayFilesList: list => dispatch(uiExecChangeReplayFilesList(list)),
+    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
   };
 };
 

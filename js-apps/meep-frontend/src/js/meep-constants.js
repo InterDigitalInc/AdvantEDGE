@@ -364,6 +364,7 @@ export const VIEW_NAME_NONE = 'None';
 export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
 export const SEQ_DIAGRAM_VIEW = 'Sequence Diagram';
+export const DATAFLOW_DIAGRAM_VIEW = 'Data Flow Diagram';
 export const NET_METRICS_PTP_VIEW = 'Network Metrics Point-to-Point';
 export const NET_METRICS_AGG_VIEW = 'Network Metrics Aggregation';
 export const WIRELESS_METRICS_PTP_VIEW = 'Wireless Metrics Point-to-Point';
