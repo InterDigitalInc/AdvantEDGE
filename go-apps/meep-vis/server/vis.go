@@ -337,16 +337,6 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_LOCALITY: ", locality)
 
-	// Get prediction model support
-	predictionModelSupportedEnv := strings.TrimSpace(os.Getenv("MEEP_PREDICT_MODEL_SUPPORTED"))
-	if predictionModelSupportedEnv != "" {
-		value, err := strconv.ParseBool(predictionModelSupportedEnv)
-		if err == nil {
-			predictionModelSupported = value
-		}
-	}
-	log.Info("MEEP_PREDICT_MODEL_SUPPORTED: ", predictionModelSupported)
-
 	// Set base path
 	if mepName == defaultMepName {
 		basePath = "/" + sandboxName + "/" + visBasePath
@@ -390,13 +380,10 @@ func Init() (err error) {
 	if mepName != defaultMepName {
 		sbiCfg.MepName = mepName
 	}
-	err = sbi.Init(sbiCfg)
+	predictionModelSupported, err = sbi.Init(sbiCfg)
 	if err != nil {
 		log.Error("Failed initialize SBI. Error: ", err)
 		return err
-	}
-	if !sbi.GridFileExists {
-		predictionModelSupported = false
 	}
 	log.Info("SBI Initialized")
 

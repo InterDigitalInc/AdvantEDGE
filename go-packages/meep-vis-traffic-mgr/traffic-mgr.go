@@ -337,7 +337,7 @@ func (tm *TrafficMgr) CreateTables() (err error) {
 	}
 
 	// Grid Table
-	_, err = tm.db.Exec(`CREATE TABLE ` + GridTable + ` (
+	_, err = tm.db.Exec(`CREATE TABLE IF NOT EXISTS ` + GridTable + ` (
 		area            varchar(100)            NOT NULL,
 		category				varchar(100)						NOT NULL,
 		grid						geometry(POLYGON,4326),
@@ -350,7 +350,7 @@ func (tm *TrafficMgr) CreateTables() (err error) {
 	log.Info("Created Grids table: ", GridTable)
 
 	// Categories Table
-	_, err = tm.db.Exec(`CREATE TABLE ` + CategoryTable + ` (
+	_, err = tm.db.Exec(`CREATE TABLE IF NOT EXISTS ` + CategoryTable + ` (
 		category				varchar(100)						NOT NULL UNIQUE,
 		"0000-0300"			integer									NOT NULL DEFAULT '0',
 		"0300-0600"			integer									NOT NULL DEFAULT '0',
@@ -369,7 +369,7 @@ func (tm *TrafficMgr) CreateTables() (err error) {
 	log.Info("Created Categories table: ", CategoryTable)
 
 	// Traffic Load Table
-	_, err = tm.db.Exec(`CREATE TABLE ` + TrafficTable + ` (
+	_, err = tm.db.Exec(`CREATE TABLE IF NOT EXISTS ` + TrafficTable + ` (
 		poa_name			  varchar(100)						NOT NULL UNIQUE,
 		category				varchar(100)						NOT NULL,
 		"0000-0300"			integer									NOT NULL DEFAULT '0',

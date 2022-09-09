@@ -22,12 +22,8 @@ import (
 	"strings"
 	"sync"
 
-	// "time"
-
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
-	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
@@ -36,14 +32,11 @@ import (
 
 const moduleName string = "meep-vis-sbi"
 
-var metricStore *met.MetricStore
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
-
-var GridFileExists bool = true
 
 type SbiCfg struct {
 	ModuleName     string
@@ -59,28 +52,27 @@ type SbiCfg struct {
 }
 
 type VisSbi struct {
-	moduleName           string
-	sandboxName          string
-	mepName              string
-	scenarioName         string
-	localityEnabled      bool
-	locality             map[string]bool
-	mqLocal              *mq.MsgQueue
-	handlerId            int
-	apiMgr               *sam.SwaggerApiMgr
-	activeModel          *mod.Model
-	gisCache             *gc.GisCache
-	trafficMgr           *tm.TrafficMgr
-	updateScenarioNameCB func(string)
-	cleanUpCB            func()
-	mutex                sync.Mutex
-	GridFileExists       bool
+	moduleName               string
+	sandboxName              string
+	mepName                  string
+	scenarioName             string
+	localityEnabled          bool
+	locality                 map[string]bool
+	mqLocal                  *mq.MsgQueue
+	handlerId                int
+	apiMgr                   *sam.SwaggerApiMgr
+	activeModel              *mod.Model
+	trafficMgr               *tm.TrafficMgr
+	updateScenarioNameCB     func(string)
+	cleanUpCB                func()
+	mutex                    sync.Mutex
+	predictionModelSupported bool
 }
 
 var sbi *VisSbi
 
 // Init - V2XI Service SBI initialization
-func Init(cfg SbiCfg) (err error) {
+func Init(cfg SbiCfg) (predictionModelSupported bool, err error) {
 
 	// Create new SBI instance
 	if sbi != nil {
@@ -111,7 +103,7 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
-		return err
+		return false, err
 	}
 	log.Info("Message Queue created")
 
@@ -119,7 +111,7 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.apiMgr, err = sam.NewSwaggerApiMgr(sbi.moduleName, sbi.sandboxName, sbi.mepName, sbi.mqLocal)
 	if err != nil {
 		log.Error("Failed to create Swagger API Manager. Error: ", err)
-		return err
+		return false, err
 	}
 	log.Info("Swagger API Manager created")
 
@@ -134,87 +126,44 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
-		return err
+		return false, err
 	}
-
-	// Connect to GIS cache
-	sbi.gisCache, err = gc.NewGisCache(sbi.sandboxName, cfg.RedisAddr)
-	if err != nil {
-		log.Error("Failed to connect to GIS Cache: ", err.Error())
-		return err
-	}
-	log.Info("Connected to GIS Cache")
 
 	// Get prediction model support
-	var predictionModelSupported bool = false
 	predictionModelSupportedEnv := strings.TrimSpace(os.Getenv("MEEP_PREDICT_MODEL_SUPPORTED"))
 	if predictionModelSupportedEnv != "" {
 		value, err := strconv.ParseBool(predictionModelSupportedEnv)
 		if err == nil {
-			predictionModelSupported = value
+			sbi.predictionModelSupported = value
 		}
 	}
-	log.Info("MEEP_PREDICT_MODEL_SUPPORTED: ", predictionModelSupported)
+	log.Info("MEEP_PREDICT_MODEL_SUPPORTED: ", sbi.predictionModelSupported)
 
-	if predictionModelSupported {
+	if sbi.predictionModelSupported {
 		// Connect to VIS Traffic Manager
 		sbi.trafficMgr, err = tm.NewTrafficMgr(sbi.moduleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
 		if sbi.trafficMgr.GridFileExists {
 			if err != nil {
 				log.Error("Failed connection to VIS Traffic Manager: ", err)
-				return err
+				return false, err
 			}
 			log.Info("Connected to VIS Traffic Manager")
 
 			// Delete any old tables
 			_ = sbi.trafficMgr.DeleteTables()
 
-			// Create new tables
-			err = sbi.trafficMgr.CreateTables()
-			if err != nil {
-				log.Error("Failed to create tables: ", err)
-				return err
-			}
-			log.Info("Created new VIS DB tables")
 		} else {
 			// In case grid map file does not exist
 			log.Error("Failed connection to VIS Traffic Manager as grid map file does not exist")
 			_ = sbi.trafficMgr.DeleteTrafficMgr()
-			GridFileExists = false
-			predictionModelSupported = false
+			sbi.predictionModelSupported = false
 		}
 	}
 
 	// Initialize service
 	processActiveScenarioUpdate()
 
-	if predictionModelSupported {
-		// Populate VIS DB Grid Map Table
-		err = sbi.trafficMgr.PopulateGridMapTable()
-		if err != nil {
-			log.Error("Failed to populate grid map table: ", err)
-			return err
-		}
-		log.Info("Populated VIS DB grid map table")
-
-		// Populate VIS DB Categories Table
-		err = sbi.trafficMgr.PopulateCategoryTable()
-		if err != nil {
-			log.Error("Failed to populate categories table: ", err)
-			return err
-		}
-		log.Info("Populated VIS DB categories table")
-
-		// Populate VIS DB Traffic Load Table
-		err = populatePoaTable()
-		if err != nil {
-			log.Error("Failed to populate traffic load table: ", err)
-			return err
-		}
-		log.Info("Populated VIS DB traffic load table")
-	}
-
-	return nil
+	return sbi.predictionModelSupported, nil
 }
 
 // Run - MEEP VIS execution
@@ -244,9 +193,6 @@ func Run() (err error) {
 		return err
 	}
 
-	// Start refresh loop
-	// startRefreshTicker()
-
 	return nil
 }
 
@@ -254,9 +200,6 @@ func Stop() (err error) {
 	if sbi == nil {
 		return
 	}
-
-	// Stop refresh loop
-	// stopRefreshTicker()
 
 	if sbi.mqLocal != nil {
 		sbi.mqLocal.UnregisterHandler(sbi.handlerId)
@@ -306,33 +249,63 @@ func processActiveScenarioTerminate() {
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
 
+	// Update scenario name
+	sbi.scenarioName = ""
+
 	// Flush all Traffic Manager tables
-	_ = sbi.trafficMgr.DeleteTables()
+	if sbi.trafficMgr != nil {
+		_ = sbi.trafficMgr.DeleteTables()
+	}
 
 	sbi.cleanUpCB()
 }
 
 func processActiveScenarioUpdate() {
-
 	sbi.mutex.Lock()
 	defer sbi.mutex.Unlock()
 
 	log.Debug("processActiveScenarioUpdate")
-
 	sbi.activeModel.UpdateScenario()
 
-	scenarioName := sbi.activeModel.GetScenarioName()
-
-	// Connect to Metric Store
-	sbi.updateScenarioNameCB(scenarioName)
-
+	// Process new scenario
+	var scenarioName = sbi.activeModel.GetScenarioName()
 	if scenarioName != sbi.scenarioName {
+		// Update scenario name
 		sbi.scenarioName = scenarioName
-		var err error
+		sbi.updateScenarioNameCB(sbi.scenarioName)
 
-		metricStore, err = met.NewMetricStore(scenarioName, sbi.sandboxName, influxAddr, redisAddr)
-		if err != nil {
-			log.Error("Failed connection to metric-store: ", err)
+		if sbi.predictionModelSupported {
+			// Create new tables
+			err := sbi.trafficMgr.CreateTables()
+			if err != nil {
+				log.Error("Failed to create tables: ", err)
+				return
+			}
+			log.Info("Created new VIS DB tables")
+
+			// Populate VIS DB Grid Map Table
+			err = sbi.trafficMgr.PopulateGridMapTable()
+			if err != nil {
+				log.Error("Failed to populate grid map table: ", err)
+				return
+			}
+			log.Info("Populated VIS DB grid map table")
+
+			// Populate VIS DB Categories Table
+			err = sbi.trafficMgr.PopulateCategoryTable()
+			if err != nil {
+				log.Error("Failed to populate categories table: ", err)
+				return
+			}
+			log.Info("Populated VIS DB categories table")
+
+			// Populate VIS DB Traffic Load Table
+			err = populatePoaTable()
+			if err != nil {
+				log.Error("Failed to populate traffic load table: ", err)
+				return
+			}
+			log.Info("Populated VIS DB traffic load table")
 		}
 	}
 }
