@@ -33,7 +33,7 @@ type SeqQueryParams struct {
 	// Requested information. Supported values:<br> NOTE: only one of mermaid or sdorg must be included  <li>mermaid: Mermaid format<br> <li>sdorg: Sequencediagram.org format<br>
 	Fields []string `json:"fields,omitempty"`
 
-	// Queried response Type. Supported Values:<br> NOTE1: only one of listonly or responly may be included  NOTE2: if listonly or stronly are not included, the response contains both the list and string  <li>listonly: Include only a list of sequence metrics in response<br> <li>stronly: Include only a concatenated string of sequence metrics in response<br>
+	// Queried response Type. Supported Values:<br> NOTE1: only one of listonly or responly may be included  NOTE2: if listonly or responly are not included, the response contains both the list and string  <li>listonly: Include only a list of sequence metrics in response<br> <li>stronly: Include only a concatenated string of sequence metrics in response<br>
 	ResponseType string `json:"responseType,omitempty"`
 
 	Scope *Scope `json:"scope,omitempty"`

@@ -47,6 +47,31 @@ paths:
           description: "Not found"
         500:
           description: "Internal server error"
+  /metrics/query/dataflow:
+    post:
+      tags:
+      - "Metrics"
+      description: "Requests dataflow diagram logs for the requested params"
+      operationId: "postDataflowQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/DataflowQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/DataflowMetrics"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
   /metrics/query/http:
     post:
       tags:
@@ -426,6 +451,93 @@ definitions:
     example:
       time: "2019-11-24T12:45:00-5:00"
       mermaid: "Alice ->> Bob: Hello!"
+  DataflowQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> "
+        items:
+          $ref: "#/definitions/Tag"
+      scope:
+        $ref: "#/definitions/Scope"
+      fields:
+        type: "array"
+        description: "Requested information. Supported values:<br><li>mermaid: Mermaid\
+          \ format<br>"
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "mermaid"
+    description: "Seq metrics query parameters"
+    example:
+      scope:
+        duration: "1h"
+        limit: 60
+      fields: ["mermaid"]
+  DataflowMetrics:
+    type: "object"
+    properties:
+      dataflowMetricList:
+        $ref: "#/definitions/DataflowMetricList"
+      dataflowMetricString:
+        type: "string"
+        description: "String of dataflow metrics with unique interactions"
+    example:
+      dataflowMetricString: "dataflowMetricString"
+      dataflowMetricList:
+        columns:
+        - "columns"
+        - "columns"
+        values:
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Alice --> Bob"
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Alice --> Bob"
+        name: "dataflow metrics"
+  DataflowMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "dataflow metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/DataflowMetric"
+    example:
+      columns:
+      - "columns"
+      - "columns"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Alice --> Bob"
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Alice --> Bob"
+      name: "dataflow metrics"
+  DataflowMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of interaction"
+      mermaid:
+        type: "string"
+        example: "Alice --> Bob"
+        description: "Mermaid formatted dataflow logs"
+    description: "dataflow diagram logs"
+    example:
+      time: "2019-11-24T12:45:00-5:00"
+      mermaid: "Alice --> Bob"
   HttpQueryParams:
     type: "object"
     properties:

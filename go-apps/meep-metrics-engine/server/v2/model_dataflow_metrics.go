@@ -24,26 +24,9 @@
 
 package server
 
-import (
-	"net/http"
-)
+type DataflowMetrics struct {
+	DataflowMetricList *DataflowMetricList `json:"dataflowMetricList,omitempty"`
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
-
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
-
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
-
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
-}
-
-func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
-	mePostDataflowQuery(w, r)
+	// String of dataflow metrics with unique interactions
+	DataflowMetricString string `json:"dataflowMetricString,omitempty"`
 }

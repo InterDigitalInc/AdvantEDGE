@@ -561,6 +561,16 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		duration = params.Scope.Duration
 		limit = int(params.Scope.Limit)
 	}
+
+	var response SeqMetrics
+	mobilityEventProcessed := false
+	if params.ResponseType == listOnly || params.ResponseType == "" {
+		response.SeqMetricList = &SeqMetricList{
+			Name:    "sequence metrics",
+			Columns: append(params.Fields, met.HttpLogTime),
+		}
+	}
+
 	// Get http metrics
 	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
 		met.HttpBody, met.HttpMethod)
@@ -587,18 +597,10 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepare & send response
-	var response SeqMetrics
-	mobilityEventProcessed := false
-	if params.ResponseType == listOnly || params.ResponseType == "" {
-		response.SeqMetricList = &SeqMetricList{
-			Name:    "sequence metrics",
-			Columns: append(params.Fields, "time"),
-		}
-	}
 	for i := len(valuesArray) - 1; i >= 0; i-- {
 		values := valuesArray[i]
 		var metric SeqMetric
-		metric.Time = values["time"].(string)
+		metric.Time = values[met.HttpLogTime].(string)
 		if values[params.Fields[0]] != nil {
 			metricTime, err := time.Parse(time.RFC3339, metric.Time)
 			if err != nil {
@@ -717,6 +719,106 @@ func updateSeqMetrics(log string, metric SeqMetric, params SeqQueryParams, respo
 		}
 	}
 	return metric, response
+}
+
+func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostHttpQuery")
+
+	// Retrieve sequence diagram query parameters from request body
+	var params DataflowQueryParams
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Make sure only type of format is specified
+	if len(params.Fields) > 1 {
+		err := errors.New("Supports only one type of format: meraid")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Parse tags
+	tags := make(map[string]string)
+	for _, tag := range params.Tags {
+		tags[tag.Name] = tag.Value
+	}
+
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
+	}
+	// Get http metrics
+	var response DataflowMetrics
+	response.DataflowMetricList = &DataflowMetricList{
+		Name:    "sequence metrics",
+		Columns: append(params.Fields, met.HttpLogTime),
+	}
+
+	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
+		met.HttpBody, met.HttpMethod)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(valuesArray) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNoContent)
+		return
+	}
+
+	// Prepare & send response
+	interactions := make(map[string]int)
+	for i := len(valuesArray) - 1; i >= 0; i-- {
+		values := valuesArray[i]
+		var metric DataflowMetric
+		metric.Time = values[met.HttpLogTime].(string)
+		if values[met.HttpSrc].(string) != "" && values[met.HttpDst].(string) != "" {
+			src := strings.Replace(values[met.HttpSrc].(string), "-", "_", 1)
+			dst := strings.Replace(values[met.HttpDst].(string), "-", "_", 1)
+			val := src + " --> " + dst
+			metric.Mermaid = val
+			response.DataflowMetricList.Values = append(response.DataflowMetricList.Values, metric)
+			interactions[val] = interactions[val] + 1
+		}
+	}
+	for interaction, count := range interactions {
+		response.DataflowMetricString += interaction + " : " + fmt.Sprint(count) + "\n"
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
 }
 
 func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {

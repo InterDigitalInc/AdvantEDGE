@@ -24,26 +24,14 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Seq metrics query parameters
+type DataflowQueryParams struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Tag names to match in query. Supported values:<br>
+	Tags []Tag `json:"tags,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
+	Scope *Scope `json:"scope,omitempty"`
 
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
-
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
-}
-
-func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
-	mePostDataflowQuery(w, r)
+	// Requested information. Supported values:<br><li>mermaid: Mermaid format<br>
+	Fields []string `json:"fields,omitempty"`
 }

@@ -24,26 +24,12 @@
 
 package server
 
-import (
-	"net/http"
-)
+// dataflow diagram logs
+type DataflowMetric struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Time of interaction
+	Time string `json:"time,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
-
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
-
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
-}
-
-func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
-	mePostDataflowQuery(w, r)
+	// Mermaid formatted dataflow logs
+	Mermaid string `json:"mermaid,omitempty"`
 }

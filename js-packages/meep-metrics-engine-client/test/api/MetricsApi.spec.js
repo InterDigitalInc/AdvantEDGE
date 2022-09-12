@@ -50,6 +50,62 @@
 
   describe('(package)', function() {
     describe('MetricsApi', function() {
+      describe('postDataflowQuery', function() {
+        it('should call postDataflowQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postDataflowQuery call and complete the assertions
+          /*
+          var params = new AdvantEdgeMetricsServiceRestApi.DataflowQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
+          params.fields = ["mermaid"]"mermaid";
+
+          instance.postDataflowQuery(params, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.DataflowMetrics);
+            expect(data.dataflowMetricList).to.be.a(AdvantEdgeMetricsServiceRestApi.DataflowMetricList);
+                  expect(data.dataflowMetricList.name).to.be.a('string');
+              expect(data.dataflowMetricList.name).to.be("dataflow metrics");
+              {
+                let dataCtr = data.dataflowMetricList.columns;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a('string');
+                  expect(data).to.be("");
+                }
+              }
+              {
+                let dataCtr = data.dataflowMetricList.values;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.DataflowMetric);
+                  expect(data.time).to.be.a('string');
+                  expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                  expect(data.mermaid).to.be.a('string');
+                  expect(data.mermaid).to.be("Alice --> Bob");
+                }
+              }
+            expect(data.dataflowMetricString).to.be.a('string');
+            expect(data.dataflowMetricString).to.be("");
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('postEventQuery', function() {
         it('should call postEventQuery successfully', function(done) {
           // TODO: uncomment, update parameter values for postEventQuery call and complete the assertions

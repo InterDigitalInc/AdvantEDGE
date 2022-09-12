@@ -24,26 +24,13 @@
 
 package server
 
-import (
-	"net/http"
-)
+type DataflowMetricList struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Response name
+	Name string `json:"name,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
+	// columns included in response based on queried values
+	Columns []string `json:"columns,omitempty"`
 
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
-}
-
-func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
-	mePostSeqQuery(w, r)
-}
-
-func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
-	mePostDataflowQuery(w, r)
+	Values []DataflowMetric `json:"values,omitempty"`
 }
