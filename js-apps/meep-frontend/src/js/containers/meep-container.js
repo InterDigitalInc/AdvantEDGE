@@ -104,7 +104,7 @@ import {
   execChangeMap,
   execChangeSeqMetrics,
   execChangeSeqParticipants,
-  execChangeDataflowChart
+  execChangeDataflowMetrics
 } from '../state/exec';
 
 import {
@@ -170,12 +170,14 @@ class MeepContainer extends Component {
       },
       responseType: 'listonly'
     };
+    this.refreshDataflowMetrics = false;
+    this.resetDataflowMetrics = false;
     this.dataflowMetricsQuery = {
       fields: ['mermaid'],
       scope: {
         limit: 10000
       },
-      responseType: 'stronly'
+      responseType: 'listonly'
     };
   }
 
@@ -221,6 +223,9 @@ class MeepContainer extends Component {
     if (this.props.pauseSeq !== prevProps.pauseSeq) {
       this.refreshSeqMetrics = true;
     }
+    if (this.props.pauseDataflow !== prevProps.pauseDataflow) {
+      this.refreshDataflowMetrics = true;
+    }
   }
   
   // Timers
@@ -263,6 +268,7 @@ class MeepContainer extends Component {
   startExecPageRefresh() {
     // Initialize refresh variables
     this.refreshSeqMetrics = true;
+    this.refreshDataflowMetrics = true;
 
     // Start refresh timer
     this.execPageRefreshIntervalTimer = setInterval(
@@ -758,62 +764,67 @@ class MeepContainer extends Component {
   }
 
   /**
-   * Callback function to receive the result of the postSeqQuery operation.
-   * @callback module:api/MetricsApi~postSeqQueryCallback
+   * Callback function to receive the result of the postDataflowQuery operation.
+   * @callback module:api/MetricsApi~postDataflowQueryCallback
    * @param {String} error Error message, if any.
-   * @param {module:model/SeqMetrics} data The data returned by the service call.
+   * @param {module:model/DataflowMetrics} data The data returned by the service call.
    * @param {String} response The complete HTTP response.
    */
   postDataflowQueryCb(error, data) {
     if (error !== null) {
       return;
     }
-    // var newSeqMetrics = (data && data.seqMetricList && data.seqMetricList.values) ? data.seqMetricList.values : [];
+    var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
     
-    // // Nothing to do if no new metrics
-    // if (newSeqMetrics.length === 0) {
-    //   // Reset metrics if necessary
-    //   if (this.resetSeqMetrics) {
-    //     this.resetSeqMetrics = false;
-    //     this.props.changeSeqMetrics([]);
-    //   }
-    //   return;
-    // }
+    // Nothing to do if no new metrics
+    if (newDataflowMetrics.length === 0) {
+      // Reset metrics if necessary
+      if (this.resetDataflowMetrics) {
+        this.resetDataflowMetrics = false;
+        this.props.changeDataflowMetrics([]);
+      }
+      return;
+    }
 
-    // // Merge new metrics with existing list
-    // // Copy previous list if no reset 
-    // var seqMetrics = [];
-    // if (this.resetSeqMetrics) {
-    //   this.resetSeqMetrics = false;
-    // } else {
-    //   seqMetrics = deepCopy(this.props.execSeqMetrics);
-    // }
+    // Merge new metrics with existing list
+    // Copy previous list if no reset 
+    var dataflowMetrics = [];
+    if (this.resetDataflowMetrics) {
+      this.resetDataflowMetrics = false;
+    } else {
+      dataflowMetrics = deepCopy(this.props.execDataflowMetrics);
+    }
 
-    // // Get latest metric
-    // var lastMetric = (seqMetrics.length > 0) ? seqMetrics[seqMetrics.length - 1] : null;
+    // Get latest metric
+    var lastMetric = (dataflowMetrics.length > 0) ? dataflowMetrics[dataflowMetrics.length - 1] : null;
     
-    // _.forEach(newSeqMetrics, newMetric => {
-    //   // Add metric to list if it is more recent than the last metric
-    //   // NOTE: assumes timestamps do not overlap due to nanosecond precision
-    //   if (!lastMetric || newMetric.time > lastMetric.time) {
-    //     seqMetrics.push(newMetric);
-    //   }
-    // });
+    _.forEach(newDataflowMetrics, newMetric => {
+      // Add metric to list if it is more recent than the last metric
+      // NOTE: assumes timestamps do not overlap due to nanosecond precision
+      if (!lastMetric || newMetric.time > lastMetric.time) {
+        dataflowMetrics.push(newMetric);
+      }
+    });
 
-    // // Update metrics state
-    // this.props.changeSeqMetrics(seqMetrics);
-
-    // Refresh dataflow chart
-    var chart = (data && data.datflowMetricsString) ? data.datflowMetricsString : '';
-    this.props.changeDataflowChart(chart);
+    // Update metrics state
+    this.props.changeDataflowMetrics(dataflowMetrics);
   }
 
   // Refresh Data Flow Diagram
   refreshDataflow() {
+    // If polling just started, refresh entire API console list
+    if (this.refreshDataflowMetrics) {
+      this.dataflowMetricsQuery.scope.duration = '';
+      this.refreshDataflowMetrics = false;
+      this.resetDataflowMetrics = true;
+    } else {
+      this.dataflowMetricsQuery.scope.duration = '2s';
+    }
+
     // Query sequence diagram
-    // this.meepMetricsApi.postDataflowQuery(this.dataflowMetricsQuery, (error, data) =>
-    //   this.postDataflowQueryCb(error, data)
-    // );
+    this.meepMetricsApi.postDataflowQuery(this.dataflowMetricsQuery, (error, data) =>
+      this.postDataflowQueryCb(error, data)
+    );
   }
 
   /**
@@ -866,6 +877,7 @@ class MeepContainer extends Component {
     if (this.scenarioName !== scenarioName) {
       this.scenarioName = scenarioName;
       this.refreshSeqMetrics = true;
+      this.refreshDataflowMetrics = true;
     }
   }
 
@@ -1118,6 +1130,7 @@ const mapStateToProps = state => {
     execSeqMetrics: state.exec.seq.metrics,
     execSeqParticipants: state.exec.seq.participants,
     pauseSeq: state.ui.execPauseSeq,
+    execDataflowMetrics: state.exec.dataflow.metrics,
     pauseDataflow: state.ui.execPauseDataflow,
     currentDialog: state.ui.currentDialog,
     page: state.ui.page,
@@ -1168,7 +1181,7 @@ const mapDispatchToProps = dispatch => {
     changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value)),
     changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
     changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants)),
-    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart))
+    changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics))
   };
 };
 

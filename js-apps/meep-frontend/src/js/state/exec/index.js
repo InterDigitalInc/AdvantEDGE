@@ -57,6 +57,7 @@ export * from './scenario-reducer';
 export * from './displayed-scenario-reducer';
 export * from './map-reducer';
 export * from './seq-reducer';
+export * from './dataflow-reducer';
 export * from './vis-reducer';
 export * from './table-reducer';
 export * from './selected-scenario-element';

@@ -50,7 +50,7 @@ class IDCSeq extends Component {
     // Return default diagram if no metrics available yet
     if (this.props.execSeqMetrics.length === 0) {
       // Default diagram
-      seqChart = 'flowchart LR\nid1(Sequence diagram waiting for metrics to display...)';
+      seqChart = 'flowchart LR\nid1(Sequence diagram: waiting for metrics...)';
     } else {
       seqChart = 'sequenceDiagram\n';
 

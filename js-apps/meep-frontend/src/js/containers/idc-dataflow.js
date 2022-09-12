@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// import _ from 'lodash';
+import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component, createRef } from 'react';
 import mermaid from 'mermaid';
@@ -48,21 +48,28 @@ class IDCDataflow extends Component {
     var dataflowChart = '';
 
     // Return default diagram if no metrics available yet
+    // if (this.props.execDataflowMetrics.length === 0) {
     if (this.props.execDataflowMetrics.length === 0) {
       // Default diagram
-      dataflowChart = 'flowchart LR\nid1(Data Flow diagram waiting for metrics to display...)';
+      dataflowChart = 'flowchart LR\nid1(Data flow diagram: waiting for metrics...)';
     } else {
       dataflowChart = 'stateDiagram-v2\n';
 
-      // // Add participants
-      // _.forEach(this.props.execSeqParticipants, participant => {
-      //   seqChart += ('participant ' + participant + '\n');
-      // });
+      // Count data flow metrics
+      var metricCount = {};
+      var metricOrder = [];
+      _.forEach(this.props.execDataflowMetrics, metric => {
+        var prevCount = metricCount[metric.mermaid] || 0;
+        metricCount[metric.mermaid] = prevCount + 1;
+        if (prevCount === 0) {
+          metricOrder.push(metric.mermaid);
+        }
+      });
 
-      // // Add metrics
-      // _.forEach(this.props.execSeqMetrics, metric => {
-      //   seqChart += (metric.mermaid + '\n');
-      // });
+      // Add metrics
+      _.forEach(metricOrder, metric => {
+        dataflowChart += (metric + ' : ' + metricCount[metric] + '\n');
+      });
     }
 
     this.mermaidChart = dataflowChart;
@@ -82,7 +89,7 @@ class IDCDataflow extends Component {
             className='dataflow-mermaid'
             data-cy={this.props.cydata}
           >
-            {this.execDataflowChart}
+            {this.mermaidChart}
           </div>
         </TransformComponent>
       </TransformWrapper>
