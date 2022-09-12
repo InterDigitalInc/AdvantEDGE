@@ -82,7 +82,7 @@ class IDCDataflow extends Component {
             className='dataflow-mermaid'
             data-cy={this.props.cydata}
           >
-            {this.mermaidChart}
+            {this.execDataflowChart}
           </div>
         </TransformComponent>
       </TransformWrapper>

@@ -85,7 +85,7 @@ class IDCSeq extends Component {
     return (
       <TransformWrapper>
         <TransformComponent
-          wrapperStyle={{width: '100%', height: '100%'}}
+          wrapperStyle={{width: '100%', height: '100%', textAlign: 'bottom'}}
         >
           <div
             ref={this.mermaidRef}
