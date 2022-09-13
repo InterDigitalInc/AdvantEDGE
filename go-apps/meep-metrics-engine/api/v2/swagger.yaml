@@ -470,12 +470,24 @@ definitions:
           description: "Queried value"
           enum:
           - "mermaid"
+      responseType:
+        type: "string"
+        description: "Queried response Type. Supported Values:<br> NOTE1: only one\
+          \ of listonly or responly may be included  NOTE2: if listonly or responly\
+          \ are not included, the response contains both the list and string  <li>listonly:\
+          \ Include only a list of dataflow metrics in response<br> <li>stronly: Include\
+          \ only a concatenated string of dataflow metrics in response<br> "
+        enum:
+        - "listonly"
+        - "stronly"
     description: "Seq metrics query parameters"
     example:
       scope:
         duration: "1h"
         limit: 60
-      fields: ["mermaid"]
+      fields:
+      - "mermaid"
+      responseType: "stronly"
   DataflowMetrics:
     type: "object"
     properties:

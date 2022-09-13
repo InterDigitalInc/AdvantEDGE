@@ -76,6 +76,8 @@
         obj.scope = Scope.constructFromObject(data['scope']);
       if (data.hasOwnProperty('fields'))
         obj.fields = ApiClient.convertToType(data['fields'], ['String']);
+      if (data.hasOwnProperty('responseType'))
+        obj.responseType = ApiClient.convertToType(data['responseType'], 'String');
     }
     return obj;
   }
@@ -97,6 +99,12 @@
    */
   exports.prototype.fields = undefined;
 
+  /**
+   * Queried response Type. Supported Values:<br> NOTE1: only one of listonly or responly may be included  NOTE2: if listonly or responly are not included, the response contains both the list and string  <li>listonly: Include only a list of dataflow metrics in response<br> <li>stronly: Include only a concatenated string of dataflow metrics in response<br> 
+   * @member {module:model/DataflowQueryParams.ResponseTypeEnum} responseType
+   */
+  exports.prototype.responseType = undefined;
+
 
   /**
    * Allowed values for the <code>fields</code> property.
@@ -109,6 +117,26 @@
      * @const
      */
     mermaid: "mermaid"
+  };
+
+
+  /**
+   * Allowed values for the <code>responseType</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.ResponseTypeEnum = {
+    /**
+     * value: "listonly"
+     * @const
+     */
+    listonly: "listonly",
+
+    /**
+     * value: "stronly"
+     * @const
+     */
+    stronly: "stronly"
   };
 
   return exports;
