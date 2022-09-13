@@ -708,6 +708,7 @@ class MeepContainer extends Component {
    */
   postSeqQueryCb(error, data) {
     if (error !== null) {
+      this.refreshSeqMetrics = true;
       return;
     }
     var newSeqMetrics = (data && data.seqMetricList && data.seqMetricList.values) ? data.seqMetricList.values : [];
@@ -772,6 +773,7 @@ class MeepContainer extends Component {
    */
   postDataflowQueryCb(error, data) {
     if (error !== null) {
+      this.refreshDataflowMetrics = true;
       return;
     }
     var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
