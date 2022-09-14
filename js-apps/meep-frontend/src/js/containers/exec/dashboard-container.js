@@ -137,8 +137,8 @@ const ViewForName = ({
 
       var url = new URL(selectedUrl);
       url.searchParams.append('var-database', scenario);
-      url.searchParams.append('var-src', viewCfg.viewType.sourceNodeSelected);
-      url.searchParams.append('var-dest', viewCfg.viewType.destNodeSelected);
+      url.searchParams.append('var-src', viewCfg.sourceNodeSelected);
+      url.searchParams.append('var-dest', viewCfg.destNodeSelected);
       selectedUrl = url.href + '&kiosk';
     }
 
