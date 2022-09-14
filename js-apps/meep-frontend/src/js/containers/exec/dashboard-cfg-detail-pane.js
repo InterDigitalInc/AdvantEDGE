@@ -19,12 +19,16 @@ import { connect } from 'react-redux';
 import autoBind from 'react-autobind';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Checkbox } from '@rmwc/checkbox';
+import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import { updateObject } from '@/js/util/object-util';
 
 import IDSelect from '../../components/helper-components/id-select';
 
+
 import {
-  VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
+  SEQ_DIAGRAM_VIEW,
+  DATAFLOW_DIAGRAM_VIEW,
   NET_METRICS_PTP_VIEW,
   NET_METRICS_AGG_VIEW,
   WIRELESS_METRICS_PTP_VIEW,
@@ -33,12 +37,9 @@ import {
 
 import {
   uiExecChangeShowApps,
-  uiExecChangeSandboxCfg
+  uiExecChangePauseSeq,
+  uiExecChangePauseDataflow
 } from '@/js/state/ui';
-
-import {
-  updateObject
-} from '@/js/util/object-util';
 
 class DashCfgDetailPane extends Component {
   constructor(props) {
@@ -46,40 +47,37 @@ class DashCfgDetailPane extends Component {
     autoBind(this);
   }
 
-  componentDidUpdate() {
-    // Create sandbox config if it does not exist
-    const sandboxName = this.props.sandbox;
-    const sandboxCfg = this.props.sandboxCfg;
-    if (!sandboxName || (sandboxCfg && sandboxCfg[sandboxName])) {
-      return;
-    } else {
-      var newSandboxCfg = updateObject({}, sandboxCfg);
-      newSandboxCfg[sandboxName] = {
-        dashboardView1: NET_TOPOLOGY_VIEW,
-        dashboardView2: VIEW_NAME_NONE
-      };
-      this.props.changeSandboxCfg(newSandboxCfg);
-    }
-  }
-
   onClose(e) {
     e.preventDefault();
     this.props.onClose(e);
   }
 
-  changeView1(viewName) {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandbox].dashboardView1 = viewName;
-    this.props.changeSandboxCfg(sandboxCfg);
+  changeViewType(val) {
+    var newViewCfg = updateObject({}, this.props.viewCfg);
+    newViewCfg.viewType = val;
+    this.props.changeViewCfg(this.props.currentView, newViewCfg);
   }
 
-  changeView2(viewName) {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandbox].dashboardView2 = viewName;
-    this.props.changeSandboxCfg(sandboxCfg);
+  changeSourceNodeSelected(val) {
+    var newViewCfg = updateObject({}, this.props.viewCfg);
+    newViewCfg.sourceNodeSelected = val;
+    this.props.changeViewCfg(this.props.currentView, newViewCfg);
+  }
+
+  changeDestNodeSelected(val) {
+    var newViewCfg = updateObject({}, this.props.viewCfg);
+    newViewCfg.destNodeSelected = val;
+    this.props.changeViewCfg(this.props.currentView, newViewCfg);
+  }
+
+  changeParticipants(val) {
+    var newViewCfg = updateObject({}, this.props.viewCfg);
+    newViewCfg.participants = val;
+    this.props.changeViewCfg(this.props.currentView, newViewCfg);
   }
 
   render() {
+    var viewCfg = this.props.viewCfg;
     var netSrcNodeIds = this.props.appIds;
     var netDstNodeIds = this.props.appIds;
     var wirelessSrcNodeIds = this.props.ueIds;
@@ -94,15 +92,15 @@ class DashCfgDetailPane extends Component {
               outlined
               options={this.props.dashboardViewsList}
               onChange={e => {
-                this.props.index === 1 ? this.changeView1(e.target.value) : this.changeView2(e.target.value);  
+                this.changeViewType(e.target.value);
               }}
-              value={this.props.viewName}
+              value={viewCfg.viewType}
             />
           </GridCell>
 
-          { this.props.viewName === NET_TOPOLOGY_VIEW ?
+          { viewCfg.viewType === NET_TOPOLOGY_VIEW ?
             <>
-              <GridCell span={2}>
+              <GridCell span={6}>
                 <Checkbox
                   checked={this.props.showApps}
                   onChange={e => this.props.changeShowApps(e.target.checked)}
@@ -113,7 +111,45 @@ class DashCfgDetailPane extends Component {
             </> : null
           }
 
-          { this.props.viewName === NET_METRICS_PTP_VIEW ?
+          { viewCfg.viewType === SEQ_DIAGRAM_VIEW ?
+            <>
+              <GridCell span={12}>
+                <TextField
+                  outlined
+                  style={{ width: '100%', marginTop: 10 }}
+                  label={'Participants'}
+                  onChange={e => this.changeParticipants(e.target.value)}
+                  value={viewCfg.participants ? viewCfg.participants : ''}
+                />
+                <TextFieldHelperText validationMsg={true}>
+                  <span>{'comma-separated, ordered list'}</span>
+                </TextFieldHelperText>        
+              </GridCell>
+              <GridCell span={12}>
+                <Checkbox
+                  checked={this.props.pauseSeq}
+                  onChange={e => this.props.changePauseSeq(e.target.checked)}
+                >
+                  Pause
+                </Checkbox>
+              </GridCell>
+            </> : null
+          }
+
+          { viewCfg.viewType === DATAFLOW_DIAGRAM_VIEW ?
+            <>
+              <GridCell span={12}>
+                <Checkbox
+                  checked={this.props.pauseDataflow}
+                  onChange={e => this.props.changePauseDataflow(e.target.checked)}
+                >
+                  Pause
+                </Checkbox>
+              </GridCell>
+            </> : null
+          }
+
+          { viewCfg.viewType === NET_METRICS_PTP_VIEW ?
             <>
               <GridCell span={12}>
                 <IDSelect
@@ -121,9 +157,9 @@ class DashCfgDetailPane extends Component {
                   outlined
                   options={netSrcNodeIds}
                   onChange={e => {
-                    this.props.changeSourceNodeSelected(e.target.value);
+                    this.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={netSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
+                  value={netSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
                 />
               </GridCell>
               <GridCell span={12}>
@@ -132,15 +168,15 @@ class DashCfgDetailPane extends Component {
                   outlined
                   options={netDstNodeIds}
                   onChange={e => {
-                    this.props.changeDestNodeSelected(e.target.value);
+                    this.changeDestNodeSelected(e.target.value);
                   }}
-                  value={netDstNodeIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None'}
+                  value={netDstNodeIds.includes(viewCfg.destNodeSelected) ? viewCfg.destNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
           }
 
-          { this.props.viewName === NET_METRICS_AGG_VIEW ?
+          { viewCfg.viewType === NET_METRICS_AGG_VIEW ?
             <>
               <GridCell span={12}>
                 <IDSelect
@@ -148,15 +184,15 @@ class DashCfgDetailPane extends Component {
                   outlined
                   options={netSrcNodeIds}
                   onChange={e => {
-                    this.props.changeSourceNodeSelected(e.target.value);
+                    this.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={netSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
+                  value={netSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
           }
 
-          { this.props.viewName === WIRELESS_METRICS_PTP_VIEW ?
+          { viewCfg.viewType === WIRELESS_METRICS_PTP_VIEW ?
             <>
               <GridCell span={12}>
                 <IDSelect
@@ -164,9 +200,9 @@ class DashCfgDetailPane extends Component {
                   outlined
                   options={wirelessSrcNodeIds}
                   onChange={e => {
-                    this.props.changeSourceNodeSelected(e.target.value);
+                    this.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={wirelessSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
+                  value={wirelessSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
                 />
               </GridCell>
               <GridCell span={12}>
@@ -175,15 +211,15 @@ class DashCfgDetailPane extends Component {
                   outlined
                   options={wirelessDstNodeIds}
                   onChange={e => {
-                    this.props.changeDestNodeSelected(e.target.value);
+                    this.changeDestNodeSelected(e.target.value);
                   }}
-                  value={wirelessDstNodeIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None'}
+                  value={wirelessDstNodeIds.includes(viewCfg.destNodeSelected) ? viewCfg.destNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
           }
 
-          { this.props.viewName === WIRELESS_METRICS_AGG_VIEW ?
+          { viewCfg.viewType === WIRELESS_METRICS_AGG_VIEW ?
             <>
               <GridCell span={12}>
                 <IDSelect
@@ -191,9 +227,9 @@ class DashCfgDetailPane extends Component {
                   outlined
                   options={wirelessSrcNodeIds}
                   onChange={e => {
-                    this.props.changeSourceNodeSelected(e.target.value);
+                    this.changeSourceNodeSelected(e.target.value);
                   }}
-                  value={wirelessSrcNodeIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None'}
+                  value={wirelessSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
@@ -207,14 +243,17 @@ class DashCfgDetailPane extends Component {
 
 const mapStateToProps = state => {
   return {
-    sandboxCfg: state.ui.sandboxCfg
+    showApps: state.ui.execShowApps,
+    pauseSeq: state.ui.execPauseSeq,
+    pauseDataflow: state.ui.execPauseDataflow
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg)),
-    changeShowApps: show => dispatch(uiExecChangeShowApps(show))
+    changeShowApps: show => dispatch(uiExecChangeShowApps(show)),
+    changePauseSeq: pause => dispatch(uiExecChangePauseSeq(pause)),
+    changePauseDataflow: pause => dispatch(uiExecChangePauseDataflow(pause))
   };
 };
 

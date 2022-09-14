@@ -39,3 +39,9 @@ export function deepCopy(source) {
   var dest = JSON.parse(JSON.stringify(source));
   return dest;
 }
+
+export function equalArrayOrdered(a1, a2) {
+  return (!a1 && !a2) || (a1 && a2 && a1.length === a2.length) && a1.every(function(element, index) {
+    return element === a2[index]; 
+  });
+}

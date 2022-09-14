@@ -18,55 +18,43 @@ import { updateObject } from '../../util/object-util';
 
 const initialState = {
   metrics: [],
-  participants: [],
   chart: ''
 };
 
-// EXEC_CHANGE_SEQ
-const EXEC_CHANGE_SEQ = 'EXEC_CHANGE_SEQ';
-export function execChangeSeq(seq) {
+// EXEC_CHANGE_DATAFLOW
+const EXEC_CHANGE_DATAFLOW = 'EXEC_CHANGE_DATAFLOW';
+export function execChangeDataflow(dataflow) {
   return {
-    type: EXEC_CHANGE_SEQ,
-    payload: seq
+    type: EXEC_CHANGE_DATAFLOW,
+    payload: dataflow
   };
 }
 
-// EXEC_CHANGE_SEQ_METRICS
-const EXEC_CHANGE_SEQ_METRICS = 'EXEC_CHANGE_SEQ_METRICS';
-export function execChangeSeqMetrics(metrics) {
+// EXEC_CHANGE_DATAFLOW_METRICS
+const EXEC_CHANGE_DATAFLOW_METRICS = 'EXEC_CHANGE_DATAFLOW_METRICS';
+export function execChangeDataflowMetrics(metrics) {
   return {
-    type: EXEC_CHANGE_SEQ_METRICS,
+    type: EXEC_CHANGE_DATAFLOW_METRICS,
     payload: metrics
   };
 }
 
-// EXEC_CHANGE_SEQ_PARTICIPANTS
-const EXEC_CHANGE_SEQ_PARTICIPANTS = 'EXEC_CHANGE_SEQ_PARTICIPANTS';
-export function execChangeSeqParticipants(participants) {
+// EXEC_CHANGE_DATAFLOW_CHART
+const EXEC_CHANGE_DATAFLOW_CHART = 'EXEC_CHANGE_DATAFLOW_CHART';
+export function execChangeDataflowChart(chart) {
   return {
-    type: EXEC_CHANGE_SEQ_PARTICIPANTS,
-    payload: participants
-  };
-}
-
-// EXEC_CHANGE_SEQ_CHART
-const EXEC_CHANGE_SEQ_CHART = 'EXEC_CHANGE_SEQ_CHART';
-export function execChangeSeqChart(chart) {
-  return {
-    type: EXEC_CHANGE_SEQ_CHART,
+    type: EXEC_CHANGE_DATAFLOW_CHART,
     payload: chart
   };
 }
 
-export function execSeqReducer(state = initialState, action) {
+export function execDataflowReducer(state = initialState, action) {
   switch (action.type) {
-  case EXEC_CHANGE_SEQ:
+  case EXEC_CHANGE_DATAFLOW:
     return action.payload;
-  case EXEC_CHANGE_SEQ_METRICS:
+  case EXEC_CHANGE_DATAFLOW_METRICS:
     return updateObject(state, { metrics: action.payload });
-  case EXEC_CHANGE_SEQ_PARTICIPANTS:
-    return updateObject(state, { participants: action.payload });
-  case EXEC_CHANGE_SEQ_CHART:
+  case EXEC_CHANGE_DATAFLOW_CHART:
     return updateObject(state, { chart: action.payload });
   default:
     return state;

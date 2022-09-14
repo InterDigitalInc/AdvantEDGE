@@ -20,7 +20,7 @@ import React, { Component, createRef } from 'react';
 import mermaid from 'mermaid';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-class IDCSeq extends Component {
+class IDCDataflow extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -34,7 +34,7 @@ class IDCSeq extends Component {
   }
 
   componentDidMount() {
-    mermaid.init(undefined, '.seq-mermaid');
+    mermaid.init(undefined, '.dataflow-mermaid');
   }
 
   componentDidUpdate() {
@@ -44,52 +44,49 @@ class IDCSeq extends Component {
     mermaid.init(undefined, this.mermaidRef.current);
   }
 
-  formatSequenceChart() {
-    var seqChart = '';
+  formatDataflowChart() {
+    var dataflowChart = '';
 
     // Return default diagram if no metrics available yet
-    if (this.props.execSeqMetrics.length === 0) {
+    // if (this.props.execDataflowMetrics.length === 0) {
+    if (this.props.execDataflowMetrics.length === 0) {
       // Default diagram
-      seqChart = 'flowchart LR\nid1(Sequence diagram: waiting for metrics...)';
+      dataflowChart = 'flowchart LR\nid1(Data flow diagram: waiting for metrics...)';
     } else {
-      seqChart = 'sequenceDiagram\n';
+      dataflowChart = 'stateDiagram-v2\n';
 
-      // Add dashboard-configured participants 
-      if (this.props.participants) {
-        var dashParticipants = _.split(this.props.participants, ',');
-        _.forEach(dashParticipants, participant => {
-          if (participant) {
-            seqChart += ('participant ' + participant + '\n');
-          }
-        });
-      }
-
-      // Add scenario-configured participants
-      _.forEach(this.props.execSeqParticipants, participant => {
-        seqChart += ('participant ' + participant + '\n');
+      // Count data flow metrics
+      var metricCount = {};
+      var metricOrder = [];
+      _.forEach(this.props.execDataflowMetrics, metric => {
+        var prevCount = metricCount[metric.mermaid] || 0;
+        metricCount[metric.mermaid] = prevCount + 1;
+        if (prevCount === 0) {
+          metricOrder.push(metric.mermaid);
+        }
       });
 
       // Add metrics
-      _.forEach(this.props.execSeqMetrics, metric => {
-        seqChart += (metric.mermaid + '\n');
+      _.forEach(metricOrder, metric => {
+        dataflowChart += (metric + ' : ' + metricCount[metric] + '\n');
       });
     }
 
-    this.mermaidChart = seqChart;
+    this.mermaidChart = dataflowChart;
   }
 
   render() {
-    // Format sequence diagram
-    this.formatSequenceChart();
+    // Format data flow diagram
+    this.formatDataflowChart();
 
     return (
       <TransformWrapper>
         <TransformComponent
-          wrapperStyle={{width: '100%', height: '100%', textAlign: 'bottom'}}
+          wrapperStyle={{width: '100%', height: '100%'}}
         >
           <div
             ref={this.mermaidRef}
-            className='seq-mermaid'
+            className='dataflow-mermaid'
             data-cy={this.props.cydata}
           >
             {this.mermaidChart}
@@ -102,9 +99,8 @@ class IDCSeq extends Component {
 
 const mapStateToProps = state => {
   return {
-    execSeqMetrics: state.exec.seq.metrics,
-    execSeqParticipants: state.exec.seq.participants,
-    execSeqChart: state.exec.seq.chart
+    execDataflowMetrics: state.exec.dataflow.metrics,
+    execDataflowChart: state.exec.dataflow.chart
   };
 };
 
@@ -113,9 +109,9 @@ const mapDispatchToProps = () => {
   };
 };
 
-const ConnectedIDCSeq = connect(
+const ConnectedIDCDataflow = connect(
   mapStateToProps,
   mapDispatchToProps
-)(IDCSeq);
+)(IDCDataflow);
 
-export default ConnectedIDCSeq;
+export default ConnectedIDCDataflow;

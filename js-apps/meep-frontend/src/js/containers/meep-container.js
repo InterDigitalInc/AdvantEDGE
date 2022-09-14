@@ -19,7 +19,7 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import autoBind from 'react-autobind';
 import axios from 'axios';
-import { updateObject, deepCopy } from '../util/object-util';
+import { updateObject, deepCopy, equalArrayOrdered } from '../util/object-util';
 import { ToolbarFixedAdjust } from '@rmwc/toolbar';
 
 // Import JS dependencies
@@ -102,7 +102,9 @@ import {
   execChangeReplayStatus,
   execChangeAppInstanceTable,
   execChangeMap,
-  execChangeSeqChart
+  execChangeSeqMetrics,
+  execChangeSeqParticipants,
+  execChangeDataflowMetrics
 } from '../state/exec';
 
 import {
@@ -158,14 +160,24 @@ class MeepContainer extends Component {
     this.meepConnectivityApi = new meepSandboxCtrlRestApiClient.ConnectivityApi();
     this.meepMetricsApi = new meepMetricsEngineRestApiClient.MetricsApi();
 
-    this.seqParticipants = '';
+    this.scenarioName = '';
+    this.refreshSeqMetrics = false;
+    this.resetSeqMetrics = false;
     this.seqMetricsQuery = {
       fields: ['mermaid'],
       scope: {
-        limit: 1000,
-        duration: '1d'
+        limit: 10000
       },
-      responseType: ''
+      responseType: 'listonly'
+    };
+    this.refreshDataflowMetrics = false;
+    this.resetDataflowMetrics = false;
+    this.dataflowMetricsQuery = {
+      fields: ['mermaid'],
+      scope: {
+        limit: 10000
+      },
+      responseType: 'listonly'
     };
   }
 
@@ -204,6 +216,15 @@ class MeepContainer extends Component {
         this.logout();
         this.props.changeSignInStatus(STATUS_SIGNED_OUT);
       }
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.pauseSeq !== prevProps.pauseSeq) {
+      this.refreshSeqMetrics = true;
+    }
+    if (this.props.pauseDataflow !== prevProps.pauseDataflow) {
+      this.refreshDataflowMetrics = true;
     }
   }
   
@@ -245,6 +266,11 @@ class MeepContainer extends Component {
 
   // Exec page refresh 
   startExecPageRefresh() {
+    // Initialize refresh variables
+    this.refreshSeqMetrics = true;
+    this.refreshDataflowMetrics = true;
+
+    // Start refresh timer
     this.execPageRefreshIntervalTimer = setInterval(
       () => {
         if (this.props.page === PAGE_EXECUTE) {
@@ -257,7 +283,12 @@ class MeepContainer extends Component {
             // Only update while scenario is running
             if (this.props.execScenarioState === 'DEPLOYED') {
               this.refreshAppInstancesTable();
-              this.refreshSeq();
+              if (!this.props.pauseSeq) {
+                this.refreshSeq();
+              }
+              if (!this.props.pauseDataflow) {
+                this.refreshDataflow();
+              }
             }
           }
         }
@@ -520,7 +551,7 @@ class MeepContainer extends Component {
       } 
 
       // Update sequence diagram
-      this.updateSequenceDiagram(updatedTable, scenarioName);
+      this.updateSeq(updatedTable, scenarioName);
     }
   }
 
@@ -677,26 +708,124 @@ class MeepContainer extends Component {
    */
   postSeqQueryCb(error, data) {
     if (error !== null) {
+      this.refreshSeqMetrics = true;
+      return;
+    }
+    var newSeqMetrics = (data && data.seqMetricList && data.seqMetricList.values) ? data.seqMetricList.values : [];
+    
+    // Nothing to do if no new metrics
+    if (newSeqMetrics.length === 0) {
+      // Reset metrics if necessary
+      if (this.resetSeqMetrics) {
+        this.resetSeqMetrics = false;
+        this.props.changeSeqMetrics([]);
+      }
       return;
     }
 
-    // Format sequence diagram
-    var seqChart = '';
-    if (data !== null) {
-      if (data.seqMetricString !== '') {
-        seqChart = 'sequenceDiagram\n' + this.seqParticipants + data.seqMetricString;
-      }
+    // Merge new metrics with existing list
+    // Copy previous list if no reset 
+    var seqMetrics = [];
+    if (this.resetSeqMetrics) {
+      this.resetSeqMetrics = false;
+    } else {
+      seqMetrics = deepCopy(this.props.execSeqMetrics);
     }
 
-    // Update sequence diagram
-    this.props.changeSeqChart(seqChart);
+    // Get latest metric
+    var lastMetric = (seqMetrics.length > 0) ? seqMetrics[seqMetrics.length - 1] : null;
+    
+    _.forEach(newSeqMetrics, newMetric => {
+      // Add metric to list if it is more recent than the last metric
+      // NOTE: assumes timestamps do not overlap due to nanosecond precision
+      if (!lastMetric || newMetric.time > lastMetric.time) {
+        seqMetrics.push(newMetric);
+      }
+    });
+
+    // Update metrics state
+    this.props.changeSeqMetrics(seqMetrics);
   }
 
   // Refresh Sequence Diagram
   refreshSeq() {
+    // If polling just started, refresh entire API console list
+    if (this.refreshSeqMetrics) {
+      this.seqMetricsQuery.scope.duration = '';
+      this.refreshSeqMetrics = false;
+      this.resetSeqMetrics = true;
+    } else {
+      this.seqMetricsQuery.scope.duration = '2s';
+    }
+
     // Query sequence diagram
     this.meepMetricsApi.postSeqQuery(this.seqMetricsQuery, (error, data) =>
       this.postSeqQueryCb(error, data)
+    );
+  }
+
+  /**
+   * Callback function to receive the result of the postDataflowQuery operation.
+   * @callback module:api/MetricsApi~postDataflowQueryCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/DataflowMetrics} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  postDataflowQueryCb(error, data) {
+    if (error !== null) {
+      this.refreshDataflowMetrics = true;
+      return;
+    }
+    var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
+    
+    // Nothing to do if no new metrics
+    if (newDataflowMetrics.length === 0) {
+      // Reset metrics if necessary
+      if (this.resetDataflowMetrics) {
+        this.resetDataflowMetrics = false;
+        this.props.changeDataflowMetrics([]);
+      }
+      return;
+    }
+
+    // Merge new metrics with existing list
+    // Copy previous list if no reset 
+    var dataflowMetrics = [];
+    if (this.resetDataflowMetrics) {
+      this.resetDataflowMetrics = false;
+    } else {
+      dataflowMetrics = deepCopy(this.props.execDataflowMetrics);
+    }
+
+    // Get latest metric
+    var lastMetric = (dataflowMetrics.length > 0) ? dataflowMetrics[dataflowMetrics.length - 1] : null;
+    
+    _.forEach(newDataflowMetrics, newMetric => {
+      // Add metric to list if it is more recent than the last metric
+      // NOTE: assumes timestamps do not overlap due to nanosecond precision
+      if (!lastMetric || newMetric.time > lastMetric.time) {
+        dataflowMetrics.push(newMetric);
+      }
+    });
+
+    // Update metrics state
+    this.props.changeDataflowMetrics(dataflowMetrics);
+  }
+
+  // Refresh Data Flow Diagram
+  refreshDataflow() {
+    // If polling just started, refresh entire API console list
+    if (this.refreshDataflowMetrics) {
+      this.dataflowMetricsQuery.scope.duration = '';
+      this.refreshDataflowMetrics = false;
+      this.resetDataflowMetrics = true;
+    } else {
+      this.dataflowMetricsQuery.scope.duration = '2s';
+    }
+
+    // Query sequence diagram
+    this.meepMetricsApi.postDataflowQuery(this.dataflowMetricsQuery, (error, data) =>
+      this.postDataflowQueryCb(error, data)
     );
   }
 
@@ -734,16 +863,24 @@ class MeepContainer extends Component {
     }
   }
 
-  // Update sequence diagram
-  updateSequenceDiagram(table, scenarioName) {
-    var participants = '';
+  // Update sequence diagram participants
+  updateSeq(table, scenarioName) {
+    // Refresh participants
+    var participants = [];
     var metaSeqParticipants = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_META_DISPLAY_SEQ_PARTICIPANTS);
     if (metaSeqParticipants) {
-      _.forEach(_.split(metaSeqParticipants, ','), function(value) {
-        participants += 'participant ' + value + '\n';
-      });
+      participants = _.split(metaSeqParticipants, ',');
     }
-    this.seqParticipants = participants;
+    if (!equalArrayOrdered(participants,this.props.execSeqParticipants)) {
+      this.props.changeSeqParticipants(participants);
+    }
+
+    // Set metrics reset flag if scenario state changed
+    if (this.scenarioName !== scenarioName) {
+      this.scenarioName = scenarioName;
+      this.refreshSeqMetrics = true;
+      this.refreshDataflowMetrics = true;
+    }
   }
 
   // Set sandox-specific API basepath
@@ -992,6 +1129,11 @@ const mapStateToProps = state => {
     exec: state.exec,
     execScenarioState: state.exec.state.scenario,
     execVis: state.exec.vis,
+    execSeqMetrics: state.exec.seq.metrics,
+    execSeqParticipants: state.exec.seq.participants,
+    pauseSeq: state.ui.execPauseSeq,
+    execDataflowMetrics: state.exec.dataflow.metrics,
+    pauseDataflow: state.ui.execPauseDataflow,
     currentDialog: state.ui.currentDialog,
     page: state.ui.page,
     sandbox: state.ui.sandbox,
@@ -1039,7 +1181,9 @@ const mapDispatchToProps = dispatch => {
     changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
     changeTabIndex: index => dispatch(uiChangeCurrentTab(index)),
     changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value)),
-    changeSeqChart: chart => dispatch(execChangeSeqChart(chart))
+    changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
+    changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants)),
+    changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics))
   };
 };
 
