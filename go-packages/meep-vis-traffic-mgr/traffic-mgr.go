@@ -26,7 +26,7 @@ import (
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
+	"github.com/roymx/viper"
 )
 
 // DB Config

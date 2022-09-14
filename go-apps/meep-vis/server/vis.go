@@ -566,6 +566,13 @@ func predictedQosPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make sure scenario is running
+	if currentStoreName == "" {
+		log.Error("Scenario not deployed")
+		errHandlerProblemDetails(w, "Scenario not deployed.", http.StatusBadRequest)
+		return
+	}
+
 	// Validating mandatory parameters in request
 	if requestData.LocationGranularity == "" {
 		log.Error("Mandatory locationGranularity parameter not present")
@@ -647,7 +654,7 @@ func predictedQosPost(w http.ResponseWriter, r *http.Request) {
 		powerResp, _, err := gisAppClient.GeospatialDataApi.GetGeoDataPowerValues(context.TODO(), geocoordinatesList)
 		if err != nil {
 			log.Error("Failed to communicate with gis engine: ", err)
-			errHandlerProblemDetails(w, "Failed to communicate with gis engine.", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Failed to communicate with gis engine.", http.StatusInternalServerError)
 			return
 		}
 		routeInfoList := responseData.Routes[i].RouteInfo
@@ -657,7 +664,7 @@ func predictedQosPost(w http.ResponseWriter, r *http.Request) {
 				rsrp := currGeoCoordinate.Rsrp
 				rsrq := currGeoCoordinate.Rsrq
 				poaName := currGeoCoordinate.PoaName
-				estTimeHour := int32(time.Unix(int64(routeInfo.Time.Seconds), int64(routeInfo.Time.Seconds)).Hour())
+				estTimeHour := int32(time.Unix(int64(routeInfo.Time.Seconds), int64(routeInfo.Time.NanoSeconds)).Hour())
 				currGeoCoordinate.Rsrp, currGeoCoordinate.Rsrq, _ = sbi.GetPredictedPowerValues(estTimeHour, rsrp, rsrq, poaName)
 			}
 			latCheck := routeInfo.Location.GeoArea.Latitude == currGeoCoordinate.Latitude
