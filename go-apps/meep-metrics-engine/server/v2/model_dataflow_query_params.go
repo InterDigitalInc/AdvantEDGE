@@ -34,4 +34,7 @@ type DataflowQueryParams struct {
 
 	// Requested information. Supported values:<br><li>mermaid: Mermaid format<br>
 	Fields []string `json:"fields,omitempty"`
+
+	// Queried response Type. Supported Values:<br> NOTE1: only one of listonly or responly may be included  NOTE2: if listonly or responly are not included, the response contains both the list and string  <li>listonly: Include only a list of dataflow metrics in response<br> <li>stronly: Include only a concatenated string of dataflow metrics in response<br>
+	ResponseType string `json:"responseType,omitempty"`
 }

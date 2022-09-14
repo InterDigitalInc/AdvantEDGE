@@ -73,6 +73,12 @@
         // expect(instance.fields).to.be(expectedValueLiteral);
       });
 
+      it('should have the property responseType (base name: "responseType")', function() {
+        // TODO: update the code to test the property responseType
+        expect(instance).to.have.property('responseType');
+        // expect(instance.responseType).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

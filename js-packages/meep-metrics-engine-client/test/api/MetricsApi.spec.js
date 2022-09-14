@@ -62,6 +62,7 @@
           params.scope.limit = 60;
           params.scope.duration = "10s";
           params.fields = ["mermaid"]"mermaid";
+          params.responseType = "listonly";
 
           instance.postDataflowQuery(params, function(error, data, response) {
             if (error) {
