@@ -109,9 +109,9 @@ const mapDispatchToProps = () => {
   };
 };
 
-const ConnectedIDCSeq = connect(
+const ConnectedIDCDataflow = connect(
   mapStateToProps,
   mapDispatchToProps
 )(IDCDataflow);
 
-export default ConnectedIDCSeq;
+export default ConnectedIDCDataflow;

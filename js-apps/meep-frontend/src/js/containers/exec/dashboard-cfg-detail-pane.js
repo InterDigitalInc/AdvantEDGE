@@ -41,54 +41,6 @@ import {
   uiExecChangePauseDataflow
 } from '@/js/state/ui';
 
-// // COMPONENTS
-// const DashCfgTextField = props => {
-//   return (
-//     <>
-//       <TextField
-//         outlined
-//         style={{ width: '100%', marginBottom: 0 }}
-//         label={props.label}
-//         withLeadingIcon={!props.icon ? null : 
-//           <TextFieldIcon
-//             tabIndex="0"
-//             icon={props.icon}
-//             onClick={props.onIconClick}
-//           />
-//         }
-//         type={props.type}
-//         onChange={event => {
-//           var err = props.validate ? props.validate(event.target.value) : null;
-//           var val =
-//             event.target.value && props.isNumber && !err
-//               ? Number(event.target.value)
-//               : event.target.value;
-//           props.onUpdate(props.fieldName, val, err);
-//         }}
-//         invalid={err}
-//         value={
-//           props.element[props.fieldName]
-//             ? props.element[props.fieldName].val
-//             : ''
-//         }
-//         disabled={props.disabled}
-//         data-cy={props.cydata}
-//       />
-//       <TextFieldHelperText validationMsg={true}>
-//         <span>{getElemFieldErr(props.element, props.fieldName)}</span>
-//       </TextFieldHelperText>
-//     </>
-//   );
-// };
-
-// const CfgTextFieldCell = props => {
-//   return (
-//     <GridCell span={props.span}>
-//       <CfgTextField {...props} />
-//     </GridCell>
-//   );
-// };
-
 class DashCfgDetailPane extends Component {
   constructor(props) {
     super(props);
