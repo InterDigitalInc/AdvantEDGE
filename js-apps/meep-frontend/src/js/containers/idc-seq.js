@@ -69,8 +69,13 @@ class IDCSeq extends Component {
         seqChart += ('participant ' + participant + '\n');
       });
 
-      // Add metrics
-      _.forEach(this.props.execSeqMetrics, metric => {
+      // Add metrics up to maximum allowed count
+      var maxMsgCount = (this.props.maxMsgCount > 0) ? this.props.maxMsgCount : 10000;
+      var execSeqMetrics = this.props.execSeqMetrics;
+      if (execSeqMetrics.length > maxMsgCount) {
+        execSeqMetrics = this.props.execSeqMetrics.slice(execSeqMetrics.length - maxMsgCount);
+      }
+      _.forEach(execSeqMetrics, metric => {
         seqChart += (metric.mermaid + '\n');
       });
     }

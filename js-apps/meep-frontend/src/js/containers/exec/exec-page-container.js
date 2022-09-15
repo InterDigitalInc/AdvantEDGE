@@ -43,8 +43,9 @@ import IDTerminateScenarioDialog from '../../components/dialogs/id-terminate-sce
 import IDSaveScenarioDialog from '../../components/dialogs/id-save-scenario-dialog';
 import IDSaveReplayDialog from '../../components/dialogs/id-save-replay-dialog';
 
-
-import { execChangeScenarioList} from '../../state/exec';
+import {
+  execChangeScenarioList
+} from '../../state/exec';
 
 import {
   uiChangeCurrentDialog,
@@ -62,6 +63,12 @@ import {
   execChangeScenarioState,
   execChangeOkToTerminate
 } from '../../state/exec';
+
+import {
+  DASH_CFG_VIEW_TYPE,
+  getDashCfgFieldVal,
+  setDashCfgField
+} from '@/js/util/dashboard-utils';
 
 import {
   // States
@@ -110,23 +117,31 @@ class ExecPageContainer extends Component {
     const sandboxName = this.props.sandbox;
     const sandboxCfg = this.props.sandboxCfg;
 
-    // Check if view config already exists
-    if (!sandboxName || (sandboxCfg && sandboxCfg[sandboxName] &&
-      sandboxCfg[sandboxName].dashView1 && sandboxCfg[sandboxName].dashView2)) {
+    // Skip if sandbox not selected
+    if (!sandboxName) {
       return;
     }
 
-    // Update sandbox config with new view configs
-    var newSandboxCfg = updateObject({}, sandboxCfg);
+    // Skip if view config already exists
+    var sandbox = sandboxCfg ? sandboxCfg[sandboxName] : {};
+    if (sandbox && sandbox.dashView1 && sandbox.dashView2 &&
+      getDashCfgFieldVal(sandbox.dashView1, DASH_CFG_VIEW_TYPE) &&
+      getDashCfgFieldVal(sandbox.dashView2, DASH_CFG_VIEW_TYPE)) {
+      return;
+    }
+
+    // Obtain sandbox config
+    var newSandboxCfg = sandboxCfg ? updateObject({}, sandboxCfg) : {};
     if (!newSandboxCfg[sandboxName]) {
       newSandboxCfg[sandboxName] = {};
     }
-    newSandboxCfg[sandboxName].dashView1 = {
-      viewType: NET_TOPOLOGY_VIEW
-    };
-    newSandboxCfg[sandboxName].dashView2 = {
-      viewType: VIEW_NAME_NONE
-    };
+
+    // Create dashboard view configurations
+    newSandboxCfg[sandboxName].dashView1 = {};
+    newSandboxCfg[sandboxName].dashView2 = {};
+    setDashCfgField(newSandboxCfg[sandboxName].dashView1, DASH_CFG_VIEW_TYPE, NET_TOPOLOGY_VIEW, null);
+    setDashCfgField(newSandboxCfg[sandboxName].dashView2, DASH_CFG_VIEW_TYPE, VIEW_NAME_NONE, null);
+  
     this.props.changeSandboxCfg(newSandboxCfg);
   }
 

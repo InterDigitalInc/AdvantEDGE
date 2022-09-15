@@ -78,15 +78,19 @@ class DashCfgPane extends Component {
   
   changeViewCfg(view, viewCfg) {
     const sandboxName = this.props.sandbox;
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    if (sandboxCfg && sandboxCfg[sandboxName]) {
+    var newSandboxCfg = updateObject({}, this.props.sandboxCfg);
+    if (newSandboxCfg && newSandboxCfg[sandboxName]) {
       if (view === VIEW_1) {
-        sandboxCfg[sandboxName].dashView1 = viewCfg;
+        newSandboxCfg[sandboxName].dashView1 = viewCfg;
       } else if (view === VIEW_2) {
-        sandboxCfg[sandboxName].dashView2 = viewCfg;
+        newSandboxCfg[sandboxName].dashView2 = viewCfg;
       }
-      this.props.changeSandboxCfg(sandboxCfg);
+      this.props.changeSandboxCfg(newSandboxCfg);
     }
+  }
+
+  changeView(event) {
+    this.props.changeView(event.target.value);
   }
 
   populateDashboardList(dashboardViewsList, dashboardOptions) {
@@ -100,7 +104,6 @@ class DashCfgPane extends Component {
   
   onDashCfgClose(e) {
     e.preventDefault();
-    this.props.changeView('');
     this.props.onClose(e);
   }
 
@@ -151,9 +154,7 @@ class DashCfgPane extends Component {
               fullwidth="true"
               outlined
               options={this.props.viewOptions}
-              onChange={event => {
-                this.props.changeView(event.target.value);
-              }}
+              onChange={this.changeView}
               data-cy={EXEC_VIEW_SELECT}
               value={this.props.currentView}
             />
@@ -165,7 +166,7 @@ class DashCfgPane extends Component {
             viewCfg={currentViewCfg}
             dashboardViewsList={dashboardViewsList}
             changeViewCfg={this.changeViewCfg}
-            onClose={e => this.onDashCfgClose(e)}
+            onClose={this.onDashCfgClose}
             appIds={appIds}
             ueIds={ueIds}
             poaIds={poaIds}
@@ -178,7 +179,7 @@ class DashCfgPane extends Component {
                 <Button
                   outlined
                   style={styles.button}
-                  onClick={e => this.onDashCfgClose(e)}
+                  onClick={this.onDashCfgClose}
                   data-cy={EXEC_BTN_DASHBOARD_BTN_CLOSE}
                 >
                   Close
