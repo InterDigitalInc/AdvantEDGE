@@ -315,7 +315,7 @@ const testScenario string = `
                                                 "type":"UE-APP",
                                                 "isExternal":true,
                                                 "externalConfig":{
-                                                    
+
                                                 },
                                                 "netChar":{
                                                     "throughputDl":1000,
@@ -2894,7 +2894,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to create a store")
 	}
 
-	httpLog, err := metricStore.GetHttpMetric(moduleName, "TX", "", 1)
+	httpLog, err := metricStore.GetHttpMetric(moduleName, "notification", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
@@ -3016,7 +3016,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to create a store")
 	}
 
-	httpLog, err := metricStore.GetHttpMetric(moduleName, "TX", "", 1)
+	httpLog, err := metricStore.GetHttpMetric(moduleName, "notification", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
@@ -3033,7 +3033,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 
 	updateScenario("mobility2")
 
-	httpLog, err = metricStore.GetHttpMetric(moduleName, "TX", "", 1)
+	httpLog, err = metricStore.GetHttpMetric(moduleName, "notification", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
@@ -3049,7 +3049,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 
 	updateScenario("mobility3")
 
-	httpLog, err = metricStore.GetHttpMetric(moduleName, "TX", "", 1)
+	httpLog, err = metricStore.GetHttpMetric(moduleName, "notification", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}

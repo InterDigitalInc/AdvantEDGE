@@ -6389,7 +6389,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 		t.Fatalf("Failed to create a store")
 	}
 
-	httpLog, err := metricStore.GetHttpMetric(moduleName, "TX", "", 1)
+	httpLog, err := metricStore.GetHttpMetric(moduleName, "notification", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
