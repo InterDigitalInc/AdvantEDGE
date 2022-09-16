@@ -596,7 +596,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prepare & send response
+	// Prepare seq metrics list
 	for i := len(valuesArray) - 1; i >= 0; i-- {
 		values := valuesArray[i]
 		var metric SeqMetric
@@ -610,37 +610,46 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 			t := metricTime.Format("15:04:05.000")
 
 			if len(eventMetrics) > 0 {
-				eventMetric := eventMetrics[len(eventMetrics)-1]
-				eventMetricTime, err := time.Parse(time.RFC3339, eventMetric.Time.(string))
-				if err != nil {
-					log.Error("Failed to parse event time with error: ", err.Error())
-					continue
-				}
-				eventSdorg := ""
-				eventMermaid := ""
-				if eventMetricTime.Before(metricTime) {
-					log.Info("metricTime: ", t)
-					log.Info("eventMetricTime: ", eventMetricTime.Format("15:04:05.000"))
-					// Close previous mobility event group if necessary
-					if mobilityEventProcessed {
-						eventSdorg += "end\n"
+				// Insert event metrics in chronological order
+				matchCount := 0
+				for j := len(eventMetrics) - 1; j >= 0; j-- {
+					eventMetric := eventMetrics[j]
+					eventMetricTime, err := time.Parse(time.RFC3339, eventMetric.Time.(string))
+					if err != nil {
+						log.Error("Failed to parse event time with error: ", err.Error())
+						continue
 					}
-					mobilityEventProcessed = true
+					eventSdorg := ""
+					eventMermaid := ""
+					if eventMetricTime.Before(metricTime) {
+						// Close previous mobility event group if necessary
+						if mobilityEventProcessed {
+							eventSdorg += "end\n"
+						}
+						mobilityEventProcessed = true
 
-					// Create group for mobility event
-					eventDescription := eventMetric.Description
-					eventDescription = strings.Replace(eventDescription, "[", "", -1)
-					eventDescription = strings.Replace(eventDescription, "]", "", -1)
-					eventSdorg += "\ngroup Mobility Event: " + eventDescription + "\n"
-					eventMermaid += "note over event: Mobility Event: " + eventDescription + "\n"
-					if params.Fields[0] == met.HttpMermaid {
-						metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
+						// Create group for mobility event
+						eventDescription := eventMetric.Description
+						eventDescription = strings.Replace(eventDescription, "[", "", -1)
+						eventDescription = strings.Replace(eventDescription, "]", "", -1)
+						eventSdorg += "\ngroup Mobility Event: " + eventDescription + "\n"
+						eventMermaid += "note over event:[" + eventMetricTime.Format("15:04:05.000") + "] Mobility Event: " + eventDescription + "\n"
+
+						if params.Fields[0] == met.HttpMermaid {
+							metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
+						}
+						if params.Fields[0] == met.HttpSdorg {
+							metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
+						}
+						matchCount++
+					} else {
+						break
 					}
-					if params.Fields[0] == met.HttpSdorg {
-						metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
-					}
-					// Remove processed metric from list
-					eventMetrics = eventMetrics[:len(eventMetrics)-1]
+				}
+
+				// Remove processed metrics from list
+				if matchCount > 0 {
+					eventMetrics = eventMetrics[:len(eventMetrics)-matchCount]
 				}
 			}
 
@@ -688,6 +697,8 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+	// Send response
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -774,13 +785,12 @@ func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
 	var response DataflowMetrics
 	if params.ResponseType == listOnly || params.ResponseType == "" {
 		response.DataflowMetricList = &DataflowMetricList{
-			Name:    "sequence metrics",
+			Name:    "data flow metrics",
 			Columns: append(params.Fields, met.HttpLogTime),
 		}
 	}
 
-	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
-		met.HttpBody, met.HttpMethod)
+	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint, met.HttpBody, met.HttpMethod)
 	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())

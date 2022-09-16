@@ -59,7 +59,12 @@ import {
   PAGE_HOME_INDEX,
   PAGE_CONFIGURE_INDEX,
   IDC_DIALOG_SIGN_IN,
-  IDC_DIALOG_SESSION_TERMINATED
+  IDC_DIALOG_SESSION_TERMINATED,
+  DASH_SEQ_MAX_MSG_COUNT,
+  MAP_VIEW,
+  SEQ_DIAGRAM_VIEW,
+  DATAFLOW_DIAGRAM_VIEW
+  // DASH_DATAFLOW_MAX_MSG_COUNT
 } from '../meep-constants';
 
 import {
@@ -104,7 +109,8 @@ import {
   execChangeMap,
   execChangeSeqMetrics,
   execChangeSeqParticipants,
-  execChangeDataflowMetrics
+  execChangeDataflowMetrics,
+  execChangeDataflowChart
 } from '../state/exec';
 
 import {
@@ -120,6 +126,7 @@ import {
   getElemByName,
   getElemFieldVal
 } from '../util/elem-utils';
+import { DASH_CFG_VIEW_TYPE, getDashCfgFieldVal } from '../util/dashboard-utils';
   
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
@@ -166,7 +173,7 @@ class MeepContainer extends Component {
     this.seqMetricsQuery = {
       fields: ['mermaid'],
       scope: {
-        limit: 10000
+        limit: DASH_SEQ_MAX_MSG_COUNT
       },
       responseType: 'listonly'
     };
@@ -174,10 +181,10 @@ class MeepContainer extends Component {
     this.resetDataflowMetrics = false;
     this.dataflowMetricsQuery = {
       fields: ['mermaid'],
-      scope: {
-        limit: 10000
-      },
-      responseType: 'listonly'
+      // scope: {
+      //   limit: DASH_DATAFLOW_MAX_MSG_COUNT
+      // },
+      responseType: 'stronly'
     };
   }
 
@@ -220,6 +227,10 @@ class MeepContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.page === PAGE_EXECUTE && this.props.page !== prevProps.page) {
+      this.refreshSeqMetrics = true;
+      this.refreshDataflowMetrics = true;
+    }
     if (this.props.pauseSeq !== prevProps.pauseSeq) {
       this.refreshSeqMetrics = true;
     }
@@ -269,6 +280,7 @@ class MeepContainer extends Component {
     // Initialize refresh variables
     this.refreshSeqMetrics = true;
     this.refreshDataflowMetrics = true;
+    
 
     // Start refresh timer
     this.execPageRefreshIntervalTimer = setInterval(
@@ -279,16 +291,35 @@ class MeepContainer extends Component {
             this.checkScenarioStatus();
             this.refreshPduSessions();
             this.refreshScenario();
-            this.refreshMap();
+            
             // Only update while scenario is running
             if (this.props.execScenarioState === 'DEPLOYED') {
               this.refreshAppInstancesTable();
-              if (!this.props.pauseSeq) {
+
+              // Refresh Map view if enabled
+              if (this.isViewEnabled(MAP_VIEW)) {
+                this.refreshMap();
+              }
+
+              // Refresh Seq diagram view if enabled
+              var isSeqViewEnabled = this.isViewEnabled(SEQ_DIAGRAM_VIEW);
+              if (isSeqViewEnabled && !this.props.pauseSeq) {
+                if (isSeqViewEnabled !== this.isSeqViewEnabled) {
+                  this.refreshSeqMetrics = true;
+                }
                 this.refreshSeq();
               }
-              if (!this.props.pauseDataflow) {
+              this.isSeqViewEnabled = isSeqViewEnabled;
+
+              // Refresh Data flow diagram view if enabled
+              var isDataflowViewEnabled = this.isViewEnabled(DATAFLOW_DIAGRAM_VIEW);
+              if (isDataflowViewEnabled && !this.props.pauseDataflow) {
+                if (isDataflowViewEnabled !== this.isDataflowViewEnabled) {
+                  this.refreshDataflowMetrics = true;
+                }
                 this.refreshDataflow();
               }
+              this.isDataflowViewEnabled = isDataflowViewEnabled;
             }
           }
         }
@@ -355,6 +386,19 @@ class MeepContainer extends Component {
         false
       );
     }
+  }
+
+  isViewEnabled(viewName) {
+    // Get sandbox config
+    var sandboxCfg = (this.props.sandboxCfg) ? this.props.sandboxCfg[this.props.sandbox] : null;
+    if (sandboxCfg) {
+      // Get view configs
+      if (getDashCfgFieldVal(sandboxCfg.dashView1, DASH_CFG_VIEW_TYPE) === viewName ||
+        getDashCfgFieldVal(sandboxCfg.dashView2, DASH_CFG_VIEW_TYPE) === viewName) {
+        return true;
+      }
+    }
+    return false;
   }
 
   checkPlatformStatus() {
@@ -550,8 +594,8 @@ class MeepContainer extends Component {
         });
       } 
 
-      // Update sequence diagram
-      this.updateSeq(updatedTable, scenarioName);
+      // Update diagrams
+      this.updateDiagrams(updatedTable, scenarioName);
     }
   }
 
@@ -744,18 +788,29 @@ class MeepContainer extends Component {
     });
 
     // Update metrics state
-    this.props.changeSeqMetrics(seqMetrics);
+    // Remove old metrics if max message count is reached
+    if (seqMetrics.length > DASH_SEQ_MAX_MSG_COUNT) {
+      this.props.changeSeqMetrics(seqMetrics.slice(seqMetrics.length - DASH_SEQ_MAX_MSG_COUNT));
+    } else {
+      this.props.changeSeqMetrics(seqMetrics);
+    }
   }
 
   // Refresh Sequence Diagram
   refreshSeq() {
     // If polling just started, refresh entire API console list
     if (this.refreshSeqMetrics) {
-      this.seqMetricsQuery.scope.duration = '';
+      this.seqMetricsQuery.scope = {
+        duration: '',
+        limit: DASH_SEQ_MAX_MSG_COUNT
+      };
       this.refreshSeqMetrics = false;
       this.resetSeqMetrics = true;
     } else {
-      this.seqMetricsQuery.scope.duration = '2s';
+      this.seqMetricsQuery.scope = {
+        duration: '2s',
+        limit: DASH_SEQ_MAX_MSG_COUNT
+      };
     }
 
     // Query sequence diagram
@@ -773,55 +828,69 @@ class MeepContainer extends Component {
    */
   postDataflowQueryCb(error, data) {
     if (error !== null) {
-      this.refreshDataflowMetrics = true;
+      // this.refreshDataflowMetrics = true;
       return;
     }
-    var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
+    // var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
     
-    // Nothing to do if no new metrics
-    if (newDataflowMetrics.length === 0) {
-      // Reset metrics if necessary
-      if (this.resetDataflowMetrics) {
-        this.resetDataflowMetrics = false;
-        this.props.changeDataflowMetrics([]);
-      }
-      return;
-    }
+    // // Nothing to do if no new metrics
+    // if (newDataflowMetrics.length === 0) {
+    //   // Reset metrics if necessary
+    //   if (this.resetDataflowMetrics) {
+    //     this.resetDataflowMetrics = false;
+    //     this.props.changeDataflowMetrics([]);
+    //   }
+    //   return;
+    // }
 
-    // Merge new metrics with existing list
-    // Copy previous list if no reset 
-    var dataflowMetrics = [];
-    if (this.resetDataflowMetrics) {
-      this.resetDataflowMetrics = false;
-    } else {
-      dataflowMetrics = deepCopy(this.props.execDataflowMetrics);
-    }
+    // // Merge new metrics with existing list
+    // // Copy previous list if no reset 
+    // var dataflowMetrics = [];
+    // if (this.resetDataflowMetrics) {
+    //   this.resetDataflowMetrics = false;
+    // } else {
+    //   dataflowMetrics = deepCopy(this.props.execDataflowMetrics);
+    // }
 
-    // Get latest metric
-    var lastMetric = (dataflowMetrics.length > 0) ? dataflowMetrics[dataflowMetrics.length - 1] : null;
+    // // Get latest metric
+    // var lastMetric = (dataflowMetrics.length > 0) ? dataflowMetrics[dataflowMetrics.length - 1] : null;
     
-    _.forEach(newDataflowMetrics, newMetric => {
-      // Add metric to list if it is more recent than the last metric
-      // NOTE: assumes timestamps do not overlap due to nanosecond precision
-      if (!lastMetric || newMetric.time > lastMetric.time) {
-        dataflowMetrics.push(newMetric);
-      }
-    });
+    // _.forEach(newDataflowMetrics, newMetric => {
+    //   // Add metric to list if it is more recent than the last metric
+    //   // NOTE: assumes timestamps do not overlap due to nanosecond precision
+    //   if (!lastMetric || newMetric.time > lastMetric.time) {
+    //     dataflowMetrics.push(newMetric);
+    //   }
+    // });
 
-    // Update metrics state
-    this.props.changeDataflowMetrics(dataflowMetrics);
+    // // Update metrics state
+    // // Remove old metrics if max message count is reached
+    // if (dataflowMetrics.length > DASH_DATAFLOW_MAX_MSG_COUNT) {
+    //   this.props.changeDataflowMetrics(dataflowMetrics.slice(dataflowMetrics.length - DASH_DATAFLOW_MAX_MSG_COUNT));
+    // } else {
+    //   this.props.changeDataflowMetrics(dataflowMetrics);
+    // }
+
+    var newDataflowChart = (data) ? data.dataflowMetricString : '';
+    this.props.changeDataflowChart(newDataflowChart);
   }
 
   // Refresh Data Flow Diagram
   refreshDataflow() {
-    // If polling just started, refresh entire API console list
-    if (this.refreshDataflowMetrics) {
-      this.dataflowMetricsQuery.scope.duration = '';
-      this.refreshDataflowMetrics = false;
-      this.resetDataflowMetrics = true;
-    } else {
-      this.dataflowMetricsQuery.scope.duration = '2s';
-    }
+    // // If polling just started, refresh entire API console list
+    // if (this.refreshDataflowMetrics) {
+    //   this.dataflowMetricsQuery.scope = {
+    //     duration: '',
+    //     limit: DASH_DATAFLOW_MAX_MSG_COUNT
+    //   };
+    //   this.refreshDataflowMetrics = false;
+    //   this.resetDataflowMetrics = true;
+    // } else {
+    //   this.dataflowMetricsQuery.scope = {
+    //     duration: '2s',
+    //     limit: DASH_DATAFLOW_MAX_MSG_COUNT
+    //   };
+    // }
 
     // Query sequence diagram
     this.meepMetricsApi.postDataflowQuery(this.dataflowMetricsQuery, (error, data) =>
@@ -864,7 +933,7 @@ class MeepContainer extends Component {
   }
 
   // Update sequence diagram participants
-  updateSeq(table, scenarioName) {
+  updateDiagrams(table, scenarioName) {
     // Refresh participants
     var participants = [];
     var metaSeqParticipants = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_META_DISPLAY_SEQ_PARTICIPANTS);
@@ -1183,7 +1252,8 @@ const mapDispatchToProps = dispatch => {
     changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value)),
     changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
     changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants)),
-    changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics))
+    changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics)),
+    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart))
   };
 };
 

@@ -388,6 +388,10 @@ export const SCENARIO_UPDATE_ACTION_MODIFY = 'MODIFY';
 export const PDU_SESSION_ACTION_ADD = 'ADD';
 export const PDU_SESSION_ACTION_REMOVE = 'REMOVE';
 
+// Dashboard Config
+export const DASH_SEQ_MAX_MSG_COUNT = 500;
+export const DASH_DATAFLOW_MAX_MSG_COUNT = 10000;
+
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [
   {

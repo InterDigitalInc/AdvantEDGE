@@ -18,8 +18,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import autoBind from 'react-autobind';
 import { Grid, GridCell } from '@rmwc/grid';
+import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
-import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import { TextField, TextFieldIcon, TextFieldHelperText } from '@rmwc/textfield';
 import { updateObject } from '@/js/util/object-util';
 
 import IDSelect from '../../components/helper-components/id-select';
@@ -41,6 +42,61 @@ import {
   uiExecChangePauseDataflow
 } from '@/js/state/ui';
 
+import {
+  DASH_CFG_VIEW_TYPE,
+  DASH_CFG_SOURCE_NODE_SELECTED,
+  DASH_CFG_DEST_NODE_SELECTED,
+  DASH_CFG_PARTICIPANTS,
+  DASH_CFG_MAX_MSG_COUNT,
+  getDashCfgFieldVal,
+  setDashCfgField,
+  DASH_CFG_START_TIME
+} from '@/js/util/dashboard-utils';
+
+// COMPONENTS
+const DashCfgTextField = props => {
+  var err = props.viewCfg[props.fieldName] ? props.viewCfg[props.fieldName].err: null;
+
+  return (
+    <>
+      <TextField
+        outlined
+        style={{ width: '100%', marginBottom: 0 }}
+        label={props.label}
+        withLeadingIcon={!props.icon ? null : 
+          <TextFieldIcon
+            tabIndex="0"
+            icon={props.icon}
+            onClick={props.onIconClick}
+          />
+        }
+        type={props.type}
+        onChange={event => {
+          var err = props.validate ? props.validate(event.target.value) : null;
+          var val =
+            event.target.value && props.isNumber && !err
+              ? Number(event.target.value)
+              : event.target.value;
+          props.onUpdate(props.fieldName, val, err);
+        }}
+        invalid={err}
+        value={
+          props.viewCfg[props.fieldName]
+            ? props.viewCfg[props.fieldName].val
+            : ''
+        }
+        disabled={props.disabled}
+        data-cy={props.cydata}
+      />
+      <TextFieldHelperText validationMsg={true}>
+        <span>
+          {props.viewCfg[props.fieldName] ? props.viewCfg[props.fieldName].err : ''}
+        </span>
+      </TextFieldHelperText>
+    </>
+  );
+};
+
 class DashCfgDetailPane extends Component {
   constructor(props) {
     super(props);
@@ -52,58 +108,72 @@ class DashCfgDetailPane extends Component {
     this.props.onClose(e);
   }
 
-  changeViewType(val) {
+  onUpdateDashCfg(name, val, err) {
     var newViewCfg = updateObject({}, this.props.viewCfg);
-    newViewCfg.viewType = val;
+    setDashCfgField(newViewCfg, name, val, err);
     this.props.changeViewCfg(this.props.currentView, newViewCfg);
   }
 
-  changeSourceNodeSelected(val) {
-    var newViewCfg = updateObject({}, this.props.viewCfg);
-    newViewCfg.sourceNodeSelected = val;
-    this.props.changeViewCfg(this.props.currentView, newViewCfg);
+  onUpdateViewType(event) {
+    this.onUpdateDashCfg(DASH_CFG_VIEW_TYPE, event.target.value, null);
   }
-
-  changeDestNodeSelected(val) {
-    var newViewCfg = updateObject({}, this.props.viewCfg);
-    newViewCfg.destNodeSelected = val;
-    this.props.changeViewCfg(this.props.currentView, newViewCfg);
+  onUpdateSourceNodeSelected(event) {
+    this.onUpdateDashCfg(DASH_CFG_SOURCE_NODE_SELECTED, event.target.value, null);
   }
+  onUpdateDestNodeSelected(event) {
+    this.onUpdateDashCfg(DASH_CFG_DEST_NODE_SELECTED, event.target.value, null);
+  }
+  onChangeShowApps(event) {
+    this.props.changeShowApps(event.target.checked);
+  }
+  onChangePauseSeq(event) {
+    this.props.changePauseSeq(event.target.checked);
+  }
+  onChangePauseDataflow(event) {
+    this.props.changePauseDataflow(event.target.checked);
+  }
+  onClickClear() {
+    // Obtain last metric timestamp
+    const metrics = this.props.execSeqMetrics;
+    var lastMetricTime = (metrics && metrics.length > 0) ? metrics[metrics.length-1].time : '';
 
-  changeParticipants(val) {
-    var newViewCfg = updateObject({}, this.props.viewCfg);
-    newViewCfg.participants = val;
-    this.props.changeViewCfg(this.props.currentView, newViewCfg);
+    // Set start time equal to last metric timestamp
+    this.onUpdateDashCfg(DASH_CFG_START_TIME, lastMetricTime, null);
+  }
+  onClickFetchAll() {
+    // Reset start time
+    this.onUpdateDashCfg(DASH_CFG_START_TIME, '', null);
   }
 
   render() {
-    var viewCfg = this.props.viewCfg;
-    var netSrcNodeIds = this.props.appIds;
-    var netDstNodeIds = this.props.appIds;
-    var wirelessSrcNodeIds = this.props.ueIds;
-    var wirelessDstNodeIds = this.props.poaIds;
+    this.viewCfg = this.props.viewCfg;
+    this.netSrcNodeIds = this.props.appIds;
+    this.netDstNodeIds = this.props.appIds;
+    this.wirelessSrcNodeIds = this.props.ueIds;
+    this.wirelessDstNodeIds = this.props.poaIds;
+    this.viewType = getDashCfgFieldVal(this.viewCfg, DASH_CFG_VIEW_TYPE);
+    this.sourceNodeSelected = getDashCfgFieldVal(this.viewCfg, DASH_CFG_SOURCE_NODE_SELECTED);
+    this.destNodeSelected = getDashCfgFieldVal(this.viewCfg, DASH_CFG_DEST_NODE_SELECTED);
 
     return (
       <div>
         <Grid>
-          <GridCell span={12}>
+          <GridCell span={12} style={{marginBottom: 10}}>
             <IDSelect
               label={'View Type'}
               outlined
               options={this.props.dashboardViewsList}
-              onChange={e => {
-                this.changeViewType(e.target.value);
-              }}
-              value={viewCfg.viewType}
+              onChange={this.onUpdateViewType}
+              value={this.viewType}
             />
           </GridCell>
 
-          { viewCfg.viewType === NET_TOPOLOGY_VIEW ?
+          { this.viewType === NET_TOPOLOGY_VIEW ?
             <>
               <GridCell span={6}>
                 <Checkbox
                   checked={this.props.showApps}
-                  onChange={e => this.props.changeShowApps(e.target.checked)}
+                  onChange={this.onChangeShowApps}
                 >
                   Show Apps
                 </Checkbox>
@@ -111,24 +181,48 @@ class DashCfgDetailPane extends Component {
             </> : null
           }
 
-          { viewCfg.viewType === SEQ_DIAGRAM_VIEW ?
+          { this.viewType === SEQ_DIAGRAM_VIEW ?
             <>
               <GridCell span={12}>
-                <TextField
-                  outlined
-                  style={{ width: '100%', marginTop: 10 }}
+                <DashCfgTextField
+                  onUpdate={this.onUpdateDashCfg}
+                  viewCfg={this.viewCfg}
+                  // validate={validateParticipants}
+                  isNumber={false}
                   label={'Participants'}
-                  onChange={e => this.changeParticipants(e.target.value)}
-                  value={viewCfg.participants ? viewCfg.participants : ''}
-                />
-                <TextFieldHelperText validationMsg={true}>
-                  <span>{'comma-separated, ordered list'}</span>
-                </TextFieldHelperText>        
+                  fieldName={DASH_CFG_PARTICIPANTS}
+                />     
+              </GridCell>
+              <GridCell span={12}>
+                <DashCfgTextField
+                  onUpdate={this.onUpdateDashCfg}
+                  viewCfg={this.viewCfg}
+                  // validate={validateParticipants}
+                  isNumber={true}
+                  label={'Max message count'}
+                  fieldName={DASH_CFG_MAX_MSG_COUNT}
+                /> 
+              </GridCell>
+              <GridCell span={12} style={{marginBottom: 10}}>
+                <Button
+                  outlined
+                  onClick={this.onClickClear}
+                >
+                  Clear
+                </Button>
+                <Button
+                  outlined
+                  style={{marginLeft: 10}}
+                  onClick={this.onClickFetchAll}
+                >
+                  Fetch all
+                </Button>
               </GridCell>
               <GridCell span={12}>
                 <Checkbox
+                  // style={{marginTop: 20}}
                   checked={this.props.pauseSeq}
-                  onChange={e => this.props.changePauseSeq(e.target.checked)}
+                  onChange={this.onChangePauseSeq}
                 >
                   Pause
                 </Checkbox>
@@ -136,12 +230,12 @@ class DashCfgDetailPane extends Component {
             </> : null
           }
 
-          { viewCfg.viewType === DATAFLOW_DIAGRAM_VIEW ?
+          { this.viewType === DATAFLOW_DIAGRAM_VIEW ?
             <>
               <GridCell span={12}>
                 <Checkbox
                   checked={this.props.pauseDataflow}
-                  onChange={e => this.props.changePauseDataflow(e.target.checked)}
+                  onChange={this.onChangePauseDataflow}
                 >
                   Pause
                 </Checkbox>
@@ -149,87 +243,75 @@ class DashCfgDetailPane extends Component {
             </> : null
           }
 
-          { viewCfg.viewType === NET_METRICS_PTP_VIEW ?
+          { this.viewType === NET_METRICS_PTP_VIEW ?
             <>
-              <GridCell span={12}>
+              <GridCell span={12} style={{marginBottom: 10}}>
                 <IDSelect
                   label={'Source Node'}
                   outlined
-                  options={netSrcNodeIds}
-                  onChange={e => {
-                    this.changeSourceNodeSelected(e.target.value);
-                  }}
-                  value={netSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
+                  options={this.netSrcNodeIds}
+                  onChange={this.onUpdateSourceNodeSelected}
+                  value={this.netSrcNodeIds.includes(this.sourceNodeSelected) ? this.sourceNodeSelected : 'None'}
                 />
               </GridCell>
-              <GridCell span={12}>
+              <GridCell span={12} style={{marginBottom: 10}}>
                 <IDSelect
                   label={'Destination Node'}
                   outlined
-                  options={netDstNodeIds}
-                  onChange={e => {
-                    this.changeDestNodeSelected(e.target.value);
-                  }}
-                  value={netDstNodeIds.includes(viewCfg.destNodeSelected) ? viewCfg.destNodeSelected : 'None'}
+                  options={this.netDstNodeIds}
+                  onChange={this.onUpdateDestNodeSelected}
+                  value={this.netDstNodeIds.includes(this.destNodeSelected) ? this.destNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
           }
 
-          { viewCfg.viewType === NET_METRICS_AGG_VIEW ?
+          { this.viewType === NET_METRICS_AGG_VIEW ?
             <>
-              <GridCell span={12}>
+              <GridCell span={12} style={{marginBottom: 10}}>
                 <IDSelect
                   label={'Source Node'}
                   outlined
-                  options={netSrcNodeIds}
-                  onChange={e => {
-                    this.changeSourceNodeSelected(e.target.value);
-                  }}
-                  value={netSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
+                  options={this.netSrcNodeIds}
+                  onChange={this.onUpdateSourceNodeSelected}
+                  value={this.netSrcNodeIds.includes(this.sourceNodeSelected) ? this.sourceNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
           }
 
-          { viewCfg.viewType === WIRELESS_METRICS_PTP_VIEW ?
+          { this.viewType === WIRELESS_METRICS_PTP_VIEW ?
             <>
-              <GridCell span={12}>
+              <GridCell span={12} style={{marginBottom: 10}}>
                 <IDSelect
                   label={'UE'}
                   outlined
-                  options={wirelessSrcNodeIds}
-                  onChange={e => {
-                    this.changeSourceNodeSelected(e.target.value);
-                  }}
-                  value={wirelessSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
+                  options={this.wirelessSrcNodeIds}
+                  onChange={this.onUpdateSourceNodeSelected}
+                  value={this.wirelessSrcNodeIds.includes(this.sourceNodeSelected) ? this.sourceNodeSelected : 'None'}
                 />
               </GridCell>
-              <GridCell span={12}>
+              <GridCell span={12} style={{marginBottom: 10}}>
                 <IDSelect
                   label={'POA'}
                   outlined
-                  options={wirelessDstNodeIds}
-                  onChange={e => {
-                    this.changeDestNodeSelected(e.target.value);
-                  }}
-                  value={wirelessDstNodeIds.includes(viewCfg.destNodeSelected) ? viewCfg.destNodeSelected : 'None'}
+                  options={this.wirelessDstNodeIds}
+                  onChange={this.onUpdateDestNodeSelected}
+                  value={this.wirelessDstNodeIds.includes(this.destNodeSelected) ? this.destNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
           }
 
-          { viewCfg.viewType === WIRELESS_METRICS_AGG_VIEW ?
+          { this.viewType === WIRELESS_METRICS_AGG_VIEW ?
             <>
-              <GridCell span={12}>
+              <GridCell span={12} style={{marginBottom: 10}}>
                 <IDSelect
                   label={'UE'}
                   outlined
-                  options={wirelessSrcNodeIds}
-                  onChange={e => {
-                    this.changeSourceNodeSelected(e.target.value);
-                  }}
-                  value={wirelessSrcNodeIds.includes(viewCfg.sourceNodeSelected) ? viewCfg.sourceNodeSelected : 'None'}
+                  options={this.wirelessSrcNodeIds}
+                  onChange={this.onUpdateSourceNodeSelected}
+                  value={this.wirelessSrcNodeIds.includes(this.sourceNodeSelected) ? this.sourceNodeSelected : 'None'}
                 />
               </GridCell>
             </> : null
@@ -243,6 +325,7 @@ class DashCfgDetailPane extends Component {
 
 const mapStateToProps = state => {
   return {
+    execSeqMetrics: state.exec.seq.metrics,
     showApps: state.ui.execShowApps,
     pauseSeq: state.ui.execPauseSeq,
     pauseDataflow: state.ui.execPauseDataflow

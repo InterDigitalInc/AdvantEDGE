@@ -39,6 +39,16 @@ import {
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
+import {
+  DASH_CFG_DEST_NODE_SELECTED,
+  DASH_CFG_MAX_MSG_COUNT,
+  DASH_CFG_PARTICIPANTS,
+  DASH_CFG_SOURCE_NODE_SELECTED,
+  DASH_CFG_START_TIME,
+  DASH_CFG_VIEW_TYPE,
+  getDashCfgFieldVal
+} from '@/js/util/dashboard-utils';
+
 const styles = {
   button: {
     marginRight: 10
@@ -74,8 +84,10 @@ const ViewForName = ({
   dashboardOptions
 }) => {
 
+  var viewType = getDashCfgFieldVal(viewCfg, DASH_CFG_VIEW_TYPE);
+
   // Handle Map view
-  if (viewCfg.viewType === MAP_VIEW) {
+  if (viewType === MAP_VIEW) {
     return (
       <div style={styles.dashboard}>
         <IDCMap
@@ -87,7 +99,7 @@ const ViewForName = ({
   }
 
   // Handle Network Topology view
-  if (viewCfg.viewType === NET_TOPOLOGY_VIEW) {
+  if (viewType === NET_TOPOLOGY_VIEW) {
     return (
       <div style={styles.dashboard}>
         <IDCVis
@@ -101,18 +113,20 @@ const ViewForName = ({
   }
 
   // Handle Sequence Diagram view
-  if (viewCfg.viewType === SEQ_DIAGRAM_VIEW) {
+  if (viewType === SEQ_DIAGRAM_VIEW) {
     return (
       <div style={styles.dashboard}>
         <IDCSeq
-          participants={viewCfg.participants}
+          participants={getDashCfgFieldVal(viewCfg, DASH_CFG_PARTICIPANTS)}
+          maxMsgCount={getDashCfgFieldVal(viewCfg, DASH_CFG_MAX_MSG_COUNT)}
+          startTime={getDashCfgFieldVal(viewCfg, DASH_CFG_START_TIME)}
         />
       </div>
     );
   }
 
   // Handle Sequence Diagram view
-  if (viewCfg.viewType === DATAFLOW_DIAGRAM_VIEW) {
+  if (viewType === DATAFLOW_DIAGRAM_VIEW) {
     return (
       <div style={styles.dashboard}>
         <IDCDataflow/>
@@ -121,9 +135,9 @@ const ViewForName = ({
   }
 
   // Get URL from Monitoring page dashboard options
-  var selectedUrl = getUrl(viewCfg.viewType, DEFAULT_DASHBOARD_OPTIONS);
+  var selectedUrl = getUrl(viewType, DEFAULT_DASHBOARD_OPTIONS);
   if (selectedUrl === '') {
-    selectedUrl = getUrl(viewCfg.viewType, dashboardOptions);
+    selectedUrl = getUrl(viewType, dashboardOptions);
   }
 
   // Add variables if requested
@@ -137,8 +151,8 @@ const ViewForName = ({
 
       var url = new URL(selectedUrl);
       url.searchParams.append('var-database', scenario);
-      url.searchParams.append('var-src', viewCfg.sourceNodeSelected);
-      url.searchParams.append('var-dest', viewCfg.destNodeSelected);
+      url.searchParams.append('var-src', getDashCfgFieldVal(viewCfg, DASH_CFG_SOURCE_NODE_SELECTED));
+      url.searchParams.append('var-dest', getDashCfgFieldVal(viewCfg, DASH_CFG_DEST_NODE_SELECTED));
       selectedUrl = url.href + '&kiosk';
     }
 
@@ -201,8 +215,8 @@ class DashboardContainer extends Component {
 
     const view1Cfg = this.getViewCfg(VIEW_1);
     const view2Cfg = this.getViewCfg(VIEW_2);
-    const view1Present = (view1Cfg && view1Cfg.viewType !== VIEW_NAME_NONE);
-    const view2Present = (view2Cfg && view2Cfg.viewType !== VIEW_NAME_NONE);
+    const view1Present = (getDashCfgFieldVal(view1Cfg, DASH_CFG_VIEW_TYPE) !== VIEW_NAME_NONE);
+    const view2Present = (getDashCfgFieldVal(view2Cfg, DASH_CFG_VIEW_TYPE) !== VIEW_NAME_NONE);
 
     let span1 = 12;
     let span2 = 12;
