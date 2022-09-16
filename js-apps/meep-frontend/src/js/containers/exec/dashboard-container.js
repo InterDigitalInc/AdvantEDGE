@@ -44,6 +44,7 @@ import {
   DASH_CFG_MAX_MSG_COUNT,
   DASH_CFG_PARTICIPANTS,
   DASH_CFG_SOURCE_NODE_SELECTED,
+  DASH_CFG_START_TIME,
   DASH_CFG_VIEW_TYPE,
   getDashCfgFieldVal
 } from '@/js/util/dashboard-utils';
@@ -118,6 +119,7 @@ const ViewForName = ({
         <IDCSeq
           participants={getDashCfgFieldVal(viewCfg, DASH_CFG_PARTICIPANTS)}
           maxMsgCount={getDashCfgFieldVal(viewCfg, DASH_CFG_MAX_MSG_COUNT)}
+          startTime={getDashCfgFieldVal(viewCfg, DASH_CFG_START_TIME)}
         />
       </div>
     );

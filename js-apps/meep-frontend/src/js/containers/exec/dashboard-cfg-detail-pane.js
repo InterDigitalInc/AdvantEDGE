@@ -49,7 +49,8 @@ import {
   DASH_CFG_PARTICIPANTS,
   DASH_CFG_MAX_MSG_COUNT,
   getDashCfgFieldVal,
-  setDashCfgField
+  setDashCfgField,
+  DASH_CFG_START_TIME
 } from '@/js/util/dashboard-utils';
 
 // COMPONENTS
@@ -107,6 +108,12 @@ class DashCfgDetailPane extends Component {
     this.props.onClose(e);
   }
 
+  onUpdateDashCfg(name, val, err) {
+    var newViewCfg = updateObject({}, this.props.viewCfg);
+    setDashCfgField(newViewCfg, name, val, err);
+    this.props.changeViewCfg(this.props.currentView, newViewCfg);
+  }
+
   onUpdateViewType(event) {
     this.onUpdateDashCfg(DASH_CFG_VIEW_TYPE, event.target.value, null);
   }
@@ -116,12 +123,6 @@ class DashCfgDetailPane extends Component {
   onUpdateDestNodeSelected(event) {
     this.onUpdateDashCfg(DASH_CFG_DEST_NODE_SELECTED, event.target.value, null);
   }
-  onUpdateDashCfg(name, val, err) {
-    var newViewCfg = updateObject({}, this.props.viewCfg);
-    setDashCfgField(newViewCfg, name, val, err);
-    this.props.changeViewCfg(this.props.currentView, newViewCfg);
-  }
-
   onChangeShowApps(event) {
     this.props.changeShowApps(event.target.checked);
   }
@@ -130,6 +131,18 @@ class DashCfgDetailPane extends Component {
   }
   onChangePauseDataflow(event) {
     this.props.changePauseDataflow(event.target.checked);
+  }
+  onClickClear() {
+    // Obtain last metric timestamp
+    const metrics = this.props.execSeqMetrics;
+    var lastMetricTime = (metrics && metrics.length > 0) ? metrics[metrics.length-1].time : '';
+
+    // Set start time equal to last metric timestamp
+    this.onUpdateDashCfg(DASH_CFG_START_TIME, lastMetricTime, null);
+  }
+  onClickFetchAll() {
+    // Reset start time
+    this.onUpdateDashCfg(DASH_CFG_START_TIME, '', null);
   }
 
   render() {
@@ -193,14 +206,14 @@ class DashCfgDetailPane extends Component {
               <GridCell span={12} style={{marginBottom: 10}}>
                 <Button
                   outlined
-                  // onClick={}
+                  onClick={this.onClickClear}
                 >
                   Clear
                 </Button>
                 <Button
                   outlined
                   style={{marginLeft: 10}}
-                  // onClick={}
+                  onClick={this.onClickFetchAll}
                 >
                   Fetch all
                 </Button>
@@ -312,6 +325,7 @@ class DashCfgDetailPane extends Component {
 
 const mapStateToProps = state => {
   return {
+    execSeqMetrics: state.exec.seq.metrics,
     showApps: state.ui.execShowApps,
     pauseSeq: state.ui.execPauseSeq,
     pauseDataflow: state.ui.execPauseDataflow

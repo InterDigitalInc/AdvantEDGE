@@ -20,6 +20,10 @@ import React, { Component, createRef } from 'react';
 import mermaid from 'mermaid';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
+import {
+  DASH_SEQ_MAX_MSG_COUNT
+} from '../meep-constants';
+
 class IDCSeq extends Component {
   constructor(props) {
     super(props);
@@ -47,13 +51,8 @@ class IDCSeq extends Component {
   formatSequenceChart() {
     var seqChart = '';
 
-    // Return default diagram if no metrics available yet
-    if (this.props.execSeqMetrics.length === 0) {
-      // Default diagram
-      seqChart = 'flowchart LR\nid1(Sequence diagram: waiting for metrics...)';
-    } else {
-      seqChart = 'sequenceDiagram\n';
-
+    // Format sequence diagram
+    if (this.props.execSeqMetrics.length > 0) {
       // Add dashboard-configured participants 
       if (this.props.participants) {
         var dashParticipants = _.split(this.props.participants, ',');
@@ -70,17 +69,26 @@ class IDCSeq extends Component {
       });
 
       // Add metrics up to maximum allowed count
-      var maxMsgCount = (this.props.maxMsgCount > 0) ? this.props.maxMsgCount : 10000;
+      var maxMsgCount = this.props.maxMsgCount;
+      var msgCount = (maxMsgCount > 0 && maxMsgCount < DASH_SEQ_MAX_MSG_COUNT) ? maxMsgCount : DASH_SEQ_MAX_MSG_COUNT;
       var execSeqMetrics = this.props.execSeqMetrics;
-      if (execSeqMetrics.length > maxMsgCount) {
-        execSeqMetrics = this.props.execSeqMetrics.slice(execSeqMetrics.length - maxMsgCount);
+      if (execSeqMetrics.length > msgCount) {
+        execSeqMetrics = this.props.execSeqMetrics.slice(execSeqMetrics.length - msgCount);
       }
       _.forEach(execSeqMetrics, metric => {
-        seqChart += (metric.mermaid + '\n');
+        // Add metric if time is after start time
+        if (!this.props.startTime || metric.time > this.props.startTime) {
+          seqChart += (metric.mermaid + '\n');
+        }
       });
     }
 
-    this.mermaidChart = seqChart;
+    // Return default diagram if no metrics available yet
+    if (!seqChart) {
+      this.mermaidChart = 'flowchart LR\nid1(Sequence diagram: waiting for metrics...)';
+    } else {
+      this.mermaidChart = 'sequenceDiagram\n' + seqChart;
+    }
   }
 
   render() {

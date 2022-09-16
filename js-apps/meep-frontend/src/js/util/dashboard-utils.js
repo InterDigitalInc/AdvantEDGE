@@ -20,6 +20,8 @@ export const DASH_CFG_SOURCE_NODE_SELECTED = 'sourceNodeSelected';
 export const DASH_CFG_DEST_NODE_SELECTED = 'destNodeSelected';
 export const DASH_CFG_PARTICIPANTS = 'participants';
 export const DASH_CFG_MAX_MSG_COUNT = 'maxMsgCount';
+export const DASH_CFG_START_TIME = 'startTime';
+
 
 export const getDashCfgFieldVal = (cfg, field) => {
   return (cfg && cfg[field]) ? cfg[field].val : null;
