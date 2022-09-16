@@ -97,6 +97,8 @@ definitions:
         $ref: '#/definitions/NetworkCharacteristics'
       connectivity:
         $ref: '#/definitions/ConnectivityConfig'
+      d2d:
+        $ref: '#/definitions/D2dConfig'
       interDomainLatency:
         type: integer
         description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
@@ -126,6 +128,16 @@ definitions:
           $ref: '#/definitions/Domain'
     description: Network deployment object
     example: {}
+  D2dConfig:
+    type: object
+    properties:
+      d2dMinDistance:
+        type: number
+        description: Minimum distance for D2D. Default distance is 100m
+      disableD2dViaNetwork:
+        type: boolean
+        description: Enable-Disable D2D via network. Default value is false
+    description: 'D2D config'
   Domain:
     type: object
     properties:
@@ -480,7 +492,7 @@ definitions:
         description: Latency variation in ms
       latencyDistribution:
         type: string
-        description: Latency distribution. Can only be set in the Scenario Deployment network characteristics, ignored otherwise. Latency distribution is set for the whole network and applied to every end-to-end traffic flows. Default value is 'Normal' distribution. 
+        description: Latency distribution. Can only be set in the Scenario Deployment network characteristics, ignored otherwise. Latency distribution is set for the whole network and applied to every end-to-end traffic flows. Default value is 'Normal' distribution.
         enum:
           - Normal
           - Pareto

@@ -28,6 +28,7 @@ package client
 type Deployment struct {
 	NetChar      *NetworkCharacteristics `json:"netChar,omitempty"`
 	Connectivity *ConnectivityConfig     `json:"connectivity,omitempty"`
+	D2d          *D2dConfig              `json:"d2d,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	InterDomainLatency int32 `json:"interDomainLatency,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation

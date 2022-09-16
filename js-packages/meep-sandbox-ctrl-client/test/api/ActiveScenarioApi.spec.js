@@ -186,6 +186,11 @@
               expect(data.deployment.connectivity).to.be.a(AdvantEdgeSandboxControllerRestApi.ConnectivityConfig);
                     expect(data.deployment.connectivity.model).to.be.a('string');
                 expect(data.deployment.connectivity.model).to.be("OPEN");
+              expect(data.deployment.d2d).to.be.a(AdvantEdgeSandboxControllerRestApi.D2dConfig);
+                    expect(data.deployment.d2d.d2dMinDistance).to.be.a('number');
+                expect(data.deployment.d2d.d2dMinDistance).to.be();
+                expect(data.deployment.d2d.disableD2dViaNetwork).to.be.a('boolean');
+                expect(data.deployment.d2d.disableD2dViaNetwork).to.be(false);
               expect(data.deployment.interDomainLatency).to.be.a('number');
               expect(data.deployment.interDomainLatency).to.be(0);
               expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
