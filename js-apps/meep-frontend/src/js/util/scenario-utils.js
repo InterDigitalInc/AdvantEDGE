@@ -56,6 +56,8 @@ import {
   FIELD_CHART_GROUP,
   FIELD_CONNECTED,
   FIELD_CONNECTIVITY_MODEL,
+  FIELD_D2D_RADIUS,
+  FIELD_D2D_DISABLED,
   FIELD_DN_NAME,
   FIELD_DN_LADN,
   FIELD_DN_ECSP,
@@ -175,6 +177,8 @@ import {
   CLOUD_APP_TYPE_STR,
 
   DEFAULT_CONNECTIVITY_MODEL,
+  DEFAULT_D2D_RADIUS,
+  DEFAULT_D2D_DISABLED,
 
   // Logical Scenario types
   TYPE_SCENARIO,
@@ -514,6 +518,11 @@ export function updateElementInScenario(scenario, element) {
       scenario.deployment.connectivity = {};
     }
     scenario.deployment.connectivity.model = getElemFieldVal(element, FIELD_CONNECTIVITY_MODEL);
+    if (!scenario.deployment.d2d) {
+      scenario.deployment.d2d = {};
+    }
+    scenario.deployment.d2d.d2dMaxDistance = getElemFieldVal(element, FIELD_D2D_RADIUS);
+    scenario.deployment.d2d.disableD2dViaNetwork = getElemFieldVal(element, FIELD_D2D_DISABLED);
     return;
   }
 
@@ -900,6 +909,10 @@ export function createNewScenario(name) {
       },
       connectivity: {
         model: DEFAULT_CONNECTIVITY_MODEL
+      },
+      d2d: {
+        d2dMaxDistance: DEFAULT_D2D_RADIUS,
+        disableD2dViaNetwork: DEFAULT_D2D_DISABLED
       },
       domains: name === 'None' ? [] : [createDefaultDomain()]
     }
@@ -1383,6 +1396,10 @@ export function getElementFromScenario(scenario, elementId) {
     }
     if (scenario.deployment.connectivity) {
       setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, scenario.deployment.connectivity.model || DEFAULT_CONNECTIVITY_MODEL);
+    }
+    if (scenario.deployment.d2d) {
+      setElemFieldVal(elem, FIELD_D2D_RADIUS, scenario.deployment.d2d.d2dMaxDistance);
+      setElemFieldVal(elem, FIELD_D2D_DISABLED, scenario.deployment.d2d.disableD2dViaNetwork || DEFAULT_D2D_DISABLED);
     }
     return elem;
   }
@@ -1892,7 +1909,7 @@ export function addPlNode(pl, parent, nodes, edges, pduSessions) {
   };
 
   var edgeTooltip = null;
-  
+
   var e = {
     from: parent.id,
     to: pl.id
@@ -1919,7 +1936,7 @@ export function addPlNode(pl, parent, nodes, edges, pduSessions) {
 
     latency = 0;
     n['level'] = 4;
-    
+
     if (pl.isExternal) {
       n['group'] = 'pLocExtFog';
     } else {
@@ -1967,7 +1984,7 @@ export function addPlNode(pl, parent, nodes, edges, pduSessions) {
     addNetChar(edgeTooltip, parent.netChar);
 
     n['level'] = 4;
-     
+
     if (pl.isExternal) {
       const image = getScenarioSpecificImage(
         n.label + '-ext',
@@ -2006,7 +2023,7 @@ export function addPlNode(pl, parent, nodes, edges, pduSessions) {
     addConnectionState(edgeTooltip, pl.connected);
     addNetChar(edgeTooltip, parent.deployment.netChar);
     latency = (parent.deployment.netChar) ? parent.deployment.netChar.latency || 0 : 0;
-    
+
     n['level'] = -1;
 
     if (pl.isExternal) {

@@ -24,22 +24,10 @@
 
 package client
 
-// Network deployment object
-type Deployment struct {
-	NetChar      *NetworkCharacteristics `json:"netChar,omitempty"`
-	Connectivity *ConnectivityConfig     `json:"connectivity,omitempty"`
-	D2d          *D2dConfig              `json:"d2d,omitempty"`
-	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
-	InterDomainLatency int32 `json:"interDomainLatency,omitempty"`
-	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
-	InterDomainLatencyVariation int32 `json:"interDomainLatencyVariation,omitempty"`
-	// **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
-	InterDomainThroughput int32 `json:"interDomainThroughput,omitempty"`
-	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
-	InterDomainPacketLoss float64 `json:"interDomainPacketLoss,omitempty"`
-	// Key/Value Pair Map (string, string)
-	Meta map[string]string `json:"meta,omitempty"`
-	// Key/Value Pair Map (string, string)
-	UserMeta map[string]string `json:"userMeta,omitempty"`
-	Domains  []Domain          `json:"domains,omitempty"`
+// D2D config
+type D2dConfig struct {
+	// Maximum distance for D2D. Default distance is 100m
+	D2dMaxDistance float32 `json:"d2dMaxDistance,omitempty"`
+	// Enable-Disable D2D via network. Default value is false
+	DisableD2dViaNetwork bool `json:"disableD2dViaNetwork,omitempty"`
 }
