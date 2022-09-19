@@ -504,11 +504,11 @@ func validatePoaLoads(poaLoads *PoaLoads, poaName string, category string, zeroT
 }
 
 func validatePredictQosPerTrafficLoad(rsrp int32, rsrq int32, expectedRsrp int32, expectedRsrq int32) bool {
-	if (rsrp != expectedRsrp) {
+	if rsrp != expectedRsrp {
 		fmt.Println("rsrp != expectedRsrp")
 		return false
 	}
-	if (rsrq != expectedRsrq) {
+	if rsrq != expectedRsrq {
 		fmt.Println("rsrq != expectedRsrq")
 		return false
 	}
@@ -520,15 +520,15 @@ func validateGridMap(gridMap *GridMapTable, area string, category string, grid s
 		fmt.Println("gridMap == nil")
 		return false
 	}
-	if (gridMap.area != area) {
+	if gridMap.area != area {
 		fmt.Println("gridMap.area != area")
 		return false
 	}
-	if (gridMap.category != category) {
+	if gridMap.category != category {
 		fmt.Println("gridMap.category != category")
 		return false
 	}
-	if (gridMap.grid != grid) {
+	if gridMap.grid != grid {
 		fmt.Println("gridMap.grid != grid")
 		return false
 	}

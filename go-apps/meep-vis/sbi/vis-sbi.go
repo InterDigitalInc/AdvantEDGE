@@ -254,6 +254,7 @@ func processActiveScenarioTerminate() {
 
 	// Flush all Traffic Manager tables
 	if sbi.trafficMgr != nil {
+		_ = sbi.trafficMgr.DeleteAllPoaLoad()
 		_ = sbi.trafficMgr.DeleteTables()
 	}
 
@@ -290,14 +291,6 @@ func processActiveScenarioUpdate() {
 				return
 			}
 			log.Info("Populated VIS DB grid map table")
-
-			// Populate VIS DB Categories Table
-			err = sbi.trafficMgr.PopulateCategoryTable()
-			if err != nil {
-				log.Error("Failed to populate categories table: ", err)
-				return
-			}
-			log.Info("Populated VIS DB categories table")
 
 			// Populate VIS DB Traffic Load Table
 			err = populatePoaTable()
