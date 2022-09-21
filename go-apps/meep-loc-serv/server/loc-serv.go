@@ -1286,7 +1286,7 @@ func sendZonalPresenceNotification(notifyUrl string, notification InlineZonalPre
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogNotification(notifyUrl, "POST", string(jsonNotif), "", "", resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifZonalPresence, notifyUrl, nil, duration)
@@ -1306,7 +1306,7 @@ func sendStatusNotification(notifyUrl string, notification InlineZoneStatusNotif
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogNotification(notifyUrl, "POST", string(jsonNotif), "", "", resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, nil, duration)
@@ -1326,7 +1326,7 @@ func sendSubscriptionNotification(notifyUrl string, notification InlineSubscript
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogNotification(notifyUrl, "POST", string(jsonNotif), "", "", resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifSubscription, notifyUrl, nil, duration)
