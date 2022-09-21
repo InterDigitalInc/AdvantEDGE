@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.8.1
+version: 1.8.2
 repo:
   name: AdvantEDGE
 
@@ -1156,4 +1156,3 @@ repo:
         src: js-packages/meep-service-mgmt-client
         # supports linting
         lint: false
-

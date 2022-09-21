@@ -49,7 +49,9 @@ import {
   DEFAULT_THROUGHPUT_DL_APP,
   DEFAULT_THROUGHPUT_UL_APP,
   DEFAULT_PACKET_LOSS_APP,
-  DEFAULT_CONNECTIVITY_MODEL
+  DEFAULT_CONNECTIVITY_MODEL,
+  DEFAULT_D2D_RADIUS,
+  DEFAULT_D2D_DISABLED
 } from '../meep-constants';
 
 // Network Element Fields
@@ -92,6 +94,8 @@ export const FIELD_CHART_VAL = 'userChartAlternateValues';
 export const FIELD_CHART_GROUP = 'userChartGroup';
 export const FIELD_CONNECTED = 'connected';
 export const FIELD_CONNECTIVITY_MODEL = 'model';
+export const FIELD_D2D_RADIUS = 'd2dRadius';
+export const FIELD_D2D_DISABLED = 'd2dDisabled';
 export const FIELD_DN_NAME = 'dnn';
 export const FIELD_DN_LADN = 'ladn';
 export const FIELD_DN_ECSP = 'ecsp';
@@ -130,6 +134,7 @@ export const FIELD_APP_THROUGHPUT_UL = 'appThroughput_Ul';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
 export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
+
 
 export const getElemByName = (entries, name) => {
   return (entries && entries[name]) ? entries[name] : null;
@@ -212,6 +217,8 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CHART_GROUP, '');
   setElemFieldVal(elem, FIELD_CONNECTED, true);
   setElemFieldVal(elem, FIELD_CONNECTIVITY_MODEL, DEFAULT_CONNECTIVITY_MODEL);
+  setElemFieldVal(elem, FIELD_D2D_RADIUS, DEFAULT_D2D_RADIUS);
+  setElemFieldVal(elem, FIELD_D2D_DISABLED, DEFAULT_D2D_DISABLED);
   setElemFieldVal(elem, FIELD_DN_NAME, '');
   setElemFieldVal(elem, FIELD_DN_LADN, false);
   setElemFieldVal(elem, FIELD_DN_ECSP, '');
