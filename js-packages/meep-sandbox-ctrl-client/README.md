@@ -159,6 +159,7 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeSandboxControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.ConnectivityConfig](docs/ConnectivityConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.CpuConfig](docs/CpuConfig.md)
+ - [AdvantEdgeSandboxControllerRestApi.D2dConfig](docs/D2dConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.DNConfig](docs/DNConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgeSandboxControllerRestApi.Domain](docs/Domain.md)

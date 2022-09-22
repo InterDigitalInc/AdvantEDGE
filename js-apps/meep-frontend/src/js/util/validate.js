@@ -35,6 +35,9 @@ export const GPU_COUNT_MIN = 1;
 export const GPU_COUNT_MAX = 4;
 export const CONNECTIVITY_MODELS = [CONNECTIVITY_MODEL_OPEN, CONNECTIVITY_MODEL_PDU];
 export const EOP_MODES = [GEO_EOP_MODE_LOOP, GEO_EOP_MODE_REVERSE];
+export const D2D_RADIUS_MIN = 1;
+export const D2D_RADIUS_MAX = 10000;
+
 
 export const validateName = val => {
   if (val) {
@@ -133,6 +136,21 @@ export const validatePositiveInt = val => {
     return intError;
   }
   return val >= 0 ? null : 'Must be a positive integer';
+};
+
+export const validateD2DRadius = val => {
+  const intError = validateInt(val);
+  if (intError) {
+    return intError;
+  }
+  if (val >= 0) {
+    const p = Number(val);
+    if (p !== '' && (p < D2D_RADIUS_MIN || p > D2D_RADIUS_MAX)) {
+      return 'Out of range(' + D2D_RADIUS_MIN + '-' + D2D_RADIUS_MAX + ')';
+    }
+  }else {
+    return 'Must be a positive integer';
+  }
 };
 
 export const validatePath = val => {
