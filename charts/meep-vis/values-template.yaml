@@ -30,6 +30,7 @@ image:
     {{- else if eq .AppEnablement "global" }}
     MEEP_APP_ENABLEMENT: meep-app-enablement
     {{- end }}
+    MEEP_PREDICT_MODEL_SUPPORTED: ""
     {{- range .Env}}
     {{.}}
     {{- end}}

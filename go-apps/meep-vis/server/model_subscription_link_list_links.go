@@ -27,5 +27,5 @@ package server
 type SubscriptionLinkListLinks struct {
 	Self *LinkType `json:"self"`
 
-	Subscriptions *[]interface{} `json:"subscriptions,omitempty"`
+	Subscriptions []SubscriptionLinkListLinksSubscriptions `json:"subscriptions,omitempty"`
 }

@@ -24,7 +24,7 @@
 package server
 
 type PredictedQosRoutesRouteInfo struct {
-	Location *LocationInfo `json:"location"`
+	Location *LocationInfo `json:"location,omitempty"`
 	// Reference Signal Received Power as defined in ETSI TS 136 214 [i.13]. Shall only be included in the response.
 	Rsrp int32 `json:"rsrp,omitempty"`
 	// Reference Signal Received Quality as defined in ETSI TS 136 214 [i.13]. Shall only be included in the response.

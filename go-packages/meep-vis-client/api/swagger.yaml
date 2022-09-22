@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
   title: AdvantEDGE V2X Information Service REST API
-  description: V2X Information Service is AdvantEDGE's implementation of [ETSI MEC
-    ISG MEC030 V2XI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/030/02.02.01_60/gs_MEC030v020201p.pdf)
-    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-    <p>**Micro-service**<br>[meep-vis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-vis)
-    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports
-    a selected subset of RNI API endpoints (see below) and a subset of subscription
-    types.
+  description: "V2X Information Service is AdvantEDGE's implementation of [ETSI MEC\
+    \ ISG MEC030 V2XI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/030/02.02.01_60/gs_MEC030v020201p.pdf)\
+    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-vis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-vis)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about radio conditions in the network <p>**Note**<br>AdvantEDGE\
+    \ supports a selected subset of RNI API endpoints (see below) and a subset of\
+    \ subscription types."
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -17,7 +17,7 @@ info:
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 2.2.1
 externalDocs:
-  description: ETSI GS MEC 030 V2X Information Service API, v2.2.1
+  description: "ETSI GS MEC 030 V2X Information Service API, v2.2.1"
   url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/030/02.02.01_60/gs_mec030v020201p.pdf
 servers:
 - url: https://localhost/sandboxname/vis/v2
@@ -52,41 +52,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/UuUnicastProvisioningInfo'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -116,41 +116,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/UuMbmsProvisioningInfo'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -181,41 +181,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pc5ProvisioningInfo'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -244,28 +244,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/PredictedQos'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
@@ -287,41 +287,41 @@ paths:
         "204":
           description: No Content
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -336,11 +336,11 @@ paths:
       parameters:
       - name: subscription_type
         in: query
-        description: 'Query parameter to filter on a specific subscription type. Permitted
-          values:  prov_chg_uu_uni: provisioning information change for V2X communication
-          over Uuunicast prov_chg_uu_mbms: provisioning information change for V2X
-          communication over Uu MBMS prov_chg_uu_pc5: provisioning information change
-          for V2X communication over PC5. v2x_msg: V2X interoperability message'
+        description: "Query parameter to filter on a specific subscription type. Permitted\
+          \ values:  prov_chg_uu_uni: provisioning information change for V2X communication\
+          \ over Uuunicast prov_chg_uu_mbms: provisioning information change for V2X\
+          \ communication over Uu MBMS prov_chg_uu_pc5: provisioning information change\
+          \ for V2X communication over PC5. v2x_msg: V2X interoperability message"
         required: false
         style: form
         explode: true
@@ -355,41 +355,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionLinkList'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -404,71 +404,72 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body'
+              $ref: '#/components/schemas/subscriptions_body'
         required: true
       responses:
         "201":
-          description: In the returned NotificationSubscription structure, the created
-            subscription is described using the appropriate data type.
+          description: "In the returned NotificationSubscription structure, the created\
+            \ subscription is described using the appropriate data type."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body'
+                $ref: '#/components/schemas/subscriptions_body'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "415":
-          description: 'Unsupported Media Type :  used to indicate that the server
-            or the client does not support the content type of the entity body.'
+          description: "Unsupported Media Type :  used to indicate that the server\
+            \ or the client does not support the content type of the entity body."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -504,8 +505,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Refers to created subscription, where the VIS API allocates a
-          unique resource name for this subscription
+        description: "Refers to created subscription, where the VIS API allocates\
+          \ a unique resource name for this subscription"
         required: true
         style: simple
         explode: false
@@ -518,43 +519,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body'
+                $ref: '#/components/schemas/subscriptions_body'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -568,8 +569,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Refers to created subscription, where the VIS API allocates a
-          unique resource name for this subscription
+        description: "Refers to created subscription, where the VIS API allocates\
+          \ a unique resource name for this subscription"
         required: true
         style: simple
         explode: false
@@ -579,7 +580,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body_1'
+              $ref: '#/components/schemas/subscriptions_subscriptionId_body'
         required: true
       responses:
         "200":
@@ -588,63 +589,64 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body_1'
+                $ref: '#/components/schemas/subscriptions_subscriptionId_body'
         "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
+          description: "Not Acceptable : used to indicate that the server cannot provide\
+            \ the any of the content formats supported by the client."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
-          description: 'Precondition failed :  used when a condition has failed during
-            conditional requests, e.g. when using ETags to avoid write conflicts when
-            using PUT'
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "422":
-          description: 'Unprocessable Entity : used to indicate that the server understands
-            the content type of the request entity and that the syntax of the request
-            entity is correct but that the server is unable to process the contained
-            instructions. This error condition can occur if an JSON request body is
-            syntactically correct but semantically incorrect, for example if the target
-            area for the request is considered too large. This error condition can
-            also occur if the capabilities required by the request are not supported.'
+          description: "Unprocessable Entity : used to indicate that the server understands\
+            \ the content type of the request entity and that the syntax of the request\
+            \ entity is correct but that the server is unable to process the contained\
+            \ instructions. This error condition can occur if an JSON request body\
+            \ is syntactically correct but semantically incorrect, for example if\
+            \ the target area for the request is considered too large. This error\
+            \ condition can also occur if the capabilities required by the request\
+            \ are not supported."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -658,8 +660,8 @@ paths:
       parameters:
       - name: subscriptionId
         in: path
-        description: Refers to created subscription, where the VIS API allocates a
-          unique resource name for this subscription
+        description: "Refers to created subscription, where the VIS API allocates\
+          \ a unique resource name for this subscription"
         required: true
         style: simple
         explode: false
@@ -669,27 +671,27 @@ paths:
         "204":
           description: No Content
         "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
+          description: "Unauthorized :  used when the client did not submit credentials."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          description: "Too Many Requests : used when a rate limiter has triggered."
           content:
             application/json:
               schema:
@@ -743,8 +745,8 @@ components:
       properties:
         earfcn:
           type: integer
-          description: E-UTRA Absolute Radio Frequency Channel Number, range (0...
-            65535)
+          description: "E-UTRA Absolute Radio Frequency Channel Number, range (0...\
+            \ 65535)"
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Integer
       example:
@@ -976,9 +978,10 @@ components:
       properties:
         dstLayer2Id:
           type: string
-          description: |-
-            For sidelink communication, the Destination Layer-2 ID is set to the ProSe Layer-2 Group ID or Prose UE ID, see ETSI TS 136 321 [i.12].
-            PLMN operators coordinate to make sure Destination Layer2 ID(s) for different V2X services are configured in a consistent manner.
+          description: "For sidelink communication, the Destination Layer-2 ID is\
+            \ set to the ProSe Layer-2 Group ID or Prose UE ID, see ETSI TS\_136\_\
+            321 [i.12].\nPLMN operators coordinate to make sure Destination Layer2\
+            \ ID(s) for different V2X services are configured in a consistent manner."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         locationInfo:
@@ -1197,17 +1200,15 @@ components:
           $ref: '#/components/schemas/LocationInfo'
         rsrp:
           type: integer
-          description: |-
-            Reference Signal Received Power as defined in ETSI TS 136 214 [i.13].
-            Shall only be included in the response.
+          description: "Reference Signal Received Power as defined in ETSI TS 136\
+            \ 214 [i.13].\nShall only be included in the response."
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrq:
           type: integer
-          description: |-
-            Reference Signal Received Quality as defined in ETSI TS 136 214 [i.13].
-            Shall only be included in the response.
+          description: "Reference Signal Received Quality as defined in ETSI TS 136\
+            \ 214 [i.13].\nShall only be included in the response."
           format: uint8
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
@@ -1253,7 +1254,7 @@ components:
           x-etsi-mec-origin-type: Uint32
         title:
           type: string
-          description: A short, human-readable summary of the problem type
+          description: "A short, human-readable summary of the problem type"
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         type:
@@ -1271,8 +1272,9 @@ components:
       properties:
         dstLayer2Id:
           type: string
-          description: For sidelink communication, the Destination Layer-2 ID is set
-            to the ProSe Layer-2 Group ID or Prose UE ID, see ETSI TS 136 321 [i.12].
+          description: "For sidelink communication, the Destination Layer-2 ID is\
+            \ set to the ProSe Layer-2 Group ID or Prose UE ID, see ETSI TS 136 321\
+            \ [i.12]."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         locationInfo:
@@ -1315,9 +1317,9 @@ components:
           $ref: '#/components/schemas/ProvChgPc5Subscription.filterCriteria'
         requestTestNotification:
           type: boolean
-          description: |-
-            Shall be set to TRUE by the service consumer to request a test notification via HTTP on the callbackReference URI, as described in ETSI GS MEC 009 [i.1], clause 6.12a.
-            Default: FALSE.
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, as described\
+            \ in ETSI GS\_MEC\_009 [i.1], clause 6.12a.\nDefault: FALSE."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         subscriptionType:
@@ -1327,10 +1329,10 @@ components:
           x-etsi-mec-origin-type: String
         websockNotifConfig:
           $ref: '#/components/schemas/WebsockNotifConfig'
-      x-etsi-notes: 'NOTE:   At least one of callbackReference and websockNotifConfig
-        shall be provided by the service consumer. If both are provided, it is up
-        to VIS to choose an alternative and return only that alternative in the response,
-        as described in ETSI GS MEC 009 [i.1], clause 6.12a.'
+      x-etsi-notes: "NOTE:   At least one of callbackReference and websockNotifConfig\
+        \ shall be provided by the service consumer. If both are provided, it is up\
+        \ to VIS to choose an alternative and return only that alternative in the\
+        \ response, as described in ETSI GS MEC 009 [i.1], clause 6.12a."
       x-etsi-ref: 6.3.4
     ProvChgPc5Subscription.filterCriteria:
       required:
@@ -1340,8 +1342,9 @@ components:
       properties:
         dstLayer2Id:
           type: string
-          description: For sidelink communication, the Destination Layer-2 ID is set
-            to the ProSe Layer-2 Group ID or Prose UE ID, see ETSI TS 136 321 [i.12].
+          description: "For sidelink communication, the Destination Layer-2 ID is\
+            \ set to the ProSe Layer-2 Group ID or Prose UE ID, see ETSI TS 136 321\
+            \ [i.12]."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         locationInfo:
@@ -1355,9 +1358,9 @@ components:
             $ref: '#/components/schemas/Pc5NeighbourCellInfo'
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Pc5NeighbourCellInfo
-      description: List of filtering criteria for the subscription. Any filtering
-        criteria from below, which is included in the request, shall also be included
-        in the response.
+      description: "List of filtering criteria for the subscription. Any filtering\
+        \ criteria from below, which is included in the request, shall also be included\
+        \ in the response."
       x-etsi-mec-cardinality: "1"
       x-etsi-mec-origin-type: Structure (inlined)
     ProvChgUuMbmsNotification:
@@ -1408,9 +1411,9 @@ components:
           $ref: '#/components/schemas/ProvChgUuMbmsSubscription.filterCriteria'
         requestTestNotification:
           type: boolean
-          description: |-
-            Shall be set to TRUE by the service consumer to request a test notification via HTTP on the callbackReference URI, as described in ETSI GS MEC 009 [i.1], clause 6.12a.
-            Default: FALSE.
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, as described\
+            \ in ETSI GS\_MEC\_009 [i.1], clause 6.12a.\nDefault: FALSE."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         subscriptionType:
@@ -1444,9 +1447,9 @@ components:
           x-etsi-mec-origin-type: UuMbmsNeighbourCellInfo
         v2xServerUsd:
           $ref: '#/components/schemas/V2xServerUsd'
-      description: List of filtering criteria for the subscription. Any filtering
-        criteria from below, which is included in the request, shall also be included
-        in the response.
+      description: "List of filtering criteria for the subscription. Any filtering\
+        \ criteria from below, which is included in the request, shall also be included\
+        \ in the response."
       x-etsi-mec-cardinality: "1"
       x-etsi-mec-origin-type: Structure (inlined)
     ProvChgUuUniNotification:
@@ -1497,9 +1500,9 @@ components:
           $ref: '#/components/schemas/ProvChgUuUniSubscription.filterCriteria'
         requestTestNotification:
           type: boolean
-          description: |-
-            Shall be set to TRUE by the service consumer to request a test notification via HTTP on the callbackReference URI, as described in ETSI GS MEC 009 [i.1], clause 6.12a.
-            Default: FALSE.
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, as described\
+            \ in ETSI GS\_MEC\_009 [i.1], clause 6.12a.\nDefault: FALSE."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         subscriptionType:
@@ -1533,9 +1536,9 @@ components:
           x-etsi-mec-origin-type: UuUniNeighbourCellInfo
         v2xApplicationServer:
           $ref: '#/components/schemas/V2xApplicationServer'
-      description: List of filtering criteria for the subscription. Any filtering
-        criteria from below, which is included in the request, shall also be included
-        in the response.
+      description: "List of filtering criteria for the subscription. Any filtering\
+        \ criteria from below, which is included in the request, shall also be included\
+        \ in the response."
       x-etsi-mec-cardinality: "1"
       x-etsi-mec-origin-type: Structure (inlined)
     SubscriptionLinkList:
@@ -1648,15 +1651,15 @@ components:
       properties:
         nanoSeconds:
           type: integer
-          description: The nanoseconds part of the time. Time is defined as Unix-time
-            since January 1, 1970, 00:00:00 UTC.
+          description: "The nanoseconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC."
           format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         seconds:
           type: integer
-          description: The seconds part of the time. Time is defined as Unixtime since
-            January 1, 1970, 00:00:00 UTC.
+          description: "The seconds part of the time. Time is defined as Unixtime\
+            \ since January 1, 1970, 00:00:00 UTC."
           format: uint32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
@@ -2252,7 +2255,7 @@ components:
           x-etsi-mec-origin-type: String
         msgEncodeFormat:
           type: string
-          description: The encode format of the V2X message, for example base64.
+          description: "The encode format of the V2X message, for example base64."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         msgType:
@@ -2303,7 +2306,7 @@ components:
           x-etsi-mec-origin-type: String
         msgEncodeFormat:
           type: string
-          description: The encode format of the V2X message, for example base64.
+          description: "The encode format of the V2X message, for example base64."
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         msgType:
@@ -2323,21 +2326,25 @@ components:
       x-etsi-ref: 6.2.6
     msgType:
       type: integer
-      description: |
-        Published V2X message type. Its value is defined by the standardization organization indicated by the attribute stdOrganization. See note 2.
-        − denm(1): Decentralized Environmental Notification Message (DENM) as specified in ETSI EN 302 637-3,
-        − cam(2): Cooperative Awareness Message (CAM) as specified in ETSI EN 302 637-2,
-        − poi(3): Point of Interest message as specified in ETSI TS 101 556-1,
-        − spatem(4): Signal Phase And Timing (SPAT) message as specified in SAE J2735 and in ETSI TS 103 301,
-        − mapem(5): MAP message as specified in SAE J2735 and in ETSI TS 103 301,
-        − ivim(6): In Vehicle Information (IVI) message as defined in ISO TS 19321,
-        − ev-rsr(7): Electric vehicle recharging spot reservation message, as defined in ETSI TS 101 556-3,
-        − tistpgtransaction(8): messages for Tyre Information System (TIS) and Tyre Pressure Gauge (TPG) interoperability, as specified in ETSI TS 101 556-2,
-        − srem(9): Traffic light Signal Request Message as specified in ETSI TS 103 301,
-        − ssem(10): Traffic Light Signal Request Status Message as specified in ETSI TS 103 301.
-        − evcsn(11): Electrical Vehicle Charging Spot Notification message as specified in ETSI TS 101 556-1,
-        − saem(12): Services Announcement Extended Message as specified in ETSI TS 102 890-1,
-        − rtcmem(13): Radio Technical Commission for Maritime Services (RTCM) Message as specified in ETSI TS 103 301,
+      description: "Published V2X message type. Its value is defined by the standardization\
+        \ organization indicated by the attribute stdOrganization. See note 2.\n−\
+        \ denm(1): Decentralized Environmental Notification Message (DENM) as specified\
+        \ in ETSI EN 302 637-3,\n− cam(2): Cooperative Awareness Message (CAM) as\
+        \ specified in ETSI EN 302 637-2,\n− poi(3): Point of Interest message as\
+        \ specified in ETSI TS 101 556-1,\n− spatem(4): Signal Phase And Timing (SPAT)\
+        \ message as specified in SAE J2735 and in ETSI TS 103 301,\n− mapem(5): MAP\
+        \ message as specified in SAE J2735 and in ETSI TS 103 301,\n− ivim(6): In\
+        \ Vehicle Information (IVI) message as defined in ISO TS 19321,\n− ev-rsr(7):\
+        \ Electric vehicle recharging spot reservation message, as defined in ETSI\
+        \ TS 101 556-3,\n− tistpgtransaction(8): messages for Tyre Information System\
+        \ (TIS) and Tyre Pressure Gauge (TPG) interoperability, as specified in ETSI\
+        \ TS 101 556-2,\n− srem(9): Traffic light Signal Request Message as specified\
+        \ in ETSI TS 103 301,\n− ssem(10): Traffic Light Signal Request Status Message\
+        \ as specified in ETSI TS 103 301.\n− evcsn(11): Electrical Vehicle Charging\
+        \ Spot Notification message as specified in ETSI TS 101 556-1,\n− saem(12):\
+        \ Services Announcement Extended Message as specified in ETSI TS 102 890-1,\n\
+        − rtcmem(13): Radio Technical Commission for Maritime Services (RTCM) Message\
+        \ as specified in ETSI TS 103 301,\n"
       enum:
       - 1
       - 2
@@ -2375,9 +2382,9 @@ components:
           $ref: '#/components/schemas/V2xMsgSubscription.filterCriteria'
         requestTestNotification:
           type: boolean
-          description: |-
-            Shall be set to TRUE by the service consumer to request a test notification via HTTP on the callbackReference URI, as described in ETSI GS MEC 009 [i.1], clause 6.12a.
-            Default: FALSE.
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, as described\
+            \ in ETSI GS\_MEC 009 [i.1], clause 6.12a.\nDefault: FALSE."
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Boolean
         subscriptionType:
@@ -2418,9 +2425,9 @@ components:
           - ETSI
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
-      description: List of filtering criteria for the subscription. Any filtering
-        criteria from below, which is included in the request, shall also be included
-        in the response.
+      description: "List of filtering criteria for the subscription. Any filtering\
+        \ criteria from below, which is included in the request, shall also be included\
+        \ in the response."
       x-etsi-mec-cardinality: "1"
       x-etsi-mec-origin-type: Structure (inlined)
     V2xServerUsd:
@@ -2498,8 +2505,8 @@ components:
           description: The Mobile Network Code part of PLMN Identity.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
-      description: Temporary Mobile Group Identity (TMGI), which is used within MBMS
-        to uniquely identify Multicast and Broadcast bearer services.
+      description: "Temporary Mobile Group Identity (TMGI), which is used within MBMS\
+        \ to uniquely identify Multicast and Broadcast bearer services."
       example:
         mnc: mnc
         mcc: mcc
@@ -2552,13 +2559,13 @@ components:
       enum:
       - STOPPING
       - TERMINATING
-    body:
+    subscriptions_body:
       oneOf:
       - $ref: '#/components/schemas/ProvChgUuUniSubscription'
       - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
       - $ref: '#/components/schemas/ProvChgPc5Subscription'
       - $ref: '#/components/schemas/V2xMsgSubscription'
-    body_1:
+    subscriptions_subscriptionId_body:
       oneOf:
       - $ref: '#/components/schemas/ProvChgUuUniSubscription'
       - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
@@ -2588,75 +2595,75 @@ components:
     "206":
       description: Partial content
     "400":
-      description: 'Bad Request : used to indicate that incorrect parameters were
-        passed to the request.'
+      description: "Bad Request : used to indicate that incorrect parameters were\
+        \ passed to the request."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "401":
-      description: 'Unauthorized :  used when the client did not submit credentials.'
+      description: "Unauthorized :  used when the client did not submit credentials."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "403":
-      description: 'Forbidden :  operation is not allowed given the current status
-        of the resource.'
+      description: "Forbidden :  operation is not allowed given the current status\
+        \ of the resource."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "404":
-      description: 'Not Found :  used when a client provided a URI that cannot be
-        mapped to a valid resource URI.'
+      description: "Not Found :  used when a client provided a URI that cannot be\
+        \ mapped to a valid resource URI."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "406":
-      description: 'Not Acceptable : used to indicate that the server cannot provide
-        the any of the content formats supported by the client.'
+      description: "Not Acceptable : used to indicate that the server cannot provide\
+        \ the any of the content formats supported by the client."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "409":
-      description: 'Conflict : The operation cannot be executed currently, due to
-        a conflict with the state of the resource'
+      description: "Conflict : The operation cannot be executed currently, due to\
+        \ a conflict with the state of the resource"
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "412":
-      description: 'Precondition failed :  used when a condition has failed during
-        conditional requests, e.g. when using ETags to avoid write conflicts when
-        using PUT'
+      description: "Precondition failed :  used when a condition has failed during\
+        \ conditional requests, e.g. when using ETags to avoid write conflicts when\
+        \ using PUT"
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "415":
-      description: 'Unsupported Media Type :  used to indicate that the server or
-        the client does not support the content type of the entity body.'
+      description: "Unsupported Media Type :  used to indicate that the server or\
+        \ the client does not support the content type of the entity body."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "422":
-      description: 'Unprocessable Entity : used to indicate that the server understands
-        the content type of the request entity and that the syntax of the request
-        entity is correct but that the server is unable to process the contained instructions.
-        This error condition can occur if an JSON request body is syntactically correct
-        but semantically incorrect, for example if the target area for the request
-        is considered too large. This error condition can also occur if the capabilities
-        required by the request are not supported.'
+      description: "Unprocessable Entity : used to indicate that the server understands\
+        \ the content type of the request entity and that the syntax of the request\
+        \ entity is correct but that the server is unable to process the contained\
+        \ instructions. This error condition can occur if an JSON request body is\
+        \ syntactically correct but semantically incorrect, for example if the target\
+        \ area for the request is considered too large. This error condition can also\
+        \ occur if the capabilities required by the request are not supported."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "429":
-      description: 'Too Many Requests : used when a rate limiter has triggered.'
+      description: "Too Many Requests : used when a rate limiter has triggered."
       content:
         application/json:
           schema:

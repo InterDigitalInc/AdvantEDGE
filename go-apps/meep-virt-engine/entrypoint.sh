@@ -13,6 +13,7 @@ mv /meep-wais /templates/sandbox/meep-wais
 mv /meep-ams /templates/sandbox/meep-ams
 mv /meep-sandbox-ctrl /templates/sandbox/meep-sandbox-ctrl
 mv /meep-tc-engine /templates/sandbox/meep-tc-engine
+mv /meep-vis /templates/sandbox/meep-vis
 
 mkdir -p /templates/scenario
 mv /meep-virt-chart-templates /templates/scenario/meep-virt-chart-templates

@@ -1153,11 +1153,6 @@ repo:
 
     # Javascript Packages
     js-packages:
-      meep-app-support-client:
-        # location of source code
-        src: js-packages/meep-app-support-client
-        # supports linting
-        lint: false
       meep-auth-svc-client:
         # location of source code
         src: js-packages/meep-auth-svc-client
@@ -1186,10 +1181,5 @@ repo:
       meep-sandbox-ctrl-client:
         # location of source code
         src: js-packages/meep-sandbox-ctrl-client
-        # supports linting
-        lint: false
-      meep-service-mgmt-client:
-        # location of source code
-        src: js-packages/meep-service-mgmt-client
         # supports linting
         lint: false

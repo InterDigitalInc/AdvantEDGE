@@ -25,5 +25,5 @@ package server
 
 type PredictedQosRoutes struct {
 	// Information relating to a specific route. The first structure shall relate to the route origin and the last to the route destination. Intermediate waypoint locations may also be provided.
-	RouteInfo []PredictedQosRoutesRouteInfo `json:"routeInfo"`
+	RouteInfo []PredictedQosRoutesRouteInfo `json:"routeInfo,omitempty"`
 }

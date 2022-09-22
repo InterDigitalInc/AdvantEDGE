@@ -22,12 +22,48 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
+	"github.com/roymx/viper"
 )
+
+// VIS Traffic Manager
+type TrafficMgr struct {
+	name           string
+	namespace      string
+	user           string
+	pwd            string
+	host           string
+	port           string
+	dbName         string
+	db             *sql.DB
+	connected      bool
+	GridFileExists bool
+	mutex          sync.Mutex
+	poaLoadMap     map[string]*PoaLoads
+	// updateCb  func(string, string)
+}
+
+type PoaLoads struct {
+	PoaName     string
+	Category    string
+	Loads       map[string]int32
+	AverageLoad int32
+}
+
+type CategoryLoads struct {
+	Category string
+	Loads    map[string]int32
+}
+
+type GridMapTable struct {
+	area     string
+	category string
+	grid     string
+}
 
 // DB Config
 const (
@@ -57,94 +93,88 @@ const (
 	FieldTwentyOneToTwentyFour = "2100-2400"
 )
 
+const (
+	CategoryCommercial  = "commercial"
+	CategoryResidential = "residential"
+	CategoryCoastal     = "coastal"
+)
+
 // DB Table Names
 const (
-	GridTable     = "grid_map"
-	CategoryTable = "categories"
-	TrafficTable  = "traffic_patterns"
+	GridTable = "grid_map"
 )
 
 // Grid Map data
 var gridMapData map[string]map[string][]string
 
 // Category-wise Traffic Loads
-var categoriesLoads = map[string]map[string]int32{
-	"commercial": {
-		"0000-0300": 50,
-		"0300-0600": 50,
-		"0600-0900": 75,
-		"0900-1200": 100,
-		"1200-1500": 125,
-		"1500-1800": 100,
-		"1800-2100": 75,
-		"2100-2400": 50,
+var categoryLoads = map[string]*CategoryLoads{
+	CategoryCommercial: &CategoryLoads{
+		Category: CategoryCommercial,
+		Loads: map[string]int32{
+			FieldZeroToThree:           50,
+			FieldThreeToSix:            50,
+			FieldSixToNine:             75,
+			FieldNineToTwelve:          100,
+			FieldTwelveToFifteen:       125,
+			FieldFifteenToEighteen:     100,
+			FieldEighteenToTwentyOne:   75,
+			FieldTwentyOneToTwentyFour: 50,
+		},
 	},
-	"residential": {
-		"0000-0300": 125,
-		"0300-0600": 125,
-		"0600-0900": 100,
-		"0900-1200": 75,
-		"1200-1500": 50,
-		"1500-1800": 50,
-		"1800-2100": 125,
-		"2100-2400": 125,
+	CategoryResidential: &CategoryLoads{
+		Category: CategoryResidential,
+		Loads: map[string]int32{
+			FieldZeroToThree:           125,
+			FieldThreeToSix:            125,
+			FieldSixToNine:             100,
+			FieldNineToTwelve:          75,
+			FieldTwelveToFifteen:       50,
+			FieldFifteenToEighteen:     50,
+			FieldEighteenToTwentyOne:   125,
+			FieldTwentyOneToTwentyFour: 125,
+		},
 	},
-	"coastal": {
-		"0000-0300": 25,
-		"0300-0600": 25,
-		"0600-0900": 50,
-		"0900-1200": 25,
-		"1200-1500": 50,
-		"1500-1800": 75,
-		"1800-2100": 50,
-		"2100-2400": 25,
+	CategoryCoastal: &CategoryLoads{
+		Category: CategoryCoastal,
+		Loads: map[string]int32{
+			FieldZeroToThree:           25,
+			FieldThreeToSix:            25,
+			FieldSixToNine:             50,
+			FieldNineToTwelve:          25,
+			FieldTwelveToFifteen:       50,
+			FieldFifteenToEighteen:     75,
+			FieldEighteenToTwentyOne:   50,
+			FieldTwentyOneToTwentyFour: 25,
+		},
 	},
 }
 
-// VIS Traffic Manager
-type TrafficMgr struct {
-	name           string
-	namespace      string
-	user           string
-	pwd            string
-	host           string
-	port           string
-	dbName         string
-	db             *sql.DB
-	connected      bool
-	GridFileExists bool
-	// updateCb  func(string, string)
-}
-
-type PoaLoads struct {
-	PoaName               string
-	Category              string
-	ZeroToThree           int32
-	ThreeToSix            int32
-	SixToNine             int32
-	NineToTwelve          int32
-	TwelveToFifteen       int32
-	FifteenToEighteen     int32
-	EighteenToTwentyOne   int32
-	TwentyOneToTwentyFour int32
-}
-
-type CategoryLoads struct {
-	Category              string
-	ZeroToThree           int32
-	ThreeToSix            int32
-	SixToNine             int32
-	NineToTwelve          int32
-	TwelveToFifteen       int32
-	FifteenToEighteen     int32
-	EighteenToTwentyOne   int32
-	TwentyOneToTwentyFour int32
-}
-
-type GridMapTable struct {
-	area     string
-	category string
-	grid     string
+var timeWindows = map[int32]string{
+	0:  FieldZeroToThree,
+	1:  FieldZeroToThree,
+	2:  FieldZeroToThree,
+	3:  FieldThreeToSix,
+	4:  FieldThreeToSix,
+	5:  FieldThreeToSix,
+	6:  FieldSixToNine,
+	7:  FieldSixToNine,
+	8:  FieldSixToNine,
+	9:  FieldNineToTwelve,
+	10: FieldNineToTwelve,
+	11: FieldNineToTwelve,
+	12: FieldTwelveToFifteen,
+	13: FieldTwelveToFifteen,
+	14: FieldTwelveToFifteen,
+	15: FieldFifteenToEighteen,
+	16: FieldFifteenToEighteen,
+	17: FieldFifteenToEighteen,
+	18: FieldEighteenToTwentyOne,
+	19: FieldEighteenToTwentyOne,
+	20: FieldEighteenToTwentyOne,
+	21: FieldTwentyOneToTwentyFour,
+	22: FieldTwentyOneToTwentyFour,
+	23: FieldTwentyOneToTwentyFour,
 }
 
 // Profiling init
@@ -173,6 +203,7 @@ func NewTrafficMgr(name, namespace, user, pwd, host, port string) (tm *TrafficMg
 	tm.pwd = pwd
 	tm.host = host
 	tm.port = port
+	tm.poaLoadMap = map[string]*PoaLoads{}
 
 	// Connect to Postgis DB
 	for retry := 0; retry <= DbMaxRetryCount; retry++ {
@@ -337,7 +368,7 @@ func (tm *TrafficMgr) CreateTables() (err error) {
 	}
 
 	// Grid Table
-	_, err = tm.db.Exec(`CREATE TABLE ` + GridTable + ` (
+	_, err = tm.db.Exec(`CREATE TABLE IF NOT EXISTS ` + GridTable + ` (
 		area            varchar(100)            NOT NULL,
 		category				varchar(100)						NOT NULL,
 		grid						geometry(POLYGON,4326),
@@ -349,53 +380,12 @@ func (tm *TrafficMgr) CreateTables() (err error) {
 	}
 	log.Info("Created Grids table: ", GridTable)
 
-	// Categories Table
-	_, err = tm.db.Exec(`CREATE TABLE ` + CategoryTable + ` (
-		category				varchar(100)						NOT NULL UNIQUE,
-		"0000-0300"			integer									NOT NULL DEFAULT '0',
-		"0300-0600"			integer									NOT NULL DEFAULT '0',
-		"0600-0900"			integer									NOT NULL DEFAULT '0',
-		"0900-1200"			integer									NOT NULL DEFAULT '0',
-		"1200-1500"			integer									NOT NULL DEFAULT '0',
-		"1500-1800"			integer									NOT NULL DEFAULT '0',
-		"1800-2100"			integer									NOT NULL DEFAULT '0',
-		"2100-2400"			integer									NOT NULL DEFAULT '0',
-		PRIMARY KEY (category)
-	)`)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("Created Categories table: ", CategoryTable)
-
-	// Traffic Load Table
-	_, err = tm.db.Exec(`CREATE TABLE ` + TrafficTable + ` (
-		poa_name			  varchar(100)						NOT NULL UNIQUE,
-		category				varchar(100)						NOT NULL,
-		"0000-0300"			integer									NOT NULL DEFAULT '0',
-		"0300-0600"			integer									NOT NULL DEFAULT '0',
-		"0600-0900"			integer									NOT NULL DEFAULT '0',
-		"0900-1200"			integer									NOT NULL DEFAULT '0',
-		"1200-1500"			integer									NOT NULL DEFAULT '0',
-		"1500-1800"			integer									NOT NULL DEFAULT '0',
-		"1800-2100"			integer									NOT NULL DEFAULT '0',
-		"2100-2400"			integer									NOT NULL DEFAULT '0',
-		PRIMARY KEY (poa_name)
-	)`)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("Created Traffic Loads table: ", TrafficTable)
-
 	return nil
 }
 
 // DeleteTables - Delete all postgis traffic tables
 func (tm *TrafficMgr) DeleteTables() (err error) {
 	_ = tm.DeleteTable(GridTable)
-	_ = tm.DeleteTable(CategoryTable)
-	_ = tm.DeleteTable(TrafficTable)
 	return nil
 }
 
@@ -447,193 +437,10 @@ func (tm *TrafficMgr) CreateGridMap(area string, category string, grid string) (
 	return nil
 }
 
-// CreateCategoryLoad - Create new Category Load
-func (tm *TrafficMgr) CreateCategoryLoad(category string, data map[string]int32) (err error) {
-	if profiling {
-		profilingTimers["CreateCategoryLoad"] = time.Now()
-	}
-
-	var loadTime []int32
-
-	// Validate input
-	if category == "" {
-		return errors.New("Missing category name")
-	}
-
-	fields := []string{
-		FieldZeroToThree,
-		FieldThreeToSix,
-		FieldSixToNine,
-		FieldNineToTwelve,
-		FieldTwelveToFifteen,
-		FieldFifteenToEighteen,
-		FieldEighteenToTwentyOne,
-		FieldTwentyOneToTwentyFour,
-	}
-	for _, field := range fields {
-		if _, found := data[field]; !found {
-			return errors.New("Missing time field " + field)
-		}
-		loadTime = append(loadTime, data[field])
-	}
-
-	// Create Traffic Load entry
-	query := `INSERT INTO ` + CategoryTable +
-		` (category, "0000-0300", "0300-0600", "0600-0900", "0900-1200", "1200-1500", "1500-1800", "1800-2100", "2100-2400")
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
-	_, err = tm.db.Exec(query, category, loadTime[0], loadTime[1], loadTime[2], loadTime[3], loadTime[4], loadTime[5], loadTime[6], loadTime[7])
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	// Notify listener
-	// tm.notifyListener(TypePoa, name)
-
-	if profiling {
-		now := time.Now()
-		log.Debug("CreateCategoryLoad: ", now.Sub(profilingTimers["CreateCategoryLoad"]))
-	}
-	return nil
-}
-
-// GetCategoryLoad - Get POA Load information
-func (tm *TrafficMgr) GetCategoryLoad(category string) (categoryLoads *CategoryLoads, err error) {
-	if profiling {
-		profilingTimers["GetCategoryLoad"] = time.Now()
-	}
-
-	// Validate input
-	if category == "" {
-		err = errors.New("Missing category name")
-		return nil, err
-	}
-
-	// Get Category Load entry
-	var rows *sql.Rows
-	rows, err = tm.db.Query(`
-		SELECT category, "0000-0300", "0300-0600", "0600-0900", "0900-1200", "1200-1500", "1500-1800", "1800-2100", "2100-2400"
-		FROM `+CategoryTable+`
-		WHERE category = ($1)`, category)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Scan result
-	for rows.Next() {
-		categoryLoads = new(CategoryLoads)
-		err = rows.Scan(
-			&categoryLoads.Category,
-			&categoryLoads.ZeroToThree,
-			&categoryLoads.ThreeToSix,
-			&categoryLoads.SixToNine,
-			&categoryLoads.NineToTwelve,
-			&categoryLoads.TwelveToFifteen,
-			&categoryLoads.FifteenToEighteen,
-			&categoryLoads.EighteenToTwentyOne,
-			&categoryLoads.TwentyOneToTwentyFour,
-		)
-		if err != nil {
-			log.Error(err.Error())
-			return nil, err
-		}
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Error(err)
-	}
-
-	// Return error if not found
-	if categoryLoads == nil {
-		err = errors.New("Category Load not found: " + category)
-		return nil, err
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("GetCategoryLoad: ", now.Sub(profilingTimers["GetCategoryLoad"]))
-	}
-	return categoryLoads, nil
-}
-
-// GetAllCategoryLoad - Get POA Load information
-func (tm *TrafficMgr) GetAllCategoryLoad() (categoryLoads map[string]*CategoryLoads, err error) {
-	if profiling {
-		profilingTimers["GetAllCategoryLoad"] = time.Now()
-	}
-
-	// Create Category map
-	categoryLoadsMap := make(map[string]*CategoryLoads)
-
-	// Get Category Load entry
-	var rows *sql.Rows
-	rows, err = tm.db.Query(`
-		SELECT category, "0000-0300", "0300-0600", "0600-0900", "0900-1200", "1200-1500", "1500-1800", "1800-2100", "2100-2400"
-		FROM ` + CategoryTable)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Scan results
-	for rows.Next() {
-
-		categoryLoads := new(CategoryLoads)
-		err = rows.Scan(
-			&categoryLoads.Category,
-			&categoryLoads.ZeroToThree,
-			&categoryLoads.ThreeToSix,
-			&categoryLoads.SixToNine,
-			&categoryLoads.NineToTwelve,
-			&categoryLoads.TwelveToFifteen,
-			&categoryLoads.FifteenToEighteen,
-			&categoryLoads.EighteenToTwentyOne,
-			&categoryLoads.TwentyOneToTwentyFour,
-		)
-
-		// Add POA to map
-		categoryLoadsMap[categoryLoads.Category] = categoryLoads
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Error(err)
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("GetAllCategoryLoad: ", now.Sub(profilingTimers["GetAllCategoryLoad"]))
-	}
-
-	return categoryLoadsMap, nil
-}
-
-// DeleteAllCategory - Delete all Category entries
-func (tm *TrafficMgr) DeleteAllCategory() (err error) {
-	if profiling {
-		profilingTimers["DeleteAllCategory"] = time.Now()
-	}
-
-	_, err = tm.db.Exec(`DELETE FROM ` + CategoryTable)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("DeleteAllCategory: ", now.Sub(profilingTimers["DeleteAllCategory"]))
-	}
-	return nil
-}
-
 // CreatePoaLoad - Create new POA Load
 func (tm *TrafficMgr) CreatePoaLoad(poaName string, category string) (err error) {
-	if profiling {
-		profilingTimers["CreatePoaLoad"] = time.Now()
-	}
+	tm.mutex.Lock()
+	defer tm.mutex.Unlock()
 
 	// Validate input
 	if poaName == "" {
@@ -644,45 +451,37 @@ func (tm *TrafficMgr) CreatePoaLoad(poaName string, category string) (err error)
 	}
 
 	// Get Load entry from Categories Table
-	categoryLoads, err := tm.GetCategoryLoad(category)
-	if err != nil {
-		log.Error(err.Error())
-		return err
+	categoryLoads, found := categoryLoads[category]
+	if !found {
+		return errors.New("Invalid category name: " + category)
 	}
 
-	loadTime := []int32{
-		categoryLoads.ZeroToThree,
-		categoryLoads.ThreeToSix,
-		categoryLoads.SixToNine,
-		categoryLoads.NineToTwelve,
-		categoryLoads.TwelveToFifteen,
-		categoryLoads.FifteenToEighteen,
-		categoryLoads.EighteenToTwentyOne,
-		categoryLoads.TwentyOneToTwentyFour,
+	// Create POA loads entry
+	poaLoads := &PoaLoads{
+		PoaName:  poaName,
+		Category: category,
+		Loads:    map[string]int32{},
 	}
+	// Copy category loads & calculate average load
+	if len(categoryLoads.Loads) > 0 {
+		var loadSum int32 = 0
+		for k, v := range categoryLoads.Loads {
+			poaLoads.Loads[k] = v
+			loadSum += v
+		}
+		poaLoads.AverageLoad = loadSum / int32(len(poaLoads.Loads))
+	}
+	log.Info("Created loads table for ", poaName, " (", category, "): ", poaLoads.Loads, ", Average: ", poaLoads.AverageLoad)
 
-	// Create Traffic Load entry
-	query := `INSERT INTO ` + TrafficTable +
-		` (poa_name, category, "0000-0300", "0300-0600", "0600-0900", "0900-1200", "1200-1500", "1500-1800", "1800-2100", "2100-2400")
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
-	_, err = tm.db.Exec(query, poaName, category, loadTime[0], loadTime[1], loadTime[2], loadTime[3], loadTime[4], loadTime[5], loadTime[6], loadTime[7])
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("CreatePoaLoad: ", now.Sub(profilingTimers["CreatePoaLoad"]))
-	}
+	// Add POA loads to map
+	tm.poaLoadMap[poaName] = poaLoads
 	return nil
 }
 
 // GetPoaLoad - Get POA Load information
 func (tm *TrafficMgr) GetPoaLoad(poaName string) (poaLoads *PoaLoads, err error) {
-	if profiling {
-		profilingTimers["GetPoaLoad"] = time.Now()
-	}
+	tm.mutex.Lock()
+	defer tm.mutex.Unlock()
 
 	// Validate input
 	if poaName == "" {
@@ -690,129 +489,27 @@ func (tm *TrafficMgr) GetPoaLoad(poaName string) (poaLoads *PoaLoads, err error)
 		return nil, err
 	}
 
-	// Get Poa entry
-	var rows *sql.Rows
-	rows, err = tm.db.Query(`
-		SELECT poa_name, category, "0000-0300", "0300-0600", "0600-0900", "0900-1200", "1200-1500", "1500-1800", "1800-2100", "2100-2400"
-		FROM `+TrafficTable+`
-		WHERE poa_name = ($1)`, poaName)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Scan result
-	for rows.Next() {
-		poaLoads = new(PoaLoads)
-		err = rows.Scan(
-			&poaLoads.PoaName,
-			&poaLoads.Category,
-			&poaLoads.ZeroToThree,
-			&poaLoads.ThreeToSix,
-			&poaLoads.SixToNine,
-			&poaLoads.NineToTwelve,
-			&poaLoads.TwelveToFifteen,
-			&poaLoads.FifteenToEighteen,
-			&poaLoads.EighteenToTwentyOne,
-			&poaLoads.TwentyOneToTwentyFour,
-		)
-		if err != nil {
-			log.Error(err.Error())
-			return nil, err
-		}
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Error(err)
-	}
-
-	// Return error if not found
+	// Get POA loads
+	poaLoads = tm.poaLoadMap[poaName]
 	if poaLoads == nil {
-		err = errors.New("POA Load not found: " + poaName)
+		err = errors.New("POA loads not found: " + poaName)
 		return nil, err
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("GetPoaLoad: ", now.Sub(profilingTimers["GetPoaLoad"]))
 	}
 	return poaLoads, nil
 }
 
 // GetAllPoaLoad - Get all POA information
 func (tm *TrafficMgr) GetAllPoaLoad() (poaLoadMap map[string]*PoaLoads, err error) {
-	if profiling {
-		profilingTimers["GetAllPoaLoad"] = time.Now()
-	}
-
-	// Create PoaLoad map
-	poaLoadMap = make(map[string]*PoaLoads)
-
-	// Get POA entries
-	var rows *sql.Rows
-	rows, err = tm.db.Query(`
-		SELECT poa_name, category, "0000-0300", "0300-0600", "0600-0900", "0900-1200", "1200-1500", "1500-1800", "1800-2100", "2100-2400"
-		FROM ` + TrafficTable)
-	if err != nil {
-		log.Error(err.Error())
-		return poaLoadMap, err
-	}
-	defer rows.Close()
-
-	// Scan results
-	for rows.Next() {
-		poaLoads := new(PoaLoads)
-
-		// Fill POA
-		err = rows.Scan(
-			&poaLoads.PoaName,
-			&poaLoads.Category,
-			&poaLoads.ZeroToThree,
-			&poaLoads.ThreeToSix,
-			&poaLoads.SixToNine,
-			&poaLoads.NineToTwelve,
-			&poaLoads.TwelveToFifteen,
-			&poaLoads.FifteenToEighteen,
-			&poaLoads.EighteenToTwentyOne,
-			&poaLoads.TwentyOneToTwentyFour,
-		)
-		if err != nil {
-			log.Error(err.Error())
-			return poaLoadMap, err
-		}
-
-		// Add POA to map
-		poaLoadMap[poaLoads.PoaName] = poaLoads
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Error(err)
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("GetAllPoaLoad: ", now.Sub(profilingTimers["GetAllPoaLoad"]))
-	}
-	return poaLoadMap, nil
+	return tm.poaLoadMap, nil
 }
 
 // DeleteAllPoaLoads - Delete all POA entries
 func (tm *TrafficMgr) DeleteAllPoaLoad() (err error) {
-	if profiling {
-		profilingTimers["DeleteAllPoa"] = time.Now()
-	}
+	tm.mutex.Lock()
+	defer tm.mutex.Unlock()
 
-	_, err = tm.db.Exec(`DELETE FROM ` + TrafficTable)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("DeleteAllPoa: ", now.Sub(profilingTimers["DeleteAllPoa"]))
-	}
+	// Reset poa loads
+	tm.poaLoadMap = map[string]*PoaLoads{}
 	return nil
 }
 
@@ -966,27 +663,6 @@ func (tm *TrafficMgr) PopulateGridMapTable() (err error) {
 	return nil
 }
 
-// PopulateCategoryTable - Populate the categories table
-func (tm *TrafficMgr) PopulateCategoryTable() (err error) {
-	if profiling {
-		profilingTimers["PopulateCategoryTable"] = time.Now()
-	}
-
-	for category, loads := range categoriesLoads {
-		err = tm.CreateCategoryLoad(category, loads)
-		if err != nil {
-			log.Error(err.Error())
-			return err
-		}
-	}
-
-	if profiling {
-		now := time.Now()
-		log.Debug("PopulateCategoryTable: ", now.Sub(profilingTimers["PopulateCategoryTable"]))
-	}
-	return nil
-}
-
 // GetPoaCategory - Get the category for a PoA
 func (tm *TrafficMgr) GetPoaCategory(longitude float32, latitude float32) (category string, err error) {
 	if profiling {
@@ -1029,13 +705,14 @@ func (tm *TrafficMgr) PopulatePoaLoad(poaNameList []string, gpsCoordinates [][]f
 		err = errors.New("Missing POA Name List")
 		return err
 	}
-
 	if gpsCoordinates == nil {
 		err = errors.New("Missing GPS coordinates")
 		return err
 	}
 
+	// Get POA loads for each POA
 	for i, poaName := range poaNameList {
+		// Get POA category from locaion & grid map
 		poaLongitude := gpsCoordinates[i][0]
 		poaLatitude := gpsCoordinates[i][1]
 		category, err := tm.GetPoaCategory(poaLongitude, poaLatitude)
@@ -1044,19 +721,13 @@ func (tm *TrafficMgr) PopulatePoaLoad(poaNameList []string, gpsCoordinates [][]f
 			return err
 		}
 
-		if _, ok := categoriesLoads[category]; !ok {
-			err = errors.New("Category " + category + " not present in the categories table")
-			log.Error(err.Error())
-			return err
-		}
-
+		// Set POA load
 		err = tm.CreatePoaLoad(poaName, category)
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -1073,64 +744,28 @@ func (tm *TrafficMgr) PredictQosPerTrafficLoad(hour int32, inRsrp int32, inRsrq 
 	}
 
 	// Get time range for DB query
-	timeRange := inTimeRange(hour)
-
-	// Get predicted load for a given PoA in a desired time slot from the traffic patterns table
-
-	var predictedUserTraffic int
-
-	var row *sql.Row
-	log.Debug("Collecting traffic load pattern of POA " + poaName + " for the time range: " + timeRange)
-	row = tm.db.QueryRow(`SELECT "`+timeRange+`" FROM `+TrafficTable+` WHERE poa_name = ($1)`, poaName)
-
-	err = row.Scan(&predictedUserTraffic)
-
-	if err == sql.ErrNoRows {
-		log.Error(err)
-		log.Error("Could not find estimated user load in the " + TrafficTable + " table")
+	timeRange, found := timeWindows[hour]
+	if !found {
+		err = errors.New("Invalid hour value")
 		return 0, 0, err
 	}
 
-	// Get average PoA load throughout the day
-	poaLoad, err := tm.GetPoaLoad(poaName)
+	// Get predicted load for a given PoA in a desired time slot from the traffic patterns table
+	log.Debug("Obtaining traffic load pattern of POA " + poaName + " for the time range: " + timeRange)
+	poaLoads, err := tm.GetPoaLoad(poaName)
 	if err != nil {
-		log.Error(err)
-		log.Error("Could not find PoA load in the " + TrafficTable + " table")
-		// returning the same values for Rsrp and Rsrq received in request
-		return inRsrp, inRsrq, err
+		return 0, 0, err
 	}
-
-	averageLoad := (poaLoad.ZeroToThree + poaLoad.ThreeToSix + poaLoad.SixToNine + poaLoad.NineToTwelve + poaLoad.TwelveToFifteen + poaLoad.FifteenToEighteen + poaLoad.EighteenToTwentyOne + poaLoad.TwentyOneToTwentyFour) / 8
+	var predictedUserTraffic int32
+	predictedUserTraffic, found = poaLoads.Loads[timeRange]
+	if !found {
+		err = errors.New("Could not find estimated user load")
+		return 0, 0, err
+	}
 
 	// Find reduced signal strength as a function of number of users in the area
-	outRsrp, outRsrq, err = findReducedSignalStrength(inRsrp, inRsrq, int32(predictedUserTraffic), averageLoad)
-
+	outRsrp, outRsrq, err = findReducedSignalStrength(inRsrp, inRsrq, predictedUserTraffic, poaLoads.AverageLoad)
 	return outRsrp, outRsrq, err
-}
-
-// Returns the time range as key in the traffic load map against vehicle ETA
-func inTimeRange(hour int32) (key string) {
-
-	var TimeWindows = map[string][]int32{
-		FieldZeroToThree:           {0, 1, 2},
-		FieldThreeToSix:            {3, 4, 5},
-		FieldSixToNine:             {6, 7, 8},
-		FieldNineToTwelve:          {9, 10, 11},
-		FieldTwelveToFifteen:       {12, 13, 14},
-		FieldFifteenToEighteen:     {15, 16, 17},
-		FieldEighteenToTwentyOne:   {18, 19, 20},
-		FieldTwentyOneToTwentyFour: {21, 22, 23},
-	}
-
-	for key, hours := range TimeWindows {
-		for i := range hours {
-			if hours[i] == hour {
-				return key
-			}
-		}
-	}
-
-	return ""
 }
 
 // Returns reduced signal strength based on the deviation in predicted user traffic from average user load in that area

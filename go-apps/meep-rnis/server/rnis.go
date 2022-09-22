@@ -2333,8 +2333,6 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	self.Href = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
 	link.Self = self
 
-	// TODO.. if required..
-
 	var jsonResponse []byte
 
 	switch subscriptionType {

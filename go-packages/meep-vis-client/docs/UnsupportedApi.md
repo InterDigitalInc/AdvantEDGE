@@ -1,4 +1,4 @@
-# {{classname}}
+# \UnsupportedApi
 
 All URIs are relative to *https://localhost/sandboxname/vis/v2*
 
@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**SubGET**](UnsupportedApi.md#SubGET) | **Get** /subscriptions | Request information about the subscriptions for this requestor.
 [**SubPOST**](UnsupportedApi.md#SubPOST) | **Post** /subscriptions |  create a new subscription to VIS notifications.
 [**V2xMessagePOST**](UnsupportedApi.md#V2xMessagePOST) | **Post** /publish_v2x_message | Used to publish a V2X message.
+
 
 # **IndividualSubscriptionDELETE**
 > IndividualSubscriptionDELETE(ctx, subscriptionId)
@@ -43,7 +44,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **IndividualSubscriptionGET**
-> Body IndividualSubscriptionGET(ctx, subscriptionId)
+> SubscriptionsBody IndividualSubscriptionGET(ctx, subscriptionId)
 Retrieve information about this subscription.
 
 Retrieve information about this subscription.
@@ -57,7 +58,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Body**](body.md)
+[**SubscriptionsBody**](subscriptions_body.md)
 
 ### Authorization
 
@@ -71,7 +72,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **IndividualSubscriptionPUT**
-> Body1 IndividualSubscriptionPUT(ctx, body, subscriptionId)
+> SubscriptionsSubscriptionIdBody IndividualSubscriptionPUT(ctx, body, subscriptionId)
 Used to update the existing subscription.
 
 Used to update the existing subscription.
@@ -81,12 +82,12 @@ Used to update the existing subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body1**](Body1.md)|  | 
+  **body** | [**SubscriptionsSubscriptionIdBody**](SubscriptionsSubscriptionIdBody.md)|  | 
   **subscriptionId** | **string**| Refers to created subscription, where the VIS API allocates a unique resource name for this subscription | 
 
 ### Return type
 
-[**Body1**](body_1.md)
+[**SubscriptionsSubscriptionIdBody**](subscriptions_subscriptionId_body.md)
 
 ### Authorization
 
@@ -194,10 +195,11 @@ Request information about the subscriptions for this requestor.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***UnsupportedApiSubGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***SubGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a UnsupportedApiSubGETOpts struct
+Optional parameters are passed through a pointer to a SubGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **subscriptionType** | **optional.String**| Query parameter to filter on a specific subscription type. Permitted values:  prov_chg_uu_uni: provisioning information change for V2X communication over Uuunicast prov_chg_uu_mbms: provisioning information change for V2X communication over Uu MBMS prov_chg_uu_pc5: provisioning information change for V2X communication over PC5. v2x_msg: V2X interoperability message | 
@@ -218,7 +220,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubPOST**
-> Body SubPOST(ctx, body)
+> SubscriptionsBody SubPOST(ctx, body)
  create a new subscription to VIS notifications.
 
  create a new subscription to VIS notifications.
@@ -228,11 +230,11 @@ No authorization required
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body**](Body.md)|  | 
+  **body** | [**SubscriptionsBody**](SubscriptionsBody.md)|  | 
 
 ### Return type
 
-[**Body**](body.md)
+[**SubscriptionsBody**](subscriptions_body.md)
 
 ### Authorization
 

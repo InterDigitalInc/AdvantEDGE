@@ -24,7 +24,7 @@
 package server
 
 type UuMbmsProvisioningInfo struct {
-	ProInfoUuMbms *[]interface{} `json:"proInfoUuMbms"`
+	ProInfoUuMbms []UuMbmsProvisioningInfoProInfoUuMbms `json:"proInfoUuMbms"`
 
 	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
 }

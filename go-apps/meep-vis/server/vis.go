@@ -337,16 +337,6 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_LOCALITY: ", locality)
 
-	// Get prediction model support
-	predictionModelSupportedEnv := strings.TrimSpace(os.Getenv("MEEP_PREDICT_MODEL_SUPPORTED"))
-	if predictionModelSupportedEnv != "" {
-		value, err := strconv.ParseBool(predictionModelSupportedEnv)
-		if err == nil {
-			predictionModelSupported = value
-		}
-	}
-	log.Info("MEEP_PREDICT_MODEL_SUPPORTED: ", predictionModelSupported)
-
 	// Set base path
 	if mepName == defaultMepName {
 		basePath = "/" + sandboxName + "/" + visBasePath
@@ -390,13 +380,10 @@ func Init() (err error) {
 	if mepName != defaultMepName {
 		sbiCfg.MepName = mepName
 	}
-	err = sbi.Init(sbiCfg)
+	predictionModelSupported, err = sbi.Init(sbiCfg)
 	if err != nil {
 		log.Error("Failed initialize SBI. Error: ", err)
 		return err
-	}
-	if !sbi.GridFileExists {
-		predictionModelSupported = false
 	}
 	log.Info("SBI Initialized")
 
@@ -579,6 +566,13 @@ func predictedQosPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make sure scenario is running
+	if currentStoreName == "" {
+		log.Error("Scenario not deployed")
+		errHandlerProblemDetails(w, "Scenario not deployed.", http.StatusBadRequest)
+		return
+	}
+
 	// Validating mandatory parameters in request
 	if requestData.LocationGranularity == "" {
 		log.Error("Mandatory locationGranularity parameter not present")
@@ -660,7 +654,7 @@ func predictedQosPost(w http.ResponseWriter, r *http.Request) {
 		powerResp, _, err := gisAppClient.GeospatialDataApi.GetGeoDataPowerValues(context.TODO(), geocoordinatesList)
 		if err != nil {
 			log.Error("Failed to communicate with gis engine: ", err)
-			errHandlerProblemDetails(w, "Failed to communicate with gis engine.", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Failed to communicate with gis engine.", http.StatusInternalServerError)
 			return
 		}
 		routeInfoList := responseData.Routes[i].RouteInfo
@@ -670,7 +664,7 @@ func predictedQosPost(w http.ResponseWriter, r *http.Request) {
 				rsrp := currGeoCoordinate.Rsrp
 				rsrq := currGeoCoordinate.Rsrq
 				poaName := currGeoCoordinate.PoaName
-				estTimeHour := int32(time.Unix(int64(routeInfo.Time.Seconds), int64(routeInfo.Time.Seconds)).Hour())
+				estTimeHour := int32(time.Unix(int64(routeInfo.Time.Seconds), int64(routeInfo.Time.NanoSeconds)).Hour())
 				currGeoCoordinate.Rsrp, currGeoCoordinate.Rsrq, _ = sbi.GetPredictedPowerValues(estTimeHour, rsrp, rsrq, poaName)
 			}
 			latCheck := routeInfo.Location.GeoArea.Latitude == currGeoCoordinate.Latitude

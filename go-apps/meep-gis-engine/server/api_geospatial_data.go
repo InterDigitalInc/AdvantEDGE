@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,12 @@ func GetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	geGetGeoDataByName(w, r)
 }
 
-func GetWithinRangeByName(w http.ResponseWriter, r *http.Request) {
-	geGetWithinRangeGeoDataByName(w, r)
-}
-
 func GetGeoDataPowerValues(w http.ResponseWriter, r *http.Request) {
 	geGetGeoDataPowerValues(w, r)
+}
+
+func GetWithinRangeByName(w http.ResponseWriter, r *http.Request) {
+	geGetWithinRangeGeoDataByName(w, r)
 }
 
 func UpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
