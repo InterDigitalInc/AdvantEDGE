@@ -498,7 +498,8 @@ func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		_, err = amsAddDevice(amsResourceId, amsResource, device)
+		var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED
+		_, err = amsSetDevice(amsResourceId, amsResource, device, contextTransferState)
 		if err != nil {
 			log.Error("Could not add device to AMS Resource", err.Error())
 			statusCode = "501"
@@ -563,8 +564,9 @@ func removeAmsDeviceHelper(device string) bool {
 		if v == device {
 			if i < len(trackDevices)-1 {
 				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
+			} else {
+				trackDevices = trackDevices[:len(trackDevices)-1]
 			}
-			trackDevices = trackDevices[:len(trackDevices)-1]
 		}
 	}
 
@@ -836,13 +838,12 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		_, amsUpdateError := amsUpdateDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, ams.USER_CONTEXT_TRANSFER_COMPLETED)
+		_, amsUpdateError := amsSetDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, ams.USER_CONTEXT_TRANSFER_COMPLETED)
 		if amsUpdateError != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not update ams")
 			return
 		}
-
 	}
 
 	appActivityLogs = append(appActivityLogs, "AMS event: transfer "+targetDevice+" context to "+
@@ -893,24 +894,26 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve AMS Resource
+	amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Update AMS Resource
+	var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED
+	_, err = amsSetDevice(amsResourceId, amsResourceBody, targetContextState.Device, contextTransferState)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Check if device is part of ams
 	res := addToAmsKey(targetContextState.Device)
 	if !res {
-		// Retrieve AMS Resource
-		amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Update AMS Resource
-		_, err = amsAddDevice(amsResourceId, amsResourceBody, targetContextState.Device)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
 		// Update ams subscription
 		amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
@@ -1017,38 +1020,27 @@ func amsSendService(appInstanceId string, device string) (string, error) {
 	return registerationInfo.AppMobilityServiceId, nil
 }
 
-// Add a device in ams resource
-// Return ams id for update ams
-func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device string) (ams.RegistrationInfo, error) {
-	var associateId ams.AssociateId
-	var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
-	associateId.Type_ = &t_
-	associateId.Value = device
-
-	var appMobilityServiceLevel ams.AppMobilityServiceLevel = ams.WITHOUT_CONFIRMATION
-	var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED
-	registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
-		AssociateId:             &associateId,
-		AppMobilityServiceLevel: &appMobilityServiceLevel,
-		ContextTransferState:    &contextTransferState,
-	})
-
-	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
-	if err != nil {
-		log.Error(err.Error())
-		return registerationBody, err
-	}
-
-	return registerationInfo, nil
-}
-
-// Update context state in ams resource to 0 or 1
-// Return ams id for update ams
-func amsUpdateDevice(amsId string, registerationBody ams.RegistrationInfo, device string, contextState ams.ContextTransferState) (ams.RegistrationInfo, error) {
-	for _, v := range registerationBody.DeviceInformation {
+// Update the Context Transfer State if the device is present else add ams device
+func amsSetDevice(amsId string, registerationBody ams.RegistrationInfo, device string, contextState ams.ContextTransferState) (ams.RegistrationInfo, error) {
+	var updated bool = false
+	for i := range registerationBody.DeviceInformation {
+		v := &registerationBody.DeviceInformation[i]
 		if v.AssociateId.Value == device {
 			v.ContextTransferState = &contextState
+			updated = true
 		}
+	}
+	if !updated {
+		var associateId ams.AssociateId
+		var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
+		associateId.Type_ = &t_
+		associateId.Value = device
+		var appMobilityServiceLevel ams.AppMobilityServiceLevel = ams.WITHOUT_CONFIRMATION
+		registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
+			AssociateId:             &associateId,
+			AppMobilityServiceLevel: &appMobilityServiceLevel,
+			ContextTransferState:    &contextState,
+		})
 	}
 
 	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
@@ -1108,7 +1100,7 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 	mobilitySubscription, resp, err := amsClient.AmsiApi.SubPOST(context.TODO(), *inlineSubscription)
 	if err != nil {
 		log.Error(err.Error())
-		return "", err	
+		return "", err
 	}
 	hRefLink := mobilitySubscription.Links.Self.Href
 

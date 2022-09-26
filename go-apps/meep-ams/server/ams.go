@@ -67,6 +67,7 @@ const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
 const appTerminationPath = "notifications/mec011/appTermination"
 const serviceAppVersion = "2.1.1"
+const USER_CTX_TRANSFER_COMPLETED = "USER_CONTEXT_TRANSFER_COMPLETED"
 
 // App Info fields
 const (
@@ -784,7 +785,7 @@ func sendMpNotifications(currentAppId string, targetAppId string, assocId *Assoc
 			// Find matching Assoc ID
 			found := false
 			for _, filterAssocId := range subOrig.FilterCriteria.AssociateId {
-				if assocId.Type_ == filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
+				if *assocId.Type_ == *filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
 					found = true
 					break
 				}
@@ -1757,6 +1758,9 @@ func refreshTrackedDevCtxOwner(appName string) {
 		} else {
 			// Perform context transfer only if current App is no longer a valid target
 			ctxTransferRequired := true
+			if trackedDev[FieldCtxTransferState] == USER_CTX_TRANSFER_COMPLETED {
+				ctxTransferRequired = false
+			}
 			for _, targetAppId := range targetAppIds {
 				if targetAppId == currentAppId {
 					ctxTransferRequired = false
