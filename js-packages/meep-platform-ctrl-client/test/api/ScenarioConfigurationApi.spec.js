@@ -74,6 +74,9 @@
           scenario.deployment.netChar.packetLoss = 0.0;
           scenario.deployment.connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
           scenario.deployment.connectivity.model = "OPEN";
+          scenario.deployment.d2d = new AdvantEdgePlatformControllerRestApi.D2dConfig();
+          scenario.deployment.d2d.d2dMaxDistance = ;
+          scenario.deployment.d2d.disableD2dViaNetwork = false;
           scenario.deployment.interDomainLatency = 0;
           scenario.deployment.interDomainLatencyVariation = 0;
           scenario.deployment.interDomainThroughput = 0;
@@ -354,6 +357,11 @@
               expect(data.deployment.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
                     expect(data.deployment.connectivity.model).to.be.a('string');
                 expect(data.deployment.connectivity.model).to.be("OPEN");
+              expect(data.deployment.d2d).to.be.a(AdvantEdgePlatformControllerRestApi.D2dConfig);
+                    expect(data.deployment.d2d.d2dMaxDistance).to.be.a('number');
+                expect(data.deployment.d2d.d2dMaxDistance).to.be();
+                expect(data.deployment.d2d.disableD2dViaNetwork).to.be.a('boolean');
+                expect(data.deployment.d2d.disableD2dViaNetwork).to.be(false);
               expect(data.deployment.interDomainLatency).to.be.a('number');
               expect(data.deployment.interDomainLatency).to.be(0);
               expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
@@ -951,6 +959,11 @@
                   expect(data.deployment.connectivity).to.be.a(AdvantEdgePlatformControllerRestApi.ConnectivityConfig);
                         expect(data.deployment.connectivity.model).to.be.a('string');
                     expect(data.deployment.connectivity.model).to.be("OPEN");
+                  expect(data.deployment.d2d).to.be.a(AdvantEdgePlatformControllerRestApi.D2dConfig);
+                        expect(data.deployment.d2d.d2dMaxDistance).to.be.a('number');
+                    expect(data.deployment.d2d.d2dMaxDistance).to.be();
+                    expect(data.deployment.d2d.disableD2dViaNetwork).to.be.a('boolean');
+                    expect(data.deployment.d2d.disableD2dViaNetwork).to.be(false);
                   expect(data.deployment.interDomainLatency).to.be.a('number');
                   expect(data.deployment.interDomainLatency).to.be(0);
                   expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
@@ -1523,6 +1536,9 @@
           scenario.deployment.netChar.packetLoss = 0.0;
           scenario.deployment.connectivity = new AdvantEdgePlatformControllerRestApi.ConnectivityConfig();
           scenario.deployment.connectivity.model = "OPEN";
+          scenario.deployment.d2d = new AdvantEdgePlatformControllerRestApi.D2dConfig();
+          scenario.deployment.d2d.d2dMaxDistance = ;
+          scenario.deployment.d2d.disableD2dViaNetwork = false;
           scenario.deployment.interDomainLatency = 0;
           scenario.deployment.interDomainLatencyVariation = 0;
           scenario.deployment.interDomainThroughput = 0;

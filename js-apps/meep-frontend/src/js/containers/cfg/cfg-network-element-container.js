@@ -67,6 +67,8 @@ import {
   FIELD_CHART_GROUP,
   FIELD_CONNECTED,
   FIELD_CONNECTIVITY_MODEL,
+  FIELD_D2D_RADIUS,
+  FIELD_D2D_DISABLED,
   FIELD_DN_NAME,
   FIELD_DN_LADN,
   FIELD_DN_ECSP,
@@ -123,7 +125,8 @@ import {
   validateDnn,
   validateEcsp,
   validateEnvironmentVariables,
-  validateName
+  validateName,
+  validateD2DRadius
 } from '@/js/util/validate';
 
 import {
@@ -197,6 +200,8 @@ import {
   CFG_ELEM_NR_CELL_ID,
   CFG_ELEM_GEO_LOCATION,
   CFG_ELEM_GEO_RADIUS,
+  CFG_ELEM_D2D_RADIUS,
+  CFG_ELEM_D2D_DISABLED,
   CFG_ELEM_GEO_PATH,
   CFG_ELEM_GEO_EOP_MODE,
   CFG_ELEM_GEO_VELOCITY,
@@ -230,7 +235,7 @@ const CfgTextField = props => {
         outlined
         style={{ width: '100%', marginBottom: 0 }}
         label={props.label}
-        withLeadingIcon={!props.icon ? null : 
+        withLeadingIcon={!props.icon ? null :
           <TextFieldIcon
             tabIndex="0"
             icon={props.icon}
@@ -514,6 +519,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
   var connectivityModel = getElemFieldVal(element, FIELD_CONNECTIVITY_MODEL) || '';
+  var d2dDisabled = getElemFieldVal(element, FIELD_D2D_DISABLED) || false;
   var isLadn = getElemFieldVal(element, FIELD_DN_LADN) || false;
   var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
   var color = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
@@ -521,7 +527,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
   switch (type) {
   case ELEMENT_TYPE_SCENARIO:
     return (
-      <> 
+      <>
         <NCGroups
           onUpdate={onUpdate}
           element={element}
@@ -537,6 +543,28 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             disabled={false}
             cydata={CFG_ELEM_CONNECTIVITY_MODEL}
           />
+        </Grid>
+        <Grid style={{ marginTop: 20 }}>
+          <CfgTextFieldCell
+            span={6}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='D2D Radius (m)'
+            validate={validateD2DRadius}
+            fieldName={FIELD_D2D_RADIUS}
+            cydata={CFG_ELEM_D2D_RADIUS}
+          />
+          <GridCell align='right' span={6}>
+            <Checkbox
+              span={6}
+              checked={d2dDisabled}
+              onChange={e => onUpdate(FIELD_D2D_DISABLED, e.target.checked, null)}
+              data-cy={CFG_ELEM_D2D_DISABLED}
+            >
+            Disable D2D Via Network
+            </Checkbox>
+          </GridCell>
         </Grid>
       </>
     );
@@ -936,11 +964,11 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               fieldName={FIELD_WIRELESS_TYPE}
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
-          </Grid> 
+          </Grid>
         ) : (
           <Grid style={{ paddingTop: 16 }}></Grid>
         )}
-        
+
         <Grid>
           <CfgTextFieldCell
             span={12}
@@ -1025,11 +1053,11 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               fieldName={FIELD_WIRELESS_TYPE}
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
-          </Grid> 
+          </Grid>
         ) : (
           <Grid style={{ paddingTop: 16 }}></Grid>
         )}
-        
+
         <Grid>
           <CfgTextFieldCell
             span={8}
@@ -1199,7 +1227,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                   User-Defined Chart
                 </Checkbox>
                 <div style={{marginTop: 20 }}></div>
-                
+
                 {chartEnabled ? (
                   <UserChartFields onUpdate={onUpdate} element={element} />
                 ) : (

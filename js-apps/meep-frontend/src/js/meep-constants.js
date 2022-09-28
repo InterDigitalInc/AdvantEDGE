@@ -156,6 +156,8 @@ export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
 export const CFG_ELEM_NR_CELL_ID = 'cfg-elem-nr-cell-id';
 export const CFG_ELEM_GEO_LOCATION = 'cfg-elem-location';
 export const CFG_ELEM_GEO_RADIUS = 'cfg-elem-radius';
+export const CFG_ELEM_D2D_RADIUS = 'cfg-elem-d2d-radius';
+export const CFG_ELEM_D2D_DISABLED = 'cfg-elem-d2d-disabled';
 export const CFG_ELEM_GEO_PATH = 'cfg-elem-path';
 export const CFG_ELEM_GEO_EOP_MODE = 'cfg-elem-eop-mode';
 export const CFG_ELEM_GEO_VELOCITY = 'cfg-elem-velocity';
@@ -319,6 +321,10 @@ export const OPT_WIRED = {label: 'Wired', value: false};
 export const CONNECTIVITY_MODEL_OPEN = 'OPEN';
 export const CONNECTIVITY_MODEL_PDU = 'PDU';
 export const DEFAULT_CONNECTIVITY_MODEL = CONNECTIVITY_MODEL_OPEN;
+
+// D2d
+export const DEFAULT_D2D_RADIUS = 100;
+export const DEFAULT_D2D_DISABLED = false;
 
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';

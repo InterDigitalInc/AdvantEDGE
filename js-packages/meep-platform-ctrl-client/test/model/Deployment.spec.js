@@ -67,6 +67,12 @@
         // expect(instance.connectivity).to.be(expectedValueLiteral);
       });
 
+      it('should have the property d2d (base name: "d2d")', function() {
+        // TODO: update the code to test the property d2d
+        expect(instance).to.have.property('d2d');
+        // expect(instance.d2d).to.be(expectedValueLiteral);
+      });
+
       it('should have the property interDomainLatency (base name: "interDomainLatency")', function() {
         // TODO: update the code to test the property interDomainLatency
         expect(instance).to.have.property('interDomainLatency');
