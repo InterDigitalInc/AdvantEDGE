@@ -127,7 +127,7 @@ import {
   getElemFieldVal
 } from '../util/elem-utils';
 import { DASH_CFG_VIEW_TYPE, getDashCfgFieldVal } from '../util/dashboard-utils';
-  
+
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
 meepPlatformCtrlRestApiClient.ApiClient.instance.basePath = basepathPlatformCtrl.replace(/\/+$/,'');
@@ -156,7 +156,7 @@ class MeepContainer extends Component {
     this.execPageRefreshIntervalTimer = null;
     this.replayStatusRefreshIntervalTimer = null;
     this.meepScenarioConfigurationApi = new meepPlatformCtrlRestApiClient.ScenarioConfigurationApi();
-    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();  
+    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();
     this.meepAppInfoApi = new meepSandboxCtrlRestApiClient.ApplicationsApi();
     this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
     this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
@@ -238,7 +238,7 @@ class MeepContainer extends Component {
       this.refreshDataflowMetrics = true;
     }
   }
-  
+
   // Timers
   startTimers() {
     if (this.props.signInStatus === STATUS_SIGNED_IN || this.props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED) {
@@ -275,12 +275,12 @@ class MeepContainer extends Component {
     }
   }
 
-  // Exec page refresh 
+  // Exec page refresh
   startExecPageRefresh() {
     // Initialize refresh variables
     this.refreshSeqMetrics = true;
     this.refreshDataflowMetrics = true;
-    
+
 
     // Start refresh timer
     this.execPageRefreshIntervalTimer = setInterval(
@@ -291,7 +291,7 @@ class MeepContainer extends Component {
             this.checkScenarioStatus();
             this.refreshPduSessions();
             this.refreshScenario();
-            
+
             // Only update while scenario is running
             if (this.props.execScenarioState === 'DEPLOYED') {
               this.refreshAppInstancesTable();
@@ -592,7 +592,7 @@ class MeepContainer extends Component {
           //restore the canvas position and scale in vis
           vis.network.canvas.body.view = view;
         });
-      } 
+      }
 
       // Update diagrams
       this.updateDiagrams(updatedTable, scenarioName);
@@ -673,7 +673,7 @@ class MeepContainer extends Component {
       return;
     }
 
-    // Update App Instance table only if data is different 
+    // Update App Instance table only if data is different
     var appInstances = data ? data : [];
     const isArrayEqual = (x, y) => _.isEmpty(_.xorWith(x, y, _.isEqual));
     if (!isArrayEqual(this.props.appInstanceTable,appInstances)) {
@@ -724,7 +724,7 @@ class MeepContainer extends Component {
         }
       });
     }
-    
+
     // Update asset map
     var assetMap = {
       ueList: _.sortBy(ueList, ['assetName']),
@@ -737,7 +737,7 @@ class MeepContainer extends Component {
   }
 
   // Refresh Map
-  refreshMap() { 
+  refreshMap() {
     this.meepGeoDataApi.getAssetData({}, (error, data) =>
       this.getAssetDataCb(error, data)
     );
@@ -756,7 +756,7 @@ class MeepContainer extends Component {
       return;
     }
     var newSeqMetrics = (data && data.seqMetricList && data.seqMetricList.values) ? data.seqMetricList.values : [];
-    
+
     // Nothing to do if no new metrics
     if (newSeqMetrics.length === 0) {
       // Reset metrics if necessary
@@ -768,7 +768,7 @@ class MeepContainer extends Component {
     }
 
     // Merge new metrics with existing list
-    // Copy previous list if no reset 
+    // Copy previous list if no reset
     var seqMetrics = [];
     if (this.resetSeqMetrics) {
       this.resetSeqMetrics = false;
@@ -778,7 +778,7 @@ class MeepContainer extends Component {
 
     // Get latest metric
     var lastMetric = (seqMetrics.length > 0) ? seqMetrics[seqMetrics.length - 1] : null;
-    
+
     _.forEach(newSeqMetrics, newMetric => {
       // Add metric to list if it is more recent than the last metric
       // NOTE: assumes timestamps do not overlap due to nanosecond precision
@@ -832,7 +832,7 @@ class MeepContainer extends Component {
       return;
     }
     // var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
-    
+
     // // Nothing to do if no new metrics
     // if (newDataflowMetrics.length === 0) {
     //   // Reset metrics if necessary
@@ -844,7 +844,7 @@ class MeepContainer extends Component {
     // }
 
     // // Merge new metrics with existing list
-    // // Copy previous list if no reset 
+    // // Copy previous list if no reset
     // var dataflowMetrics = [];
     // if (this.resetDataflowMetrics) {
     //   this.resetDataflowMetrics = false;
@@ -854,7 +854,7 @@ class MeepContainer extends Component {
 
     // // Get latest metric
     // var lastMetric = (dataflowMetrics.length > 0) ? dataflowMetrics[dataflowMetrics.length - 1] : null;
-    
+
     // _.forEach(newDataflowMetrics, newMetric => {
     //   // Add metric to list if it is more recent than the last metric
     //   // NOTE: assumes timestamps do not overlap due to nanosecond precision
@@ -1091,7 +1091,7 @@ class MeepContainer extends Component {
   closeDialog() {
     this.props.changeCurrentDialog(Math.random());
   }
-  
+
   renderDialogs() {
     return (
       <>
@@ -1135,6 +1135,7 @@ class MeepContainer extends Component {
               automationApi={this.meepEventAutomationApi}
               replayApi={this.meepEventReplayApi}
               cfgApi={this.meepScenarioConfigurationApi}
+              metricsApi={this.meepMetricsApi}
               sandboxApi={this.meepSandboxControlApi}
               sandbox={this.props.sandbox}
               sandboxes={this.props.sandboxes}
@@ -1158,7 +1159,7 @@ class MeepContainer extends Component {
 
     case PAGE_MONITOR:
       return <MonitorPageContainer />;
-    
+
     case PAGE_HOME:
       return <HomePageContainer />;
 

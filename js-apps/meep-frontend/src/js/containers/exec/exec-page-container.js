@@ -141,7 +141,7 @@ class ExecPageContainer extends Component {
     newSandboxCfg[sandboxName].dashView2 = {};
     setDashCfgField(newSandboxCfg[sandboxName].dashView1, DASH_CFG_VIEW_TYPE, NET_TOPOLOGY_VIEW, null);
     setDashCfgField(newSandboxCfg[sandboxName].dashView2, DASH_CFG_VIEW_TYPE, VIEW_NAME_NONE, null);
-  
+
     this.props.changeSandboxCfg(newSandboxCfg);
   }
 
@@ -240,7 +240,7 @@ class ExecPageContainer extends Component {
       this.getReplayFileListCb(error, data, response);
     });
   }
-  
+
   saveReplay(state) {
     const scenarioName = this.props.scenario.name;
     var replayInfo = {
@@ -360,7 +360,7 @@ class ExecPageContainer extends Component {
       this.terminateScenarioCb(error, data, response)
     );
   }
-  
+
   renderDialogs() {
     return (
       <>
@@ -539,13 +539,14 @@ class ExecPageContainer extends Component {
                   onClose={this.onCloseDashCfg}
                   sandbox={this.props.sandbox}
                   scenarioName={this.props.execScenarioName}
+                  metricsApi={this.props.metricsApi}
                 />
               </Elevation>
             </GridCell>
           </Grid>
         )}
-        
-        {sandbox && 
+
+        {sandbox &&
           <ExecTable />
         }
       </div>

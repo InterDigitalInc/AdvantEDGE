@@ -127,6 +127,9 @@ export const CFG_BTN_NEW_ELEM = 'cfg-btn-new-elem';
 export const CFG_BTN_DEL_ELEM = 'cfg-btn-del-elem';
 export const CFG_BTN_CLONE_ELEM = 'cfg-btn-clone-elem';
 export const CFG_BTN_SAVE_ELEM = 'cfg-btn-save-elem';
+export const CFG_BTN_EXP_MERMAID_SEQ = 'cfg-btn-exp-mermaid-seq';
+export const CFG_BTN_EXP_SDORG_SEQ = 'cfg-btn-exp-sdorg-seq';
+export const CFG_BTN_EXP_MERMAID_DF = 'cfg-btn-exp-mermaid-df';
 
 export const CFG_ELEM_TYPE = 'cfg-elem-type';
 export const CFG_ELEM_NAME = 'cfg-elem-name';
