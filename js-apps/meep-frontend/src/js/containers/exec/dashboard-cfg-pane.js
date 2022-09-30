@@ -75,7 +75,7 @@ class DashCfgPane extends Component {
     }
     return null;
   }
-  
+
   changeViewCfg(view, viewCfg) {
     const sandboxName = this.props.sandbox;
     var newSandboxCfg = updateObject({}, this.props.sandboxCfg);
@@ -101,7 +101,7 @@ class DashCfgPane extends Component {
       }
     }
   }
-  
+
   onDashCfgClose(e) {
     e.preventDefault();
     this.props.onClose(e);
@@ -117,7 +117,7 @@ class DashCfgPane extends Component {
     }
 
     var currentViewCfg = this.getViewCfg(this.props.currentView);
-    
+
     const root = this.getRoot();
     const nodes = root.descendants();
     const apps = nodes.filter(isApp);
@@ -170,6 +170,7 @@ class DashCfgPane extends Component {
             appIds={appIds}
             ueIds={ueIds}
             poaIds={poaIds}
+            metricsApi={this.props.metricsApi}
           />
         }
         <div>

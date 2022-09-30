@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import _ from 'lodash';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import autoBind from 'react-autobind';
@@ -33,7 +34,10 @@ import {
   NET_METRICS_PTP_VIEW,
   NET_METRICS_AGG_VIEW,
   WIRELESS_METRICS_PTP_VIEW,
-  WIRELESS_METRICS_AGG_VIEW
+  WIRELESS_METRICS_AGG_VIEW,
+  CFG_BTN_EXP_MERMAID_SEQ,
+  CFG_BTN_EXP_SDORG_SEQ,
+  CFG_BTN_EXP_MERMAID_DF
 } from '@/js/meep-constants';
 
 import {
@@ -63,7 +67,7 @@ const DashCfgTextField = props => {
         outlined
         style={{ width: '100%', marginBottom: 0 }}
         label={props.label}
-        withLeadingIcon={!props.icon ? null : 
+        withLeadingIcon={!props.icon ? null :
           <TextFieldIcon
             tabIndex="0"
             icon={props.icon}
@@ -145,6 +149,103 @@ class DashCfgDetailPane extends Component {
     this.onUpdateDashCfg(DASH_CFG_START_TIME, '', null);
   }
 
+  // Callback function for postSeqQuery
+  postSeqQueryCb(error, data, format) {
+    if (error !== null) {
+      return;
+    }
+    var seqMetrics = (data && data.seqMetricString) ? data.seqMetricString : '';
+
+    // Nothing to do if no new metrics
+    if (seqMetrics.length === 0) {
+      return;
+    }
+    var seqChart = '';
+    // Add scenario-configured participants
+    var participants = getDashCfgFieldVal(this.viewCfg, DASH_CFG_PARTICIPANTS);
+    participants = _.split(participants, ',');
+    _.forEach(participants, participant => {
+      seqChart += ('participant ' + participant + '\n');
+    });
+    var scenarioName = this.props.scenarioName;
+    if (format === 'mermaid'){
+      seqChart = 'sequenceDiagram\n' + seqChart + seqMetrics;
+      var filename = scenarioName + '-mermaid-seq.txt';
+      var id = 'export-mermaid-link';
+    }
+    else{
+      seqChart = seqChart + seqMetrics;
+      filename = scenarioName + '-sdorg-seq.txt';
+      id = 'export-sdorg-link';
+    }
+    var link = document.getElementById(id);
+    link.href = this.makeTextFile(seqChart);
+    link.download = filename;
+    link.click();
+  }
+
+  // Export Mermaid Sequence Diagram
+  exportMermaidSeq() {
+    var seqMetricsQuery = {
+      fields: ['mermaid'],
+      scope: {
+        limit: 0
+      },
+      responseType: 'stronly'
+    };
+    var format = 'mermaid';
+    // Query sequence diagram
+    this.props.metricsApi.postSeqQuery(seqMetricsQuery, (error, data) =>
+      this.postSeqQueryCb(error, data, format)
+    );
+  }
+  // Export Sdorg Sequence Diagram
+  exportSdorgSeq() {
+    var seqMetricsQuery = {
+      fields: ['sdorg'],
+      scope: {
+        limit: 0
+      },
+      responseType: 'stronly'
+    };
+    var format = 'sdorg';
+    // Query sequence diagram
+    this.props.metricsApi.postSeqQuery(seqMetricsQuery, (error, data) =>
+      this.postSeqQueryCb(error, data, format)
+    );
+  }
+
+  // Callback function for postDataflowQuery
+  postDataflowQueryCb(error, data) {
+    if (error !== null) {
+      return;
+    }
+    var dataflowChart = (data) ? data.dataflowMetricString : '';
+    dataflowChart = 'stateDiagram\n' + dataflowChart;
+    var filename = this.props.scenarioName + '-mermaid-df.txt';
+    var id = 'export-dataflow-link';
+    var link = document.getElementById(id);
+    link.href = this.makeTextFile(dataflowChart);
+    link.download = filename;
+    link.click();
+  }
+
+  // Export Mermaid Dataflow Diagram
+  exportMermaidDataflow() {
+    var dataflowMetricsQuery = {
+      fields: ['mermaid'],
+      responseType: 'stronly'
+    };
+    this.props.metricsApi.postDataflowQuery(dataflowMetricsQuery, (error, data) =>
+      this.postDataflowQueryCb(error, data)
+    );
+  }
+
+  makeTextFile(text) {
+    var data = new Blob([text], { type: 'text/plain'});
+    var exportTextFile = window.URL.createObjectURL(data);
+    return exportTextFile;
+  }
   render() {
     this.viewCfg = this.props.viewCfg;
     this.netSrcNodeIds = this.props.appIds;
@@ -191,7 +292,7 @@ class DashCfgDetailPane extends Component {
                   isNumber={false}
                   label={'Participants'}
                   fieldName={DASH_CFG_PARTICIPANTS}
-                />     
+                />
               </GridCell>
               <GridCell span={12}>
                 <DashCfgTextField
@@ -201,7 +302,7 @@ class DashCfgDetailPane extends Component {
                   isNumber={true}
                   label={'Max message count'}
                   fieldName={DASH_CFG_MAX_MSG_COUNT}
-                /> 
+                />
               </GridCell>
               <GridCell span={12} style={{marginBottom: 10}}>
                 <Button
@@ -217,6 +318,24 @@ class DashCfgDetailPane extends Component {
                 >
                   Fetch all
                 </Button>
+                <Button
+                  outlined
+                  style={{marginLeft: 10}}
+                  onClick={this.exportMermaidSeq}
+                  data-cy={CFG_BTN_EXP_MERMAID_SEQ}
+                >
+                  Export mermaid
+                </Button>
+                <a id='export-mermaid-link' download='mermaid.txt' hidden></a>
+                <Button
+                  outlined
+                  style={{marginLeft: 10}}
+                  onClick={this.exportSdorgSeq}
+                  data-cy={CFG_BTN_EXP_SDORG_SEQ}
+                >
+                  Export sdorg
+                </Button>
+                <a id='export-sdorg-link' download='sdorg.txt' hidden></a>
               </GridCell>
               <GridCell span={12}>
                 <Checkbox
@@ -232,6 +351,17 @@ class DashCfgDetailPane extends Component {
 
           { this.viewType === DATAFLOW_DIAGRAM_VIEW ?
             <>
+              <GridCell span={12} style={{marginBottom: 10}}>
+                <Button
+                  outlined
+                  style={{marginLeft: 10}}
+                  onClick={this.exportMermaidDataflow}
+                  data-cy={CFG_BTN_EXP_MERMAID_DF}
+                >
+                  Export mermaid
+                </Button>
+                <a id='export-dataflow-link' download='df.txt' hidden></a>
+              </GridCell>
               <GridCell span={12}>
                 <Checkbox
                   checked={this.props.pauseDataflow}
@@ -328,7 +458,8 @@ const mapStateToProps = state => {
     execSeqMetrics: state.exec.seq.metrics,
     showApps: state.ui.execShowApps,
     pauseSeq: state.ui.execPauseSeq,
-    pauseDataflow: state.ui.execPauseDataflow
+    pauseDataflow: state.ui.execPauseDataflow,
+    scenarioName: state.exec.scenario.name
   };
 };
 
