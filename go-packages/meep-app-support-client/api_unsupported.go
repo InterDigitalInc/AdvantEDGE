@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -77,7 +77,7 @@ func (a *UnsupportedApiService) ApplicationsDnsRuleGET(ctx context.Context, appI
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -202,7 +202,7 @@ func (a *UnsupportedApiService) ApplicationsDnsRulePUT(ctx context.Context, body
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -337,7 +337,7 @@ func (a *UnsupportedApiService) ApplicationsDnsRulesGET(ctx context.Context, app
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -461,7 +461,7 @@ func (a *UnsupportedApiService) ApplicationsTrafficRuleGET(ctx context.Context, 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -586,7 +586,7 @@ func (a *UnsupportedApiService) ApplicationsTrafficRulePUT(ctx context.Context, 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -721,7 +721,7 @@ func (a *UnsupportedApiService) ApplicationsTrafficRulesGET(ctx context.Context,
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)

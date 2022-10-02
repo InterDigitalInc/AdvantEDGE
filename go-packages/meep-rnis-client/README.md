@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/sandboxname/rni/v2*
+All URIs are relative to *https://localhost/rni/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -125,7 +125,6 @@ Class | Method | HTTP request | Description
  - [SubscriptionLinkList](docs/SubscriptionLinkList.md)
  - [SubscriptionLinkListLinks](docs/SubscriptionLinkListLinks.md)
  - [SubscriptionLinkListLinksSubscription](docs/SubscriptionLinkListLinksSubscription.md)
- - [TestNotification](docs/TestNotification.md)
  - [TimeStamp](docs/TimeStamp.md)
  - [Trigger](docs/Trigger.md)
  - [TriggerNr](docs/TriggerNr.md)

@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/sandboxname/mec_service_mgmt/v1*
+All URIs are relative to *https://localhost/mec_service_mgmt/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

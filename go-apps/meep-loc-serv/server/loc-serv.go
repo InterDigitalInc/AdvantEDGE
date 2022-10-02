@@ -612,11 +612,11 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 	if opStatus != nil {
 		for i := 0; i < len(opStatus); i++ {
 			switch opStatus[i] {
-			case SERVICEABLE:
+			case SERVICEABLE_OperationStatus:
 				zoneStatus.Serviceable = true
-			case UNSERVICEABLE:
+			case UNSERVICEABLE_OperationStatus:
 				zoneStatus.Unserviceable = true
-			case OPSTATUS_UNKNOWN:
+			case UNKNOWN_OperationStatus:
 				zoneStatus.Unknown = true
 			default:
 			}
@@ -656,11 +656,11 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
-			case ENTERING_EVENT:
+			case ENTERING_UserEventType:
 				zonalSubscriptionEnteringMap[subsId] = zoneId
-			case LEAVING_EVENT:
+			case LEAVING_UserEventType:
 				zonalSubscriptionLeavingMap[subsId] = zoneId
-			case TRANSFERRING_EVENT:
+			case TRANSFERRING_UserEventType:
 				zonalSubscriptionTransferringMap[subsId] = zoneId
 			default:
 			}
@@ -699,11 +699,11 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
-			case ENTERING_EVENT:
+			case ENTERING_UserEventType:
 				userSubscriptionEnteringMap[subsId] = userAddress
-			case LEAVING_EVENT:
+			case LEAVING_UserEventType:
 				userSubscriptionLeavingMap[subsId] = userAddress
-			case TRANSFERRING_EVENT:
+			case TRANSFERRING_UserEventType:
 				userSubscriptionTransferringMap[subsId] = userAddress
 			default:
 			}
@@ -817,23 +817,23 @@ func checkNotificationDistancePeriodicTrigger() {
 					distance := int32(distResp.Distance)
 
 					switch *distanceCheck.Subscription.Criteria {
-					case ALL_WITHIN_DISTANCE:
+					case ALL_WITHIN_DISTANCE_DistanceCriteria:
 						if float32(distance) < distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						} else {
 							skipThisSubscription = true
 						}
-					case ALL_BEYOND_DISTANCE:
+					case ALL_BEYOND_DISTANCE_DistanceCriteria:
 						if float32(distance) > distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						} else {
 							skipThisSubscription = true
 						}
-					case ANY_WITHIN_DISTANCE:
+					case ANY_WITHIN_DISTANCE_DistanceCriteria:
 						if float32(distance) < distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						}
-					case ANY_BEYOND_DISTANCE:
+					case ANY_BEYOND_DISTANCE_DistanceCriteria:
 						if float32(distance) > distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						}
@@ -869,7 +869,7 @@ func checkNotificationDistancePeriodicTrigger() {
 						timestamp.Seconds = int32(seconds)
 						locationInfo.Timestamp = &timestamp
 						terminalLocation.CurrentLocation = &locationInfo
-						retrievalStatus := RETRIEVED
+						retrievalStatus := RETRIEVED_RetrievalStatus
 						terminalLocation.LocationRetrievalStatus = &retrievalStatus
 						terminalLocationList = append(terminalLocationList, terminalLocation)
 					}
@@ -935,7 +935,7 @@ func checkNotificationAreaCircle(addressToCheck string) {
 							continue
 						} else {
 							areaCircleCheck.AddrInArea[addr] = true
-							event = ENTERING_CRITERIA
+							event = ENTERING_EnteringLeavingCriteria
 						}
 					} else {
 						if !areaCircleCheck.AddrInArea[addr] {
@@ -943,7 +943,7 @@ func checkNotificationAreaCircle(addressToCheck string) {
 							continue
 						} else {
 							areaCircleCheck.AddrInArea[addr] = false
-							event = LEAVING_CRITERIA
+							event = LEAVING_EnteringLeavingCriteria
 						}
 					}
 					//no tracking this event, stop looking for this UE
@@ -970,7 +970,7 @@ func checkNotificationAreaCircle(addressToCheck string) {
 					timestamp.Seconds = int32(seconds)
 					locationInfo.Timestamp = &timestamp
 					terminalLocation.CurrentLocation = &locationInfo
-					retrievalStatus := RETRIEVED
+					retrievalStatus := RETRIEVED_RetrievalStatus
 					terminalLocation.LocationRetrievalStatus = &retrievalStatus
 					terminalLocationList = append(terminalLocationList, terminalLocation)
 
@@ -1035,7 +1035,7 @@ func checkNotificationPeriodicTrigger() {
 				timestamp.Seconds = int32(seconds)
 				locationInfo.Timestamp = &timestamp
 				terminalLocation.CurrentLocation = &locationInfo
-				retrievalStatus := RETRIEVED
+				retrievalStatus := RETRIEVED_RetrievalStatus
 				terminalLocation.LocationRetrievalStatus = &retrievalStatus
 				terminalLocationList = append(terminalLocationList, terminalLocation)
 			}
@@ -1236,7 +1236,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.ZoneId = oldZoneId
 						zonal.CurrentAccessPointId = oldApId
 						event := new(UserEventType)
-						*event = LEAVING_EVENT
+						*event = LEAVING_UserEventType
 						zonal.UserEventType = event
 						var inlineZonal InlineZonalPresenceNotification
 						inlineZonal.ZonalPresenceNotification = &zonal
@@ -1248,7 +1248,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 					zonal.ZoneId = newZoneId
 					zonal.CurrentAccessPointId = newApId
 					event := new(UserEventType)
-					*event = ENTERING_EVENT
+					*event = ENTERING_UserEventType
 					zonal.UserEventType = event
 					var inlineZonal InlineZonalPresenceNotification
 					inlineZonal.ZonalPresenceNotification = &zonal
@@ -1263,7 +1263,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = newApId
 						zonal.PreviousAccessPointId = oldApId
 						event := new(UserEventType)
-						*event = TRANSFERRING_EVENT
+						*event = TRANSFERRING_UserEventType
 						zonal.UserEventType = event
 						var inlineZonal InlineZonalPresenceNotification
 						inlineZonal.ZonalPresenceNotification = &zonal
@@ -1360,7 +1360,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = newApId
 						zonal.Address = userId
 						event := new(UserEventType)
-						*event = ENTERING_EVENT
+						*event = ENTERING_UserEventType
 						zonal.UserEventType = event
 						seconds := time.Now().Unix()
 						var timestamp TimeStamp
@@ -1388,7 +1388,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 							zonal.PreviousAccessPointId = oldApId
 							zonal.Address = userId
 							event := new(UserEventType)
-							*event = TRANSFERRING_EVENT
+							*event = TRANSFERRING_UserEventType
 							zonal.UserEventType = event
 							seconds := time.Now().Unix()
 							var timestamp TimeStamp
@@ -1418,7 +1418,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = oldApId
 						zonal.Address = userId
 						event := new(UserEventType)
-						*event = LEAVING_EVENT
+						*event = LEAVING_UserEventType
 						zonal.UserEventType = event
 						seconds := time.Now().Unix()
 						var timestamp TimeStamp
@@ -2146,7 +2146,7 @@ func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		switch *areaCircleSub.EnteringLeavingCriteria {
-		case ENTERING_CRITERIA, LEAVING_CRITERIA:
+		case ENTERING_EnteringLeavingCriteria, LEAVING_EnteringLeavingCriteria:
 		default:
 			log.Error("Invalid Mandatory EnteringLeavingCriteria parameter value")
 			errHandlerProblemDetails(w, "Invalid Mandatory EnteringLeavingCriteria parameter value", http.StatusBadRequest)
@@ -3514,11 +3514,11 @@ func zoneStatusReInit() {
 			if opStatus != nil {
 				for i := 0; i < len(opStatus); i++ {
 					switch opStatus[i] {
-					case SERVICEABLE:
+					case SERVICEABLE_OperationStatus:
 						zoneStatus.Serviceable = true
-					case UNSERVICEABLE:
+					case UNSERVICEABLE_OperationStatus:
 						zoneStatus.Unserviceable = true
-					case OPSTATUS_UNKNOWN:
+					case UNKNOWN_OperationStatus:
 						zoneStatus.Unknown = true
 					default:
 					}
@@ -3555,11 +3555,11 @@ func zonalTrafficReInit() {
 
 			for i := 0; i < len(zone.UserEventCriteria); i++ {
 				switch zone.UserEventCriteria[i] {
-				case ENTERING_EVENT:
+				case ENTERING_UserEventType:
 					zonalSubscriptionEnteringMap[subscriptionId] = zone.ZoneId
-				case LEAVING_EVENT:
+				case LEAVING_UserEventType:
 					zonalSubscriptionLeavingMap[subscriptionId] = zone.ZoneId
-				case TRANSFERRING_EVENT:
+				case TRANSFERRING_UserEventType:
 					zonalSubscriptionTransferringMap[subscriptionId] = zone.ZoneId
 				default:
 				}
@@ -3593,11 +3593,11 @@ func userTrackingReInit() {
 
 			for i := 0; i < len(user.UserEventCriteria); i++ {
 				switch user.UserEventCriteria[i] {
-				case ENTERING_EVENT:
+				case ENTERING_UserEventType:
 					userSubscriptionEnteringMap[subscriptionId] = user.Address
-				case LEAVING_EVENT:
+				case LEAVING_UserEventType:
 					userSubscriptionLeavingMap[subscriptionId] = user.Address
-				case TRANSFERRING_EVENT:
+				case TRANSFERRING_UserEventType:
 					userSubscriptionTransferringMap[subscriptionId] = user.Address
 				default:
 				}

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -29,12 +29,12 @@ type DnsRule struct {
 	DnsRuleId string `json:"dnsRuleId"`
 	// FQDN resolved by the DNS rule
 	DomainName string `json:"domainName"`
-	// IP address type
-	IpAddressType string `json:"ipAddressType"`
+
+	IpAddressType *DnsRuleIpAddressType `json:"ipAddressType"`
 	// IP address associated with the FQDN resolved by the DNS rule
 	IpAddress string `json:"ipAddress"`
 	// Time to live value
 	Ttl int32 `json:"ttl,omitempty"`
-	// DNS rule state. This attribute may be updated using HTTP PUT method
-	State string `json:"state"`
+
+	State *DnsRuleState `json:"state"`
 }

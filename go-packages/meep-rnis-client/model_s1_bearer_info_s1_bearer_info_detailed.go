@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Radio Network Information Service REST API
+ * ETSI GS MEC 012 - Radio Network Information API
  *
  * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
@@ -27,6 +27,6 @@ package client
 type S1BearerInfoS1BearerInfoDetailed struct {
 	EnbInfo *S1BearerInfoEnbInfo `json:"enbInfo,omitempty"`
 	// The attribute that uniquely identifies a S1 bearer for a specific UE, as defined in ETSI TS 136 413 [i.3].
-	ErabId int32 `json:"erabId,omitempty"`
+	ErabId  int32                `json:"erabId,omitempty"`
 	SGwInfo *S1BearerInfoSGwInfo `json:"sGwInfo,omitempty"`
 }

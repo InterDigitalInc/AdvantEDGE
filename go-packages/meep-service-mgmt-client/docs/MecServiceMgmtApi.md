@@ -1,6 +1,6 @@
-# {{classname}}
+# \MecServiceMgmtApi
 
-All URIs are relative to *https://localhost/sandboxname/mec_service_mgmt/v1*
+All URIs are relative to *https://localhost/mec_service_mgmt/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -30,19 +30,20 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **appInstanceId** | **string**| Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager. | 
- **optional** | ***MecServiceMgmtApiAppServicesGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***AppServicesGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a MecServiceMgmtApiAppServicesGETOpts struct
+Optional parameters are passed through a pointer to a AppServicesGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
  **serInstanceId** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serName** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serCategoryId** | **optional.String**| A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
- **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance. | 
- **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application. | 
- **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality. | 
+ **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | 
+ **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | 
+ **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality. | 
 
 ### Return type
 
@@ -92,7 +93,7 @@ No authorization required
 > AppServicesServiceIdDELETE(ctx, appInstanceId, serviceId)
 
 
-This method deletes a mecService resource. This method is typically used in the service deregistration procedure. 
+This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
 
 ### Required Parameters
 
@@ -302,18 +303,19 @@ This method retrieves information about a list of mecService resources. This met
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***MecServiceMgmtApiServicesGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***ServicesGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a MecServiceMgmtApiServicesGETOpts struct
+Optional parameters are passed through a pointer to a ServicesGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **serInstanceId** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serName** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serCategoryId** | **optional.String**| A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
- **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance. | 
- **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application. | 
- **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality. | 
+ **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | 
+ **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | 
+ **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality. | 
 
 ### Return type
 

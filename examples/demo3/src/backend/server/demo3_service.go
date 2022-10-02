@@ -498,7 +498,7 @@ func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED
+		var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED_ContextTransferState
 		_, err = amsSetDevice(amsResourceId, amsResource, device, contextTransferState)
 		if err != nil {
 			log.Error("Could not add device to AMS Resource", err.Error())
@@ -838,7 +838,7 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		_, amsUpdateError := amsSetDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, ams.USER_CONTEXT_TRANSFER_COMPLETED)
+		_, amsUpdateError := amsSetDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, ams.USER_CONTEXT_TRANSFER_COMPLETED_ContextTransferState)
 		if amsUpdateError != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not update ams")
@@ -886,7 +886,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	var targetContextState ApplicationContextState
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&targetContextState)
-	counter := strconv.Itoa(targetContextState.Counter)
+	counter := strconv.Itoa(int(targetContextState.Counter))
 	if err != nil {
 		log.Error(err.Error())
 		appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [500]")
@@ -903,7 +903,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update AMS Resource
-	var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED
+	var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED_ContextTransferState
 	_, err = amsSetDevice(amsResourceId, amsResourceBody, targetContextState.Device, contextTransferState)
 	if err != nil {
 		log.Error(err.Error())
@@ -932,7 +932,7 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	addToTrackingDevices(targetContextState.Device)
 
-	terminalDeviceState[targetContextState.Device] = targetContextState.Counter
+	terminalDeviceState[targetContextState.Device] = int(targetContextState.Counter)
 
 	appActivityLogs = append(appActivityLogs, "=== Receive device "+targetContextState.Device+" context (state="+counter+") [200]")
 
@@ -951,7 +951,7 @@ func updateAmsSubscription(subscriptionId string, device string, inlineSubscript
 		return inLineSubscriptionResp, nil
 	}
 
-	var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
+	var t_ ams.AssociateIdType = ams.UE_I_PV4_ADDRESS_AssociateIdType
 	associateId := ams.AssociateId{
 		Type_: &t_,
 		Value: device,
@@ -971,7 +971,7 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 
 	// Context state transfer
 	var contextState ApplicationContextState
-	contextState.Counter = terminalDeviceState[device]
+	contextState.Counter = int32(terminalDeviceState[device])
 	contextState.AppId = instanceName
 	contextState.Mep = mep
 	contextState.Device = device
@@ -983,7 +983,7 @@ func sendContextTransfer(notifyUrl string, device string, targetId string) error
 		log.Error("Failed to marshal context state ", err.Error())
 		return err
 	}
-	counter := strconv.Itoa(contextState.Counter)
+	counter := strconv.Itoa(int(contextState.Counter))
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonCounter))
 	if err != nil {
 		log.Error(err.Error())
@@ -1032,10 +1032,10 @@ func amsSetDevice(amsId string, registerationBody ams.RegistrationInfo, device s
 	}
 	if !updated {
 		var associateId ams.AssociateId
-		var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
+		var t_ ams.AssociateIdType = ams.UE_I_PV4_ADDRESS_AssociateIdType
 		associateId.Type_ = &t_
 		associateId.Value = device
-		var appMobilityServiceLevel ams.AppMobilityServiceLevel = ams.WITHOUT_CONFIRMATION
+		var appMobilityServiceLevel ams.AppMobilityServiceLevel = ams.WITHOUT_CONFIRMATION_AppMobilityServiceLevel
 		registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
 			AssociateId:             &associateId,
 			AppMobilityServiceLevel: &appMobilityServiceLevel,
@@ -1080,11 +1080,12 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 	var mobilityProcedureSubscription ams.MobilityProcedureSubscription
 
 	mobilityProcedureSubscription.CallbackReference = callBackUrl + "/services/callback/amsevent"
-	mobilityProcedureSubscription.SubscriptionType = "MobilityProcedureSubscription"
+	subscriptionType := ams.MOBILITY_PROCEDURE_SUBSCRIPTION_SubscriptionType
+	mobilityProcedureSubscription.SubscriptionType = &subscriptionType
 
 	// Default tracking ue set to 10.100.0.3
 	var associateId ams.AssociateId
-	var t_ ams.ModelType = ams.UE_I_PV4_ADDRESS
+	var t_ ams.AssociateIdType = ams.UE_I_PV4_ADDRESS_AssociateIdType
 	associateId.Type_ = &t_
 	associateId.Value = device
 

@@ -27,10 +27,10 @@ type LocalityType string
 
 // List of LocalityType
 const (
-	MEC_SYSTEM LocalityType = "MEC_SYSTEM"
-	MEC_HOST   LocalityType = "MEC_HOST"
-	NFVI_POP   LocalityType = "NFVI_POP"
-	ZONE       LocalityType = "ZONE"
-	ZONE_GROUP LocalityType = "ZONE_GROUP"
-	NFVI_NODE  LocalityType = "NFVI_NODE"
+	MEC_SYSTEM_LocalityType LocalityType = "MEC_SYSTEM"
+	MEC_HOST_LocalityType   LocalityType = "MEC_HOST"
+	NFVI_POP_LocalityType   LocalityType = "NFVI_POP"
+	ZONE_LocalityType       LocalityType = "ZONE"
+	ZONE_GROUP_LocalityType LocalityType = "ZONE_GROUP"
+	NFVI_NODE_LocalityType  LocalityType = "NFVI_NODE"
 )

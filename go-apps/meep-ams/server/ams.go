@@ -798,7 +798,7 @@ func sendMpNotifications(currentAppId string, targetAppId string, assocId *Assoc
 		// Ignore mobility status filter
 
 		// Prepare notification
-		var mobilityStatus MobilityStatus = TRIGGERED // only supporting 1 = INTERHOST_MOVEOUT_TRIGGERED
+		var mobilityStatus MobilityStatus = TRIGGERED_MobilityStatus // only supporting 1 = INTERHOST_MOVEOUT_TRIGGERED
 		notif := MobilityProcedureNotification{
 			NotificationType: MOBILITY_PROCEDURE_NOTIFICATION,
 			TimeStamp: &TimeStamp{
@@ -842,7 +842,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	// Use discriminator to obtain subscription type
-	var discriminator OneOfbody
+	var discriminator OneOfInlineSubscription
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(bodyBytes, &discriminator)
 	if err != nil {
@@ -905,7 +905,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		// Set default mobility status filter criteria if none provided
 		if len(mobProcSub.FilterCriteria.MobilityStatus) == 0 {
-			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, TRIGGERED)
+			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, TRIGGERED_MobilityStatus)
 		}
 
 		// Create & store subscription
@@ -998,7 +998,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	subId := vars["subscriptionId"]
 
 	// Use discriminator to obtain subscription type
-	var discriminator OneOfbody
+	var discriminator OneOfInlineSubscription
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(bodyBytes, &discriminator)
 	if err != nil {
@@ -1081,7 +1081,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		// Set default mobility status filter criteria if none provided
 		if len(mobProcSub.FilterCriteria.MobilityStatus) == 0 {
-			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, TRIGGERED)
+			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, TRIGGERED_MobilityStatus)
 		}
 
 		// Update subscription JSON
@@ -1252,11 +1252,11 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 		// Add type-specific link
 		var subscriptionType SubscriptionType
 		if sub.Cfg.Type == MOBILITY_PROCEDURE_SUBSCRIPTION {
-			subscriptionType = SubscriptionType_MOBILITY_PROCEDURE_
+			subscriptionType = MOBILITY_PROCEDURE_SUBSCRIPTION_SubscriptionType
 			subOrig := convertJsonToMobilityProcedureSubscription(sub.JsonSubOrig)
 			linkListSub.Href = subOrig.Links.Self.Href
 		} else if sub.Cfg.Type == ADJACENT_APP_INFO_SUBSCRIPTION {
-			subscriptionType = SubscriptionType_ADJACENT_APPINFO
+			subscriptionType = ADJACENT_APP_INFO_SUBSCRIPTION_SubscriptionType
 			subOrig := convertJsonToAdjacentAppInfoSubscription(sub.JsonSubOrig)
 			linkListSub.Href = subOrig.Links.Self.Href
 		}
@@ -1716,7 +1716,7 @@ func refreshTrackedDevCtxOwner(appName string) {
 	deviceTargetMap := make(map[string][]string)
 	for _, trackedDev := range matchingTrackedDevList {
 		// Make sure device mobility is allowed
-		if trackedDev[FieldServiceLevel] == string(NOT_ALLOWED) {
+		if trackedDev[FieldServiceLevel] == string(NOT_ALLOWED_AppMobilityServiceLevel) {
 			continue
 		}
 
@@ -1781,7 +1781,7 @@ func refreshTrackedDevCtxOwner(appName string) {
 
 				// Send MP Notification for subscriptions to current MEC App
 				// NOTE: Only send for notifications for the source AM service dtracked devices
-				modelType := UE_I_PV4_ADDRESS
+				modelType := UE_I_PV4_ADDRESS_AssociateIdType
 				if trackedDev[FieldAppInstanceId] == currentAppId {
 					assocId := AssociateId{
 						Type_: &modelType,
@@ -1836,7 +1836,7 @@ func getTargetApps(appName string, address string) ([]string, error) {
 func ExpiredSubscriptionCb(sub *subs.Subscription) {
 	// Build expiry notification
 	notif := ExpiryNotification{
-		Links: &MobilityProcedureNotificationLinks{
+		Links: &Link{
 			Subscription: &LinkType{
 				Href: hostUrl.String() + basePath + "subscriptions/" + sub.Cfg.Id,
 			},

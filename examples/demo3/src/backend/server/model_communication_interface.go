@@ -23,5 +23,5 @@
 package server
 
 type CommunicationInterface struct {
-	IpAddresses []CommunicationInterfaceIpAddresses `json:"ipAddresses,omitempty"`
+	IpAddresses string `json:"ipAddresses,omitempty"`
 }

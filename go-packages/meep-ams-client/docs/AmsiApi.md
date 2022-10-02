@@ -1,21 +1,62 @@
 # \AmsiApi
 
-All URIs are relative to *https://localhost/sandboxname/amsi/v1*
+All URIs are relative to *https://localhost/amsi/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**AdjAppInstGET**](AmsiApi.md#AdjAppInstGET) | **Get** /queries/adjacent_app_instances | Retrieve information about this subscription.
 [**AppMobilityServiceByIdDELETE**](AmsiApi.md#AppMobilityServiceByIdDELETE) | **Delete** /app_mobility_services/{appMobilityServiceId} |  deregister the individual application mobility service
 [**AppMobilityServiceByIdGET**](AmsiApi.md#AppMobilityServiceByIdGET) | **Get** /app_mobility_services/{appMobilityServiceId} | Retrieve information about this individual application mobility service
 [**AppMobilityServiceByIdPUT**](AmsiApi.md#AppMobilityServiceByIdPUT) | **Put** /app_mobility_services/{appMobilityServiceId} |  update the existing individual application mobility service
-[**AppMobilityServiceGET**](AmsiApi.md#AppMobilityServiceGET) | **Get** /app_mobility_services |  Retrieve information about the registered application mobility service.
+[**AppMobilityServiceGET**](AmsiApi.md#AppMobilityServiceGET) | **Get** /app_mobility_services | Retrieve information about the registered application mobility service.
 [**AppMobilityServicePOST**](AmsiApi.md#AppMobilityServicePOST) | **Post** /app_mobility_services | Create a new application mobility service for the service requester.
 [**Mec011AppTerminationPOST**](AmsiApi.md#Mec011AppTerminationPOST) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
+[**NotificationPOST**](AmsiApi.md#NotificationPOST) | **Post** /uri_provided_by_subscriber | delivers a notification from the AMS resource to the subscriber
 [**SubByIdDELETE**](AmsiApi.md#SubByIdDELETE) | **Delete** /subscriptions/{subscriptionId} | cancel the existing individual subscription
 [**SubByIdGET**](AmsiApi.md#SubByIdGET) | **Get** /subscriptions/{subscriptionId} | Retrieve information about this subscription.
 [**SubByIdPUT**](AmsiApi.md#SubByIdPUT) | **Put** /subscriptions/{subscriptionId} | update the existing individual subscription.
-[**SubGET**](AmsiApi.md#SubGET) | **Get** /subscriptions/ | Retrieve information about the subscriptions for this requestor.
-[**SubPOST**](AmsiApi.md#SubPOST) | **Post** /subscriptions/ | Create a new subscription to Application Mobility Service notifications.
+[**SubGET**](AmsiApi.md#SubGET) | **Get** /subscriptions | Retrieve information about the subscriptions for this requestor.
+[**SubPOST**](AmsiApi.md#SubPOST) | **Post** /subscriptions | Create a new subscription to Application Mobility Service notifications.
 
+
+# **AdjAppInstGET**
+> []AdjacentAppInstanceInfo AdjAppInstGET(ctx, optional)
+Retrieve information about this subscription.
+
+Retrieve information about this subscription.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **optional** | ***AdjAppInstGETOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a AdjAppInstGETOpts struct
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **filter** | **optional.String**| Attribute-based filtering parameters according to ETSI GS MEC 009 | 
+ **allFields** | **optional.String**| Include all complex attributes in the response. | 
+ **fields** | **optional.String**| Complex attributes to be included into the response. See clause 6.18 in ETSI GS MEC 009 | 
+ **excludeFields** | **optional.String**| Complex attributes to be excluded from the response.See clause 6.18 in ETSI GS MEC 009 | 
+ **excludeDefault** | **optional.String**| Indicates to exclude the following complex attributes from the response  See clause 6.18 in ETSI GS MEC 011 for details. | 
+
+### Return type
+
+[**[]AdjacentAppInstanceInfo**](AdjacentAppInstanceInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **AppMobilityServiceByIdDELETE**
 > AppMobilityServiceByIdDELETE(ctx, appMobilityServiceId)
@@ -104,7 +145,7 @@ No authorization required
 
 # **AppMobilityServiceGET**
 > []RegistrationInfo AppMobilityServiceGET(ctx, optional)
- Retrieve information about the registered application mobility service.
+Retrieve information about the registered application mobility service.
 
  Retrieve information about the registered application mobility service.
 
@@ -197,6 +238,34 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **NotificationPOST**
+> NotificationPOST(ctx, body)
+delivers a notification from the AMS resource to the subscriber
+
+delivers a notification from the AMS resource to the subscriber
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**InlineNotification**](InlineNotification.md)|  | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **SubByIdDELETE**
 > SubByIdDELETE(ctx, subscriptionId)
 cancel the existing individual subscription
@@ -283,7 +352,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubGET**
-> SubscriptionLinkList SubGET(ctx, optional)
+> SubscriptionLinkList SubGET(ctx, subscriptionType)
 Retrieve information about the subscriptions for this requestor.
 
 Retrieve information about the subscriptions for this requestor.
@@ -293,14 +362,7 @@ Retrieve information about the subscriptions for this requestor.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***SubGETOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a SubGETOpts struct
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **subscriptionType** | **optional.String**| Query parameter to filter on a specific subscription type. Permitted values: mobility_proc or adj_app_info | 
+  **subscriptionType** | **string**| Query parameter to filter on a specific subscription type. Permitted values: mobility_proc or adj_app_info | 
 
 ### Return type
 

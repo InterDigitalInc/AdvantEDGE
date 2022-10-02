@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Radio Network Information Service REST API
+ * ETSI GS MEC 012 - Radio Network Information API
  *
  * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
@@ -25,17 +25,17 @@ package server
 
 // This type represents a subscription to cell change notifications from Radio Network Information Service. NOTE: At least one of callbackReference and websockNotifConfig shall be provided by the service consumer.       If both are provided, it is up to RNIS to choose an alternative and return only that alternative in the response,       specified in ETSI GS MEC 009 [6], as described in clause 6.12a.
 type CellChangeSubscription struct {
-	SubscriptionType string `json:"subscriptionType"`
-
 	Links *CaReconfSubscriptionLinks `json:"_links,omitempty"`
 	// URI exposed by the client on which to receive notifications via HTTP. See note.
-	CallbackReference string `json:"callbackReference,omitempty"`
-	// Provides details to negotiate and signal the use of a Websocket connection between RNIS and the service consumer for notifications. See note.
-	WebsockNotifConfig *WebsockNotifConfig `json:"websockNotifConfig,omitempty"`
+	CallbackReference string `json:"callbackReference"`
 
 	ExpiryDeadline *TimeStamp `json:"expiryDeadline,omitempty"`
 
-	FilterCriteriaAssocHo *CellChangeSubscriptionFilterCriteriaAssocHo `json:"filterCriteriaAssocHo"`
+	WebsockNotifConfig *WebsockNotifConfig `json:"websockNotifConfig,omitempty"`
 	// Shall be set to TRUE by the service consumer to request a test notification via HTTP on the callbackReference URI, specified in ETSI GS MEC 009 [6], as described in clause 6.12a.
 	RequestTestNotification bool `json:"requestTestNotification,omitempty"`
+
+	FilterCriteriaAssocHo *CellChangeSubscriptionFilterCriteriaAssocHo `json:"filterCriteriaAssocHo"`
+	// Shall be set to \"CellChangeSubscription\".
+	SubscriptionType string `json:"subscriptionType"`
 }

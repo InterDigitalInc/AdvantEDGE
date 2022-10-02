@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Radio Network Information Service REST API
+ * ETSI GS MEC 012 - Radio Network Information API
  *
  * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
@@ -30,11 +30,11 @@ type CellChangeNotification struct {
 	// Indicate the status of the UE handover procedure. Values are defined as following: <p>1 = IN_PREPARATION. <p>2 = IN_EXECUTION. <p>3 = COMPLETED. <p>4 = REJECTED. <p>5 = CANCELLED.
 	HoStatus int32 `json:"hoStatus"`
 	// Shall be set to \"CellChangeNotification\".
-	NotificationType string `json:"notificationType"`
-	SrcEcgi *Ecgi `json:"srcEcgi"`
-	TempUeId *CellChangeNotificationTempUeId `json:"tempUeId,omitempty"`
-	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
+	NotificationType string                          `json:"notificationType"`
+	SrcEcgi          *Ecgi                           `json:"srcEcgi"`
+	TempUeId         *CellChangeNotificationTempUeId `json:"tempUeId,omitempty"`
+	TimeStamp        *TimeStamp                      `json:"timeStamp,omitempty"`
 	// E-UTRAN Cell Global Identifier of the target cell. See note. NOTE: Cardinality N is valid only in case of statuses IN_PREPARATION, REJECTED and CANCELLED.
-	TrgEcgi []Ecgi `json:"trgEcgi"`
-	Links *CaReconfNotificationLinks `json:"_links"`
+	TrgEcgi []Ecgi                     `json:"trgEcgi"`
+	Links   *CaReconfNotificationLinks `json:"_links"`
 }

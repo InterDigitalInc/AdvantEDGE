@@ -715,7 +715,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 	newEcgi.Plmn = &plmn
 
 	var newNrcgi Nrcgi
-	newNrcgi.NrCellId = obj.NrCellId
+	newNrcgi.NrcellId = obj.NrCellId
 	newNrcgi.Plmn = &plmn
 
 	var ueData UeData
@@ -737,7 +737,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 	var oldErabId int32 = -1
 	oldNrPlmnMnc := ""
 	oldNrPlmnMcc := ""
-	oldNrCellId := ""
+	oldNrcellId := ""
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+obj.Name, ".")
@@ -756,7 +756,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 			if ueDataObj.Nrcgi != nil {
 				oldNrPlmnMnc = ueDataObj.Nrcgi.Plmn.Mnc
 				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
-				oldNrCellId = ueDataObj.Nrcgi.NrCellId
+				oldNrcellId = ueDataObj.Nrcgi.NrcellId
 			}
 			// Keep previous measurements
 			ueData.InRangePoas = ueDataObj.InRangePoas
@@ -802,7 +802,7 @@ func updateUeData(obj sbi.UeDataSbi) {
 		//keep erabId info that was there
 		ueData.ErabId = oldErabId
 
-		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrCellId != oldNrCellId {
+		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrcellId {
 			//update because nrcgi changed
 			_ = rc.JSONSetEntry(baseKey+"UE:"+obj.Name, ".", convertUeDataToJson(&ueData))
 		}
@@ -852,7 +852,7 @@ func updatePoaInfo(obj sbi.PoaInfoSbi) {
 		poaInfo.Ecgi = ecgi
 	case poaType5G:
 		var nrcgi Nrcgi
-		nrcgi.NrCellId = obj.CellId
+		nrcgi.NrcellId = obj.CellId
 		nrcgi.Plmn = &plmn
 		poaInfo.Nrcgi = nrcgi
 	default:
@@ -1461,13 +1461,13 @@ func isMatchNrMrFilterCriteriaNrcgi(filterCriteria interface{}, newPlmn *Plmn, o
 			}
 		}
 		if matchingPlmn {
-			if nrcgi.NrCellId == "" {
+			if nrcgi.NrcellId == "" {
 				return true
 			}
-			if newCellId == nrcgi.NrCellId {
+			if newCellId == nrcgi.NrcellId {
 				return true
 			}
-			if oldCellId == nrcgi.NrCellId {
+			if oldCellId == nrcgi.NrcellId {
 				return true
 			}
 		}
@@ -1902,7 +1902,7 @@ func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, ext
 
 							var measRepUeNotificationNrNCellInfo MeasRepUeNotificationNrNCellInfo
 							measRepUeNotificationNrNCellInfo.NrNCellPlmn = append(measRepUeNotificationNrNCellInfo.NrNCellPlmn, *poaInfo.Nrcgi.Plmn)
-							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrCellId
+							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrcellId
 							neighborCell.NrNCellInfo = append(neighborCell.NrNCellInfo, measRepUeNotificationNrNCellInfo)
 							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
 						default:
@@ -1955,7 +1955,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 		return err
 	}
 
-	if ueData.Nrcgi == nil || ueData.Nrcgi.NrCellId == "" {
+	if ueData.Nrcgi == nil || ueData.Nrcgi.NrcellId == "" {
 		//that ue is not on a 5G poa
 		return nil
 	}
@@ -1978,7 +1978,7 @@ func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, e
 
 			if match {
 				if ueData.Nrcgi != nil {
-					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrCellId, "")
+					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrcellId, "")
 				} else {
 					match = false
 				}
@@ -2513,7 +2513,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, nrcgi := range subscription.FilterCriteriaNrMrs.Nrcgi {
-			if nrcgi.Plmn == nil || nrcgi.NrCellId == "" {
+			if nrcgi.Plmn == nil || nrcgi.NrcellId == "" {
 				log.Error("For non null nrcgi, plmn and cellId are mandatory")
 				errHandlerProblemDetails(w, "For non null nrcgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return

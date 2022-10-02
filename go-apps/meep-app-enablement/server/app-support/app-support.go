@@ -312,7 +312,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	switch *confirmation.OperationAction {
-	case STOPPING, TERMINATING:
+	case STOPPING_OperationActionType, TERMINATING_OperationActionType:
 	default:
 		log.Error("Mandatory OperationAction value not valid")
 		errHandlerProblemDetails(w, "Mandatory OperationAction value not valid", http.StatusBadRequest)
@@ -389,8 +389,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	// Get a new subscription ID
 	subId := subMgr.GenerateSubscriptionId()
 
-	// Set resource link
-	appTermNotifSub.Links = &AppTerminationNotificationSubscriptionLinks{
+	appTermNotifSub.Links = &Self{
 		Self: &LinkType{
 			Href: hostUrl.String() + basePath + "applications/" + appId + "/subscriptions/" + subId,
 		},
@@ -565,10 +564,10 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	for _, sub := range subList {
 		// Create subscription reference & append it to link list
-		subscription := MecAppSuptApiSubscriptionLinkListLinksSubscriptions{
+		subscription := MecAppSuptApiSubscriptionLinkListSubscription{
 			// In v2.2.1 it should be SubscriptionType, but spec is expecting "rel" as per v1.1.1
-			SubscriptionType: APP_TERMINATION_NOTIF_SUB_TYPE,
-			Href:             sub.Cfg.Self,
+			Rel:  APP_TERMINATION_NOTIF_SUB_TYPE,
+			Href: sub.Cfg.Self,
 		}
 		subscriptionLinkList.Links.Subscriptions = append(subscriptionLinkList.Links.Subscriptions, subscription)
 	}
@@ -607,9 +606,10 @@ func timingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
 
 	// Create timestamp
 	seconds := time.Now().Unix()
+	TimeSourceStatus := TRACEABLE_TimeSourceStatus
 	currentTime := CurrentTime{
 		Seconds:          int32(seconds),
-		TimeSourceStatus: "TRACEABLE",
+		TimeSourceStatus: &TimeSourceStatus,
 	}
 
 	// Send response
@@ -895,7 +895,7 @@ func terminateApp(appId string) error {
 		gracefulTermination = true
 
 		// Create notification payload
-		operationAction := TERMINATING
+		operationAction := TERMINATING_OperationActionType
 		notif := &AppTerminationNotification{
 			NotificationType:   APP_TERMINATION_NOTIF_TYPE,
 			OperationAction:    &operationAction,
@@ -904,7 +904,7 @@ func terminateApp(appId string) error {
 				Subscription: &LinkType{
 					Href: sub.Cfg.Self,
 				},
-				ConfirmTermination: &LinkType{
+				ConfirmTermination: &LinkTypeConfirmTermination{
 					Href: hostUrl.String() + basePath + "confirm_termination",
 				},
 			},

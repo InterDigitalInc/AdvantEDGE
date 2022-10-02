@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Application Mobility API
+ * ETSI GS MEC 021 Application Mobility Service API
  *
- * Application Mobility Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_MEC021v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about application mobility in the network <p>**Note**<br>AdvantEDGE supports all of Application Mobility API endpoints (see below).
+ * Application Mobility Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_MEC021v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about application mobility in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Mobility API endpoints (see below).
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -27,5 +27,5 @@ type AdjacentAppInfoNotificationAdjacentAppInfo struct {
 	// Identifier of the adjacent application instance.
 	AppInstanceId string `json:"appInstanceId"`
 	// If present, it represents the communication interface(s) information of the application instance.
-	CommInterface []CommunicationInterface `json:"commInterface,omitempty"`
+	CommInterface []CommunicationInterface `json:"commInterface"`
 }

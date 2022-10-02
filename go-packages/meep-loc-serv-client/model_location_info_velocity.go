@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Location Service REST API
+ * ETSI GS MEC 013 - Location API
  *
  * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below).
  *
@@ -24,18 +24,18 @@
 
 package client
 
-// Structure with attributes relating to the target entity’s velocity, as defined in [14].
+// Structure with attributes relating to the target entity’s velocity, as defined in ETSI TS 123 032 [14].
 type LocationInfoVelocity struct {
-	// Bearing, expressed in the range 0° to 360°, as defined in [14].
+	// Bearing, expressed in the range 0° to 360°, as defined in ETSI TS 123 032 [14].
 	Bearing int32 `json:"bearing"`
-	// Horizontal speed, expressed in km/h and defined in [14].
+	// Horizontal speed, expressed in km/h and defined in ETSI TS 123 032 [14].
 	HorizontalSpeed int32 `json:"horizontalSpeed"`
-	// Horizontal uncertainty, as defined in [14]. Present only if \"velocityType\" equals 3 or 4
+	// Horizontal uncertainty, as defined in ETSI TS 123 032 [14]. Present only if \"velocityType\" equals 3 or 4
 	Uncertainty int32 `json:"uncertainty,omitempty"`
-	// Velocity information, as detailed in [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT
+	// Velocity information, as detailed in ETSI TS 123 032 [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT
 	VelocityType int32 `json:"velocityType"`
-	// Vertical speed, expressed in km/h and defined in [14]. Present only if \"velocityType\" equals 2 or 4
+	// Vertical speed, expressed in km/h and defined in ETSI TS 123 032 [14]. Present only if \"velocityType\" equals 2 or 4
 	VerticalSpeed int32 `json:"verticalSpeed,omitempty"`
-	// Vertical uncertainty, as defined in [14]. Present only if \"velocityType\" equals 4
+	// Vertical uncertainty, as defined in ETSI TS 123 032 [14]. Present only if \"velocityType\" equals 4
 	VerticalUncertainty int32 `json:"verticalUncertainty,omitempty"`
 }

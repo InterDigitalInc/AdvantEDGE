@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -25,18 +25,17 @@ package server
 
 // NTP server detail.
 type TimingCapsNtpServers struct {
-	// Address type of NTP server
-	NtpServerAddrType string `json:"ntpServerAddrType"`
+	NtpServerAddrType *TimingCapsNtpServersNtpServerAddrType `json:"ntpServerAddrType"`
 	// NTP server address
 	NtpServerAddr string `json:"ntpServerAddr"`
-	// Minimum poll interval for NTP messages, in seconds as a power of two. Range 3...17
+	// Minimum poll interval for NTP messages, in seconds as a power of two. Range 3 to 17
 	MinPollingInterval int32 `json:"minPollingInterval"`
-	// Maximum poll interval for NTP messages, in seconds as a power of two. Range 3...17
+	// Maximum poll interval for NTP messages, in seconds as a power of two. Range 3 to 17
 	MaxPollingInterval int32 `json:"maxPollingInterval"`
 	// NTP server local priority
 	LocalPriority int32 `json:"localPriority"`
-	// NTP authentication option
-	AuthenticationOption string `json:"authenticationOption"`
+
+	AuthenticationOption *TimingCapsNtpServersAuthenticationOption `json:"authenticationOption"`
 	// Authentication key number
 	AuthenticationKeyNum int32 `json:"authenticationKeyNum"`
 }

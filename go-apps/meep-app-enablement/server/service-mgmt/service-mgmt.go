@@ -205,7 +205,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve request parameters from body
 	// NOTE: Set default values for omitted fields
-	locality := MEC_HOST
+	locality := MEC_HOST_LocalityType
 	sInfoPost := ServiceInfoPost{
 		ScopeOfLocality:   &locality,
 		IsLocal:           true,
@@ -359,7 +359,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve request parameters from body
 	// NOTE: Set default values for omitted fields
-	locality := MEC_HOST
+	locality := MEC_HOST_LocalityType
 	sInfo := ServiceInfo{
 		ScopeOfLocality:   &locality,
 		IsLocal:           true,
@@ -835,7 +835,7 @@ func transportsGET(w http.ResponseWriter, r *http.Request) {
 	// Create transport info
 	var endpoint OneOfTransportInfoEndpoint
 	endpoint.Uris = append(endpoint.Uris, hostUrl.String()+basePath)
-	transportType := REST_HTTP
+	transportType := REST_HTTP_TransportType
 	transportInfo := TransportInfo{
 		Id:       "sandboxTransport",
 		Name:     "REST",
@@ -1123,7 +1123,7 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 		mep := getMepNameFromKey(key)
 
 		// Check if service is local
-		if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
+		if *sInfo.ScopeOfLocality == MEC_SYSTEM_LocalityType || (mep != "" && mep == mepName) {
 			sInfo.IsLocal = true
 		} else {
 			sInfo.IsLocal = false
@@ -1245,7 +1245,7 @@ func processSvcUpdate(sInfoJson, mep, changeType string) {
 
 func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType ServiceAvailabilityNotificationChangeType) {
 	// Set IsLocal flag
-	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
+	if *sInfo.ScopeOfLocality == MEC_SYSTEM_LocalityType || (mep != "" && mep == mepName) {
 		sInfo.IsLocal = true
 	} else {
 		sInfo.IsLocal = false

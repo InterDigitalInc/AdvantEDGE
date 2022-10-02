@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Application Support API
+ * MEC Application Support API
  *
- * MEC Application Support Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about applications in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Support API endpoints (see below).
+ * The ETSI MEC ISG MEC011 MEC Application Support API described using OpenAPI
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -27,15 +27,12 @@ package client
 // This type represents the general information of a traffic rule.
 type TrafficRule struct {
 	// Identify the traffic rule.
-	TrafficRuleId string `json:"trafficRuleId"`
-	// Definition of filter per FLOW or PACKET. If flow the filter match UE->EPC packet and the reverse packet is handled in the same context
-	FilterType string `json:"filterType"`
-	// Priority of this traffic rule. If traffic rule conflicts, the one with higher priority take precedence
-	Priority      int32           `json:"priority"`
-	TrafficFilter []TrafficFilter `json:"trafficFilter"`
-	// The action of the MEC host data plane when a packet matches the trafficFilter
-	Action       string                `json:"action"`
-	DstInterface *DestinationInterface `json:"dstInterface,omitempty"`
-	// Contains the traffic rule state. This attribute may be updated using HTTP PUT   method
-	State string `json:"state"`
+	TrafficRuleId string                 `json:"trafficRuleId"`
+	FilterType    *TrafficRuleFilterType `json:"filterType"`
+	// Priority of this traffic rule within the range 0 to 255. If traffic rules conflict, the one with higher priority take precedence. Value indicates the priority in descending order, i.e. with 0 as the highest priority and 255 as the lowest priority.
+	Priority      int32                  `json:"priority"`
+	TrafficFilter []TrafficFilter        `json:"trafficFilter"`
+	Action        *TrafficRuleAction     `json:"action"`
+	DstInterface  []DestinationInterface `json:"dstInterface,omitempty"`
+	State         *TrafficRuleState      `json:"state"`
 }

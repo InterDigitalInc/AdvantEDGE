@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Radio Network Information Service REST API
+ * ETSI GS MEC 012 - Radio Network Information API
  *
  * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
@@ -25,11 +25,9 @@ package server
 
 // This type represents a subscription to UE measurement report notifications from Radio Network Information Service for UEs served by E-UTRA Cells. NOTE: At least one of callbackReference and websockNotifConfig shall be provided by the service consumer. If both are provided, it is up to RNIS to select the method to be used for notifications and to return only that method in the response.
 type MeasRepUeSubscription struct {
-	SubscriptionType string `json:"subscriptionType"`
-
 	Links *CaReconfSubscriptionLinks `json:"_links,omitempty"`
 	// URI selected by the service consumer to receive notifications on the subscribed RNIS information. This shall be included both in the request and in response. If not present, the service consumer is requesting the use of a Websocket for notifications. See note.
-	CallbackReference string `json:"callbackReference,omitempty"`
+	CallbackReference string `json:"callbackReference"`
 
 	WebsockNotifConfig *WebsockNotifConfig `json:"websockNotifConfig,omitempty"`
 	// Set to TRUE by the service consumer to request a test notification on the callbackReference URI to determine if it is reachable by RNIS for notifications.
@@ -38,4 +36,6 @@ type MeasRepUeSubscription struct {
 	ExpiryDeadline *TimeStamp `json:"expiryDeadline,omitempty"`
 
 	FilterCriteriaAssocTri *MeasRepUeSubscriptionFilterCriteriaAssocTri `json:"filterCriteriaAssocTri"`
+	// Shall be set to \"MeasRepUeSubscription\".
+	SubscriptionType string `json:"subscriptionType"`
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Location Service REST API
+ * ETSI GS MEC 013 - Location API
  *
  * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below).
  *
@@ -79,7 +79,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -244,7 +244,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -398,7 +398,7 @@ func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscripti
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -512,7 +512,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -753,7 +753,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -911,7 +911,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -1110,7 +1110,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -1264,7 +1264,7 @@ func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscription
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -1378,7 +1378,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -1619,7 +1619,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -1777,7 +1777,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -2025,7 +2025,7 @@ func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscription
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -2139,7 +2139,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -2380,7 +2380,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -2538,7 +2538,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -2716,7 +2716,7 @@ func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscrip
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -2830,7 +2830,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -3071,7 +3071,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -3229,7 +3229,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -3426,7 +3426,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -3580,7 +3580,7 @@ func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscrip
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -3694,7 +3694,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -3935,7 +3935,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -4093,7 +4093,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -4271,7 +4271,7 @@ func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscripti
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -4385,7 +4385,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -4626,7 +4626,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -4784,7 +4784,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -4961,7 +4961,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -5116,7 +5116,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
