@@ -392,6 +392,18 @@ func processScenarioTerminate() {
 }
 
 func setAssets(assetList []string) {
+	// Get default D2D radius
+	d2dRadius := float32(0)
+	deploymentFilter := &mod.NodeFilter{
+		ExcludeChildren: true,
+		Minimize:        true,
+	}
+	deployment := ge.activeModel.GetDeployment(deploymentFilter)
+	if deployment != nil && deployment.D2d != nil {
+		d2dRadius = deployment.D2d.D2dMaxDistance
+	}
+
+	// Set assets
 	for _, assetName := range assetList {
 		var geoData *AssetGeoData = nil
 		var err error
@@ -414,6 +426,15 @@ func setAssets(assetList []string) {
 				geoData, err = parseGeoData(pl.GeoData)
 				if err != nil {
 					continue
+				}
+
+				// If UE supports D2D, set D2D radius
+				priorityList := strings.Split(strings.TrimSpace(pl.WirelessType), ",")
+				for _, priority := range priorityList {
+					if priority == "d2d" {
+						geoData.radius = d2dRadius
+						break
+					}
 				}
 			}
 			_ = setUe(asset, pl, geoData)
@@ -501,6 +522,7 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 		ueData[am.FieldConnected] = pl.Connected
 		ueData[am.FieldPriority] = initWirelessType(pl.Wireless, pl.WirelessType)
 		ueData[am.FieldPosition] = geoData.position
+		ueData[am.FieldRadius] = geoData.radius
 		if geoData.path != "" {
 			ueData[am.FieldPath] = geoData.path
 			// Set default EOP mode to LOOP if not provided
@@ -814,11 +836,27 @@ func initWirelessType(wireless bool, wirelessType string) string {
 	return wt
 }
 
+func notifyCacheUpdate(cacheUpdated *bool) {
+	if *cacheUpdated {
+		// Send GIS cache update message on local Message Queue
+		msg := ge.mqLocal.CreateMsg(mq.MsgGeUpdate, mq.TargetAll, ge.sandboxName)
+		log.Debug("TX MSG: ", mq.PrintMsg(msg))
+		err := ge.mqLocal.SendMsg(msg)
+		if err != nil {
+			log.Error("Failed to send message. Error: ", err.Error())
+		}
+	}
+}
+
 func updateCache() {
+	cacheUpdated := false
 
 	if profiling {
 		proStart = time.Now()
 	}
+
+	//
+	defer notifyCacheUpdate(&cacheUpdated)
 
 	/* ----- UE ----- */
 
@@ -837,7 +875,14 @@ func updateCache() {
 	}
 
 	// Get cached UE measurements
-	cachedUeMeasMap, err := ge.gisCache.GetAllMeasurements()
+	cachedD2DMeasMap, err := ge.gisCache.GetAllD2DMeasurements()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// Get cached UE measurements
+	cachedPoaMeasMap, err := ge.gisCache.GetAllPoaMeasurements()
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -859,28 +904,53 @@ func updateCache() {
 			position.Longitude = *longitude
 			position.Latitude = *latitude
 			_ = ge.gisCache.SetPosition(gc.TypeUe, ue.Name, position)
+			cacheUpdated = true
 		}
 
-		// Update measurements if different from cached value
-		for _, ueMeas := range ue.Measurements {
+		// Update D2D measurements if different from cached value
+		for _, d2dMeas := range ue.D2DMeasurements {
 			updateRequired := false
-			cachedUeMeas, found := cachedUeMeasMap[ue.Name]
+			cachedD2DMeas, found := cachedD2DMeasMap[ue.Name]
 			if !found {
 				updateRequired = true
 			} else {
-				cachedMeas, found := cachedUeMeas.Measurements[ueMeas.Poa]
-				if !found || cachedMeas.Distance != ueMeas.Distance || cachedMeas.Rssi != ueMeas.Rssi || cachedMeas.Rsrp != ueMeas.Rsrp || cachedMeas.Rsrq != ueMeas.Rsrq {
+				cachedMeas, found := cachedD2DMeas.Measurements[d2dMeas.Ue]
+				if !found || cachedMeas.Distance != d2dMeas.Distance {
 					updateRequired = true
 				}
 			}
 
 			if updateRequired {
-				measurement := new(gc.Measurement)
-				measurement.Rssi = ueMeas.Rssi
-				measurement.Rsrp = ueMeas.Rsrp
-				measurement.Rsrq = ueMeas.Rsrq
-				measurement.Distance = ueMeas.Distance
-				_ = ge.gisCache.SetMeasurement(ue.Name, AssetTypeUe, ueMeas.Poa, ueMeas.SubType, measurement)
+				measurement := &gc.D2DMeasurement{
+					Distance: d2dMeas.Distance,
+				}
+				_ = ge.gisCache.SetD2DMeasurement(ue.Name, AssetTypeUe, d2dMeas.Ue, AssetTypeUe, measurement)
+				cacheUpdated = true
+			}
+		}
+
+		// Update POA measurements if different from cached value
+		for _, poaMeas := range ue.PoaMeasurements {
+			updateRequired := false
+			cachedPoaMeas, found := cachedPoaMeasMap[ue.Name]
+			if !found {
+				updateRequired = true
+			} else {
+				cachedMeas, found := cachedPoaMeas.Measurements[poaMeas.Poa]
+				if !found || cachedMeas.Distance != poaMeas.Distance || cachedMeas.Rssi != poaMeas.Rssi || cachedMeas.Rsrp != poaMeas.Rsrp || cachedMeas.Rsrq != poaMeas.Rsrq {
+					updateRequired = true
+				}
+			}
+
+			if updateRequired {
+				measurement := &gc.PoaMeasurement{
+					Rssi:     poaMeas.Rssi,
+					Rsrp:     poaMeas.Rsrp,
+					Rsrq:     poaMeas.Rsrq,
+					Distance: poaMeas.Distance,
+				}
+				_ = ge.gisCache.SetPoaMeasurement(ue.Name, AssetTypeUe, poaMeas.Poa, poaMeas.SubType, measurement)
+				cacheUpdated = true
 			}
 		}
 	}
@@ -889,18 +959,33 @@ func updateCache() {
 	for ueName := range cachedUePosMap {
 		if _, found := ueMap[ueName]; !found {
 			ge.gisCache.DelPosition(gc.TypeUe, ueName)
+			cacheUpdated = true
 		}
 	}
 
-	// Remove stale measurements
-	for ueName, ueMeas := range cachedUeMeasMap {
-		for poaName := range ueMeas.Measurements {
+	// Remove stale D2D measurements
+	for ueName, d2dMeas := range cachedD2DMeasMap {
+		for d2dUeName := range d2dMeas.Measurements {
 			if ue, ueFound := ueMap[ueName]; ueFound {
-				if _, poaFound := ue.Measurements[poaName]; poaFound {
+				if _, d2dUeFound := ue.D2DMeasurements[d2dUeName]; d2dUeFound {
 					continue
 				}
 			}
-			ge.gisCache.DelMeasurement(ueName, poaName)
+			ge.gisCache.DelD2DMeasurement(ueName, d2dUeName)
+			cacheUpdated = true
+		}
+	}
+
+	// Remove stale POA measurements
+	for ueName, poaMeas := range cachedPoaMeasMap {
+		for poaName := range poaMeas.Measurements {
+			if ue, ueFound := ueMap[ueName]; ueFound {
+				if _, poaFound := ue.PoaMeasurements[poaName]; poaFound {
+					continue
+				}
+			}
+			ge.gisCache.DelPoaMeasurement(ueName, poaName)
+			cacheUpdated = true
 		}
 	}
 
@@ -936,6 +1021,7 @@ func updateCache() {
 			position.Longitude = *longitude
 			position.Latitude = *latitude
 			_ = ge.gisCache.SetPosition(gc.TypePoa, poa.Name, position)
+			cacheUpdated = true
 		}
 	}
 
@@ -943,6 +1029,7 @@ func updateCache() {
 	for poaName := range cachedPoaPosMap {
 		if _, found := poaMap[poaName]; !found {
 			ge.gisCache.DelPosition(gc.TypePoa, poaName)
+			cacheUpdated = true
 		}
 	}
 
@@ -978,6 +1065,7 @@ func updateCache() {
 			position.Longitude = *longitude
 			position.Latitude = *latitude
 			_ = ge.gisCache.SetPosition(gc.TypeCompute, compute.Name, position)
+			cacheUpdated = true
 		}
 	}
 
@@ -985,6 +1073,7 @@ func updateCache() {
 	for computeName := range cachedComputePosMap {
 		if _, found := computeMap[computeName]; !found {
 			ge.gisCache.DelPosition(gc.TypeCompute, computeName)
+			cacheUpdated = true
 		}
 	}
 
@@ -1106,9 +1195,9 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 
 			// Exclude path if necessary
 			if excludePath == "true" {
-				err = fillGeoDataAsset(&asset, ue.Position, 0, "", ue.PathMode, ue.PathVelocity)
+				err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, "", ue.PathMode, ue.PathVelocity)
 			} else {
-				err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+				err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, ue.Path, ue.PathMode, ue.PathVelocity)
 			}
 			if err != nil {
 				log.Error(err.Error())
@@ -1484,9 +1573,9 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		}
 		// Exclude path if necessary
 		if excludePath == "true" {
-			err = fillGeoDataAsset(&asset, ue.Position, 0, "", ue.PathMode, ue.PathVelocity)
+			err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, "", ue.PathMode, ue.PathVelocity)
 		} else {
-			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+			err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, ue.Path, ue.PathMode, ue.PathVelocity)
 		}
 		if err != nil {
 			log.Error(err.Error())

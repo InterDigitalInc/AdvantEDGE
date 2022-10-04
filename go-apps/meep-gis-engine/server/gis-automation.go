@@ -285,7 +285,7 @@ func runAutoNetChar(ueMap map[string]*am.Ue, poaMap map[string]*am.Poa) {
 			disconnected = true
 		} else {
 			// Ignore POAs with no measurements
-			meas, found := ue.Measurements[poa.Name]
+			meas, found := ue.PoaMeasurements[poa.Name]
 			if !found {
 				disconnected = true
 			} else {

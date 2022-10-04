@@ -34,6 +34,8 @@ const MAX_THROUGHPUT = 9999999999
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 const DEFAULT_THROUGHPUT_LINK = 1000.0
 
+const PoaTypeD2d string = "POA-D2D"
+
 const metricsDb = 0
 const metricsKey string = "metrics:"
 
@@ -113,14 +115,17 @@ type SegAlgoNetElem struct {
 
 // SegmentAlgorithm -
 type SegmentAlgorithm struct {
-	Name              string
-	Namespace         string
-	BaseKey           string
-	FlowMap           map[string]*SegAlgoFlow
-	SegmentMap        map[string]*SegAlgoSegment
-	ConnectivityModel string
-	Config            SegAlgoConfig
-	rc                *redis.Connector
+	Name                  string
+	Namespace             string
+	BaseKey               string
+	FlowMap               map[string]*SegAlgoFlow
+	SegmentMap            map[string]*SegAlgoSegment
+	ConnectivityModel     string
+	D2DDeviceList         map[string]string
+	D2DMaxDistance        float32
+	D2DViaNetworkDisabled bool
+	Config                SegAlgoConfig
+	rc                    *redis.Connector
 }
 
 // NewSegmentAlgorithm - Create, Initialize and connect
@@ -134,6 +139,9 @@ func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*Segm
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	algo.ConnectivityModel = mod.ConnectivityModelOpen
+	algo.D2DDeviceList = map[string]string{}
+	algo.D2DMaxDistance = 100
+	algo.D2DViaNetworkDisabled = false
 	algo.Config.MaxBwPerInactiveFlow = 20.0
 	algo.Config.MaxBwPerInactiveFlowFloor = 6.0
 	algo.Config.MinActivityThreshold = 0.3
@@ -156,7 +164,8 @@ func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*Segm
 }
 
 // ProcessScenario -
-func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) error {
+func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model,
+	pduSessions map[string]map[string]*dataModel.PduSessionInfo, d2dSessions map[string]string) error {
 	var netElemList []SegAlgoNetElem
 
 	// Process empty scenario
@@ -167,13 +176,44 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 		algo.FlowMap = make(map[string]*SegAlgoFlow)
 	}
 
-	// Get scenario connectivity model
-	algo.ConnectivityModel = model.GetConnectivityModel()
+	// Get deployment information
+	deploymentFilter := &mod.NodeFilter{
+		ExcludeChildren: true,
+		Minimize:        true,
+	}
+	deployment := model.GetDeployment(deploymentFilter)
+	if deployment != nil {
+		// Get scenario connectivity model
+		if deployment.Connectivity != nil {
+			algo.ConnectivityModel = deployment.Connectivity.Model
+		}
+		// Get scenario D2D configuration
+		if deployment.D2d != nil {
+			algo.D2DMaxDistance = deployment.D2d.D2dMaxDistance
+			algo.D2DViaNetworkDisabled = deployment.D2d.DisableD2dViaNetwork
+		}
+	}
+
+	// Get D2D capable device list
+	algo.D2DDeviceList = map[string]string{}
+	phyLocsFilter := &mod.NodeFilter{
+		ExcludeChildren: true,
+		Minimize:        true,
+	}
+	phyLocs := model.GetPhysicalLocations(phyLocsFilter)
+	for _, pl := range phyLocs.PhysicalLocations {
+		priorityList := strings.Split(strings.TrimSpace(pl.WirelessType), ",")
+		for _, priority := range priorityList {
+			if priority == PoaTypeD2d {
+				algo.D2DDeviceList[pl.Name] = pl.Name
+			}
+		}
+	}
 
 	// Clear segment & flow maps
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	// Process active scenario
-	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
+	procNames := model.GetNodeNames(mod.NodeTypeCloudApp, mod.NodeTypeEdgeApp, mod.NodeTypeUEApp)
 
 	// Create NetElem for each scenario process
 	for _, name := range procNames {
@@ -202,10 +242,10 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 
 		// Type-specific values
 		element.Type = model.GetNodeType(element.PhyLocName)
-		if element.Type == "UE" || element.Type == "FOG" {
+		if element.Type == mod.NodeTypeUE || element.Type == mod.NodeTypeFog {
 			element.PoaName = ctx.Parents[mod.NetLoc]
 		}
-		if element.Type != "DC" {
+		if element.Type != mod.NodeTypeCloud {
 			element.ZoneName = ctx.Parents[mod.Zone]
 		}
 
@@ -235,7 +275,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 		for _, elemDest := range netElemList {
 			if elemSrc.Name != elemDest.Name {
 				// Create flow
-				algo.populateFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0, model, pduSessions)
+				algo.populateFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0, model, pduSessions, d2dSessions)
 
 				// Create DB entry to begin collecting metrics for this flow
 				algo.createMetricsEntry(elemSrc.Name, elemDest.Name)
@@ -400,7 +440,7 @@ func (algo *SegmentAlgorithm) deleteMetricsEntries() {
 
 // populateFlow - Create/Update flow
 func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, maxBw float64,
-	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) {
+	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo, d2dSessions map[string]string) {
 
 	// Use existing flow if present or Create new flow
 	flow := algo.FlowMap[flowName]
@@ -431,7 +471,7 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 	flow.ConfiguredNetChar.PacketLoss = 0
 	// Create a new path for this flow
 	oldPath := flow.Path
-	flow.Path = algo.createPath(flowName, srcElement, destElement, model, pduSessions)
+	flow.Path = algo.createPath(flowName, srcElement, destElement, model, pduSessions, d2dSessions)
 	flow.UpdateRequired = algo.comparePath(oldPath, flow.Path)
 }
 
@@ -455,7 +495,15 @@ func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgo
 
 // createPath -
 func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem,
-	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) *SegAlgoPath {
+	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo, d2dSessions map[string]string) *SegAlgoPath {
+
+	// Path creation algorithm:
+	// - Add D2D segment if the following conditions are met:
+	//   - D2D enabled UEs in range (from gis cache) AND
+	//   	- Apps are on in range UEs OR
+	//      - UE has no POA in range
+	// - Otherwise, go up layers until common parent is found
+	//   - If D2D via network disabled, prevent inter-UE communication over network
 
 	direction := ""
 	var segment *SegAlgoSegment
@@ -484,6 +532,8 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	if srcElement.PhyLocName == destElement.PhyLocName {
 		return path
 	}
+
+	// Check if Apps are on in-range D2D devices
 
 	// Check if src or dest Physical location is disconnected
 	// NOTE: Does not apply to apps on same physical node
@@ -552,14 +602,21 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 		}
 	}
 
+	// If D2D via network is disabled, disable UE-to-UE paths via network
+	if !path.Disconnected && algo.D2DViaNetworkDisabled {
+		if mod.IsUe(srcPhyLoc.Type_) && mod.IsUe(destPhyLoc.Type_) {
+			path.Disconnected = true
+		}
+	}
+
 	//network location ul, dl
-	if srcElement.Type == "UE" {
+	if srcElement.Type == mod.NodeTypeUE {
 		direction = "uplink"
 		segment = algo.createSegment(srcElement.PoaName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 	}
 
-	if destElement.Type == "UE" {
+	if destElement.Type == mod.NodeTypeUE {
 		direction = "downlink"
 		segment = algo.createSegment(destElement.PoaName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
@@ -571,14 +628,14 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//zone ul, dl
-	if srcElement.Type != "DC" {
+	if srcElement.Type != mod.NodeTypeCloud {
 		direction = "uplink"
 		segment = algo.createSegment(srcElement.ZoneName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
 
-	if destElement.Type != "DC" {
+	if destElement.Type != mod.NodeTypeCloud {
 		direction = "downlink"
 		segment = algo.createSegment(destElement.ZoneName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
@@ -591,14 +648,14 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//domain ul, dl
-	if srcElement.Type != "DC" {
+	if srcElement.Type != mod.NodeTypeCloud {
 		direction = "uplink"
 		segment = algo.createSegment(srcElement.DomainName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
 
-	if destElement.Type != "DC" {
+	if destElement.Type != mod.NodeTypeCloud {
 		direction = "downlink"
 		segment = algo.createSegment(destElement.DomainName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)

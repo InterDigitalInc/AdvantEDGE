@@ -305,7 +305,7 @@ func processActiveScenarioUpdate() {
 	}
 	// Get all POA positions & UE measurments
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
-	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	uePoaMeasMap, _ := sbi.gisCache.GetAllPoaMeasurements()
 
 	// Update UE info
 	ueNames := []string{}
@@ -325,7 +325,7 @@ func processActiveScenarioUpdate() {
 			switch poa.Type_ {
 			case mod.NodeTypePoaWifi:
 				apMacId = poa.PoaWifiConfig.MacId
-				rssi = getRssi(name, poa.Name, ueMeasMap)
+				rssi = getRssi(name, poa.Name, uePoaMeasMap)
 			}
 			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
 
@@ -433,7 +433,7 @@ func refreshPositions() {
 
 func refreshMeasurements() {
 	// Update UE measurements
-	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	uePoaMeasMap, _ := sbi.gisCache.GetAllPoaMeasurements()
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 		// Ignore disconnected UEs
@@ -449,7 +449,7 @@ func refreshMeasurements() {
 			switch poa.Type_ {
 			case mod.NodeTypePoaWifi:
 				apMacId = poa.PoaWifiConfig.MacId
-				rssi = getRssi(name, poa.Name, ueMeasMap)
+				rssi = getRssi(name, poa.Name, uePoaMeasMap)
 			}
 			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
 			apps := (sbi.activeModel.GetNodeChild(name)).(*[]dataModel.Process)
@@ -467,8 +467,8 @@ func refreshMeasurements() {
 	}
 }
 
-func getRssi(ue string, poa string, ueMeasMap map[string]*gc.UeMeasurement) *int32 {
-	if ueMeas, ueFound := ueMeasMap[ue]; ueFound {
+func getRssi(ue string, poa string, uePoaMeasMap map[string]*gc.UePoaMeasurement) *int32 {
+	if ueMeas, ueFound := uePoaMeasMap[ue]; ueFound {
 		if meas, poaFound := ueMeas.Measurements[poa]; poaFound {
 			rssi := int32(meas.Rssi)
 			return &rssi
