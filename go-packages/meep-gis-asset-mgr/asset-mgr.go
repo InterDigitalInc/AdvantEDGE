@@ -40,7 +40,7 @@ const (
 )
 
 // Enable profiling
-const profiling = true
+const profiling = false
 
 var profilingTimers map[string]time.Time
 
