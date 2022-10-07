@@ -18,6 +18,7 @@ package netchar
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -51,7 +52,7 @@ type NetCharMgr interface {
 
 // NetCharAlgo
 type NetCharAlgo interface {
-	ProcessScenario(*mod.Model, map[string]map[string]*dataModel.PduSessionInfo, map[string]string) error
+	ProcessScenario(*mod.Model, map[string]map[string]*dataModel.PduSessionInfo, map[string]map[string]bool) error
 	CalculateNetChar() []FlowNetChar
 	SetConfigAttribute(string, string)
 }
@@ -100,7 +101,7 @@ type NetCharManager struct {
 	pduSessionStore  *pss.PduSessionStore
 	pduSessions      map[string]map[string]*dataModel.PduSessionInfo
 	gisCache         *gc.GisCache
-	d2dSessions      map[string]string
+	d2dSessions      map[string]map[string]bool
 	mutex            sync.Mutex
 	config           NetCharConfig
 	mqLocal          *mq.MsgQueue
@@ -126,6 +127,8 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	ncm.baseKey = dkm.GetKeyRoot(namespace)
 	ncm.isStarted = false
 	ncm.config.RecalculationPeriod = defaultTickerPeriod
+	ncm.pduSessions = map[string]map[string]*dataModel.PduSessionInfo{}
+	ncm.d2dSessions = map[string]map[string]bool{}
 
 	// Create message queue
 	ncm.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(namespace), name, namespace, redisAddr)
@@ -218,6 +221,9 @@ func (ncm *NetCharManager) Start() error {
 
 		// Process current pdu sessions
 		go ncm.processPduSessionUpdate()
+
+		// Process GIS Engine D2D sessions
+		go ncm.processGeUpdate()
 
 		// Process current scenario
 		go ncm.processActiveScenarioUpdate()
@@ -339,24 +345,38 @@ func (ncm *NetCharManager) processGeUpdate() {
 	ncm.mutex.Lock()
 	defer ncm.mutex.Unlock()
 
-	// Refresh D2D sessions from cache
-	var err error
-	ncm.pduSessions, err = ncm.pduSessionStore.GetAllPduSessions()
+	// Obtain D2D measurements from cache
+	ueD2DMeasurements, err := ncm.gisCache.GetAllD2DMeasurements()
 	if err != nil {
-		log.Error("Failed to retrieve PDU session maps with error: ", err)
+		log.Error("Failed to retrieve D2D measurements with error: ", err)
 		return
 	}
 
-	if ncm.isStarted {
-		// Process updated scenario using algorithm
-		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions, ncm.d2dSessions)
-		if err != nil {
-			log.Error("Failed to process active model with error: ", err)
-			return
+	// Obtain local list of D2D sessions
+	d2dSessions := map[string]map[string]bool{}
+	for ueName, ueD2dMeas := range ueD2DMeasurements {
+		d2dSessions[ueName] = map[string]bool{}
+		for d2dUeName := range ueD2dMeas.Measurements {
+			d2dSessions[ueName][d2dUeName] = true
 		}
+	}
 
-		// Recalculate network characteristics
-		ncm.updateNetChars()
+	// Update list if necessary
+	if !reflect.DeepEqual(d2dSessions, ncm.d2dSessions) {
+		log.Info("Updating D2D sessions")
+		ncm.d2dSessions = d2dSessions
+
+		if ncm.isStarted {
+			// Process updated scenario using algorithm
+			err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions, ncm.d2dSessions)
+			if err != nil {
+				log.Error("Failed to process active model with error: ", err)
+				return
+			}
+
+			// Recalculate network characteristics
+			ncm.updateNetChars()
+		}
 	}
 }
 
