@@ -240,8 +240,8 @@ export const validateGpuCount = count => {
 
 export const validateWirelessType = val => {
   if (val) {
-    if (!val.match(/^((,\s*)?(wifi|5g|4g|other))+$/)) {
-      return 'Comma-separated values: wifi|5g|4g|other';
+    if (!val.match(/^((,\s*)?(d2d|wifi|5g|4g|other))+$/)) {
+      return 'Comma-separated values: d2d|wifi|5g|4g|other';
     }
   }
   return null;

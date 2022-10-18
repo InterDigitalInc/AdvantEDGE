@@ -67,10 +67,12 @@ const (
 
 // DB Table Names
 const (
-	UeTable            = "ue"
-	UeMeasurementTable = "measurements"
-	PoaTable           = "poa"
-	ComputeTable       = "compute"
+	UeTable                = "ue"
+	LegacyMeasurementTable = "measurements"
+	D2DMeasurementTable    = "d2d_meas"
+	PoaMeasurementTable    = "poa_meas"
+	PoaTable               = "poa"
+	ComputeTable           = "compute"
 )
 
 // Asset Types
@@ -86,10 +88,18 @@ const (
 	PoaTypeCell4g       = "POA-4G"
 	PoaTypeCell5g       = "POA-5G"
 	PoaTypeWifi         = "POA-WIFI"
+	PoaTypeD2d          = "POA-D2D"
 	PoaTypeDisconnected = "DISCONNECTED"
 )
 
-type UeMeasurement struct {
+type D2DMeasurement struct {
+	Ue       string
+	Radius   float32
+	Distance float32
+	InRange  bool
+}
+
+type PoaMeasurement struct {
 	Poa      string
 	SubType  string
 	Radius   float32
@@ -101,21 +111,24 @@ type UeMeasurement struct {
 }
 
 type Ue struct {
-	Id            string
-	Name          string
-	Position      string
-	Path          string
-	PathMode      string
-	PathVelocity  float32
-	PathLength    float32
-	PathIncrement float32
-	PathFraction  float32
-	Poa           string
-	PoaDistance   float32
-	PoaInRange    []string
-	PoaTypePrio   []string
-	Connected     bool
-	Measurements  map[string]*UeMeasurement
+	Id              string
+	Name            string
+	Position        string
+	Path            string
+	PathMode        string
+	PathVelocity    float32
+	PathLength      float32
+	PathIncrement   float32
+	PathFraction    float32
+	Poa             string
+	PoaDistance     float32
+	PoaInRange      []string
+	PoaTypePrio     []string
+	Connected       bool
+	D2DRadius       float32
+	D2DInRange      []string
+	D2DMeasurements map[string]*D2DMeasurement
+	PoaMeasurements map[string]*PoaMeasurement
 }
 
 type Poa struct {
@@ -318,6 +331,7 @@ func (am *AssetMgr) CreateTables() (err error) {
 		name            varchar(100)            NOT NULL UNIQUE,
 		position        geometry(POINT,4326)    NOT NULL,
 		path            geometry(LINESTRING,4326),
+		path_json       json,
 		path_mode       varchar(20)             NOT NULL DEFAULT 'LOOP',
 		path_velocity   decimal(10,3)           NOT NULL DEFAULT '0.000',
 		path_length     decimal(10,3)           NOT NULL DEFAULT '0.000',
@@ -327,6 +341,8 @@ func (am *AssetMgr) CreateTables() (err error) {
 		poa_distance    decimal(10,3)           NOT NULL DEFAULT '0.000',
 		poa_in_range    varchar(100)[]          NOT NULL DEFAULT array[]::varchar[],
 		poa_type_prio   varchar(20)[]           NOT NULL DEFAULT array[]::varchar[],
+		d2d_radius      decimal(10,1)           NOT NULL DEFAULT '0.0',
+		d2d_in_range    varchar(100)[]          NOT NULL DEFAULT array[]::varchar[],
 		connected       boolean                 NOT NULL DEFAULT 'false',
 		start_time      timestamptz             NOT NULL DEFAULT now(),
 		PRIMARY KEY (id)
@@ -337,8 +353,8 @@ func (am *AssetMgr) CreateTables() (err error) {
 	}
 	log.Info("Created UE table: ", UeTable)
 
-	// UE Measurements Table
-	_, err = am.db.Exec(`CREATE TABLE ` + UeMeasurementTable + ` (
+	// POA Measurements Table
+	_, err = am.db.Exec(`CREATE TABLE ` + PoaMeasurementTable + ` (
 		id              varchar(36)             NOT NULL,
 		ue              varchar(36)             NOT NULL,
 		poa             varchar(100)            NOT NULL DEFAULT '',
@@ -356,7 +372,24 @@ func (am *AssetMgr) CreateTables() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	log.Info("Created UE Measurements table: ", UeMeasurementTable)
+	log.Info("Created POA Measurements table: ", PoaMeasurementTable)
+
+	// D2D Measurements Table
+	_, err = am.db.Exec(`CREATE TABLE ` + D2DMeasurementTable + ` (
+		id              varchar(36)             NOT NULL,
+		ue              varchar(36)             NOT NULL,
+		d2d_ue          varchar(100)            NOT NULL DEFAULT '',
+		radius          decimal(10,1)           NOT NULL DEFAULT '0.0',
+		distance        decimal(10,3)           NOT NULL DEFAULT '0.000',
+		in_range        boolean                 NOT NULL DEFAULT 'false',
+		PRIMARY KEY (id),
+		FOREIGN KEY (ue) REFERENCES ` + UeTable + `(name) ON DELETE CASCADE
+	)`)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("Created POA Measurements table: ", D2DMeasurementTable)
 
 	// POA Table
 	_, err = am.db.Exec(`CREATE TABLE ` + PoaTable + ` (
@@ -393,7 +426,9 @@ func (am *AssetMgr) CreateTables() (err error) {
 
 // DeleteTables - Delete all postgis tables
 func (am *AssetMgr) DeleteTables() (err error) {
-	_ = am.DeleteTable(UeMeasurementTable)
+	_ = am.DeleteTable(LegacyMeasurementTable)
+	_ = am.DeleteTable(D2DMeasurementTable)
+	_ = am.DeleteTable(PoaMeasurementTable)
 	_ = am.DeleteTable(UeTable)
 	_ = am.DeleteTable(PoaTable)
 	_ = am.DeleteTable(ComputeTable)
@@ -422,6 +457,7 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 	var mode string
 	var velocity float32
 	var connected bool
+	var d2dRadius float32
 	var priority string
 	var ok bool
 
@@ -474,6 +510,18 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 	}
 	priorityList := strings.Split(strings.TrimSpace(priority), ",")
 
+	// Get D2D radius if D2D is supported by UE
+	for _, priority := range priorityList {
+		if priority == "d2d" {
+			if radius, found := data[FieldRadius]; found {
+				if d2dRadius, ok = radius.(float32); !ok {
+					return errors.New("Invalid D2D radius data type")
+				}
+			}
+			break
+		}
+	}
+
 	if path != "" {
 		// Validate Path parameters
 		if mode == "" {
@@ -481,9 +529,9 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 		}
 
 		// Create UE entry with path
-		query := `INSERT INTO ` + UeTable + ` (id, name, position, path, path_mode, path_velocity, poa_type_prio, connected)
-			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), ST_GeomFromGeoJSON('` + path + `'), $3, $4, $5, $6)`
-		_, err = am.db.Exec(query, id, name, mode, velocity, pq.Array(priorityList), connected)
+		query := `INSERT INTO ` + UeTable + ` (id, name, position, path, path_json, path_mode, path_velocity, poa_type_prio, d2d_radius, connected)
+			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), ST_GeomFromGeoJSON('` + path + `'), $3, $4, $5, $6, $7, $8)`
+		_, err = am.db.Exec(query, id, name, path, mode, velocity, pq.Array(priorityList), d2dRadius, connected)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -497,9 +545,9 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 		}
 	} else {
 		// Create UE entry without path
-		query := `INSERT INTO ` + UeTable + ` (id, name, position, poa_type_prio, connected)
-			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), $3, $4)`
-		_, err = am.db.Exec(query, id, name, pq.Array(priorityList), connected)
+		query := `INSERT INTO ` + UeTable + ` (id, name, position, poa_type_prio, d2d_radius, connected)
+			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), $3, $4, $5)`
+		_, err = am.db.Exec(query, id, name, pq.Array(priorityList), d2dRadius, connected)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -717,10 +765,11 @@ func (am *AssetMgr) UpdateUe(name string, data map[string]interface{}) (err erro
 				// Update UE position
 				query := `UPDATE ` + UeTable + `
 					SET path = ST_GeomFromGeoJSON('` + path + `'),
-						path_mode = $2,
-						path_velocity = $3
+						path_json = $2,
+						path_mode = $3,
+						path_velocity = $4
 					WHERE name = ($1)`
-				_, err = am.db.Exec(query, name, mode, velocity)
+				_, err = am.db.Exec(query, name, path, mode, velocity)
 				if err != nil {
 					log.Error(err.Error())
 					return err
@@ -928,13 +977,16 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 	// Get UE entry
 	var rows *sql.Rows
 	rows, err = am.db.Query(`
-		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ST_AsGeoJSON(ue.path),
+		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ue.path_json,
 			ue.path_mode, ue.path_velocity, ue.path_length, ue.path_increment, ue.path_fraction,
 			ue.poa, ue.poa_distance, ue.poa_in_range, ue.poa_type_prio, ue.connected,
-			COALESCE (meas.poa,''), COALESCE (meas.type,''), COALESCE (meas.radius,'0.0'), COALESCE (meas.distance,'0.000'),
-			COALESCE (meas.in_range,'false'), COALESCE (meas.rssi,'0.000'), COALESCE (meas.rsrp,'0.0'), COALESCE (meas.rsrq,'0.0')
+			ue.d2d_radius, ue.d2d_in_range,
+			COALESCE (d2d_meas.d2d_ue,''), COALESCE (d2d_meas.radius,'0.0'), COALESCE (d2d_meas.distance,'0.000'), COALESCE (d2d_meas.in_range,'false'),
+			COALESCE (poa_meas.poa,''), COALESCE (poa_meas.type,''), COALESCE (poa_meas.radius,'0.0'), COALESCE (poa_meas.distance,'0.000'),
+			COALESCE (poa_meas.in_range,'false'), COALESCE (poa_meas.rssi,'0.000'), COALESCE (poa_meas.rsrp,'0.0'), COALESCE (poa_meas.rsrq,'0.0')
 		FROM `+UeTable+` AS ue
-		LEFT JOIN `+UeMeasurementTable+` AS meas ON (ue.name = meas.ue)
+		LEFT JOIN `+D2DMeasurementTable+` AS d2d_meas ON (ue.name = d2d_meas.ue AND d2d_meas.in_range)
+		LEFT JOIN `+PoaMeasurementTable+` AS poa_meas ON (ue.name = poa_meas.ue AND poa_meas.in_range)
 		WHERE ue.name = ($1)`, name)
 	if err != nil {
 		log.Error(err.Error())
@@ -945,15 +997,18 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 	// Scan result
 	for rows.Next() {
 		ueEntry := new(Ue)
-		ueMeas := new(UeMeasurement)
+		d2dMeas := new(D2DMeasurement)
+		poaMeas := new(PoaMeasurement)
 		path := new(string)
 
 		// Fill UE
 		err = rows.Scan(&ueEntry.Id, &ueEntry.Name, &ueEntry.Position, &path,
 			&ueEntry.PathMode, &ueEntry.PathVelocity, &ueEntry.PathLength, &ueEntry.PathIncrement, &ueEntry.PathFraction,
 			&ueEntry.Poa, &ueEntry.PoaDistance, pq.Array(&ueEntry.PoaInRange), pq.Array(&ueEntry.PoaTypePrio), &ueEntry.Connected,
-			&ueMeas.Poa, &ueMeas.SubType, &ueMeas.Radius, &ueMeas.Distance, &ueMeas.InRange,
-			&ueMeas.Rssi, &ueMeas.Rsrp, &ueMeas.Rsrq)
+			&ueEntry.D2DRadius, pq.Array(&ueEntry.D2DInRange),
+			&d2dMeas.Ue, &d2dMeas.Radius, &d2dMeas.Distance, &d2dMeas.InRange,
+			&poaMeas.Poa, &poaMeas.SubType, &poaMeas.Radius, &poaMeas.Distance, &poaMeas.InRange,
+			&poaMeas.Rssi, &poaMeas.Rsrp, &poaMeas.Rsrq)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
@@ -962,15 +1017,20 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 		// Create new UE if not set
 		if ue == nil {
 			ue = ueEntry
-			ue.Measurements = make(map[string]*UeMeasurement)
+			ue.D2DMeasurements = make(map[string]*D2DMeasurement)
+			ue.PoaMeasurements = make(map[string]*PoaMeasurement)
 			if path != nil {
 				ue.Path = *path
 			}
 		}
 
-		// Set UE measurement if in range
-		if ueMeas.InRange {
-			ue.Measurements[ueMeas.Poa] = ueMeas
+		// Set D2D measurement if in range
+		if d2dMeas.InRange {
+			ue.D2DMeasurements[d2dMeas.Ue] = d2dMeas
+		}
+		// Set POA measurement if in range
+		if poaMeas.InRange {
+			ue.PoaMeasurements[poaMeas.Poa] = poaMeas
 		}
 	}
 	err = rows.Err()
@@ -1105,13 +1165,16 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 	// Get UE entries
 	var rows *sql.Rows
 	rows, err = am.db.Query(`
-		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ST_AsGeoJSON(ue.path),
+		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ue.path_json,
 			ue.path_mode, ue.path_velocity, ue.path_length, ue.path_increment, ue.path_fraction,
 			ue.poa, ue.poa_distance, ue.poa_in_range, ue.poa_type_prio, ue.connected,
-			COALESCE (meas.poa,''), COALESCE (meas.type,''), COALESCE (meas.radius,'0.0'), COALESCE (meas.distance,'0.000'),
-			COALESCE (meas.in_range,'false'), COALESCE (meas.rssi,'0.000'), COALESCE (meas.rsrp,'0.0'), COALESCE (meas.rsrq,'0.0')
+			ue.d2d_radius, ue.d2d_in_range,
+			COALESCE (d2d_meas.d2d_ue,''), COALESCE (d2d_meas.radius,'0.0'), COALESCE (d2d_meas.distance,'0.000'), COALESCE (d2d_meas.in_range,'false'),
+			COALESCE (poa_meas.poa,''), COALESCE (poa_meas.type,''), COALESCE (poa_meas.radius,'0.0'), COALESCE (poa_meas.distance,'0.000'),
+			COALESCE (poa_meas.in_range,'false'), COALESCE (poa_meas.rssi,'0.000'), COALESCE (poa_meas.rsrp,'0.0'), COALESCE (poa_meas.rsrq,'0.0')
 		FROM ` + UeTable + ` AS ue
-		LEFT JOIN ` + UeMeasurementTable + ` AS meas ON (ue.name = meas.ue)`)
+		LEFT JOIN ` + D2DMeasurementTable + ` AS d2d_meas ON (ue.name = d2d_meas.ue AND d2d_meas.in_range)
+		LEFT JOIN ` + PoaMeasurementTable + ` AS poa_meas ON (ue.name = poa_meas.ue AND poa_meas.in_range)`)
 	if err != nil {
 		log.Error(err.Error())
 		return ueMap, err
@@ -1121,15 +1184,18 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 	// Scan results
 	for rows.Next() {
 		ueEntry := new(Ue)
-		ueMeas := new(UeMeasurement)
+		d2dMeas := new(D2DMeasurement)
+		poaMeas := new(PoaMeasurement)
 		path := new(string)
 
 		// Fill UE
 		err = rows.Scan(&ueEntry.Id, &ueEntry.Name, &ueEntry.Position, &path,
 			&ueEntry.PathMode, &ueEntry.PathVelocity, &ueEntry.PathLength, &ueEntry.PathIncrement, &ueEntry.PathFraction,
 			&ueEntry.Poa, &ueEntry.PoaDistance, pq.Array(&ueEntry.PoaInRange), pq.Array(&ueEntry.PoaTypePrio), &ueEntry.Connected,
-			&ueMeas.Poa, &ueMeas.SubType, &ueMeas.Radius, &ueMeas.Distance, &ueMeas.InRange,
-			&ueMeas.Rssi, &ueMeas.Rsrp, &ueMeas.Rsrq)
+			&ueEntry.D2DRadius, pq.Array(&ueEntry.D2DInRange),
+			&d2dMeas.Ue, &d2dMeas.Radius, &d2dMeas.Distance, &d2dMeas.InRange,
+			&poaMeas.Poa, &poaMeas.SubType, &poaMeas.Radius, &poaMeas.Distance, &poaMeas.InRange,
+			&poaMeas.Rssi, &poaMeas.Rsrp, &poaMeas.Rsrq)
 		if err != nil {
 			log.Error(err.Error())
 			return ueMap, err
@@ -1139,16 +1205,21 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 		ue := ueMap[ueEntry.Name]
 		if ue == nil {
 			ue = ueEntry
-			ue.Measurements = make(map[string]*UeMeasurement)
+			ue.D2DMeasurements = make(map[string]*D2DMeasurement)
+			ue.PoaMeasurements = make(map[string]*PoaMeasurement)
 			if path != nil {
 				ue.Path = *path
 			}
 			ueMap[ue.Name] = ue
 		}
 
-		// Set UE measurement if in range
-		if ueMeas.InRange {
-			ue.Measurements[ueMeas.Poa] = ueMeas
+		// Set D2D measurement if in range
+		if d2dMeas.InRange {
+			ue.D2DMeasurements[d2dMeas.Ue] = d2dMeas
+		}
+		// Set POA measurement if in range
+		if poaMeas.InRange {
+			ue.PoaMeasurements[poaMeas.Poa] = poaMeas
 		}
 	}
 	err = rows.Err()
@@ -1563,12 +1634,27 @@ func (am *AssetMgr) refreshUe(name string) (err error) {
 
 	// Initialize UE information map
 	ueMap := make(map[string]*Ue)
+	d2dMap := make(map[string]bool)
 	poaMap := make(map[string]bool)
+
+	// Parse UE to POA information results
+	err = am.parseUeD2DInfo(name, ueMap, d2dMap)
+	if err != nil {
+		return err
+	}
 
 	// Parse UE to POA information results
 	err = am.parseUePoaInfo(name, ueMap, poaMap)
 	if err != nil {
 		return err
+	}
+
+	// If no D2D UEs found, reset UE D2D Info
+	if len(d2dMap) == 0 {
+		err = am.resetUeD2DInfo(name, ueMap)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If no POAs found, reset UE Poa Info
@@ -1601,11 +1687,26 @@ func (am *AssetMgr) refreshAllUe() (err error) {
 	// Initialize UE information map
 	ueMap := make(map[string]*Ue)
 	poaMap := make(map[string]bool)
+	d2dMap := make(map[string]bool)
 
-	// Parse UE to POA information results
+	// Parse UE D2D information results
+	err = am.parseUeD2DInfo("", ueMap, d2dMap)
+	if err != nil {
+		return err
+	}
+
+	// Parse UE POA information results
 	err = am.parseUePoaInfo("", ueMap, poaMap)
 	if err != nil {
 		return err
+	}
+
+	// If no D2D UEs found, reset all UE D2D Info
+	if len(d2dMap) == 0 {
+		err = am.resetUeD2DInfo("", ueMap)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If no POAs found, reset all UE Poa Info
@@ -1629,15 +1730,156 @@ func (am *AssetMgr) refreshAllUe() (err error) {
 	return nil
 }
 
+// Parse UE to UE (D2D) information results
+func (am *AssetMgr) parseUeD2DInfo(name string, ueMap map[string]*Ue, d2dMap map[string]bool) (err error) {
+	if profiling {
+		profilingTimers["parseUeD2DInfo"] = time.Now()
+		profilingTimers["parseUeD2DInfo-query"] = time.Now()
+	}
+
+	// Get full matrix of UE to POA information in order to perform
+	// POA selection & UE measurement calculations
+	var rows *sql.Rows
+	if name == "" {
+		rows, err = am.db.Query(`
+			SELECT ue.name, ue.poa_type_prio, d2d_ue.name, ue.d2d_radius, d2d_ue.d2d_radius,
+				ST_Distance(ue.position::geography, d2d_ue.position::geography),
+				ST_DWithin(ue.position::geography, d2d_ue.position::geography, LEAST(ue.d2d_radius, d2d_ue.d2d_radius))
+			FROM ` + UeTable + ` AS ue, ` + UeTable + ` AS d2d_ue
+			WHERE ue.d2d_radius > 0 AND ue.name != d2d_ue.name`)
+	} else {
+		rows, err = am.db.Query(`
+			SELECT ue.name, ue.poa_type_prio, d2d_ue.name, ue.d2d_radius, d2d_ue.d2d_radius,
+				ST_Distance(ue.position::geography, d2d_ue.position::geography),
+				ST_DWithin(ue.position::geography, d2d_ue.position::geography, LEAST(ue.d2d_radius, d2d_ue.d2d_radius))
+			FROM `+UeTable+` AS ue, `+UeTable+` AS d2d_ue
+			WHERE ue.d2d_radius > 0 AND ue.name != d2d_ue.name AND ue.name = ($1)`, name)
+	}
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	defer rows.Close()
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUeD2DInfo-query: ", now.Sub(profilingTimers["parseUeD2DInfo-query"]))
+		profilingTimers["parseUeD2DInfo-scan"] = time.Now()
+	}
+
+	for rows.Next() {
+		ueName := ""
+		poaTypePrio := []string{}
+		d2dUeName := ""
+		d2dRadius := float32(0)
+		d2dUeRadius := float32(0)
+		dist := float32(0)
+		inRange := false
+
+		err := rows.Scan(&ueName, pq.Array(&poaTypePrio), &d2dUeName, &d2dRadius, &d2dUeRadius, &dist, &inRange)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Get existing UE Info or create new one
+		ue, found := ueMap[ueName]
+		if !found {
+			ue = new(Ue)
+			ue.Name = ueName
+			ue.PoaTypePrio = poaTypePrio
+			ue.Poa = ""
+			ue.PoaInRange = []string{}
+			ue.PoaMeasurements = map[string]*PoaMeasurement{}
+			ue.D2DRadius = d2dRadius
+			ue.D2DInRange = []string{}
+			ue.D2DMeasurements = map[string]*D2DMeasurement{}
+			ueMap[ueName] = ue
+		}
+
+		// Add D2D UE to list of D2D UEs
+		d2dMap[d2dUeName] = true
+
+		// Create new Measurement for each POA
+		meas := new(D2DMeasurement)
+		meas.Ue = d2dUeName
+		meas.Radius = d2dUeRadius
+		meas.Distance = dist
+		if inRange && d2dRadius != 0 && d2dUeRadius != 0 {
+			meas.InRange = true
+			ue.D2DInRange = append(ue.PoaInRange, d2dUeName)
+		}
+		ue.D2DMeasurements[d2dUeName] = meas
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUeD2DInfo-scan: ", now.Sub(profilingTimers["parseUeD2DInfo-scan"]))
+		log.Debug("-- parseUeD2DInfo: ", now.Sub(profilingTimers["parseUeD2DInfo"]))
+	}
+	return nil
+}
+
+// reset UE D2D Info
+func (am *AssetMgr) resetUeD2DInfo(name string, ueMap map[string]*Ue) (err error) {
+	if profiling {
+		profilingTimers["resetUeD2DInfo"] = time.Now()
+	}
+
+	if name == "" {
+		rows, err := am.db.Query(`SELECT name FROM ` + UeTable)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			ueName := ""
+			err := rows.Scan(&ueName)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+
+			// Reset D2D fields
+			ue, found := ueMap[ueName]
+			if found {
+				ue.D2DInRange = []string{}
+				ue.D2DMeasurements = make(map[string]*D2DMeasurement)
+			}
+		}
+		err = rows.Err()
+		if err != nil {
+			log.Error(err)
+		}
+	} else {
+		// Reset D2D fields
+		ue, found := ueMap[name]
+		if found {
+			ue.D2DInRange = []string{}
+			ue.D2DMeasurements = make(map[string]*D2DMeasurement)
+		}
+	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- resetUeD2DInfo: ", now.Sub(profilingTimers["resetUeD2DInfo"]))
+	}
+	return nil
+}
+
 // Parse UE to POA information results
 func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map[string]bool) (err error) {
 	if profiling {
 		profilingTimers["parseUePoaInfo"] = time.Now()
-	}
-
-	if profiling {
 		profilingTimers["parseUePoaInfo-query"] = time.Now()
 	}
+
 	// Get full matrix of UE to POA information in order to perform
 	// POA selection & UE measurement calculations
 	var rows *sql.Rows
@@ -1646,14 +1888,15 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 			SELECT ue.name, ue.poa_type_prio, ue.poa, poa.name, poa.type, poa.radius,
 				ST_Distance(ue.position::geography, poa.position::geography),
 				ST_DWithin(ue.position::geography, poa.position::geography, poa.radius)
-			FROM ` + UeTable + `, ` + PoaTable)
+			FROM ` + UeTable + `, ` + PoaTable + `
+			WHERE poa.radius > 0`)
 	} else {
 		rows, err = am.db.Query(`
 			SELECT ue.name, ue.poa_type_prio, ue.poa, poa.name, poa.type, poa.radius,
 				ST_Distance(ue.position::geography, poa.position::geography),
 				ST_DWithin(ue.position::geography, poa.position::geography, poa.radius)
 			FROM `+UeTable+`, `+PoaTable+`
-			WHERE ue.name = ($1)`, name)
+			WHERE poa.radius > 0 AND ue.name = ($1)`, name)
 	}
 	if err != nil {
 		log.Error(err.Error())
@@ -1664,9 +1907,6 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 	if profiling {
 		now := time.Now()
 		log.Debug("-- parseUePoaInfo-query: ", now.Sub(profilingTimers["parseUePoaInfo-query"]))
-	}
-
-	if profiling {
 		profilingTimers["parseUePoaInfo-scan"] = time.Now()
 	}
 
@@ -1694,15 +1934,16 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 			ue.PoaTypePrio = poaTypePrio
 			ue.Poa = curPoa
 			ue.PoaInRange = []string{}
-			ue.Measurements = make(map[string]*UeMeasurement)
+			ue.D2DMeasurements = map[string]*D2DMeasurement{}
+			ue.PoaMeasurements = map[string]*PoaMeasurement{}
 			ueMap[ueName] = ue
 		}
 
 		// Add POA to list of POAs
 		poaMap[poaName] = true
 
-		// Create new UE Measurement for each POA
-		meas := new(UeMeasurement)
+		// Create new Measurement for each POA
+		meas := new(PoaMeasurement)
 		meas.Poa = poaName
 		meas.SubType = poaType
 		meas.Radius = poaRadius
@@ -1711,7 +1952,7 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 			meas.InRange = true
 			ue.PoaInRange = append(ue.PoaInRange, poaName)
 		}
-		ue.Measurements[poaName] = meas
+		ue.PoaMeasurements[poaName] = meas
 	}
 	err = rows.Err()
 	if err != nil {
@@ -1721,10 +1962,6 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 	if profiling {
 		now := time.Now()
 		log.Debug("-- parseUePoaInfo-scan: ", now.Sub(profilingTimers["parseUePoaInfo-scan"]))
-	}
-
-	if profiling {
-		now := time.Now()
 		log.Debug("-- parseUePoaInfo: ", now.Sub(profilingTimers["parseUePoaInfo"]))
 	}
 	return nil
@@ -1752,28 +1989,26 @@ func (am *AssetMgr) resetUePoaInfo(name string, ueMap map[string]*Ue) (err error
 				return err
 			}
 
-			// Create empty UE Info
-			ue := new(Ue)
-			ue.Name = ueName
-			ue.PoaTypePrio = []string{}
-			ue.Poa = ""
-			ue.PoaInRange = []string{}
-			ue.Measurements = make(map[string]*UeMeasurement)
-			ueMap[ueName] = ue
+			// Reset POA fields
+			ue, found := ueMap[ueName]
+			if found {
+				ue.Poa = ""
+				ue.PoaInRange = []string{}
+				ue.PoaMeasurements = make(map[string]*PoaMeasurement)
+			}
 		}
 		err = rows.Err()
 		if err != nil {
 			log.Error(err)
 		}
 	} else {
-		// Create single empty UE Info
-		ue := new(Ue)
-		ue.Name = name
-		ue.PoaTypePrio = []string{}
-		ue.Poa = ""
-		ue.PoaInRange = []string{}
-		ue.Measurements = make(map[string]*UeMeasurement)
-		ueMap[name] = ue
+		// Reset POA fields
+		ue, found := ueMap[name]
+		if found {
+			ue.Poa = ""
+			ue.PoaInRange = []string{}
+			ue.PoaMeasurements = make(map[string]*PoaMeasurement)
+		}
 	}
 
 	if profiling {
@@ -1819,24 +2054,25 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 
 		// Update POA Selection
 		selectedPoa := selectPoa(ue)
-		distance := float32(0)
+		poaDistance := float32(0)
 		if selectedPoa != "" {
-			distance = ue.Measurements[selectedPoa].Distance
+			poaDistance = ue.PoaMeasurements[selectedPoa].Distance
 		}
 
 		query := `UPDATE ` + UeTable + `
 			SET poa = $2,
 				poa_distance = $3,
-				poa_in_range = $4
+				poa_in_range = $4,
+				d2d_in_range = $5
 			WHERE name = ($1)`
-		_, err = tx.Exec(query, ueName, selectedPoa, distance, pq.Array(ue.PoaInRange))
+		_, err = tx.Exec(query, ueName, selectedPoa, poaDistance, pq.Array(ue.PoaInRange), pq.Array(ue.D2DInRange))
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
 
-		// Update UE measurements
-		for poaName, meas := range ue.Measurements {
+		// Update POA measurements
+		for poaName, meas := range ue.PoaMeasurements {
 			// Calculate power measurements
 			rssi, rsrp, rsrq := calculatePower(meas.SubType, meas.Radius, meas.Distance)
 			if rsrp == 0 && rsrq == 0 && rssi == 0 {
@@ -1845,12 +2081,28 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 
 			// Add new entry or update existing one
 			id := ueName + "-" + poaName
-			query := `INSERT INTO ` + UeMeasurementTable + ` (id, ue, poa, type, radius, distance, in_range, rssi, rsrp, rsrq)
+			query := `INSERT INTO ` + PoaMeasurementTable + ` (id, ue, poa, type, radius, distance, in_range, rssi, rsrp, rsrq)
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 				ON CONFLICT (id)
 				DO UPDATE SET radius = $5, distance = $6, in_range = $7, rssi = $8, rsrp = $9, rsrq = $10
-					WHERE ` + UeMeasurementTable + `.ue = ($2) AND ` + UeMeasurementTable + `.poa = ($3)`
+					WHERE ` + PoaMeasurementTable + `.ue = ($2) AND ` + PoaMeasurementTable + `.poa = ($3)`
 			_, err = tx.Exec(query, id, ueName, poaName, meas.SubType, meas.Radius, meas.Distance, meas.InRange, rssi, rsrp, rsrq)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+		}
+
+		// Update D2D measurements
+		for d2dUeName, meas := range ue.D2DMeasurements {
+			// Add new entry or update existing one
+			id := ueName + "-" + d2dUeName
+			query := `INSERT INTO ` + D2DMeasurementTable + ` (id, ue, d2d_ue, radius, distance, in_range)
+				VALUES ($1, $2, $3, $4, $5, $6)
+				ON CONFLICT (id)
+				DO UPDATE SET radius = $4, distance = $5, in_range = $6
+					WHERE ` + D2DMeasurementTable + `.ue = ($2) AND ` + D2DMeasurementTable + `.d2d_ue = ($3)`
+			_, err = tx.Exec(query, id, ueName, d2dUeName, meas.Radius, meas.Distance, meas.InRange)
 			if err != nil {
 				log.Error(err.Error())
 				return err
@@ -1874,7 +2126,7 @@ func selectPoa(ue *Ue) (selectedPoa string) {
 		// Start with current POA as selected POA, if still in range
 		currentPoaType := ""
 		selectedPoaType := ""
-		currentPoaInfo, found := ue.Measurements[ue.Poa]
+		currentPoaInfo, found := ue.PoaMeasurements[ue.Poa]
 		if found && currentPoaInfo.InRange && isSupportedPoaType(currentPoaInfo.SubType, ue.PoaTypePrio) {
 			currentPoaType = currentPoaInfo.SubType
 			selectedPoaType = currentPoaType
@@ -1883,13 +2135,13 @@ func selectPoa(ue *Ue) (selectedPoa string) {
 
 		// Look for closest POA in range with a more localized RAT
 		for _, poa := range ue.PoaInRange {
-			poaInfo := ue.Measurements[poa]
+			poaInfo := ue.PoaMeasurements[poa]
 			if isSupportedPoaType(poaInfo.SubType, ue.PoaTypePrio) {
 				if selectedPoa == "" ||
 					comparePoaTypes(poaInfo.SubType, selectedPoaType, ue.PoaTypePrio) > 0 ||
 					(comparePoaTypes(poaInfo.SubType, selectedPoaType, ue.PoaTypePrio) == 0 &&
 						comparePoaTypes(poaInfo.SubType, currentPoaType, ue.PoaTypePrio) > 0 &&
-						poaInfo.Distance < ue.Measurements[selectedPoa].Distance) {
+						poaInfo.Distance < ue.PoaMeasurements[selectedPoa].Distance) {
 					selectedPoaType = poaInfo.SubType
 					selectedPoa = poa
 				}
@@ -1917,7 +2169,7 @@ func isSupportedPoaType(poaType string, poaTypePrio []string) bool {
 
 func getPoaTypePriority(poaType string, poaTypePrio []string) int {
 	if len(poaTypePrio) == 0 {
-		poaTypePrio = []string{"wifi", "5g", "4g", "other"}
+		poaTypePrio = []string{"d2d", "wifi", "5g", "4g", "other"}
 	}
 
 	// Determine string to search for
@@ -1930,6 +2182,8 @@ func getPoaTypePriority(poaType string, poaTypePrio []string) int {
 		poaTypeStr = "5g"
 	} else if poaType == PoaTypeWifi {
 		poaTypeStr = "wifi"
+	} else if poaType == PoaTypeD2d {
+		poaTypeStr = "d2d"
 	}
 
 	// Get priority

@@ -73,7 +73,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 	}
 
 	fmt.Println("Process scenario model")
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -119,7 +119,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating net char")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -140,7 +140,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -173,7 +173,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -207,7 +207,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 		t.Fatalf("Failed to create Model instance")
 	}
 	fmt.Println("Process empty scenario model")
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -254,7 +254,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 		t.Fatalf("Failed to create a SegAlgo object.")
 	}
 	fmt.Println("Process scenario model")
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -303,7 +303,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating net char")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -336,7 +336,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -398,7 +398,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -478,7 +478,7 @@ func TestSegAlgoDisconnected(t *testing.T) {
 
 	// Process model with no disconnected UEs
 	fmt.Println("Process scenario model")
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -498,7 +498,7 @@ func TestSegAlgoDisconnected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -518,7 +518,7 @@ func TestSegAlgoDisconnected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -538,7 +538,7 @@ func TestSegAlgoDisconnected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -558,7 +558,7 @@ func TestSegAlgoDisconnected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -606,7 +606,7 @@ func TestSegAlgoPdu(t *testing.T) {
 
 	// No PDU sessions
 	fmt.Println("Process scenario model with no PDU sessions")
-	err = algo.ProcessScenario(activeModel, nil)
+	err = algo.ProcessScenario(activeModel, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -644,7 +644,7 @@ func TestSegAlgoPdu(t *testing.T) {
 	pduSessionsUe2["internet"] = &dataModel.PduSessionInfo{Dnn: "internet"}
 	pduSessions["ue2-ext"] = pduSessionsUe2
 
-	err = algo.ProcessScenario(activeModel, pduSessions)
+	err = algo.ProcessScenario(activeModel, pduSessions, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -671,7 +671,7 @@ func TestSegAlgoPdu(t *testing.T) {
 	pduSessionsUe2["edn2"] = &dataModel.PduSessionInfo{Dnn: "edn2"}
 	pduSessions["ue2-ext"] = pduSessionsUe2
 
-	err = algo.ProcessScenario(activeModel, pduSessions)
+	err = algo.ProcessScenario(activeModel, pduSessions, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
@@ -725,7 +725,7 @@ func TestSegAlgoPdu(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error moving UE")
 	}
-	err = algo.ProcessScenario(activeModel, pduSessions)
+	err = algo.ProcessScenario(activeModel, pduSessions, nil)
 	if err != nil {
 		t.Fatalf("Failed to process scenario model")
 	}
