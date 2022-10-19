@@ -85,6 +85,18 @@
         // expect(instance.velocity).to.be(expectedValueLiteral);
       });
 
+      it('should have the property d2dInRange (base name: "d2dInRange")', function() {
+        // TODO: update the code to test the property d2dInRange
+        expect(instance).to.have.property('d2dInRange');
+        // expect(instance.d2dInRange).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property poaInRange (base name: "poaInRange")', function() {
+        // TODO: update the code to test the property poaInRange
+        expect(instance).to.have.property('poaInRange');
+        // expect(instance.poaInRange).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

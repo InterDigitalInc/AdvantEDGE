@@ -167,6 +167,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.velocity = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.d2dInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.poaInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
@@ -182,6 +184,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.d2dInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.poaInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
@@ -626,6 +630,26 @@
                             expect(data.geoData.eopMode).to.be("LOOP");
                             expect(data.geoData.velocity).to.be.a('number');
                             expect(data.geoData.velocity).to.be();
+                            {
+                              let dataCtr = data.geoData.d2dInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.geoData.poaInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -674,6 +698,26 @@
                                 expect(data.geoData.eopMode).to.be("LOOP");
                                 expect(data.geoData.velocity).to.be.a('number');
                                 expect(data.geoData.velocity).to.be();
+                                {
+                                  let dataCtr = data.geoData.d2dInRange;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
+                                {
+                                  let dataCtr = data.geoData.poaInRange;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
                               {
                                 let dataCtr = data.networkLocationsInRange;
                                 expect(dataCtr).to.be.an(Array);
@@ -1228,6 +1272,26 @@
                                 expect(data.geoData.eopMode).to.be("LOOP");
                                 expect(data.geoData.velocity).to.be.a('number');
                                 expect(data.geoData.velocity).to.be();
+                                {
+                                  let dataCtr = data.geoData.d2dInRange;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
+                                {
+                                  let dataCtr = data.geoData.poaInRange;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
                               {
                                 let dataCtr = data.physicalLocations;
                                 expect(dataCtr).to.be.an(Array);
@@ -1276,6 +1340,26 @@
                                     expect(data.geoData.eopMode).to.be("LOOP");
                                     expect(data.geoData.velocity).to.be.a('number');
                                     expect(data.geoData.velocity).to.be();
+                                    {
+                                      let dataCtr = data.geoData.d2dInRange;
+                                      expect(dataCtr).to.be.an(Array);
+                                      expect(dataCtr).to.not.be.empty();
+                                      for (let p in dataCtr) {
+                                        let data = dataCtr[p];
+                                        expect(data).to.be.a('string');
+                                        expect(data).to.be("");
+                                      }
+                                    }
+                                    {
+                                      let dataCtr = data.geoData.poaInRange;
+                                      expect(dataCtr).to.be.an(Array);
+                                      expect(dataCtr).to.not.be.empty();
+                                      for (let p in dataCtr) {
+                                        let data = dataCtr[p];
+                                        expect(data).to.be.a('string');
+                                        expect(data).to.be("");
+                                      }
+                                    }
                                   {
                                     let dataCtr = data.networkLocationsInRange;
                                     expect(dataCtr).to.be.an(Array);
@@ -1629,6 +1713,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.velocity = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.d2dInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.poaInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
@@ -1644,6 +1730,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.d2dInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.poaInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;

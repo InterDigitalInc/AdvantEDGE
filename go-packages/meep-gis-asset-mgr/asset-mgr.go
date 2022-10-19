@@ -1516,7 +1516,7 @@ func (am *AssetMgr) AdvanceUePosition(name string, increment float32) (err error
 				CASE
 					WHEN 1 < (path_fraction + ($2 * path_increment)) %2 THEN
 						ST_LineInterpolatePoint(path, 1 - ((path_fraction + ($2 * path_increment)) %1))
-					ELSE 
+					ELSE
 						ST_LineInterpolatePoint(path, (path_fraction + ($2 * path_increment)) %1)
 				END
 		END,
@@ -1564,7 +1564,7 @@ func (am *AssetMgr) AdvanceAllUePosition(increment float32) (err error) {
 				CASE
 					WHEN 1 < (path_fraction + ($1 * path_increment)) %2 THEN
 						ST_LineInterpolatePoint(path, 1 - ((path_fraction + ($1 * path_increment)) %1))
-					ELSE 
+					ELSE
 						ST_LineInterpolatePoint(path, (path_fraction + ($1 * path_increment)) %1)
 				END
 		END,
@@ -1807,7 +1807,7 @@ func (am *AssetMgr) parseUeD2DInfo(name string, ueMap map[string]*Ue, d2dMap map
 		meas.Distance = dist
 		if inRange && d2dRadius != 0 && d2dUeRadius != 0 {
 			meas.InRange = true
-			ue.D2DInRange = append(ue.PoaInRange, d2dUeName)
+			ue.D2DInRange = append(ue.D2DInRange, d2dUeName)
 		}
 		ue.D2DMeasurements[d2dUeName] = meas
 	}

@@ -124,6 +124,26 @@
                 expect(data.eopMode).to.be("LOOP");
                 expect(data.velocity).to.be.a('number');
                 expect(data.velocity).to.be();
+                {
+                  let dataCtr = data.d2dInRange;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
+                {
+                  let dataCtr = data.poaInRange;
+                  expect(dataCtr).to.be.an(Array);
+                  expect(dataCtr).to.not.be.empty();
+                  for (let p in dataCtr) {
+                    let data = dataCtr[p];
+                    expect(data).to.be.a('string');
+                    expect(data).to.be("");
+                  }
+                }
                 expect(data.assetName).to.be.a('string');
                 expect(data.assetName).to.be("");
                 expect(data.assetType).to.be.a('string');
@@ -222,6 +242,26 @@
             expect(data.eopMode).to.be("LOOP");
             expect(data.velocity).to.be.a('number');
             expect(data.velocity).to.be();
+            {
+              let dataCtr = data.d2dInRange;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a('string');
+                expect(data).to.be("");
+              }
+            }
+            {
+              let dataCtr = data.poaInRange;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a('string');
+                expect(data).to.be("");
+              }
+            }
             expect(data.assetName).to.be.a('string');
             expect(data.assetName).to.be("");
             expect(data.assetType).to.be.a('string');
@@ -288,6 +328,8 @@
           geoData.path.coordinates = [[]];
           geoData.eopMode = "LOOP";
           geoData.velocity = ;
+          geoData.d2dInRange = [""];
+          geoData.poaInRange = [""];
           geoData.assetName = "";
           geoData.assetType = "UE";
           geoData.subType = "UE";

@@ -414,6 +414,16 @@ definitions:
       velocity:
         description: Speed of movement along path in m/s
         type: number
+      d2dInRange:
+        type: array
+        items:
+          type: string
+          description: D2D UEs visible to UE
+      poaInRange:
+        type: array
+        items:
+          type: string
+          description: POAs visible to UE
   GpuConfig:
     type: object
     properties:

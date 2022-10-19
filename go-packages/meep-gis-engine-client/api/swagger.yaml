@@ -531,6 +531,16 @@ definitions:
       velocity:
         type: "number"
         description: "Speed of movement along path in m/s"
+      d2dInRange:
+        type: "array"
+        items:
+          type: "string"
+          description: "D2D UEs visible to UE"
+      poaInRange:
+        type: "array"
+        items:
+          type: "string"
+          description: "POAs visible to UE"
     description: "Geographic data"
   Point:
     type: "object"
