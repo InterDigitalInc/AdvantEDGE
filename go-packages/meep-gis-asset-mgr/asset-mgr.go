@@ -555,7 +555,7 @@ func (am *AssetMgr) CreateUe(id string, name string, data map[string]interface{}
 	}
 
 	// Refresh UE information
-	err = am.refreshUe(name)
+	err = am.refreshAllUe()
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -731,7 +731,7 @@ func (am *AssetMgr) UpdateUe(name string, data map[string]interface{}) (err erro
 				}
 
 				// Refresh UE information
-				err = am.refreshUe(name)
+				err = am.refreshAllUe()
 				if err != nil {
 					log.Error(err.Error())
 					return err
@@ -1529,7 +1529,7 @@ func (am *AssetMgr) AdvanceUePosition(name string, increment float32) (err error
 	}
 
 	// Refresh UE information
-	err = am.refreshUe(name)
+	err = am.refreshAllUe()
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -1637,6 +1637,12 @@ func (am *AssetMgr) refreshUe(name string) (err error) {
 	d2dMap := make(map[string]bool)
 	poaMap := make(map[string]bool)
 
+	// Get UE list
+	err = am.parseUeInfo(name, ueMap)
+	if err != nil {
+		return err
+	}
+
 	// Parse UE to POA information results
 	err = am.parseUeD2DInfo(name, ueMap, d2dMap)
 	if err != nil {
@@ -1689,6 +1695,12 @@ func (am *AssetMgr) refreshAllUe() (err error) {
 	poaMap := make(map[string]bool)
 	d2dMap := make(map[string]bool)
 
+	// Get UE list
+	err = am.parseUeInfo("", ueMap)
+	if err != nil {
+		return err
+	}
+
 	// Parse UE D2D information results
 	err = am.parseUeD2DInfo("", ueMap, d2dMap)
 	if err != nil {
@@ -1730,6 +1742,76 @@ func (am *AssetMgr) refreshAllUe() (err error) {
 	return nil
 }
 
+// Parse UE information
+func (am *AssetMgr) parseUeInfo(name string, ueMap map[string]*Ue) (err error) {
+	if profiling {
+		profilingTimers["parseUeInfo"] = time.Now()
+		profilingTimers["parseUeInfo-query"] = time.Now()
+	}
+
+	// Get full UE information list
+	var rows *sql.Rows
+	if name == "" {
+		rows, err = am.db.Query(`
+			SELECT ue.name, ue.poa_type_prio, ue.poa
+			FROM ` + UeTable + ` AS ue`)
+	} else {
+		rows, err = am.db.Query(`
+			SELECT ue.name, ue.poa_type_prio, ue.poa
+			FROM `+UeTable+` AS ue
+			WHERE ue.name = ($1)`, name)
+	}
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	defer rows.Close()
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUeInfo-query: ", now.Sub(profilingTimers["parseUeInfo-query"]))
+		profilingTimers["parseUeInfo-scan"] = time.Now()
+	}
+
+	for rows.Next() {
+		ueName := ""
+		poaTypePrio := []string{}
+		curPoa := ""
+
+		err := rows.Scan(&ueName, pq.Array(&poaTypePrio), &curPoa)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Get existing UE Info or create new one
+		_, found := ueMap[ueName]
+		if !found {
+			ue := new(Ue)
+			ue.Name = ueName
+			ue.PoaTypePrio = poaTypePrio
+			ue.Poa = curPoa
+			ue.PoaInRange = []string{}
+			ue.PoaMeasurements = map[string]*PoaMeasurement{}
+			ue.D2DRadius = float32(0)
+			ue.D2DInRange = []string{}
+			ue.D2DMeasurements = map[string]*D2DMeasurement{}
+			ueMap[ueName] = ue
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	if profiling {
+		now := time.Now()
+		log.Debug("-- parseUeInfo-scan: ", now.Sub(profilingTimers["parseUeD2DInfo-scan"]))
+		log.Debug("-- parseUeInfo: ", now.Sub(profilingTimers["parseUeD2DInfo"]))
+	}
+	return nil
+}
+
 // Parse UE to UE (D2D) information results
 func (am *AssetMgr) parseUeD2DInfo(name string, ueMap map[string]*Ue, d2dMap map[string]bool) (err error) {
 	if profiling {
@@ -1742,14 +1824,14 @@ func (am *AssetMgr) parseUeD2DInfo(name string, ueMap map[string]*Ue, d2dMap map
 	var rows *sql.Rows
 	if name == "" {
 		rows, err = am.db.Query(`
-			SELECT ue.name, ue.poa_type_prio, d2d_ue.name, ue.d2d_radius, d2d_ue.d2d_radius,
+			SELECT ue.name, d2d_ue.name, ue.d2d_radius, d2d_ue.d2d_radius,
 				ST_Distance(ue.position::geography, d2d_ue.position::geography),
 				ST_DWithin(ue.position::geography, d2d_ue.position::geography, LEAST(ue.d2d_radius, d2d_ue.d2d_radius))
 			FROM ` + UeTable + ` AS ue, ` + UeTable + ` AS d2d_ue
 			WHERE ue.d2d_radius > 0 AND ue.name != d2d_ue.name`)
 	} else {
 		rows, err = am.db.Query(`
-			SELECT ue.name, ue.poa_type_prio, d2d_ue.name, ue.d2d_radius, d2d_ue.d2d_radius,
+			SELECT ue.name, d2d_ue.name, ue.d2d_radius, d2d_ue.d2d_radius,
 				ST_Distance(ue.position::geography, d2d_ue.position::geography),
 				ST_DWithin(ue.position::geography, d2d_ue.position::geography, LEAST(ue.d2d_radius, d2d_ue.d2d_radius))
 			FROM `+UeTable+` AS ue, `+UeTable+` AS d2d_ue
@@ -1769,32 +1851,23 @@ func (am *AssetMgr) parseUeD2DInfo(name string, ueMap map[string]*Ue, d2dMap map
 
 	for rows.Next() {
 		ueName := ""
-		poaTypePrio := []string{}
 		d2dUeName := ""
 		d2dRadius := float32(0)
 		d2dUeRadius := float32(0)
 		dist := float32(0)
 		inRange := false
 
-		err := rows.Scan(&ueName, pq.Array(&poaTypePrio), &d2dUeName, &d2dRadius, &d2dUeRadius, &dist, &inRange)
+		err := rows.Scan(&ueName, &d2dUeName, &d2dRadius, &d2dUeRadius, &dist, &inRange)
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
 
-		// Get existing UE Info or create new one
+		// Get existing UE Info
 		ue, found := ueMap[ueName]
 		if !found {
-			ue = new(Ue)
-			ue.Name = ueName
-			ue.PoaTypePrio = poaTypePrio
-			ue.Poa = ""
-			ue.PoaInRange = []string{}
-			ue.PoaMeasurements = map[string]*PoaMeasurement{}
-			ue.D2DRadius = d2dRadius
-			ue.D2DInRange = []string{}
-			ue.D2DMeasurements = map[string]*D2DMeasurement{}
-			ueMap[ueName] = ue
+			log.Error("UE not found: " + ueName)
+			return err
 		}
 
 		// Add D2D UE to list of D2D UEs
@@ -1885,14 +1958,14 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 	var rows *sql.Rows
 	if name == "" {
 		rows, err = am.db.Query(`
-			SELECT ue.name, ue.poa_type_prio, ue.poa, poa.name, poa.type, poa.radius,
+			SELECT ue.name, poa.name, poa.type, poa.radius,
 				ST_Distance(ue.position::geography, poa.position::geography),
 				ST_DWithin(ue.position::geography, poa.position::geography, poa.radius)
 			FROM ` + UeTable + `, ` + PoaTable + `
 			WHERE poa.radius > 0`)
 	} else {
 		rows, err = am.db.Query(`
-			SELECT ue.name, ue.poa_type_prio, ue.poa, poa.name, poa.type, poa.radius,
+			SELECT ue.name, poa.name, poa.type, poa.radius,
 				ST_Distance(ue.position::geography, poa.position::geography),
 				ST_DWithin(ue.position::geography, poa.position::geography, poa.radius)
 			FROM `+UeTable+`, `+PoaTable+`
@@ -1912,15 +1985,13 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 
 	for rows.Next() {
 		ueName := ""
-		poaTypePrio := []string{}
-		curPoa := ""
 		poaName := ""
 		poaType := ""
 		poaRadius := float32(0)
 		dist := float32(0)
 		inRange := false
 
-		err := rows.Scan(&ueName, pq.Array(&poaTypePrio), &curPoa, &poaName, &poaType, &poaRadius, &dist, &inRange)
+		err := rows.Scan(&ueName, &poaName, &poaType, &poaRadius, &dist, &inRange)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -1929,14 +2000,8 @@ func (am *AssetMgr) parseUePoaInfo(name string, ueMap map[string]*Ue, poaMap map
 		// Get existing UE Info or create new one
 		ue, found := ueMap[ueName]
 		if !found {
-			ue = new(Ue)
-			ue.Name = ueName
-			ue.PoaTypePrio = poaTypePrio
-			ue.Poa = curPoa
-			ue.PoaInRange = []string{}
-			ue.D2DMeasurements = map[string]*D2DMeasurement{}
-			ue.PoaMeasurements = map[string]*PoaMeasurement{}
-			ueMap[ueName] = ue
+			log.Error("UE not found: " + ueName)
+			return err
 		}
 
 		// Add POA to list of POAs

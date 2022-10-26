@@ -406,8 +406,8 @@ class IDCMap extends Component {
     return radius;
   }
 
-  isD2dEnabled(marker) {
-    if (this.getWirelessTypePrio(marker.options.meep.ue.id) && this.getWirelessTypePrio(marker.options.meep.ue.id).includes('d2d')) {
+  isD2dEnabled(name) {
+    if (this.getWirelessTypePrio(name) && this.getWirelessTypePrio(name).includes('d2d')) {
       return true;
     }
     return false;
@@ -572,7 +572,7 @@ class IDCMap extends Component {
       markerStyle['border-color'] = color.darken(10);
 
       // Set UE range color
-      if (this.isD2dEnabled(marker) && marker.options.meep.ue.range) {
+      if (this.isD2dEnabled(marker.options.meep.ue.id)) {
         marker.options.meep.ue.range.setStyle({color: color});
       }
 
@@ -632,7 +632,7 @@ class IDCMap extends Component {
         msg += 'mac: ' + ownMac + '<br>';
       }
       msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
-      if (this.isD2dEnabled(marker)) {
+      if (this.isD2dEnabled(marker.options.meep.ue.id)) {
         if (marker.options.meep.ue.d2dInRange) {
           var d2dConnType = 'd2d: ' + marker.options.meep.ue.d2dInRange + '<br>';
           d2dInRange = true;
@@ -783,7 +783,7 @@ class IDCMap extends Component {
             id: ue.assetName
           }
         },
-        radius: (this.props.type === TYPE_CFG) ?  this.getD2dRadius(this.props.cfgScenarioName): ue.radius || 0 ,
+        radius: (this.props.type === TYPE_CFG) ?  (this.isD2dEnabled(ue.assetName) ? this.getD2dRadius(this.props.cfgScenarioName): 0) : ue.radius || 0,
         opacity: UE_RANGE_OPACITY,
         pmIgnore: true
       });
