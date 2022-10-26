@@ -406,7 +406,7 @@ class IDCMap extends Component {
     return radius;
   }
 
-  checkD2d(marker) {
+  isD2dEnabled(marker) {
     if (this.getWirelessTypePrio(marker.options.meep.ue.id) && this.getWirelessTypePrio(marker.options.meep.ue.id).includes('d2d')) {
       return true;
     }
@@ -572,7 +572,7 @@ class IDCMap extends Component {
       markerStyle['border-color'] = color.darken(10);
 
       // Set UE range color
-      if (this.checkD2d(marker)){
+      if (this.isD2dEnabled(marker) && marker.options.meep.ue.range) {
         marker.options.meep.ue.range.setStyle({color: color});
       }
 
@@ -621,8 +621,8 @@ class IDCMap extends Component {
   // UE Marker Event Handler
   updateUePopup(marker) {
     var table = this.getTable();
-    var d2d = false;
-    var ifpoa = false;
+    var d2dInRange = false;
+    var poaInRange = false;
     if (marker && table && table.entries) {
       var latlng = marker.getLatLng();
       var hasPath = (marker.options.meep.ue.path) ? true : false;
@@ -632,44 +632,44 @@ class IDCMap extends Component {
         msg += 'mac: ' + ownMac + '<br>';
       }
       msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
-      if (this.checkD2d(marker)) {
+      if (this.isD2dEnabled(marker)) {
         if (marker.options.meep.ue.d2dInRange) {
-          msg += 'd2d: ' + marker.options.meep.ue.d2dInRange + '<br>';
-          d2d = true;
+          var d2dConnType = 'd2d: ' + marker.options.meep.ue.d2dInRange + '<br>';
+          d2dInRange = true;
         }
       }
       if (this.isConnected(marker.options.meep.ue.id)) {
         var poa = this.getUePoa(marker.options.meep.ue.id);
         var poaType = getElemFieldVal(table.entries[poa], FIELD_TYPE);
-        msg += 'poa: ' + poa + '<br>';
+        var poaConnType = 'poa: ' + poa + '<br>';
+        poaInRange = true;
         switch(poaType) {
         case ELEMENT_TYPE_POA_4G:
-          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_CELL_ID) + '<br>';
+          poaConnType += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_CELL_ID) + '<br>';
           break;
         case ELEMENT_TYPE_POA_5G:
-          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
+          poaConnType += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
           break;
         case ELEMENT_TYPE_POA_WIFI:
-          msg += 'poa mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
+          poaConnType += 'poa mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
           break;
         default:
           break;
         }
-        ifpoa = true;
-        msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
-      } else if (marker.options.meep.ue.d2dInRange) {
-        // msg += 'poa: none <br>';
-        ifpoa = false;
-      } else {
-        msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
-      }
-      if (!d2d && ifpoa) {
-        msg += 'd2d: none <br>';
-      }
-      if (!ifpoa && d2d) {
-        msg += 'poa: none <br>';
+        poaConnType += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
       }
 
+      if (!d2dInRange && !poaInRange) {
+        msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
+      } else if (poaInRange && !d2dInRange) {
+        msg += 'd2d: none <br>';
+        msg += poaConnType;
+      } else if (d2dInRange && !poaInRange) {
+        msg += d2dConnType;
+        msg += 'poa: none <br>';
+      } else if (d2dInRange && poaInRange) {
+        msg += d2dConnType + poaConnType;
+      }
       msg += 'wireless: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
       msg += 'location: ' + this.getLocationStr(latlng);
       marker.getPopup().setContent(msg);
