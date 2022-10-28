@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AppTerminationSubscription', 'model/ApplicationContextState', 'model/MobilityProcedureNotification', 'model/ServiceAvailabilityNotification'], factory);
+    define(['ApiClient', 'model/AppTerminationSubscription', 'model/ApplicationContextState', 'model/InlineNotification', 'model/ProblemDetails', 'model/ServiceAvailabilityNotification'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationSubscription'), require('../model/ApplicationContextState'), require('../model/MobilityProcedureNotification'), require('../model/ServiceAvailabilityNotification'));
+    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationSubscription'), require('../model/ApplicationContextState'), require('../model/InlineNotification'), require('../model/ProblemDetails'), require('../model/ServiceAvailabilityNotification'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationSubscription, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.MobilityProcedureNotification, root.MecDemo3Api.ServiceAvailabilityNotification);
+    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationSubscription, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.InlineNotification, root.MecDemo3Api.ProblemDetails, root.MecDemo3Api.ServiceAvailabilityNotification);
   }
-}(this, function(ApiClient, AppTerminationSubscription, ApplicationContextState, MobilityProcedureNotification, ServiceAvailabilityNotification) {
+}(this, function(ApiClient, AppTerminationSubscription, ApplicationContextState, InlineNotification, ProblemDetails, ServiceAvailabilityNotification) {
   'use strict';
 
   /**
@@ -72,7 +72,7 @@
     /**
      * Callback endpoint for AMS Notifications
      * Callback endpoint for AMS Notifications
-     * @param {module:model/MobilityProcedureNotification} body Subscription notification
+     * @param {module:model/InlineNotification} body 
      * @param {module:api/NotificationApi~amsNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.amsNotificationCallback = function(body, callback) {
@@ -97,7 +97,7 @@
 
       var authNames = [];
       var contentTypes = ['application/json'];
-      var accepts = [];
+      var accepts = ['application/json'];
       var returnType = null;
 
       return this.apiClient.callApi(

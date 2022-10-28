@@ -1,6 +1,6 @@
 # MecDemo3Api.FrontendApi
 
-All URIs are relative to *http://10.190.115.162:8093*
+All URIs are relative to *https://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

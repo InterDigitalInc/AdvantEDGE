@@ -1,0 +1,12 @@
+# MecDemo3Api.MobilityStatus
+
+## Enum
+
+
+* `TRIGGERED` (value: `"INTERHOST_MOVEOUT_TRIGGERED"`)
+
+* `COMPLETED` (value: `"INTERHOST_MOVEOUT_COMPLETED"`)
+
+* `FAILED` (value: `"INTERHOST_MOVEOUT_FAILED"`)
+
+

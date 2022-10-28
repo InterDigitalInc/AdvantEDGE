@@ -770,7 +770,7 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	log.Debug("Receive AMS notification")
-	var amsNotification ams.MobilityProcedureNotification
+	var amsNotification MobilityProcedureNotification
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&amsNotification)
 	if err != nil {

@@ -30,12 +30,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AppTerminationSubscription', 'model/AppTerminationSubscriptionLinks', 'model/ApplicationContextState', 'model/ApplicationInstance', 'model/ApplicationInstanceAmsLinkListSubscription', 'model/ApplicationInstanceAppTerminationSubscription', 'model/ApplicationInstanceDiscoveredServices', 'model/ApplicationInstanceOfferedService', 'model/ApplicationInstanceSerAvailabilitySubscription', 'model/ApplicationInstanceSubscriptions', 'model/AssociateId', 'model/CommunicationInterface', 'model/LinkType', 'model/LocalityType', 'model/MobilityProcedureNotification', 'model/MobilityProcedureNotificationTargetAppInfo', 'model/SerInstanceId', 'model/SerName', 'model/ServiceAvailabilityNotification', 'model/ServiceAvailabilityNotificationServiceReferences', 'model/ServiceState', 'model/Subscription', 'model/TimeStamp', 'api/FrontendApi', 'api/NotificationApi'], factory);
+    define(['ApiClient', 'model/AdjacentAppInfoNotification', 'model/AdjacentAppInfoNotificationAdjacentAppInfo', 'model/AppTerminationSubscription', 'model/AppTerminationSubscriptionLinks', 'model/ApplicationContextState', 'model/ApplicationInstance', 'model/ApplicationInstanceAmsLinkListSubscription', 'model/ApplicationInstanceAppTerminationSubscription', 'model/ApplicationInstanceDiscoveredServices', 'model/ApplicationInstanceOfferedService', 'model/ApplicationInstanceSerAvailabilitySubscription', 'model/ApplicationInstanceSubscriptions', 'model/AssociateId', 'model/AssociateId1', 'model/AssociateIdType', 'model/CommunicationInterface', 'model/CommunicationInterface1', 'model/CommunicationInterfaceIpAddresses', 'model/ExpiryNotification', 'model/InlineNotification', 'model/Link', 'model/LinkType', 'model/LinkType1', 'model/LocalityType', 'model/MobilityProcedureNotification', 'model/MobilityProcedureNotificationTargetAppInfo', 'model/MobilityProcedureNotificationTargetAppInfo1', 'model/MobilityStatus', 'model/OneOfInlineNotification', 'model/ProblemDetails', 'model/SerInstanceId', 'model/SerName', 'model/ServiceAvailabilityNotification', 'model/ServiceAvailabilityNotificationServiceReferences', 'model/ServiceState', 'model/Subscription', 'model/TimeStamp', 'model/TimeStamp1', 'api/FrontendApi', 'api/NotificationApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/AppTerminationSubscription'), require('./model/AppTerminationSubscriptionLinks'), require('./model/ApplicationContextState'), require('./model/ApplicationInstance'), require('./model/ApplicationInstanceAmsLinkListSubscription'), require('./model/ApplicationInstanceAppTerminationSubscription'), require('./model/ApplicationInstanceDiscoveredServices'), require('./model/ApplicationInstanceOfferedService'), require('./model/ApplicationInstanceSerAvailabilitySubscription'), require('./model/ApplicationInstanceSubscriptions'), require('./model/AssociateId'), require('./model/CommunicationInterface'), require('./model/LinkType'), require('./model/LocalityType'), require('./model/MobilityProcedureNotification'), require('./model/MobilityProcedureNotificationTargetAppInfo'), require('./model/SerInstanceId'), require('./model/SerName'), require('./model/ServiceAvailabilityNotification'), require('./model/ServiceAvailabilityNotificationServiceReferences'), require('./model/ServiceState'), require('./model/Subscription'), require('./model/TimeStamp'), require('./api/FrontendApi'), require('./api/NotificationApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/AdjacentAppInfoNotification'), require('./model/AdjacentAppInfoNotificationAdjacentAppInfo'), require('./model/AppTerminationSubscription'), require('./model/AppTerminationSubscriptionLinks'), require('./model/ApplicationContextState'), require('./model/ApplicationInstance'), require('./model/ApplicationInstanceAmsLinkListSubscription'), require('./model/ApplicationInstanceAppTerminationSubscription'), require('./model/ApplicationInstanceDiscoveredServices'), require('./model/ApplicationInstanceOfferedService'), require('./model/ApplicationInstanceSerAvailabilitySubscription'), require('./model/ApplicationInstanceSubscriptions'), require('./model/AssociateId'), require('./model/AssociateId1'), require('./model/AssociateIdType'), require('./model/CommunicationInterface'), require('./model/CommunicationInterface1'), require('./model/CommunicationInterfaceIpAddresses'), require('./model/ExpiryNotification'), require('./model/InlineNotification'), require('./model/Link'), require('./model/LinkType'), require('./model/LinkType1'), require('./model/LocalityType'), require('./model/MobilityProcedureNotification'), require('./model/MobilityProcedureNotificationTargetAppInfo'), require('./model/MobilityProcedureNotificationTargetAppInfo1'), require('./model/MobilityStatus'), require('./model/OneOfInlineNotification'), require('./model/ProblemDetails'), require('./model/SerInstanceId'), require('./model/SerName'), require('./model/ServiceAvailabilityNotification'), require('./model/ServiceAvailabilityNotificationServiceReferences'), require('./model/ServiceState'), require('./model/Subscription'), require('./model/TimeStamp'), require('./model/TimeStamp1'), require('./api/FrontendApi'), require('./api/NotificationApi'));
   }
-}(function(ApiClient, AppTerminationSubscription, AppTerminationSubscriptionLinks, ApplicationContextState, ApplicationInstance, ApplicationInstanceAmsLinkListSubscription, ApplicationInstanceAppTerminationSubscription, ApplicationInstanceDiscoveredServices, ApplicationInstanceOfferedService, ApplicationInstanceSerAvailabilitySubscription, ApplicationInstanceSubscriptions, AssociateId, CommunicationInterface, LinkType, LocalityType, MobilityProcedureNotification, MobilityProcedureNotificationTargetAppInfo, SerInstanceId, SerName, ServiceAvailabilityNotification, ServiceAvailabilityNotificationServiceReferences, ServiceState, Subscription, TimeStamp, FrontendApi, NotificationApi) {
+}(function(ApiClient, AdjacentAppInfoNotification, AdjacentAppInfoNotificationAdjacentAppInfo, AppTerminationSubscription, AppTerminationSubscriptionLinks, ApplicationContextState, ApplicationInstance, ApplicationInstanceAmsLinkListSubscription, ApplicationInstanceAppTerminationSubscription, ApplicationInstanceDiscoveredServices, ApplicationInstanceOfferedService, ApplicationInstanceSerAvailabilitySubscription, ApplicationInstanceSubscriptions, AssociateId, AssociateId1, AssociateIdType, CommunicationInterface, CommunicationInterface1, CommunicationInterfaceIpAddresses, ExpiryNotification, InlineNotification, Link, LinkType, LinkType1, LocalityType, MobilityProcedureNotification, MobilityProcedureNotificationTargetAppInfo, MobilityProcedureNotificationTargetAppInfo1, MobilityStatus, OneOfInlineNotification, ProblemDetails, SerInstanceId, SerName, ServiceAvailabilityNotification, ServiceAvailabilityNotificationServiceReferences, ServiceState, Subscription, TimeStamp, TimeStamp1, FrontendApi, NotificationApi) {
   'use strict';
 
   /**
@@ -75,6 +75,16 @@
      * @property {module:ApiClient}
      */
     ApiClient: ApiClient,
+    /**
+     * The AdjacentAppInfoNotification model constructor.
+     * @property {module:model/AdjacentAppInfoNotification}
+     */
+    AdjacentAppInfoNotification: AdjacentAppInfoNotification,
+    /**
+     * The AdjacentAppInfoNotificationAdjacentAppInfo model constructor.
+     * @property {module:model/AdjacentAppInfoNotificationAdjacentAppInfo}
+     */
+    AdjacentAppInfoNotificationAdjacentAppInfo: AdjacentAppInfoNotificationAdjacentAppInfo,
     /**
      * The AppTerminationSubscription model constructor.
      * @property {module:model/AppTerminationSubscription}
@@ -131,15 +141,55 @@
      */
     AssociateId: AssociateId,
     /**
+     * The AssociateId1 model constructor.
+     * @property {module:model/AssociateId1}
+     */
+    AssociateId1: AssociateId1,
+    /**
+     * The AssociateIdType model constructor.
+     * @property {module:model/AssociateIdType}
+     */
+    AssociateIdType: AssociateIdType,
+    /**
      * The CommunicationInterface model constructor.
      * @property {module:model/CommunicationInterface}
      */
     CommunicationInterface: CommunicationInterface,
     /**
+     * The CommunicationInterface1 model constructor.
+     * @property {module:model/CommunicationInterface1}
+     */
+    CommunicationInterface1: CommunicationInterface1,
+    /**
+     * The CommunicationInterfaceIpAddresses model constructor.
+     * @property {module:model/CommunicationInterfaceIpAddresses}
+     */
+    CommunicationInterfaceIpAddresses: CommunicationInterfaceIpAddresses,
+    /**
+     * The ExpiryNotification model constructor.
+     * @property {module:model/ExpiryNotification}
+     */
+    ExpiryNotification: ExpiryNotification,
+    /**
+     * The InlineNotification model constructor.
+     * @property {module:model/InlineNotification}
+     */
+    InlineNotification: InlineNotification,
+    /**
+     * The Link model constructor.
+     * @property {module:model/Link}
+     */
+    Link: Link,
+    /**
      * The LinkType model constructor.
      * @property {module:model/LinkType}
      */
     LinkType: LinkType,
+    /**
+     * The LinkType1 model constructor.
+     * @property {module:model/LinkType1}
+     */
+    LinkType1: LinkType1,
     /**
      * The LocalityType model constructor.
      * @property {module:model/LocalityType}
@@ -155,6 +205,26 @@
      * @property {module:model/MobilityProcedureNotificationTargetAppInfo}
      */
     MobilityProcedureNotificationTargetAppInfo: MobilityProcedureNotificationTargetAppInfo,
+    /**
+     * The MobilityProcedureNotificationTargetAppInfo1 model constructor.
+     * @property {module:model/MobilityProcedureNotificationTargetAppInfo1}
+     */
+    MobilityProcedureNotificationTargetAppInfo1: MobilityProcedureNotificationTargetAppInfo1,
+    /**
+     * The MobilityStatus model constructor.
+     * @property {module:model/MobilityStatus}
+     */
+    MobilityStatus: MobilityStatus,
+    /**
+     * The OneOfInlineNotification model constructor.
+     * @property {module:model/OneOfInlineNotification}
+     */
+    OneOfInlineNotification: OneOfInlineNotification,
+    /**
+     * The ProblemDetails model constructor.
+     * @property {module:model/ProblemDetails}
+     */
+    ProblemDetails: ProblemDetails,
     /**
      * The SerInstanceId model constructor.
      * @property {module:model/SerInstanceId}
@@ -190,6 +260,11 @@
      * @property {module:model/TimeStamp}
      */
     TimeStamp: TimeStamp,
+    /**
+     * The TimeStamp1 model constructor.
+     * @property {module:model/TimeStamp1}
+     */
+    TimeStamp1: TimeStamp1,
     /**
      * The FrontendApi service constructor.
      * @property {module:api/FrontendApi}

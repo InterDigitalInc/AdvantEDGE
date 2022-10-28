@@ -22,8 +22,8 @@
  */
 package server
 
-// This type represents a type of link and may be referenced from data structures
+// 'This data type represents a type of link'
 type LinkType struct {
-	// URI referring to a resource
-	Href string `json:"href,omitempty"`
+	// The URI referring to the subscription.
+	Href string `json:"href"`
 }

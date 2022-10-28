@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: ETSI GS MEC 013 - Location API
+  title: AdvantEDGE Location API
   version: 2.2.1
   description: "Location Service is AdvantEDGE's implementation of
   [ETSI MEC ISG MEC013 Location API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf)

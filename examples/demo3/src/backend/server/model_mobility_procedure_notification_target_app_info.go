@@ -22,10 +22,9 @@
  */
 package server
 
-// Identifiers to associate the information of target application instance.
-type MobilityProcedureNotificationTargetAppInfo struct {
+type MobilityProcedureNotificationTargetAppInfo1 struct {
 	// Identifiers of the target application instance.
-	AppInstanceId string `json:"appInstanceId,omitempty"`
+	AppInstanceId string `json:"appInstanceId"`
 
-	CommInterface *CommunicationInterface `json:"commInterface,omitempty"`
+	CommInterface *CommunicationInterface1 `json:"commInterface,omitempty"`
 }

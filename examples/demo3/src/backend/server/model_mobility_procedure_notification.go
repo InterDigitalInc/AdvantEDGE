@@ -23,14 +23,16 @@
 package server
 
 type MobilityProcedureNotification struct {
-	// 0 to N identifiers to associate the information for specific UE(s) and flow(s).
-	AssociateId []AssociateId `json:"associateId,omitempty"`
-	// Indicate the status of the UE mobility. Values are defined as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3 = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.
-	MobilityStatus int32 `json:"mobilityStatus"`
-	// Shall be set to \\\"MobilityProcedureNotification\\\".
+	// Shall be set to \"MobilityProcedureNotification\".
 	NotificationType string `json:"notificationType"`
 
-	TargetAppInfo *MobilityProcedureNotificationTargetAppInfo `json:"targetAppInfo,omitempty"`
-
 	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
+	// 1 to N identifiers to associate the information for specific
+	AssociateId []AssociateId `json:"associateId"`
+
+	MobilityStatus *MobilityStatus `json:"mobilityStatus"`
+
+	TargetAppInfo *MobilityProcedureNotificationTargetAppInfo1 `json:"targetAppInfo,omitempty"`
+
+	Links *Link `json:"_links"`
 }

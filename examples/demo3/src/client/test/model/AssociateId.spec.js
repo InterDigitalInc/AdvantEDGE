@@ -44,14 +44,14 @@
   var instance;
 
   describe('(package)', function() {
-    describe('AssociateId', function() {
+    describe('AssociateId1', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.AssociateId();
+        instance = new MecDemo3Api.AssociateId1();
       });
 
-      it('should create an instance of AssociateId', function() {
-        // TODO: update the code to test AssociateId
-        expect(instance).to.be.a(MecDemo3Api.AssociateId);
+      it('should create an instance of AssociateId1', function() {
+        // TODO: update the code to test AssociateId1
+        expect(instance).to.be.a(MecDemo3Api.AssociateId1);
       });
 
       it('should have the property type (base name: "type")', function() {

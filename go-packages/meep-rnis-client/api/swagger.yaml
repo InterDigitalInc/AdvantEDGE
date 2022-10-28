@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: ETSI GS MEC 012 - Radio Network Information API
+  title: AdvantEDGE Radio Network Information API
   description: "Radio Network Information Service is AdvantEDGE's implementation of\
     \ [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf)\
     \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\

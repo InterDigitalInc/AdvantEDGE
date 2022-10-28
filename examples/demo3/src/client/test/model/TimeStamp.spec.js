@@ -44,26 +44,26 @@
   var instance;
 
   describe('(package)', function() {
-    describe('TimeStamp', function() {
+    describe('TimeStamp1', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.TimeStamp();
+        instance = new MecDemo3Api.TimeStamp1();
       });
 
-      it('should create an instance of TimeStamp', function() {
-        // TODO: update the code to test TimeStamp
-        expect(instance).to.be.a(MecDemo3Api.TimeStamp);
-      });
-
-      it('should have the property nanoSeconds (base name: "nanoSeconds")', function() {
-        // TODO: update the code to test the property nanoSeconds
-        expect(instance).to.have.property('nanoSeconds');
-        // expect(instance.nanoSeconds).to.be(expectedValueLiteral);
+      it('should create an instance of TimeStamp1', function() {
+        // TODO: update the code to test TimeStamp1
+        expect(instance).to.be.a(MecDemo3Api.TimeStamp1);
       });
 
       it('should have the property seconds (base name: "seconds")', function() {
         // TODO: update the code to test the property seconds
         expect(instance).to.have.property('seconds');
         // expect(instance.seconds).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property nanoSeconds (base name: "nanoSeconds")', function() {
+        // TODO: update the code to test the property nanoSeconds
+        expect(instance).to.have.property('nanoSeconds');
+        // expect(instance.nanoSeconds).to.be(expectedValueLiteral);
       });
 
     });

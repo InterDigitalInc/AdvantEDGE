@@ -54,6 +54,18 @@
         expect(instance).to.be.a(MecDemo3Api.MobilityProcedureNotification);
       });
 
+      it('should have the property notificationType (base name: "notificationType")', function() {
+        // TODO: update the code to test the property notificationType
+        expect(instance).to.have.property('notificationType');
+        // expect(instance.notificationType).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property timeStamp (base name: "timeStamp")', function() {
+        // TODO: update the code to test the property timeStamp
+        expect(instance).to.have.property('timeStamp');
+        // expect(instance.timeStamp).to.be(expectedValueLiteral);
+      });
+
       it('should have the property associateId (base name: "associateId")', function() {
         // TODO: update the code to test the property associateId
         expect(instance).to.have.property('associateId');
@@ -66,22 +78,16 @@
         // expect(instance.mobilityStatus).to.be(expectedValueLiteral);
       });
 
-      it('should have the property notificationType (base name: "notificationType")', function() {
-        // TODO: update the code to test the property notificationType
-        expect(instance).to.have.property('notificationType');
-        // expect(instance.notificationType).to.be(expectedValueLiteral);
-      });
-
       it('should have the property targetAppInfo (base name: "targetAppInfo")', function() {
         // TODO: update the code to test the property targetAppInfo
         expect(instance).to.have.property('targetAppInfo');
         // expect(instance.targetAppInfo).to.be(expectedValueLiteral);
       });
 
-      it('should have the property timeStamp (base name: "timeStamp")', function() {
-        // TODO: update the code to test the property timeStamp
-        expect(instance).to.have.property('timeStamp');
-        // expect(instance.timeStamp).to.be(expectedValueLiteral);
+      it('should have the property links (base name: "_links")', function() {
+        // TODO: update the code to test the property links
+        expect(instance).to.have.property('links');
+        // expect(instance.links).to.be(expectedValueLiteral);
       });
 
     });

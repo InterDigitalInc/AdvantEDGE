@@ -113,7 +113,7 @@ api.deleteAmsDevice(device, callback);
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://10.190.115.162:8093*
+All URIs are relative to *https://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -132,6 +132,8 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
+ - [MecDemo3Api.AdjacentAppInfoNotification](docs/AdjacentAppInfoNotification.md)
+ - [MecDemo3Api.AdjacentAppInfoNotificationAdjacentAppInfo](docs/AdjacentAppInfoNotificationAdjacentAppInfo.md)
  - [MecDemo3Api.AppTerminationSubscription](docs/AppTerminationSubscription.md)
  - [MecDemo3Api.AppTerminationSubscriptionLinks](docs/AppTerminationSubscriptionLinks.md)
  - [MecDemo3Api.ApplicationContextState](docs/ApplicationContextState.md)
@@ -143,11 +145,23 @@ Class | Method | HTTP request | Description
  - [MecDemo3Api.ApplicationInstanceSerAvailabilitySubscription](docs/ApplicationInstanceSerAvailabilitySubscription.md)
  - [MecDemo3Api.ApplicationInstanceSubscriptions](docs/ApplicationInstanceSubscriptions.md)
  - [MecDemo3Api.AssociateId](docs/AssociateId.md)
+ - [MecDemo3Api.AssociateId1](docs/AssociateId1.md)
+ - [MecDemo3Api.AssociateIdType](docs/AssociateIdType.md)
  - [MecDemo3Api.CommunicationInterface](docs/CommunicationInterface.md)
+ - [MecDemo3Api.CommunicationInterface1](docs/CommunicationInterface1.md)
+ - [MecDemo3Api.CommunicationInterfaceIpAddresses](docs/CommunicationInterfaceIpAddresses.md)
+ - [MecDemo3Api.ExpiryNotification](docs/ExpiryNotification.md)
+ - [MecDemo3Api.InlineNotification](docs/InlineNotification.md)
+ - [MecDemo3Api.Link](docs/Link.md)
  - [MecDemo3Api.LinkType](docs/LinkType.md)
+ - [MecDemo3Api.LinkType1](docs/LinkType1.md)
  - [MecDemo3Api.LocalityType](docs/LocalityType.md)
  - [MecDemo3Api.MobilityProcedureNotification](docs/MobilityProcedureNotification.md)
  - [MecDemo3Api.MobilityProcedureNotificationTargetAppInfo](docs/MobilityProcedureNotificationTargetAppInfo.md)
+ - [MecDemo3Api.MobilityProcedureNotificationTargetAppInfo1](docs/MobilityProcedureNotificationTargetAppInfo1.md)
+ - [MecDemo3Api.MobilityStatus](docs/MobilityStatus.md)
+ - [MecDemo3Api.OneOfInlineNotification](docs/OneOfInlineNotification.md)
+ - [MecDemo3Api.ProblemDetails](docs/ProblemDetails.md)
  - [MecDemo3Api.SerInstanceId](docs/SerInstanceId.md)
  - [MecDemo3Api.SerName](docs/SerName.md)
  - [MecDemo3Api.ServiceAvailabilityNotification](docs/ServiceAvailabilityNotification.md)
@@ -155,6 +169,7 @@ Class | Method | HTTP request | Description
  - [MecDemo3Api.ServiceState](docs/ServiceState.md)
  - [MecDemo3Api.Subscription](docs/Subscription.md)
  - [MecDemo3Api.TimeStamp](docs/TimeStamp.md)
+ - [MecDemo3Api.TimeStamp1](docs/TimeStamp1.md)
 
 
 ## Documentation for Authorization

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: ETSI GS MEC 021 Application Mobility Service API
+  title: AdvantEDGE Application Mobility API
   description: "Application Mobility Service is AdvantEDGE's implementation of [ETSI\
     \ MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_MEC021v020201p.pdf)\
     \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\

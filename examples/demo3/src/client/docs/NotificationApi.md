@@ -1,6 +1,6 @@
 # MecDemo3Api.NotificationApi
 
-All URIs are relative to *http://10.190.115.162:8093*
+All URIs are relative to *https://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -24,7 +24,7 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
-var body = new MecDemo3Api.MobilityProcedureNotification(); // MobilityProcedureNotification | Subscription notification
+var body = new MecDemo3Api.InlineNotification(); // InlineNotification | 
 
 
 var callback = function(error, data, response) {
@@ -41,7 +41,7 @@ apiInstance.amsNotificationCallback(body, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**MobilityProcedureNotification**](MobilityProcedureNotification.md)| Subscription notification | 
+ **body** | [**InlineNotification**](InlineNotification.md)|  | 
 
 ### Return type
 
@@ -54,7 +54,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 <a name="appTerminationNotificationCallback"></a>
 # **appTerminationNotificationCallback**

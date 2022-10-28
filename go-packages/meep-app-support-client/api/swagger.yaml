@@ -1,8 +1,13 @@
 openapi: 3.0.2
 info:
-  title: MEC Application Support API
-  description: The ETSI MEC ISG MEC011 MEC Application Support API described using
-    OpenAPI
+  title: AdvantEDGE MEC Application Support API
+  description: "MEC Application Support Service is AdvantEDGE's implementation of\
+    \ [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)\
+    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about applications in the network <p>**Note**<br>AdvantEDGE supports\
+    \ a selected subset of Application Support API endpoints (see below)."
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -11,13 +16,6 @@ info:
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 2.2.1
 externalDocs:
-  description: "MEC Application Support Service is AdvantEDGE's implementation of\
-    \ [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)\
-    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
-    \ <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/app-support)\
-    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
-    \ information about applications in the network <p>**Note**<br>AdvantEDGE supports\
-    \ a selected subset of Application Support API endpoints (see below)."
   url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf
 servers:
 - url: https://localhost/mec_app_support/v1

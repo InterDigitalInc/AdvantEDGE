@@ -22,6 +22,6 @@
  */
 package server
 
-type CommunicationInterface struct {
-	IpAddresses string `json:"ipAddresses,omitempty"`
+type CommunicationInterface1 struct {
+	IpAddresses []CommunicationInterfaceIpAddresses `json:"ipAddresses,omitempty"`
 }
