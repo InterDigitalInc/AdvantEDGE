@@ -99,6 +99,8 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.d2dInRange = [""];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.poaInRange = [""];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
@@ -435,6 +437,26 @@
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode).to.be("LOOP");
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity).to.be.a('number');
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity).to.be();
+                            {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.d2dInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.poaInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
                           {
                             let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange;
                             expect(dataCtr).to.be.an(Array);

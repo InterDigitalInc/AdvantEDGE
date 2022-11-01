@@ -134,6 +134,16 @@
    */
   exports.prototype.velocity = undefined;
 
+  /**
+   * @member {Array.<String>} d2dInRange
+   */
+  exports.prototype.d2dInRange = undefined;
+
+  /**
+   * @member {Array.<String>} poaInRange
+   */
+  exports.prototype.poaInRange = undefined;
+
 
   /**
    * Allowed values for the <code>assetType</code> property.

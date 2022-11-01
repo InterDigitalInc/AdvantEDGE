@@ -779,7 +779,7 @@ func parseGeoDataAsset(geoData *GeoDataAsset) (assetGeoData *AssetGeoData, err e
 	return assetGeoData, nil
 }
 
-func fillGeoDataAsset(geoData *GeoDataAsset, position string, radius float32, path string, mode string, velocity float32) (err error) {
+func fillGeoDataAsset(geoData *GeoDataAsset, position string, radius float32, path string, mode string, velocity float32, d2dInRange []string, poaInRange []string) (err error) {
 	if geoData == nil {
 		return errors.New("geoData == nil")
 	}
@@ -811,6 +811,9 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, radius float32, pa
 	// Fill Velocity
 	geoData.Velocity = velocity
 
+	geoData.D2dInRange = d2dInRange
+
+	geoData.PoaInRange = poaInRange
 	return
 }
 
@@ -1195,9 +1198,9 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 
 			// Exclude path if necessary
 			if excludePath == "true" {
-				err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, "", ue.PathMode, ue.PathVelocity)
+				err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, "", ue.PathMode, ue.PathVelocity, ue.D2DInRange, ue.PoaInRange)
 			} else {
-				err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, ue.Path, ue.PathMode, ue.PathVelocity)
+				err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, ue.Path, ue.PathMode, ue.PathVelocity, ue.D2DInRange, ue.PoaInRange)
 			}
 			if err != nil {
 				log.Error(err.Error())
@@ -1226,7 +1229,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 			asset.AssetName = poa.Name
 			asset.AssetType = AssetTypePoa
 			asset.SubType = poa.SubType
-			err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0)
+			err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0, nil, nil)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1254,7 +1257,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 			asset.AssetName = compute.Name
 			asset.AssetType = AssetTypeCompute
 			asset.SubType = compute.SubType
-			err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0)
+			err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0, nil, nil)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1573,9 +1576,9 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		}
 		// Exclude path if necessary
 		if excludePath == "true" {
-			err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, "", ue.PathMode, ue.PathVelocity)
+			err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, "", ue.PathMode, ue.PathVelocity, ue.D2DInRange, ue.PoaInRange)
 		} else {
-			err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, ue.Path, ue.PathMode, ue.PathVelocity)
+			err = fillGeoDataAsset(&asset, ue.Position, ue.D2DRadius, ue.Path, ue.PathMode, ue.PathVelocity, ue.D2DInRange, ue.PoaInRange)
 		}
 		if err != nil {
 			log.Error(err.Error())
@@ -1591,7 +1594,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0)
+		err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0, nil, nil)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1606,7 +1609,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0)
+		err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0, nil, nil)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
