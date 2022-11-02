@@ -52,11 +52,13 @@
 
   /**
    * Constructs a new <code>LinkType</code>.
-   * This type represents a type of link and may be referenced from data structures
+   * &#39;This data type represents a type of link&#39;
    * @alias module:model/LinkType
    * @class
+   * @param href {String} The URI referring to the subscription.
    */
-  var exports = function() {
+  var exports = function(href) {
+    this.href = href;
   };
 
   /**
@@ -76,7 +78,7 @@
   }
 
   /**
-   * URI referring to a resource
+   * The URI referring to the subscription.
    * @member {String} href
    */
   exports.prototype.href = undefined;

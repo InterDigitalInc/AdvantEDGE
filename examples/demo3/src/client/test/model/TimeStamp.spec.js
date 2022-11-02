@@ -44,14 +44,14 @@
   var instance;
 
   describe('(package)', function() {
-    describe('TimeStamp1', function() {
+    describe('TimeStamp', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.TimeStamp1();
+        instance = new MecDemo3Api.TimeStamp();
       });
 
-      it('should create an instance of TimeStamp1', function() {
-        // TODO: update the code to test TimeStamp1
-        expect(instance).to.be.a(MecDemo3Api.TimeStamp1);
+      it('should create an instance of TimeStamp', function() {
+        // TODO: update the code to test TimeStamp
+        expect(instance).to.be.a(MecDemo3Api.TimeStamp);
       });
 
       it('should have the property seconds (base name: "seconds")', function() {

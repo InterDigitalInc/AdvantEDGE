@@ -44,14 +44,14 @@
   var instance;
 
   describe('(package)', function() {
-    describe('LinkType1', function() {
+    describe('LinkType', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.LinkType1();
+        instance = new MecDemo3Api.LinkType();
       });
 
-      it('should create an instance of LinkType1', function() {
-        // TODO: update the code to test LinkType1
-        expect(instance).to.be.a(MecDemo3Api.LinkType1);
+      it('should create an instance of LinkType', function() {
+        // TODO: update the code to test LinkType
+        expect(instance).to.be.a(MecDemo3Api.LinkType);
       });
 
       it('should have the property href (base name: "href")', function() {

@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AdjacentAppInfoNotificationAdjacentAppInfo', 'model/AssociateId1', 'model/Link', 'model/TimeStamp1'], factory);
+    define(['ApiClient', 'model/AdjacentAppInfoNotificationAdjacentAppInfo', 'model/AssociateId', 'model/Link', 'model/TimeStamp'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./AdjacentAppInfoNotificationAdjacentAppInfo'), require('./AssociateId1'), require('./Link'), require('./TimeStamp1'));
+    module.exports = factory(require('../ApiClient'), require('./AdjacentAppInfoNotificationAdjacentAppInfo'), require('./AssociateId'), require('./Link'), require('./TimeStamp'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.AdjacentAppInfoNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AdjacentAppInfoNotificationAdjacentAppInfo, root.MecDemo3Api.AssociateId1, root.MecDemo3Api.Link, root.MecDemo3Api.TimeStamp1);
+    root.MecDemo3Api.AdjacentAppInfoNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AdjacentAppInfoNotificationAdjacentAppInfo, root.MecDemo3Api.AssociateId, root.MecDemo3Api.Link, root.MecDemo3Api.TimeStamp);
   }
-}(this, function(ApiClient, AdjacentAppInfoNotificationAdjacentAppInfo, AssociateId1, Link, TimeStamp1) {
+}(this, function(ApiClient, AdjacentAppInfoNotificationAdjacentAppInfo, AssociateId, Link, TimeStamp) {
   'use strict';
 
   /**
@@ -76,9 +76,9 @@
       if (data.hasOwnProperty('notificationType'))
         obj.notificationType = ApiClient.convertToType(data['notificationType'], 'String');
       if (data.hasOwnProperty('timeStamp'))
-        obj.timeStamp = TimeStamp1.constructFromObject(data['timeStamp']);
+        obj.timeStamp = TimeStamp.constructFromObject(data['timeStamp']);
       if (data.hasOwnProperty('associateId'))
-        obj.associateId = ApiClient.convertToType(data['associateId'], [AssociateId1]);
+        obj.associateId = ApiClient.convertToType(data['associateId'], [AssociateId]);
       if (data.hasOwnProperty('adjacentAppInfo'))
         obj.adjacentAppInfo = ApiClient.convertToType(data['adjacentAppInfo'], [AdjacentAppInfoNotificationAdjacentAppInfo]);
       if (data.hasOwnProperty('_links'))
@@ -94,13 +94,13 @@
   exports.prototype.notificationType = undefined;
 
   /**
-   * @member {module:model/TimeStamp1} timeStamp
+   * @member {module:model/TimeStamp} timeStamp
    */
   exports.prototype.timeStamp = undefined;
 
   /**
    * 1 to N identifiers to associate the information for specific
-   * @member {Array.<module:model/AssociateId1>} associateId
+   * @member {Array.<module:model/AssociateId>} associateId
    */
   exports.prototype.associateId = undefined;
 

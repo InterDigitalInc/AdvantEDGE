@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/AssociateIdType'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('./AssociateIdType'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.AssociateId = factory(root.MecDemo3Api.ApiClient);
+    root.MecDemo3Api.AssociateId = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AssociateIdType);
   }
-}(this, function(ApiClient) {
+}(this, function(ApiClient, AssociateIdType) {
   'use strict';
 
   /**
@@ -69,7 +69,7 @@
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('type'))
-        obj.type = ApiClient.convertToType(data['type'], 'Number');
+        obj.type = AssociateIdType.constructFromObject(data['type']);
       if (data.hasOwnProperty('value'))
         obj.value = ApiClient.convertToType(data['value'], 'String');
     }
@@ -77,7 +77,7 @@
   }
 
   /**
-   * @member {Number} type
+   * @member {module:model/AssociateIdType} type
    */
   exports.prototype.type = undefined;
 

@@ -52,11 +52,12 @@
 
   /**
    * Constructs a new <code>MobilityProcedureNotificationTargetAppInfo</code>.
-   * Identifiers to associate the information of target application instance.
    * @alias module:model/MobilityProcedureNotificationTargetAppInfo
    * @class
+   * @param appInstanceId {String} Identifiers of the target application instance.
    */
-  var exports = function() {
+  var exports = function(appInstanceId) {
+    this.appInstanceId = appInstanceId;
   };
 
   /**

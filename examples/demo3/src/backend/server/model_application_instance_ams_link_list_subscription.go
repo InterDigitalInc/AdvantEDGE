@@ -25,6 +25,4 @@ package server
 // This type represents the information that the MEC platform notifies the subscribed application instance about app mobility support
 type ApplicationInstanceAmsLinkListSubscription struct {
 	SubId string `json:"subId,omitempty"`
-	// 0 to N identifiers to associate the information for specific UE(s) and flow(s).
-	AssociateId []AssociateId `json:"associateId,omitempty"`
 }

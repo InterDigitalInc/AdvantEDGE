@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CommunicationInterface1'], factory);
+    define(['ApiClient', 'model/CommunicationInterface'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./CommunicationInterface1'));
+    module.exports = factory(require('../ApiClient'), require('./CommunicationInterface'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.AdjacentAppInfoNotificationAdjacentAppInfo = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.CommunicationInterface1);
+    root.MecDemo3Api.AdjacentAppInfoNotificationAdjacentAppInfo = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.CommunicationInterface);
   }
-}(this, function(ApiClient, CommunicationInterface1) {
+}(this, function(ApiClient, CommunicationInterface) {
   'use strict';
 
   /**
@@ -55,7 +55,7 @@
    * @alias module:model/AdjacentAppInfoNotificationAdjacentAppInfo
    * @class
    * @param appInstanceId {String} Identifier of the adjacent application instance.
-   * @param commInterface {Array.<module:model/CommunicationInterface1>} If present, it represents the communication interface(s) information of the application instance.
+   * @param commInterface {Array.<module:model/CommunicationInterface>} If present, it represents the communication interface(s) information of the application instance.
    */
   var exports = function(appInstanceId, commInterface) {
     this.appInstanceId = appInstanceId;
@@ -75,7 +75,7 @@
       if (data.hasOwnProperty('appInstanceId'))
         obj.appInstanceId = ApiClient.convertToType(data['appInstanceId'], 'String');
       if (data.hasOwnProperty('commInterface'))
-        obj.commInterface = ApiClient.convertToType(data['commInterface'], [CommunicationInterface1]);
+        obj.commInterface = ApiClient.convertToType(data['commInterface'], [CommunicationInterface]);
     }
     return obj;
   }
@@ -88,7 +88,7 @@
 
   /**
    * If present, it represents the communication interface(s) information of the application instance.
-   * @member {Array.<module:model/CommunicationInterface1>} commInterface
+   * @member {Array.<module:model/CommunicationInterface>} commInterface
    */
   exports.prototype.commInterface = undefined;
 

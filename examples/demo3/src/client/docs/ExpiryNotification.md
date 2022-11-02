@@ -4,8 +4,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **notificationType** | **String** | Shall be set to \&quot;ExpiryNotification\&quot;. | 
-**timeStamp** | [**TimeStamp1**](TimeStamp1.md) |  | [optional] 
+**timeStamp** | [**TimeStamp**](TimeStamp.md) |  | [optional] 
 **links** | [**Link**](Link.md) |  | 
-**expiryDeadline** | [**TimeStamp1**](TimeStamp1.md) |  | 
+**expiryDeadline** | [**TimeStamp**](TimeStamp.md) |  | 
 
 

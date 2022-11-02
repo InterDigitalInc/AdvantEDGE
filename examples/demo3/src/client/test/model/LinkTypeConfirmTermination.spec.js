@@ -44,38 +44,20 @@
   var instance;
 
   describe('(package)', function() {
-    describe('ServiceAvailabilityNotificationServiceReferences', function() {
+    describe('LinkTypeConfirmTermination', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.ServiceAvailabilityNotificationServiceReferences();
+        instance = new MecDemo3Api.LinkTypeConfirmTermination();
       });
 
-      it('should create an instance of ServiceAvailabilityNotificationServiceReferences', function() {
-        // TODO: update the code to test ServiceAvailabilityNotificationServiceReferences
-        expect(instance).to.be.a(MecDemo3Api.ServiceAvailabilityNotificationServiceReferences);
+      it('should create an instance of LinkTypeConfirmTermination', function() {
+        // TODO: update the code to test LinkTypeConfirmTermination
+        expect(instance).to.be.a(MecDemo3Api.LinkTypeConfirmTermination);
       });
 
-      it('should have the property link (base name: "link")', function() {
-        // TODO: update the code to test the property link
-        expect(instance).to.have.property('link');
-        // expect(instance.link).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property serName (base name: "serName")', function() {
-        // TODO: update the code to test the property serName
-        expect(instance).to.have.property('serName');
-        // expect(instance.serName).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property state (base name: "state")', function() {
-        // TODO: update the code to test the property state
-        expect(instance).to.have.property('state');
-        // expect(instance.state).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property changeType (base name: "changeType")', function() {
-        // TODO: update the code to test the property changeType
-        expect(instance).to.have.property('changeType');
-        // expect(instance.changeType).to.be(expectedValueLiteral);
+      it('should have the property href (base name: "href")', function() {
+        // TODO: update the code to test the property href
+        expect(instance).to.have.property('href');
+        // expect(instance.href).to.be(expectedValueLiteral);
       });
 
     });

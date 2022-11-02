@@ -26,5 +26,5 @@ type AdjacentAppInfoNotificationAdjacentAppInfo struct {
 	// Identifier of the adjacent application instance.
 	AppInstanceId string `json:"appInstanceId"`
 	// If present, it represents the communication interface(s) information of the application instance.
-	CommInterface []CommunicationInterface1 `json:"commInterface"`
+	CommInterface []CommunicationInterface `json:"commInterface"`
 }

@@ -44,20 +44,38 @@
   var instance;
 
   describe('(package)', function() {
-    describe('Subscription', function() {
+    describe('AppTerminationNotification', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.Subscription();
+        instance = new MecDemo3Api.AppTerminationNotification();
       });
 
-      it('should create an instance of Subscription', function() {
-        // TODO: update the code to test Subscription
-        expect(instance).to.be.a(MecDemo3Api.Subscription);
+      it('should create an instance of AppTerminationNotification', function() {
+        // TODO: update the code to test AppTerminationNotification
+        expect(instance).to.be.a(MecDemo3Api.AppTerminationNotification);
       });
 
-      it('should have the property subscription (base name: "subscription")', function() {
-        // TODO: update the code to test the property subscription
-        expect(instance).to.have.property('subscription');
-        // expect(instance.subscription).to.be(expectedValueLiteral);
+      it('should have the property notificationType (base name: "notificationType")', function() {
+        // TODO: update the code to test the property notificationType
+        expect(instance).to.have.property('notificationType');
+        // expect(instance.notificationType).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property operationAction (base name: "operationAction")', function() {
+        // TODO: update the code to test the property operationAction
+        expect(instance).to.have.property('operationAction');
+        // expect(instance.operationAction).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property maxGracefulTimeout (base name: "maxGracefulTimeout")', function() {
+        // TODO: update the code to test the property maxGracefulTimeout
+        expect(instance).to.have.property('maxGracefulTimeout');
+        // expect(instance.maxGracefulTimeout).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property links (base name: "_links")', function() {
+        // TODO: update the code to test the property links
+        expect(instance).to.have.property('links');
+        // expect(instance.links).to.be(expectedValueLiteral);
       });
 
     });

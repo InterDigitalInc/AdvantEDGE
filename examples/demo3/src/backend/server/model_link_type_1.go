@@ -22,12 +22,8 @@
  */
 package server
 
-// This type represents the service availability information.
-type ServiceAvailabilityNotification struct {
-	// Shall be set to SerAvailabilityNotification
-	NotificationType string `json:"notificationType"`
-
-	ServiceReferences []ServiceAvailabilityNotificationServiceReferences `json:"serviceReferences"`
-
-	Links *Subscription `json:"_links"`
+// This type represents a type of link and may be referenced from data structures
+type LinkType1 struct {
+	// URI referring to a resource
+	Href string `json:"href,omitempty"`
 }

@@ -44,38 +44,26 @@
   var instance;
 
   describe('(package)', function() {
-    describe('AppTerminationSubscription', function() {
+    describe('AppTerminationNotificationLinks', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.AppTerminationSubscription();
+        instance = new MecDemo3Api.AppTerminationNotificationLinks();
       });
 
-      it('should create an instance of AppTerminationSubscription', function() {
-        // TODO: update the code to test AppTerminationSubscription
-        expect(instance).to.be.a(MecDemo3Api.AppTerminationSubscription);
+      it('should create an instance of AppTerminationNotificationLinks', function() {
+        // TODO: update the code to test AppTerminationNotificationLinks
+        expect(instance).to.be.a(MecDemo3Api.AppTerminationNotificationLinks);
       });
 
-      it('should have the property subscriptionType (base name: "subscriptionType")', function() {
-        // TODO: update the code to test the property subscriptionType
-        expect(instance).to.have.property('subscriptionType');
-        // expect(instance.subscriptionType).to.be(expectedValueLiteral);
+      it('should have the property subscription (base name: "subscription")', function() {
+        // TODO: update the code to test the property subscription
+        expect(instance).to.have.property('subscription');
+        // expect(instance.subscription).to.be(expectedValueLiteral);
       });
 
-      it('should have the property callbackReference (base name: "callbackReference")', function() {
-        // TODO: update the code to test the property callbackReference
-        expect(instance).to.have.property('callbackReference');
-        // expect(instance.callbackReference).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property links (base name: "_links")', function() {
-        // TODO: update the code to test the property links
-        expect(instance).to.have.property('links');
-        // expect(instance.links).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property appInstanceId (base name: "appInstanceId")', function() {
-        // TODO: update the code to test the property appInstanceId
-        expect(instance).to.have.property('appInstanceId');
-        // expect(instance.appInstanceId).to.be(expectedValueLiteral);
+      it('should have the property confirmTermination (base name: "confirmTermination")', function() {
+        // TODO: update the code to test the property confirmTermination
+        expect(instance).to.have.property('confirmTermination');
+        // expect(instance.confirmTermination).to.be(expectedValueLiteral);
       });
 
     });

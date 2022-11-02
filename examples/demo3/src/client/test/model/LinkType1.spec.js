@@ -44,32 +44,20 @@
   var instance;
 
   describe('(package)', function() {
-    describe('ServiceAvailabilityNotification', function() {
+    describe('LinkType1', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.ServiceAvailabilityNotification();
+        instance = new MecDemo3Api.LinkType1();
       });
 
-      it('should create an instance of ServiceAvailabilityNotification', function() {
-        // TODO: update the code to test ServiceAvailabilityNotification
-        expect(instance).to.be.a(MecDemo3Api.ServiceAvailabilityNotification);
+      it('should create an instance of LinkType1', function() {
+        // TODO: update the code to test LinkType1
+        expect(instance).to.be.a(MecDemo3Api.LinkType1);
       });
 
-      it('should have the property notificationType (base name: "notificationType")', function() {
-        // TODO: update the code to test the property notificationType
-        expect(instance).to.have.property('notificationType');
-        // expect(instance.notificationType).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property serviceReferences (base name: "serviceReferences")', function() {
-        // TODO: update the code to test the property serviceReferences
-        expect(instance).to.have.property('serviceReferences');
-        // expect(instance.serviceReferences).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property links (base name: "_links")', function() {
-        // TODO: update the code to test the property links
-        expect(instance).to.have.property('links');
-        // expect(instance.links).to.be(expectedValueLiteral);
+      it('should have the property href (base name: "href")', function() {
+        // TODO: update the code to test the property href
+        expect(instance).to.have.property('href');
+        // expect(instance.href).to.be(expectedValueLiteral);
       });
 
     });

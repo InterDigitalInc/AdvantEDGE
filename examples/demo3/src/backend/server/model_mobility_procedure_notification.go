@@ -32,7 +32,7 @@ type MobilityProcedureNotification struct {
 
 	MobilityStatus *MobilityStatus `json:"mobilityStatus"`
 
-	TargetAppInfo *MobilityProcedureNotificationTargetAppInfo1 `json:"targetAppInfo,omitempty"`
+	TargetAppInfo *MobilityProcedureNotificationTargetAppInfo `json:"targetAppInfo,omitempty"`
 
 	Links *Link `json:"_links"`
 }

@@ -22,7 +22,11 @@
  */
 package server
 
-// A link to the related subscription
-type Subscription struct {
-	Subscription *LinkType `json:"subscription"`
-}
+// OperationActionType : Operation that is being performed on the MEC application instance.
+type OperationActionType string
+
+// List of OperationActionType
+const (
+	STOPPING_OperationActionType    OperationActionType = "STOPPING"
+	TERMINATING_OperationActionType OperationActionType = "TERMINATING"
+)

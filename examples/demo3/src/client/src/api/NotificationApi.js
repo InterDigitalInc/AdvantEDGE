@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AppTerminationSubscription', 'model/ApplicationContextState', 'model/InlineNotification', 'model/ProblemDetails', 'model/ServiceAvailabilityNotification'], factory);
+    define(['ApiClient', 'model/AppTerminationNotification', 'model/ApplicationContextState', 'model/InlineNotification', 'model/ProblemDetails'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationSubscription'), require('../model/ApplicationContextState'), require('../model/InlineNotification'), require('../model/ProblemDetails'), require('../model/ServiceAvailabilityNotification'));
+    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationNotification'), require('../model/ApplicationContextState'), require('../model/InlineNotification'), require('../model/ProblemDetails'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationSubscription, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.InlineNotification, root.MecDemo3Api.ProblemDetails, root.MecDemo3Api.ServiceAvailabilityNotification);
+    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationNotification, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.InlineNotification, root.MecDemo3Api.ProblemDetails);
   }
-}(this, function(ApiClient, AppTerminationSubscription, ApplicationContextState, InlineNotification, ProblemDetails, ServiceAvailabilityNotification) {
+}(this, function(ApiClient, AppTerminationNotification, ApplicationContextState, InlineNotification, ProblemDetails) {
   'use strict';
 
   /**
@@ -116,18 +116,14 @@
      */
 
     /**
-     * Callback endpoint for MEC011 app-termination notifications
-     * Callback endpoint for MEC011 app-termination notifications
-     * @param {module:model/AppTerminationSubscription} body app termination notification details
+     * Represents the information that the MEP notifies the subscribed application instance about the corresponding application instance termination/stop&#39;
+     * @param {Object} opts Optional parameters
+     * @param {module:model/AppTerminationNotification} opts.body 
      * @param {module:api/NotificationApi~appTerminationNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.appTerminationNotificationCallback = function(body, callback) {
-      var postBody = body;
-
-      // verify the required parameter 'body' is set
-      if (body === undefined || body === null) {
-        throw new Error("Missing the required parameter 'body' when calling appTerminationNotificationCallback");
-      }
+    this.appTerminationNotificationCallback = function(opts, callback) {
+      opts = opts || {};
+      var postBody = opts['body'];
 
 
       var pathParams = {
@@ -210,16 +206,10 @@
     /**
      * Callback endpoint for MEC011 Notifications
      * Callback endpoint for MEC011 Notifications
-     * @param {module:model/ServiceAvailabilityNotification} body service availability notification details
      * @param {module:api/NotificationApi~serviceAvailNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.serviceAvailNotificationCallback = function(body, callback) {
-      var postBody = body;
-
-      // verify the required parameter 'body' is set
-      if (body === undefined || body === null) {
-        throw new Error("Missing the required parameter 'body' when calling serviceAvailNotificationCallback");
-      }
+    this.serviceAvailNotificationCallback = function(callback) {
+      var postBody = null;
 
 
       var pathParams = {
@@ -234,7 +224,7 @@
       };
 
       var authNames = [];
-      var contentTypes = ['application/json'];
+      var contentTypes = [];
       var accepts = [];
       var returnType = null;
 

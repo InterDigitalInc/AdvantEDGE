@@ -71,8 +71,9 @@
         it('should call appTerminationNotificationCallback successfully', function(done) {
           // TODO: uncomment, update parameter values for appTerminationNotificationCallback call
           /*
+          var opts = {};
 
-          instance.appTerminationNotificationCallback(body, function(error, data, response) {
+          instance.appTerminationNotificationCallback(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -105,10 +106,10 @@
       });
       describe('serviceAvailNotificationCallback', function() {
         it('should call serviceAvailNotificationCallback successfully', function(done) {
-          // TODO: uncomment, update parameter values for serviceAvailNotificationCallback call
+          // TODO: uncomment serviceAvailNotificationCallback call
           /*
 
-          instance.serviceAvailNotificationCallback(body, function(error, data, response) {
+          instance.serviceAvailNotificationCallback(function(error, data, response) {
             if (error) {
               done(error);
               return;

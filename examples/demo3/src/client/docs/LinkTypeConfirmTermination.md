@@ -1,8 +1,8 @@
-# MecDemo3Api.AppTerminationSubscriptionLinks
+# MecDemo3Api.LinkTypeConfirmTermination
 
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**self** | [**LinkType**](LinkType.md) |  | 
+**href** | **String** | URI referring to a resource | [optional] 
 
 

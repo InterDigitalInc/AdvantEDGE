@@ -125,7 +125,7 @@ Class | Method | HTTP request | Description
 *MecDemo3Api.FrontendApi* | [**register**](docs/FrontendApi.md#register) | **POST** /register/app | Register with MEC Platform and create necessary resources
 *MecDemo3Api.FrontendApi* | [**updateAmsDevices**](docs/FrontendApi.md#updateAmsDevices) | **PUT** /service/ams/update/{device} | Updates the list of AMS devices
 *MecDemo3Api.NotificationApi* | [**amsNotificationCallback**](docs/NotificationApi.md#amsNotificationCallback) | **POST** /services/callback/amsevent | Callback endpoint for AMS Notifications
-*MecDemo3Api.NotificationApi* | [**appTerminationNotificationCallback**](docs/NotificationApi.md#appTerminationNotificationCallback) | **POST** /application/termination | Callback endpoint for MEC011 app-termination notifications
+*MecDemo3Api.NotificationApi* | [**appTerminationNotificationCallback**](docs/NotificationApi.md#appTerminationNotificationCallback) | **POST** /application/termination | 
 *MecDemo3Api.NotificationApi* | [**contextTransferNotificationCallback**](docs/NotificationApi.md#contextTransferNotificationCallback) | **POST** /application/transfer | Callback endpoint for MEC021 context-state transfer notification
 *MecDemo3Api.NotificationApi* | [**serviceAvailNotificationCallback**](docs/NotificationApi.md#serviceAvailNotificationCallback) | **POST** /services/callback/service-availability | Callback endpoint for MEC011 Notifications
 
@@ -134,8 +134,8 @@ Class | Method | HTTP request | Description
 
  - [MecDemo3Api.AdjacentAppInfoNotification](docs/AdjacentAppInfoNotification.md)
  - [MecDemo3Api.AdjacentAppInfoNotificationAdjacentAppInfo](docs/AdjacentAppInfoNotificationAdjacentAppInfo.md)
- - [MecDemo3Api.AppTerminationSubscription](docs/AppTerminationSubscription.md)
- - [MecDemo3Api.AppTerminationSubscriptionLinks](docs/AppTerminationSubscriptionLinks.md)
+ - [MecDemo3Api.AppTerminationNotification](docs/AppTerminationNotification.md)
+ - [MecDemo3Api.AppTerminationNotificationLinks](docs/AppTerminationNotificationLinks.md)
  - [MecDemo3Api.ApplicationContextState](docs/ApplicationContextState.md)
  - [MecDemo3Api.ApplicationInstance](docs/ApplicationInstance.md)
  - [MecDemo3Api.ApplicationInstanceAmsLinkListSubscription](docs/ApplicationInstanceAmsLinkListSubscription.md)
@@ -145,31 +145,26 @@ Class | Method | HTTP request | Description
  - [MecDemo3Api.ApplicationInstanceSerAvailabilitySubscription](docs/ApplicationInstanceSerAvailabilitySubscription.md)
  - [MecDemo3Api.ApplicationInstanceSubscriptions](docs/ApplicationInstanceSubscriptions.md)
  - [MecDemo3Api.AssociateId](docs/AssociateId.md)
- - [MecDemo3Api.AssociateId1](docs/AssociateId1.md)
  - [MecDemo3Api.AssociateIdType](docs/AssociateIdType.md)
  - [MecDemo3Api.CommunicationInterface](docs/CommunicationInterface.md)
- - [MecDemo3Api.CommunicationInterface1](docs/CommunicationInterface1.md)
  - [MecDemo3Api.CommunicationInterfaceIpAddresses](docs/CommunicationInterfaceIpAddresses.md)
  - [MecDemo3Api.ExpiryNotification](docs/ExpiryNotification.md)
  - [MecDemo3Api.InlineNotification](docs/InlineNotification.md)
  - [MecDemo3Api.Link](docs/Link.md)
  - [MecDemo3Api.LinkType](docs/LinkType.md)
  - [MecDemo3Api.LinkType1](docs/LinkType1.md)
+ - [MecDemo3Api.LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MecDemo3Api.LocalityType](docs/LocalityType.md)
  - [MecDemo3Api.MobilityProcedureNotification](docs/MobilityProcedureNotification.md)
  - [MecDemo3Api.MobilityProcedureNotificationTargetAppInfo](docs/MobilityProcedureNotificationTargetAppInfo.md)
- - [MecDemo3Api.MobilityProcedureNotificationTargetAppInfo1](docs/MobilityProcedureNotificationTargetAppInfo1.md)
  - [MecDemo3Api.MobilityStatus](docs/MobilityStatus.md)
  - [MecDemo3Api.OneOfInlineNotification](docs/OneOfInlineNotification.md)
+ - [MecDemo3Api.OperationActionType](docs/OperationActionType.md)
  - [MecDemo3Api.ProblemDetails](docs/ProblemDetails.md)
  - [MecDemo3Api.SerInstanceId](docs/SerInstanceId.md)
  - [MecDemo3Api.SerName](docs/SerName.md)
- - [MecDemo3Api.ServiceAvailabilityNotification](docs/ServiceAvailabilityNotification.md)
- - [MecDemo3Api.ServiceAvailabilityNotificationServiceReferences](docs/ServiceAvailabilityNotificationServiceReferences.md)
  - [MecDemo3Api.ServiceState](docs/ServiceState.md)
- - [MecDemo3Api.Subscription](docs/Subscription.md)
  - [MecDemo3Api.TimeStamp](docs/TimeStamp.md)
- - [MecDemo3Api.TimeStamp1](docs/TimeStamp1.md)
 
 
 ## Documentation for Authorization

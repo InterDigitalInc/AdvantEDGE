@@ -30,62 +30,64 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AssociateIdType'], factory);
+    define(['ApiClient', 'model/LinkType1', 'model/LinkTypeConfirmTermination'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./AssociateIdType'));
+    module.exports = factory(require('../ApiClient'), require('./LinkType1'), require('./LinkTypeConfirmTermination'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.AssociateId1 = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AssociateIdType);
+    root.MecDemo3Api.AppTerminationNotificationLinks = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType1, root.MecDemo3Api.LinkTypeConfirmTermination);
   }
-}(this, function(ApiClient, AssociateIdType) {
+}(this, function(ApiClient, LinkType1, LinkTypeConfirmTermination) {
   'use strict';
 
   /**
-   * The AssociateId1 model module.
-   * @module model/AssociateId1
+   * The AppTerminationNotificationLinks model module.
+   * @module model/AppTerminationNotificationLinks
    * @version 0.0.1
    */
 
   /**
-   * Constructs a new <code>AssociateId1</code>.
-   * @alias module:model/AssociateId1
+   * Constructs a new <code>AppTerminationNotificationLinks</code>.
+   * Object containing hyperlinks related to the resource.
+   * @alias module:model/AppTerminationNotificationLinks
    * @class
+   * @param subscription {module:model/LinkType1} 
    */
-  var exports = function() {
+  var exports = function(subscription) {
+    this.subscription = subscription;
   };
 
   /**
-   * Constructs a <code>AssociateId1</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>AppTerminationNotificationLinks</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/AssociateId1} obj Optional instance to populate.
-   * @return {module:model/AssociateId1} The populated <code>AssociateId1</code> instance.
+   * @param {module:model/AppTerminationNotificationLinks} obj Optional instance to populate.
+   * @return {module:model/AppTerminationNotificationLinks} The populated <code>AppTerminationNotificationLinks</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
-      if (data.hasOwnProperty('type'))
-        obj.type = AssociateIdType.constructFromObject(data['type']);
-      if (data.hasOwnProperty('value'))
-        obj.value = ApiClient.convertToType(data['value'], 'String');
+      if (data.hasOwnProperty('subscription'))
+        obj.subscription = LinkType1.constructFromObject(data['subscription']);
+      if (data.hasOwnProperty('confirmTermination'))
+        obj.confirmTermination = LinkTypeConfirmTermination.constructFromObject(data['confirmTermination']);
     }
     return obj;
   }
 
   /**
-   * @member {module:model/AssociateIdType} type
+   * @member {module:model/LinkType1} subscription
    */
-  exports.prototype.type = undefined;
+  exports.prototype.subscription = undefined;
 
   /**
-   * Value for the identifier.
-   * @member {String} value
+   * @member {module:model/LinkTypeConfirmTermination} confirmTermination
    */
-  exports.prototype.value = undefined;
+  exports.prototype.confirmTermination = undefined;
 
   return exports;
 

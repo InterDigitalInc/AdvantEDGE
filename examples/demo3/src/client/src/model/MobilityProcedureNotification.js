@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AssociateId1', 'model/Link', 'model/MobilityProcedureNotificationTargetAppInfo1', 'model/MobilityStatus', 'model/TimeStamp1'], factory);
+    define(['ApiClient', 'model/AssociateId', 'model/Link', 'model/MobilityProcedureNotificationTargetAppInfo', 'model/MobilityStatus', 'model/TimeStamp'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./AssociateId1'), require('./Link'), require('./MobilityProcedureNotificationTargetAppInfo1'), require('./MobilityStatus'), require('./TimeStamp1'));
+    module.exports = factory(require('../ApiClient'), require('./AssociateId'), require('./Link'), require('./MobilityProcedureNotificationTargetAppInfo'), require('./MobilityStatus'), require('./TimeStamp'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.MobilityProcedureNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AssociateId1, root.MecDemo3Api.Link, root.MecDemo3Api.MobilityProcedureNotificationTargetAppInfo1, root.MecDemo3Api.MobilityStatus, root.MecDemo3Api.TimeStamp1);
+    root.MecDemo3Api.MobilityProcedureNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AssociateId, root.MecDemo3Api.Link, root.MecDemo3Api.MobilityProcedureNotificationTargetAppInfo, root.MecDemo3Api.MobilityStatus, root.MecDemo3Api.TimeStamp);
   }
-}(this, function(ApiClient, AssociateId1, Link, MobilityProcedureNotificationTargetAppInfo1, MobilityStatus, TimeStamp1) {
+}(this, function(ApiClient, AssociateId, Link, MobilityProcedureNotificationTargetAppInfo, MobilityStatus, TimeStamp) {
   'use strict';
 
   /**
@@ -55,7 +55,7 @@
    * @alias module:model/MobilityProcedureNotification
    * @class
    * @param notificationType {String} Shall be set to \"MobilityProcedureNotification\".
-   * @param associateId {Array.<module:model/AssociateId1>} 1 to N identifiers to associate the information for specific
+   * @param associateId {Array.<module:model/AssociateId>} 1 to N identifiers to associate the information for specific
    * @param mobilityStatus {module:model/MobilityStatus} 
    * @param links {module:model/Link} 
    */
@@ -80,13 +80,13 @@
       if (data.hasOwnProperty('notificationType'))
         obj.notificationType = ApiClient.convertToType(data['notificationType'], 'String');
       if (data.hasOwnProperty('timeStamp'))
-        obj.timeStamp = TimeStamp1.constructFromObject(data['timeStamp']);
+        obj.timeStamp = TimeStamp.constructFromObject(data['timeStamp']);
       if (data.hasOwnProperty('associateId'))
-        obj.associateId = ApiClient.convertToType(data['associateId'], [AssociateId1]);
+        obj.associateId = ApiClient.convertToType(data['associateId'], [AssociateId]);
       if (data.hasOwnProperty('mobilityStatus'))
         obj.mobilityStatus = MobilityStatus.constructFromObject(data['mobilityStatus']);
       if (data.hasOwnProperty('targetAppInfo'))
-        obj.targetAppInfo = MobilityProcedureNotificationTargetAppInfo1.constructFromObject(data['targetAppInfo']);
+        obj.targetAppInfo = MobilityProcedureNotificationTargetAppInfo.constructFromObject(data['targetAppInfo']);
       if (data.hasOwnProperty('_links'))
         obj.links = Link.constructFromObject(data['_links']);
     }
@@ -100,13 +100,13 @@
   exports.prototype.notificationType = undefined;
 
   /**
-   * @member {module:model/TimeStamp1} timeStamp
+   * @member {module:model/TimeStamp} timeStamp
    */
   exports.prototype.timeStamp = undefined;
 
   /**
    * 1 to N identifiers to associate the information for specific
-   * @member {Array.<module:model/AssociateId1>} associateId
+   * @member {Array.<module:model/AssociateId>} associateId
    */
   exports.prototype.associateId = undefined;
 
@@ -116,7 +116,7 @@
   exports.prototype.mobilityStatus = undefined;
 
   /**
-   * @member {module:model/MobilityProcedureNotificationTargetAppInfo1} targetAppInfo
+   * @member {module:model/MobilityProcedureNotificationTargetAppInfo} targetAppInfo
    */
   exports.prototype.targetAppInfo = undefined;
 

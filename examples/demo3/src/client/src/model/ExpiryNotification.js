@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Link', 'model/TimeStamp1'], factory);
+    define(['ApiClient', 'model/Link', 'model/TimeStamp'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Link'), require('./TimeStamp1'));
+    module.exports = factory(require('../ApiClient'), require('./Link'), require('./TimeStamp'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.ExpiryNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.Link, root.MecDemo3Api.TimeStamp1);
+    root.MecDemo3Api.ExpiryNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.Link, root.MecDemo3Api.TimeStamp);
   }
-}(this, function(ApiClient, Link, TimeStamp1) {
+}(this, function(ApiClient, Link, TimeStamp) {
   'use strict';
 
   /**
@@ -56,7 +56,7 @@
    * @class
    * @param notificationType {String} Shall be set to \"ExpiryNotification\".
    * @param links {module:model/Link} 
-   * @param expiryDeadline {module:model/TimeStamp1} 
+   * @param expiryDeadline {module:model/TimeStamp} 
    */
   var exports = function(notificationType, links, expiryDeadline) {
     OneOfInlineNotification.call(this);
@@ -78,11 +78,11 @@
       if (data.hasOwnProperty('notificationType'))
         obj.notificationType = ApiClient.convertToType(data['notificationType'], 'String');
       if (data.hasOwnProperty('timeStamp'))
-        obj.timeStamp = TimeStamp1.constructFromObject(data['timeStamp']);
+        obj.timeStamp = TimeStamp.constructFromObject(data['timeStamp']);
       if (data.hasOwnProperty('_links'))
         obj.links = Link.constructFromObject(data['_links']);
       if (data.hasOwnProperty('expiryDeadline'))
-        obj.expiryDeadline = TimeStamp1.constructFromObject(data['expiryDeadline']);
+        obj.expiryDeadline = TimeStamp.constructFromObject(data['expiryDeadline']);
     }
     return obj;
   }
@@ -94,7 +94,7 @@
   exports.prototype.notificationType = undefined;
 
   /**
-   * @member {module:model/TimeStamp1} timeStamp
+   * @member {module:model/TimeStamp} timeStamp
    */
   exports.prototype.timeStamp = undefined;
 
@@ -104,7 +104,7 @@
   exports.prototype.links = undefined;
 
   /**
-   * @member {module:model/TimeStamp1} expiryDeadline
+   * @member {module:model/TimeStamp} expiryDeadline
    */
   exports.prototype.expiryDeadline = undefined;
 

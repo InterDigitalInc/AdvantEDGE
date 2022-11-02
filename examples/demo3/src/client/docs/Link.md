@@ -3,6 +3,6 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**subscription** | [**LinkType1**](LinkType1.md) |  | 
+**subscription** | [**LinkType**](LinkType.md) |  | 
 
 

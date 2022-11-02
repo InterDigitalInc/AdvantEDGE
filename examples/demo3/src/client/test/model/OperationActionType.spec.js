@@ -44,20 +44,24 @@
   var instance;
 
   describe('(package)', function() {
-    describe('AppTerminationSubscriptionLinks', function() {
+    describe('OperationActionType', function() {
       beforeEach(function() {
-        instance = new MecDemo3Api.AppTerminationSubscriptionLinks();
+        instance = MecDemo3Api.OperationActionType;
       });
 
-      it('should create an instance of AppTerminationSubscriptionLinks', function() {
-        // TODO: update the code to test AppTerminationSubscriptionLinks
-        expect(instance).to.be.a(MecDemo3Api.AppTerminationSubscriptionLinks);
+      it('should create an instance of OperationActionType', function() {
+        // TODO: update the code to test OperationActionType
+        expect(instance).to.be.a('object');
       });
 
-      it('should have the property self (base name: "self")', function() {
-        // TODO: update the code to test the property self
-        expect(instance).to.have.property('self');
-        // expect(instance.self).to.be(expectedValueLiteral);
+      it('should have the property STOPPING', function() {
+        expect(instance).to.have.property('STOPPING');
+        expect(instance.STOPPING).to.be(&quot;STOPPING&quot;);
+      });
+
+      it('should have the property TERMINATING', function() {
+        expect(instance).to.have.property('TERMINATING');
+        expect(instance.TERMINATING).to.be(&quot;TERMINATING&quot;);
       });
 
     });

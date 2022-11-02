@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/LinkType1'], factory);
+    define(['ApiClient', 'model/LinkType'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./LinkType1'));
+    module.exports = factory(require('../ApiClient'), require('./LinkType'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.Link = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType1);
+    root.MecDemo3Api.Link = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType);
   }
-}(this, function(ApiClient, LinkType1) {
+}(this, function(ApiClient, LinkType) {
   'use strict';
 
   /**
@@ -55,7 +55,7 @@
    * Object containing hyperlinks related to the resource.
    * @alias module:model/Link
    * @class
-   * @param subscription {module:model/LinkType1} 
+   * @param subscription {module:model/LinkType} 
    */
   var exports = function(subscription) {
     this.subscription = subscription;
@@ -72,13 +72,13 @@
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('subscription'))
-        obj.subscription = LinkType1.constructFromObject(data['subscription']);
+        obj.subscription = LinkType.constructFromObject(data['subscription']);
     }
     return obj;
   }
 
   /**
-   * @member {module:model/LinkType1} subscription
+   * @member {module:model/LinkType} subscription
    */
   exports.prototype.subscription = undefined;
 

@@ -22,9 +22,9 @@
  */
 package server
 
-type MobilityProcedureNotificationTargetAppInfo1 struct {
+type MobilityProcedureNotificationTargetAppInfo struct {
 	// Identifiers of the target application instance.
 	AppInstanceId string `json:"appInstanceId"`
 
-	CommInterface *CommunicationInterface1 `json:"commInterface,omitempty"`
+	CommInterface *CommunicationInterface `json:"commInterface,omitempty"`
 }
