@@ -561,6 +561,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		duration = params.Scope.Duration
 		limit = int(params.Scope.Limit)
 	}
+	influxLimit := 2 * limit
 
 	var response SeqMetrics
 	mobilityEventProcessed := false
@@ -574,7 +575,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	// Get http metrics
 	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
 		met.HttpBody, met.HttpMethod)
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, influxLimit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -597,12 +598,12 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepare seq metrics list
+	var metricList []SeqMetric
 	for i := len(valuesArray) - 1; i >= 0; i-- {
 		values := valuesArray[i]
-		var metric SeqMetric
-		metric.Time = values[met.HttpLogTime].(string)
+		httpMetricTime := values[met.HttpLogTime].(string)
 		if values[params.Fields[0]] != nil {
-			metricTime, err := time.Parse(time.RFC3339, metric.Time)
+			metricTime, err := time.Parse(time.RFC3339, httpMetricTime)
 			if err != nil {
 				log.Error("Failed to parse time with error: ", err.Error())
 				continue
@@ -636,10 +637,10 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 						eventMermaid += "note over event:[" + eventMetricTime.Format("15:04:05.000") + "] Mobility Event: " + eventDescription + "\n"
 
 						if params.Fields[0] == met.HttpMermaid {
-							metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
+							metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Mermaid: eventMermaid})
 						}
 						if params.Fields[0] == met.HttpSdorg {
-							metric, response = updateSeqMetrics(eventMermaid, metric, params, response)
+							metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Sdorg: eventSdorg})
 						}
 						matchCount++
 					} else {
@@ -677,7 +678,12 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 							// Sequencediagram.org formatted line
 							notifStr = "note over " + values[met.HttpSrc].(string) + " : [" + t + "] Terminated PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + dnn + "\n"
 						}
-						metric, response = updateSeqMetrics(notifStr, metric, params, response)
+						if params.Fields[0] == met.HttpMermaid {
+							metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: notifStr})
+						}
+						if params.Fields[0] == met.HttpSdorg {
+							metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: notifStr})
+						}
 					}
 				}
 				continue
@@ -686,16 +692,24 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 			if params.Fields[0] == met.HttpMermaid {
 				if val, ok := values[met.HttpMermaid].(string); ok {
 					val = strings.Replace(val, ":", ": ["+t+"]", 1)
-					metric, response = updateSeqMetrics(val, metric, params, response)
+					metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: val})
 				}
 			}
 			if params.Fields[0] == met.HttpSdorg {
 				if val, ok := values[met.HttpSdorg].(string); ok {
 					val = strings.Replace(val, ":", ": ["+t+"]", 1)
-					metric, response = updateSeqMetrics(val, metric, params, response)
+					metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: val})
 				}
 			}
 		}
+	}
+	// Take max limit logs from aggregated list of logs
+	if len(metricList) > limit && limit != 0 {
+		metricList = metricList[len(metricList)-limit:]
+	}
+
+	for _, metric := range metricList {
+		updateResponseSeqMetrics(&response, metric, params)
 	}
 
 	// Send response
@@ -709,27 +723,24 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func updateSeqMetrics(log string, metric SeqMetric, params SeqQueryParams, response SeqMetrics) (
-	SeqMetric, SeqMetrics) {
-	if params.Fields[0] == met.HttpMermaid && log != "" {
+func updateResponseSeqMetrics(response *SeqMetrics, metric SeqMetric, params SeqQueryParams) {
+	if params.Fields[0] == met.HttpMermaid && metric.Mermaid != "" {
 		if params.ResponseType == listOnly || params.ResponseType == "" {
-			metric.Mermaid = log
 			response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
 		}
 		if params.ResponseType == strOnly || params.ResponseType == "" {
-			response.SeqMetricString += log + "\n"
+			response.SeqMetricString += metric.Mermaid + "\n"
 		}
 	}
-	if params.Fields[0] == met.HttpSdorg && log != "" {
+	if params.Fields[0] == met.HttpSdorg && metric.Sdorg != "" {
 		if params.ResponseType == listOnly || params.ResponseType == "" {
-			metric.Sdorg = log
+			// metric.Sdorg = log
 			response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
 		}
 		if params.ResponseType == strOnly || params.ResponseType == "" {
-			response.SeqMetricString += log + "\n"
+			response.SeqMetricString += metric.Sdorg + "\n"
 		}
 	}
-	return metric, response
 }
 
 func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
