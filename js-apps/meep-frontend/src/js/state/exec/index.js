@@ -24,6 +24,8 @@ import { appInstanceTableReducer} from './app-instance-table-reducer';
 import { scenarioReducer } from './scenario-reducer';
 import { displayedScenarioReducer } from './displayed-scenario-reducer';
 import { execMapReducer } from './map-reducer';
+import { execSeqReducer } from './seq-reducer';
+import { execDataflowReducer } from './dataflow-reducer';
 import { execVisReducer } from './vis-reducer';
 import { execTableReducer } from './table-reducer';
 import { execSelectedScenarioElement } from './selected-scenario-element';
@@ -54,6 +56,8 @@ export * from './state-reducer';
 export * from './scenario-reducer';
 export * from './displayed-scenario-reducer';
 export * from './map-reducer';
+export * from './seq-reducer';
+export * from './dataflow-reducer';
 export * from './vis-reducer';
 export * from './table-reducer';
 export * from './selected-scenario-element';
@@ -167,6 +171,8 @@ const execReducer = combineReducers({
   scenario: scenarioReducer,
   displayedScenario: displayedScenarioReducer,
   map: execMapReducer,
+  seq: execSeqReducer,
+  dataflow: execDataflowReducer,
   vis: execVisReducer,
   table: execTableReducer,
   selectedScenarioElement: execSelectedScenarioElement,

@@ -96,6 +96,7 @@ import {
   FIELD_APP_PKT_LOSS,
   FIELD_META_DISPLAY_MAP_COLOR,
   FIELD_META_DISPLAY_MAP_ICON,
+  FIELD_META_DISPLAY_SEQ_PARTICIPANTS,
   createElem,
   getElemFieldVal,
   setElemFieldVal,
@@ -191,7 +192,8 @@ import {
 
 import {
   META_DISPLAY_MAP_COLOR,
-  META_DISPLAY_MAP_ICON
+  META_DISPLAY_MAP_ICON,
+  META_DISPLAY_SEQ_PARTICIPANTS
 } from './meta-keys';
 
 // Import images used in JS
@@ -1400,6 +1402,9 @@ export function getElementFromScenario(scenario, elementId) {
     if (scenario.deployment.d2d) {
       setElemFieldVal(elem, FIELD_D2D_RADIUS, scenario.deployment.d2d.d2dMaxDistance);
       setElemFieldVal(elem, FIELD_D2D_DISABLED, scenario.deployment.d2d.disableD2dViaNetwork || DEFAULT_D2D_DISABLED);
+    }
+    if (scenario.deployment.meta) {
+      setElemFieldVal(elem, FIELD_META_DISPLAY_SEQ_PARTICIPANTS, scenario.deployment.meta[META_DISPLAY_SEQ_PARTICIPANTS]);
     }
     return elem;
   }

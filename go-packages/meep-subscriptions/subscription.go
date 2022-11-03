@@ -231,7 +231,7 @@ func (sub *Subscription) sendNotification(notif []byte, sandbox string, service 
 	// Log metrics if necessary
 	if metricsEnabled {
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-		_ = httpLog.LogTx(notifUrl, notifMethod, string(notif), notifResp, startTime)
+		_ = httpLog.LogNotification(notifUrl, notifMethod, "", "", string(notif), notifResp, startTime)
 		if notifErr != nil {
 			log.Error(notifErr)
 			met.ObserveNotification(sandbox, service, sub.Cfg.NotifType, notifUrl, nil, duration)

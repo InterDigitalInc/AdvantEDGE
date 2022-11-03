@@ -16,8 +16,6 @@
 
 import { updateObject } from '../../util/object-util';
 import {
-  VIEW_NAME_NONE,
-  NET_TOPOLOGY_VIEW,
   MOBILITY_EVENT,
   CFG_VIEW_NETWORK,
   SCENARIO_UPDATE_ACTION_NONE,
@@ -47,15 +45,11 @@ const initialState = {
   automaticRefresh: false,
   refreshInterval: 1000,
   execShowApps: false,
+  execPauseSeq: false,
+  execPauseDataflow: false,
   dashCfgMode: false,
   eventCfgMode: false,
   eventStatus: '',
-  dashboardView1: NET_TOPOLOGY_VIEW,
-  dashboardView2: VIEW_NAME_NONE,
-  sourceNodeSelectedView1: '',
-  destNodeSelectedView1: '',
-  sourceNodeSelectedView2: '',
-  destNodeSelectedView2: '',
   eventReplayMode: false,
   eventReplayLoop: false,
   replayFiles: [],
@@ -312,51 +306,19 @@ export function uiExecChangeShowApps(show) {
   };
 }
 
-const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
-export function uiExecChangeDashboardView1(name) {
+const UI_EXEC_CHANGE_PAUSE_SEQ = 'UI_EXEC_CHANGE_PAUSE_SEQ';
+export function uiExecChangePauseSeq(pause) {
   return {
-    type: UI_EXEC_CHANGE_DASHBOARD_VIEW1,
-    payload: name
+    type: UI_EXEC_CHANGE_PAUSE_SEQ,
+    payload: pause
   };
 }
 
-const UI_EXEC_CHANGE_DASHBOARD_VIEW2 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW2';
-export function uiExecChangeDashboardView2(name) {
+const UI_EXEC_CHANGE_PAUSE_DATAFLOW = 'UI_EXEC_CHANGE_PAUSE_DATAFLOW';
+export function uiExecChangePauseDataflow(pause) {
   return {
-    type: UI_EXEC_CHANGE_DASHBOARD_VIEW2,
-    payload: name
-  };
-}
-
-const UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1 = 'UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1';
-export function uiExecChangeSourceNodeSelectedView1(node) {
-  return {
-    type: UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1,
-    payload: node
-  };
-}
-
-const UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1 = 'UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1';
-export function uiExecChangeDestNodeSelectedView1(node) {
-  return {
-    type: UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1,
-    payload: node
-  };
-}
-
-const UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2 = 'UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2';
-export function uiExecChangeSourceNodeSelectedView2(node) {
-  return {
-    type: UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2,
-    payload: node
-  };
-}
-
-const UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2 = 'UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2';
-export function uiExecChangeDestNodeSelectedView2(node) {
-  return {
-    type: UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2,
-    payload: node
+    type: UI_EXEC_CHANGE_PAUSE_DATAFLOW,
+    payload: pause
   };
 }
 
@@ -479,18 +441,10 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { refreshInterval: action.payload });
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, { execShowApps: action.payload });
-  case UI_EXEC_CHANGE_DASHBOARD_VIEW1:
-    return updateObject(state, { dashboardView1: action.payload });
-  case UI_EXEC_CHANGE_DASHBOARD_VIEW2:
-    return updateObject(state, { dashboardView2: action.payload });
-  case UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW1:
-    return updateObject(state, { sourceNodeSelectedView1: action.payload });
-  case UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW1:
-    return updateObject(state, { destNodeSelectedView1: action.payload });
-  case UI_EXEC_CHANGE_SOURCE_NODE_SELECTED_VIEW2:
-    return updateObject(state, { sourceNodeSelectedView2: action.payload });
-  case UI_EXEC_CHANGE_DEST_NODE_SELECTED_VIEW2:
-    return updateObject(state, { destNodeSelectedView2: action.payload });
+  case UI_EXEC_CHANGE_PAUSE_SEQ:
+    return updateObject(state, { execPauseSeq: action.payload });
+  case UI_EXEC_CHANGE_PAUSE_DATAFLOW:
+    return updateObject(state, { execPauseDataflow: action.payload });
   case UI_EXEC_CHANGE_REPLAY_FILES_LIST:
     return updateObject(state, { replayFiles: action.payload });
   case UI_EXEC_CHANGE_REPLAY_FILE_SELECTED:

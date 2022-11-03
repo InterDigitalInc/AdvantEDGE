@@ -300,7 +300,7 @@ func activateScenario(scenarioName string) (err error) {
 	}
 
 	// Set Metrics Store
-	err = sbxCtrl.metricStore.SetStore(scenarioName)
+	err = sbxCtrl.metricStore.SetStore(scenarioName, sbxCtrl.sandboxName, true)
 	if err != nil {
 		log.Error("Failed to set scenario metrics store with err: ", err.Error())
 		return err
@@ -381,7 +381,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set Metrics Store
-	err = sbxCtrl.metricStore.SetStore(scenarioName)
+	err = sbxCtrl.metricStore.SetStore(scenarioName, sbxCtrl.sandboxName, true)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -806,7 +806,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set Metrics Store
-	err = sbxCtrl.metricStore.SetStore("")
+	err = sbxCtrl.metricStore.SetStore("", "", false)
 	if err != nil {
 		log.Error(err.Error())
 	}

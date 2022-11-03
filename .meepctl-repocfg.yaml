@@ -442,6 +442,7 @@ repo:
           meep-mon-engine-api: js-packages/meep-mon-engine-client
           meep-gis-engine-api: js-packages/meep-gis-engine-client
           meep-auth-svc-client: js-packages/meep-auth-svc-client
+          meep-metrics-engine-api: js-packages/meep-metrics-engine-client
 
   #------------------------------
   #  Sandbox Subsystem

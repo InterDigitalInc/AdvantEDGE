@@ -39,3 +39,11 @@ func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
 func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	mePostNetworkQuery(w, r)
 }
+
+func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
+	mePostSeqQuery(w, r)
+}
+
+func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
+	mePostDataflowQuery(w, r)
+}
