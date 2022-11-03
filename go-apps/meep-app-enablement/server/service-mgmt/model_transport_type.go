@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Service Management API
+ * AdvantEDGE Service Management API
  *
  * MEC Service Management Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below).
  *
@@ -28,11 +28,11 @@ type TransportType string
 
 // List of TransportType
 const (
-	REST_HTTP      TransportType = "REST_HTTP"
-	MB_TOPIC_BASED TransportType = "MB_TOPIC_BASED"
-	MB_ROUTING     TransportType = "MB_ROUTING"
-	MB_PUBSUB      TransportType = "MB_PUBSUB"
-	RPC            TransportType = "RPC"
-	RPC_STREAMING  TransportType = "RPC_STREAMING"
-	WEBSOCKET      TransportType = "WEBSOCKET"
+	REST_HTTP_TransportType      TransportType = "REST_HTTP"
+	MB_TOPIC_BASED_TransportType TransportType = "MB_TOPIC_BASED"
+	MB_ROUTING_TransportType     TransportType = "MB_ROUTING"
+	MB_PUBSUB_TransportType      TransportType = "MB_PUBSUB"
+	RPC_TransportType            TransportType = "RPC"
+	RPC_STREAMING_TransportType  TransportType = "RPC_STREAMING"
+	WEBSOCKET_TransportType      TransportType = "WEBSOCKET"
 )

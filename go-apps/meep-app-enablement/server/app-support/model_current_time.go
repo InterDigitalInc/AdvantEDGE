@@ -29,6 +29,6 @@ type CurrentTime struct {
 	Seconds int32 `json:"seconds"`
 	// The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC
 	NanoSeconds int32 `json:"nanoSeconds"`
-	// Platform Time Source status. 1 = TRACEABLE - time source is locked to the UTC time source. 2 = NONTRACEABLE - time source is not locked to the UTC time source
-	TimeSourceStatus string `json:"timeSourceStatus"`
+
+	TimeSourceStatus *TimeSourceStatus `json:"timeSourceStatus"`
 }

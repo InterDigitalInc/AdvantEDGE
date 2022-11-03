@@ -24,7 +24,7 @@ package server
 
 type ApplicationContextState struct {
 	// Integer representing state of device being tracked
-	Counter int `json:"Counter,omitempty"`
+	Counter int32 `json:"Counter,omitempty"`
 	// Application UUID
 	AppId string `json:"AppId,omitempty"`
 	// MEC platform name

@@ -28,6 +28,6 @@ type TimingCaps struct {
 	TimeStamp *TimingCapsTimeStamp `json:"timeStamp,omitempty"`
 	// Available NTP servers
 	NtpServers []TimingCapsNtpServers `json:"ntpServers,omitempty"`
-	// Available PTP Masters
+	// Number of available PTP Servers (referred to as \"masters\" in IEEE 1588-2019)
 	PtpMasters []TimingCapsPtpMasters `json:"ptpMasters,omitempty"`
 }

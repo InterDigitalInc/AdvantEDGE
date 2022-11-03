@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,7 @@ package client
 
 // This type represents the tunnel information.
 type TunnelInfo struct {
-	// This type represents the tunnel information.
-	TunnelType string `json:"tunnelType"`
+	TunnelType *TunnelInfoTunnelType `json:"tunnelType"`
 	// Destination address of the tunnel
 	TunnelDstAddress string `json:"tunnelDstAddress,omitempty"`
 	// Source address of the tunnel

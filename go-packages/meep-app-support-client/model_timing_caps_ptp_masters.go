@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ package client
 
 // NTP server detail.
 type TimingCapsPtpMasters struct {
-	// PTP Master IP Address
+	// PTP Server (referred to as \"master\" in IEEE 1588-2019) IP Address
 	PtpMasterIpAddress string `json:"ptpMasterIpAddress"`
-	// PTP Master local priority
+	// PTP Server (referred to as \"master\" in IEEE 1588-2019 ) local priority
 	PtpMasterLocalPriority int32 `json:"ptpMasterLocalPriority"`
 	// Acceptable maximum rate of the Delay_Req messages in packets per second
 	DelayReqMaxRate int32 `json:"delayReqMaxRate"`

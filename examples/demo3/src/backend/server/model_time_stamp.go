@@ -22,9 +22,10 @@
  */
 package server
 
+// 'This data type represents the time stamp as Unix-time since January 1, 1970, 00:00:00 UTC'
 type TimeStamp struct {
-	// The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
-	NanoSeconds int32 `json:"nanoSeconds"`
-	// The seconds part of the time. Time is defined as Unixtime since January 1, 1970, 00:00:00 UTC.
+	// 'The seconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.'
 	Seconds int32 `json:"seconds"`
+	// 'The nanoseconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.'
+	NanoSeconds int32 `json:"nanoSeconds"`
 }

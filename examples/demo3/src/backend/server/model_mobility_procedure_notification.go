@@ -24,11 +24,15 @@ package server
 
 type MobilityProcedureNotification struct {
 	// Shall be set to \"MobilityProcedureNotification\".
-	NotificationType string     `json:"notificationType"`
-	TimeStamp        *TimeStamp `json:"timeStamp,omitempty"`
+	NotificationType string `json:"notificationType"`
+
+	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
 	// 1 to N identifiers to associate the information for specific
-	AssociateId    []AssociateId                               `json:"associateId"`
-	MobilityStatus *MobilityStatus                             `json:"mobilityStatus"`
-	TargetAppInfo  *MobilityProcedureNotificationTargetAppInfo `json:"targetAppInfo,omitempty"`
-	Links          *MobilityProcedureNotificationLinks         `json:"_links,omitempty"`
+	AssociateId []AssociateId `json:"associateId"`
+
+	MobilityStatus *MobilityStatus `json:"mobilityStatus"`
+
+	TargetAppInfo *MobilityProcedureNotificationTargetAppInfo `json:"targetAppInfo,omitempty"`
+
+	Links *Link `json:"_links"`
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,12 @@ package client
 // This type represents the general information of a traffic rule.
 type TrafficRule struct {
 	// Identify the traffic rule.
-	TrafficRuleId string `json:"trafficRuleId"`
-	// Definition of filter per FLOW or PACKET. If flow the filter match UE->EPC packet and the reverse packet is handled in the same context
-	FilterType string `json:"filterType"`
-	// Priority of this traffic rule. If traffic rule conflicts, the one with higher priority take precedence
-	Priority      int32           `json:"priority"`
-	TrafficFilter []TrafficFilter `json:"trafficFilter"`
-	// The action of the MEC host data plane when a packet matches the trafficFilter
-	Action       string                `json:"action"`
-	DstInterface *DestinationInterface `json:"dstInterface,omitempty"`
-	// Contains the traffic rule state. This attribute may be updated using HTTP PUT   method
-	State string `json:"state"`
+	TrafficRuleId string                 `json:"trafficRuleId"`
+	FilterType    *TrafficRuleFilterType `json:"filterType"`
+	// Priority of this traffic rule within the range 0 to 255. If traffic rules conflict, the one with higher priority take precedence. Value indicates the priority in descending order, i.e. with 0 as the highest priority and 255 as the lowest priority.
+	Priority      int32                  `json:"priority"`
+	TrafficFilter []TrafficFilter        `json:"trafficFilter"`
+	Action        *TrafficRuleAction     `json:"action"`
+	DstInterface  []DestinationInterface `json:"dstInterface,omitempty"`
+	State         *TrafficRuleState      `json:"state"`
 }

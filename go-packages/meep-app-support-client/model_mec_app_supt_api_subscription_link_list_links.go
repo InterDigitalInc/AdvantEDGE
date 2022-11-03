@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -28,5 +28,5 @@ package client
 type MecAppSuptApiSubscriptionLinkListLinks struct {
 	Self *LinkType `json:"self"`
 	// The MEC application instance's subscriptions
-	Subscriptions []MecAppSuptApiSubscriptionLinkListLinksSubscriptions `json:"subscriptions,omitempty"`
+	Subscriptions []MecAppSuptApiSubscriptionLinkListSubscription `json:"subscriptions,omitempty"`
 }

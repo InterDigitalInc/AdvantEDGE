@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ type AppTerminationNotificationSubscription struct {
 	// Shall be set to AppTerminationNotificationSubscription.
 	SubscriptionType string `json:"subscriptionType"`
 	// URI selected by the MEC application instance to receive notifications on the subscribed MEC application instance management information. This shall be included in both the request and the response.
-	CallbackReference string                                       `json:"callbackReference"`
-	Links             *AppTerminationNotificationSubscriptionLinks `json:"_links"`
+	CallbackReference string `json:"callbackReference"`
+	Links             *Self  `json:"_links"`
 	// It is used as the filtering criterion for the subscribed events.
 	AppInstanceId string `json:"appInstanceId"`
 }

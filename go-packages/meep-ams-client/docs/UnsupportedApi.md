@@ -1,4 +1,4 @@
-# {{classname}}
+# \UnsupportedApi
 
 All URIs are relative to *https://localhost/amsi/v1*
 
@@ -6,6 +6,8 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**AdjAppInstGET**](UnsupportedApi.md#AdjAppInstGET) | **Get** /queries/adjacent_app_instances | Retrieve information about this subscription.
 [**AppMobilityServiceDerPOST**](UnsupportedApi.md#AppMobilityServiceDerPOST) | **Post** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
+[**NotificationPOST**](UnsupportedApi.md#NotificationPOST) | **Post** /uri_provided_by_subscriber | delivers a notification from the AMS resource to the subscriber
+
 
 # **AdjAppInstGET**
 > []AdjacentAppInstanceInfo AdjAppInstGET(ctx, optional)
@@ -18,10 +20,11 @@ Retrieve information about this subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***UnsupportedApiAdjAppInstGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***AdjAppInstGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a UnsupportedApiAdjAppInstGETOpts struct
+Optional parameters are passed through a pointer to a AdjAppInstGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **filter** | **optional.String**| Attribute-based filtering parameters according to ETSI GS MEC 009 | 
@@ -69,6 +72,34 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **NotificationPOST**
+> NotificationPOST(ctx, body)
+delivers a notification from the AMS resource to the subscriber
+
+delivers a notification from the AMS resource to the subscriber
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**InlineNotification**](InlineNotification.md)|  | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

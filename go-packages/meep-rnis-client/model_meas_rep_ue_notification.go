@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Radio Network Information Service REST API
+ * AdvantEDGE Radio Network Information API
  *
  * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
@@ -29,7 +29,7 @@ type MeasRepUeNotification struct {
 	AssociateId []AssociateId `json:"associateId,omitempty"`
 	// This parameter can be repeated to contain information of all the carriers assign for Carrier Aggregation up to M.
 	CarrierAggregationMeasInfo []MeasRepUeNotificationCarrierAggregationMeasInfo `json:"carrierAggregationMeasInfo,omitempty"`
-	Ecgi *Ecgi `json:"ecgi"`
+	Ecgi                       *Ecgi                                             `json:"ecgi"`
 	// This parameter can be repeated to contain information of all the neighbouring cells up to N.
 	EutranNeighbourCellMeasInfo []MeasRepUeNotificationEutranNeighbourCellMeasInfo `json:"eutranNeighbourCellMeasInfo,omitempty"`
 	// Indicates height of the UE in meters relative to the sea level as defined in ETSI TS 136.331 [i.7].
@@ -49,8 +49,8 @@ type MeasRepUeNotification struct {
 	// Extended Reference Signal Received Quality, with value mapping defined in ETSI TS 136 133 [i.16].
 	RsrqEx int32 `json:"rsrqEx,omitempty"`
 	// Reference Signal \"Signal to Interference plus Noise Ratio\", with value mapping defined in ETSI TS 136 133 [i.16].
-	Sinr int32 `json:"sinr,omitempty"`
-	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
-	Trigger *Trigger `json:"trigger"`
-	Links *CaReconfNotificationLinks `json:"_links"`
+	Sinr      int32                      `json:"sinr,omitempty"`
+	TimeStamp *TimeStamp                 `json:"timeStamp,omitempty"`
+	Trigger   *Trigger                   `json:"trigger"`
+	Links     *CaReconfNotificationLinks `json:"_links"`
 }

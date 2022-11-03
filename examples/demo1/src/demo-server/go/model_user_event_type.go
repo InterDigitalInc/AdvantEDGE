@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ type UserEventType string
 
 // List of UserEventType
 const (
-	ENTERING     UserEventType = "Entering"
-	TRANSFERRING UserEventType = "Transferring"
-	EXITING      UserEventType = "Exiting"
+	ENTERING_UserEventType     UserEventType = "Entering"
+	TRANSFERRING_UserEventType UserEventType = "Transferring"
+	EXITING_UserEventType      UserEventType = "Exiting"
 )

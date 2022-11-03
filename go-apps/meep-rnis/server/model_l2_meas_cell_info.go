@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Radio Network Information Service REST API
+ * AdvantEDGE Radio Network Information API
  *
  * Radio Network Information Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription
  *
@@ -35,7 +35,7 @@ type L2MeasCellInfo struct {
 	// It indicates (in percentage) the PRB usage for total downlink traffic, as defined in ETSI TS 136 314 [i.11] and ETSI TS 136 423 [i.12].
 	DlTotalPrbUsageCell int32 `json:"dl_total_prb_usage_cell,omitempty"`
 
-	Ecgi *Ecgi `json:"ecgi"`
+	Ecgi *Ecgi `json:"ecgi,omitempty"`
 	// It indicates the number of active UEs with downlink GBR traffic, as defined in ETSI TS 136 314 [i.11].
 	NumberOfActiveUeDlGbrCell int32 `json:"number_of_active_ue_dl_gbr_cell,omitempty"`
 	// It indicates the number of active UEs with downlink non-GBR traffic, as defined in ETSI TS 136 314 [i.11].
@@ -44,7 +44,7 @@ type L2MeasCellInfo struct {
 	NumberOfActiveUeUlGbrCell int32 `json:"number_of_active_ue_ul_gbr_cell,omitempty"`
 	// It indicates the number of active UEs with uplink non-GBR traffic, as defined in ETSI TS 136 314 [i.11].
 	NumberOfActiveUeUlNongbrCell int32 `json:"number_of_active_ue_ul_nongbr_cell,omitempty"`
-	// It indicates (in percentage) the received dedicated preambles, as defined in ETSI TS 136 314 [i.11].
+	// It indicates (in percentage) the received dedicated preamples, as defined in ETSI TS 136 314 [i.11].
 	ReceivedDedicatedPreamblesCell int32 `json:"received_dedicated_preambles_cell,omitempty"`
 	// It indicates (in percentage) the received randomly selected preambles in the high range, as defined in ETSI TS 136 314 [i.11].
 	ReceivedRandomlySelectedPreamblesHighRangeCell int32 `json:"received_randomly_selected_preambles_high_range_cell,omitempty"`

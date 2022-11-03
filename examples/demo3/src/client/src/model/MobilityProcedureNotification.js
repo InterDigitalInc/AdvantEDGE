@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AssociateId', 'model/MobilityProcedureNotificationTargetAppInfo', 'model/TimeStamp'], factory);
+    define(['ApiClient', 'model/AssociateId', 'model/Link', 'model/MobilityProcedureNotificationTargetAppInfo', 'model/MobilityStatus', 'model/TimeStamp'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./AssociateId'), require('./MobilityProcedureNotificationTargetAppInfo'), require('./TimeStamp'));
+    module.exports = factory(require('../ApiClient'), require('./AssociateId'), require('./Link'), require('./MobilityProcedureNotificationTargetAppInfo'), require('./MobilityStatus'), require('./TimeStamp'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.MobilityProcedureNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AssociateId, root.MecDemo3Api.MobilityProcedureNotificationTargetAppInfo, root.MecDemo3Api.TimeStamp);
+    root.MecDemo3Api.MobilityProcedureNotification = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AssociateId, root.MecDemo3Api.Link, root.MecDemo3Api.MobilityProcedureNotificationTargetAppInfo, root.MecDemo3Api.MobilityStatus, root.MecDemo3Api.TimeStamp);
   }
-}(this, function(ApiClient, AssociateId, MobilityProcedureNotificationTargetAppInfo, TimeStamp) {
+}(this, function(ApiClient, AssociateId, Link, MobilityProcedureNotificationTargetAppInfo, MobilityStatus, TimeStamp) {
   'use strict';
 
   /**
@@ -54,12 +54,17 @@
    * Constructs a new <code>MobilityProcedureNotification</code>.
    * @alias module:model/MobilityProcedureNotification
    * @class
-   * @param mobilityStatus {Number} Indicate the status of the UE mobility. Values are defined as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3 = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.
-   * @param notificationType {String} Shall be set to \\\"MobilityProcedureNotification\\\".
+   * @param notificationType {String} Shall be set to \"MobilityProcedureNotification\".
+   * @param associateId {Array.<module:model/AssociateId>} 1 to N identifiers to associate the information for specific
+   * @param mobilityStatus {module:model/MobilityStatus} 
+   * @param links {module:model/Link} 
    */
-  var exports = function(mobilityStatus, notificationType) {
-    this.mobilityStatus = mobilityStatus;
+  var exports = function(notificationType, associateId, mobilityStatus, links) {
+    OneOfInlineNotification.call(this);
     this.notificationType = notificationType;
+    this.associateId = associateId;
+    this.mobilityStatus = mobilityStatus;
+    this.links = links;
   };
 
   /**
@@ -72,37 +77,43 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
+      if (data.hasOwnProperty('notificationType'))
+        obj.notificationType = ApiClient.convertToType(data['notificationType'], 'String');
+      if (data.hasOwnProperty('timeStamp'))
+        obj.timeStamp = TimeStamp.constructFromObject(data['timeStamp']);
       if (data.hasOwnProperty('associateId'))
         obj.associateId = ApiClient.convertToType(data['associateId'], [AssociateId]);
       if (data.hasOwnProperty('mobilityStatus'))
-        obj.mobilityStatus = ApiClient.convertToType(data['mobilityStatus'], 'Number');
-      if (data.hasOwnProperty('notificationType'))
-        obj.notificationType = ApiClient.convertToType(data['notificationType'], 'String');
+        obj.mobilityStatus = MobilityStatus.constructFromObject(data['mobilityStatus']);
       if (data.hasOwnProperty('targetAppInfo'))
         obj.targetAppInfo = MobilityProcedureNotificationTargetAppInfo.constructFromObject(data['targetAppInfo']);
-      if (data.hasOwnProperty('timeStamp'))
-        obj.timeStamp = TimeStamp.constructFromObject(data['timeStamp']);
+      if (data.hasOwnProperty('_links'))
+        obj.links = Link.constructFromObject(data['_links']);
     }
     return obj;
   }
 
   /**
-   * 0 to N identifiers to associate the information for specific UE(s) and flow(s).
+   * Shall be set to \"MobilityProcedureNotification\".
+   * @member {String} notificationType
+   */
+  exports.prototype.notificationType = undefined;
+
+  /**
+   * @member {module:model/TimeStamp} timeStamp
+   */
+  exports.prototype.timeStamp = undefined;
+
+  /**
+   * 1 to N identifiers to associate the information for specific
    * @member {Array.<module:model/AssociateId>} associateId
    */
   exports.prototype.associateId = undefined;
 
   /**
-   * Indicate the status of the UE mobility. Values are defined as following:      1 = INTERHOST_MOVEOUT_TRIGGERED.      2 = INTERHOST_MOVEOUT_COMPLETED.      3 = INTERHOST_MOVEOUT_FAILED.       Other values are reserved.
-   * @member {Number} mobilityStatus
+   * @member {module:model/MobilityStatus} mobilityStatus
    */
   exports.prototype.mobilityStatus = undefined;
-
-  /**
-   * Shall be set to \\\"MobilityProcedureNotification\\\".
-   * @member {String} notificationType
-   */
-  exports.prototype.notificationType = undefined;
 
   /**
    * @member {module:model/MobilityProcedureNotificationTargetAppInfo} targetAppInfo
@@ -110,10 +121,11 @@
   exports.prototype.targetAppInfo = undefined;
 
   /**
-   * @member {module:model/TimeStamp} timeStamp
+   * @member {module:model/Link} links
    */
-  exports.prototype.timeStamp = undefined;
+  exports.prototype.links = undefined;
 
+  // Implement OneOfInlineNotification interface:
   return exports;
 
 }));

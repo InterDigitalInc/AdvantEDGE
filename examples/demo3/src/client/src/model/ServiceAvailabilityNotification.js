@@ -55,7 +55,7 @@
    * This type represents the service availability information.
    * @alias module:model/ServiceAvailabilityNotification
    * @class
-   * @param notificationType {String} Shall be set to SerAvailabilityNotification
+   * @param notificationType {String} Shall be set to SerAvailabilityNotification.
    * @param serviceReferences {Array.<module:model/ServiceAvailabilityNotificationServiceReferences>} 
    * @param links {module:model/Subscription} 
    */
@@ -86,7 +86,7 @@
   }
 
   /**
-   * Shall be set to SerAvailabilityNotification
+   * Shall be set to SerAvailabilityNotification.
    * @member {String} notificationType
    */
   exports.prototype.notificationType = undefined;

@@ -24,7 +24,7 @@ package server
 
 // This type represents the service availability information.
 type ServiceAvailabilityNotification struct {
-	// Shall be set to SerAvailabilityNotification
+	// Shall be set to SerAvailabilityNotification.
 	NotificationType string `json:"notificationType"`
 
 	ServiceReferences []ServiceAvailabilityNotificationServiceReferences `json:"serviceReferences"`

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Location Service REST API
+ * AdvantEDGE Location API
  *
  * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below).
  *
@@ -28,15 +28,14 @@ type ConnectionType string
 
 // List of ConnectionType
 const (
-	FEMTO         ConnectionType = "Femto"
-	LTE_FEMTO     ConnectionType = "LTE-femto"
-	SMALLCELL     ConnectionType = "Smallcell"
-	LTE_SMALLCELL ConnectionType = "LTE-smallcell"
-	WIFI          ConnectionType = "Wifi"
-	PICO          ConnectionType = "Pico"
-	MICRO         ConnectionType = "Micro"
-	MACRO         ConnectionType = "Macro"
-	WIMAX         ConnectionType = "Wimax"
-	//CONTYPE_ added in order to make this const unique, (already used in other ENUMS for the same API), unknown is also a keyword that cannot be used in go
-	CONTYPE_UNKNOWN ConnectionType = "Unknown"
+	FEMTO_ConnectionType         ConnectionType = "Femto"
+	LTE_FEMTO_ConnectionType     ConnectionType = "LTE-femto"
+	SMALLCELL_ConnectionType     ConnectionType = "Smallcell"
+	LTE_SMALLCELL_ConnectionType ConnectionType = "LTE-smallcell"
+	WIFI_ConnectionType          ConnectionType = "Wifi"
+	PICO_ConnectionType          ConnectionType = "Pico"
+	MICRO_ConnectionType         ConnectionType = "Micro"
+	MACRO_ConnectionType         ConnectionType = "Macro"
+	WIMAX_ConnectionType         ConnectionType = "Wimax"
+	UNKNOWN_ConnectionType       ConnectionType = "Unknown"
 )

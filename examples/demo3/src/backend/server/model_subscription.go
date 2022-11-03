@@ -24,5 +24,5 @@ package server
 
 // A link to the related subscription
 type Subscription struct {
-	Subscription *LinkType `json:"subscription"`
+	Subscription *LinkType1 `json:"subscription"`
 }

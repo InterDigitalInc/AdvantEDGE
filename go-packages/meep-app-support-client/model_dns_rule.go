@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,11 @@ type DnsRule struct {
 	// Identifies the DNS Rule
 	DnsRuleId string `json:"dnsRuleId"`
 	// FQDN resolved by the DNS rule
-	DomainName string `json:"domainName"`
-	// IP address type
-	IpAddressType string `json:"ipAddressType"`
+	DomainName    string                `json:"domainName"`
+	IpAddressType *DnsRuleIpAddressType `json:"ipAddressType"`
 	// IP address associated with the FQDN resolved by the DNS rule
 	IpAddress string `json:"ipAddress"`
 	// Time to live value
-	Ttl int32 `json:"ttl,omitempty"`
-	// DNS rule state. This attribute may be updated using HTTP PUT method
-	State string `json:"state"`
+	Ttl   int32         `json:"ttl,omitempty"`
+	State *DnsRuleState `json:"state"`
 }

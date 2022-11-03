@@ -60,12 +60,6 @@
         // expect(instance.subId).to.be(expectedValueLiteral);
       });
 
-      it('should have the property associateId (base name: "associateId")', function() {
-        // TODO: update the code to test the property associateId
-        expect(instance).to.have.property('associateId');
-        // expect(instance.associateId).to.be(expectedValueLiteral);
-      });
-
     });
   });
 

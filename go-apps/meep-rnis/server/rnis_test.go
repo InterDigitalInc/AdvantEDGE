@@ -897,7 +897,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
 	expectedLink := &CaReconfSubscriptionLinks{Self: &expectedLinkType}
-	expectedResponse := CellChangeSubscription{CELL_CHANGE_SUBSCRIPTION, expectedLink, expectedCallBackRef, nil, nil, &expectedFilter, false}
+	expectedResponse := CellChangeSubscription{expectedLink, expectedCallBackRef, nil, nil, false, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -915,7 +915,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	//filter is not exactly the same in response and request
 	filterCriteria := expectedFilter
 	filterCriteria.HoStatus = nil
-	cellChangeSubscriptionPost1 := CellChangeSubscription{CELL_CHANGE_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, &expectedFilter, false}
+	cellChangeSubscriptionPost1 := CellChangeSubscription{nil, expectedCallBackRef, nil, nil, false, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	body, err := json.Marshal(cellChangeSubscriptionPost1)
 	if err != nil {
@@ -960,7 +960,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}
 	expectedLink := &CaReconfSubscriptionLinks{Self: &expectedLinkType}
-	expectedResponse := CellChangeSubscription{CELL_CHANGE_SUBSCRIPTION, expectedLink, expectedCallBackRef, nil, nil, &expectedFilter, false}
+	expectedResponse := CellChangeSubscription{expectedLink, expectedCallBackRef, nil, nil, false, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -976,7 +976,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * request body section
 	 ******************************/
-	cellChangeSubscription1 := CellChangeSubscription{CELL_CHANGE_SUBSCRIPTION, expectedLink, expectedCallBackRef, nil, nil, &expectedFilter, false}
+	cellChangeSubscription1 := CellChangeSubscription{expectedLink, expectedCallBackRef, nil, nil, false, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	body, err := json.Marshal(cellChangeSubscription1)
 	if err != nil {
@@ -1105,7 +1105,7 @@ func testSubscriptionRabEstPost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := RabEstSubscription{RAB_EST_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := RabEstSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, false, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1121,7 +1121,7 @@ func testSubscriptionRabEstPost(t *testing.T) string {
 	 ******************************/
 
 	//filter is not exactly the same in response and request
-	subscriptionPost1 := RabEstSubscription{RAB_EST_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscriptionPost1 := RabEstSubscription{nil, expectedCallBackRef, nil, nil, false, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -1163,7 +1163,7 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := RabEstSubscription{RAB_EST_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := RabEstSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, false, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1180,7 +1180,7 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	 * request body section
 	 ******************************/
 
-	subscription1 := RabEstSubscription{RAB_EST_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscription1 := RabEstSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, false, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1230,7 +1230,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := RabRelSubscription{RAB_REL_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := RabRelSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1246,7 +1246,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 	 ******************************/
 
 	//filter is not exactly the same in response and request
-	subscriptionPost1 := RabRelSubscription{RAB_REL_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscriptionPost1 := RabRelSubscription{nil, expectedCallBackRef, nil, false, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -1287,7 +1287,7 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 1, 88}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-	expectedResponse := RabRelSubscription{RAB_REL_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := RabRelSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1304,7 +1304,7 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	 * request body section
 	 ******************************/
 
-	subscription1 := RabRelSubscription{RAB_REL_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscription1 := RabRelSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1356,7 +1356,7 @@ func testSubscriptionMeasRepUePost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := MeasRepUeSubscription{MEAS_REP_UE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := MeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1372,7 +1372,7 @@ func testSubscriptionMeasRepUePost(t *testing.T) string {
 	 ******************************/
 
 	//filter is not exactly the same in response and request
-	subscriptionPost1 := MeasRepUeSubscription{MEAS_REP_UE_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscriptionPost1 := MeasRepUeSubscription{nil, expectedCallBackRef, nil, false, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -1415,7 +1415,7 @@ func testSubscriptionMeasRepUePut(t *testing.T, subscriptionId string, expectSuc
 	expectedFilter := MeasRepUeSubscriptionFilterCriteriaAssocTri{"myApp", expectedAssocId, expectedEcgi, []Trigger{1}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-	expectedResponse := MeasRepUeSubscription{MEAS_REP_UE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := MeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1432,7 +1432,7 @@ func testSubscriptionMeasRepUePut(t *testing.T, subscriptionId string, expectSuc
 	 * request body section
 	 ******************************/
 
-	subscription1 := MeasRepUeSubscription{MEAS_REP_UE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscription1 := MeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1484,7 +1484,7 @@ func testSubscriptionNrMeasRepUePost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := NrMeasRepUeSubscription{NR_MEAS_REP_UE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := NrMeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1500,7 +1500,7 @@ func testSubscriptionNrMeasRepUePost(t *testing.T) string {
 	 ******************************/
 
 	//filter is not exactly the same in response and request
-	subscriptionPost1 := NrMeasRepUeSubscription{NR_MEAS_REP_UE_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscriptionPost1 := NrMeasRepUeSubscription{nil, expectedCallBackRef, nil, false, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -1543,7 +1543,7 @@ func testSubscriptionNrMeasRepUePut(t *testing.T, subscriptionId string, expectS
 	expectedFilter := NrMeasRepUeSubscriptionFilterCriteriaNrMrs{"myApp", expectedAssocId, expectedNrcgi, []TriggerNr{1}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-	expectedResponse := NrMeasRepUeSubscription{NR_MEAS_REP_UE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	expectedResponse := NrMeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1560,7 +1560,7 @@ func testSubscriptionNrMeasRepUePut(t *testing.T, subscriptionId string, expectS
 	 * request body section
 	 ******************************/
 
-	subscription1 := NrMeasRepUeSubscription{NR_MEAS_REP_UE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	subscription1 := NrMeasRepUeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, false, nil, &expectedFilter, NR_MEAS_REP_UE_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1657,7 +1657,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	//filter is not exactly the same in response and request
 	filterCriteria := expectedFilter
 	filterCriteria.HoStatus = nil
-	cellChangeSubscriptionPost1 := CellChangeSubscription{CELL_CHANGE_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, &expectedFilter, false}
+	cellChangeSubscriptionPost1 := CellChangeSubscription{nil, expectedCallBackRef, nil, nil, false, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	body, err := json.Marshal(cellChangeSubscriptionPost1)
 	if err != nil {
@@ -1815,7 +1815,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	rabEstSubscriptionPost1 := RabEstSubscription{RAB_EST_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	rabEstSubscriptionPost1 := RabEstSubscription{nil, expectedCallBackRef, nil, nil, false, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	body, err := json.Marshal(rabEstSubscriptionPost1)
 	if err != nil {
@@ -1968,7 +1968,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	rabRelSubscriptionPost1 := RabRelSubscription{RAB_REL_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	rabRelSubscriptionPost1 := RabRelSubscription{nil, expectedCallBackRef, nil, false, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	body, err := json.Marshal(rabRelSubscriptionPost1)
 	if err != nil {
@@ -2118,7 +2118,7 @@ func TestSubscriptionMeasRepUeNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	measRepUeSubscriptionPost1 := MeasRepUeSubscription{MEAS_REP_UE_SUBSCRIPTION, nil, expectedCallBackRef, nil, false, nil, &expectedFilter}
+	measRepUeSubscriptionPost1 := MeasRepUeSubscription{nil, expectedCallBackRef, nil, false, nil, &expectedFilter, MEAS_REP_UE_SUBSCRIPTION}
 
 	body, err := json.Marshal(measRepUeSubscriptionPost1)
 	if err != nil {

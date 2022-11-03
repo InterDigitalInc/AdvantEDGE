@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE MEC Service Management API
+ * AdvantEDGE Service Management API
  *
  * MEC Service Management Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below).
  *
@@ -51,9 +51,9 @@ This method retrieves information about a list of mecService resources. This met
      * @param "SerInstanceId" (optional.Interface of []string) -  A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present.
      * @param "SerName" (optional.Interface of []string) -  A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present.
      * @param "SerCategoryId" (optional.String) -  A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present.
-     * @param "ConsumedLocalOnly" (optional.Bool) -  Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance.
-     * @param "IsLocal" (optional.Bool) -  Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application.
-     * @param "ScopeOfLocality" (optional.String) -  A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality.
+     * @param "ConsumedLocalOnly" (optional.Bool) -  Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance.
+     * @param "IsLocal" (optional.Bool) -  Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application.
+     * @param "ScopeOfLocality" (optional.String) -  A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality.
 
 @return []ServiceInfo
 */
@@ -1162,9 +1162,9 @@ This method retrieves information about a list of mecService resources. This met
      * @param "SerInstanceId" (optional.Interface of []string) -  A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present.
      * @param "SerName" (optional.Interface of []string) -  A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present.
      * @param "SerCategoryId" (optional.String) -  A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present.
-     * @param "ConsumedLocalOnly" (optional.Bool) -  Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance.
-     * @param "IsLocal" (optional.Bool) -  Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application.
-     * @param "ScopeOfLocality" (optional.String) -  A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality.
+     * @param "ConsumedLocalOnly" (optional.Bool) -  Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance.
+     * @param "IsLocal" (optional.Bool) -  Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application.
+     * @param "ScopeOfLocality" (optional.String) -  A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality.
 
 @return []ServiceInfo
 */

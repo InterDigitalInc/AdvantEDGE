@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/CommunicationInterfaceIpAddresses'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('./CommunicationInterfaceIpAddresses'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.CommunicationInterface = factory(root.MecDemo3Api.ApiClient);
+    root.MecDemo3Api.CommunicationInterface = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.CommunicationInterfaceIpAddresses);
   }
-}(this, function(ApiClient) {
+}(this, function(ApiClient, CommunicationInterfaceIpAddresses) {
   'use strict';
 
   /**
@@ -69,13 +69,13 @@
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('ipAddresses'))
-        obj.ipAddresses = ApiClient.convertToType(data['ipAddresses'], 'String');
+        obj.ipAddresses = ApiClient.convertToType(data['ipAddresses'], [CommunicationInterfaceIpAddresses]);
     }
     return obj;
   }
 
   /**
-   * @member {String} ipAddresses
+   * @member {Array.<module:model/CommunicationInterfaceIpAddresses>} ipAddresses
    */
   exports.prototype.ipAddresses = undefined;
 

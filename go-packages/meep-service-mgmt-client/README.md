@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/sandboxname/mec_service_mgmt/v1*
+All URIs are relative to *https://localhost/mec_service_mgmt/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -55,6 +55,7 @@ Class | Method | HTTP request | Description
  - [SerAvailabilityNotificationSubscriptionFilteringCriteria](docs/SerAvailabilityNotificationSubscriptionFilteringCriteria.md)
  - [SerializerType](docs/SerializerType.md)
  - [ServiceAvailabilityNotification](docs/ServiceAvailabilityNotification.md)
+ - [ServiceAvailabilityNotificationChangeType](docs/ServiceAvailabilityNotificationChangeType.md)
  - [ServiceAvailabilityNotificationServiceReferences](docs/ServiceAvailabilityNotificationServiceReferences.md)
  - [ServiceInfo](docs/ServiceInfo.md)
  - [ServiceInfoLinks](docs/ServiceInfoLinks.md)

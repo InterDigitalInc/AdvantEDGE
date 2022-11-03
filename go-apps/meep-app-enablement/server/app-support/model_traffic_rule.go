@@ -27,16 +27,16 @@ package server
 type TrafficRule struct {
 	// Identify the traffic rule.
 	TrafficRuleId string `json:"trafficRuleId"`
-	// Definition of filter per FLOW or PACKET. If flow the filter match UE->EPC packet and the reverse packet is handled in the same context
-	FilterType string `json:"filterType"`
-	// Priority of this traffic rule. If traffic rule conflicts, the one with higher priority take precedence
+
+	FilterType *TrafficRuleFilterType `json:"filterType"`
+	// Priority of this traffic rule within the range 0 to 255. If traffic rules conflict, the one with higher priority take precedence. Value indicates the priority in descending order, i.e. with 0 as the highest priority and 255 as the lowest priority.
 	Priority int32 `json:"priority"`
 
 	TrafficFilter []TrafficFilter `json:"trafficFilter"`
-	// The action of the MEC host data plane when a packet matches the trafficFilter
-	Action string `json:"action"`
 
-	DstInterface *DestinationInterface `json:"dstInterface,omitempty"`
-	// Contains the traffic rule state. This attribute may be updated using HTTP PUT   method
-	State string `json:"state"`
+	Action *TrafficRuleAction `json:"action"`
+
+	DstInterface []DestinationInterface `json:"dstInterface,omitempty"`
+
+	State *TrafficRuleState `json:"state"`
 }

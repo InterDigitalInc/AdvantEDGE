@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Application Mobility API
  *
- * Application Mobility Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_MEC021v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about application mobility in the network <p>**Note**<br>AdvantEDGE supports all of Application Mobility API endpoints (see below).
+ * Application Mobility Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC021 Application Mobility API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_MEC021v020201p.pdf) <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-ams](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ams) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about application mobility in the network <p>**Note**<br>AdvantEDGE supports a selected subset of Application Mobility API endpoints (see below).
  *
  * API version: 2.2.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -29,7 +29,7 @@ type ExpiryNotification struct {
 
 	TimeStamp *TimeStamp `json:"timeStamp,omitempty"`
 
-	Links *MobilityProcedureNotificationLinks `json:"_links"`
+	Links *Link `json:"_links"`
 
 	ExpiryDeadline *TimeStamp `json:"expiryDeadline"`
 }

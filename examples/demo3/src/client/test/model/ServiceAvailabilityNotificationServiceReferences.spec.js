@@ -66,6 +66,12 @@
         // expect(instance.serName).to.be(expectedValueLiteral);
       });
 
+      it('should have the property serInstanceId (base name: "serInstanceId")', function() {
+        // TODO: update the code to test the property serInstanceId
+        expect(instance).to.have.property('serInstanceId');
+        // expect(instance.serInstanceId).to.be(expectedValueLiteral);
+      });
+
       it('should have the property state (base name: "state")', function() {
         // TODO: update the code to test the property state
         expect(instance).to.have.property('state');

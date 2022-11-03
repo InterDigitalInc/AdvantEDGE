@@ -25,8 +25,7 @@ package server
 
 // This type represents the tunnel information.
 type TunnelInfo struct {
-	// This type represents the tunnel information.
-	TunnelType string `json:"tunnelType"`
+	TunnelType *TunnelInfoTunnelType `json:"tunnelType"`
 	// Destination address of the tunnel
 	TunnelDstAddress string `json:"tunnelDstAddress,omitempty"`
 	// Source address of the tunnel

@@ -23,7 +23,7 @@
 package server
 
 type AssociateId struct {
-	Type_ *ModelType `json:"type"`
+	Type_ *AssociateIdType `json:"type,omitempty"`
 	// Value for the identifier.
-	Value string `json:"value"`
+	Value string `json:"value,omitempty"`
 }

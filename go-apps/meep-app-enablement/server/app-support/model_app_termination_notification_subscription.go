@@ -30,7 +30,7 @@ type AppTerminationNotificationSubscription struct {
 	// URI selected by the MEC application instance to receive notifications on the subscribed MEC application instance management information. This shall be included in both the request and the response.
 	CallbackReference string `json:"callbackReference"`
 
-	Links *AppTerminationNotificationSubscriptionLinks `json:"_links"`
+	Links *Self `json:"_links"`
 	// It is used as the filtering criterion for the subscribed events.
 	AppInstanceId string `json:"appInstanceId"`
 }

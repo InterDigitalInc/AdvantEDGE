@@ -28,6 +28,6 @@ type OperationActionType string
 
 // List of OperationActionType
 const (
-	STOPPING    OperationActionType = "STOPPING"
-	TERMINATING OperationActionType = "TERMINATING"
+	STOPPING_OperationActionType    OperationActionType = "STOPPING"
+	TERMINATING_OperationActionType OperationActionType = "TERMINATING"
 )

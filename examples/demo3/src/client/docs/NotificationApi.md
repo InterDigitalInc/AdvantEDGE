@@ -5,14 +5,14 @@ All URIs are relative to *https://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**amsNotificationCallback**](NotificationApi.md#amsNotificationCallback) | **POST** /services/callback/amsevent | Callback endpoint for AMS Notifications
-[**appTerminationNotificationCallback**](NotificationApi.md#appTerminationNotificationCallback) | **POST** /application/termination | Callback endpoint for MEC011 app-termination notifications
+[**appTerminationNotificationCallback**](NotificationApi.md#appTerminationNotificationCallback) | **POST** /application/termination | 
 [**contextTransferNotificationCallback**](NotificationApi.md#contextTransferNotificationCallback) | **POST** /application/transfer | Callback endpoint for MEC021 context-state transfer notification
 [**serviceAvailNotificationCallback**](NotificationApi.md#serviceAvailNotificationCallback) | **POST** /services/callback/service-availability | Callback endpoint for MEC011 Notifications
 
 
 <a name="amsNotificationCallback"></a>
 # **amsNotificationCallback**
-> amsNotificationCallback()
+> amsNotificationCallback(body)
 
 Callback endpoint for AMS Notifications
 
@@ -24,6 +24,9 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var body = new MecDemo3Api.InlineNotification(); // InlineNotification | 
+
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -31,11 +34,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.amsNotificationCallback(callback);
+apiInstance.amsNotificationCallback(body, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**InlineNotification**](InlineNotification.md)|  | 
 
 ### Return type
 
@@ -47,22 +53,26 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 
 <a name="appTerminationNotificationCallback"></a>
 # **appTerminationNotificationCallback**
-> appTerminationNotificationCallback()
+> appTerminationNotificationCallback(opts)
 
-Callback endpoint for MEC011 app-termination notifications
 
-Callback endpoint for MEC011 app-termination notifications
+
+Represents the information that the MEP notifies the subscribed application instance about the corresponding application instance termination/stop&#39;
 
 ### Example
 ```javascript
 var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
+
+var opts = { 
+  'body': new MecDemo3Api.AppTerminationNotification() // AppTerminationNotification | 
+};
 
 var callback = function(error, data, response) {
   if (error) {
@@ -71,11 +81,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.appTerminationNotificationCallback(callback);
+apiInstance.appTerminationNotificationCallback(opts, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**AppTerminationNotification**](AppTerminationNotification.md)|  | [optional] 
 
 ### Return type
 
@@ -87,12 +100,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 
 <a name="contextTransferNotificationCallback"></a>
 # **contextTransferNotificationCallback**
-> contextTransferNotificationCallback()
+> contextTransferNotificationCallback(body)
 
 Callback endpoint for MEC021 context-state transfer notification
 
@@ -104,6 +117,9 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var body = new MecDemo3Api.ApplicationContextState(); // ApplicationContextState | app termination notification details
+
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -111,11 +127,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.contextTransferNotificationCallback(callback);
+apiInstance.contextTransferNotificationCallback(body, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**ApplicationContextState**](ApplicationContextState.md)| app termination notification details | 
 
 ### Return type
 
@@ -127,12 +146,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 
 <a name="serviceAvailNotificationCallback"></a>
 # **serviceAvailNotificationCallback**
-> serviceAvailNotificationCallback()
+> serviceAvailNotificationCallback(opts)
 
 Callback endpoint for MEC011 Notifications
 
@@ -144,6 +163,10 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var opts = { 
+  'body': new MecDemo3Api.ServiceAvailabilityNotification() // ServiceAvailabilityNotification | 
+};
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -151,11 +174,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.serviceAvailNotificationCallback(callback);
+apiInstance.serviceAvailNotificationCallback(opts, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**ServiceAvailabilityNotification**](ServiceAvailabilityNotification.md)|  | [optional] 
 
 ### Return type
 
@@ -167,6 +193,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 

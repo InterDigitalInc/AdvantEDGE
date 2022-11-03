@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/LinkType', 'model/SerName', 'model/ServiceState'], factory);
+    define(['ApiClient', 'model/LinkType1', 'model/SerInstanceId', 'model/SerName', 'model/ServiceAvailabilityNotificationChangeType', 'model/ServiceState1'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./LinkType'), require('./SerName'), require('./ServiceState'));
+    module.exports = factory(require('../ApiClient'), require('./LinkType1'), require('./SerInstanceId'), require('./SerName'), require('./ServiceAvailabilityNotificationChangeType'), require('./ServiceState1'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.ServiceAvailabilityNotificationServiceReferences = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType, root.MecDemo3Api.SerName, root.MecDemo3Api.ServiceState);
+    root.MecDemo3Api.ServiceAvailabilityNotificationServiceReferences = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType1, root.MecDemo3Api.SerInstanceId, root.MecDemo3Api.SerName, root.MecDemo3Api.ServiceAvailabilityNotificationChangeType, root.MecDemo3Api.ServiceState1);
   }
-}(this, function(ApiClient, LinkType, SerName, ServiceState) {
+}(this, function(ApiClient, LinkType1, SerInstanceId, SerName, ServiceAvailabilityNotificationChangeType, ServiceState1) {
   'use strict';
 
   /**
@@ -56,11 +56,13 @@
    * @alias module:model/ServiceAvailabilityNotificationServiceReferences
    * @class
    * @param serName {module:model/SerName} 
-   * @param state {module:model/ServiceState} 
-   * @param changeType {module:model/ServiceAvailabilityNotificationServiceReferences.ChangeTypeEnum} Type of the change. Valid values:  ADDED: The service was newly added.   REMOVED: The service was removed.   STATE_CHANGED: Only the state of the service was changed.    ATTRIBUTES_CHANGED: At least one attribute of the service other than state was changed. The change may or may not include changing the state.
+   * @param serInstanceId {module:model/SerInstanceId} 
+   * @param state {module:model/ServiceState1} 
+   * @param changeType {module:model/ServiceAvailabilityNotificationChangeType} 
    */
-  var exports = function(serName, state, changeType) {
+  var exports = function(serName, serInstanceId, state, changeType) {
     this.serName = serName;
+    this.serInstanceId = serInstanceId;
     this.state = state;
     this.changeType = changeType;
   };
@@ -76,19 +78,21 @@
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('link'))
-        obj.link = LinkType.constructFromObject(data['link']);
+        obj.link = LinkType1.constructFromObject(data['link']);
       if (data.hasOwnProperty('serName'))
         obj.serName = SerName.constructFromObject(data['serName']);
+      if (data.hasOwnProperty('serInstanceId'))
+        obj.serInstanceId = SerInstanceId.constructFromObject(data['serInstanceId']);
       if (data.hasOwnProperty('state'))
-        obj.state = ServiceState.constructFromObject(data['state']);
+        obj.state = ServiceState1.constructFromObject(data['state']);
       if (data.hasOwnProperty('changeType'))
-        obj.changeType = ApiClient.convertToType(data['changeType'], 'String');
+        obj.changeType = ServiceAvailabilityNotificationChangeType.constructFromObject(data['changeType']);
     }
     return obj;
   }
 
   /**
-   * @member {module:model/LinkType} link
+   * @member {module:model/LinkType1} link
    */
   exports.prototype.link = undefined;
 
@@ -98,47 +102,19 @@
   exports.prototype.serName = undefined;
 
   /**
-   * @member {module:model/ServiceState} state
+   * @member {module:model/SerInstanceId} serInstanceId
+   */
+  exports.prototype.serInstanceId = undefined;
+
+  /**
+   * @member {module:model/ServiceState1} state
    */
   exports.prototype.state = undefined;
 
   /**
-   * Type of the change. Valid values:  ADDED: The service was newly added.   REMOVED: The service was removed.   STATE_CHANGED: Only the state of the service was changed.    ATTRIBUTES_CHANGED: At least one attribute of the service other than state was changed. The change may or may not include changing the state.
-   * @member {module:model/ServiceAvailabilityNotificationServiceReferences.ChangeTypeEnum} changeType
+   * @member {module:model/ServiceAvailabilityNotificationChangeType} changeType
    */
   exports.prototype.changeType = undefined;
-
-
-  /**
-   * Allowed values for the <code>changeType</code> property.
-   * @enum {String}
-   * @readonly
-   */
-  exports.ChangeTypeEnum = {
-    /**
-     * value: "ADDED"
-     * @const
-     */
-    ADDED: "ADDED",
-
-    /**
-     * value: "REMOVED"
-     * @const
-     */
-    REMOVED: "REMOVED",
-
-    /**
-     * value: "STATE_CHANGED"
-     * @const
-     */
-    STATE_CHANGED: "STATE_CHANGED",
-
-    /**
-     * value: "ATTRIBUTES_CHANGED"
-     * @const
-     */
-    ATTRIBUTES_CHANGED: "ATTRIBUTES_CHANGED"
-  };
 
   return exports;
 

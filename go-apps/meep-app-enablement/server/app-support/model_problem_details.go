@@ -29,9 +29,9 @@ type ProblemDetails struct {
 	// A short, human-readable summary of the problem type
 	Title string `json:"title,omitempty"`
 	// The HTTP status code for this occurrence of the problem
-	Status int32 `json:"status"`
+	Status int32 `json:"status,omitempty"`
 	// A human-readable explanation specific to this occurrence of the problem
-	Detail string `json:"detail"`
+	Detail string `json:"detail,omitempty"`
 	// A URI reference that identifies the specific occurrence of the problem
 	Instance string `json:"instance,omitempty"`
 }

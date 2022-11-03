@@ -25,18 +25,17 @@ package server
 
 // NTP server detail.
 type TimingCapsNtpServers struct {
-	// Address type of NTP server
-	NtpServerAddrType string `json:"ntpServerAddrType"`
+	NtpServerAddrType *TimingCapsNtpServersNtpServerAddrType `json:"ntpServerAddrType"`
 	// NTP server address
 	NtpServerAddr string `json:"ntpServerAddr"`
-	// Minimum poll interval for NTP messages, in seconds as a power of two. Range 3...17
+	// Minimum poll interval for NTP messages, in seconds as a power of two. Range 3 to 17
 	MinPollingInterval int32 `json:"minPollingInterval"`
-	// Maximum poll interval for NTP messages, in seconds as a power of two. Range 3...17
+	// Maximum poll interval for NTP messages, in seconds as a power of two. Range 3 to 17
 	MaxPollingInterval int32 `json:"maxPollingInterval"`
 	// NTP server local priority
 	LocalPriority int32 `json:"localPriority"`
-	// NTP authentication option
-	AuthenticationOption string `json:"authenticationOption"`
+
+	AuthenticationOption *TimingCapsNtpServersAuthenticationOption `json:"authenticationOption"`
 	// Authentication key number
 	AuthenticationKeyNum int32 `json:"authenticationKeyNum"`
 }

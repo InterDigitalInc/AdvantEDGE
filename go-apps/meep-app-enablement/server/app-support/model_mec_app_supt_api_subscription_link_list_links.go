@@ -27,5 +27,5 @@ package server
 type MecAppSuptApiSubscriptionLinkListLinks struct {
 	Self *LinkType `json:"self"`
 	// The MEC application instance's subscriptions
-	Subscriptions []MecAppSuptApiSubscriptionLinkListLinksSubscriptions `json:"subscriptions,omitempty"`
+	Subscriptions []MecAppSuptApiSubscriptionLinkListSubscription `json:"subscriptions,omitempty"`
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ func (a *MecAppSupportApiService) ApplicationsConfirmReadyPOST(ctx context.Conte
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -202,7 +202,7 @@ func (a *MecAppSupportApiService) ApplicationsConfirmTerminationPOST(ctx context
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -330,7 +330,7 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionDELETE(ctx context.Con
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -424,7 +424,7 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionGET(ctx context.Contex
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -546,7 +546,7 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionsGET(ctx context.Conte
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -669,7 +669,7 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionsPOST(ctx context.Cont
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -791,7 +791,7 @@ func (a *MecAppSupportApiService) TimingCapsGET(ctx context.Context) (TimingCaps
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -911,7 +911,7 @@ func (a *MecAppSupportApiService) TimingCurrentTimeGET(ctx context.Context) (Cur
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)

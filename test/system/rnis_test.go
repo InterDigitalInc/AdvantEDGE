@@ -2064,7 +2064,7 @@ func validateNrMeasRepUeNotification(notification *rnisClient.NrMeasRepUeNotific
 
 	if expectedNrNeighCellMeasInfo != nil {
 		if notification.NrNeighCellMeasInfo != nil || len(notification.NrNeighCellMeasInfo) > 0 {
-			if notification.NrNeighCellMeasInfo[0].Nrcgi != expectedNrNeighCellMeasInfo.Nrcgi {
+			if notification.NrNeighCellMeasInfo[0].Nrcgi.NrcellId != expectedNrNeighCellMeasInfo.Nrcgi.NrcellId {
 				return ("NrNeighCellMeasInfo:Nrcgi of notification not as expected: " + notification.NrNeighCellMeasInfo[0].Nrcgi.NrcellId + " instead of " + expectedNrNeighCellMeasInfo.Nrcgi.NrcellId)
 			}
 			if notification.NrNeighCellMeasInfo[0].MeasQuantityResultsSsbCell.Rsrp != expectedNrNeighCellMeasInfo.MeasQuantityResultsSsbCell.Rsrp {

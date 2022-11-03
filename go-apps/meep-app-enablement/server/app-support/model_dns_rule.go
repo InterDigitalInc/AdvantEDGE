@@ -29,12 +29,12 @@ type DnsRule struct {
 	DnsRuleId string `json:"dnsRuleId"`
 	// FQDN resolved by the DNS rule
 	DomainName string `json:"domainName"`
-	// IP address type
-	IpAddressType string `json:"ipAddressType"`
+
+	IpAddressType *DnsRuleIpAddressType `json:"ipAddressType"`
 	// IP address associated with the FQDN resolved by the DNS rule
 	IpAddress string `json:"ipAddress"`
 	// Time to live value
 	Ttl int32 `json:"ttl,omitempty"`
-	// DNS rule state. This attribute may be updated using HTTP PUT method
-	State string `json:"state"`
+
+	State *DnsRuleState `json:"state"`
 }

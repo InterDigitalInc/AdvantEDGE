@@ -27,6 +27,6 @@ type ServiceState string
 
 // List of ServiceState
 const (
-	ACTIVE   ServiceState = "ACTIVE"
-	INACTIVE ServiceState = "INACTIVE"
+	ACTIVE_ServiceState   ServiceState = "ACTIVE"
+	INACTIVE_ServiceState ServiceState = "INACTIVE"
 )

@@ -54,16 +54,16 @@
         expect(instance).to.be.a(MecDemo3Api.TimeStamp);
       });
 
-      it('should have the property nanoSeconds (base name: "nanoSeconds")', function() {
-        // TODO: update the code to test the property nanoSeconds
-        expect(instance).to.have.property('nanoSeconds');
-        // expect(instance.nanoSeconds).to.be(expectedValueLiteral);
-      });
-
       it('should have the property seconds (base name: "seconds")', function() {
         // TODO: update the code to test the property seconds
         expect(instance).to.have.property('seconds');
         // expect(instance.seconds).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property nanoSeconds (base name: "nanoSeconds")', function() {
+        // TODO: update the code to test the property nanoSeconds
+        expect(instance).to.have.property('nanoSeconds');
+        // expect(instance.nanoSeconds).to.be(expectedValueLiteral);
       });
 
     });

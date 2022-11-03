@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ func (a *UnsupportedApiService) ApplicationsDnsRuleGET(ctx context.Context, appI
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -202,7 +202,7 @@ func (a *UnsupportedApiService) ApplicationsDnsRulePUT(ctx context.Context, body
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -337,7 +337,7 @@ func (a *UnsupportedApiService) ApplicationsDnsRulesGET(ctx context.Context, app
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -461,7 +461,7 @@ func (a *UnsupportedApiService) ApplicationsTrafficRuleGET(ctx context.Context, 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -586,7 +586,7 @@ func (a *UnsupportedApiService) ApplicationsTrafficRulePUT(ctx context.Context, 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -721,7 +721,7 @@ func (a *UnsupportedApiService) ApplicationsTrafficRulesGET(ctx context.Context,
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json"}
+	localVarHttpHeaderAccepts := []string{"application/json", "application/problem+json", "text/plain"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)

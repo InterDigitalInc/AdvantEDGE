@@ -25,13 +25,12 @@ package server
 
 // This type represents the destination interface. If the action is FORWARD_DECAPSULATED, FORWARD_ENCAPSULATED or PASSTHROUGH one value shall be provided. If the action is DUPLICATE_DECAPSULATED or DUPLICATE_ENCAPSULATED, two values shall be provided. If the action is DROP, no value shall be provided.
 type DestinationInterface struct {
-	// Type of the interface
-	InterfaceType string `json:"interfaceType"`
+	InterfaceType *DestinationInterfaceInterfaceType `json:"interfaceType"`
 
 	TunnelInfo *TunnelInfo `json:"tunnelInfo,omitempty"`
 	// Source address identifies the MAC address of the interface
 	SrcMacAddress string `json:"srcMacAddress,omitempty"`
-	// Destination address identifies the MAC address of the interface
+	// Source address identifies the MAC address of the interface
 	DstMacAddress string `json:"dstMacAddress,omitempty"`
 	// IP address of the remote destination
 	DstIpAddress string `json:"dstIpAddress,omitempty"`

@@ -1,9 +1,6 @@
 openapi: 3.0.0
 info:
-  contact:
-    name: InterDigital AdvantEDGE Support
-    email: AdvantEDGE@InterDigital.com
-  title: AdvantEDGE Radio Network Information Service REST API
+  title: AdvantEDGE Radio Network Information API
   version: 2.2.1
   description: "Radio Network Information Service is AdvantEDGE's implementation of
   [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf)
@@ -18,16 +15,18 @@ info:
   <p> - MeasRepUeSubscription
   <p> - NrMeasRepUeSubscription"
   license:
-    name: "Apache 2.0"
-    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+    name: Apache 2.0
+    url: 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE'
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
 externalDocs:
-  description: ETSI GS MEC 012 Radio Network Information API, V2.2.1
-  url: 'https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf'
+  description: ETSI MEC012 V2.2.1 Radio Network Information API
+  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_mec012v020201p.pdf'
 servers:
-  - url: 'https://localhost/sandboxname/rni/v2'
+  - url: 'https://localhost/rni/v2'
 tags:
-- name: 'rni'
-- name: 'unsupported'
+  - name: 'rni'
 paths:
   /queries/rab_info:
     get:
@@ -514,7 +513,7 @@ paths:
         '429':
           $ref: '#/components/responses/429'
       x-swagger-router-controller: "subscriptions"
-  /notifications/mec011/appTermination:
+  '/notifications/mec011/appTermination':
     post:
       tags:
       - 'rni'
@@ -1261,6 +1260,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaAssoc
       type: object
       x-etsi-ref: 6.3.8
@@ -1439,6 +1439,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaAssocHo
       type: object
       x-etsi-ref: 6.3.2
@@ -2202,6 +2203,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaAssocTri
       type: object
       x-etsi-ref: 6.3.6
@@ -2327,6 +2329,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaAssoc
       type: object
       x-etsi-ref: 6.3.7
@@ -2597,6 +2600,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaNrMrs
       type: object
       x-etsi-ref: 6.3.11
@@ -2859,6 +2863,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaQci
       type: object
       x-etsi-ref: 6.3.3
@@ -3150,6 +3155,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaQci
       type: object
       x-etsi-ref: 6.3.4
@@ -3231,7 +3237,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Structure (inlined)
         callbackReference:
-          description: URI selected by the service consumer to receive notifications on the subscribed RNIS information. This shall be included both in the request and in response. If not present, the service consumer is requesting the use of a Websocket for notifications. See note. 
+          description: URI selected by the service consumer to receive notifications on the subscribed RNIS information. This shall be included both in the request and in response. If not present, the service consumer is requesting the use of a Websocket for notifications. See note.
           format: uri
           type: string
           x-etsi-mec-cardinality: 0..1
@@ -3286,6 +3292,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - filterCriteriaQci
       type: object
       x-etsi-ref: 6.3.5
@@ -3718,6 +3725,7 @@ components:
           x-etsi-mec-origin-type: String
       required:
       - subscriptionType
+      - callbackReference
       - eventType
       - S1BearerSubscriptionCriteria
       type: object
@@ -3854,6 +3862,24 @@ components:
       discriminator:
         propertyName: notificationType
 
+    WebsockNotifConfig:
+      title: WebsockNotifConfig
+      description: >
+        This type represents configuration for the delivery of subscription notifications over Websockets per the pattern defined in defined in clause 6.12a of ETSI GS MEC 009 [6].
+      type: object
+      properties:
+        websocketUri:
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uri
+          description: Set by RNIS to indicate to the service consumer the Websocket URI to be used for delivering notifications.
+        requestWebsocketUri:
+          type: boolean
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uri
+          description: Set to true by the service consumer to indicate that Websocket delivery is requested.
+      x-etsi-ref: 6.3.12
     AppTerminationNotification:
       description: >-
         This type represents the information that the MEC platform
@@ -3894,47 +3920,3 @@ components:
       enum:
         - STOPPING
         - TERMINATING
-    WebsockNotifConfig:
-      title: WebsockNotifConfig
-      description: >
-        This type represents configuration for the delivery of subscription notifications over Websockets per the pattern defined in defined in clause 6.12a of ETSI GS MEC 009 [6].
-      type: object
-      properties:
-        websocketUri:
-          format: uri
-          type: string
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uri
-          description: Set by RNIS to indicate to the service consumer the Websocket URI to be used for delivering notifications.
-        requestWebsocketUri:
-          type: boolean
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: Uri
-          description: Set to true by the service consumer to indicate that Websocket delivery is requested.
-      x-etsi-ref: 6.3.12
-
-    TestNotification:
-      description: >
-        This type represents a test notification from a Radio Network Information service to determine if the Websocket method is to be utilized for the RNIS to issue notifications for a subscription, as defined in clause 6.12a of ETSI GS MEC 009 [6]. 
-      type: object
-      required:
-      - _links
-      - notificationType
-      properties:
-        notificationType:
-          description: Shall be set to "RabEstNotification".
-          type: string
-          x-etsi-mec-cardinality: '1'
-          x-etsi-mec-origin-type: String
-        _links:
-          description: Links to resources related to this notification.
-          required:
-          - subscription
-          properties:
-            subscription:
-              description: A link to the related subscription.
-              $ref: '#/components/schemas/LinkType'
-          type: object
-          x-etsi-mec-cardinality: 1
-          x-etsi-mec-origin-type: Structure (inlined)
-      x-etsi-ref: 6.4.12

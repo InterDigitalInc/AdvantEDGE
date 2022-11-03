@@ -1,6 +1,6 @@
-# {{classname}}
+# \RniApi
 
-All URIs are relative to *https://localhost/sandboxname/rni/v2*
+All URIs are relative to *https://localhost/rni/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -14,6 +14,7 @@ Method | HTTP request | Description
 [**SubscriptionsPOST**](RniApi.md#SubscriptionsPOST) | **Post** /subscriptions | Create a new subscription
 [**SubscriptionsPUT**](RniApi.md#SubscriptionsPUT) | **Put** /subscriptions/{subscriptionId} | Modify an existing subscription
 
+
 # **Layer2MeasInfoGET**
 > L2Meas Layer2MeasInfoGET(ctx, optional)
 Retrieve information on layer 2 measurements
@@ -25,10 +26,11 @@ Queries information about the layer 2 measurements.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***RniApiLayer2MeasInfoGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***Layer2MeasInfoGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a RniApiLayer2MeasInfoGETOpts struct
+Optional parameters are passed through a pointer to a Layer2MeasInfoGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **appInsId** | **optional.String**| Application instance identifier | 
@@ -153,10 +155,11 @@ Queries information about the Radio Access Bearers
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***RniApiRabInfoGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***RabInfoGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a RniApiRabInfoGETOpts struct
+Optional parameters are passed through a pointer to a RabInfoGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **appInsId** | **optional.String**| Application instance identifier | 
@@ -198,10 +201,11 @@ Queries information on subscriptions for notifications
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***RniApiSubscriptionLinkListSubscriptionsGETOpts** | optional parameters | nil if no parameters
+ **optional** | ***SubscriptionLinkListSubscriptionsGETOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a RniApiSubscriptionLinkListSubscriptionsGETOpts struct
+Optional parameters are passed through a pointer to a SubscriptionLinkListSubscriptionsGETOpts struct
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **subscriptionType** | **optional.String**| Filter on a specific subscription type. Permitted values: cell_change, rab_est, rab_mod, rab_rel, meas_rep_ue, nr_meas_rep_ue, timing_advance_ue, ca_reconf, s1_bearer. | 

@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/sandboxname/mec_app_support/v1*
+All URIs are relative to *https://localhost/mec_app_support/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -44,23 +44,34 @@ Class | Method | HTTP request | Description
  - [AppTerminationNotification](docs/AppTerminationNotification.md)
  - [AppTerminationNotificationLinks](docs/AppTerminationNotificationLinks.md)
  - [AppTerminationNotificationSubscription](docs/AppTerminationNotificationSubscription.md)
- - [AppTerminationNotificationSubscriptionLinks](docs/AppTerminationNotificationSubscriptionLinks.md)
  - [CurrentTime](docs/CurrentTime.md)
  - [DestinationInterface](docs/DestinationInterface.md)
+ - [DestinationInterfaceInterfaceType](docs/DestinationInterfaceInterfaceType.md)
  - [DnsRule](docs/DnsRule.md)
+ - [DnsRuleIpAddressType](docs/DnsRuleIpAddressType.md)
+ - [DnsRuleState](docs/DnsRuleState.md)
  - [LinkType](docs/LinkType.md)
- - [OperationActionType](docs/OperationActionType.md)
- - [ProblemDetails](docs/ProblemDetails.md)
+ - [LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MecAppSuptApiSubscriptionLinkList](docs/MecAppSuptApiSubscriptionLinkList.md)
  - [MecAppSuptApiSubscriptionLinkListLinks](docs/MecAppSuptApiSubscriptionLinkListLinks.md)
- - [MecAppSuptApiSubscriptionLinkListLinksSubscriptions](docs/MecAppSuptApiSubscriptionLinkListLinksSubscriptions.md)
+ - [MecAppSuptApiSubscriptionLinkListSubscription](docs/MecAppSuptApiSubscriptionLinkListSubscription.md)
+ - [OperationActionType](docs/OperationActionType.md)
+ - [ProblemDetails](docs/ProblemDetails.md)
+ - [Self](docs/Self.md)
+ - [TimeSourceStatus](docs/TimeSourceStatus.md)
  - [TimingCaps](docs/TimingCaps.md)
  - [TimingCapsNtpServers](docs/TimingCapsNtpServers.md)
+ - [TimingCapsNtpServersAuthenticationOption](docs/TimingCapsNtpServersAuthenticationOption.md)
+ - [TimingCapsNtpServersNtpServerAddrType](docs/TimingCapsNtpServersNtpServerAddrType.md)
  - [TimingCapsPtpMasters](docs/TimingCapsPtpMasters.md)
  - [TimingCapsTimeStamp](docs/TimingCapsTimeStamp.md)
  - [TrafficFilter](docs/TrafficFilter.md)
  - [TrafficRule](docs/TrafficRule.md)
+ - [TrafficRuleAction](docs/TrafficRuleAction.md)
+ - [TrafficRuleFilterType](docs/TrafficRuleFilterType.md)
+ - [TrafficRuleState](docs/TrafficRuleState.md)
  - [TunnelInfo](docs/TunnelInfo.md)
+ - [TunnelInfoTunnelType](docs/TunnelInfoTunnelType.md)
 
 
 ## Documentation For Authorization
