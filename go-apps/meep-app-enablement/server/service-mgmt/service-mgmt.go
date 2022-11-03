@@ -305,7 +305,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	err, retCode := setService(appId, sInfo, ServiceAvailabilityNotificationChangeType_ADDED)
+	err, retCode := setService(appId, sInfo, ADDED_ServiceAvailabilityNotificationChangeType)
 	if err != nil {
 		log.Error(err.Error())
 		errHandlerProblemDetails(w, err.Error(), retCode)
@@ -393,7 +393,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	// Compare service info states & update DB if necessary
 	*sInfo.State = state
 	if *sInfo.State != *sInfoPrev.State {
-		err, retCode := setService(appId, &sInfo, ServiceAvailabilityNotificationChangeType_STATE_CHANGED)
+		err, retCode := setService(appId, &sInfo, STATE_CHANGED_ServiceAvailabilityNotificationChangeType)
 		if err != nil {
 			log.Error(err.Error())
 			errHandlerProblemDetails(w, err.Error(), retCode)
@@ -453,7 +453,7 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Notify remote listeners (except if global instance)
-	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+	changeType := REMOVED_ServiceAvailabilityNotificationChangeType
 	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
@@ -931,7 +931,7 @@ func deleteService(key string, sInfoJson string, data interface{}) error {
 	sInfo := convertJsonToServiceInfo(sInfoJson)
 
 	// Notify remote listeners (except if global instance)
-	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+	changeType := REMOVED_ServiceAvailabilityNotificationChangeType
 	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
@@ -1356,7 +1356,7 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 			SerName:       sInfo.SerName,
 			SerInstanceId: sInfo.SerInstanceId,
 			State:         sInfo.State,
-			ChangeType:    string(changeType),
+			ChangeType:    &changeType,
 		}
 		notif.ServiceReferences = append(notif.ServiceReferences, serAvailabilityRef)
 

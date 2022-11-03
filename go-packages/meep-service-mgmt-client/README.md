@@ -55,6 +55,7 @@ Class | Method | HTTP request | Description
  - [SerAvailabilityNotificationSubscriptionFilteringCriteria](docs/SerAvailabilityNotificationSubscriptionFilteringCriteria.md)
  - [SerializerType](docs/SerializerType.md)
  - [ServiceAvailabilityNotification](docs/ServiceAvailabilityNotification.md)
+ - [ServiceAvailabilityNotificationChangeType](docs/ServiceAvailabilityNotificationChangeType.md)
  - [ServiceAvailabilityNotificationServiceReferences](docs/ServiceAvailabilityNotificationServiceReferences.md)
  - [ServiceInfo](docs/ServiceInfo.md)
  - [ServiceInfoLinks](docs/ServiceInfoLinks.md)

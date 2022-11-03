@@ -1047,6 +1047,18 @@ components:
         _links:
           $ref: '#/components/schemas/Subscription'
       description: This type represents the service availability information.
+    ServiceAvailabilityNotificationChangeType:
+      type: string
+      description: "Type of the change. Valid values:\n ADDED: The service was newly\
+        \ added.\n  REMOVED: The service was removed.\n  STATE_CHANGED: Only the state\
+        \ of the service was changed.\n  ATTRIBUTES_CHANGED: At least one attribute\
+        \ of the service other than state was changed. The change may or may not include\
+        \ changing the state."
+      enum:
+      - ADDED
+      - REMOVED
+      - STATE_CHANGED
+      - ATTRIBUTES_CHANGED
     SerializerType:
       type: string
       description: The enumeration  represents types of serializers
@@ -1446,17 +1458,7 @@ components:
         state:
           $ref: '#/components/schemas/ServiceState'
         changeType:
-          type: string
-          description: "Type of the change. Valid values:\n ADDED: The service was\
-            \ newly added.\n  REMOVED: The service was removed.\n  STATE_CHANGED:\
-            \ Only the state of the service was changed.\n  ATTRIBUTES_CHANGED: At\
-            \ least one attribute of the service other than state was changed. The\
-            \ change may or may not include changing the state."
-          enum:
-          - ADDED
-          - REMOVED
-          - STATE_CHANGED
-          - ATTRIBUTES_CHANGED
+          $ref: '#/components/schemas/ServiceAvailabilityNotificationChangeType'
       description: List of links to services whose availability has changed.
     ServiceInfo__links:
       required:

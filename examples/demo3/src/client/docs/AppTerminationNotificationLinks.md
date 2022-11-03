@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**subscription** | [**LinkType1**](LinkType1.md) |  | 
+**subscription** | [**LinkType2**](LinkType2.md) |  | 
 **confirmTermination** | [**LinkTypeConfirmTermination**](LinkTypeConfirmTermination.md) |  | [optional] 
 
 

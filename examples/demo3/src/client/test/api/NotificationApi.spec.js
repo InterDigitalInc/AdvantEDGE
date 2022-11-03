@@ -106,10 +106,11 @@
       });
       describe('serviceAvailNotificationCallback', function() {
         it('should call serviceAvailNotificationCallback successfully', function(done) {
-          // TODO: uncomment serviceAvailNotificationCallback call
+          // TODO: uncomment, update parameter values for serviceAvailNotificationCallback call
           /*
+          var opts = {};
 
-          instance.serviceAvailNotificationCallback(function(error, data, response) {
+          instance.serviceAvailNotificationCallback(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;

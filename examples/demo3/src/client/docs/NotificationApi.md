@@ -151,7 +151,7 @@ No authorization required
 
 <a name="serviceAvailNotificationCallback"></a>
 # **serviceAvailNotificationCallback**
-> serviceAvailNotificationCallback()
+> serviceAvailNotificationCallback(opts)
 
 Callback endpoint for MEC011 Notifications
 
@@ -163,6 +163,10 @@ var MecDemo3Api = require('mec_demo_3_api');
 
 var apiInstance = new MecDemo3Api.NotificationApi();
 
+var opts = { 
+  'body': new MecDemo3Api.ServiceAvailabilityNotification() // ServiceAvailabilityNotification | 
+};
+
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -170,11 +174,14 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.serviceAvailNotificationCallback(callback);
+apiInstance.serviceAvailNotificationCallback(opts, callback);
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**ServiceAvailabilityNotification**](ServiceAvailabilityNotification.md)|  | [optional] 
 
 ### Return type
 
@@ -186,6 +193,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: Not defined
 

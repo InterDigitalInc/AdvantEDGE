@@ -24,7 +24,7 @@ package server
 
 // Object containing hyperlinks related to the resource.
 type AppTerminationNotificationLinks struct {
-	Subscription *LinkType1 `json:"subscription"`
+	Subscription *LinkType2 `json:"subscription"`
 
 	ConfirmTermination *LinkTypeConfirmTermination `json:"confirmTermination,omitempty"`
 }

@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AppTerminationNotification', 'model/ApplicationContextState', 'model/InlineNotification', 'model/ProblemDetails'], factory);
+    define(['ApiClient', 'model/AppTerminationNotification', 'model/ApplicationContextState', 'model/InlineNotification', 'model/ProblemDetails', 'model/ServiceAvailabilityNotification'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationNotification'), require('../model/ApplicationContextState'), require('../model/InlineNotification'), require('../model/ProblemDetails'));
+    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationNotification'), require('../model/ApplicationContextState'), require('../model/InlineNotification'), require('../model/ProblemDetails'), require('../model/ServiceAvailabilityNotification'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationNotification, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.InlineNotification, root.MecDemo3Api.ProblemDetails);
+    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationNotification, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.InlineNotification, root.MecDemo3Api.ProblemDetails, root.MecDemo3Api.ServiceAvailabilityNotification);
   }
-}(this, function(ApiClient, AppTerminationNotification, ApplicationContextState, InlineNotification, ProblemDetails) {
+}(this, function(ApiClient, AppTerminationNotification, ApplicationContextState, InlineNotification, ProblemDetails, ServiceAvailabilityNotification) {
   'use strict';
 
   /**
@@ -206,10 +206,13 @@
     /**
      * Callback endpoint for MEC011 Notifications
      * Callback endpoint for MEC011 Notifications
+     * @param {Object} opts Optional parameters
+     * @param {module:model/ServiceAvailabilityNotification} opts.body 
      * @param {module:api/NotificationApi~serviceAvailNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.serviceAvailNotificationCallback = function(callback) {
-      var postBody = null;
+    this.serviceAvailNotificationCallback = function(opts, callback) {
+      opts = opts || {};
+      var postBody = opts['body'];
 
 
       var pathParams = {
@@ -224,7 +227,7 @@
       };
 
       var authNames = [];
-      var contentTypes = [];
+      var contentTypes = ['application/json'];
       var accepts = [];
       var returnType = null;
 

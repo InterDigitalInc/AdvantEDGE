@@ -32,6 +32,6 @@ type ServiceAvailabilityNotificationServiceReferences struct {
 	SerInstanceId string `json:"serInstanceId"`
 
 	State *ServiceState `json:"state"`
-	// Type of the change. Valid values:  ADDED: The service was newly added.   REMOVED: The service was removed.   STATE_CHANGED: Only the state of the service was changed.   ATTRIBUTES_CHANGED: At least one attribute of the service other than state was changed. The change may or may not include changing the state.
-	ChangeType string `json:"changeType"`
+
+	ChangeType *ServiceAvailabilityNotificationChangeType `json:"changeType"`
 }

@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/LinkType1', 'model/LinkTypeConfirmTermination'], factory);
+    define(['ApiClient', 'model/LinkType2', 'model/LinkTypeConfirmTermination'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./LinkType1'), require('./LinkTypeConfirmTermination'));
+    module.exports = factory(require('../ApiClient'), require('./LinkType2'), require('./LinkTypeConfirmTermination'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.AppTerminationNotificationLinks = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType1, root.MecDemo3Api.LinkTypeConfirmTermination);
+    root.MecDemo3Api.AppTerminationNotificationLinks = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.LinkType2, root.MecDemo3Api.LinkTypeConfirmTermination);
   }
-}(this, function(ApiClient, LinkType1, LinkTypeConfirmTermination) {
+}(this, function(ApiClient, LinkType2, LinkTypeConfirmTermination) {
   'use strict';
 
   /**
@@ -55,7 +55,7 @@
    * Object containing hyperlinks related to the resource.
    * @alias module:model/AppTerminationNotificationLinks
    * @class
-   * @param subscription {module:model/LinkType1} 
+   * @param subscription {module:model/LinkType2} 
    */
   var exports = function(subscription) {
     this.subscription = subscription;
@@ -72,7 +72,7 @@
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('subscription'))
-        obj.subscription = LinkType1.constructFromObject(data['subscription']);
+        obj.subscription = LinkType2.constructFromObject(data['subscription']);
       if (data.hasOwnProperty('confirmTermination'))
         obj.confirmTermination = LinkTypeConfirmTermination.constructFromObject(data['confirmTermination']);
     }
@@ -80,7 +80,7 @@
   }
 
   /**
-   * @member {module:model/LinkType1} subscription
+   * @member {module:model/LinkType2} subscription
    */
   exports.prototype.subscription = undefined;
 

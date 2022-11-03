@@ -200,6 +200,11 @@ paths:
       summary: Callback endpoint for MEC011 Notifications
       description: Callback endpoint for MEC011 Notifications
       operationId: ServiceAvailNotificationCallback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAvailabilityNotification'
       responses:
         "200":
           description: "Expected responses from callback consumer, if it accepts the\
@@ -647,6 +652,60 @@ components:
           type: string
           description: A URI reference according to IETF RFC 3986 that identifies
             the problem type
+    ServiceAvailabilityNotification:
+      required:
+      - _links
+      - notificationType
+      - serviceReferences
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to SerAvailabilityNotification.
+        serviceReferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAvailabilityNotification_serviceReferences'
+        _links:
+          $ref: '#/components/schemas/Subscription'
+      description: This type represents the service availability information.
+    LinkType_1:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URI referring to a resource
+          format: uri
+          example: /mecSerMgmtApi/example
+      description: This type represents a type of link and may be referenced from
+        data structures
+    ServiceState_1:
+      type: string
+      description: This enumeration defines the possible states of a service.
+      enum:
+      - ACTIVE
+      - INACTIVE
+      - SUSPENDED
+    ServiceAvailabilityNotificationChangeType:
+      type: string
+      description: "Type of the change. Valid values:\n ADDED: The service was newly\
+        \ added.\n  REMOVED: The service was removed.\n  STATE_CHANGED: Only the state\
+        \ of the service was changed.\n  ATTRIBUTES_CHANGED: At least one attribute\
+        \ of the service other than state was changed. The change may or may not include\
+        \ changing the state."
+      enum:
+      - ADDED
+      - REMOVED
+      - STATE_CHANGED
+      - ATTRIBUTES_CHANGED
+    Subscription:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType_1'
+      description: A link to the related subscription
     AppTerminationNotification:
       title: AppTerminationNotification
       required:
@@ -686,11 +745,11 @@ components:
       type: object
       properties:
         subscription:
-          $ref: '#/components/schemas/LinkType_1'
+          $ref: '#/components/schemas/LinkType_2'
         confirmTermination:
           $ref: '#/components/schemas/LinkTypeConfirmTermination'
       description: Object containing hyperlinks related to the resource.
-    LinkType_1:
+    LinkType_2:
       title: LinkType
       type: object
       properties:
@@ -720,3 +779,22 @@ components:
           description: Identifiers of the target application instance.
         commInterface:
           $ref: '#/components/schemas/CommunicationInterface'
+    ServiceAvailabilityNotification_serviceReferences:
+      required:
+      - changeType
+      - serInstanceId
+      - serName
+      - state
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/LinkType_1'
+        serName:
+          $ref: '#/components/schemas/SerName'
+        serInstanceId:
+          $ref: '#/components/schemas/SerInstanceId'
+        state:
+          $ref: '#/components/schemas/ServiceState_1'
+        changeType:
+          $ref: '#/components/schemas/ServiceAvailabilityNotificationChangeType'
+      description: List of links to services whose availability has changed.

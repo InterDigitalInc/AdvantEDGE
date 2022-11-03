@@ -28,7 +28,7 @@ paths:
   /queries/adjacent_app_instances:
     get:
       tags:
-      - amsi
+      - unsupported
       summary: 'Retrieve information about this subscription.'
       description: Retrieve information about this subscription.
       operationId: adj_app_instGET
@@ -896,7 +896,7 @@ paths:
   /uri_provided_by_subscriber:
     post:
       tags:
-      - amsi
+      - unsupported
       summary: delivers a notification from the AMS resource to the subscriber
       description: delivers a notification from the AMS resource to the subscriber
       operationId: notificationPOST

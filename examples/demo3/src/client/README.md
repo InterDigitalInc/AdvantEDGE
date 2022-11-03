@@ -153,6 +153,7 @@ Class | Method | HTTP request | Description
  - [MecDemo3Api.Link](docs/Link.md)
  - [MecDemo3Api.LinkType](docs/LinkType.md)
  - [MecDemo3Api.LinkType1](docs/LinkType1.md)
+ - [MecDemo3Api.LinkType2](docs/LinkType2.md)
  - [MecDemo3Api.LinkTypeConfirmTermination](docs/LinkTypeConfirmTermination.md)
  - [MecDemo3Api.LocalityType](docs/LocalityType.md)
  - [MecDemo3Api.MobilityProcedureNotification](docs/MobilityProcedureNotification.md)
@@ -163,7 +164,12 @@ Class | Method | HTTP request | Description
  - [MecDemo3Api.ProblemDetails](docs/ProblemDetails.md)
  - [MecDemo3Api.SerInstanceId](docs/SerInstanceId.md)
  - [MecDemo3Api.SerName](docs/SerName.md)
+ - [MecDemo3Api.ServiceAvailabilityNotification](docs/ServiceAvailabilityNotification.md)
+ - [MecDemo3Api.ServiceAvailabilityNotificationChangeType](docs/ServiceAvailabilityNotificationChangeType.md)
+ - [MecDemo3Api.ServiceAvailabilityNotificationServiceReferences](docs/ServiceAvailabilityNotificationServiceReferences.md)
  - [MecDemo3Api.ServiceState](docs/ServiceState.md)
+ - [MecDemo3Api.ServiceState1](docs/ServiceState1.md)
+ - [MecDemo3Api.Subscription](docs/Subscription.md)
  - [MecDemo3Api.TimeStamp](docs/TimeStamp.md)
 
 
