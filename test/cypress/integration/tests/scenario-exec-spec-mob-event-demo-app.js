@@ -261,7 +261,7 @@ describe('Scenario Execution', function () {
     click(meep.EXEC_BTN_NEW_SANDBOX);
     type(meep.MEEP_DLG_NEW_SANDBOX_NAME, name);
     click(meep.MEEP_DLG_NEW_SANDBOX, 'Ok');
-    cy.wait(15000);
+    cy.wait(30000);
     verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
@@ -473,5 +473,3 @@ describe('Scenario Execution', function () {
   }
 
 });
-
-

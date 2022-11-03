@@ -63,5 +63,3 @@ spec:
       tolerations:
 {{toYaml .Values.deployment.tolerations | indent 8}}
 {{- end}}
-
-
