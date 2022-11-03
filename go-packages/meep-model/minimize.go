@@ -22,8 +22,14 @@ import (
 
 // minimizeScenario - Minimizes scenario
 func minimizeScenario(scenario *dataModel.Scenario) {
-	if scenario != nil && scenario.Deployment != nil {
-		deployment := scenario.Deployment
+	if scenario != nil {
+		minimizeDeployment(scenario.Deployment)
+	}
+}
+
+// minimizeDeployment - Minimizes deployment
+func minimizeDeployment(deployment *dataModel.Deployment) {
+	if deployment != nil {
 		for i := range deployment.Domains {
 			domain := &deployment.Domains[i]
 			minimizeDomain(domain)

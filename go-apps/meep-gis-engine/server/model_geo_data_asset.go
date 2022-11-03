@@ -39,6 +39,10 @@ type GeoDataAsset struct {
 	// Speed of movement along path in m/s
 	Velocity float32 `json:"velocity,omitempty"`
 
+	D2dInRange []string `json:"d2dInRange,omitempty"`
+
+	PoaInRange []string `json:"poaInRange,omitempty"`
+
 	// Name of geospatial asset
 	AssetName string `json:"assetName"`
 

@@ -95,6 +95,8 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.d2dInRange = [""];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.poaInRange = [""];
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;

@@ -72,7 +72,8 @@ import {
   setElemFieldErr,
   FIELD_DN_NAME,
   FIELD_DN_ECSP,
-  FIELD_DN_LADN
+  FIELD_DN_LADN,
+  FIELD_D2D_RADIUS
 } from '../util/elem-utils';
 
 import 'leaflet/dist/images/marker-shadow.png';
@@ -100,6 +101,7 @@ const UE_OPACITY = 1.0;
 const UE_OPACITY_BACKGROUND = 0.3;
 const UE_PATH_OPACITY = 0.5;
 const UE_PATH_OPACITY_BACKGROUND = 0.3;
+const UE_RANGE_OPACITY = 0.05;
 
 const POA_ICON = 'ion-connection-bars';
 const POA_ICON_WIFI = 'ion-wifi';
@@ -269,12 +271,12 @@ class IDCMap extends Component {
     var lng = (cfg && cfg.center) ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
     var zoom = (cfg && cfg.zoom) ? cfg.zoom : DEFAULT_MAP_ZOOM;
     var baselayerName = (cfg && cfg.baselayerName) ? cfg.baselayerName : DEFAULT_MAP_STYLE;
- 
+
     // Map bounds
     const corner1 = L.latLng(-90, -180);
     const corner2 = L.latLng(90, 180);
     const bounds = L.latLngBounds(corner1, corner2);
-    
+
     // Create Map instance
     var domNode = ReactDOM.findDOMNode(this);
     this.map = L.map(domNode, {
@@ -303,6 +305,7 @@ class IDCMap extends Component {
 
     // Create Layer Group Overlays
     this.ueOverlay = L.layerGroup();
+    this.ueRangeOverlay = L.layerGroup();
     this.uePathOverlay = L.layerGroup();
     this.poaOverlay = L.layerGroup();
     this.poaRangeOverlay = L.layerGroup();
@@ -312,7 +315,8 @@ class IDCMap extends Component {
       'terminal-path': this.uePathOverlay,
       'poa': this.poaOverlay,
       'poa-coverage': this.poaRangeOverlay,
-      'compute': this.computeOverlay
+      'compute': this.computeOverlay,
+      'd2d-coverage': this.ueRangeOverlay
     };
 
     // Create Layer Controller
@@ -324,6 +328,7 @@ class IDCMap extends Component {
     // Initialize map & layers
     this.layerCtrl.addTo(this.map);
     this.ueOverlay.addTo(this.map);
+    this.ueRangeOverlay.addTo(this.map);
     this.uePathOverlay.addTo(this.map);
     this.poaOverlay.addTo(this.map);
     this.poaRangeOverlay.addTo(this.map);
@@ -331,7 +336,7 @@ class IDCMap extends Component {
 
     // Set default base layer
     var baselayer = baselayers[baselayerName] ? baselayers[baselayerName] : positronBaselayer;
-    baselayer.addTo(this.map);    
+    baselayer.addTo(this.map);
 
     // Handlers
     var _this = this;
@@ -392,6 +397,21 @@ class IDCMap extends Component {
     this.updateCfg({baselayerName: event.name});
   }
 
+  getD2dRadius(scenarioName) {
+    var radius = 0;
+    var table = this.getTable();
+    if (table && table.entries) {
+      radius = getElemFieldVal(table.entries[scenarioName], FIELD_D2D_RADIUS);
+    }
+    return radius;
+  }
+
+  isD2dEnabled(name) {
+    if (this.getWirelessTypePrio(name) && this.getWirelessTypePrio(name).includes('d2d')) {
+      return true;
+    }
+    return false;
+  }
   getUePoa(ue) {
     var poa = null;
     var table = this.getTable();
@@ -459,9 +479,9 @@ class IDCMap extends Component {
   }
 
   getUeColor(ue) {
-    // var color = this.getZoneColor(this.getUeZone(ue));
     var color = undefined;
-    if (!this.isConnected(ue)) {
+    var connected = this.isConnected(ue.id) || (ue.d2dInRange && ue.d2dInRange.length > 0);
+    if (!connected) {
       color = DISCONNECTED_COLOR;
     }
     return color ? color : UE_COLOR_DEFAULT;
@@ -546,14 +566,19 @@ class IDCMap extends Component {
   setUeMarkerStyle(marker) {
     if (marker._icon) {
       // Set marker color
-      var color = tinycolor(this.getUeColor(marker.options.meep.ue.id));
+      var color = tinycolor(this.getUeColor(marker.options.meep.ue));
       var markerStyle = marker._icon.querySelector('.custom-marker-pin').style;
       markerStyle['background'] = color;
       markerStyle['border-color'] = color.darken(10);
 
+      // Set UE range color
+      if (this.isD2dEnabled(marker.options.meep.ue.id)) {
+        marker.options.meep.ue.range.setStyle({color: color});
+      }
+
       // Set marker icon
       var iconDiv = marker._icon.querySelector('.custom-marker-icon');
-      this.setUeIcon(iconDiv, marker.options.meep.ue.id);   
+      this.setUeIcon(iconDiv, marker.options.meep.ue.id);
     }
   }
 
@@ -596,6 +621,8 @@ class IDCMap extends Component {
   // UE Marker Event Handler
   updateUePopup(marker) {
     var table = this.getTable();
+    var d2dInRange = false;
+    var poaInRange = false;
     if (marker && table && table.entries) {
       var latlng = marker.getLatLng();
       var hasPath = (marker.options.meep.ue.path) ? true : false;
@@ -605,30 +632,44 @@ class IDCMap extends Component {
         msg += 'mac: ' + ownMac + '<br>';
       }
       msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
-
+      if (this.isD2dEnabled(marker.options.meep.ue.id)) {
+        if (marker.options.meep.ue.d2dInRange) {
+          var d2dConnType = 'd2d: ' + marker.options.meep.ue.d2dInRange + '<br>';
+          d2dInRange = true;
+        }
+      }
       if (this.isConnected(marker.options.meep.ue.id)) {
         var poa = this.getUePoa(marker.options.meep.ue.id);
         var poaType = getElemFieldVal(table.entries[poa], FIELD_TYPE);
-        msg += 'poa: ' + poa + '<br>';
+        var poaConnType = 'poa: ' + poa + '<br>';
+        poaInRange = true;
         switch(poaType) {
         case ELEMENT_TYPE_POA_4G:
-          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_CELL_ID) + '<br>';
+          poaConnType += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_CELL_ID) + '<br>';
           break;
         case ELEMENT_TYPE_POA_5G:
-          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
+          poaConnType += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
           break;
         case ELEMENT_TYPE_POA_WIFI:
-          msg += 'poa mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
+          poaConnType += 'poa mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
           break;
         default:
           break;
         }
-
-        msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
-      } else {
-        msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
+        poaConnType += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
       }
 
+      if (!d2dInRange && !poaInRange) {
+        msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
+      } else if (poaInRange && !d2dInRange) {
+        msg += 'd2d: none <br>';
+        msg += poaConnType;
+      } else if (d2dInRange && !poaInRange) {
+        msg += d2dConnType;
+        msg += 'poa: none <br>';
+      } else if (d2dInRange && poaInRange) {
+        msg += d2dConnType + poaConnType;
+      }
       msg += 'wireless: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
       msg += 'location: ' + this.getLocationStr(latlng);
       marker.getPopup().setContent(msg);
@@ -663,7 +704,7 @@ class IDCMap extends Component {
   updateComputePopup(marker) {
     var table = this.getTable();
     if (marker && table && table.entries) {
-      // Retrieve state 
+      // Retrieve state
       const networkName = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_NAME);
       const edgeProvider = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_ECSP);
       const ladn = getElemFieldVal(table.entries[marker.options.meep.compute.id], FIELD_DN_LADN);
@@ -735,7 +776,18 @@ class IDCMap extends Component {
         popupAnchor: [0, -36]
       });
 
-      // Create new UE marker
+      // Create new UE marker & circle
+      var c = L.circle(latlng, {
+        meep: {
+          range: {
+            id: ue.assetName
+          }
+        },
+        radius: (this.props.type === TYPE_CFG) ?  (this.isD2dEnabled(ue.assetName) ? this.getD2dRadius(this.props.cfgScenarioName): 0) : ue.radius || 0,
+        opacity: UE_RANGE_OPACITY,
+        pmIgnore: true
+      });
+
       var m = L.marker(latlng, {
         meep: {
           ue: {
@@ -743,7 +795,9 @@ class IDCMap extends Component {
             path: p,
             eopMode: ue.eopMode,
             velocity: ue.velocity,
-            connected: true
+            connected: true,
+            d2dInRange: ue.d2dInRange,
+            range: c
           }
         },
         icon: markerIcon,
@@ -765,15 +819,21 @@ class IDCMap extends Component {
 
       // Add to map overlay
       m.addTo(this.ueOverlay);
+      c.addTo(this.ueRangeOverlay);
       if (p) {
         p.addTo(this.uePathOverlay);
       }
 
     } else {
-      // Update UE position, path, mode & velocity
+      // Update UE position, path, mode, velocity, range & d2dInRange
       existingMarker.setLatLng(latlng);
       existingMarker.options.meep.ue.eopMode = ue.eopMode;
       existingMarker.options.meep.ue.velocity = ue.velocity;
+      if (Number.isInteger(ue.radius) && ue.radius >= 0) {
+        existingMarker.options.meep.ue.range.setLatLng(latlng);
+        existingMarker.options.meep.ue.range.setRadius(ue.radius);
+        existingMarker.options.meep.ue.d2dInRange = ue.d2dInRange;
+      }
 
       // Update, create or remove path
       if (pathLatLngs) {
@@ -804,7 +864,7 @@ class IDCMap extends Component {
       if (this.props.type === TYPE_CFG) {
         this.setUeMarkerStyle(existingMarker);
       } else {
-        var connected = this.isConnected(ue.assetName);
+        var connected = this.isConnected(ue.id) || (ue.d2dInRange && ue.d2dInRange.length > 0);
         if (existingMarker.options.meep.ue.connected !== connected) {
           this.setUeMarkerStyle(existingMarker);
           existingMarker.options.meep.ue.connected = connected;
@@ -885,8 +945,8 @@ class IDCMap extends Component {
     } else {
       // Update POA position & range
       existingMarker.setLatLng(latlng);
-      existingMarker.options.meep.poa.range.setLatLng(latlng);
       if (Number.isInteger(poa.radius) && poa.radius >= 0) {
+        existingMarker.options.meep.poa.range.setLatLng(latlng);
         existingMarker.options.meep.poa.range.setRadius(poa.radius);
       }
 
@@ -1048,12 +1108,12 @@ class IDCMap extends Component {
       return;
     }
 
-    // Get copy of map data 
+    // Get copy of map data
     var map = deepCopy(this.getMap(this.props));
     if (!map) {
       return;
     }
-    
+
     // Update target marker geodata using configured element geodata, if any
     if (this.props.type === TYPE_CFG) {
       this.updateTargetMarker(map);
@@ -1111,8 +1171,9 @@ class IDCMap extends Component {
           marker.options.meep.ue.path.removeFrom(this.uePathOverlay);
         }
         marker.removeFrom(this.ueOverlay);
+        marker.removeFrom(this.ueRangeOverlay);
       }
-    });   
+    });
   }
 
   onEditModeToggle(e) {
@@ -1288,13 +1349,13 @@ class IDCMap extends Component {
     // Disable draw, edit & drag modes if controls disabled
     if (!drawMarkerEnabled) {
       this.map.pm.disableDraw('Marker');
-    } 
+    }
     if (!drawPolylineEnabled) {
       this.map.pm.disableDraw('Line');
     }
     if (!editModeEnabled) {
       if (this.map.pm.globalEditEnabled()) {
-        this.map.pm.disableGlobalEditMode(); 
+        this.map.pm.disableGlobalEditMode();
       }
     }
     if (!dragModeEnabled) {
