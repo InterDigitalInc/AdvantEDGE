@@ -82,93 +82,6 @@ func TestNewTrafficMgr(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func TestTrafficMgrCreateCategoryTable(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	// Create Connector
-	fmt.Println("Create valid VIS Asset Manager")
-	tm, err := NewTrafficMgr(tmName, tmNamespace, tmDBUser, tmDBPwd, tmDBHost, tmDBPort)
-	if err != nil || tm == nil {
-		t.Fatalf("Failed to create VIS Asset Manager")
-	}
-
-	// Cleanup
-	_ = tm.DeleteTables()
-
-	// Create tables
-	fmt.Println("Create Tables")
-	err = tm.CreateTables()
-	if err != nil {
-		t.Fatalf("Failed to create tables")
-	}
-
-	// Make sure Category don't exist
-	fmt.Println("Verify no Category present")
-	catMap, err := tm.GetAllCategoryLoad()
-	if err != nil {
-		t.Fatalf("Failed to get all Category")
-	}
-	if len(catMap) != 0 {
-		t.Fatalf("No Category should be present")
-	}
-
-	// Add Invalid Category
-	fmt.Println("Create Invalid Category")
-	catData := map[string]int32{
-		FieldZeroToThree:           zeroToThree1,
-		FieldThreeToSix:            threeToSix1,
-		FieldSixToNine:             sixToNine1,
-		FieldNineToTwelve:          nineToTwelve1,
-		FieldTwelveToFifteen:       twelveToFifteen1,
-		FieldFifteenToEighteen:     fifteenToEighteen1,
-		FieldEighteenToTwentyOne:   eighteenToTwentyOne1,
-		FieldTwentyOneToTwentyFour: twentyOneToTwentyFour1,
-	}
-	err = tm.CreateCategoryLoad("", catData) // Invalid category field value
-	if err == nil {
-		t.Fatalf("Category creation should have failed")
-	}
-
-	// Add Category & Validate successfully added
-	catData = map[string]int32{
-		FieldZeroToThree:           zeroToThree1,
-		FieldThreeToSix:            threeToSix1,
-		FieldSixToNine:             sixToNine1,
-		FieldNineToTwelve:          nineToTwelve1,
-		FieldTwelveToFifteen:       twelveToFifteen1,
-		FieldFifteenToEighteen:     fifteenToEighteen1,
-		FieldEighteenToTwentyOne:   eighteenToTwentyOne1,
-		FieldTwentyOneToTwentyFour: twentyOneToTwentyFour1,
-	}
-	err = tm.CreateCategoryLoad(category1, catData)
-	if err != nil {
-		t.Fatalf("Failed to create asset: " + err.Error())
-	}
-	catLoad, err := tm.GetCategoryLoad(category1)
-	if err != nil || catLoad == nil {
-		t.Fatalf("Failed to get Category")
-	}
-	// Validate
-	if !validateCategory(catLoad, category1, zeroToThree1, threeToSix1, sixToNine1, nineToTwelve1, twelveToFifteen1, fifteenToEighteen1, eighteenToTwentyOne1, twentyOneToTwentyFour1) {
-		t.Fatalf("Category validation failed")
-	}
-	// Delete all & validate updatespoaMap
-
-	fmt.Println("Delete all & validate updates")
-	// TODO
-	err = tm.DeleteAllCategory()
-	if err != nil {
-		t.Fatalf("Failed to delete all Category")
-	}
-	catMap, err = tm.GetAllCategoryLoad()
-	if err != nil || len(catMap) != 0 {
-		t.Fatalf("Category should no longer exist")
-	}
-
-	// t.Fatalf("DONE")
-}
-
 func TestTrafficMgrCreateTrafficTable(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -227,9 +140,9 @@ func TestTrafficMgrCreateTrafficTable(t *testing.T) {
 		FieldEighteenToTwentyOne:   eighteenToTwentyOne1,
 		FieldTwentyOneToTwentyFour: twentyOneToTwentyFour1,
 	}
-	err = tm.CreateCategoryLoad(category1, catData)
-	if err != nil {
-		t.Fatalf("Failed to create asset: " + err.Error())
+	categoryLoads[category1] = &CategoryLoads{
+		Category: category1,
+		Loads:    catData,
 	}
 	// 2. Add Traffic
 	err = tm.CreatePoaLoad(poaName1, category1)
@@ -242,7 +155,17 @@ func TestTrafficMgrCreateTrafficTable(t *testing.T) {
 		t.Fatalf("Failed to get Traffic")
 	}
 	// Validate
-	if !validatePoaLoads(trafficMap, poaName1, category1, zeroToThree1, threeToSix1, sixToNine1, nineToTwelve1, twelveToFifteen1, fifteenToEighteen1, eighteenToTwentyOne1, twentyOneToTwentyFour1) {
+	loads := map[string]int32{
+		FieldZeroToThree:           zeroToThree1,
+		FieldThreeToSix:            threeToSix1,
+		FieldSixToNine:             sixToNine1,
+		FieldNineToTwelve:          nineToTwelve1,
+		FieldTwelveToFifteen:       twelveToFifteen1,
+		FieldFifteenToEighteen:     fifteenToEighteen1,
+		FieldEighteenToTwentyOne:   eighteenToTwentyOne1,
+		FieldTwentyOneToTwentyFour: twentyOneToTwentyFour1,
+	}
+	if !validatePoaLoads(trafficMap, poaName1, category1, loads) {
 		t.Fatalf("Category validation failed")
 	}
 
@@ -355,6 +278,7 @@ func TestPredictQosPerTrafficLoad(t *testing.T) {
 	_ = tm.CreateTables()
 
 	// Add Traffic & Validate successfully added
+	// Create category load
 	catData := map[string]int32{
 		FieldZeroToThree:           zeroToThree1,
 		FieldThreeToSix:            threeToSix1,
@@ -365,7 +289,10 @@ func TestPredictQosPerTrafficLoad(t *testing.T) {
 		FieldEighteenToTwentyOne:   eighteenToTwentyOne1,
 		FieldTwentyOneToTwentyFour: twentyOneToTwentyFour1,
 	}
-	_ = tm.CreateCategoryLoad(category1, catData)
+	categoryLoads[category1] = &CategoryLoads{
+		Category: category1,
+		Loads:    catData,
+	}
 	_ = tm.CreatePoaLoad(poaName1, category1)
 	fmt.Println("Tables initialized")
 
@@ -409,52 +336,7 @@ func TestPredictQosPerTrafficLoad(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func validateCategory(categoryLoads *CategoryLoads, category string, zeroToThree int32, threeToSix int32, sixToNine int32, nineToTwelve int32, twelveToFifteen int32, fifteenToEighteen int32, eighteenToTwentyOne int32, twentyOneToTwentyFour int32) bool {
-	if categoryLoads == nil {
-		fmt.Println("categoryLoads == nil")
-		return false
-	}
-	if categoryLoads.Category != category {
-		fmt.Println("CategoryLoads.Category != category")
-		return false
-	}
-	if categoryLoads.ZeroToThree != zeroToThree {
-		fmt.Println("CategoryLoads.ZeroToThree != zeroToThree")
-		return false
-	}
-	if categoryLoads.ThreeToSix != threeToSix {
-		fmt.Println("CategoryLoads.ThreeToSix != threeToSix")
-		return false
-	}
-	if categoryLoads.SixToNine != sixToNine {
-		fmt.Println("CategoryLoads.SixToNine != sixToNine")
-		return false
-	}
-	if categoryLoads.NineToTwelve != nineToTwelve {
-		fmt.Println("CategoryLoads.NineToTwelve != nineToTwelve")
-		return false
-	}
-	if categoryLoads.EighteenToTwentyOne != eighteenToTwentyOne {
-		fmt.Println("CategoryLoads.EighteenToTwentyOne != eighteenToTwentyOne")
-		return false
-	}
-	if categoryLoads.FifteenToEighteen != fifteenToEighteen {
-		fmt.Println("CategoryLoads.FifteenToEighteen != fifteenToEighteen")
-		return false
-	}
-	if categoryLoads.FifteenToEighteen != fifteenToEighteen {
-		fmt.Println("CategoryLoads.FifteenToEighteen != fifteenToEighteen")
-		return false
-	}
-	if categoryLoads.TwentyOneToTwentyFour != twentyOneToTwentyFour {
-		fmt.Println("CategoryLoads.TwentyOneToTwentyFour != twentyOneToTwentyFour")
-		return false
-	}
-
-	return true
-}
-
-func validatePoaLoads(poaLoads *PoaLoads, poaName string, category string, zeroToThree int32, threeToSix int32, sixToNine int32, nineToTwelve int32, twelveToFifteen int32, fifteenToEighteen int32, eighteenToTwentyOne int32, twentyOneToTwentyFour int32) bool {
+func validatePoaLoads(poaLoads *PoaLoads, poaName string, category string, loads map[string]int32) bool {
 	if poaLoads == nil {
 		fmt.Println("poaLoads == nil")
 		return false
@@ -467,39 +349,13 @@ func validatePoaLoads(poaLoads *PoaLoads, poaName string, category string, zeroT
 		fmt.Println("PoaLoads.Category != category")
 		return false
 	}
-	if poaLoads.ZeroToThree != zeroToThree {
-		fmt.Println("PoaLoads.ZeroToThree != zeroToThree")
-		return false
+	for key, load := range loads {
+		curLoad, found := poaLoads.Loads[key]
+		if !found || load != curLoad {
+			fmt.Println("poaLoads.Loads[" + key + "] not valid")
+			return false
+		}
 	}
-	if poaLoads.ThreeToSix != threeToSix {
-		fmt.Println("PoaLoads.ThreeToSix != threeToSix")
-		return false
-	}
-	if poaLoads.SixToNine != sixToNine {
-		fmt.Println("PoaLoads.SixToNine != sixToNine")
-		return false
-	}
-	if poaLoads.NineToTwelve != nineToTwelve {
-		fmt.Println("PoaLoads.NineToTwelve != nineToTwelve")
-		return false
-	}
-	if poaLoads.EighteenToTwentyOne != eighteenToTwentyOne {
-		fmt.Println("PoaLoads.EighteenToTwentyOne != eighteenToTwentyOne")
-		return false
-	}
-	if poaLoads.FifteenToEighteen != fifteenToEighteen {
-		fmt.Println("PoaLoads.FifteenToEighteen != fifteenToEighteen")
-		return false
-	}
-	if poaLoads.FifteenToEighteen != fifteenToEighteen {
-		fmt.Println("PoaLoads.FifteenToEighteen != fifteenToEighteen")
-		return false
-	}
-	if poaLoads.TwentyOneToTwentyFour != twentyOneToTwentyFour {
-		fmt.Println("PoaLoads.TwentyOneToTwentyFour != twentyOneToTwentyFour")
-		return false
-	}
-
 	return true
 }
 
