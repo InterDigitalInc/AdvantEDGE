@@ -96,7 +96,7 @@ func NewMetricStore(name string, namespace string, influxAddr string, redisAddr 
 	}
 
 	// Set store to use
-	err = ms.SetStore(name)
+	err = ms.SetStore(name, namespace, true)
 	if err != nil {
 		log.Error("Failed to set store: ", err.Error())
 		return nil, err
@@ -133,16 +133,21 @@ func (ms *MetricStore) connectInfluxDB(addr string) error {
 }
 
 // SetStore -
-func (ms *MetricStore) SetStore(name string) error {
+func (ms *MetricStore) SetStore(name string, namespace string, createDb bool) error {
 	var storeName string
 
 	if name != "" {
+		// Use default namespace if none provided
+		if namespace == "" {
+			namespace = ms.namespace
+		}
+
 		// Create store name using format: '<namespace>_<name>'
 		// Replace dashes with underscores
-		storeName = strings.Replace(ms.namespace+"_"+name, "-", "_", -1)
+		storeName = strings.Replace(namespace+"_"+name, "-", "_", -1)
 
 		// Create new DB if necessary
-		if ms.influxClient != nil {
+		if createDb && ms.influxClient != nil {
 			q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
 			_, err := (*ms.influxClient).Query(q)
 			if err != nil {

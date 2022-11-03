@@ -123,6 +123,20 @@ var routes = Routes{
 	},
 
 	Route{
+		"PostSeqQuery",
+		strings.ToUpper("Post"),
+		"/metrics/v2/metrics/query/seq",
+		v2.PostSeqQuery,
+	},
+
+	Route{
+		"PostDataflowQuery",
+		strings.ToUpper("Post"),
+		"/metrics/v2/metrics/query/dataflow",
+		v2.PostDataflowQuery,
+	},
+
+	Route{
 		"PostNetworkQuery",
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/query/network",

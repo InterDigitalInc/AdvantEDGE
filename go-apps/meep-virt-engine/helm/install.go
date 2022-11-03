@@ -63,13 +63,15 @@ func install(chart Chart) error {
 	var cmd *exec.Cmd
 	if strings.Trim(chart.ValuesFile, " ") == "" {
 		codecovLocation := strings.TrimSpace(os.Getenv("MEEP_CODECOV_LOCATION")) + chart.ReleaseName
+		codecovEnabled := strings.TrimSpace(os.Getenv("MEEP_CODECOV"))
 		cmd = exec.Command("helm", "install", chart.ReleaseName,
 			"--namespace", chart.Namespace, "--create-namespace",
 			"--set", "nameOverride="+chart.Name,
 			"--set", "fullnameOverride="+chart.Name,
 			chart.Location, "--replace", "--disable-openapi-validation",
-			"--set", "codecov.enabled="+strings.TrimSpace(os.Getenv("MEEP_CODECOV")),
-			"--set", "codecov.location="+codecovLocation)
+			"--set", "codecov.enabled="+codecovEnabled,
+			"--set", "codecov.location="+codecovLocation,
+			"--set", "image.env.MEEP_CODECOV="+codecovEnabled)
 	} else {
 		cmd = exec.Command("helm", "install", chart.ReleaseName,
 			"--namespace", chart.Namespace, "--create-namespace",

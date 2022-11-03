@@ -42,7 +42,7 @@ const (
 	REGEX_NAME               = `^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$`
 	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9A-Z.]*)?[_a-z0-9A-Z])+$`
 	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9A-Z]*)?[_a-f0-9A-F])+$`
-	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
+	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(d2d|wifi|5g|4g|other))+$`
 	REGEX_PATH               = `[\^#%&$\*<>\?\{\|\} ]+`
 	REGEX_DNN                = `^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$`
 	REGEX_ECSP               = `^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$`

@@ -274,6 +274,10 @@ func TestValidateWirelessTypeList(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Wireless Type should be invalid")
 	}
+	err = validateWirelessTypeList("d2d")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	err = validateWirelessTypeList("wifi")
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -290,11 +294,11 @@ func TestValidateWirelessTypeList(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	err = validateWirelessTypeList("wifi,5g,4g,other")
+	err = validateWirelessTypeList("d2d,wifi,5g,4g,other")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	err = validateWirelessTypeList("wifi, 4g,   5g")
+	err = validateWirelessTypeList("d2d,   wifi, 4g,   5g")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

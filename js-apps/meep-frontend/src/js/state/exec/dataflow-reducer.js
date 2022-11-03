@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) 2022  InterDigital Communications, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { updateObject } from '../../util/object-util';
+
+const initialState = {
+  metrics: [],
+  chart: ''
+};
+
+// EXEC_CHANGE_DATAFLOW
+const EXEC_CHANGE_DATAFLOW = 'EXEC_CHANGE_DATAFLOW';
+export function execChangeDataflow(dataflow) {
+  return {
+    type: EXEC_CHANGE_DATAFLOW,
+    payload: dataflow
+  };
+}
+
+// EXEC_CHANGE_DATAFLOW_METRICS
+const EXEC_CHANGE_DATAFLOW_METRICS = 'EXEC_CHANGE_DATAFLOW_METRICS';
+export function execChangeDataflowMetrics(metrics) {
+  return {
+    type: EXEC_CHANGE_DATAFLOW_METRICS,
+    payload: metrics
+  };
+}
+
+// EXEC_CHANGE_DATAFLOW_CHART
+const EXEC_CHANGE_DATAFLOW_CHART = 'EXEC_CHANGE_DATAFLOW_CHART';
+export function execChangeDataflowChart(chart) {
+  return {
+    type: EXEC_CHANGE_DATAFLOW_CHART,
+    payload: chart
+  };
+}
+
+export function execDataflowReducer(state = initialState, action) {
+  switch (action.type) {
+  case EXEC_CHANGE_DATAFLOW:
+    return action.payload;
+  case EXEC_CHANGE_DATAFLOW_METRICS:
+    return updateObject(state, { metrics: action.payload });
+  case EXEC_CHANGE_DATAFLOW_CHART:
+    return updateObject(state, { chart: action.payload });
+  default:
+    return state;
+  }
+}

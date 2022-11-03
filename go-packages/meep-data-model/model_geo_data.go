@@ -32,5 +32,7 @@ type GeoData struct {
 	// End-of-Path mode: <li>LOOP: When path endpoint is reached, start over from the beginning <li>REVERSE: When path endpoint is reached, return on the reverse path
 	EopMode string `json:"eopMode,omitempty"`
 	// Speed of movement along path in m/s
-	Velocity float32 `json:"velocity,omitempty"`
+	Velocity   float32  `json:"velocity,omitempty"`
+	D2dInRange []string `json:"d2dInRange,omitempty"`
+	PoaInRange []string `json:"poaInRange,omitempty"`
 }

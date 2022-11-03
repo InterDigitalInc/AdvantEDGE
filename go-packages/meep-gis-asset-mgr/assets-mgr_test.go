@@ -147,7 +147,8 @@ func TestNewAssetMgr(t *testing.T) {
 	}
 
 	// Cleanup
-	_ = am.DeleteTable(UeMeasurementTable)
+	_ = am.DeleteTable(D2DMeasurementTable)
+	_ = am.DeleteTable(PoaMeasurementTable)
 	_ = am.DeleteTable(UeTable)
 	_ = am.DeleteTable(PoaTable)
 	_ = am.DeleteTable(ComputeTable)

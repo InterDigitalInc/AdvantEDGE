@@ -2104,7 +2104,7 @@ func sendCcNotification(notifyUrl string, notification CellChangeNotification) {
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifCellChange, notifyUrl, nil, duration)
@@ -2123,7 +2123,7 @@ func sendReNotification(notifyUrl string, notification RabEstNotification) {
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifRabEst, notifyUrl, nil, duration)
@@ -2142,7 +2142,7 @@ func sendRrNotification(notifyUrl string, notification RabRelNotification) {
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifRabRel, notifyUrl, nil, duration)
@@ -2161,7 +2161,7 @@ func sendMrNotification(notifyUrl string, notification MeasRepUeNotification) {
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifMeasRepUe, notifyUrl, nil, duration)
@@ -2180,7 +2180,7 @@ func sendNrMrNotification(notifyUrl string, notification NrMeasRepUeNotification
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifNrMeasRepUe, notifyUrl, nil, duration)
@@ -2199,7 +2199,7 @@ func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifExpiry, notifyUrl, nil, duration)

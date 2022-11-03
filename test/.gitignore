@@ -1,5 +1,4 @@
-codecov-*.txt
-codecov-*.html
+codecov/
 cypress/screenshots
 cypress/videos
 coverage

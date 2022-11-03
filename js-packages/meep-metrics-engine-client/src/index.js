@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventMetric', 'model/EventMetricList', 'model/EventQueryParams', 'model/EventSubscription', 'model/EventSubscriptionList', 'model/EventSubscriptionParams', 'model/EventsCallbackReference', 'model/HttpMetric', 'model/HttpMetricList', 'model/HttpQueryParams', 'model/NetworkCallbackReference', 'model/NetworkMetric', 'model/NetworkMetricList', 'model/NetworkQueryParams', 'model/NetworkSubscription', 'model/NetworkSubscriptionList', 'model/NetworkSubscriptionParams', 'model/Scope', 'model/Tag', 'api/MetricsApi', 'api/SubscriptionsApi'], factory);
+    define(['ApiClient', 'model/DataflowMetric', 'model/DataflowMetricList', 'model/DataflowMetrics', 'model/DataflowQueryParams', 'model/EventMetric', 'model/EventMetricList', 'model/EventQueryParams', 'model/EventSubscription', 'model/EventSubscriptionList', 'model/EventSubscriptionParams', 'model/EventsCallbackReference', 'model/HttpMetric', 'model/HttpMetricList', 'model/HttpQueryParams', 'model/NetworkCallbackReference', 'model/NetworkMetric', 'model/NetworkMetricList', 'model/NetworkQueryParams', 'model/NetworkSubscription', 'model/NetworkSubscriptionList', 'model/NetworkSubscriptionParams', 'model/Scope', 'model/SeqMetric', 'model/SeqMetricList', 'model/SeqMetrics', 'model/SeqQueryParams', 'model/Tag', 'api/MetricsApi', 'api/SubscriptionsApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/EventMetric'), require('./model/EventMetricList'), require('./model/EventQueryParams'), require('./model/EventSubscription'), require('./model/EventSubscriptionList'), require('./model/EventSubscriptionParams'), require('./model/EventsCallbackReference'), require('./model/HttpMetric'), require('./model/HttpMetricList'), require('./model/HttpQueryParams'), require('./model/NetworkCallbackReference'), require('./model/NetworkMetric'), require('./model/NetworkMetricList'), require('./model/NetworkQueryParams'), require('./model/NetworkSubscription'), require('./model/NetworkSubscriptionList'), require('./model/NetworkSubscriptionParams'), require('./model/Scope'), require('./model/Tag'), require('./api/MetricsApi'), require('./api/SubscriptionsApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/DataflowMetric'), require('./model/DataflowMetricList'), require('./model/DataflowMetrics'), require('./model/DataflowQueryParams'), require('./model/EventMetric'), require('./model/EventMetricList'), require('./model/EventQueryParams'), require('./model/EventSubscription'), require('./model/EventSubscriptionList'), require('./model/EventSubscriptionParams'), require('./model/EventsCallbackReference'), require('./model/HttpMetric'), require('./model/HttpMetricList'), require('./model/HttpQueryParams'), require('./model/NetworkCallbackReference'), require('./model/NetworkMetric'), require('./model/NetworkMetricList'), require('./model/NetworkQueryParams'), require('./model/NetworkSubscription'), require('./model/NetworkSubscriptionList'), require('./model/NetworkSubscriptionParams'), require('./model/Scope'), require('./model/SeqMetric'), require('./model/SeqMetricList'), require('./model/SeqMetrics'), require('./model/SeqQueryParams'), require('./model/Tag'), require('./api/MetricsApi'), require('./api/SubscriptionsApi'));
   }
-}(function(ApiClient, EventMetric, EventMetricList, EventQueryParams, EventSubscription, EventSubscriptionList, EventSubscriptionParams, EventsCallbackReference, HttpMetric, HttpMetricList, HttpQueryParams, NetworkCallbackReference, NetworkMetric, NetworkMetricList, NetworkQueryParams, NetworkSubscription, NetworkSubscriptionList, NetworkSubscriptionParams, Scope, Tag, MetricsApi, SubscriptionsApi) {
+}(function(ApiClient, DataflowMetric, DataflowMetricList, DataflowMetrics, DataflowQueryParams, EventMetric, EventMetricList, EventQueryParams, EventSubscription, EventSubscriptionList, EventSubscriptionParams, EventsCallbackReference, HttpMetric, HttpMetricList, HttpQueryParams, NetworkCallbackReference, NetworkMetric, NetworkMetricList, NetworkQueryParams, NetworkSubscription, NetworkSubscriptionList, NetworkSubscriptionParams, Scope, SeqMetric, SeqMetricList, SeqMetrics, SeqQueryParams, Tag, MetricsApi, SubscriptionsApi) {
   'use strict';
 
   /**
@@ -76,6 +76,26 @@
      * @property {module:ApiClient}
      */
     ApiClient: ApiClient,
+    /**
+     * The DataflowMetric model constructor.
+     * @property {module:model/DataflowMetric}
+     */
+    DataflowMetric: DataflowMetric,
+    /**
+     * The DataflowMetricList model constructor.
+     * @property {module:model/DataflowMetricList}
+     */
+    DataflowMetricList: DataflowMetricList,
+    /**
+     * The DataflowMetrics model constructor.
+     * @property {module:model/DataflowMetrics}
+     */
+    DataflowMetrics: DataflowMetrics,
+    /**
+     * The DataflowQueryParams model constructor.
+     * @property {module:model/DataflowQueryParams}
+     */
+    DataflowQueryParams: DataflowQueryParams,
     /**
      * The EventMetric model constructor.
      * @property {module:model/EventMetric}
@@ -166,6 +186,26 @@
      * @property {module:model/Scope}
      */
     Scope: Scope,
+    /**
+     * The SeqMetric model constructor.
+     * @property {module:model/SeqMetric}
+     */
+    SeqMetric: SeqMetric,
+    /**
+     * The SeqMetricList model constructor.
+     * @property {module:model/SeqMetricList}
+     */
+    SeqMetricList: SeqMetricList,
+    /**
+     * The SeqMetrics model constructor.
+     * @property {module:model/SeqMetrics}
+     */
+    SeqMetrics: SeqMetrics,
+    /**
+     * The SeqQueryParams model constructor.
+     * @property {module:model/SeqQueryParams}
+     */
+    SeqQueryParams: SeqQueryParams,
     /**
      * The Tag model constructor.
      * @property {module:model/Tag}

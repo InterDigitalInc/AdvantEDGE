@@ -5,6 +5,7 @@ echo "MEEP_HOST_URL: ${MEEP_HOST_URL}"
 echo "MEEP_SANDBOX_NAME: ${MEEP_SANDBOX_NAME}"
 echo "MEEP_MEP_NAME: ${MEEP_MEP_NAME}"
 echo "USER_SWAGGER: ${USER_SWAGGER}"
+echo "MEEP_CODECOV: ${MEEP_CODECOV}"
 
 if [[ ! -z "${MEEP_MEP_NAME}" ]]; then
     svcPath="${MEEP_SANDBOX_NAME}/${MEEP_MEP_NAME}"
@@ -46,4 +47,11 @@ if [[ ! -z "${USER_SWAGGER}" ]]; then
 fi
 
 # Start service
-exec /meep-sandbox-ctrl
+currenttime=`date "+%Y%m%d-%H%M%S"`
+filepath="/codecov/codecov-meep-sandbox-ctrl-"
+filename=$filepath$currenttime".out"
+if [ "$MEEP_CODECOV" = 'true' ]; then
+  exec /meep-sandbox-ctrl -test.coverprofile=$filename __DEVEL--code-cov
+else
+  exec /meep-sandbox-ctrl
+fi

@@ -42,19 +42,19 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	ms.Flush()
 
 	fmt.Println("Set http metrics")
-	err = ms.SetHttpMetric(HttpMetric{"logger1", "RX", 1, "url1", "endpoint1", "method1", "body1", "respBody1", "201", "101", nil})
+	err = ms.SetHttpMetric(HttpMetric{"logger1", "RX", 1, "url1", "endpoint1", "method1", "src1", "dst1", "body1", "respBody1", "201", "101", "time", "memaid", "seuqence"})
 	if err != nil {
 		t.Fatalf("Unable to set http metric")
 	}
-	err = ms.SetHttpMetric(HttpMetric{"logger1", "TX", 2, "url2", "endpoint2", "method2", "body2", "respBody2", "202", "102", nil})
+	err = ms.SetHttpMetric(HttpMetric{"logger1", "TX", 2, "url2", "endpoint2", "method2", "src2", "dst2", "body2", "respBody2", "202", "102", "time", "memaid", "seuqence"})
 	if err != nil {
 		t.Fatalf("Unable to set http metric")
 	}
-	err = ms.SetHttpMetric(HttpMetric{"logger1", "TX", 3, "url3", "endpoint3", "method3", "body3", "respBody3", "203", "103", nil})
+	err = ms.SetHttpMetric(HttpMetric{"logger1", "TX", 3, "url3", "endpoint3", "method3", "src3", "dst3", "body3", "respBody3", "203", "103", "time", "memaid", "seuqence"})
 	if err != nil {
 		t.Fatalf("Unable to set http metric")
 	}
-	err = ms.SetHttpMetric(HttpMetric{"logger2", "RX", 4, "url4", "endpoint4", "method4", "body4", "respBody4", "204", "104", nil})
+	err = ms.SetHttpMetric(HttpMetric{"logger2", "RX", 4, "url4", "endpoint4", "method4", "src4", "dst4", "body4", "respBody4", "204", "104", "time", "memaid", "seuqence"})
 	if err != nil {
 		t.Fatalf("Unable to set http metric")
 	}
@@ -68,7 +68,7 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	if err != nil || len(hml) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
-	if !validateHttpMetric(hml[0], "logger1", "RX", 1, "url1", "endpoint1", "method1", "body1", "respBody1", "201", "101") {
+	if !validateHttpMetric(hml[0], "logger1", "RX", 1, "url1", "endpoint1", "method1", "src1", "dst1", "body1", "respBody1", "201", "101") {
 		t.Fatalf("Invalid http metric")
 	}
 
@@ -92,6 +92,6 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func validateHttpMetric(h HttpMetric, loggerName string, direction string, id int32, url string, endpoint string, method string, body string, respBody string, respCode string, procTime string) bool {
-	return h.LoggerName == loggerName && h.Direction == direction && h.Id == id && h.Url == url && h.Endpoint == endpoint && h.Method == method && h.Body == body && h.RespBody == respBody && h.RespCode == respCode && h.ProcTime == procTime
+func validateHttpMetric(h HttpMetric, loggerName string, direction string, id int32, url string, endpoint string, method string, src string, dst string, body string, respBody string, respCode string, procTime string) bool {
+	return h.LoggerName == loggerName && h.Id == id && h.Url == url && h.Endpoint == endpoint && h.Method == method && h.Body == body && h.RespBody == respBody && h.RespCode == respCode && h.ProcTime == procTime && h.Src == src && h.Dst == dst
 }

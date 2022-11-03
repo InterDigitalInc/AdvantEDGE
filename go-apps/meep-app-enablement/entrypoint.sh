@@ -4,6 +4,7 @@ set -e
 echo "MEEP_HOST_URL: ${MEEP_HOST_URL}"
 echo "MEEP_SANDBOX_NAME: ${MEEP_SANDBOX_NAME}"
 echo "MEEP_MEP_NAME: ${MEEP_MEP_NAME}"
+echo "MEEP_CODECOV: ${MEEP_CODECOV}"
 
 if [[ ! -z "${MEEP_MEP_NAME}" ]]; then
     svcPath="${MEEP_SANDBOX_NAME}/${MEEP_MEP_NAME}"
@@ -38,4 +39,11 @@ for file in /user-api/*; do
 done
 
 # Start service
-exec /meep-app-enablement
+currenttime=`date "+%Y%m%d-%H%M%S"`
+filepath="/codecov/codecov-meep-app-enablement-"
+filename=$filepath$currenttime".out"
+if [ "$MEEP_CODECOV" = 'true' ]; then
+  exec /meep-app-enablement -test.coverprofile=$filename __DEVEL--code-cov
+else
+  exec /meep-app-enablement
+fi

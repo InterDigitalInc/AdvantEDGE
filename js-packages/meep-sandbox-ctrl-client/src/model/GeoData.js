@@ -80,6 +80,10 @@
         obj.eopMode = ApiClient.convertToType(data['eopMode'], 'String');
       if (data.hasOwnProperty('velocity'))
         obj.velocity = ApiClient.convertToType(data['velocity'], 'Number');
+      if (data.hasOwnProperty('d2dInRange'))
+        obj.d2dInRange = ApiClient.convertToType(data['d2dInRange'], ['String']);
+      if (data.hasOwnProperty('poaInRange'))
+        obj.poaInRange = ApiClient.convertToType(data['poaInRange'], ['String']);
     }
     return obj;
   }
@@ -111,6 +115,16 @@
    * @member {Number} velocity
    */
   exports.prototype.velocity = undefined;
+
+  /**
+   * @member {Array.<String>} d2dInRange
+   */
+  exports.prototype.d2dInRange = undefined;
+
+  /**
+   * @member {Array.<String>} poaInRange
+   */
+  exports.prototype.poaInRange = undefined;
 
 
   /**

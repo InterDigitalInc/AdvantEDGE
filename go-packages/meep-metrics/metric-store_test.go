@@ -82,18 +82,18 @@ func TestMetricStoreNew(t *testing.T) {
 	}
 
 	fmt.Println("Set store")
-	err = ms.SetStore(metricStore1Name)
+	err = ms.SetStore(metricStore1Name, metricStoreNamespace, true)
 	if err != nil {
 		t.Fatalf("Unable to set Store")
 	}
 	fmt.Println("Set store2")
-	err = ms.SetStore(metricStore2Name)
+	err = ms.SetStore(metricStore2Name, metricStoreNamespace, false)
 	if err != nil {
 		t.Fatalf("Unable to set Store2")
 	}
 
 	fmt.Println("Reset store")
-	err = ms.SetStore("")
+	err = ms.SetStore("", metricStoreNamespace, true)
 	if err != nil {
 		t.Fatalf("Unable to reset Store")
 	}
@@ -245,7 +245,7 @@ func TestMetricStoreCopyInflux(t *testing.T) {
 
 	fmt.Println("Validate copied data")
 	fmt.Println("Set store")
-	err = ms.SetStore(metricStore3Name)
+	err = ms.SetStore(metricStore3Name, metricStoreNamespace, true)
 	if err != nil {
 		t.Fatalf("Unable to set Store")
 	}

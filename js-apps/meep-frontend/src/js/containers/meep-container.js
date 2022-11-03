@@ -19,7 +19,7 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import autoBind from 'react-autobind';
 import axios from 'axios';
-import { updateObject, deepCopy } from '../util/object-util';
+import { updateObject, deepCopy, equalArrayOrdered } from '../util/object-util';
 import { ToolbarFixedAdjust } from '@rmwc/toolbar';
 
 // Import JS dependencies
@@ -28,6 +28,7 @@ import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-s
 import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
 import * as meepGisEngineRestApiClient from '../../../../../js-packages/meep-gis-engine-client/src/index.js';
 import * as meepAuthSvcRestApiClient from '../../../../../js-packages/meep-auth-svc-client/src/index.js';
+import * as meepMetricsEngineRestApiClient from '../../../../../js-packages/meep-metrics-engine-client/src/index.js';
 
 import MeepTopBar from '@/js/components/meep-top-bar';
 import Footer from '@/js/components/footer';
@@ -58,7 +59,12 @@ import {
   PAGE_HOME_INDEX,
   PAGE_CONFIGURE_INDEX,
   IDC_DIALOG_SIGN_IN,
-  IDC_DIALOG_SESSION_TERMINATED
+  IDC_DIALOG_SESSION_TERMINATED,
+  DASH_SEQ_MAX_MSG_COUNT,
+  MAP_VIEW,
+  SEQ_DIAGRAM_VIEW,
+  DATAFLOW_DIAGRAM_VIEW
+  // DASH_DATAFLOW_MAX_MSG_COUNT
 } from '../meep-constants';
 
 import {
@@ -100,7 +106,11 @@ import {
   execVisFilteredData,
   execChangeReplayStatus,
   execChangeAppInstanceTable,
-  execChangeMap
+  execChangeMap,
+  execChangeSeqMetrics,
+  execChangeSeqParticipants,
+  execChangeDataflowMetrics,
+  execChangeDataflowChart
 } from '../state/exec';
 
 import {
@@ -112,9 +122,11 @@ import {
 
 import {
   FIELD_CONNECTIVITY_MODEL,
+  FIELD_META_DISPLAY_SEQ_PARTICIPANTS,
   getElemByName,
   getElemFieldVal
 } from '../util/elem-utils';
+import { DASH_CFG_VIEW_TYPE, getDashCfgFieldVal } from '../util/dashboard-utils';
 
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
@@ -127,6 +139,8 @@ var basepathGisEngine = HOST_PATH + '/gis/v1';
 meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
 var basepathAuthSvc = HOST_PATH + '/auth/v1';
 meepAuthSvcRestApiClient.ApiClient.instance.basePath = basepathAuthSvc.replace(/\/+$/,'');
+var basepathMetricsEngine = HOST_PATH + '/metrics/v2';
+meepMetricsEngineRestApiClient.ApiClient.instance.basePath = basepathMetricsEngine.replace(/\/+$/,'');
 
 const SESSION_KEEPALIVE_INTERVAL = 600000; // 10 min
 
@@ -142,7 +156,7 @@ class MeepContainer extends Component {
     this.execPageRefreshIntervalTimer = null;
     this.replayStatusRefreshIntervalTimer = null;
     this.meepScenarioConfigurationApi = new meepPlatformCtrlRestApiClient.ScenarioConfigurationApi();
-    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();  
+    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();
     this.meepAppInfoApi = new meepSandboxCtrlRestApiClient.ApplicationsApi();
     this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
     this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
@@ -151,6 +165,27 @@ class MeepContainer extends Component {
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
     this.meepAuthApi = new meepAuthSvcRestApiClient.AuthApi();
     this.meepConnectivityApi = new meepSandboxCtrlRestApiClient.ConnectivityApi();
+    this.meepMetricsApi = new meepMetricsEngineRestApiClient.MetricsApi();
+
+    this.scenarioName = '';
+    this.refreshSeqMetrics = false;
+    this.resetSeqMetrics = false;
+    this.seqMetricsQuery = {
+      fields: ['mermaid'],
+      scope: {
+        limit: DASH_SEQ_MAX_MSG_COUNT
+      },
+      responseType: 'listonly'
+    };
+    this.refreshDataflowMetrics = false;
+    this.resetDataflowMetrics = false;
+    this.dataflowMetricsQuery = {
+      fields: ['mermaid'],
+      // scope: {
+      //   limit: DASH_DATAFLOW_MAX_MSG_COUNT
+      // },
+      responseType: 'stronly'
+    };
   }
 
   componentDidMount() {
@@ -190,7 +225,20 @@ class MeepContainer extends Component {
       }
     }
   }
-  
+
+  componentDidUpdate(prevProps) {
+    if (this.props.page === PAGE_EXECUTE && this.props.page !== prevProps.page) {
+      this.refreshSeqMetrics = true;
+      this.refreshDataflowMetrics = true;
+    }
+    if (this.props.pauseSeq !== prevProps.pauseSeq) {
+      this.refreshSeqMetrics = true;
+    }
+    if (this.props.pauseDataflow !== prevProps.pauseDataflow) {
+      this.refreshDataflowMetrics = true;
+    }
+  }
+
   // Timers
   startTimers() {
     if (this.props.signInStatus === STATUS_SIGNED_IN || this.props.signInStatus === STATUS_SIGNIN_NOT_SUPPORTED) {
@@ -227,8 +275,14 @@ class MeepContainer extends Component {
     }
   }
 
-  // Exec page refresh 
+  // Exec page refresh
   startExecPageRefresh() {
+    // Initialize refresh variables
+    this.refreshSeqMetrics = true;
+    this.refreshDataflowMetrics = true;
+
+
+    // Start refresh timer
     this.execPageRefreshIntervalTimer = setInterval(
       () => {
         if (this.props.page === PAGE_EXECUTE) {
@@ -237,10 +291,35 @@ class MeepContainer extends Component {
             this.checkScenarioStatus();
             this.refreshPduSessions();
             this.refreshScenario();
-            this.refreshMap();
+
             // Only update while scenario is running
             if (this.props.execScenarioState === 'DEPLOYED') {
               this.refreshAppInstancesTable();
+
+              // Refresh Map view if enabled
+              if (this.isViewEnabled(MAP_VIEW)) {
+                this.refreshMap();
+              }
+
+              // Refresh Seq diagram view if enabled
+              var isSeqViewEnabled = this.isViewEnabled(SEQ_DIAGRAM_VIEW);
+              if (isSeqViewEnabled && !this.props.pauseSeq) {
+                if (isSeqViewEnabled !== this.isSeqViewEnabled) {
+                  this.refreshSeqMetrics = true;
+                }
+                this.refreshSeq();
+              }
+              this.isSeqViewEnabled = isSeqViewEnabled;
+
+              // Refresh Data flow diagram view if enabled
+              var isDataflowViewEnabled = this.isViewEnabled(DATAFLOW_DIAGRAM_VIEW);
+              if (isDataflowViewEnabled && !this.props.pauseDataflow) {
+                if (isDataflowViewEnabled !== this.isDataflowViewEnabled) {
+                  this.refreshDataflowMetrics = true;
+                }
+                this.refreshDataflow();
+              }
+              this.isDataflowViewEnabled = isDataflowViewEnabled;
             }
           }
         }
@@ -307,6 +386,19 @@ class MeepContainer extends Component {
         false
       );
     }
+  }
+
+  isViewEnabled(viewName) {
+    // Get sandbox config
+    var sandboxCfg = (this.props.sandboxCfg) ? this.props.sandboxCfg[this.props.sandbox] : null;
+    if (sandboxCfg) {
+      // Get view configs
+      if (getDashCfgFieldVal(sandboxCfg.dashView1, DASH_CFG_VIEW_TYPE) === viewName ||
+        getDashCfgFieldVal(sandboxCfg.dashView2, DASH_CFG_VIEW_TYPE) === viewName) {
+        return true;
+      }
+    }
+    return false;
   }
 
   checkPlatformStatus() {
@@ -500,7 +592,10 @@ class MeepContainer extends Component {
           //restore the canvas position and scale in vis
           vis.network.canvas.body.view = view;
         });
-      } 
+      }
+
+      // Update diagrams
+      this.updateDiagrams(updatedTable, scenarioName);
     }
   }
 
@@ -578,7 +673,7 @@ class MeepContainer extends Component {
       return;
     }
 
-    // Update App Instance table only if data is different 
+    // Update App Instance table only if data is different
     var appInstances = data ? data : [];
     const isArrayEqual = (x, y) => _.isEmpty(_.xorWith(x, y, _.isEqual));
     if (!isArrayEqual(this.props.appInstanceTable,appInstances)) {
@@ -629,7 +724,7 @@ class MeepContainer extends Component {
         }
       });
     }
-    
+
     // Update asset map
     var assetMap = {
       ueList: _.sortBy(ueList, ['assetName']),
@@ -642,9 +737,164 @@ class MeepContainer extends Component {
   }
 
   // Refresh Map
-  refreshMap() { 
+  refreshMap() {
     this.meepGeoDataApi.getAssetData({}, (error, data) =>
       this.getAssetDataCb(error, data)
+    );
+  }
+
+  /**
+   * Callback function to receive the result of the postSeqQuery operation.
+   * @callback module:api/MetricsApi~postSeqQueryCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/SeqMetrics} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  postSeqQueryCb(error, data) {
+    if (error !== null) {
+      this.refreshSeqMetrics = true;
+      return;
+    }
+    var newSeqMetrics = (data && data.seqMetricList && data.seqMetricList.values) ? data.seqMetricList.values : [];
+
+    // Nothing to do if no new metrics
+    if (newSeqMetrics.length === 0) {
+      // Reset metrics if necessary
+      if (this.resetSeqMetrics) {
+        this.resetSeqMetrics = false;
+        this.props.changeSeqMetrics([]);
+      }
+      return;
+    }
+
+    // Merge new metrics with existing list
+    // Copy previous list if no reset
+    var seqMetrics = [];
+    if (this.resetSeqMetrics) {
+      this.resetSeqMetrics = false;
+    } else {
+      seqMetrics = deepCopy(this.props.execSeqMetrics);
+    }
+
+    // Get latest metric
+    var lastMetric = (seqMetrics.length > 0) ? seqMetrics[seqMetrics.length - 1] : null;
+
+    _.forEach(newSeqMetrics, newMetric => {
+      // Add metric to list if it is more recent than the last metric
+      // NOTE: assumes timestamps do not overlap due to nanosecond precision
+      if (!lastMetric || newMetric.time > lastMetric.time) {
+        seqMetrics.push(newMetric);
+      }
+    });
+
+    // Update metrics state
+    // Remove old metrics if max message count is reached
+    if (seqMetrics.length > DASH_SEQ_MAX_MSG_COUNT) {
+      this.props.changeSeqMetrics(seqMetrics.slice(seqMetrics.length - DASH_SEQ_MAX_MSG_COUNT));
+    } else {
+      this.props.changeSeqMetrics(seqMetrics);
+    }
+  }
+
+  // Refresh Sequence Diagram
+  refreshSeq() {
+    // If polling just started, refresh entire API console list
+    if (this.refreshSeqMetrics) {
+      this.seqMetricsQuery.scope = {
+        duration: '',
+        limit: DASH_SEQ_MAX_MSG_COUNT
+      };
+      this.refreshSeqMetrics = false;
+      this.resetSeqMetrics = true;
+    } else {
+      this.seqMetricsQuery.scope = {
+        duration: '2s',
+        limit: DASH_SEQ_MAX_MSG_COUNT
+      };
+    }
+
+    // Query sequence diagram
+    this.meepMetricsApi.postSeqQuery(this.seqMetricsQuery, (error, data) =>
+      this.postSeqQueryCb(error, data)
+    );
+  }
+
+  /**
+   * Callback function to receive the result of the postDataflowQuery operation.
+   * @callback module:api/MetricsApi~postDataflowQueryCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/DataflowMetrics} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  postDataflowQueryCb(error, data) {
+    if (error !== null) {
+      // this.refreshDataflowMetrics = true;
+      return;
+    }
+    // var newDataflowMetrics = (data && data.dataflowMetricList && data.dataflowMetricList.values) ? data.dataflowMetricList.values : [];
+
+    // // Nothing to do if no new metrics
+    // if (newDataflowMetrics.length === 0) {
+    //   // Reset metrics if necessary
+    //   if (this.resetDataflowMetrics) {
+    //     this.resetDataflowMetrics = false;
+    //     this.props.changeDataflowMetrics([]);
+    //   }
+    //   return;
+    // }
+
+    // // Merge new metrics with existing list
+    // // Copy previous list if no reset
+    // var dataflowMetrics = [];
+    // if (this.resetDataflowMetrics) {
+    //   this.resetDataflowMetrics = false;
+    // } else {
+    //   dataflowMetrics = deepCopy(this.props.execDataflowMetrics);
+    // }
+
+    // // Get latest metric
+    // var lastMetric = (dataflowMetrics.length > 0) ? dataflowMetrics[dataflowMetrics.length - 1] : null;
+
+    // _.forEach(newDataflowMetrics, newMetric => {
+    //   // Add metric to list if it is more recent than the last metric
+    //   // NOTE: assumes timestamps do not overlap due to nanosecond precision
+    //   if (!lastMetric || newMetric.time > lastMetric.time) {
+    //     dataflowMetrics.push(newMetric);
+    //   }
+    // });
+
+    // // Update metrics state
+    // // Remove old metrics if max message count is reached
+    // if (dataflowMetrics.length > DASH_DATAFLOW_MAX_MSG_COUNT) {
+    //   this.props.changeDataflowMetrics(dataflowMetrics.slice(dataflowMetrics.length - DASH_DATAFLOW_MAX_MSG_COUNT));
+    // } else {
+    //   this.props.changeDataflowMetrics(dataflowMetrics);
+    // }
+
+    var newDataflowChart = (data) ? data.dataflowMetricString : '';
+    this.props.changeDataflowChart(newDataflowChart);
+  }
+
+  // Refresh Data Flow Diagram
+  refreshDataflow() {
+    // // If polling just started, refresh entire API console list
+    // if (this.refreshDataflowMetrics) {
+    //   this.dataflowMetricsQuery.scope = {
+    //     duration: '',
+    //     limit: DASH_DATAFLOW_MAX_MSG_COUNT
+    //   };
+    //   this.refreshDataflowMetrics = false;
+    //   this.resetDataflowMetrics = true;
+    // } else {
+    //   this.dataflowMetricsQuery.scope = {
+    //     duration: '2s',
+    //     limit: DASH_DATAFLOW_MAX_MSG_COUNT
+    //   };
+    // }
+
+    // Query sequence diagram
+    this.meepMetricsApi.postDataflowQuery(this.dataflowMetricsQuery, (error, data) =>
+      this.postDataflowQueryCb(error, data)
     );
   }
 
@@ -682,6 +932,26 @@ class MeepContainer extends Component {
     }
   }
 
+  // Update sequence diagram participants
+  updateDiagrams(table, scenarioName) {
+    // Refresh participants
+    var participants = [];
+    var metaSeqParticipants = getElemFieldVal(getElemByName(table.entries, scenarioName), FIELD_META_DISPLAY_SEQ_PARTICIPANTS);
+    if (metaSeqParticipants) {
+      participants = _.split(metaSeqParticipants, ',');
+    }
+    if (!equalArrayOrdered(participants,this.props.execSeqParticipants)) {
+      this.props.changeSeqParticipants(participants);
+    }
+
+    // Set metrics reset flag if scenario state changed
+    if (this.scenarioName !== scenarioName) {
+      this.scenarioName = scenarioName;
+      this.refreshSeqMetrics = true;
+      this.refreshDataflowMetrics = true;
+    }
+  }
+
   // Set sandox-specific API basepath
   setBasepath(sandboxName) {
     var sandboxPath = (sandboxName) ? '/' + sandboxName : '';
@@ -689,6 +959,8 @@ class MeepContainer extends Component {
     meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
     basepathGisEngine = HOST_PATH + sandboxPath + '/gis/v1';
     meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
+    basepathMetricsEngine = HOST_PATH + sandboxPath + '/metrics/v2';
+    meepMetricsEngineRestApiClient.ApiClient.instance.basePath = basepathMetricsEngine.replace(/\/+$/,'');
   }
 
   /**
@@ -819,7 +1091,7 @@ class MeepContainer extends Component {
   closeDialog() {
     this.props.changeCurrentDialog(Math.random());
   }
-  
+
   renderDialogs() {
     return (
       <>
@@ -863,6 +1135,7 @@ class MeepContainer extends Component {
               automationApi={this.meepEventAutomationApi}
               replayApi={this.meepEventReplayApi}
               cfgApi={this.meepScenarioConfigurationApi}
+              metricsApi={this.meepMetricsApi}
               sandboxApi={this.meepSandboxControlApi}
               sandbox={this.props.sandbox}
               sandboxes={this.props.sandboxes}
@@ -886,7 +1159,7 @@ class MeepContainer extends Component {
 
     case PAGE_MONITOR:
       return <MonitorPageContainer />;
-    
+
     case PAGE_HOME:
       return <HomePageContainer />;
 
@@ -926,6 +1199,11 @@ const mapStateToProps = state => {
     exec: state.exec,
     execScenarioState: state.exec.state.scenario,
     execVis: state.exec.vis,
+    execSeqMetrics: state.exec.seq.metrics,
+    execSeqParticipants: state.exec.seq.participants,
+    pauseSeq: state.ui.execPauseSeq,
+    execDataflowMetrics: state.exec.dataflow.metrics,
+    pauseDataflow: state.ui.execPauseDataflow,
     currentDialog: state.ui.currentDialog,
     page: state.ui.page,
     sandbox: state.ui.sandbox,
@@ -972,7 +1250,11 @@ const mapDispatchToProps = dispatch => {
     changeSignInStatus: status => dispatch(uiChangeSignInStatus(status)),
     changeSignInUsername: name => dispatch(uiChangeSignInUsername(name)),
     changeTabIndex: index => dispatch(uiChangeCurrentTab(index)),
-    changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value))
+    changeAppInstanceTable: value => dispatch(execChangeAppInstanceTable(value)),
+    changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
+    changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants)),
+    changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics)),
+    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart))
   };
 };
 
