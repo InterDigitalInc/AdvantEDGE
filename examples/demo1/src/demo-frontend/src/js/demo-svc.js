@@ -1,11 +1,11 @@
-﻿/*
- * Copyright (c) 2019  InterDigital Communications, Inc
+/*
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Import CSS 
+// Import CSS
 import 'material-design-icons/iconfont/material-icons.css';
 import 'ol/ol.css';
 import '../css/demo-svc.scss';
@@ -279,7 +279,7 @@ function initializeUI() {
     targetedUeAppNameDialogTextfield2.valid = true;
     $('#targeted-ue-app-name-2-tf-div').hide();
 
-    //ues are starting by default in zone1 and poa1, so hardcoded because the subscriptions are only sent after the tracking starts 
+    //ues are starting by default in zone1 and poa1, so hardcoded because the subscriptions are only sent after the tracking starts
     //and this app only tracks notifications, not queries where they are located
     //a work-around would be to have the demo-server do a get for the location knowing it is registering for the event, and then fake
     //a notification to trigger the app
@@ -416,4 +416,3 @@ $(document).ready(function () {
     // Initialize UI
     initializeUI();
 });
-
