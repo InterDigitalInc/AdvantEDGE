@@ -1,6 +1,6 @@
 # \UnsupportedApi
 
-All URIs are relative to *https://localhost/mec_app_support/v1*
+All URIs are relative to *https://localhost/sandboxname/mec_app_support/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

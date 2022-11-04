@@ -28,6 +28,10 @@ import (
 	"net/http"
 )
 
+func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
+	mePostDataflowQuery(w, r)
+}
+
 func PostEventQuery(w http.ResponseWriter, r *http.Request) {
 	mePostEventQuery(w, r)
 }
@@ -42,8 +46,4 @@ func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 
 func PostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	mePostSeqQuery(w, r)
-}
-
-func PostDataflowQuery(w http.ResponseWriter, r *http.Request) {
-	mePostDataflowQuery(w, r)
 }

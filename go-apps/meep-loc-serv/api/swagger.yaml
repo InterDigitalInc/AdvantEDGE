@@ -19,7 +19,7 @@ externalDocs:
   description: ETSI MEC013 V2.2.1 Location API
   url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf'
 servers:
-  - url: 'https://localhost/location/v2'
+  - url: 'https://localhost/sandboxname/location/v2'
 tags:
   - name: 'location'
 paths:

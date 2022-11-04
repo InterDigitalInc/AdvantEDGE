@@ -369,8 +369,8 @@ func validateSerAvailabilityNotification(notification *smc.ServiceAvailabilityNo
 	if notification.NotificationType != "SerAvailabilityNotification" {
 		return ("NotificationType of notification not as expected: " + notification.NotificationType + " instead of " + "SerAvailabilityNotification")
 	}
-	if string(notification.ServiceReferences[0].ChangeType) != expectedChangeType {
-		return ("ChangeType of notification not as expected: " + string(notification.ServiceReferences[0].ChangeType) + " instead of " + expectedChangeType)
+	if string(*notification.ServiceReferences[0].ChangeType) != expectedChangeType {
+		return ("ChangeType of notification not as expected: " + string(*notification.ServiceReferences[0].ChangeType) + " instead of " + expectedChangeType)
 	}
 	return ""
 }

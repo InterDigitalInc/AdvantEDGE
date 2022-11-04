@@ -22,7 +22,7 @@ externalDocs:
   description: ETSI MEC012 V2.2.1 Radio Network Information API
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_mec012v020201p.pdf
 servers:
-- url: https://localhost/rni/v2
+- url: https://localhost/sandboxname/rni/v2
 tags:
 - name: rni
 paths:

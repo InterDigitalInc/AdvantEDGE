@@ -22,7 +22,7 @@ tags:
   - name: unsupported
   - name: callbacks
 servers:
-  - url: 'https://localhost/mec_app_support/v1'
+  - url: 'https://localhost/sandboxname/mec_app_support/v1'
 paths:
   /applications/{appInstanceId}/traffic_rules:
     get:

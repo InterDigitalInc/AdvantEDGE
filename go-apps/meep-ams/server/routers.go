@@ -88,13 +88,6 @@ var routes = Routes{
 	},
 
 	Route{
-		"AdjAppInstGET",
-		strings.ToUpper("Get"),
-		"/amsi/v1/queries/adjacent_app_instances",
-		AdjAppInstGET,
-	},
-
-	Route{
 		"AppMobilityServiceByIdDELETE",
 		strings.ToUpper("Delete"),
 		"/amsi/v1/app_mobility_services/{appMobilityServiceId}",
@@ -169,6 +162,13 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/amsi/v1/subscriptions",
 		SubPOST,
+	},
+
+	Route{
+		"AdjAppInstGET",
+		strings.ToUpper("Get"),
+		"/amsi/v1/queries/adjacent_app_instances",
+		AdjAppInstGET,
 	},
 
 	Route{

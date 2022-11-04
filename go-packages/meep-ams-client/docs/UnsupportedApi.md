@@ -1,6 +1,6 @@
 # \UnsupportedApi
 
-All URIs are relative to *https://localhost/amsi/v1*
+All URIs are relative to *https://localhost/sandboxname/amsi/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

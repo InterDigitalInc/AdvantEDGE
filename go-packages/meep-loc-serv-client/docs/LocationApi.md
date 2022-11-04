@@ -1,6 +1,6 @@
 # \LocationApi
 
-All URIs are relative to *https://localhost/location/v2*
+All URIs are relative to *https://localhost/sandboxname/location/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

@@ -19,7 +19,7 @@ externalDocs:
   description: ETSI MEC011 V2.2.1 Service Management API
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_mec011v020201p.pdf
 servers:
-- url: https://localhost/mec_service_mgmt/v1
+- url: https://localhost/sandboxname/mec_service_mgmt/v1
 tags:
 - name: mec_service_mgmt
 paths:

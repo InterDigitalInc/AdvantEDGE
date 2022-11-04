@@ -1,6 +1,6 @@
 # \MecServiceMgmtApi
 
-All URIs are relative to *https://localhost/mec_service_mgmt/v1*
+All URIs are relative to *https://localhost/sandboxname/mec_service_mgmt/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

@@ -18,7 +18,7 @@ info:
 externalDocs:
   url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf
 servers:
-- url: https://localhost/mec_app_support/v1
+- url: https://localhost/sandboxname/mec_app_support/v1
 security:
 - {}
 tags:

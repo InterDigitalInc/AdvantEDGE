@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/rni/v2*
+All URIs are relative to *https://localhost/sandboxname/rni/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

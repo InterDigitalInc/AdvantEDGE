@@ -19,7 +19,7 @@ externalDocs:
   description: ETSI GS MEC 021 Application Mobility Service API, v2.2.1
   url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_mec021v020201p.pdf
 servers:
-- url: https://localhost/amsi/v1
+- url: https://localhost/sandboxname/amsi/v1
   variables: {}
 tags:
   - name: amsi
