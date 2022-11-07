@@ -45,7 +45,6 @@ const (
 	fieldRsrq      = "rsrq"
 	fieldSrc       = "src"
 	fieldSrcType   = "srcType"
-	fieldInRange   = "inRange"
 )
 
 const (
