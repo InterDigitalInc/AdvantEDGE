@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: AdvantEDGE Radio Network Information Service REST API
+  title: AdvantEDGE Radio Network Information API
   description: "Radio Network Information Service is AdvantEDGE's implementation of\
-    \ [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf)\
+    \ [ETSI MEC ISG MEC012 RNI API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf)\
     \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
     \ <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis)\
     \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
@@ -17,15 +17,14 @@ info:
   license:
     name: Apache 2.0
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
-  version: 2.1.1
+  version: 2.2.1
 externalDocs:
-  description: "ETSI GS MEC 012 Radio Network Information API, V2.1.1"
-  url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf
+  description: ETSI MEC012 V2.2.1 Radio Network Information API
+  url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_mec012v020201p.pdf
 servers:
 - url: https://localhost/sandboxname/rni/v2
 tags:
 - name: rni
-- name: unsupported
 paths:
   /queries/rab_info:
     get:
@@ -1478,6 +1477,7 @@ components:
         value: value
     CaReconfNotification:
       required:
+      - _links
       - ecgi
       - notificationType
       type: object
@@ -1501,7 +1501,7 @@ components:
             the carriers assign for Carrier Aggregation up to M.
           items:
             $ref: '#/components/schemas/CaReconfNotification_carrierAggregationMeasInfo'
-          x-etsi-mec-cardinality: 0..M
+          x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Structure (inlined)
         ecgi:
           $ref: '#/components/schemas/Ecgi'
@@ -1530,8 +1530,11 @@ components:
           x-etsi-mec-origin-type: Structure (inlined)
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.8
     CaReconfSubscription:
+      title: CaReconfSubscription
       required:
       - callbackReference
       - filterCriteriaAssoc
@@ -1542,12 +1545,18 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         filterCriteriaAssoc:
@@ -1557,9 +1566,16 @@ components:
           description: Shall be set to "CaReconfSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to UE carrier aggregation\
+        \ reconfiguration notifications from Radio Network Information Service.\n\
+        NOTE: At least one of callbackReference and websockNotifConfig shall be provided\
+        \ by the service consumer.\n      If both are provided, it is up to RNIS to\
+        \ choose an alternative and return only that alternative in the response,\n\
+        \      specified in ETSI GS MEC 009 [6], as described in clause 6.12a.\n"
       x-etsi-ref: 6.3.8
     CellChangeNotification:
       required:
+      - _links
       - hoStatus
       - notificationType
       - srcEcgi
@@ -1602,15 +1618,18 @@ components:
         trgEcgi:
           minItems: 1
           type: array
-          description: "E-UTRAN Cell Global Identifier of the target cell.\nNOTE:\
-            \ Cardinality N is valid only in case of statuses IN_PREPARATION, REJECTED\
-            \ and CANCELLED."
+          description: "E-UTRAN Cell Global Identifier of the target cell. See note.\n\
+            NOTE: Cardinality N is valid only in case of statuses IN_PREPARATION,\
+            \ REJECTED and CANCELLED."
           items:
             $ref: '#/components/schemas/Ecgi'
           x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: Ecgi
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.2
     CellChangeSubscription:
+      title: CellChangeSubscription
       required:
       - callbackReference
       - filterCriteriaAssocHo
@@ -1621,14 +1640,20 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumerto receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         filterCriteriaAssocHo:
           $ref: '#/components/schemas/CellChangeSubscription_filterCriteriaAssocHo'
         subscriptionType:
@@ -1636,6 +1661,12 @@ components:
           description: Shall be set to "CellChangeSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to cell change notifications\
+        \ from Radio Network Information Service.\nNOTE: At least one of callbackReference\
+        \ and websockNotifConfig shall be provided by the service consumer.\n    \
+        \  If both are provided, it is up to RNIS to choose an alternative and return\
+        \ only that alternative in the response,\n      specified in ETSI GS MEC 009\
+        \ [6], as described in clause 6.12a.\n"
       x-etsi-ref: 6.3.2
     CellId:
       type: string
@@ -1663,6 +1694,7 @@ components:
       required:
       - _links
       - expiryDeadline
+      - notificationType
       type: object
       properties:
         _links:
@@ -1671,6 +1703,11 @@ components:
           $ref: '#/components/schemas/TimeStamp'
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
+        notificationType:
+          type: string
+          description: Shall be set to "ExpiryNotification"
+          x-etsi-mec-cardinality': "1"
+          x-etsi-mec-origin-type': String
       x-etsi-ref: 6.4.9
     L2Meas:
       type: object
@@ -1800,7 +1837,7 @@ components:
           description: URI referring to a resource
           format: uri
           x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: URI
+          x-etsi-mec-origin-type: Uri
       example:
         href: http://example.com/aeiou
       x-etsi-ref: 6.5.2
@@ -1831,6 +1868,7 @@ components:
       x-etsi-ref: 6.5.11
     MeasRepUeNotification:
       required:
+      - _links
       - ecgi
       - notificationType
       - rsrp
@@ -1856,7 +1894,7 @@ components:
             the carriers assign for Carrier Aggregation up to M.
           items:
             $ref: '#/components/schemas/MeasRepUeNotification_carrierAggregationMeasInfo'
-          x-etsi-mec-cardinality: 0..M
+          x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Structure (inlined)
         ecgi:
           $ref: '#/components/schemas/Ecgi'
@@ -1942,8 +1980,11 @@ components:
           $ref: '#/components/schemas/TimeStamp'
         trigger:
           $ref: '#/components/schemas/Trigger'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.6
     MeasRepUeSubscription:
+      title: MeasRepUeSubscription
       required:
       - callbackReference
       - filterCriteriaAssocTri
@@ -1954,12 +1995,20 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: "URI selected by the service consumer to receive notifications\
+            \ on the subscribed RNIS information. This shall be included both in the\
+            \ request and in response. If not present, the service consumer is requesting\
+            \ the use of a Websocket for notifications. See note."
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: Set to TRUE by the service consumer to request a test notification
+            on the callbackReference URI to determine if it is reachable by RNIS for
+            notifications.
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         filterCriteriaAssocTri:
@@ -1969,9 +2018,16 @@ components:
           description: Shall be set to "MeasRepUeSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to UE measurement report notifications\
+        \ from Radio Network Information Service for UEs served by E-UTRA Cells.\n\
+        NOTE: At least one of callbackReference and websockNotifConfig shall be provided\
+        \ by the service consumer. If both are provided, it is up to RNIS to select\
+        \ the method to be used for notifications and to return only that method in\
+        \ the response.\n"
       x-etsi-ref: 6.3.6
     MeasTaNotification:
       required:
+      - _links
       - ecgi
       - notificationType
       - timingAdvance
@@ -2001,8 +2057,11 @@ components:
           format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.7
     MeasTaSubscription:
+      title: MeasTaSubscription
       required:
       - callbackReference
       - filterCriteriaAssoc
@@ -2013,12 +2072,18 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         filterCriteriaAssoc:
@@ -2028,8 +2093,14 @@ components:
           description: Shall be set to "MeasTaSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to UE timing advance notifications\
+        \ from Radio Network Information Service.\nNOTE: At least one of callbackReference\
+        \ and websockNotifConfig shall be provided by the service consumer.\n    \
+        \  If both are provided, it is up to RNIS to choose an alternative and return\
+        \ only that alternative in the response,\n      specified in ETSI GS MEC 009\
+        \ [6], as described in clause 6.12a.\n"
       x-etsi-ref: 6.3.7
-    NRcgi:
+    Nrcgi:
       required:
       - nrcellId
       - plmn
@@ -2046,6 +2117,7 @@ components:
         \ (size (36)) as defined in ETSI TS 138 423 [i.17]."
     NrMeasRepUeNotification:
       required:
+      - _links
       - notificationType
       - triggerNr
       type: object
@@ -2104,8 +2176,11 @@ components:
           $ref: '#/components/schemas/TimeStamp'
         triggerNr:
           $ref: '#/components/schemas/TriggerNr'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.11
     NrMeasRepUeSubscription:
+      title: NrMeasRepUeSubscription
       required:
       - callbackReference
       - filterCriteriaNrMrs
@@ -2116,12 +2191,18 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         filterCriteriaNrMrs:
@@ -2131,6 +2212,13 @@ components:
           description: Shall be set to "NrMeasRepUeSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to 5G UE measurement report\
+        \ notifications from Radio Network Information Service for UEs served by NR\
+        \ Cells.\nNOTE: At least one of callbackReference and websockNotifConfig shall\
+        \ be provided by the service consumer.\n      If both are provided, it is\
+        \ up to RNIS to choose an alternative and return only that alternative in\
+        \ the response,\n      specified in ETSI GS MEC 009 [6], as described in clause\
+        \ 6.12a.\n"
       x-etsi-ref: 6.3.11
     Plmn:
       required:
@@ -2187,6 +2275,9 @@ components:
           mcc: mcc
       x-etsi-ref: 6.2.2
     ProblemDetails:
+      required:
+      - detail
+      - status
       type: object
       properties:
         detail:
@@ -2222,6 +2313,7 @@ components:
           x-etsi-mec-origin-type: URI
     RabEstNotification:
       required:
+      - _links
       - ecgi
       - erabId
       - notificationType
@@ -2253,10 +2345,13 @@ components:
           x-etsi-mec-origin-type: String
         tempUeId:
           $ref: '#/components/schemas/RabEstNotification_tempUeId'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
       x-etsi-ref: 6.4.3
     RabEstSubscription:
+      title: RabEstSubscription
       required:
       - callbackReference
       - filterCriteriaQci
@@ -2267,14 +2362,20 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         filterCriteriaQci:
           $ref: '#/components/schemas/RabEstSubscription_filterCriteriaQci'
         subscriptionType:
@@ -2282,6 +2383,12 @@ components:
           description: Shall be set to "RabEstSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to RAB establishment notifications\
+        \ from Radio Network Information Service.\nNOTE: At least one of callbackReference\
+        \ and websockNotifConfig shall be provided by the service consumer.\n    \
+        \  If both are provided, it is up to RNIS to choose an alternative and return\
+        \ only that alternative in the response,\n      specified in ETSI GS MEC 009\
+        \ [6], as described in clause 6.12a.\n"
       x-etsi-ref: 6.3.3
     RabInfo:
       required:
@@ -2423,6 +2530,7 @@ components:
       x-etsi-ref: 6.2.3
     RabModNotification:
       required:
+      - _links
       - ecgi
       - erabId
       - notificationType
@@ -2454,8 +2562,11 @@ components:
           x-etsi-mec-origin-type: String
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.4
     RabModSubscription:
+      title: RabModSubscription
       required:
       - callbackReference
       - filterCriteriaQci
@@ -2466,12 +2577,18 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         filterCriteriaQci:
@@ -2481,9 +2598,16 @@ components:
           description: Shall be set to "RabModSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to RAB modification notifications\
+        \ from Radio Network Information Service.\nNOTE: At least one of callbackReference\
+        \ and websockNotifConfig shall be provided by the service consumer.\n    \
+        \  If both are provided, it is up to RNIS to choose an alternative and return\
+        \ only that alternative in the response,\n      specified in ETSI GS MEC 009\
+        \ [6], as described in clause 6.12a.\n"
       x-etsi-ref: 6.3.4
     RabRelNotification:
       required:
+      - _links
       - ecgi
       - erabReleaseInfo
       - notificationType
@@ -2509,8 +2633,11 @@ components:
           x-etsi-mec-origin-type: String
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.5
     RabRelSubscription:
+      title: RabRelSubscription
       required:
       - callbackReference
       - filterCriteriaQci
@@ -2521,12 +2648,20 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
-            on the subscribed RNIS information. This shall be included both in the
-            request and in response.
+          description: "URI selected by the service consumer to receive notifications\
+            \ on the subscribed RNIS information. This shall be included both in the\
+            \ request and in response. If not present, the service consumer is requesting\
+            \ the use of a Websocket for notifications. See note."
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         expiryDeadline:
           $ref: '#/components/schemas/TimeStamp'
         filterCriteriaQci:
@@ -2536,6 +2671,11 @@ components:
           description: Shall be set to "RabRelSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to RAB release notifications\
+        \ from Radio Network Information Service.\nNOTE: At least one of callbackReference\
+        \ and websockNotifConfig shall be provided by the service consumer.\n    \
+        \  If both are provided, it is up to RNIS to select the method to be used\
+        \ for notifications and to return only that method in the response.\n"
       x-etsi-ref: 6.3.5
     ResultsPerCsiRsIndex:
       required:
@@ -2558,7 +2698,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ResultsPerCsiRsIndexList_resultsPerCsiRsIndex'
-          x-etsi-mec-cardinality: 0..P
+          x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Structure (inline)
       x-etsi-ref: 6.5.10
     ResultsPerSsbIndex:
@@ -2582,7 +2722,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ResultsPerSsbIndexList_resultsPerSsbIndex'
-          x-etsi-mec-cardinality: 0..P
+          x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Structure (inline)
       x-etsi-ref: 6.5.9
     RsIndexResults:
@@ -2687,6 +2827,7 @@ components:
       x-etsi-ref: 6.2.4
     S1BearerNotification:
       required:
+      - _links
       - notificationType
       - s1Event
       - s1UeInfo
@@ -2706,8 +2847,11 @@ components:
           $ref: '#/components/schemas/S1BearerNotification_s1UeInfo'
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
+        _links:
+          $ref: '#/components/schemas/CaReconfNotification__links'
       x-etsi-ref: 6.4.10
     S1BearerSubscription:
+      title: S1BearerSubscription
       required:
       - S1BearerSubscriptionCriteria
       - callbackReference
@@ -2721,12 +2865,18 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: "URI selected by the service consumer, to receive notifications\
-            \ on the subscribed RNIS information. This shall be included in the request\
-            \ and response."
+          description: URI exposed by the client on which to receive notifications
+            via HTTP. See note.
           format: uri
-          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: URI
+        websockNotifConfig:
+          $ref: '#/components/schemas/WebsockNotifConfig'
+        requestTestNotification:
+          type: boolean
+          description: "Shall be set to TRUE by the service consumer to request a\
+            \ test notification via HTTP on the callbackReference URI, specified in\
+            \ ETSI GS MEC 009 [6], as described in clause 6.12a."
         eventType:
           minItems: 1
           type: array
@@ -2745,6 +2895,12 @@ components:
           description: Shall be set to "S1BearerSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      description: "This type represents a subscription to S1-U bearer information\
+        \ notification from Radio Network Information Service.\nNOTE: At least one\
+        \ of callbackReference and websockNotifConfig shall be provided by the service\
+        \ consumer.\n      If both are provided, it is up to RNIS to choose an alternative\
+        \ and return only that alternative in the response,\n      specified in ETSI\
+        \ GS MEC 009 [6], as described in clause 6.12a.\n"
       x-etsi-ref: 6.3.9
     SubscriptionLinkList:
       required:
@@ -2869,6 +3025,27 @@ components:
       - $ref: '#/components/schemas/MeasTaNotification'
       - $ref: '#/components/schemas/CaReconfNotification'
       - $ref: '#/components/schemas/S1BearerNotification'
+    WebsockNotifConfig:
+      title: WebsockNotifConfig
+      type: object
+      properties:
+        websocketUri:
+          type: string
+          description: Set by RNIS to indicate to the service consumer the Websocket
+            URI to be used for delivering notifications.
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uri
+        requestWebsocketUri:
+          type: boolean
+          description: Set to true by the service consumer to indicate that Websocket
+            delivery is requested.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uri
+      description: "This type represents configuration for the delivery of subscription\
+        \ notifications over Websockets per the pattern defined in defined in clause\
+        \ 6.12a of ETSI GS MEC 009 [6].\n"
+      x-etsi-ref: 6.3.12
     AppTerminationNotification:
       required:
       - _links
@@ -2938,6 +3115,14 @@ components:
       properties:
         ecgi:
           $ref: '#/components/schemas/Ecgi'
+    CaReconfNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: Links to resources related to this notification.
     CaReconfSubscription__links:
       required:
       - self
@@ -3037,17 +3222,11 @@ components:
         \ in the response."
     ExpiryNotification__links:
       required:
-      - self
+      - subscription
       type: object
       properties:
-        self:
-          type: string
-          description: Self referring URI. This shall be included in the response
-            from the RNIS. The URI shall be unique within the RNI API as it acts as
-            an ID for the subscription.
-          format: uri
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: URI
+        subscription:
+          $ref: '#/components/schemas/LinkType'
       description: List of hyperlinks related to the resource.
     L2Meas_cellInfo:
       type: object
@@ -3436,7 +3615,7 @@ components:
           description: Public land mobile network identities
           items:
             $ref: '#/components/schemas/Plmn'
-          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: Plmn
     MeasRepUeNotification_nrBNCs:
       required:
@@ -3452,7 +3631,7 @@ components:
           description: Best neighbours of the secondary serving cell(s) info
           items:
             $ref: '#/components/schemas/MeasRepUeNotification_nrBNCs_nrBNCellInfo'
-          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: Structure (inlined)
         nrBNCellRsrp:
           type: integer
@@ -3662,7 +3841,7 @@ components:
         measQuantityResultsSsbCell:
           $ref: '#/components/schemas/MeasQuantityResultsNr'
         nrcgi:
-          $ref: '#/components/schemas/NrCellId'
+          $ref: '#/components/schemas/Nrcgi'
         rsIndexResults:
           $ref: '#/components/schemas/RsIndexResults'
     NrMeasRepUeNotification_nCell:
@@ -3692,7 +3871,7 @@ components:
         nCell:
           $ref: '#/components/schemas/NrMeasRepUeNotification_nCell'
         nrcgi:
-          $ref: '#/components/schemas/NRcgi'
+          $ref: '#/components/schemas/Nrcgi'
         sCell:
           $ref: '#/components/schemas/NrMeasRepUeNotification_sCell'
     NrMeasRepUeSubscription_filterCriteriaNrMrs:
@@ -3717,9 +3896,9 @@ components:
           type: array
           description: NR Cell Global Identier.
           items:
-            $ref: '#/components/schemas/NRcgi'
+            $ref: '#/components/schemas/Nrcgi'
           x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: NRcgi
+          x-etsi-mec-origin-type: Nrcgi
         triggerNr:
           minItems: 0
           type: array

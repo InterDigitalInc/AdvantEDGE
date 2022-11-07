@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -24,11 +24,13 @@ package server
 
 // List of links to services whose availability has changed.
 type ServiceAvailabilityNotificationServiceReferences struct {
-	Link *LinkType `json:"link,omitempty"`
+	Link *LinkType1 `json:"link,omitempty"`
 
 	SerName string `json:"serName"`
 
-	State *ServiceState `json:"state"`
-	// Type of the change. Valid values:  ADDED: The service was newly added.   REMOVED: The service was removed.   STATE_CHANGED: Only the state of the service was changed.    ATTRIBUTES_CHANGED: At least one attribute of the service other than state was changed. The change may or may not include changing the state.
-	ChangeType string `json:"changeType"`
+	SerInstanceId string `json:"serInstanceId"`
+
+	State *ServiceState1 `json:"state"`
+
+	ChangeType *ServiceAvailabilityNotificationChangeType `json:"changeType"`
 }

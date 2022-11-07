@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **S1Event** | **int32** | The subscribed event that triggered this notification in S1BearerSubscription. | [default to null]
 **S1UeInfo** | [***S1BearerNotificationS1UeInfo**](S1BearerNotification_s1UeInfo.md) |  | [default to null]
 **TimeStamp** | [***TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
+**Links** | [***CaReconfNotificationLinks**](CaReconfNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

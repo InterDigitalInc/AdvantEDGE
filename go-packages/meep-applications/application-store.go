@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ type ApplicationStore struct {
 	mutex    sync.Mutex
 }
 
-var SysAppNames []string = []string{"meep-app-enablement", "meep-ams", "meep-loc-serv", "meep-rnis", "meep-wais"}
+var SysAppNames []string = []string{"meep-app-enablement", "meep-ams", "meep-loc-serv", "meep-rnis", "meep-wais", "meep-vis"}
 
 // NewApplicationStore - Creates and initialize an Application Store instance
 func NewApplicationStore(cfg *ApplicationStoreCfg) (as *ApplicationStore, err error) {

@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **ServCellMeasInfo** | [**[]NrMeasRepUeNotificationServCellMeasInfo**](NrMeasRepUeNotification_servCellMeasInfo.md) | This parameter can be repeated to contain information of all the serving cells up to N. | [optional] [default to null]
 **TimeStamp** | [***TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
 **TriggerNr** | [***TriggerNr**](TriggerNr.md) |  | [default to null]
+**Links** | [***CaReconfNotificationLinks**](CaReconfNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

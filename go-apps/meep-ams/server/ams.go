@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ const defaultScopeOfLocality = "MEC_SYSTEM"
 const defaultConsumedLocalOnly = true
 const appTerminationPath = "notifications/mec011/appTermination"
 const serviceAppVersion = "2.1.1"
+const USER_CTX_TRANSFER_COMPLETED = "USER_CONTEXT_TRANSFER_COMPLETED"
 
 // App Info fields
 const (
@@ -93,27 +94,8 @@ const (
 	FieldCtxOwner         string = "contextOwner"
 )
 
-const (
-	AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED          = 1
-	AppMobilityServiceLevel_APP_MOBILITY_WITH_CONFIRMATION    = 2
-	AppMobilityServiceLevel_APP_MOBILITY_WITHOUT_CONFIRMATION = 3
-)
-
-const (
-	MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED = 1
-	MobilityStatus_INTERHOST_MOVEOUT_COMPLETED = 2
-	MobilityStatus_INTERHOST_MOVEOUT_FAILED    = 3
-)
-
-const (
-	ContextTransferState_NOT_TRANSFERRED                 = 0
-	ContextTransferState_USER_CONTEXT_TRANSFER_COMPLETED = 1
-)
-
-const MOBILITY_PROCEDURE_SUBSCRIPTION_INT = int32(1)
 const MOBILITY_PROCEDURE_SUBSCRIPTION = "MobilityProcedureSubscription"
 const MOBILITY_PROCEDURE_NOTIFICATION = "MobilityProcedureNotification"
-const ADJACENT_APP_INFO_SUBSCRIPTION_INT = int32(2)
 const ADJACENT_APP_INFO_SUBSCRIPTION = "AdjacentAppInfoSubscription"
 const ADJACENT_APP_INFO_NOTIFICATION = "AdjacentAppInfoNotification"
 const APP_STATE_READY = "READY"
@@ -690,7 +672,7 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &notification)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -803,7 +785,7 @@ func sendMpNotifications(currentAppId string, targetAppId string, assocId *Assoc
 			// Find matching Assoc ID
 			found := false
 			for _, filterAssocId := range subOrig.FilterCriteria.AssociateId {
-				if assocId.Type_ == filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
+				if *assocId.Type_ == *filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
 					found = true
 					break
 				}
@@ -816,12 +798,13 @@ func sendMpNotifications(currentAppId string, targetAppId string, assocId *Assoc
 		// Ignore mobility status filter
 
 		// Prepare notification
+		var mobilityStatus MobilityStatus = TRIGGERED_MobilityStatus // only supporting 1 = INTERHOST_MOVEOUT_TRIGGERED
 		notif := MobilityProcedureNotification{
 			NotificationType: MOBILITY_PROCEDURE_NOTIFICATION,
 			TimeStamp: &TimeStamp{
 				Seconds: int32(time.Now().Unix()),
 			},
-			MobilityStatus: 1, // only supporting 1 = INTERHOST_MOVEOUT_TRIGGERED
+			MobilityStatus: &mobilityStatus,
 			TargetAppInfo: &MobilityProcedureNotificationTargetAppInfo{
 				AppInstanceId: targetAppId,
 			},
@@ -846,7 +829,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -864,7 +847,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &discriminator)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	subscriptionType := discriminator.SubscriptionType
@@ -878,24 +861,24 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &mobProcSub)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Validate subscription
 		if mobProcSub.CallbackReference == "" {
 			log.Error("Mandatory CallbackReference parameter not present")
-			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 			return
 		}
 		if mobProcSub.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
-			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 		if mobProcSub.FilterCriteria.AppInstanceId == "" {
 			log.Error("FilterCriteria AppInstanceId should not be null for this subscription type")
-			http.Error(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -906,7 +889,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		appId := mobProcSub.FilterCriteria.AppInstanceId
 		_, err := getApp(appId)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
@@ -914,7 +897,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		subId := subMgr.GenerateSubscriptionId()
 
 		// Set resource link
-		mobProcSub.Links = &AdjacentAppInfoSubscriptionLinks{
+		mobProcSub.Links = &MobilityProcedureSubscriptionLinks{
 			Self: &LinkType{
 				Href: hostUrl.String() + basePath + "subscriptions/" + subId,
 			},
@@ -922,7 +905,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		// Set default mobility status filter criteria if none provided
 		if len(mobProcSub.FilterCriteria.MobilityStatus) == 0 {
-			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED)
+			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, TRIGGERED_MobilityStatus)
 		}
 
 		// Create & store subscription
@@ -931,7 +914,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		_, err = subMgr.CreateSubscription(subCfg, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
-			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+			errHandlerProblemDetails(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
 		}
 
@@ -943,24 +926,24 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &adjAppInfoSub)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Validate subscription
 		if adjAppInfoSub.CallbackReference == "" {
 			log.Error("Mandatory CallbackReference parameter not present")
-			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 			return
 		}
 		if adjAppInfoSub.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
-			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 		if adjAppInfoSub.FilterCriteria.AppInstanceId == "" {
 			log.Error("FilterCriteria AppInstanceId should not be null for this subscription type")
-			http.Error(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -971,7 +954,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		appId := adjAppInfoSub.FilterCriteria.AppInstanceId
 		_, err := getApp(appId)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
@@ -991,7 +974,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		_, err = subMgr.CreateSubscription(subCfg, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
-			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+			errHandlerProblemDetails(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
 		}
 
@@ -1020,7 +1003,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &discriminator)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	subscriptionType := discriminator.SubscriptionType
@@ -1029,7 +1012,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -1042,37 +1025,37 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &mobProcSub)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Validate subscription
 		if mobProcSub.CallbackReference == "" {
 			log.Error("Mandatory CallbackReference parameter not present")
-			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 			return
 		}
 		link := mobProcSub.Links
 		if link == nil || link.Self == nil {
 			log.Error("Mandatory Link parameter not present")
-			http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory Link parameter not present", http.StatusBadRequest)
 			return
 		}
 		selfUrl := strings.Split(link.Self.Href, "/")
 		subsIdStr := selfUrl[len(selfUrl)-1]
 		if subsIdStr != subId {
 			log.Error("SubscriptionId in endpoint and in body not matching")
-			http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 			return
 		}
 		if mobProcSub.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
-			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 		if mobProcSub.FilterCriteria.AppInstanceId == "" {
 			log.Error("FilterCriteria AppInstanceId should not be null for this subscription type")
-			http.Error(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1083,7 +1066,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		appId := mobProcSub.FilterCriteria.AppInstanceId
 		if appId != sub.Cfg.AppId {
 			log.Error("AppInstanceId does not match stored subscription")
-			http.Error(w, "AppInstanceId does not match stored subscription", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "AppInstanceId does not match stored subscription", http.StatusBadRequest)
 			return
 		}
 
@@ -1092,13 +1075,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = subMgr.UpdateSubscription(sub)
 		if err != nil {
 			log.Error("Failed to update subscription")
-			http.Error(w, "Failed to update subscription", http.StatusInternalServerError)
+			errHandlerProblemDetails(w, "Failed to update subscription", http.StatusInternalServerError)
 			return
 		}
 
 		// Set default mobility status filter criteria if none provided
 		if len(mobProcSub.FilterCriteria.MobilityStatus) == 0 {
-			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, MobilityStatus_INTERHOST_MOVEOUT_TRIGGERED)
+			mobProcSub.FilterCriteria.MobilityStatus = append(mobProcSub.FilterCriteria.MobilityStatus, TRIGGERED_MobilityStatus)
 		}
 
 		// Update subscription JSON
@@ -1106,7 +1089,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = subMgr.SetSubscriptionJson(sub, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
-			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+			errHandlerProblemDetails(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
 		}
 
@@ -1115,37 +1098,37 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bodyBytes, &adjAppInfoSub)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Validate subscription
 		if adjAppInfoSub.CallbackReference == "" {
 			log.Error("Mandatory CallbackReference parameter not present")
-			http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 			return
 		}
 		link := adjAppInfoSub.Links
 		if link == nil || link.Self == nil {
 			log.Error("Mandatory Link parameter not present")
-			http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory Link parameter not present", http.StatusBadRequest)
 			return
 		}
 		selfUrl := strings.Split(link.Self.Href, "/")
 		subsIdStr := selfUrl[len(selfUrl)-1]
 		if subsIdStr != subId {
 			log.Error("SubscriptionId in endpoint and in body not matching")
-			http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 			return
 		}
 		if adjAppInfoSub.FilterCriteria == nil {
 			log.Error("FilterCriteria should not be null for this subscription type")
-			http.Error(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 		if adjAppInfoSub.FilterCriteria.AppInstanceId == "" {
 			log.Error("FilterCriteria AppInstanceId should not be null for this subscription type")
-			http.Error(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "FilterCriteria AppInstanceId should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1156,7 +1139,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		appId := adjAppInfoSub.FilterCriteria.AppInstanceId
 		if appId != sub.Cfg.AppId {
 			log.Error("AppInstanceId does not match stored subscription")
-			http.Error(w, "AppInstanceId does not match stored subscription", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "AppInstanceId does not match stored subscription", http.StatusBadRequest)
 			return
 		}
 
@@ -1165,7 +1148,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = subMgr.UpdateSubscription(sub)
 		if err != nil {
 			log.Error("Failed to update subscription")
-			http.Error(w, "Failed to update subscription", http.StatusInternalServerError)
+			errHandlerProblemDetails(w, "Failed to update subscription", http.StatusInternalServerError)
 			return
 		}
 
@@ -1174,7 +1157,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		err = subMgr.SetSubscriptionJson(sub, jsonSub)
 		if err != nil {
 			log.Error("Failed to create subscription")
-			http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+			errHandlerProblemDetails(w, "Failed to create subscription", http.StatusInternalServerError)
 			return
 		}
 
@@ -1199,7 +1182,7 @@ func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -1207,7 +1190,7 @@ func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
 	err = subMgr.DeleteSubscription(sub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1243,6 +1226,8 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 		},
 	}
 
+	var subscriptionLinkListLinks SubscriptionLinkListLinks
+
 	// Find subscriptions by type
 	subscriptionType := ""
 	if subType != "" {
@@ -1255,7 +1240,7 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 	subList, err := subMgr.GetFilteredSubscriptions("", subscriptionType)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1265,19 +1250,22 @@ func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request
 		var linkListSub SubscriptionLinkListSubscription
 
 		// Add type-specific link
+		var subscriptionType SubscriptionType
 		if sub.Cfg.Type == MOBILITY_PROCEDURE_SUBSCRIPTION {
-			linkListSub.SubscriptionType = MOBILITY_PROCEDURE_SUBSCRIPTION_INT
+			subscriptionType = MOBILITY_PROCEDURE_SUBSCRIPTION_SubscriptionType
 			subOrig := convertJsonToMobilityProcedureSubscription(sub.JsonSubOrig)
 			linkListSub.Href = subOrig.Links.Self.Href
 		} else if sub.Cfg.Type == ADJACENT_APP_INFO_SUBSCRIPTION {
-			linkListSub.SubscriptionType = ADJACENT_APP_INFO_SUBSCRIPTION_INT
+			subscriptionType = ADJACENT_APP_INFO_SUBSCRIPTION_SubscriptionType
 			subOrig := convertJsonToAdjacentAppInfoSubscription(sub.JsonSubOrig)
 			linkListSub.Href = subOrig.Links.Self.Href
 		}
+		linkListSub.SubscriptionType = &subscriptionType
 
 		// Add to link list
-		subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, linkListSub)
+		subscriptionLinkListLinks.Subscription = append(subscriptionLinkListLinks.Subscription, linkListSub)
 	}
+	subscriptionLinkList.Links = &subscriptionLinkListLinks
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
@@ -1291,27 +1279,27 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// validate registration info
 	if regInfo.ServiceConsumerId == nil {
 		log.Error("Service Consumer Id parameter not present")
-		http.Error(w, "Service Consumer Id parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Service Consumer Id parameter not present", http.StatusBadRequest)
 		return
 	}
 	appId := regInfo.ServiceConsumerId.AppInstanceId
 	mepId := regInfo.ServiceConsumerId.MepId
 	if (appId == "" && mepId == "") || (appId != "" && mepId != "") {
 		log.Error("Service Consumer Id parameter should contain either AppInstanceId or MepId")
-		http.Error(w, "Service Consumer Id parameter should contain either AppInstanceId or MepId", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Service Consumer Id parameter should contain either AppInstanceId or MepId", http.StatusBadRequest)
 		return
 	}
 	for _, deviceInfo := range regInfo.DeviceInformation {
 		if deviceInfo.AssociateId == nil {
 			log.Error("AssociateId is a mandatory parameter if deviceInformation is present.")
-			http.Error(w, "AssociateId is a mandatory parameter if deviceInformation is present.", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "AssociateId is a mandatory parameter if deviceInformation is present.", http.StatusBadRequest)
 			return
 		}
 	}
@@ -1326,7 +1314,7 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	appInfo, err := getApp(appId)
 	if err != nil {
 		log.Error("App Instance Id does not exist.")
-		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "App Instance Id does not exist.", http.StatusBadRequest)
 		return
 	}
 
@@ -1334,7 +1322,7 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	svcId, err := generateRand(12)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	regInfo.AppMobilityServiceId = svcId
@@ -1343,7 +1331,7 @@ func appMobilityServicePOST(w http.ResponseWriter, r *http.Request) {
 	err = createService(appId, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1381,26 +1369,26 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(bodyBytes, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// validate registration info
 	if regInfo.ServiceConsumerId == nil {
 		log.Error("Service Consumer Id parameter not present")
-		http.Error(w, "Service Consumer Id parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Service Consumer Id parameter not present", http.StatusBadRequest)
 		return
 	}
 	appId := regInfo.ServiceConsumerId.AppInstanceId
 	mepId := regInfo.ServiceConsumerId.MepId
 	if (appId == "" && mepId == "") || (appId != "" && mepId != "") {
 		log.Error("Service Consumer Id parameter should contain either AppInstanceId or MepId")
-		http.Error(w, "Service Consumer Id parameter should contain either AppInstanceId or MepId", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Service Consumer Id parameter should contain either AppInstanceId or MepId", http.StatusBadRequest)
 		return
 	}
 	if regInfo.AppMobilityServiceId != svcId {
 		log.Error("ServiceId passed in parameters not matching the serviceId in the RegistrationInfo")
-		http.Error(w, "ServiceId passed in parameters not matching the serviceId in the RegistrationInfo", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "ServiceId passed in parameters not matching the serviceId in the RegistrationInfo", http.StatusBadRequest)
 		return
 	}
 
@@ -1414,7 +1402,7 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	appInfo, err := getApp(appId)
 	if err != nil {
 		log.Error("App Instance Id does not exist.")
-		http.Error(w, "App Instance Id does not exist.", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "App Instance Id does not exist.", http.StatusBadRequest)
 		return
 	}
 
@@ -1422,7 +1410,7 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	statusCode, err := deleteServiceById(svcId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), statusCode)
+		errHandlerProblemDetails(w, err.Error(), statusCode)
 		return
 	}
 
@@ -1430,7 +1418,7 @@ func appMobilityServiceByIdPUT(w http.ResponseWriter, r *http.Request) {
 	err = createService(appId, &regInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1454,7 +1442,7 @@ func appMobilityServiceByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	regInfo, err := getRegInfo(svcId)
 	if err != nil || regInfo == nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -1473,7 +1461,7 @@ func appMobilityServiceByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	statusCode, err := deleteServiceById(svcId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), statusCode)
+		errHandlerProblemDetails(w, err.Error(), statusCode)
 		return
 	}
 
@@ -1493,7 +1481,7 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(key, populateRegInfoList, &regInfoList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1501,7 +1489,7 @@ func appMobilityServiceGET(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(regInfoList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1585,8 +1573,8 @@ func createService(appId string, regInfo *RegistrationInfo) error {
 	for _, devInfo := range regInfo.DeviceInformation {
 		dev := make(map[string]string)
 		dev[FieldAssociateId] = devInfo.AssociateId.Value
-		dev[FieldServiceLevel] = strconv.Itoa(int(devInfo.AppMobilityServiceLevel))
-		dev[FieldCtxTransferState] = strconv.Itoa(int(devInfo.ContextTransferState))
+		dev[FieldServiceLevel] = string(*devInfo.AppMobilityServiceLevel)
+		dev[FieldCtxTransferState] = string(*devInfo.ContextTransferState)
 		dev[FieldMobilitySvcId] = regInfo.AppMobilityServiceId
 		dev[FieldAppInstanceId] = appId
 		dev[FieldCtxOwner] = ""
@@ -1728,7 +1716,7 @@ func refreshTrackedDevCtxOwner(appName string) {
 	deviceTargetMap := make(map[string][]string)
 	for _, trackedDev := range matchingTrackedDevList {
 		// Make sure device mobility is allowed
-		if trackedDev[FieldServiceLevel] == strconv.Itoa(int(AppMobilityServiceLevel_APP_MOBILITY_NOT_ALLOWED)) {
+		if trackedDev[FieldServiceLevel] == string(NOT_ALLOWED_AppMobilityServiceLevel) {
 			continue
 		}
 
@@ -1770,6 +1758,9 @@ func refreshTrackedDevCtxOwner(appName string) {
 		} else {
 			// Perform context transfer only if current App is no longer a valid target
 			ctxTransferRequired := true
+			if trackedDev[FieldCtxTransferState] == USER_CTX_TRANSFER_COMPLETED {
+				ctxTransferRequired = false
+			}
 			for _, targetAppId := range targetAppIds {
 				if targetAppId == currentAppId {
 					ctxTransferRequired = false
@@ -1790,9 +1781,10 @@ func refreshTrackedDevCtxOwner(appName string) {
 
 				// Send MP Notification for subscriptions to current MEC App
 				// NOTE: Only send for notifications for the source AM service dtracked devices
+				modelType := UE_I_PV4_ADDRESS_AssociateIdType
 				if trackedDev[FieldAppInstanceId] == currentAppId {
 					assocId := AssociateId{
-						Type_: 1, //ipv4 address
+						Type_: &modelType,
 						Value: address,
 					}
 					sendMpNotifications(currentAppId, targetAppId, &assocId)
@@ -1844,8 +1836,10 @@ func getTargetApps(appName string, address string) ([]string, error) {
 func ExpiredSubscriptionCb(sub *subs.Subscription) {
 	// Build expiry notification
 	notif := ExpiryNotification{
-		Links: &ExpiryNotificationLinks{
-			Self: hostUrl.String() + basePath + "subscriptions/" + sub.Cfg.Id,
+		Links: &Link{
+			Subscription: &LinkType{
+				Href: hostUrl.String() + basePath + "subscriptions/" + sub.Cfg.Id,
+			},
 		},
 		ExpiryDeadline: &TimeStamp{
 			Seconds:     int32(sub.Cfg.ExpiryTime.Unix()),
@@ -2364,4 +2358,15 @@ func generateRand(n int) (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(data), nil
+}
+
+func errHandlerProblemDetails(w http.ResponseWriter, error string, code int) {
+	var pd ProblemDetails
+	pd.Detail = error
+	pd.Status = int32(code)
+
+	jsonResponse := convertProblemDetailstoJson(&pd)
+
+	w.WriteHeader(code)
+	fmt.Fprint(w, jsonResponse)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,11 +264,11 @@ func convertStringToOperationStatus(opStatus string) OperationStatus {
 
 	switch opStatus {
 	case "Serviceable":
-		return SERVICEABLE
+		return SERVICEABLE_OperationStatus
 	case "Unserviceable":
-		return UNSERVICEABLE
+		return UNSERVICEABLE_OperationStatus
 	default:
-		return OPSTATUS_UNKNOWN
+		return UNKNOWN_OperationStatus
 	}
 }
 
@@ -276,24 +276,33 @@ func convertStringToConnectionType(conType string) ConnectionType {
 
 	switch conType {
 	case "Femto":
-		return FEMTO
+		return FEMTO_ConnectionType
 	case "LTE-femto":
-		return LTE_FEMTO
+		return LTE_FEMTO_ConnectionType
 	case "Smallcell":
-		return SMALLCELL
+		return SMALLCELL_ConnectionType
 	case "LTE-smallcell":
-		return LTE_SMALLCELL
+		return LTE_SMALLCELL_ConnectionType
 	case "Wifi":
-		return WIFI
+		return WIFI_ConnectionType
 	case "Pico":
-		return PICO
+		return PICO_ConnectionType
 	case "Micro":
-		return MICRO
+		return MICRO_ConnectionType
 	case "Macro":
-		return MACRO
+		return MACRO_ConnectionType
 	case "Wimax":
-		return WIMAX
+		return WIMAX_ConnectionType
 	default:
-		return CONTYPE_UNKNOWN
+		return UNKNOWN_ConnectionType
 	}
+}
+
+func convertProblemDetailstoJson(probdetails *ProblemDetails) string {
+	jsonInfo, err := json.Marshal(*probdetails)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
 }

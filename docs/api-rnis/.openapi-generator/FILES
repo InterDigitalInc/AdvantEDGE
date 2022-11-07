@@ -6,11 +6,13 @@ Models/AppTerminationNotificationLinks.md
 Models/AssociateId.md
 Models/CaReconfNotification.md
 Models/CaReconfNotificationCarrierAggregationMeasInfo.md
+Models/CaReconfNotificationLinks.md
 Models/CaReconfNotificationSecondaryCellAdd.md
 Models/CaReconfSubscription.md
 Models/CaReconfSubscriptionFilterCriteriaAssoc.md
 Models/CaReconfSubscriptionLinks.md
 Models/CellChangeNotification.md
+Models/CellChangeNotificationLinks.md
 Models/CellChangeNotificationTempUeId.md
 Models/CellChangeSubscription.md
 Models/CellChangeSubscriptionFilterCriteriaAssocHo.md
@@ -38,7 +40,6 @@ Models/MeasRepUeSubscription.md
 Models/MeasRepUeSubscriptionFilterCriteriaAssocTri.md
 Models/MeasTaNotification.md
 Models/MeasTaSubscription.md
-Models/NRcgi.md
 Models/NrMeasRepUeNotification.md
 Models/NrMeasRepUeNotificationEutraNeighCellMeasInfo.md
 Models/NrMeasRepUeNotificationNCell.md
@@ -47,6 +48,7 @@ Models/NrMeasRepUeNotificationSCell.md
 Models/NrMeasRepUeNotificationServCellMeasInfo.md
 Models/NrMeasRepUeSubscription.md
 Models/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md
+Models/Nrcgi.md
 Models/OperationActionType.md
 Models/Plmn.md
 Models/PlmnInfo.md
@@ -88,7 +90,9 @@ Models/S1BearerSubscriptionS1BearerSubscriptionCriteria.md
 Models/SubscriptionLinkList.md
 Models/SubscriptionLinkListLinks.md
 Models/SubscriptionLinkListLinksSubscription.md
+Models/TestNotification.md
 Models/TimeStamp.md
 Models/Trigger.md
 Models/TriggerNr.md
+Models/WebsockNotifConfig.md
 README.md

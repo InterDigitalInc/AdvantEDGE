@@ -1,11 +1,11 @@
 /*
-* Copyright (c) 2021 InterDigital Communications, Inc
+* Copyright (c) 2022  The AdvantEDGE Authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-* http://www.apache.org/licenses/LICENSE-2.0
+*   http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -498,7 +498,8 @@ func demo3UpdateAmsDevices(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		_, err = amsAddDevice(amsResourceId, amsResource, device)
+		var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED_ContextTransferState
+		_, err = amsSetDevice(amsResourceId, amsResource, device, contextTransferState)
 		if err != nil {
 			log.Error("Could not add device to AMS Resource", err.Error())
 			statusCode = "501"
@@ -563,8 +564,9 @@ func removeAmsDeviceHelper(device string) bool {
 		if v == device {
 			if i < len(trackDevices)-1 {
 				trackDevices = append(trackDevices[:i], trackDevices[i+1:]...)
+			} else {
+				trackDevices = trackDevices[:len(trackDevices)-1]
 			}
-			trackDevices = trackDevices[:len(trackDevices)-1]
 		}
 	}
 
@@ -640,6 +642,13 @@ func demo3DeleteAmsDevice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to retrieve ams subscription", http.StatusInternalServerError)
 		return
 	}
+	if amsSubscriptionResp.SubscriptionType == "AdjacentAppInfoSubscription" {
+		statusCode = "400"
+		appActivityLogs = append(appActivityLogs, "Remove "+device+" to AMS resource ["+statusCode+"]")
+		log.Error("AdjacentAppInfoSubscription not suported", err.Error())
+		http.Error(w, "AdjacentAppInfoSubscription not suported", http.StatusBadRequest)
+		return
+	}
 
 	for i, v := range amsSubscriptionResp.FilterCriteria.AssociateId {
 		if v.Value == device {
@@ -684,7 +693,7 @@ func serviceAvailNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	log.Info("Received service availability notification")
 
 	msg := ""
-	if notification.ServiceReferences[0].ChangeType == "ADDED" {
+	if *notification.ServiceReferences[0].ChangeType == smc.ADDED_ServiceAvailabilityNotificationChangeType {
 		msg = "Available"
 	} else {
 		msg = "Unavailable"
@@ -761,7 +770,7 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	log.Debug("Receive AMS notification")
-	var amsNotification ams.MobilityProcedureNotification
+	var amsNotification MobilityProcedureNotification
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&amsNotification)
 	if err != nil {
@@ -829,13 +838,12 @@ func amsNotificationCallback(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update AMS Resource
-		_, amsUpdateError := amsUpdateDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, 1)
+		_, amsUpdateError := amsSetDevice(amsResourceId, amsResource, amsNotification.AssociateId[0].Value, ams.USER_CONTEXT_TRANSFER_COMPLETED_ContextTransferState)
 		if amsUpdateError != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not update ams")
 			return
 		}
-
 	}
 
 	appActivityLogs = append(appActivityLogs, "AMS event: transfer "+targetDevice+" context to "+
@@ -886,24 +894,26 @@ func stateTransferPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve AMS Resource
+	amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Update AMS Resource
+	var contextTransferState ams.ContextTransferState = ams.NOT_TRANSFERRED_ContextTransferState
+	_, err = amsSetDevice(amsResourceId, amsResourceBody, targetContextState.Device, contextTransferState)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Check if device is part of ams
 	res := addToAmsKey(targetContextState.Device)
 	if !res {
-		// Retrieve AMS Resource
-		amsResourceBody, _, err := amsClient.AmsiApi.AppMobilityServiceByIdGET(context.TODO(), amsResourceId)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Update AMS Resource
-		_, err = amsAddDevice(amsResourceId, amsResourceBody, targetContextState.Device)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
 		// Update ams subscription
 		amsSubscription, _, err := amsClient.AmsiApi.SubByIdGET(context.TODO(), demoAppInfo.Subscriptions.AmsLinkListSubscription.SubId)
@@ -941,8 +951,9 @@ func updateAmsSubscription(subscriptionId string, device string, inlineSubscript
 		return inLineSubscriptionResp, nil
 	}
 
+	var t_ ams.AssociateIdType = ams.UE_I_PV4_ADDRESS_AssociateIdType
 	associateId := ams.AssociateId{
-		Type_: 1,
+		Type_: &t_,
 		Value: device,
 	}
 	inlineSubscription.FilterCriteria.AssociateId = append(inlineSubscription.FilterCriteria.AssociateId, associateId)
@@ -1009,34 +1020,27 @@ func amsSendService(appInstanceId string, device string) (string, error) {
 	return registerationInfo.AppMobilityServiceId, nil
 }
 
-// Add a device in ams resource
-// Return ams id for update ams
-func amsAddDevice(amsId string, registerationBody ams.RegistrationInfo, device string) (ams.RegistrationInfo, error) {
-	var associateId ams.AssociateId
-	associateId.Type_ = 1
-	associateId.Value = device
-
-	registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
-		AssociateId:             &associateId,
-		AppMobilityServiceLevel: 3,
-	})
-
-	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
-	if err != nil {
-		log.Error(err.Error())
-		return registerationBody, err
-	}
-
-	return registerationInfo, nil
-}
-
-// Update context state in ams resource to 0 or 1
-// Return ams id for update ams
-func amsUpdateDevice(amsId string, registerationBody ams.RegistrationInfo, device string, contextState int32) (ams.RegistrationInfo, error) {
-	for _, v := range registerationBody.DeviceInformation {
+// Update the Context Transfer State if the device is present else add ams device
+func amsSetDevice(amsId string, registerationBody ams.RegistrationInfo, device string, contextState ams.ContextTransferState) (ams.RegistrationInfo, error) {
+	var updated bool = false
+	for i := range registerationBody.DeviceInformation {
+		v := &registerationBody.DeviceInformation[i]
 		if v.AssociateId.Value == device {
-			v.ContextTransferState = contextState
+			v.ContextTransferState = &contextState
+			updated = true
 		}
+	}
+	if !updated {
+		var associateId ams.AssociateId
+		var t_ ams.AssociateIdType = ams.UE_I_PV4_ADDRESS_AssociateIdType
+		associateId.Type_ = &t_
+		associateId.Value = device
+		var appMobilityServiceLevel ams.AppMobilityServiceLevel = ams.WITHOUT_CONFIRMATION_AppMobilityServiceLevel
+		registerationBody.DeviceInformation = append(registerationBody.DeviceInformation, ams.RegistrationInfoDeviceInformation{
+			AssociateId:             &associateId,
+			AppMobilityServiceLevel: &appMobilityServiceLevel,
+			ContextTransferState:    &contextState,
+		})
 	}
 
 	registerationInfo, _, err := amsClient.AmsiApi.AppMobilityServiceByIdPUT(context.TODO(), registerationBody, amsId)
@@ -1076,11 +1080,13 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 	var mobilityProcedureSubscription ams.MobilityProcedureSubscription
 
 	mobilityProcedureSubscription.CallbackReference = callBackUrl + "/services/callback/amsevent"
-	mobilityProcedureSubscription.SubscriptionType = "MobilityProcedureSubscription"
+	subscriptionType := ams.MOBILITY_PROCEDURE_SUBSCRIPTION_SubscriptionType
+	mobilityProcedureSubscription.SubscriptionType = &subscriptionType
 
 	// Default tracking ue set to 10.100.0.3
 	var associateId ams.AssociateId
-	associateId.Type_ = 1
+	var t_ ams.AssociateIdType = ams.UE_I_PV4_ADDRESS_AssociateIdType
+	associateId.Type_ = &t_
 	associateId.Value = device
 
 	// Filter criteria
@@ -1093,6 +1099,10 @@ func amsSendSubscription(appInstanceId string, device string, callBackUrl string
 	inlineSubscription := ams.ConvertMobilityProcedureSubscriptionToInlineSubscription(&mobilityProcedureSubscription)
 
 	mobilitySubscription, resp, err := amsClient.AmsiApi.SubPOST(context.TODO(), *inlineSubscription)
+	if err != nil {
+		log.Error(err.Error())
+		return "", err
+	}
 	hRefLink := mobilitySubscription.Links.Self.Href
 
 	// Find subscription id from response
@@ -1122,12 +1132,13 @@ func sendReadyConfirmation(appInstanceId string) error {
 	appReady.Indication = "READY"
 	log.Info(appSupportClientPath)
 	resp, err := appSupportClient.MecAppSupportApi.ApplicationsConfirmReadyPOST(context.TODO(), appReady, appInstanceId)
-	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {
-		log.Error("Failed to receive confirmation acknowlegement ", resp.Status)
-		appActivityLogs = append(appActivityLogs, "Send confirm ready ["+status+"]")
+		log.Error(err.Error())
+		//log.Error("Failed to receive confirmation acknowlegement ", resp.Status)
+		appActivityLogs = append(appActivityLogs, "Send confirm ready ["+err.Error()+"]")
 		return err
 	}
+	status := strconv.Itoa(resp.StatusCode)
 
 	appActivityLogs = append(appActivityLogs, "Send confirm ready ["+status+"]")
 	return nil
@@ -1193,12 +1204,7 @@ func subscribeAvailability(appInstanceId string, callbackReference string) (stri
 	var filter smc.SerAvailabilityNotificationSubscriptionFilteringCriteria
 	filter.SerNames = nil
 	filter.IsLocal = true
-	subscription := smc.SerAvailabilityNotificationSubscription{
-		SubscriptionType:  "SerAvailabilityNotificationSubscription",
-		CallbackReference: callbackReference,
-		Links:             nil,
-		FilteringCriteria: &filter,
-	}
+	subscription := smc.SerAvailabilityNotificationSubscription{"SerAvailabilityNotificationSubscription", callbackReference, nil, &filter}
 	serAvailabilityNotificationSubscription, resp, err := srvMgmtClient.MecServiceMgmtApi.ApplicationsSubscriptionsPOST(context.TODO(), subscription, appInstanceId)
 	status := strconv.Itoa(resp.StatusCode)
 	if err != nil {

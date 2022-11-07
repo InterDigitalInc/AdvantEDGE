@@ -316,6 +316,32 @@ paths:
           description: "Not found"
         500:
           description: "Internal server error"
+  /geodata/cellularPower:
+    post:
+      tags:
+      - "Geospatial Data"
+      summary: "Get RSRQ and RSRP values for a list of coordinates"
+      description: "Get RSRQ and RSRP values for a list of coordinates"
+      operationId: "getGeoDataPowerValues"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "coordinates"
+        description: "List of geo coordinates"
+        required: true
+        schema:
+          $ref: "#/definitions/GeoCoordinateList"
+        x-exportParamName: "Coordinates"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/CoordinatePowerList"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
 definitions:
   AutomationStateList:
     type: "object"
@@ -350,6 +376,90 @@ definitions:
     example:
       active: true
       type: "MOBILITY"
+  CoordinatePowerList:
+    type: "object"
+    properties:
+      coordinatesPower:
+        type: "array"
+        items:
+          $ref: "#/definitions/CoordinatePower"
+    description: "List of geo coordinates with RSRQ/RSRP values"
+    example:
+      coordinatesPower:
+      - latitude: 43.73651
+        longitude: 7.421802
+        rsrq: 21
+        rsrp: 63
+        poaName: "4g-macro-cell-6"
+      - latitude: 43.747787
+        longitude: 7.434856
+        rsrq: 58
+        rsrp: 60
+        poaName: "5G-small-cell-15"
+  CoordinatePower:
+    required:
+    - "latitude"
+    - "longitude"
+    - "poaName"
+    - "rsrp"
+    - "rsrq"
+    properties:
+      latitude:
+        type: "number"
+        format: "float"
+        description: "Latitude of a second element for query purpose."
+      longitude:
+        type: "number"
+        format: "float"
+        description: "Longitude of a second element for query purpose."
+      rsrq:
+        type: "integer"
+        format: "int32"
+        description: "Reference Signal Received Quality as defined in ETSI TS 136\
+          \ 214."
+      rsrp:
+        type: "integer"
+        format: "int32"
+        description: "Reference Signal Received Power as defined in ETSI TS 136 214."
+      poaName:
+        type: "string"
+        description: "Name of the POA for which RSRP/RSRQ values are calculated."
+    description: "Coordinates with their power values."
+    example:
+      latitude: 0.8008282
+      longitude: 6.0274563
+      rsrq: -2
+      rsrp: 40
+      poaName: "5G-macro-cell-15"
+  GeoCoordinateList:
+    type: "object"
+    properties:
+      geoCoordinates:
+        type: "array"
+        items:
+          $ref: "#/definitions/GeoCoordinate"
+    description: "List of geo-coordinates"
+    example:
+      geoCoordinates:
+      - latitude: 43.73651
+        longitude: 7.421802
+      - latitude: 43.73736
+        longitude: 7.42821
+  GeoCoordinate:
+    type: "object"
+    properties:
+      latitude:
+        type: "number"
+        format: "float"
+        description: "Latitude of a second element for query purpose."
+      longitude:
+        type: "number"
+        format: "float"
+        description: "Longitude of a second element for query purpose."
+    description: "Geo-coordinates for cellular power."
+    example:
+      latitude: 0.8008282
+      longitude: 6.0274563
   TargetPoint:
     type: "object"
     properties:

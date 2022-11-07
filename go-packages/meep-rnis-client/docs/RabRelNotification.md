@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **ErabReleaseInfo** | [***RabRelNotificationErabReleaseInfo**](RabRelNotification_erabReleaseInfo.md) |  | [default to null]
 **NotificationType** | **string** | Shall be set to \&quot;RabRelNotification\&quot;. | [default to null]
 **TimeStamp** | [***TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
+**Links** | [***CaReconfNotificationLinks**](CaReconfNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

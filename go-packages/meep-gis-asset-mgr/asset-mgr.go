@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package gisassetmgr
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -159,6 +161,24 @@ type AssetMgr struct {
 	db        *sql.DB
 	connected bool
 	updateCb  func(string, string)
+}
+
+type CoordinatePowerValue struct {
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
+	Rsrq      float32 `json:"rsrq"`
+	Rsrp      float32 `json:"rsrp"`
+	PoaName   string  `json:"poaName"`
+}
+
+type Coordinate struct {
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
+}
+
+type Position struct {
+	Type        string    `json:"type,omitempty"`
+	Coordinates []float32 `json:"coordinates"`
 }
 
 // Profiling init
@@ -2410,4 +2430,71 @@ func (am *AssetMgr) GetWithinRangeBetweenPoints(srcCoordinates string, dstCoordi
 		log.Error(err)
 	}
 	return within, err
+}
+
+// Calculate RSRQ/RSRP for a given list of coordinates
+func (am *AssetMgr) GetPowerValuesForCoordinates(coordinates []Coordinate) ([]CoordinatePowerValue, error) {
+	poaMap, err := am.GetAllPoa()
+
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	var position Position
+	var CoordinatePowerValues []CoordinatePowerValue
+	for _, coord := range coordinates {
+		maxRsrp := float32(0)
+		maxRsrq := float32(0)
+		var bestPoa string
+		for _, poa := range poaMap {
+			_ = json.Unmarshal([]byte(poa.Position), &position)
+			poaLat := position.Coordinates[1]
+			poaLong := position.Coordinates[0]
+			poaRadius := poa.Radius
+
+			poaLatStr := strconv.FormatFloat(float64(poaLat), 'f', -1, 32)
+			poaLongStr := strconv.FormatFloat(float64(poaLong), 'f', -1, 32)
+			coordLatStr := strconv.FormatFloat(float64(coord.Latitude), 'f', -1, 32)
+			coordLongStr := strconv.FormatFloat(float64(coord.Longitude), 'f', -1, 32)
+
+			poaCoordinates := "(" + poaLongStr + " " + poaLatStr + ")"
+			coordCoordinates := "(" + coordLongStr + " " + coordLatStr + ")"
+
+			distance, err := am.GetDistanceBetweenPoints(poaCoordinates, coordCoordinates)
+			if err != nil {
+				log.Error(err.Error())
+				return nil, err
+			}
+
+			if distance > poaRadius {
+				continue
+			}
+
+			_, rsrp, rsrq := calculatePower(poa.SubType, poaRadius, distance)
+
+			if rsrp > maxRsrp {
+				maxRsrp = rsrp
+				maxRsrq = rsrq
+				if maxRsrp != minCell4gRsrp && maxRsrq != minCell4gRsrq {
+					bestPoa = poa.Name
+				}
+			}
+		}
+
+		newCoordinatePowerValue := CoordinatePowerValue{
+			Latitude:  coord.Latitude,
+			Longitude: coord.Longitude,
+			Rsrp:      maxRsrp,
+			Rsrq:      maxRsrq,
+		}
+		if maxRsrp != minCell4gRsrp && maxRsrq != minCell4gRsrq {
+			newCoordinatePowerValue.PoaName = bestPoa
+		} else {
+			newCoordinatePowerValue.PoaName = "" // TODO: Check if empty string is the most significant value to be used
+		}
+
+		CoordinatePowerValues = append(CoordinatePowerValues, newCoordinatePowerValue)
+	}
+	return CoordinatePowerValues, nil
 }

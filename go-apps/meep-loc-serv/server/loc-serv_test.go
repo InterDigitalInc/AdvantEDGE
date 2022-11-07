@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -596,7 +596,7 @@ func testDistanceSubscriptionPost(t *testing.T) string {
 	requestCallbackReference := "myCallbackRef"
 	requestMonitoredAddress := []string{"ue1"}
 	requestReferenceAddress := []string{"ue2-ext"}
-	requestCriteria := ALL_WITHIN_DISTANCE
+	requestCriteria := ALL_WITHIN_DISTANCE_DistanceCriteria
 	requestFrequency := int32(1)
 	requestDistance := float32(100.1)
 	requestDuration := int32(0)
@@ -659,7 +659,7 @@ func testDistanceSubscriptionPut(t *testing.T, subscriptionId string, expectSucc
 	requestCallbackReference := "myCallbackRef"
 	requestMonitoredAddress := []string{"ue1"}
 	requestReferenceAddress := []string{"ue2-ext"}
-	requestCriteria := ALL_WITHIN_DISTANCE
+	requestCriteria := ALL_WITHIN_DISTANCE_DistanceCriteria
 	requestFrequency := int32(1)
 	requestDistance := float32(100.1)
 	requestDuration := int32(0)
@@ -948,7 +948,7 @@ func testAreaCircleSubscriptionPost(t *testing.T) string {
 	requestAddress := []string{"ue1"}
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
-	requestEnteringLeaving := ENTERING_CRITERIA
+	requestEnteringLeaving := ENTERING_EnteringLeavingCriteria
 	requestFrequency := int32(1)
 	requestLatitude := float32(45.5)
 	requestLongitude := float32(50.1)
@@ -1012,7 +1012,7 @@ func testAreaCircleSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	requestAddress := []string{"ue1"}
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
-	requestEnteringLeaving := ENTERING_CRITERIA
+	requestEnteringLeaving := ENTERING_EnteringLeavingCriteria
 	requestFrequency := int32(1)
 	requestLatitude := float32(45.5)
 	requestLongitude := float32(50.1)
@@ -1648,7 +1648,7 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestUserEvent := []UserEventType{ENTERING_UserEventType, TRANSFERRING_UserEventType}
 	requestDuration := int32(0)
 	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zonalTraffic/" + strconv.Itoa(nextZonalSubscriptionIdAvailable)
 
@@ -1705,7 +1705,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestUserEvent := []UserEventType{ENTERING_UserEventType, TRANSFERRING_UserEventType}
 	requestDuration := int32(0)
 	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zonalTraffic/" + subscriptionId
 
@@ -1989,7 +1989,7 @@ func testUserSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "myAddr"
-	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestUserEvent := []UserEventType{ENTERING_UserEventType, TRANSFERRING_UserEventType}
 	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/userTracking/" + strconv.Itoa(nextUserSubscriptionIdAvailable)
 
 	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
@@ -2044,7 +2044,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "myAddr"
-	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestUserEvent := []UserEventType{ENTERING_UserEventType, TRANSFERRING_UserEventType}
 	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/userTracking/" + subscriptionId
 
 	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
@@ -2328,7 +2328,7 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestOperationStatus := []OperationStatus{SERVICEABLE}
+	requestOperationStatus := []OperationStatus{SERVICEABLE_OperationStatus}
 	requestNumberOfUsersZoneThreshold := int32(10)
 	requestNumberOfUsersAPThreshold := int32(8)
 	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zoneStatus/" + strconv.Itoa(nextZoneStatusSubscriptionIdAvailable)
@@ -2385,7 +2385,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestOperationStatus := []OperationStatus{SERVICEABLE}
+	requestOperationStatus := []OperationStatus{SERVICEABLE_OperationStatus}
 	requestNumberOfUsersZoneThreshold := int32(10)
 	requestNumberOfUsersAPThreshold := int32(8)
 	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zoneStatus/" + subscriptionId
@@ -2744,8 +2744,8 @@ func TestAPInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedConnType := MACRO
-	expectedOpStatus := SERVICEABLE
+	expectedConnType := MACRO_ConnectionType
+	expectedOpStatus := SERVICEABLE_OperationStatus
 
 	expectedAPInfo := AccessPointInfo{"zone1-poa-cell1", &expectedConnType, "", nil, 2, &expectedOpStatus, "", ""}
 
@@ -2850,7 +2850,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "ue1"
-	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestUserEvent := []UserEventType{ENTERING_UserEventType, TRANSFERRING_UserEventType}
 	requestResourceURL := ""
 
 	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
@@ -2956,7 +2956,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone2"
-	requestUserEvent := []UserEventType{ENTERING_EVENT, LEAVING_EVENT}
+	requestUserEvent := []UserEventType{ENTERING_UserEventType, LEAVING_UserEventType}
 	requestDuration := int32(0)
 	requestResourceURL := ""
 
@@ -2966,7 +2966,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator = "123"
 	requestCallbackReference = "myCallbackRef"
 	requestZoneId = "zone1"
-	requestUserEvent = []UserEventType{TRANSFERRING_EVENT}
+	requestUserEvent = []UserEventType{TRANSFERRING_UserEventType}
 	requestDuration = int32(0)
 	requestResourceURL = ""
 

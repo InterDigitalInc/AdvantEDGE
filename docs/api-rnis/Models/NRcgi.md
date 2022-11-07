@@ -1,4 +1,4 @@
-# NRcgi
+# Nrcgi
 ## Properties
 
 Name | Type | Description | Notes

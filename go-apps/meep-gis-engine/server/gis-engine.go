@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,16 @@ import (
 
 const serviceName = "GIS Engine"
 const moduleName = "meep-gis-engine"
-const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
-const influxAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
+
+var redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+var influxAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
+
 const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
+
+var postgisHost string = ""
+var postgisPort string = ""
 
 // Enable profiling
 const profiling = false
@@ -172,7 +177,7 @@ func Init() (err error) {
 	log.Info("Connected to GIS Cache")
 
 	// Connect to GIS Asset Manager
-	ge.assetMgr, err = am.NewAssetMgr(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")
+	ge.assetMgr, err = am.NewAssetMgr(moduleName, ge.sandboxName, postgisUser, postgisPwd, postgisHost, postgisPort)
 	if err != nil {
 		log.Error("Failed connection to GIS Asset Manager: ", err)
 		return err
@@ -293,6 +298,7 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 }
 
 func processScenarioActivate() {
+
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
@@ -342,6 +348,7 @@ func processScenarioActivate() {
 }
 
 func processScenarioUpdate() {
+
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
@@ -369,6 +376,7 @@ func processScenarioUpdate() {
 }
 
 func processScenarioTerminate() {
+
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
@@ -1531,14 +1539,20 @@ func geGetWithinRangeGeoDataByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
+
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Debug("Get GeoData for asset: ", assetName)
+	//log.Info("Get GeoData for asset: ", assetName)
 
 	// Retrieve query parameters
 	query := r.URL.Query()
+	//log.Info("geGetGeoDataByName: query: ", query)
+	if assetName == "" {
+		assetName = query.Get("assetName")
+	}
 	excludePath := query.Get("excludePath")
+	//log.Info("geGetGeoDataByName: excludePath: ", excludePath)
 
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
@@ -1720,6 +1734,75 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func geGetGeoDataPowerValues(w http.ResponseWriter, r *http.Request) {
+	// Retrieve coordinates to work with from request body
+	var coordinates GeoCoordinateList
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&coordinates)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Make sure scenario is active
+	if ge.activeModel.GetScenarioName() == "" {
+		err := errors.New("No active scenario")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var geocoordinates []am.Coordinate
+	for _, geocoordinate := range coordinates.GeoCoordinates {
+		geocoordinates = append(geocoordinates, am.Coordinate{
+			Latitude:  geocoordinate.Latitude,
+			Longitude: geocoordinate.Longitude,
+		})
+	}
+
+	coordinatesPower, err := ge.assetMgr.GetPowerValuesForCoordinates(geocoordinates)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var intCoordinatesPower CoordinatePowerList
+	for _, coordinatePower := range coordinatesPower {
+		var intCoordinatePower = CoordinatePower{
+			Latitude:  coordinatePower.Latitude,
+			Longitude: coordinatePower.Longitude,
+			Rsrq:      int32(coordinatePower.Rsrq),
+			Rsrp:      int32(coordinatePower.Rsrp),
+		}
+		if coordinatePower.PoaName != "" {
+			intCoordinatePower.PoaName = coordinatePower.PoaName
+		}
+
+		intCoordinatesPower.CoordinatesPower = append(intCoordinatesPower.CoordinatesPower, intCoordinatePower)
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(&intCoordinatesPower)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	jsonResponseStr := string(jsonResponse)
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, jsonResponseStr)
 }
 
 func (ge *GisEngine) StartSnapshotThread() error {

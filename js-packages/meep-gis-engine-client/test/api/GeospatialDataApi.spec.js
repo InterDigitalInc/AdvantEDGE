@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -268,6 +268,49 @@
             expect(data.assetType).to.be("UE");
             expect(data.subType).to.be.a('string');
             expect(data.subType).to.be("UE");
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('getGeoDataPowerValues', function() {
+        it('should call getGeoDataPowerValues successfully', function(done) {
+          // TODO: uncomment, update parameter values for getGeoDataPowerValues call and complete the assertions
+          /*
+          var coordinates = new AdvantEdgeGisEngineRestApi.GeoCoordinateList();
+          coordinates.geoCoordinates = [new AdvantEdgeGisEngineRestApi.GeoCoordinate()];
+          coordinates.geoCoordinates[0].latitude = 0.0;
+          coordinates.geoCoordinates[0].longitude = 0.0;
+
+          instance.getGeoDataPowerValues(coordinates, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeGisEngineRestApi.CoordinatePowerList);
+            {
+              let dataCtr = data.coordinatesPower;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeGisEngineRestApi.CoordinatePower);
+                expect(data.latitude).to.be.a('number');
+                expect(data.latitude).to.be(0.0);
+                expect(data.longitude).to.be.a('number');
+                expect(data.longitude).to.be(0.0);
+                expect(data.rsrq).to.be.a('number');
+                expect(data.rsrq).to.be(0);
+                expect(data.rsrp).to.be.a('number');
+                expect(data.rsrp).to.be(0);
+                expect(data.poaName).to.be.a('string');
+                expect(data.poaName).to.be("");
+              }
+            }
 
             done();
           });

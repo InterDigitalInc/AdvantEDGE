@@ -1,6 +1,6 @@
 # UnsupportedApi
 
-All URIs are relative to *https://localhost/sandboxname/amsi/v1*
+All URIs are relative to *https://localhost/amsi/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -20,10 +20,10 @@ Retrieve information about this subscription.
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **filter** | **String**| Attribute-based filtering parameters according to ETSI GS MEC 011 | [optional] [default to null]
+ **filter** | **String**| Attribute-based filtering parameters according to ETSI GS MEC 009 | [optional] [default to null]
  **all\_fields** | **String**| Include all complex attributes in the response. | [optional] [default to null]
- **fields** | **String**| Complex attributes to be included into the response. See clause 6.18 in ETSI GS MEC 011 | [optional] [default to null]
- **exclude\_fields** | **String**| Complex attributes to be excluded from the response.See clause 6.18 in ETSI GS MEC 011 | [optional] [default to null]
+ **fields** | **String**| Complex attributes to be included into the response. See clause 6.18 in ETSI GS MEC 009 | [optional] [default to null]
+ **exclude\_fields** | **String**| Complex attributes to be excluded from the response.See clause 6.18 in ETSI GS MEC 009 | [optional] [default to null]
  **exclude\_default** | **String**| Indicates to exclude the following complex attributes from the response  See clause 6.18 in ETSI GS MEC 011 for details. | [optional] [default to null]
 
 ### Return type

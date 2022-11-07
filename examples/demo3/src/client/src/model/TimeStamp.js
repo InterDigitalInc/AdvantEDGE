@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -52,14 +52,15 @@
 
   /**
    * Constructs a new <code>TimeStamp</code>.
+   * &#39;This data type represents the time stamp as Unix-time since January 1, 1970, 00:00:00 UTC&#39;
    * @alias module:model/TimeStamp
    * @class
-   * @param nanoSeconds {Number} The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
-   * @param seconds {Number} The seconds part of the time. Time is defined as Unixtime since January 1, 1970, 00:00:00 UTC.
+   * @param seconds {Number} 'The seconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.'
+   * @param nanoSeconds {Number} 'The nanoseconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.'
    */
-  var exports = function(nanoSeconds, seconds) {
-    this.nanoSeconds = nanoSeconds;
+  var exports = function(seconds, nanoSeconds) {
     this.seconds = seconds;
+    this.nanoSeconds = nanoSeconds;
   };
 
   /**
@@ -72,25 +73,25 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
-      if (data.hasOwnProperty('nanoSeconds'))
-        obj.nanoSeconds = ApiClient.convertToType(data['nanoSeconds'], 'Number');
       if (data.hasOwnProperty('seconds'))
         obj.seconds = ApiClient.convertToType(data['seconds'], 'Number');
+      if (data.hasOwnProperty('nanoSeconds'))
+        obj.nanoSeconds = ApiClient.convertToType(data['nanoSeconds'], 'Number');
     }
     return obj;
   }
 
   /**
-   * The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
-   * @member {Number} nanoSeconds
-   */
-  exports.prototype.nanoSeconds = undefined;
-
-  /**
-   * The seconds part of the time. Time is defined as Unixtime since January 1, 1970, 00:00:00 UTC.
+   * 'The seconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.'
    * @member {Number} seconds
    */
   exports.prototype.seconds = undefined;
+
+  /**
+   * 'The nanoseconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.'
+   * @member {Number} nanoSeconds
+   */
+  exports.prototype.nanoSeconds = undefined;
 
   return exports;
 

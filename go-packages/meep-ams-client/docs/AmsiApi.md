@@ -7,14 +7,14 @@ Method | HTTP request | Description
 [**AppMobilityServiceByIdDELETE**](AmsiApi.md#AppMobilityServiceByIdDELETE) | **Delete** /app_mobility_services/{appMobilityServiceId} |  deregister the individual application mobility service
 [**AppMobilityServiceByIdGET**](AmsiApi.md#AppMobilityServiceByIdGET) | **Get** /app_mobility_services/{appMobilityServiceId} | Retrieve information about this individual application mobility service
 [**AppMobilityServiceByIdPUT**](AmsiApi.md#AppMobilityServiceByIdPUT) | **Put** /app_mobility_services/{appMobilityServiceId} |  update the existing individual application mobility service
-[**AppMobilityServiceGET**](AmsiApi.md#AppMobilityServiceGET) | **Get** /app_mobility_services |  Retrieve information about the registered application mobility service.
+[**AppMobilityServiceGET**](AmsiApi.md#AppMobilityServiceGET) | **Get** /app_mobility_services | Retrieve information about the registered application mobility service.
 [**AppMobilityServicePOST**](AmsiApi.md#AppMobilityServicePOST) | **Post** /app_mobility_services | Create a new application mobility service for the service requester.
 [**Mec011AppTerminationPOST**](AmsiApi.md#Mec011AppTerminationPOST) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 [**SubByIdDELETE**](AmsiApi.md#SubByIdDELETE) | **Delete** /subscriptions/{subscriptionId} | cancel the existing individual subscription
 [**SubByIdGET**](AmsiApi.md#SubByIdGET) | **Get** /subscriptions/{subscriptionId} | Retrieve information about this subscription.
 [**SubByIdPUT**](AmsiApi.md#SubByIdPUT) | **Put** /subscriptions/{subscriptionId} | update the existing individual subscription.
-[**SubGET**](AmsiApi.md#SubGET) | **Get** /subscriptions/ | Retrieve information about the subscriptions for this requestor.
-[**SubPOST**](AmsiApi.md#SubPOST) | **Post** /subscriptions/ | Create a new subscription to Application Mobility Service notifications.
+[**SubGET**](AmsiApi.md#SubGET) | **Get** /subscriptions | Retrieve information about the subscriptions for this requestor.
+[**SubPOST**](AmsiApi.md#SubPOST) | **Post** /subscriptions | Create a new subscription to Application Mobility Service notifications.
 
 
 # **AppMobilityServiceByIdDELETE**
@@ -104,7 +104,7 @@ No authorization required
 
 # **AppMobilityServiceGET**
 > []RegistrationInfo AppMobilityServiceGET(ctx, optional)
- Retrieve information about the registered application mobility service.
+Retrieve information about the registered application mobility service.
 
  Retrieve information about the registered application mobility service.
 
@@ -283,7 +283,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubGET**
-> SubscriptionLinkList SubGET(ctx, optional)
+> SubscriptionLinkList SubGET(ctx, subscriptionType)
 Retrieve information about the subscriptions for this requestor.
 
 Retrieve information about the subscriptions for this requestor.
@@ -293,14 +293,7 @@ Retrieve information about the subscriptions for this requestor.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***SubGETOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a SubGETOpts struct
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **subscriptionType** | **optional.String**| Query parameter to filter on a specific subscription type. Permitted values: mobility_proc or adj_app_info | 
+  **subscriptionType** | **string**| Query parameter to filter on a specific subscription type. Permitted values: mobility_proc or adj_app_info | 
 
 ### Return type
 

@@ -1,10 +1,10 @@
-# Copyright (c) 2020  InterDigital Communications, Inc
+# Copyright (c) 2022  The AdvantEDGE Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,12 @@
 #  - Fileserver names must be unique for all fileservers
 #  - Service endpoint names must be unique within a service
 #  - 'mode' is the access authorization mode
-#    -> allow: grant access 
+#    -> allow: grant access
 #    -> block: deny access
 #    -> verify: obtain session role & verify role-specific access permissions
 #  - 'roles' is a map of role permissions
-#    -> allow: grant access 
-#    -> block: deny access 
+#    -> allow: grant access
+#    -> block: deny access
 #  - Default access mode & role permissions are used when service-specific
 #    values are not provided
 #------------------------------------------------------------------------------
@@ -39,7 +39,6 @@
 #------------------------------------------------------------------------------
 default:
   mode: 'allow'
-
 # #------------------------------------------------------------------------------
 # #  FILESERVER PERMISSIONS
 # #  File Server access permissions.
@@ -800,6 +799,26 @@ default:
 #         roles:
 #           admin: 'allow'
 #           user: 'allow'
+#   #------------------------------
+#   #  V2XI Service (Sbox)
+#   #------------------------------
+#   - name: 'meep-vis'
+#     path: '/vis/v2'
+#     sbox: true
+#     default:
+#       mode: 'allow'
+#     fileservers:
+#       - name: 'Api'
+#         path: '/api'
+#         mode: 'allow'
+#       - name: 'UserApi'
+#         path: '/user-api'
+#         mode: 'allow'
+#     endpoints:
+#       - name: 'Index'
+#         path: '/'
+#         method: 'GET'
+#         mode: 'block'
 #   #------------------------------
 #   #  WAI Service (Sbox)
 #   #------------------------------

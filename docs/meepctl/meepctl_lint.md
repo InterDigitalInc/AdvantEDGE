@@ -60,6 +60,8 @@ Valid Targets:
   * meep-tc-sidecar
   * meep-users
   * meep-virt-engine
+  * meep-vis
+  * meep-vis-traffic-mgr
   * meep-wais
   * meep-watchdog
   * meep-webhook

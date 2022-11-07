@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**GetAssetData**](GeospatialDataApi.md#GetAssetData) | **Get** /geodata | Get geospatial data
 [**GetDistanceGeoDataByName**](GeospatialDataApi.md#GetDistanceGeoDataByName) | **Post** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 [**GetGeoDataByName**](GeospatialDataApi.md#GetGeoDataByName) | **Get** /geodata/{assetName} | Get geospatial data
+[**GetGeoDataPowerValues**](GeospatialDataApi.md#GetGeoDataPowerValues) | **Post** /geodata/cellularPower | Get RSRQ and RSRP values for a list of coordinates
 [**GetWithinRangeByName**](GeospatialDataApi.md#GetWithinRangeByName) | **Post** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 [**UpdateGeoDataByName**](GeospatialDataApi.md#UpdateGeoDataByName) | **Post** /geodata/{assetName} | Create/Update geospatial data
 
@@ -131,6 +132,34 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**GeoDataAsset**](GeoDataAsset.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetGeoDataPowerValues**
+> CoordinatePowerList GetGeoDataPowerValues(ctx, coordinates)
+Get RSRQ and RSRP values for a list of coordinates
+
+Get RSRQ and RSRP values for a list of coordinates
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **coordinates** | [**GeoCoordinateList**](GeoCoordinateList.md)| List of geo coordinates | 
+
+### Return type
+
+[**CoordinatePowerList**](CoordinatePowerList.md)
 
 ### Authorization
 

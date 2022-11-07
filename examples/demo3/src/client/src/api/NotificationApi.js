@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/AppTerminationSubscription', 'model/ApplicationContextState', 'model/MobilityProcedureNotification', 'model/ServiceAvailabilityNotification'], factory);
+    define(['ApiClient', 'model/AppTerminationNotification', 'model/ApplicationContextState', 'model/InlineNotification', 'model/ProblemDetails', 'model/ServiceAvailabilityNotification'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationSubscription'), require('../model/ApplicationContextState'), require('../model/MobilityProcedureNotification'), require('../model/ServiceAvailabilityNotification'));
+    module.exports = factory(require('../ApiClient'), require('../model/AppTerminationNotification'), require('../model/ApplicationContextState'), require('../model/InlineNotification'), require('../model/ProblemDetails'), require('../model/ServiceAvailabilityNotification'));
   } else {
     // Browser globals (root is window)
     if (!root.MecDemo3Api) {
       root.MecDemo3Api = {};
     }
-    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationSubscription, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.MobilityProcedureNotification, root.MecDemo3Api.ServiceAvailabilityNotification);
+    root.MecDemo3Api.NotificationApi = factory(root.MecDemo3Api.ApiClient, root.MecDemo3Api.AppTerminationNotification, root.MecDemo3Api.ApplicationContextState, root.MecDemo3Api.InlineNotification, root.MecDemo3Api.ProblemDetails, root.MecDemo3Api.ServiceAvailabilityNotification);
   }
-}(this, function(ApiClient, AppTerminationSubscription, ApplicationContextState, MobilityProcedureNotification, ServiceAvailabilityNotification) {
+}(this, function(ApiClient, AppTerminationNotification, ApplicationContextState, InlineNotification, ProblemDetails, ServiceAvailabilityNotification) {
   'use strict';
 
   /**
@@ -72,7 +72,7 @@
     /**
      * Callback endpoint for AMS Notifications
      * Callback endpoint for AMS Notifications
-     * @param {module:model/MobilityProcedureNotification} body Subscription notification
+     * @param {module:model/InlineNotification} body 
      * @param {module:api/NotificationApi~amsNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.amsNotificationCallback = function(body, callback) {
@@ -97,7 +97,7 @@
 
       var authNames = [];
       var contentTypes = ['application/json'];
-      var accepts = [];
+      var accepts = ['application/json'];
       var returnType = null;
 
       return this.apiClient.callApi(
@@ -116,18 +116,14 @@
      */
 
     /**
-     * Callback endpoint for MEC011 app-termination notifications
-     * Callback endpoint for MEC011 app-termination notifications
-     * @param {module:model/AppTerminationSubscription} body app termination notification details
+     * Represents the information that the MEP notifies the subscribed application instance about the corresponding application instance termination/stop&#39;
+     * @param {Object} opts Optional parameters
+     * @param {module:model/AppTerminationNotification} opts.body 
      * @param {module:api/NotificationApi~appTerminationNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.appTerminationNotificationCallback = function(body, callback) {
-      var postBody = body;
-
-      // verify the required parameter 'body' is set
-      if (body === undefined || body === null) {
-        throw new Error("Missing the required parameter 'body' when calling appTerminationNotificationCallback");
-      }
+    this.appTerminationNotificationCallback = function(opts, callback) {
+      opts = opts || {};
+      var postBody = opts['body'];
 
 
       var pathParams = {
@@ -210,16 +206,13 @@
     /**
      * Callback endpoint for MEC011 Notifications
      * Callback endpoint for MEC011 Notifications
-     * @param {module:model/ServiceAvailabilityNotification} body service availability notification details
+     * @param {Object} opts Optional parameters
+     * @param {module:model/ServiceAvailabilityNotification} opts.body 
      * @param {module:api/NotificationApi~serviceAvailNotificationCallbackCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.serviceAvailNotificationCallback = function(body, callback) {
-      var postBody = body;
-
-      // verify the required parameter 'body' is set
-      if (body === undefined || body === null) {
-        throw new Error("Missing the required parameter 'body' when calling serviceAvailNotificationCallback");
-      }
+    this.serviceAvailNotificationCallback = function(opts, callback) {
+      opts = opts || {};
+      var postBody = opts['body'];
 
 
       var pathParams = {
