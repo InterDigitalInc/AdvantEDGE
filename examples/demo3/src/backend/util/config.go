@@ -17,7 +17,7 @@
 package util
 
 import (
-	"github.com/spf13/viper"
+	"github.com/roymx/viper"
 )
 
 type Config struct {
