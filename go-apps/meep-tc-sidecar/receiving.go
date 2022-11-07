@@ -36,7 +36,7 @@ func (pinger *Pinger) receiver(proto int, conn *icmp.PacketConn) {
 	// read incoming packets
 	for {
 		if n, source, err := conn.ReadFrom(rb); err != nil {
-			if netErr, ok := err.(net.Error); !ok || !netErr.Temporary() {
+			if _, ok := err.(net.Error); !ok {
 				break // socket gone
 			}
 		} else {

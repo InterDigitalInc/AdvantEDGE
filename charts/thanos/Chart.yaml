@@ -8,10 +8,6 @@ dependencies:
   tags:
   - bitnami-common
   version: 1.x.x
-- condition: minio.enabled
-  name: minio
-  repository: https://charts.bitnami.com/bitnami
-  version: 6.x.x
 description: Thanos is a highly available metrics system that can be added on top
   of existing Prometheus deployments, providing a global query view across all Prometheus
   installations.

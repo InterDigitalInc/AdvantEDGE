@@ -16,6 +16,8 @@
     - apt-transport-https
     - ca-certificates
     - curl
+    - gnupg
+    - lsb-release
     - software-properties-common
     - python3-pip
     - virtualenv
@@ -28,19 +30,29 @@
 
 - name: Add Docker APT repository
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    repo: deb https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable
     state: present
 
 - name: Install docker engine
   apt:
     update_cache: yes
-    name: "docker-ce={{ docker_version }}*"
+    name: "{{ item }}"
     state: present
+  with_items:
+    - docker-ce={{ docker_version }}*
+    - docker-ce-cli={{ docker_version }}*
+    - containerd.io={{ containerd_version }}
+    - docker-compose-plugin
 
-# - name: Hold docker version
-#   dpkg_selections:
-#     name: docker-ce
-#     selection: hold
+- name: Hold docker version
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-compose-plugin
 
 - name: Verify docker group is present
   group:
@@ -52,6 +64,13 @@
     name: '{{ ansible_user }}'
     append: yes
     groups: docker
+
+- name: Allow {{ ansible_user }} to access containerd socket
+  acl:
+    path: /run/containerd/containerd.sock
+    etype: user
+    entity: '{{ ansible_user }}'
+    permissions: rw
 
 - name: Set dockerd config
   copy:

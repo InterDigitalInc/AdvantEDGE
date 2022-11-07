@@ -104,7 +104,6 @@ var redisAddr = "meep-redis-master:6379"
 var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
 var stopChan = make(chan struct{})
 var mqGlobal *mq.MsgQueue
-var handlerId int
 var apiMgr *sam.SwaggerApiMgr
 var sandboxStore *sbs.SandboxStore
 var metricStore *met.MetricStore
@@ -241,7 +240,7 @@ func Run() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqGlobal.RegisterHandler(handler)
+	_, err = mqGlobal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to register MsgQueue handler: ", err.Error())
 		return err
@@ -397,7 +396,9 @@ func processEvent(obj interface{}, reason int) {
 	monEngineInfo.MeepApp = pod.Labels["meepApp"]
 	monEngineInfo.MeepScenario = pod.Labels["meepScenario"]
 	if monEngineInfo.Release, ok = pod.Labels["release"]; !ok {
-		monEngineInfo.Release = notFoundStr
+		if monEngineInfo.Release, ok = pod.Labels["app.kubernetes.io/instance"]; !ok {
+			monEngineInfo.Release = notFoundStr
+		}
 	}
 	if monEngineInfo.MeepApp, ok = pod.Labels["meepApp"]; !ok {
 		monEngineInfo.MeepApp = notFoundStr
