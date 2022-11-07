@@ -47,8 +47,6 @@ const HttpMsgTypeRequest = "request"
 const HttpMsgTypeResponse = "response"
 const HttpMsgTypeNotification = "notification"
 
-var pduSessions map[string]string
-
 type HttpMetric struct {
 	LoggerName string
 	MsgType    string

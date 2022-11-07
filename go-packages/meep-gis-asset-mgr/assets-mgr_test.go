@@ -18,10 +18,10 @@ package gisassetmgr
 
 import (
 	"fmt"
-	"sort"
-	"strings"
-	"strconv"
 	"regexp"
+	"sort"
+	"strconv"
+	"strings"
 	"testing"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -1235,7 +1235,7 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		200.994, 0.024876, 1.8657, poa1Name, 56.846, []string{poa1Name}, ue1Priority, true) {//"wifi","5g","4g","other"
+		200.994, 0.024876, 1.8657, poa1Name, 56.846, []string{poa1Name}, ue1Priority, true) { //"wifi","5g","4g","other"
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1372,7 +1372,7 @@ func TestAssetMgrMovement(t *testing.T) {
 func validateUe(ue *Ue, id string, name string, position string, path string,
 	mode string, velocity float32, length float32, increment float32, fraction float32,
 	poa string, distance float32, poaInRange []string, poaTypePrio []string, connected bool) bool {
-	fmt.Println("validateUe: ue: ", ue)	
+	fmt.Println("validateUe: ue: ", ue)
 	if ue == nil {
 		fmt.Println("ue == nil")
 		return false
@@ -1650,6 +1650,9 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 		FieldConnected: true,
 	}
 	err = am.CreateUe(ue1Id, ue1Name, ueData)
+	if err != nil {
+		t.Fatalf("Failed to create UE: " + err.Error())
+	}
 	// ue4
 	ueData = map[string]interface{}{
 		FieldPosition:  ue4Loc,
@@ -1659,7 +1662,10 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 		FieldPriority:  strings.Join(ue4Priority, ","),
 		FieldConnected: true,
 	}
-	err = am.CreateUe(ue4Id, ue1Name, ueData)
+	err = am.CreateUe(ue4Id, ue4Name, ueData)
+	if err != nil {
+		t.Fatalf("Failed to create UE: " + err.Error())
+	}
 
 	// Check an empty list of coordinates
 	fmt.Println("Check an empty list of coordinates")
@@ -1674,7 +1680,7 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 
 	// Check an one item list of coordinates
 	fmt.Println("Check an one item list of coordinates")
-	r := regexp.MustCompile("\\[(?P<lon>.*),(?P<lat>.*)\\]")
+	r := regexp.MustCompile(`\[(?P<lon>.*),(?P<lat>.*)\]`)
 	m := r.FindStringSubmatch(point1)
 	if m == nil {
 		t.Fatalf("Failed to resolv point")
@@ -1688,7 +1694,7 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 		t.Fatalf("Failed to convert latitude")
 	}
 	coordinates = make([]Coordinate, 1)
-	coordinates[0] = Coordinate { float32(lat), float32(lon) }
+	coordinates[0] = Coordinate{float32(lat), float32(lon)}
 	ret_value, err = am.GetPowerValuesForCoordinates(coordinates)
 	if err != nil {
 		t.Fatalf("Unexpected error returned: " + err.Error())
@@ -1697,8 +1703,8 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 	if len(ret_value) != 1 {
 		t.Fatalf("Only one item is expected")
 	}
-	var expectd_value []CoordinatePowerValue = make ([]CoordinatePowerValue, 1)
-	expectd_value[0] = CoordinatePowerValue { float32(43.7342), float32(7.418522), 12, 54, "poa1" }
+	var expectd_value []CoordinatePowerValue = make([]CoordinatePowerValue, 1)
+	expectd_value[0] = CoordinatePowerValue{float32(43.7342), float32(7.418522), 12, 54, "poa1"}
 	if expectd_value[0] != ret_value[0] {
 		t.Fatalf("OUnexpected value was returned")
 	}
@@ -1709,15 +1715,15 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 	lon, _ = strconv.ParseFloat(m[1], 32)
 	lat, _ = strconv.ParseFloat(m[2], 32)
 	coordinates = make([]Coordinate, 3)
-	coordinates[0] = Coordinate { float32(lat), float32(lon) }
+	coordinates[0] = Coordinate{float32(lat), float32(lon)}
 	m = r.FindStringSubmatch(point3)
 	lon, _ = strconv.ParseFloat(m[1], 32)
 	lat, _ = strconv.ParseFloat(m[2], 32)
-	coordinates[1] = Coordinate { float32(lat), float32(lon) }
+	coordinates[1] = Coordinate{float32(lat), float32(lon)}
 	m = r.FindStringSubmatch(point5)
 	lon, _ = strconv.ParseFloat(m[1], 32)
 	lat, _ = strconv.ParseFloat(m[2], 32)
-	coordinates[2] = Coordinate { float32(lat), float32(lon) }
+	coordinates[2] = Coordinate{float32(lat), float32(lon)}
 	fmt.Println(coordinates)
 	ret_value, err = am.GetPowerValuesForCoordinates(coordinates)
 	fmt.Println("--- ret_value", ret_value)
@@ -1727,10 +1733,10 @@ func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
 	if len(ret_value) != 3 {
 		t.Fatalf("Only one item is expected")
 	}
-	expectd_value = make ([]CoordinatePowerValue, 3)
-	expectd_value[0] = CoordinatePowerValue { float32(43.733868), float32(7.418536), 19, 61, "poa1" }
-	expectd_value[1] = CoordinatePowerValue { float32(43.7337), float32(7.418578), 22, 64, "poa1" }
-	expectd_value[2] = CoordinatePowerValue { float32(43.73153), float32(7.417135), 0, 0, "" }
+	expectd_value = make([]CoordinatePowerValue, 3)
+	expectd_value[0] = CoordinatePowerValue{float32(43.733868), float32(7.418536), 19, 61, "poa1"}
+	expectd_value[1] = CoordinatePowerValue{float32(43.7337), float32(7.418578), 22, 64, "poa1"}
+	expectd_value[2] = CoordinatePowerValue{float32(43.73153), float32(7.417135), 0, 0, ""}
 	if expectd_value[0] != ret_value[0] || expectd_value[1] != ret_value[1] || expectd_value[2] != ret_value[2] {
 		t.Fatalf("Unexpected value was returned")
 	}

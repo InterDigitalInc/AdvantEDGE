@@ -1131,6 +1131,16 @@ repo:
         src: go-packages/meep-users
         # supports linting
         lint: true
+      meep-vis-client:
+        # location of source code
+        src: go-packages/meep-vis-client
+        # supports linting
+        lint: false
+      meep-vis-traffic-mgr:
+        # location of source code
+        src: go-packages/meep-vis-traffic-mgr
+        # supports linting
+        lint: true
       meep-wais-client:
         # location of source code
         src: go-packages/meep-wais-client
@@ -1146,11 +1156,6 @@ repo:
         src: go-packages/meep-websocket
         # supports linting
         lint: true
-      meep-vis-client:
-        # location of source code
-        src: go-packages/meep-vis-client
-        # supports linting
-        lint: false
 
     # Javascript Packages
     js-packages:
