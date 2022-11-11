@@ -110,7 +110,8 @@ import {
   execChangeSeqMetrics,
   execChangeSeqParticipants,
   execChangeDataflowMetrics,
-  execChangeDataflowChart
+  execChangeDataflowChart,
+  execChangeSeqPauseState
 } from '../state/exec';
 
 import {
@@ -943,7 +944,7 @@ class MeepContainer extends Component {
     if (!equalArrayOrdered(participants,this.props.execSeqParticipants)) {
       this.props.changeSeqParticipants(participants);
     }
-
+    this.props.changePauseSeq(false);
     // Set metrics reset flag if scenario state changed
     if (this.scenarioName !== scenarioName) {
       this.scenarioName = scenarioName;
@@ -1254,7 +1255,8 @@ const mapDispatchToProps = dispatch => {
     changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
     changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants)),
     changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics)),
-    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart))
+    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart)),
+    changePauseSeq: pause => dispatch(execChangeSeqPauseState(pause))
   };
 };
 

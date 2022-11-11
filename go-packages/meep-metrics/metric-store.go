@@ -38,6 +38,7 @@ const dbMaxRetryCount = 2
 const MetricsDbDisabled = "disabled"
 const metricsDb = 0
 const metricsKey = "metric-store:"
+const MAX_LIMIT = 20
 
 type Metric struct {
 	Name   string
@@ -267,7 +268,7 @@ func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 }
 
 // GetInfluxMetric - Generic metric getter
-func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fields []string, duration string, count int) (values []map[string]interface{}, err error) {
+func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fields []string, timeStart string, timeStop string, duration string, count int) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		return values, errors.New("Store name not specified")
@@ -309,11 +310,47 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 		}
 		tagStr += ")"
 	}
-	if duration != "" {
+	if timeStart != "" && timeStop != "" {
 		if tagStr == "" {
-			tagStr = " WHERE time > now() - " + duration
+			tagStr = " WHERE time > " + timeStart + " AND time < " + timeStop
 		} else {
-			tagStr += " AND time > now() - " + duration
+			tagStr += " AND time > " + timeStart + " AND time < " + timeStop
+		}
+	} else if timeStart != "" {
+		if duration != "" {
+			if tagStr == "" {
+				tagStr = " WHERE time > " + timeStart + " AND time < " + timeStart + " + " + duration
+			} else {
+				tagStr += " AND time > " + timeStart + " AND time < " + timeStart + " + " + duration
+			}
+		} else {
+			if tagStr == "" {
+				tagStr = " WHERE time > " + timeStart
+			} else {
+				tagStr += " AND time > " + timeStart
+			}
+		}
+	} else if timeStop != "" {
+		if duration != "" {
+			if tagStr == "" {
+				tagStr = " WHERE time < " + timeStop + " AND time > " + timeStop + " - " + duration
+			} else {
+				tagStr += " AND time < " + timeStop + " AND time > " + timeStop + " - " + duration
+			}
+		} else {
+			if tagStr == "" {
+				tagStr = " WHERE time < " + timeStop
+			} else {
+				tagStr += " AND time < " + timeStop
+			}
+		}
+	} else {
+		if duration != "" {
+			if tagStr == "" {
+				tagStr = " WHERE time > now() - " + duration
+			} else {
+				tagStr += " AND time > now() - " + duration
+			}
 		}
 	}
 

@@ -165,7 +165,7 @@ func (ms *MetricStore) GetNetworkMetric(src string, dst string, duration string,
 	tags := map[string]string{NetMetSrc: src, NetMetDst: dst}
 	fields := []string{NetMetLatency, NetMetULThroughput, NetMetDLThroughput, NetMetULPktLoss, NetMetDLPktLoss}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetInfluxMetric(NetMetName, tags, fields, duration, count)
+	valuesArray, err = ms.GetInfluxMetric(NetMetName, tags, fields, "", "", duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return

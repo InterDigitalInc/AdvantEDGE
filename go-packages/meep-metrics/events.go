@@ -70,7 +70,7 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 	}
 	fields := []string{EvMetEvent, EvMetDescription}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetInfluxMetric(EvMetName, tags, fields, duration, count)
+	valuesArray, err = ms.GetInfluxMetric(EvMetName, tags, fields, "", "", duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return

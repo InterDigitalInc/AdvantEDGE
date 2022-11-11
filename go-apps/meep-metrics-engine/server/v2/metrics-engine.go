@@ -63,6 +63,7 @@ const (
 
 const listOnly = "listonly"
 const strOnly = "stronly"
+const MAX_LIMIT = 10000
 
 var defaultDuration string = "1s"
 var defaultLimit int32 = 1
@@ -349,7 +350,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(met.EvMetName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.EvMetName, tags, params.Fields, "", "", duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -429,7 +430,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		limit = int(params.Scope.Limit)
 	}
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, "", "", duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -574,11 +575,44 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	// Get http metrics
 	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
 		met.HttpBody, met.HttpMethod)
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, influxLimit)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	valuesArray := []map[string]interface{}{}
+	metricCount := 0
+	startTime := ""
+	if duration != "" {
+		influxDuration, err := time.ParseDuration(duration)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		startTime = strconv.FormatInt(time.Now().Add(-1*influxDuration).UnixNano(), 10)
+	}
+	for {
+		stopTime := ""
+		if len(valuesArray) > 0 {
+			logTime, err := time.Parse(time.RFC3339, valuesArray[len(valuesArray)-1][met.HttpLogTime].(string))
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			stopTime = strconv.FormatInt(logTime.UnixNano(), 10)
+		}
+		count := MAX_LIMIT
+		if influxLimit > 0 && metricCount+MAX_LIMIT > influxLimit {
+			count = influxLimit - metricCount
+		}
+		metricCount += count
+		influxData, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, startTime, stopTime, "", count)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		valuesArray = append(valuesArray, influxData...)
+		if len(influxData) < MAX_LIMIT {
+			break
+		}
 	}
 
 	// Get event metrics
@@ -598,106 +632,108 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare seq metrics list
 	var metricList []SeqMetric
-	for i := len(valuesArray) - 1; i >= 0; i-- {
-		values := valuesArray[i]
-		httpMetricTime := values[met.HttpLogTime].(string)
-		if values[params.Fields[0]] != nil {
-			metricTime, err := time.Parse(time.RFC3339, httpMetricTime)
-			if err != nil {
-				log.Error("Failed to parse time with error: ", err.Error())
-				continue
-			}
-			t := metricTime.Format("15:04:05.000")
-
-			if len(eventMetrics) > 0 {
-				// Insert event metrics in chronological order
-				matchCount := 0
-				for j := len(eventMetrics) - 1; j >= 0; j-- {
-					eventMetric := eventMetrics[j]
-					eventMetricTime, err := time.Parse(time.RFC3339, eventMetric.Time.(string))
-					if err != nil {
-						log.Error("Failed to parse event time with error: ", err.Error())
-						continue
-					}
-					eventSdorg := ""
-					eventMermaid := ""
-					if eventMetricTime.Before(metricTime) {
-						// Close previous mobility event group if necessary
-						if mobilityEventProcessed {
-							eventSdorg += "end\n"
-						}
-						mobilityEventProcessed = true
-
-						// Create group for mobility event
-						eventDescription := eventMetric.Description
-						eventDescription = strings.Replace(eventDescription, "[", "", -1)
-						eventDescription = strings.Replace(eventDescription, "]", "", -1)
-						eventSdorg += "\ngroup Mobility Event: " + eventDescription + "\n"
-						eventMermaid += "note over event:[" + eventMetricTime.Format("15:04:05.000") + "] Mobility Event: " + eventDescription + "\n"
-
-						if params.Fields[0] == met.HttpMermaid {
-							metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Mermaid: eventMermaid})
-						}
-						if params.Fields[0] == met.HttpSdorg {
-							metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Sdorg: eventSdorg})
-						}
-						matchCount++
-					} else {
-						break
-					}
+	if valuesArray != nil {
+		for i := len(valuesArray) - 1; i >= 0; i-- {
+			values := valuesArray[i]
+			httpMetricTime := values[met.HttpLogTime].(string)
+			if values[params.Fields[0]] != nil {
+				metricTime, err := time.Parse(time.RFC3339, httpMetricTime)
+				if err != nil {
+					log.Error("Failed to parse time with error: ", err.Error())
+					continue
 				}
+				t := metricTime.Format("15:04:05.000")
 
-				// Remove processed metrics from list
-				if matchCount > 0 {
-					eventMetrics = eventMetrics[:len(eventMetrics)-matchCount]
-				}
-			}
-
-			// Handle notifications
-			notifStr := ""
-			if values[met.HttpLoggerMsgType].(string) == met.HttpMsgTypeNotification {
-				// Sandbox Controller requests
-				if values[met.HttpDst].(string) == "sandbox-ctrl" {
-					// Add note for PDU Session requests
-					pduSessionPrefix := "/sandbox-ctrl/connectivity/pdu-session/"
-					if strings.HasPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix) {
-						pduSession := strings.Split(strings.TrimPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix), "/")
-						if values[met.HttpMethod] == "POST" {
-							var pduSessionInfo sandboxCtrlClient.PduSessionInfo
-							err := json.Unmarshal([]byte(values[met.HttpBody].(string)), &pduSessionInfo)
-							if err != nil {
-								log.Error(err.Error())
-								continue
+				if len(eventMetrics) > 0 {
+					// Insert event metrics in chronological order
+					matchCount := 0
+					for j := len(eventMetrics) - 1; j >= 0; j-- {
+						eventMetric := eventMetrics[j]
+						eventMetricTime, err := time.Parse(time.RFC3339, eventMetric.Time.(string))
+						if err != nil {
+							log.Error("Failed to parse event time with error: ", err.Error())
+							continue
+						}
+						eventSdorg := ""
+						eventMermaid := ""
+						if eventMetricTime.Before(metricTime) {
+							// Close previous mobility event group if necessary
+							if mobilityEventProcessed {
+								eventSdorg += "end\n"
 							}
-							pduSessions[pduSession[1]] = pduSessionInfo.Dnn
-							// Sequencediagram.org formatted line
-							notifStr = "note over " + values[met.HttpSrc].(string) + " :[" + t + "] Created PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + pduSessionInfo.Dnn + "\n"
-						} else if values[met.HttpMethod] == "DELETE" {
-							dnn := pduSessions[pduSession[1]]
-							// Sequencediagram.org formatted line
-							notifStr = "note over " + values[met.HttpSrc].(string) + " : [" + t + "] Terminated PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + dnn + "\n"
-						}
-						if params.Fields[0] == met.HttpMermaid {
-							metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: notifStr})
-						}
-						if params.Fields[0] == met.HttpSdorg {
-							metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: notifStr})
+							mobilityEventProcessed = true
+
+							// Create group for mobility event
+							eventDescription := eventMetric.Description
+							eventDescription = strings.Replace(eventDescription, "[", "", -1)
+							eventDescription = strings.Replace(eventDescription, "]", "", -1)
+							eventSdorg += "\ngroup Mobility Event: " + eventDescription + "\n"
+							eventMermaid += "note over event:[" + eventMetricTime.Format("15:04:05.000") + "] Mobility Event: " + eventDescription + "\n"
+
+							if params.Fields[0] == met.HttpMermaid {
+								metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Mermaid: eventMermaid})
+							}
+							if params.Fields[0] == met.HttpSdorg {
+								metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Sdorg: eventSdorg})
+							}
+							matchCount++
+						} else {
+							break
 						}
 					}
-				}
-				continue
-			}
 
-			if params.Fields[0] == met.HttpMermaid {
-				if val, ok := values[met.HttpMermaid].(string); ok {
-					val = strings.Replace(val, ":", ": ["+t+"]", 1)
-					metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: val})
+					// Remove processed metrics from list
+					if matchCount > 0 {
+						eventMetrics = eventMetrics[:len(eventMetrics)-matchCount]
+					}
 				}
-			}
-			if params.Fields[0] == met.HttpSdorg {
-				if val, ok := values[met.HttpSdorg].(string); ok {
-					val = strings.Replace(val, ":", ": ["+t+"]", 1)
-					metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: val})
+
+				// Handle notifications
+				notifStr := ""
+				if values[met.HttpLoggerMsgType].(string) == met.HttpMsgTypeNotification {
+					// Sandbox Controller requests
+					if values[met.HttpDst].(string) == "sandbox-ctrl" {
+						// Add note for PDU Session requests
+						pduSessionPrefix := "/sandbox-ctrl/connectivity/pdu-session/"
+						if strings.HasPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix) {
+							pduSession := strings.Split(strings.TrimPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix), "/")
+							if values[met.HttpMethod] == "POST" {
+								var pduSessionInfo sandboxCtrlClient.PduSessionInfo
+								err := json.Unmarshal([]byte(values[met.HttpBody].(string)), &pduSessionInfo)
+								if err != nil {
+									log.Error(err.Error())
+									continue
+								}
+								pduSessions[pduSession[1]] = pduSessionInfo.Dnn
+								// Sequencediagram.org formatted line
+								notifStr = "note over " + values[met.HttpSrc].(string) + " :[" + t + "] Created PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + pduSessionInfo.Dnn + "\n"
+							} else if values[met.HttpMethod] == "DELETE" {
+								dnn := pduSessions[pduSession[1]]
+								// Sequencediagram.org formatted line
+								notifStr = "note over " + values[met.HttpSrc].(string) + " : [" + t + "] Terminated PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + dnn + "\n"
+							}
+							if params.Fields[0] == met.HttpMermaid {
+								metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: notifStr})
+							}
+							if params.Fields[0] == met.HttpSdorg {
+								metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: notifStr})
+							}
+						}
+					}
+					continue
+				}
+
+				if params.Fields[0] == met.HttpMermaid {
+					if val, ok := values[met.HttpMermaid].(string); ok {
+						val = strings.Replace(val, ":", ": ["+t+"]", 1)
+						metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: val})
+					}
+				}
+				if params.Fields[0] == met.HttpSdorg {
+					if val, ok := values[met.HttpSdorg].(string); ok {
+						val = strings.Replace(val, ":", ": ["+t+"]", 1)
+						metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: val})
+					}
 				}
 			}
 		}
@@ -801,7 +837,7 @@ func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint, met.HttpBody, met.HttpMethod)
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, "", "", duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -906,7 +942,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(met.NetMetName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.NetMetName, tags, params.Fields, "", "", duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1154,7 +1190,7 @@ func processEventNotification(subsId string) {
 		valuesArray, err := metricStore.GetInfluxMetric(
 			metricEvent,
 			eventRegistration.requestedTags,
-			eventRegistration.params.EventQueryParams.Fields,
+			eventRegistration.params.EventQueryParams.Fields, "", "",
 			eventRegistration.params.EventQueryParams.Scope.Duration,
 			int(eventRegistration.params.EventQueryParams.Scope.Limit))
 
@@ -1194,7 +1230,7 @@ func processNetworkNotification(subsId string) {
 		valuesArray, err := metricStore.GetInfluxMetric(
 			metricNetwork,
 			networkRegistration.requestedTags,
-			networkRegistration.params.NetworkQueryParams.Fields,
+			networkRegistration.params.NetworkQueryParams.Fields, "", "",
 			networkRegistration.params.NetworkQueryParams.Scope.Duration,
 			int(networkRegistration.params.NetworkQueryParams.Scope.Limit))
 

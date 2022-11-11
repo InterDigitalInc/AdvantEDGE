@@ -137,7 +137,7 @@ func (ms *MetricStore) GetHttpMetric(loggerName string, msgType string, duration
 	}
 	fields := []string{HttpLoggerName, HttpLoggerMsgType, HttpLogId, HttpUrl, HttpLogEndpoint, HttpMethod, HttpSrc, HttpDst, HttpBody, HttpRespBody, HttpRespCode, HttpProcTime}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetInfluxMetric(HttpLogMetricName, tags, fields, duration, count)
+	valuesArray, err = ms.GetInfluxMetric(HttpLogMetricName, tags, fields, "", "", duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
