@@ -719,7 +719,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func updateResponseSeqMetrics(response *SeqMetrics, metric SeqMetric, params SeqQueryParams) {
@@ -850,7 +850,7 @@ func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func contains(s []string, str string) bool {
