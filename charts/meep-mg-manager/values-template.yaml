@@ -20,7 +20,6 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
-      nodeSelectorTerms:
       - matchExpressions:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -63,7 +62,7 @@ prometheus:
     additionalLabels: {}
     relabelings: []
     scrapeTimeout: 5s
-    
+
 codecov:
   enabled: false
   location: "<WORKDIR>/codecov/meep-mg-manager"

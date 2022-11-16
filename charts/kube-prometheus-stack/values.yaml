@@ -596,7 +596,6 @@ alertmanager:
           - matchExpressions:
             - key: node-role.kubernetes.io/master
               operator: Exists
-          nodeSelectorTerms:
           - matchExpressions:
             - key: node-role.kubernetes.io/control-plane
               operator: Exists
@@ -2477,7 +2476,6 @@ prometheus:
           - matchExpressions:
             - key: node-role.kubernetes.io/master
               operator: Exists
-          nodeSelectorTerms:
           - matchExpressions:
             - key: node-role.kubernetes.io/control-plane
               operator: Exists

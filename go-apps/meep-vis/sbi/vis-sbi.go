@@ -32,8 +32,8 @@ import (
 
 const moduleName string = "meep-vis-sbi"
 
-var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
-var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+// var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+// var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
@@ -85,8 +85,8 @@ func Init(cfg SbiCfg) (predictionModelSupported bool, err error) {
 	sbi.scenarioName = ""
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
-	redisAddr = cfg.RedisAddr
-	influxAddr = cfg.InfluxAddr
+	// redisAddr = cfg.RedisAddr
+	// influxAddr = cfg.InfluxAddr
 
 	// Fill locality map
 	if len(cfg.Locality) > 0 {

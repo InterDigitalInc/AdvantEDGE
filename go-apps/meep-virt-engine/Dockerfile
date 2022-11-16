@@ -1,5 +1,5 @@
 # Copyright (c) 2022  The AdvantEDGE Authors
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -18,7 +18,7 @@ COPY ./api /api
 COPY ./user-api /user-api
 COPY ./data /
 
-ENV HELM_VERSION="v3.7.0"
+ENV HELM_VERSION="v3.10.1"
 RUN mkdir -p /active \
     && apt-get update \
     && apt-get install -y wget \
