@@ -1,0 +1,20 @@
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) (eq .Values.persistence.type "pvc") .Values.persistentVolume.enabled}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ template "grafana.fullname" . }}
+  namespace: {{ template "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: {{ .Values.persistentVolume.size }}
+  accessModes:
+  {{- range .Values.persistentVolume.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistentVolume.reclaimPolicy }}
+  hostPath:
+    path: "{{.Values.persistentVolume.location}}"
+  storageClassName: {{ template "grafana.fullname" . }}
+{{- end }}
