@@ -31,10 +31,6 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          {{- if .Values.codecov.enabled}}
-          command: [ "/meep-vis" ]
-          args: [ "-test.coverprofile=/codecov/codecov-meep-vis.out", "__DEVEL--code-cov" ]
-          {{- end}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.deployment.port }}

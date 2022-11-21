@@ -17,6 +17,8 @@ serviceAccount:
   create: true
   name:
   nameTest:
+  ## ServiceAccount labels.
+  labels: {}
 ## Service account annotations. Can be templated.
 #  annotations:
 #    eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here
@@ -74,7 +76,8 @@ livenessProbe:
 
 image:
   repository: grafana/grafana
-  tag: 8.5.0
+  # Overrides the Grafana image tag whose default is the chart appVersion
+  tag: ""
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -98,8 +101,10 @@ securityContext:
   runAsGroup: 472
   fsGroup: 472
 
-containerSecurityContext:
-  {}
+containerSecurityContext: {}
+
+# Enable creating the grafana configmap
+createConfigmap: true
 
 # Extra configmaps to mount in grafana pods
 # Values are templated.
@@ -124,7 +129,7 @@ extraLabels: {}
 
 downloadDashboardsImage:
   repository: curlimages/curl
-  tag: 7.73.0
+  tag: 7.85.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -132,6 +137,7 @@ downloadDashboards:
   env: {}
   envFromSecret: ""
   resources: {}
+  securityContext: {}
 
 ## Pod Annotations
 # podAnnotations: {}
@@ -154,9 +160,12 @@ service:
   port: 80
   targetPort: 3000
     # targetPort: 4181 To be used with a proxy extraContainer
+  ## Service annotations. Can be templated.
   annotations: {}
   labels: {}
   portName: service
+  # Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
+  appProtocol: ""
 
 serviceMonitor:
   ## If true, a ServiceMonitor CRD is created for a prometheus operator
@@ -264,6 +273,11 @@ affinity:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
 
+## Topology Spread Constraints
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+##
+topologySpreadConstraints: []
+
 ## Additional init containers (evaluated as template)
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
 ##
@@ -301,7 +315,7 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   # enabled: false
-  enabkled: true
+  enabled: true
   # storageClassName: default
   accessModes:
     - ReadWriteOnce
@@ -318,6 +332,8 @@ persistence:
   ## If set to "fullname", storageClassName: <template fullname>
   # storageClassName: default
   storageClassName: "fullname"
+  ## Extra labels to apply to a PVC.
+  extraPvcLabels: {}
 
   ## If persistence is not enabled, this allows to mount the
   ## local storage in-memory to improve performance
@@ -341,7 +357,7 @@ persistentVolume:
 
 initChownData:
   ## If false, data ownership will not be reset at startup
-  ## This allows the prometheus-server to be run with an arbitrary user
+  ## This allows the grafana-server to be run with an arbitrary user
   ##
   enabled: true
 
@@ -363,6 +379,9 @@ initChownData:
   #  requests:
   #    cpu: 100m
   #    memory: 128Mi
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
 
 
 # Administrator credentials when not using an existing secret (see below)
@@ -383,11 +402,6 @@ admin:
 # command:
 # - "sh"
 # - "/run.sh"
-
-## Use an alternate scheduler, e.g. "stork".
-## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
-##
-# schedulerName:
 
 ## Extra environment variables that will be pass onto deployment pods
 ##
@@ -498,6 +512,13 @@ extraVolumeMounts: []
   #   mountPath: /mnt/volume1
   #   readOnly: true
   #   hostPath: /usr/shared/
+  # - name: grafana-secrets
+  #   csi: true
+  #   data:
+  #     driver: secrets-store.csi.k8s.io
+  #     readOnly: true
+  #     volumeAttributes:
+  #       secretProviderClass: "grafana-env-spc"
 
 ## Container Lifecycle Hooks. Execute a specific bash command or make an HTTP request
 lifecycleHooks: {}
@@ -556,6 +577,71 @@ datasources:
 #        authType: default
 #        defaultRegion: us-east-1
 
+## Configure grafana alerting (can be templated)
+## ref: http://docs.grafana.org/administration/provisioning/#alerting
+##
+alerting: {}
+  # rules.yaml:
+  #   apiVersion: 1
+  #   groups:
+  #     - orgId: 1
+  #       name: '{{ .Chart.Name }}_my_rule_group'
+  #       folder: my_first_folder
+  #       interval: 60s
+  #       rules:
+  #         - uid: my_id_1
+  #           title: my_first_rule
+  #           condition: A
+  #           data:
+  #             - refId: A
+  #               datasourceUid: '-100'
+  #               model:
+  #                 conditions:
+  #                   - evaluator:
+  #                       params:
+  #                         - 3
+  #                       type: gt
+  #                     operator:
+  #                       type: and
+  #                     query:
+  #                       params:
+  #                         - A
+  #                     reducer:
+  #                       type: last
+  #                     type: query
+  #                 datasource:
+  #                   type: __expr__
+  #                   uid: '-100'
+  #                 expression: 1==0
+  #                 intervalMs: 1000
+  #                 maxDataPoints: 43200
+  #                 refId: A
+  #                 type: math
+  #           dashboardUid: my_dashboard
+  #           panelId: 123
+  #           noDataState: Alerting
+  #           for: 60s
+  #           annotations:
+  #             some_key: some_value
+  #           labels:
+  #             team: sre_team_1
+  # contactpoints.yaml:
+  #   apiVersion: 1
+  #   contactPoints:
+  #     - orgId: 1
+  #       name: cp_1
+  #       receivers:
+  #         - uid: first_uid
+  #           type: pagerduty
+  #           settings:
+  #             integrationKey: XXX
+  #             severity: critical
+  #             class: ping failure
+  #             component: Grafana
+  #             group: app-stack
+  #             summary: |
+  #               {{ `{{ include "default.message" . }}` }}
+
 ## Configure notifiers
 ## ref: http://docs.grafana.org/administration/provisioning/#alert-notification-channels
 ##
@@ -611,8 +697,8 @@ dashboardProviders:
 ##
 ## dashboards per provider, use provider name as key.
 ##
-dashboards: {}
-  # default:
+dashboards:
+  default:
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON
@@ -629,6 +715,12 @@ dashboards: {}
   #     url: https://example.com/repository/test-b64.json
   #     token: ''
   #     b64content: true
+  #   local-dashboard-gitlab:
+  #     url: https://example.com/repository/test-gitlab.json
+  #     gitlabToken: ''
+  #   local-dashboard-bitbucket:
+  #     url: https://example.com/repository/test-bitbucket.json
+  #     bearerToken: ''
 
 ## Reference to external ConfigMap per provider. Use provider name as key and ConfigMap name as value.
 ## A provider dashboards must be defined either by external ConfigMaps or in values.yaml, not in both.
@@ -658,8 +750,8 @@ grafana.ini:
     mode: console
   grafana_net:
     url: https://grafana.net
-  ## grafana Authentication can be enabled with the following values on grafana.ini
   server:
+    # domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ .Values.ingress.hosts | first }}{{ else }}''{{ end }}"
     # The full public facing url you use in browser, used for redirects and emails
     root_url: /grafana/
   auth:
@@ -735,7 +827,7 @@ smtp:
 sidecar:
   image:
     repository: quay.io/kiwigrid/k8s-sidecar
-    tag: 1.15.6
+    tag: 1.19.2
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -751,13 +843,59 @@ sidecar:
   enableUniqueFilenames: false
   readinessProbe: {}
   livenessProbe: {}
+  # Log level default for all sidecars. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL. Defaults to INFO
+  # logLevel: INFO
+  alerts:
+    enabled: false
+    # Additional environment variables for the alerts sidecar
+    env: {}
+    # Do not reprocess already processed unchanged resources on k8s API reconnect.
+    # ignoreAlreadyProcessed: true
+    # label that the configmaps with alert are marked with
+    label: grafana_alert
+    # value of label that the configmaps with alert are set to
+    labelValue: ""
+    # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
+    # logLevel: INFO
+    # If specified, the sidecar will search for alert config-maps inside this namespace.
+    # Otherwise the namespace in which the sidecar is running will be used.
+    # It's also possible to specify ALL to search in all namespaces
+    searchNamespace: null
+    # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
+    watchMethod: WATCH
+    # search in configmap, secret or both
+    resource: both
+    # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
+    # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
+    # watchServerTimeout: 3600
+    #
+    # watchClientTimeout: is a client-side timeout, configuring your local socket.
+    # If you have a network outage dropping all packets with no RST/FIN,
+    # this is how long your client waits before realizing & dropping the connection.
+    # defaults to 66sec (sic!)
+    # watchClientTimeout: 60
+    #
+    # Endpoint to send request to reload alerts
+    reloadURL: "http://localhost:3000/api/admin/provisioning/alerting/reload"
+    # Absolute path to shell script to execute after a alert got reloaded
+    script: null
+    skipReload: false
+    # Deploy the alert sidecar as an initContainer in addition to a container.
+    # Sets the size limit of the alert sidecar emptyDir volume
+    sizeLimit: {}
   dashboards:
     enabled: false
+    # Additional environment variables for the dashboards sidecar
+    env: {}
+    # Do not reprocess already processed unchanged resources on k8s API reconnect.
+    # ignoreAlreadyProcessed: true
     SCProvider: true
     # label that the configmaps with dashboards are marked with
     label: grafana_dashboard
     # value of label that the configmaps with dashboards are set to
-    labelValue: null
+    labelValue: ""
+    # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
+    # logLevel: INFO
     # folder in the pod that should hold the collected dashboards (unless `defaultFolderName` is set)
     folder: /tmp/dashboards
     # The default folder name, it will create a subfolder under the `folder` and put dashboards in there instead
@@ -807,10 +945,16 @@ sidecar:
     sizeLimit: {}
   datasources:
     enabled: false
+    # Additional environment variables for the datasourcessidecar
+    env: {}
+    # Do not reprocess already processed unchanged resources on k8s API reconnect.
+    # ignoreAlreadyProcessed: true
     # label that the configmaps with datasources are marked with
     label: grafana_datasource
     # value of label that the configmaps with datasources are set to
-    labelValue: null
+    labelValue: ""
+    # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
+    # logLevel: INFO
     # If specified, the sidecar will search for datasource config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
@@ -819,8 +963,20 @@ sidecar:
     watchMethod: WATCH
     # search in configmap, secret or both
     resource: both
+    # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
+    # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
+    # watchServerTimeout: 3600
+    #
+    # watchClientTimeout: is a client-side timeout, configuring your local socket.
+    # If you have a network outage dropping all packets with no RST/FIN,
+    # this is how long your client waits before realizing & dropping the connection.
+    # defaults to 66sec (sic!)
+    # watchClientTimeout: 60
+    #
     # Endpoint to send request to reload datasources
     reloadURL: "http://localhost:3000/api/admin/provisioning/datasources/reload"
+    # Absolute path to shell script to execute after a datasource got reloaded
+    script: null
     skipReload: false
     # Deploy the datasource sidecar as an initContainer in addition to a container.
     # This is needed if skipReload is true, to load any datasources defined at startup time.
@@ -829,10 +985,16 @@ sidecar:
     sizeLimit: {}
   plugins:
     enabled: false
+    # Additional environment variables for the plugins sidecar
+    env: {}
+    # Do not reprocess already processed unchanged resources on k8s API reconnect.
+    # ignoreAlreadyProcessed: true
     # label that the configmaps with plugins are marked with
     label: grafana_plugin
     # value of label that the configmaps with plugins are set to
-    labelValue: null
+    labelValue: ""
+    # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
+    # logLevel: INFO
     # If specified, the sidecar will search for plugin config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
@@ -841,8 +1003,20 @@ sidecar:
     watchMethod: WATCH
     # search in configmap, secret or both
     resource: both
+    # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
+    # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
+    # watchServerTimeout: 3600
+    #
+    # watchClientTimeout: is a client-side timeout, configuring your local socket.
+    # If you have a network outage dropping all packets with no RST/FIN,
+    # this is how long your client waits before realizing & dropping the connection.
+    # defaults to 66sec (sic!)
+    # watchClientTimeout: 60
+    #
     # Endpoint to send request to reload plugins
     reloadURL: "http://localhost:3000/api/admin/provisioning/plugins/reload"
+    # Absolute path to shell script to execute after a plugin got reloaded
+    script: null
     skipReload: false
     # Deploy the datasource sidecar as an initContainer in addition to a container.
     # This is needed if skipReload is true, to load any plugins defined at startup time.
@@ -851,14 +1025,42 @@ sidecar:
     sizeLimit: {}
   notifiers:
     enabled: false
+    # Additional environment variables for the notifierssidecar
+    env: {}
+    # Do not reprocess already processed unchanged resources on k8s API reconnect.
+    # ignoreAlreadyProcessed: true
     # label that the configmaps with notifiers are marked with
     label: grafana_notifier
+    # value of label that the configmaps with notifiers are set to
+    labelValue: ""
+    # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
+    # logLevel: INFO
     # If specified, the sidecar will search for notifier config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
     searchNamespace: null
+    # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
+    watchMethod: WATCH
     # search in configmap, secret or both
     resource: both
+    # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
+    # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
+    # watchServerTimeout: 3600
+    #
+    # watchClientTimeout: is a client-side timeout, configuring your local socket.
+    # If you have a network outage dropping all packets with no RST/FIN,
+    # this is how long your client waits before realizing & dropping the connection.
+    # defaults to 66sec (sic!)
+    # watchClientTimeout: 60
+    #
+    # Endpoint to send request to reload notifiers
+    reloadURL: "http://localhost:3000/api/admin/provisioning/notifications/reload"
+    # Absolute path to shell script to execute after a notifier got reloaded
+    script: null
+    skipReload: false
+    # Deploy the notifier sidecar as an initContainer in addition to a container.
+    # This is needed if skipReload is true, to load any notifiers defined at startup time.
+    initNotifiers: false
     # Sets the size limit of the notifier sidecar emptyDir volume
     sizeLimit: {}
 
@@ -872,6 +1074,7 @@ revisionHistoryLimit: 10
 
 ## Add a seperate remote image renderer deployment/service
 imageRenderer:
+  deploymentStrategy: {}
   # Enable the image-renderer deployment & service
   enabled: false
   replicas: 1
@@ -894,6 +1097,12 @@ imageRenderer:
   serviceAccountName: ""
   # image-renderer deployment securityContext
   securityContext: {}
+  # image-renderer deployment container securityContext
+  containerSecurityContext:
+    capabilities:
+      drop: ['ALL']
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
   # image-renderer deployment Host Aliases
   hostAliases: []
   # image-renderer deployment priority class
@@ -906,6 +1115,8 @@ imageRenderer:
     # image-renderer service port used by both service and deployment
     port: 8081
     targetPort: 8081
+    # Adds the appProtocol field to the image-renderer service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
+    appProtocol: ""
   # If https is enabled in Grafana, this needs to be set as 'https' to correctly configure the callback used in Grafana
   grafanaProtocol: http
   # In case a sub_path is used this needs to be added to the image renderer callback
@@ -941,6 +1152,11 @@ imageRenderer:
   ##
   affinity: {}
 
+  ## Use an alternate scheduler, e.g. "stork".
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  ##
+  # schedulerName: "default-scheduler"
+
 networkPolicy:
   ## @param networkPolicy.enabled Enable creation of NetworkPolicy resources. Only Ingress traffic is filtered for now.
   ##
@@ -950,6 +1166,10 @@ networkPolicy:
   ## client label will have network access to  grafana port defined.
   ## When true, grafana will accept connections from any source
   ## (with the correct destination port).
+  ##
+  ingress: true
+  ## @param networkPolicy.ingress When true enables the creation
+  ## an ingress network policy
   ##
   allowExternal: true
   ## @param networkPolicy.explicitNamespacesSelector A Kubernetes LabelSelector to explicitly select namespaces from which traffic could be allowed
@@ -966,10 +1186,34 @@ networkPolicy:
   ##    - {key: role, operator: In, values: [frontend]}
   ##
   explicitNamespacesSelector: {}
+  ##
+  ##
+  ##
+  ##
+  ##
+  ##
+  egress:
+    ## @param networkPolicy.egress.enabled When enabled, an egress network policy will be
+    ## created allowing grafana to connect to external data sources from kubernetes cluster.
+    enabled: false
+    ##
+    ## @param networkPolicy.egress.ports Add individual ports to be allowed by the egress
+    ports: []
+    ## Add ports to the egress by specifying - port: <port number>
+    ## E.X.
+    ## ports:
+      ## - port: 80
+      ## - port: 443
+  ##
+  ##
+  ##
+  ##
+  ##
+  ##
 
 # Enable backward compatibility of kubernetes where version below 1.13 doesn't have the enableServiceLinks option
 enableKubeBackwardCompatibility: false
-
+useStatefulSet: false
 # Create a dynamic manifests via values:
 extraObjects: []
   # - apiVersion: "kubernetes-client.io/v1"
