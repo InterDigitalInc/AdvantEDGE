@@ -88,7 +88,7 @@ func (ms *MetricStore) GetSessionMetric(typ string, duration string, count int) 
 	}
 	fields := []string{SesMetProvider, SesMetUser, SesMetSid, SesMetSbox, SesMetErrType, SesMetDesc}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetInfluxMetric(SesMetName, tags, fields, "", "", duration, count)
+	valuesArray, err = ms.GetInfluxMetric(SesMetName, tags, fields, duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return

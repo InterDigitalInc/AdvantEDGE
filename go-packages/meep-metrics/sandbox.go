@@ -68,7 +68,7 @@ func (ms *MetricStore) GetSandboxMetric(typ string, duration string, count int) 
 	}
 	fields := []string{SboxMetSboxName, SboxMetCreateTime}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetInfluxMetric(SboxMetName, tags, fields, "", "", duration, count)
+	valuesArray, err = ms.GetInfluxMetric(SboxMetName, tags, fields, duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
