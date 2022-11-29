@@ -38,7 +38,9 @@ const dbMaxRetryCount = 2
 const MetricsDbDisabled = "disabled"
 const metricsDb = 0
 const metricsKey = "metric-store:"
-const MAX_LIMIT = 10000
+
+var MAX_LIMIT = 10000
+
 const metricsTime = "time"
 
 type Metric struct {
@@ -312,7 +314,6 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 		tagStr += ")"
 	}
 
-	valuesArray := []map[string]interface{}{}
 	metricCount := 0
 	startTime := ""
 	if duration != "" {
@@ -321,16 +322,20 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 	}
 	for {
 		stopTime := ""
-		if len(valuesArray) > 0 {
-			logTime, _ := time.Parse(time.RFC3339, valuesArray[len(valuesArray)-1][metricsTime].(string))
+		if len(values) > 0 {
+			logTime, _ := time.Parse(time.RFC3339, values[len(values)-1][metricsTime].(string))
 			stopTime = strconv.FormatInt(logTime.UnixNano(), 10)
 		}
 		count := MAX_LIMIT
 		if limit > 0 && metricCount+MAX_LIMIT > limit {
 			count = limit - metricCount
+			if count == 0 {
+				break
+			}
 		}
+
 		metricCount += count
-		tagStrTime := ms.GetTagStr(tagStr, startTime, stopTime, duration)
+		tagStrTime := ms.getTagStr(tagStr, startTime, stopTime, duration)
 		// Count
 		countStr := ""
 		if count != 0 {
@@ -348,9 +353,11 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 			return values, err
 		}
 
+		respValuesLen := 0
 		// Process response
 		if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
 			row := response.Results[0].Series[0]
+			respValuesLen = len(row.Values)
 			for _, qValues := range row.Values {
 				rValues := make(map[string]interface{})
 				for index, qVal := range qValues {
@@ -360,16 +367,15 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 			}
 		}
 
-		valuesArray = append(valuesArray, values...)
-		if len(values) < MAX_LIMIT {
+		if respValuesLen < MAX_LIMIT {
 			break
 		}
 	}
 
-	return valuesArray, nil
+	return values, nil
 }
 
-func (ms *MetricStore) GetTagStr(inputTagStr string, timeStart string, timeStop string, duration string) string {
+func (ms *MetricStore) getTagStr(inputTagStr string, timeStart string, timeStop string, duration string) string {
 	tagStr := inputTagStr
 	if timeStart != "" && timeStop != "" {
 		if tagStr == "" {

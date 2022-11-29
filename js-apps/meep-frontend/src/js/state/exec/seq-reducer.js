@@ -19,8 +19,7 @@ import { updateObject } from '../../util/object-util';
 const initialState = {
   metrics: [],
   participants: [],
-  chart: '',
-  pause: false
+  chart: ''
 };
 
 // EXEC_CHANGE_SEQ
@@ -59,15 +58,6 @@ export function execChangeSeqChart(chart) {
   };
 }
 
-// EXEC_CHANGE_SEQ_PAUSE_STATE
-const EXEC_CHANGE_SEQ_PAUSE = 'EXEC_CHANGE_SEQ_PAUSE_STATE';
-export function execChangeSeqPauseState(pause) {
-  return {
-    type: EXEC_CHANGE_SEQ_PAUSE,
-    payload: pause
-  };
-}
-
 export function execSeqReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SEQ:
@@ -78,8 +68,6 @@ export function execSeqReducer(state = initialState, action) {
     return updateObject(state, { participants: action.payload });
   case EXEC_CHANGE_SEQ_CHART:
     return updateObject(state, { chart: action.payload });
-  case EXEC_CHANGE_SEQ_PAUSE:
-    return updateObject(state, { pause: action.payload });
   default:
     return state;
   }
