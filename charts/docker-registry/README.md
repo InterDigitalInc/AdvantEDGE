@@ -14,10 +14,16 @@ This chart will do the following:
 
 ## Installing the Chart
 
+First, add the repo:
+
+```console
+$ helm repo add twuni https://helm.twun.io
+```
+
 To install the chart, use the following:
 
 ```console
-$ helm install stable/docker-registry
+$ helm install twuni/docker-registry
 ```
 
 ## Configuration
@@ -41,6 +47,10 @@ their default values.
 | `service.type`              | service type                                                                               | `ClusterIP`     |
 | `service.clusterIP`         | if `service.type` is `ClusterIP` and this is non-empty, sets the cluster IP of the service | `nil`           |
 | `service.nodePort`          | if `service.type` is `NodePort` and this is non-empty, sets the node port of the service   | `nil`           |
+| `service.loadBalancerIP`     | if `service.type` is `LoadBalancer` and this is non-empty, sets the loadBalancerIP of the service | `nil`          |
+| `service.loadBalancerSourceRanges`| if `service.type` is `LoadBalancer` and this is non-empty, sets the loadBalancerSourceRanges of the service | `nil`           |
+| `service.sessionAffinity`       | service session affinity                                                               | `nil`           |
+| `service.sessionAffinityConfig` | service session affinity config                                                        | `nil`           |
 | `replicaCount`              | k8s replicas                                                                               | `1`             |
 | `updateStrategy`            | update strategy for deployment                                                             | `{}`            |
 | `podAnnotations`            | Annotations for pod                                                                        | `{}`            |
@@ -54,6 +64,7 @@ their default values.
 | `secrets.htpasswd`          | Htpasswd authentication                                                                    | `nil`           |
 | `secrets.s3.accessKey`      | Access Key for S3 configuration                                                            | `nil`           |
 | `secrets.s3.secretKey`      | Secret Key for S3 configuration                                                            | `nil`           |
+| `secrets.s3.secretRef`      | The ref for an external secret containing the accessKey and secretKey keys                 | `""`            |
 | `secrets.swift.username`    | Username for Swift configuration                                                           | `nil`           |
 | `secrets.swift.password`    | Password for Swift configuration                                                           | `nil`           |
 | `haSharedSecret`            | Shared secret for Registry                                                                 | `nil`           |
@@ -61,10 +72,17 @@ their default values.
 | `s3.region`                 | S3 region                                                                                  | `nil`           |
 | `s3.regionEndpoint`         | S3 region endpoint                                                                         | `nil`           |
 | `s3.bucket`                 | S3 bucket name                                                                             | `nil`           |
+| `s3.rootdirectory`          | S3 prefix that is applied to allow you to segment data                                     | `nil`           |
 | `s3.encrypt`                | Store images in encrypted format                                                           | `nil`           |
 | `s3.secure`                 | Use HTTPS                                                                                  | `nil`           |
 | `swift.authurl`             | Swift authurl                                                                              | `nil`           |
 | `swift.container`           | Swift container                                                                            | `nil`           |
+| `proxy.enabled`             | If true, registry will function as a proxy/mirror                                          | `false`         |
+| `proxy.remoteurl`           | Remote registry URL to proxy requests to                                                   | `https://registry-1.docker.io`            |
+| `proxy.username`            | Remote registry login username                                                             | `nil`           |
+| `proxy.password`            | Remote registry login password                                                             | `nil`           |
+| `proxy.secretRef`           | The ref for an external secret containing the proxyUsername and proxyPassword keys         | `""`            |
+| `namespace`                 | specify a namespace to install the chart to - defaults to `.Release.Namespace`             | `{{ .Release.Namespace }}` |
 | `nodeSelector`              | node labels for pod assignment                                                             | `{}`            |
 | `affinity`                  | affinity settings                                                                          | `{}`            |
 | `tolerations`               | pod tolerations                                                                            | `[]`            |
@@ -74,8 +92,18 @@ their default values.
 | `ingress.path`              | Ingress service path                                                                       | `/`             |
 | `ingress.hosts`             | Ingress hostnames                                                                          | `[]`            |
 | `ingress.tls`               | Ingress TLS configuration (YAML)                                                           | `[]`            |
+| `metrics.enabled`           | Enable metrics on Service                                                                  | `false`         |
+| `metrics.port`              | TCP port on which the service metrics is exposed                                           | `5001`          |
+| `metrics.serviceMonitor.annotations` | Prometheus Operator ServiceMonitor annotations                                    | `{}`            |
+| `metrics.serviceMonitor.enable` | If true, Prometheus Operator ServiceMonitor will be created                            | `false`         |
+| `metrics.serviceMonitor.labels` | Prometheus Operator ServiceMonitor labels                                              | `{}`            |
+| `metrics.prometheusRule.annotations` | Prometheus Operator PrometheusRule annotations                                    | `{}`            |
+| `metrics.prometheusRule.enable` | If true, Prometheus Operator prometheusRule will be created                            | `false`         |
+| `metrics.prometheusRule.labels` | Prometheus Operator prometheusRule labels                                              | `{}`            |
+| `metrics.prometheusRule.rules` | PrometheusRule defining alerting rules for a Prometheus instance                        | `{}`            |
 | `extraVolumeMounts`         | Additional volumeMounts to the registry container                                          | `[]`            |
 | `extraVolumes`              | Additional volumes to the pod                                                              | `[]`            |
+| `extraEnvVars`              | Additional environment variables to the pod                                                | `[]`            |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to
 `helm install`.

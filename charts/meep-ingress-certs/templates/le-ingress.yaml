@@ -1,5 +1,5 @@
 {{- if .Values.letsEncrypt.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "meep-ingress-certs.fullname" . }}
@@ -19,9 +19,12 @@ spec:
     - http:
         paths:
           - path: "/letsencrypt/"
+            pathType: ImplementationSpecific
             backend:
-              serviceName: {{ .Values.letsEncrypt.defaultBackend.service.name }}
-              servicePort: {{ .Values.letsEncrypt.defaultBackend.service.port }}
+              service:
+                name: {{ .Values.letsEncrypt.defaultBackend.service.name }}
+                port:
+                  number: {{ .Values.letsEncrypt.defaultBackend.service.port }}
   tls:
     - secretName: {{ .Values.letsEncrypt.tls.secret }}
       hosts:

@@ -77,7 +77,6 @@ var pduSessions = map[string]string{}
 
 var SandboxName string
 var mqLocal *mq.MsgQueue
-var handlerId int
 var apiMgr *sam.SwaggerApiMgr
 var activeModel *mod.Model
 var activeScenarioName string
@@ -206,7 +205,7 @@ func Run() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqLocal.RegisterHandler(handler)
+	_, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -385,7 +384,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
@@ -509,7 +508,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
@@ -561,7 +560,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		duration = params.Scope.Duration
 		limit = int(params.Scope.Limit)
 	}
-	influxLimit := 2 * limit
+	count := 2 * limit
 
 	var response SeqMetrics
 	mobilityEventProcessed := false
@@ -575,7 +574,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	// Get http metrics
 	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
 		met.HttpBody, met.HttpMethod)
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, influxLimit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, count)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -720,7 +719,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func updateResponseSeqMetrics(response *SeqMetrics, metric SeqMetric, params SeqQueryParams) {
@@ -851,7 +850,7 @@ func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func contains(s []string, str string) bool {
@@ -952,7 +951,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func createEventSubscription(w http.ResponseWriter, r *http.Request) {
@@ -997,7 +996,7 @@ func createEventSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
@@ -1042,7 +1041,7 @@ func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateEventList(key string, jsonInfo string, userData interface{}) error {
@@ -1377,7 +1376,7 @@ func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
@@ -1395,7 +1394,7 @@ func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getEventSubscriptionById(w http.ResponseWriter, r *http.Request) {
@@ -1409,7 +1408,7 @@ func getEventSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
@@ -1423,7 +1422,7 @@ func getNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func deleteEventSubscriptionById(w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,7 @@ package metrics
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -177,6 +178,9 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fields = []string{field1, field2, field3, field4}
 	result, err = ms.GetInfluxMetric(metric1, tags, fields, "10s", 0)
 	if err != nil || len(result) != 2 {
+		if err == nil {
+			fmt.Println(len(result))
+		}
 		t.Fatalf("Failed to get metric")
 	}
 	if !validateMetric(result[0], false, "val2", 1, 1.1) {
@@ -262,6 +266,272 @@ func TestMetricStoreCopyInflux(t *testing.T) {
 	}
 	if !validateMetric(result[1], true, "val1", 0, 0.0) {
 		t.Fatalf("Invalid result")
+	}
+}
+
+func TestIncrementalInfluxQuery(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	fmt.Println("Create valid Metric Store")
+	ms, err := NewMetricStore(metricStore1Name, metricStoreNamespace, metricStoreInfluxAddr, metricStoreRedisAddr)
+	if err != nil {
+		t.Fatalf("Unable to create Metric Store")
+	}
+
+	fmt.Println("Flush store metrics")
+	ms.Flush()
+
+	fmt.Println("Get empty metric")
+	tags := map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields := []string{field1, field2, field3, field4}
+	result, err := ms.GetInfluxMetric(metric1, tags, fields, "", 1)
+	if err != nil || len(result) != 0 {
+		t.Fatalf("Net metric should not exist")
+	}
+
+	fmt.Println("Set metrics")
+	metricList := make([]Metric, 1)
+	MAX_LIMIT = 20
+	count := 0
+	for count < 100 {
+		metricNum := strconv.Itoa(count)
+		metric := &metricList[0]
+		metric.Name = "metric1"
+		metric.Tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+		metric.Fields = map[string]interface{}{field1: true, field2: "val" + metricNum, field3: 0, field4: 0.0}
+		err = ms.SetInfluxMetric(metricList)
+		count += 1
+	}
+	if err != nil {
+		t.Fatalf("Failed to set metric")
+	}
+
+	fmt.Println("Get last metric")
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1)
+	if err != nil || len(result) != 1 {
+		t.Fatalf("Failed to get metric")
+	}
+	fmt.Println(result[0])
+	if !validateMetric(result[0], true, "val99", 0, 0.0) {
+		t.Fatalf("Invalid result")
+	}
+
+	fmt.Println("Get all metrics")
+	MAX_LIMIT = 10
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 0)
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+	if !validateMetric(result[0], true, "val99", 0, 0.0) {
+		t.Fatalf("Invalid result")
+	}
+	if !validateMetric(result[1], true, "val98", 0, 0.0) {
+		t.Fatalf("Invalid result")
+	}
+	if !validateMetric(result[99], true, "val0", 0, 0.0) {
+		t.Fatalf("Invalid result")
+	}
+
+	fmt.Println("Get all metrics")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 0)
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get all metrics")
+	MAX_LIMIT = 1000
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 0)
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N > log count, maxlimit < log count")
+	MAX_LIMIT = 10
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1000)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N > log count, maxlimit = log count")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1000)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N > log count, maxlimit > log count")
+	MAX_LIMIT = 500
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1000)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N > log count, N=maxlimit > log count")
+	MAX_LIMIT = 1000
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1000)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N < log count, maxlimit < log count")
+	MAX_LIMIT = 10
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 25)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 25 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N < log count, N=maxlimit < log count")
+	MAX_LIMIT = 25
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 25)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 25 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N < log count & maxlimit, maxlimit < log count")
+	MAX_LIMIT = 50
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 25)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 25 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N < log count, maxlimit = log count")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 25)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 25 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N < log count, maxlimit > log count")
+	MAX_LIMIT = 500
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 25)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 25 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N = log count, maxlimit > log count")
+	MAX_LIMIT = 500
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N = log count, maxlimit < log count")
+	MAX_LIMIT = 50
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Get N = log count = maxlimit")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Check Duration")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1s", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Check Duration")
+	MAX_LIMIT = 10
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1s", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Check Duration")
+	MAX_LIMIT = 500
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1s", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Check Duration")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1s", 50)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 50 {
+		t.Fatalf("Failed to get metric")
+	}
+	fmt.Println("Check Duration")
+	MAX_LIMIT = 100
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1s", 0)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	fmt.Println("Check Duration")
+	MAX_LIMIT = 10
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1s", 0)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
 	}
 }
 

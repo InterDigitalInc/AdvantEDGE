@@ -21,6 +21,9 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
 
 image:
   repository: meep-platform-ctrl
@@ -62,7 +65,7 @@ prometheus:
     additionalLabels: {}
     relabelings: []
     scrapeTimeout: 5s
-    
+
 codecov:
   enabled: false
   location: "<WORKDIR>/codecov/meep-platform-ctrl"

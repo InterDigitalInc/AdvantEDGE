@@ -1,4 +1,4 @@
-{{- if and .Values.podSecurityPolicy.enabled .Values.defaultBackend.enabled -}}
+{{- if and .Values.podSecurityPolicy.enabled .Values.defaultBackend.enabled (empty .Values.defaultBackend.existingPsp) -}}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -6,6 +6,9 @@ metadata:
   labels:
     {{- include "ingress-nginx.labels" . | nindent 4 }}
     app.kubernetes.io/component: default-backend
+    {{- with .Values.defaultBackend.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   allowPrivilegeEscalation: false
   fsGroup:

@@ -71,7 +71,6 @@ var APP_ENABLEMENT_DB = 0
 var mutex *sync.Mutex
 var rc *redis.Connector
 var mqLocal *mq.MsgQueue
-var handlerId int
 var hostUrl *url.URL
 var sandboxName string
 var mepName string
@@ -157,7 +156,7 @@ func Run() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqLocal.RegisterHandler(handler)
+	_, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -280,7 +279,7 @@ func applicationsConfirmTerminationPOST(w http.ResponseWriter, r *http.Request) 
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -347,7 +346,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -408,7 +407,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Location", appTermNotifSub.Links.Self.Href)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, jsonSub)
+	fmt.Fprint(w, jsonSub)
 }
 
 func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
@@ -433,7 +432,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -483,7 +482,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -539,7 +538,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
 			errHandlerProblemDetails(w, err.Error(), code)
 		}
@@ -574,7 +573,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertMecAppSuptApiSubscriptionLinkListToJson(subscriptionLinkList))
+	fmt.Fprint(w, convertMecAppSuptApiSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func timingCapsGET(w http.ResponseWriter, r *http.Request) {
@@ -597,7 +596,7 @@ func timingCapsGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func timingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
@@ -620,7 +619,7 @@ func timingCurrentTimeGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func deleteAppInstance(appId string) {
