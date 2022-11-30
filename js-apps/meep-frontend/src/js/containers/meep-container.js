@@ -86,7 +86,9 @@ import {
   uiExecChangeEventReplayMode,
   uiChangeSignInStatus,
   uiChangeSignInUsername,
-  uiChangeCurrentTab
+  uiChangeCurrentTab,
+  uiExecChangePauseSeq,
+  uiExecChangePauseDataflow
 } from '../state/ui';
 
 import {
@@ -651,6 +653,12 @@ class MeepContainer extends Component {
   execDeleteScenario() {
     var scenario = createNewScenario(NO_SCENARIO_NAME);
     this.updateScenario(TYPE_EXEC, scenario, true);
+    this.execScenarioCleanup();
+  }
+  execScenarioCleanup() {
+    // Reset flags on scenario termination
+    this.props.changePauseSeq(false);
+    this.props.changePauseDataflow(false);
   }
 
   // Refresh Active scenario
@@ -1015,7 +1023,7 @@ class MeepContainer extends Component {
     this.setBasepath(null);
 
     // Delete the active scenario
-    this.execDeleteScenario(TYPE_EXEC);
+    this.execDeleteScenario();
     this.props.execChangeScenarioState(EXEC_STATE_IDLE);
     this.props.execChangeOkToTerminate(false);
   }
@@ -1254,7 +1262,9 @@ const mapDispatchToProps = dispatch => {
     changeSeqMetrics: metrics => dispatch(execChangeSeqMetrics(metrics)),
     changeSeqParticipants: participants => dispatch(execChangeSeqParticipants(participants)),
     changeDataflowMetrics: metrics => dispatch(execChangeDataflowMetrics(metrics)),
-    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart))
+    changeDataflowChart: chart => dispatch(execChangeDataflowChart(chart)),
+    changePauseSeq: pause => dispatch(uiExecChangePauseSeq(pause)),
+    changePauseDataflow: pause => dispatch(uiExecChangePauseDataflow(pause))
   };
 };
 
