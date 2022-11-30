@@ -31,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.8.2"
+const configVersion = "1.9.0"
 
 const defaultNotSet = "not set"
 
@@ -325,7 +325,8 @@ func GetResourcePrerequisites(group string) ([]string, []string) {
 }
 
 // GetTargets retreives the keys based on group and operation type
-//  operation == "" returns the whole group
+//
+//	operation == "" returns the whole group
 func GetTargets(group string, operation string) []string {
 	targets := []string{}
 	if RepoCfg != nil {
