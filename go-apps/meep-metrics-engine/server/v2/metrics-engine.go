@@ -560,7 +560,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 		duration = params.Scope.Duration
 		limit = int(params.Scope.Limit)
 	}
-	influxLimit := 2 * limit
+	count := 2 * limit
 
 	var response SeqMetrics
 	mobilityEventProcessed := false
@@ -574,7 +574,7 @@ func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
 	// Get http metrics
 	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
 		met.HttpBody, met.HttpMethod)
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, influxLimit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, count)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

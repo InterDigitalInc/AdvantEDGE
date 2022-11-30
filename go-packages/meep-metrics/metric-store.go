@@ -39,6 +39,10 @@ const MetricsDbDisabled = "disabled"
 const metricsDb = 0
 const metricsKey = "metric-store:"
 
+var MAX_LIMIT = 10000
+
+const metricsTime = "time"
+
 type Metric struct {
 	Name   string
 	Tags   map[string]string
@@ -267,7 +271,7 @@ func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 }
 
 // GetInfluxMetric - Generic metric getter
-func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fields []string, duration string, count int) (values []map[string]interface{}, err error) {
+func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fields []string, duration string, limit int) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		return values, errors.New("Store name not specified")
@@ -309,44 +313,114 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 		}
 		tagStr += ")"
 	}
+
+	metricCount := 0
+	startTime := ""
 	if duration != "" {
-		if tagStr == "" {
-			tagStr = " WHERE time > now() - " + duration
-		} else {
-			tagStr += " AND time > now() - " + duration
+		influxDuration, _ := time.ParseDuration(duration)
+		startTime = strconv.FormatInt(time.Now().Add(-1*influxDuration).UnixNano(), 10)
+	}
+	for {
+		stopTime := ""
+		if len(values) > 0 {
+			logTime, _ := time.Parse(time.RFC3339, values[len(values)-1][metricsTime].(string))
+			stopTime = strconv.FormatInt(logTime.UnixNano(), 10)
 		}
-	}
-
-	// Count
-	countStr := ""
-	if count != 0 {
-		countStr = " LIMIT " + strconv.Itoa(count)
-	}
-
-	query := "SELECT " + fieldStr + " FROM " + metric + " " + tagStr + " ORDER BY desc" + countStr
-	log.Debug("QUERY: ", query)
-
-	// Query store for metric
-	q := influx.NewQuery(query, ms.name, "")
-	response, err := (*ms.influxClient).Query(q)
-	if err != nil {
-		log.Error("Query failed with error: ", err.Error())
-		return values, err
-	}
-
-	// Process response
-	if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
-		row := response.Results[0].Series[0]
-		for _, qValues := range row.Values {
-			rValues := make(map[string]interface{})
-			for index, qVal := range qValues {
-				rValues[row.Columns[index]] = qVal
+		count := MAX_LIMIT
+		if limit > 0 && metricCount+MAX_LIMIT > limit {
+			count = limit - metricCount
+			if count == 0 {
+				break
 			}
-			values = append(values, rValues)
+		}
+
+		metricCount += count
+		tagStrTime := ms.getTagStr(tagStr, startTime, stopTime, duration)
+		// Count
+		countStr := ""
+		if count != 0 {
+			countStr = " LIMIT " + strconv.Itoa(count)
+		}
+
+		query := "SELECT " + fieldStr + " FROM " + metric + " " + tagStrTime + " ORDER BY desc" + countStr
+		log.Debug("QUERY: ", query)
+
+		// Query store for metric
+		q := influx.NewQuery(query, ms.name, "")
+		response, err := (*ms.influxClient).Query(q)
+		if err != nil {
+			log.Error("Query failed with error: ", err.Error())
+			return values, err
+		}
+
+		respValuesLen := 0
+		// Process response
+		if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
+			row := response.Results[0].Series[0]
+			respValuesLen = len(row.Values)
+			for _, qValues := range row.Values {
+				rValues := make(map[string]interface{})
+				for index, qVal := range qValues {
+					rValues[row.Columns[index]] = qVal
+				}
+				values = append(values, rValues)
+			}
+		}
+
+		if respValuesLen < MAX_LIMIT {
+			break
 		}
 	}
 
 	return values, nil
+}
+
+func (ms *MetricStore) getTagStr(inputTagStr string, timeStart string, timeStop string, duration string) string {
+	tagStr := inputTagStr
+	if timeStart != "" && timeStop != "" {
+		if tagStr == "" {
+			tagStr = " WHERE time > " + timeStart + " AND time < " + timeStop
+		} else {
+			tagStr += " AND time > " + timeStart + " AND time < " + timeStop
+		}
+	} else if timeStart != "" {
+		if duration != "" {
+			if tagStr == "" {
+				tagStr = " WHERE time > " + timeStart + " AND time < " + timeStart + " + " + duration
+			} else {
+				tagStr += " AND time > " + timeStart + " AND time < " + timeStart + " + " + duration
+			}
+		} else {
+			if tagStr == "" {
+				tagStr = " WHERE time > " + timeStart
+			} else {
+				tagStr += " AND time > " + timeStart
+			}
+		}
+	} else if timeStop != "" {
+		if duration != "" {
+			if tagStr == "" {
+				tagStr = " WHERE time < " + timeStop + " AND time > " + timeStop + " - " + duration
+			} else {
+				tagStr += " AND time < " + timeStop + " AND time > " + timeStop + " - " + duration
+			}
+		} else {
+			if tagStr == "" {
+				tagStr = " WHERE time < " + timeStop
+			} else {
+				tagStr += " AND time < " + timeStop
+			}
+		}
+	} else {
+		if duration != "" {
+			if tagStr == "" {
+				tagStr = " WHERE time > now() - " + duration
+			} else {
+				tagStr += " AND time > now() - " + duration
+			}
+		}
+	}
+	return tagStr
 }
 
 // SetRedisMetric - Generic metric setter
