@@ -70,10 +70,4 @@ More details about the deprecation can be found here:
 
 **Impact on AdvantEDGE deployment**
 
-AdvantEDGE [runtime installation procedure]({{site.baseurl}}{% link docs/setup/env-runtime.md %}) deploys Docker as the
-k8s container runtime. For this reason, AdvantEDGE installation as currently documented only supports k8s versions up to 1.21. We have validated
-that the Docker container runtime can be replaced seamlessly by _containerd_ for k8s version 1.20, however we have not yet tested with the latest
-k8s release 1.22.
-
-We will update the AdvantEDGE documentation with the new container runtime installation procedure as soon as we officially support 
-the latest k8s version. Users wishing to migrate to another CRI-compatible container runtime may do so at any time.
+Support for k8s versions 1.22+ was added with AdvantEDGE release v1.9.0. In this release, the Docker container runtime was replaced by the CRI-compliant _containerd_ container runtime. The AdvantEDGE [runtime installation procedure]({{site.baseurl}}{% link docs/setup/env-runtime.md %}) has been updated to initialize k8s with _containerd_ as the default container runtime.

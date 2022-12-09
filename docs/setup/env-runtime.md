@@ -9,7 +9,7 @@ Topic | Abstract
 ------|------
 [Ansible](#ansible) | Install using **Ansible** (_beta-feature_)
 [Ubuntu](#ubuntu) | Supported OS
-[Dockers](#dockers) | Dockers installation
+[Docker](#docker) | Docker installation
 [Kubernetes](#kubernetes) | Kubernetes installation
 [Helm](#helm) | Helm installation
 [GPU Support](#gpu-support) | [Optional] To run sceanrios using GPUs
@@ -33,23 +33,61 @@ Versions we use:
 - Kernel: 4.4, 4.15, 4.18, 5.3 and 5.4
 
 ----
-## Dockers
+## Docker
 
-We typically use the convenience script procedure for the community edition from [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+Containerd v1.6+ does not work with weave CNI plugin; the latest supported containerd version is therefore v1.5.11.<br>
+For more information, see issue [here](https://github.com/containernetworking/cni/issues/895)._
+
+We use the procedure for the community edition from [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
 Versions we use:
 
 - 19.03 and 20.10 <br> _(versions 17.03, 18.03, 18.09 used to work - not tested anymore)_
+- Containerd: 1.5.11 _(v1.6+ not supported)_
 
 How we do it:
 
-```
-curl -fsSL https://get.docker.com -o get-docker.sh
+If upgrading from an older version, start by uninstalling it:
 
-sudo sh get-docker.sh
+```
+# Uninstall the Docker Engine, CLI, Containerd, and Docker Compose packages
+sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Delete all images, containers, and volumes
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
+
+sudo reboot
+```
+
+To install the latest supported version:
+
+```
+# Install dependencies
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
+
+# Add Docker’s official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+# Set up the stable repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker engine
+sudo apt-get update
+sudo apt-get install -y docker-ce=5:20.10.14~3-0~ubuntu-bionic docker-ce-cli=5:20.10.14~3-0~ubuntu-bionic containerd.io=1.5.11-1 docker-compose-plugin
+
+# Lock current version
+sudo apt-mark hold docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Add user to docker group
 sudo usermod -aG docker <your-user>
+
+# Allow user to access containerd socket 
+sudo setfacl --modify user:<your-user>:rw /run/containerd/containerd.sock
 
 # Restart shell to apply changes
 ```
@@ -57,20 +95,18 @@ sudo usermod -aG docker <your-user>
 ----
 ## Kubernetes
 
-_:exclamation: **BREAKING CHANGE** :exclamation:<br>With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**._
+_:exclamation: **BREAKING CHANGE** :exclamation:<br>
+With AdvantEDGE release v1.7+, **pre-1.16 k8s releases are no longer supported**._
 
 _:exclamation: **IMPORTANT NOTE** :exclamation:<br>
-K8s versions 1.22+ are not yet supported by AdvantEDGE due to breaking API changes; upgrade is planned but not completed._
-
-_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
-Current installation procedure uses Docker container runtime, which is no longer supported as of k8s version 1.22.<br>
+With AdvantEDGE release v1.9+, Docker container runtime has been replaced by containerd to support k8s versions 1.22+.<br>
 For more information, see the [Docker container runtime deprecation FAQ]({{site.baseurl}}{% link docs/project/project-faq.md %}#faq-2-k8s-docker-container-runtime-deprecation)._
 
 We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independent/install-kubeadm/)
 
 Versions we use:
 
-- 1.19, 1.20, 1.21 <br> _(versions 1.16 used to work - not tested anymore)_
+- 1.19 to 1.24<br> _(versions 1.16 to 1.18 used to work - not tested anymore)_
 
 _**NOTE:** K8s deployment has a dependency on the node's IP address.<br>
 From our experience, it is **strongly recommended** to ensure that your platform always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
@@ -86,30 +122,43 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^/#/' /etc/fstab
 ```
 
-##### STEP 2 - Setup Docker daemon [(details)](https://kubernetes.io/docs/setup/cri/#docker)
+##### STEP 2 - Setup container runtime [(details)](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
+
+Containerd is used as the k8s container runtime.
+
+_**NOTE:** Containerd was installed during Docker installation._
+
+To install the container runtime prerequisites:
 
 ```
-# Docker was previously installed
-# Now, setup Docker daemon
-cat > ~/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
 EOF
 
-# Copy daemon config
-sudo mv ~/daemon.json /etc/docker
+sudo modprobe overlay
+sudo modprobe br_netfilter
 
-# Create systemd entry for docker daemon
-sudo mkdir -p /etc/systemd/system/docker.service.d
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
 
-# Reboot
-sudo reboot
+# Apply sysctl params without reboot
+sudo sysctl --system
+```
+
+To configure containerd:
+
+```
+# configure containerd
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+
+# restart containerd
+sudo systemctl restart containerd
 ```
 
 ##### STEP 3 - Install kubeadm, kubelet & kubectl [(details)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
@@ -139,7 +188,7 @@ EOF'
 
 # Install latest supported k8s version
 sudo apt-get update
-sudo apt-get install -y kubelet=1.19.1-00 kubeadm=1.19.1-00 kubectl=1.19.1-00 kubernetes-cni=0.8.7-00
+sudo apt-get install -y kubelet=1.24.0-00 kubeadm=1.24.0-00 kubectl=1.24.0-00 kubernetes-cni=0.8.7-00
 
 # Lock current version
 sudo apt-mark hold kubelet kubeadm kubectl
@@ -148,7 +197,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ##### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
 
 ```
-sudo kubeadm init
+sudo kubeadm init --cri-socket unix:///run/containerd/containerd.sock
 
 # Once completed, follow onscreen instructions
 mkdir -p $HOME/.kube
@@ -160,6 +209,7 @@ Allow scheduling pods on master node [(details)](https://kubernetes.io/docs/setu
 
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 ```
 
 Install the network add-on [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network)
@@ -192,7 +242,7 @@ On each worker node:
 sudo sysctl net.bridge.bridge-nf-call-iptables=1
 
 # Join worker node
-kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
+sudo kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
 
 # Configure the worker node
 mkdir ~/.kube
@@ -200,6 +250,8 @@ scp <user>@<master-ip>:~/.kube/config ~/.kube/
 ```
 
 ##### STEP 6 - Enable kubectl auto-completion
+
+_**NOTE:** This step should only be run once._
 
 ```
 echo "source <(kubectl completion bash)" >> ~/.bashrc
@@ -223,6 +275,9 @@ sudo update-ca-certificates
 
 # Restart docker daemon
 sudo systemctl restart docker
+
+# Restart containerd daemon
+sudo systemctl restart containerd
 ```
 
 ----
@@ -232,7 +287,7 @@ We use [this](https://helm.sh/docs/intro/install/) procedure
 
 Versions we use:
 
-- 3.3 <br> _(Helm v2 deprecated)_
+- 3.3, 3.7 <br> _(Helm v2 deprecated)_
 
 _**NOTE:** Procedure is slightly different when upgrading Helm v2 to v3 versus installing Helm v3 from scratch_
 
@@ -241,10 +296,10 @@ How we do it:
 ### Install Helm from scratch[(details)](https://helm.sh/docs/intro/install/)
 
 ```
-sudo snap install helm --channel=3.3/stable --classic
+sudo snap install helm --channel=3.7/stable --classic
 
 # If you have already installed helm v3, use the refresh command below to configure it to 3.3 instead
-sudo snap refresh helm --channel=3.3/stable --classic
+sudo snap refresh helm --channel=3.7/stable --classic
 ```
 
 ### Upgrade Helm v2 to v3
@@ -254,14 +309,14 @@ sudo snap refresh helm --channel=3.3/stable --classic
 ##### STEP 2 - Install Helm v3
 
 ```
-sudo snap refresh helm --channel=3.3/stable --classic
+sudo snap refresh helm --channel=3.7/stable --classic
 ```
 
 ##### STEP 3 - Check helm installation
 
 ```
 helm version
-# Output should show version as 3.3.1
+# Output should show version as 3.7.0
 ```
 
 ##### STEP 4 - Download helm v2 to v3 plugin to get the helm v2 configuration and data
@@ -295,7 +350,7 @@ helm 2to3 cleanup
 
 ### NVIDIA
 
-In order for Kubernetes to be aware of available GPU resources on its nodes, each host with a GPU must install the necessary drivers and vendor-specific device plugin. Also, the docker container runtime must be changed to make the GPUs visible within the containers. More information can be found in this [blog post](https://devblogs.nvidia.com/gpu-containers-runtime/).
+In order for Kubernetes to be aware of available GPU resources on its nodes, each host with a GPU must install the necessary drivers. The NVIDIA GPU Operator must also be installed in order to configure, install & validate all other components required to enable GPUs on k8s, such as the NVIDIA container runtime, device plugin & CUDA toolkit. More information can be found in this [blog post](https://developer.nvidia.com/blog/announcing-containerd-support-for-the-nvidia-gpu-operator/).
 
 How we do it:
 
@@ -311,8 +366,8 @@ sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt update
 
 # Install the NVIDIA drivers
-# sudo apt-get install nvidia-<version>
-sudo apt-get install nvidia-415
+# sudo apt-get install nvidia-driver-<version>
+sudo apt-get install nvidia-driver-510
 ```
 
 Verify driver installation:
@@ -323,88 +378,42 @@ nvidia-smi
 
 # Sample output:
 +-----------------------------------------------------------------------------+
-| NVIDIA-SMI 415.27       Driver Version: 415.27       CUDA Version: 10.0     |
+| NVIDIA-SMI 510.73.05    Driver Version: 510.73.05    CUDA Version: 11.6     |
 |-------------------------------+----------------------+----------------------+
 | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
 | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
 |===============================+======================+======================|
-|   0  GeForce GTX 1050    Off  | 00000000:01:00.0  On |                  N/A |
-| 40%   34C    P8    N/A /  75W |    296MiB /  1999MiB |      0%      Default |
+|   0  NVIDIA GeForce ...  Off  | 00000000:17:00.0 Off |                  N/A |
+|  0%   36C    P8     2W / 190W |     99MiB /  6144MiB |      0%      Default |
+|                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
 
 +-----------------------------------------------------------------------------+
-| Processes:                                                       GPU Memory |
-|  GPU       PID   Type   Process name                             Usage      |
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
 |=============================================================================|
-|    0       983      G   /usr/lib/xorg/Xorg                           161MiB |
-|    0      7315      G   compiz                                       131MiB |
+|    0   N/A  N/A      1447      G   /usr/lib/xorg/Xorg                 39MiB |
+|    0   N/A  N/A      1690      G   /usr/bin/gnome-shell               57MiB |
 +-----------------------------------------------------------------------------+
 ```
 
-##### STEP 2 - Install NVIDIA Container Runtime
+##### STEP 2 - Install NVIDIA GPU Operator
 
-Starting with Docker 19.03, NVIDIA GPU support is included in the default _runc_ container runtime. However, the NVIDIA device plugin requires the NVIDIA container runtime. We describe how to install it here.
+The NVIDIA GPU Operator configures, installs and validates the NVIDIA container runtime, device plugin & CUDA toolkit required to support GPUs within k8s containers. We use the NVIDIA method documented [here](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#install-nvidia-gpu-operator)
 
-We use the [NVIDIA Container Runtime for Docker](https://github.com/NVIDIA/nvidia-docker) procedure.
-
-_**IMPORTANT NOTE:** For older versions of docker you must install the nvidia-docker2 runtime as described [here](https://github.com/NVIDIA/nvidia-docker#upgrading-with-nvidia-docker2-deprecated)_
-
-Install container-toolkit & nvidia-runtime, and verify _runc_ runtime GPU support:
+_**NOTE:** This procedure will take some time during first installation_
 
 ```
-# Add the package repositories
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+# Add the NVIDIA helm repository
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
 
-sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit nvidia-container-runtime
-sudo systemctl restart docker
-
-# Test nvidia-smi with the latest supported official CUDA image
-docker run --gpus all nvidia/cuda:9.0-base nvidia-smi
+# Install NVIDIA GPU Operator in Bare-metal/Passthrough with pre-installed NVIDIA drivers
+helm install gpu-operator --create-namespace nvidia/gpu-operator --set driver.enabled=false
 ```
 
-Update the default docker runtime by setting the following in `/etc/docker/daemon.json`:
-
-```
-{
-  "default-runtime": "nvidia",
-  "runtimes": {
-    "nvidia": {
-      "path": "/usr/bin/nvidia-container-runtime",
-      "runtimeArgs": [
-      ]
-    }
-  },
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
-```
-
-Restart the docker daemon & verify _nvidia_ runtime GPU support:
-
-```
-sudo systemctl restart docker
-
-# Test nvidia-smi with the latest supported official CUDA image
-docker run --rm nvidia/cuda:9.0-base nvidia-smi
-```
-
-##### STEP 3 - Install NVIDIA device plugin for Kubernetes
-
-We use the [NVIDIA Device Plugin for Kubernetes](https://github.com/nvidia/k8s-device-plugin) procedure.
-
-Install the device plugin DaemonSet using the following command:
-
-```
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta/nvidia-device-plugin.yml
-```
-
-##### STEP 4 - Deploy a scenario requiring GPU resources
+##### STEP 3 - Deploy a scenario requiring GPU resources
 
 This can be done via AdvantEDGE frontend scenario configuration by selecting the number of requested GPUs for a specific application (GPU type must be set to _NVIDIA_). The application image must include or be based on an official NVIDIA image containing the matching NVIDIA drivers. DockerHub images can be found [here](https://hub.docker.com/r/nvidia/cuda/).
 

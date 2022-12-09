@@ -83,8 +83,8 @@ This feature provides the following capabilities:
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
 - _Metrics Long-term Storage (Optional)_
-  - Long-term data retention: Thanos pushes Prometheus metrics to MinIO high-performance object store every 2 hours
-  - Daily backups: cronjob pushes InfluxDB data to MinIO object store
+  - Long-term data retention: Thanos pushes Prometheus metrics to object store every 2 hours
+  - Daily backups: cronjob pushes InfluxDB data to object store
 
 Want to know more about Monitoring feature: [Monitoring Subsystem]({{site.baseurl}}{% link docs/overview/features/overview-monitoring.md %})
 

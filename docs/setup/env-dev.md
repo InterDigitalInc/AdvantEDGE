@@ -37,7 +37,7 @@ We use the official [Go Programming Language install procedure](https://golang.o
 
 Versions we use:
 
-- 1.14, 1.15, 1.16 <br>(version 1.13 used to work - not tested anymore)
+- 1.16 - 1.18 <br> (versions 1.14, 1.15 used to work - not tested anymore)
 
 How we do it:
 
@@ -46,7 +46,7 @@ How we do it:
 ##### STEP 2 - Unzip tarball & install
 
 ```
-# Example tarball: go1.15.3.linux-amd64.tar.gz
+# Example tarball: go1.18.1.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz
 ```
 
@@ -78,7 +78,7 @@ go version
 
 # Example output:
 #   /usr/local/go/bin/go
-#   go version go1.15.3 linux/amd64
+#   go version go1.18.1 linux/amd64
 ```
 
 ----
@@ -91,7 +91,7 @@ NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows 
 Versions we use:
 
 - NVM: 0.34.0
-- Node.js: 8.11, 10.15, 10.16, 10.19
+- Node.js: 8.11, 10.15, 10.16, 10.19, 12.19
 - npm: 6.8, 6.9, 6.11, 6.12, 6.14
 
 How we do it:
@@ -118,13 +118,10 @@ source ~/.profile
 
 ##### STEP 4 - Install Node.js (latest LTS version)
 
-_**IMPORTANT NOTE:** Latest LTS version 12+ causes demo1 build failures (see issue [here](https://github.com/InterDigitalInc/AdvantEDGE/issues/32))<br>
-Workaround is to install previous LTS version 10 until issue is fixed_
-
 ```
-# Retrieve & install latest v10 Node.js versions
+# Retrieve & install latest v12 Node.js versions
 nvm ls-remote | grep "Latest LTS"
-nvm install 10.16.3
+nvm install 12.19.0
 ```
 
 ##### STEP 5 - Update NPM version bundled with Node.js
@@ -140,8 +137,8 @@ node -v
 npm -v
 
 # Example output:
-#   v10.16.3
-#   6.12.0
+#   v12.19.0
+#   6.14.8
 ```
 
 
@@ -186,19 +183,19 @@ eslint -v
 
 ### GolangCI-Lint
 
-[GolangCI-Lint](https://github.com/golangci/golangci-lint) is a linters aggregator for Go.
+[GolangCI-Lint](https://golangci-lint.run/) is a linters aggregator for Go.
 
 Versions we use:
 
-- 1.18.0
+- 1.46.0
 
 How we do it:
 
 ##### STEP 1 - Install GolangCI-Lint
 
 ```
-cd ~
-GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
+# binary will be $(go env GOPATH)/bin/golangci-lint
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin 
 ```
 
 ##### STEP 2 - Verify install
@@ -207,7 +204,7 @@ GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.
 golangci-lint --version
 
 # Example output:
-# golangci-lint has version v1.18.0 built from (unknown, mod sum: "h1:XmQgfcLofSG/6AsQuQqmLizB+3GggD+o6ObBG9L+VMM=") on (unknown)
+# golangci-lint has version 1.46.0 built from 7c1d8b75 on 2022-05-09T11:16:24Z
 ```
 
 ----
