@@ -106,7 +106,7 @@ We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independe
 
 Versions we use:
 
-- 1.19 to 1.24<br> _(versions 1.16 to 1.18 used to work - not tested anymore)_
+- 1.19 to 1.25<br> _(versions 1.16 to 1.18 used to work - not tested anymore)_
 
 _**NOTE:** K8s deployment has a dependency on the node's IP address.<br>
 From our experience, it is **strongly recommended** to ensure that your platform always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
@@ -156,6 +156,8 @@ To configure containerd:
 # configure containerd
 sudo mkdir -p /etc/containerd
 containerd config default | sudo tee /etc/containerd/config.toml
+# if ubuntu veersion=22.04
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
 
 # restart containerd
 sudo systemctl restart containerd
