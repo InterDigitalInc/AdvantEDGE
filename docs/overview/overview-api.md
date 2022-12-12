@@ -22,6 +22,7 @@ Topic | Abstract
 [AMS API](#ams-api) | [OAS3] Application Mobility Service northbound API endpoints
 [Application State Transfer Service API](#application-state-transfer-service-api) | [OAS2] Mobility Group Manager membership and state transfer endpoints
 [Application State Transfer Notification API](#application-state-transfer-notification-api) | [OAS2] Client side Mobility Group Manager state transfer endpoints
+[VIS API](#vis-api) | [OAS3] VIS northbound API endpoints
 NEXT STEP: [Recommended hardware](#next-step) | |
 
 ----
