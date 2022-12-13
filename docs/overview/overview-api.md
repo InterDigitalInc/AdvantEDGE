@@ -244,6 +244,15 @@ API:
 - From wiki: [MG Manager Notification (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-mg-manager-notif/README.md)
 - From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
 
+----
+### VIS API
+This API allows to obtain V2X information
 
+API:
+- From repository: [meep-vis (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-vis/api/swagger.yaml)
+- From wiki: [VIS (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-vis/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
 ## Next Step
 Learn about the [recommended hardware]({{site.baseurl}}{% link docs/setup/env-hw.md %}):
