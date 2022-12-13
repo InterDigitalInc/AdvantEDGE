@@ -114,6 +114,8 @@ This section provides the following configuration controls for the Visualization
 Drop-down menus to select the visualizations to display in the Visualization dashboard. You may configure a single view or two views to display side-by-side. You can choose from the following views:
 - Network Topology
 - Map View
+- Sequence Diagram
+- Data Flow Diagram
 - Network Metrics Point-to-Point
 - Network Metrics Aggregation
 - None
@@ -148,6 +150,18 @@ We use a 3rd party mapping client called [Leaflet](https://leafletjs.com/) to re
 This view loads the Network Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and destination nodes. It displays instantaneous measurements for round-trip ping time and UL & DL throughput, as well as a graph of these measurements over the last minute.
 
 _**NOTE:** You must select both a source and destination node in the Dashboard configuration bar to visualize data in this view._
+
+### Sequence Diagram
+The sequence diagram visualization dashboard is an AdvantEDGE feature that allows to observe interactions in a scenario in real-time. The feature also allows to export sequence diagrams in a text format to facilitate documenting scenarios. The chosen visualization technology is Mermaid, a JS visualization library.
+
+It is possible to export sequence diagrams in the [Mermaid](https://mermaid.live/edit) format or in the [SequenceDiagram.org](https://sequencediagram.org/) format
+
+It is possible to configure the dashboard with the order of participants to view the intercations, specify the number of interactions to be shown on screen, pause or unpause to view new interactions. 
+
+### Data Flow Diagram
+The data flow diagram visualization dashboard is an AdvantEDGE feature that allows to observe the number of interactions between components in a scenario in real-time. The feature also allows to export data flow diagrams in a text format to facilitate documenting scenarios. The chosen visualization technology is Mermaid, a JS visualization library.
+
+It is possible to export sequence diagrams in the [Mermaid](https://mermaid.live/edit) format.
 
 ### Network Metrics Aggregation
 This view loads the Network Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and all other scenario application nodes. It displays graphs for round-trip ping times, UL & DL throughput measurements over the last minute. It also shows a table of events received by the backend.
