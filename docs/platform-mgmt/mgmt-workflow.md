@@ -260,8 +260,8 @@ Once testing is complete:
 - **Stop the micro-services gracefully**: `meepctl delete core`
   - _Build, dockerize & deploy will instrument and execute core micro-services so they measure code coverage._
   - _When terminated gracefully, the core micro-services store code coverage results at the following location: `~/.meep/codecov/<micro-service-name>/codecov-<micro-service-name>.out`_
-- For convenience, code coverage reports can be generated using `meepctl test`
-_**This will generate aggregated code coverage reports per service.**_
+- For convenience, code coverage reports can be generated using `meepctl test`<br>
+_This will generate aggregated code coverage reports per service._
 
 ----
 ## Next Step
