@@ -1,6 +1,10 @@
 .openapi-generator-ignore
 Apis/MetricsApi.md
 Apis/SubscriptionsApi.md
+Models/DataflowMetric.md
+Models/DataflowMetricList.md
+Models/DataflowMetrics.md
+Models/DataflowQueryParams.md
 Models/EventMetric.md
 Models/EventMetricList.md
 Models/EventQueryParams.md
@@ -19,5 +23,9 @@ Models/NetworkSubscription.md
 Models/NetworkSubscriptionList.md
 Models/NetworkSubscriptionParams.md
 Models/Scope.md
+Models/SeqMetric.md
+Models/SeqMetricList.md
+Models/SeqMetrics.md
+Models/SeqQueryParams.md
 Models/Tag.md
 README.md

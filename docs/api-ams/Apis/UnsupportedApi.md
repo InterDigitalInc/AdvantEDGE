@@ -1,11 +1,12 @@
 # UnsupportedApi
 
-All URIs are relative to *https://localhost/amsi/v1*
+All URIs are relative to *https://localhost/sandboxname/amsi/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adjAppInstGET**](UnsupportedApi.md#adjAppInstGET) | **GET** /queries/adjacent_app_instances | Retrieve information about this subscription.
 [**appMobilityServiceDerPOST**](UnsupportedApi.md#appMobilityServiceDerPOST) | **POST** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
+[**notificationPOST**](UnsupportedApi.md#notificationPOST) | **POST** /uri_provided_by_subscriber | delivers a notification from the AMS resource to the subscriber
 
 
 <a name="adjAppInstGET"></a>
@@ -64,5 +65,32 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="notificationPOST"></a>
+# **notificationPOST**
+> notificationPOST(InlineNotification)
+
+delivers a notification from the AMS resource to the subscriber
+
+    delivers a notification from the AMS resource to the subscriber
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **InlineNotification** | [**InlineNotification**](../Models/InlineNotification.md)|  |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 

@@ -3,7 +3,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**tunnelType** | [**String**](string.md) | This type represents the tunnel information. | [default to null]
+**tunnelType** | [**TunnelInfoTunnelType**](TunnelInfoTunnelType.md) |  | [default to null]
 **tunnelDstAddress** | [**String**](string.md) | Destination address of the tunnel | [optional] [default to null]
 **tunnelSrcAddress** | [**String**](string.md) | Source address of the tunnel | [optional] [default to null]
 

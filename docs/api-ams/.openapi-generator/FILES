@@ -11,14 +11,17 @@ Models/AppMobilityServiceLevel.md
 Models/AppTerminationNotification.md
 Models/AppTerminationNotificationLinks.md
 Models/AssociateId.md
+Models/AssociateIdType.md
 Models/CommunicationInterface.md
 Models/CommunicationInterfaceIpAddresses.md
 Models/ContextTransferState.md
 Models/ExpiryNotification.md
+Models/InlineNotification.md
+Models/InlineSubscription.md
+Models/Link.md
 Models/LinkType.md
 Models/MECHostInformation.md
 Models/MobilityProcedureNotification.md
-Models/MobilityProcedureNotificationLinks.md
 Models/MobilityProcedureNotificationTargetAppInfo.md
 Models/MobilityProcedureSubscription.md
 Models/MobilityProcedureSubscriptionFilterCriteria.md
@@ -36,6 +39,5 @@ Models/SubscriptionType.md
 Models/TestNotification.md
 Models/TestNotificationLinks.md
 Models/TimeStamp.md
-Models/Type.md
 Models/WebsockNotifConfig.md
 README.md

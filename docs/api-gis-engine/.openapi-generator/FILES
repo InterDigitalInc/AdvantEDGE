@@ -3,7 +3,11 @@ Apis/AutomationApi.md
 Apis/GeospatialDataApi.md
 Models/AutomationState.md
 Models/AutomationStateList.md
+Models/CoordinatePower.md
+Models/CoordinatePowerList.md
 Models/Distance.md
+Models/GeoCoordinate.md
+Models/GeoCoordinateList.md
 Models/GeoData.md
 Models/GeoDataAsset.md
 Models/GeoDataAssetAllOf.md
