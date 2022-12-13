@@ -164,7 +164,7 @@ To use the capabilities offered by D2D, it is necessary to configure D2D informa
 
 As shown below, the configuration pane enables toggling of the visualization between the network hierarchy and map views (top left corner). Both views may be used to select and configure or edit geospatial data for the UEs.
 
-The configuration pane is used to set other data such as D2d Radius and Diable D2D via Network.
+The configuration pane is used to set other data such as D2D Radius and Diable D2D via Network.
  
 ![D2DScenarioConfig]({{site.baseurl}}/assets/images/D2DScenarioConfig.png)
 
