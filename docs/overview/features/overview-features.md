@@ -60,6 +60,19 @@ This feature provides the following capabilities:
   - PoA in-range events: generates event listing all PoA in range
   - Network Characteristic update events: drive network characteristics based on distance from PoA (**v1.6+**)
   - Provides a more complete emulation for Location, RNI & WAI services
+- _Device-to-device (D2D) communication_
+  - D2D is an AdvantEDGE feature that allows emulation of UE direct communication.
+  - The goal of this feature is to add D2D over PC5 capabilities to the AdvantEDGE platform.
+  - D2D via Uu for inter-UE communication through the network is supported.
+  - New emulation capabilities for D2D are added
+    - D2D emulation provides a “one-hop” data path between two UEs
+    - D2D communication are local and opportunistic and happen when UE conditions in req. #3 are met
+    - D2D features such as keep-alive, advertisement, etc. are out-of-scope of the solution but may be considered later on a need basis
+  - Condition for establishing a D2D communication path are 
+    - Both UE must specify “D2D” capability in the “Supported Wireless Type” of the scenario
+    - Both UE must be in D2D proximity of each other
+    - D2D proximity is defined by “D2D maximum distance”
+
 
 Want to know more about GIS feature: [Geospatial Subsystem]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %})
 
