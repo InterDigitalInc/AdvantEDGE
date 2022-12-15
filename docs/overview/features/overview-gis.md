@@ -35,7 +35,7 @@ This feature provides the following capabilities:
   - D2D via Uu for inter-UE communication through the network is supported.
   - New emulation capabilities for D2D are added
     - D2D emulation provides a “one-hop” data path between two UEs
-    - D2D communication are local and opportunistic and happen when UE conditions in req. #3 are met
+    - D2D communication are local and opportunistic and happen when UE conditions described below are met
     - D2D features such as keep-alive, advertisement, etc. are out-of-scope of the solution but may be considered later on a need basis
   - Condition for establishing a D2D communication path are 
     - Both UE must specify “D2D” capability in the “Supported Wireless Type” of the scenario
