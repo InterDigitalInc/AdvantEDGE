@@ -184,5 +184,6 @@ Learn about the various [Edge services]({{site.baseurl}}{% link docs/overview/ed
 - Location Service
 - Radio Network Information Service (RNIS)
 - Wireless Access Information Service (WAIS)
+- V2X Information Service (VIS)
 - Application State Transfer Service
 - etc.
