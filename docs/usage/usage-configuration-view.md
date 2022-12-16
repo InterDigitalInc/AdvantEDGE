@@ -268,7 +268,7 @@ _**NOTE:** For AdvantEDGE versions older than v1.5, alternate **values.yaml** fi
 Test field to input D2D proximity which represent the maximum distance beyween UEs to establish a D2D connection.
 
 ##### Diabled D2D via network
-Tticker box to disable or enable D2D via network at the scenario/deployment level.
+Ticker box to disable or enable D2D via network at the scenario/deployment level.
 
 ### DELETE
 Remove an existing scenario element:
