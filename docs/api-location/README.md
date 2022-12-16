@@ -1,4 +1,4 @@
-# Documentation for AdvantEDGE Location Service REST API
+# Documentation for AdvantEDGE Location API
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints

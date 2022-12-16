@@ -27,7 +27,7 @@ Method | HTTP request | Description
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **appInstanceId** | **String**| Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager. | [default to null]
- **AppReadyConfirmation** | [**AppReadyConfirmation**](../Models/AppReadyConfirmation.md)|  | [optional]
+ **AppReadyConfirmation** | [**AppReadyConfirmation**](../Models/AppReadyConfirmation.md)|  |
 
 ### Return type
 
@@ -55,7 +55,7 @@ No authorization required
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **appInstanceId** | **String**| Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager. | [default to null]
- **AppTerminationConfirmation** | [**AppTerminationConfirmation**](../Models/AppTerminationConfirmation.md)|  | [optional]
+ **AppTerminationConfirmation** | [**AppTerminationConfirmation**](../Models/AppTerminationConfirmation.md)|  |
 
 ### Return type
 

@@ -34,9 +34,9 @@ Name | Type | Description  | Notes
  **ser\_instance\_id** | [**List**](../Models/String.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | [optional] [default to null]
  **ser\_name** | [**List**](../Models/String.md)| A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | [optional] [default to null]
  **ser\_category\_id** | **String**| A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | [optional] [default to null]
- **consumed\_local\_only** | **Boolean**| Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance. | [optional] [default to null]
- **is\_local** | **Boolean**| Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application. | [optional] [default to null]
- **scope\_of\_locality** | **String**| A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality. | [optional] [default to null]
+ **consumed\_local\_only** | **Boolean**| Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | [optional] [default to null]
+ **is\_local** | **Boolean**| Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | [optional] [default to null]
+ **scope\_of\_locality** | **String**| A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality. | [optional] [default to null]
 
 ### Return type
 
@@ -85,7 +85,7 @@ No authorization required
 
 
 
-    This method deletes a mecService resource. This method is typically used in the service deregistration procedure. 
+    This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
 
 ### Parameters
 
@@ -290,9 +290,9 @@ Name | Type | Description  | Notes
  **ser\_instance\_id** | [**List**](../Models/String.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | [optional] [default to null]
  **ser\_name** | [**List**](../Models/String.md)| A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | [optional] [default to null]
  **ser\_category\_id** | **String**| A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | [optional] [default to null]
- **consumed\_local\_only** | **Boolean**| Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance. | [optional] [default to null]
- **is\_local** | **Boolean**| Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application. | [optional] [default to null]
- **scope\_of\_locality** | **String**| A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality. | [optional] [default to null]
+ **consumed\_local\_only** | **Boolean**| Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | [optional] [default to null]
+ **is\_local** | **Boolean**| Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | [optional] [default to null]
+ **scope\_of\_locality** | **String**| A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality. | [optional] [default to null]
 
 ### Return type
 

@@ -119,6 +119,8 @@ func Init(envPath string, envName string) (port string, err error) {
 
 	// Retrieve environmental variable
 	var config util.Config
+	// trim file extension
+	envName = strings.TrimSuffix(envName, ".yaml")
 	log.Info("Using config values from ", envPath, "/", envName)
 	config, err = util.LoadConfig(envPath, envName)
 	if err != nil {

@@ -4,10 +4,39 @@ All URIs are relative to *http://localhost/sandboxname/metrics/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**postDataflowQuery**](MetricsApi.md#postDataflowQuery) | **POST** /metrics/query/dataflow | 
 [**postEventQuery**](MetricsApi.md#postEventQuery) | **POST** /metrics/query/event | 
 [**postHttpQuery**](MetricsApi.md#postHttpQuery) | **POST** /metrics/query/http | 
 [**postNetworkQuery**](MetricsApi.md#postNetworkQuery) | **POST** /metrics/query/network | 
+[**postSeqQuery**](MetricsApi.md#postSeqQuery) | **POST** /metrics/query/seq | 
 
+
+<a name="postDataflowQuery"></a>
+# **postDataflowQuery**
+> DataflowMetrics postDataflowQuery(params)
+
+
+
+    Requests dataflow diagram logs for the requested params
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **params** | [**DataflowQueryParams**](../Models/DataflowQueryParams.md)| Query parameters |
+
+### Return type
+
+[**DataflowMetrics**](../Models/DataflowMetrics.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
 
 <a name="postEventQuery"></a>
 # **postEventQuery**
@@ -80,6 +109,33 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**NetworkMetricList**](../Models/NetworkMetricList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="postSeqQuery"></a>
+# **postSeqQuery**
+> SeqMetrics postSeqQuery(params)
+
+
+
+    Requests sequence diagram logs for the requested params
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **params** | [**SeqQueryParams**](../Models/SeqQueryParams.md)| Query parameters |
+
+### Return type
+
+[**SeqMetrics**](../Models/SeqMetrics.md)
 
 ### Authorization
 

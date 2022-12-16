@@ -47,6 +47,7 @@ Class | Method | HTTP request | Description
  - [CellularPoaConfig](./Models/CellularPoaConfig.md)
  - [ConnectivityConfig](./Models/ConnectivityConfig.md)
  - [CpuConfig](./Models/CpuConfig.md)
+ - [D2dConfig](./Models/D2dConfig.md)
  - [DNConfig](./Models/DNConfig.md)
  - [Deployment](./Models/Deployment.md)
  - [Domain](./Models/Domain.md)
