@@ -165,8 +165,6 @@ The sequence diagram visualization dashboard is an AdvantEDGE feature that allow
 
 It is possible to export sequence diagrams in the [Mermaid](https://mermaid.live/edit) format or in the [SequenceDiagram.org](https://sequencediagram.org/) format
 
-It is possible to configure the dashboard with the order of participants to view the intercations, specify the number of interactions to be shown on screen, pause or unpause to view new interactions. 
-
 #### Dashboard Options:
 #### Participants
 Text field to input the sequence of participants to be rendered in the sequence digaram.
