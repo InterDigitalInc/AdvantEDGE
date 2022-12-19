@@ -37,7 +37,7 @@ We use the official [Go Programming Language install procedure](https://golang.o
 
 Versions we use:
 
-- 1.16 - 1.19 <br> (versions 1.14, 1.15 used to work - not tested anymore)
+- 1.16 - 1.18 <br> (versions 1.14, 1.15 used to work - not tested anymore)
 
 How we do it:
 
@@ -46,7 +46,7 @@ How we do it:
 ##### STEP 2 - Unzip tarball & install
 
 ```
-# Example tarball: go1.19.4.linux-amd64.tar.gz
+# Example tarball: go1.18.1.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz
 ```
 
@@ -195,7 +195,7 @@ How we do it:
 
 ```
 # binary will be $(go env GOPATH)/bin/golangci-lint
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin 
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.46.0
 ```
 
 ##### STEP 2 - Verify install
@@ -204,7 +204,7 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 golangci-lint --version
 
 # Example output:
-# golangci-lint has version 1.50.1 built from 8926a95f on 2022-10-22T10:50:47Z
+# golangci-lint has version 1.46.0 built from 7c1d8b75 on 2022-05-09T11:16:24Z
 ```
 
 ----
