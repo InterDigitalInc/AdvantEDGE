@@ -37,7 +37,7 @@ We use the official [Go Programming Language install procedure](https://golang.o
 
 Versions we use:
 
-- 1.16 - 1.18 <br> (versions 1.14, 1.15 used to work - not tested anymore)
+- 1.16 - 1.19 <br> (versions 1.14, 1.15 used to work - not tested anymore)
 
 How we do it:
 
@@ -46,7 +46,7 @@ How we do it:
 ##### STEP 2 - Unzip tarball & install
 
 ```
-# Example tarball: go1.18.1.linux-amd64.tar.gz
+# Example tarball: go1.19.4.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz
 ```
 
@@ -78,7 +78,7 @@ go version
 
 # Example output:
 #   /usr/local/go/bin/go
-#   go version go1.18.1 linux/amd64
+#   go version go1.19.4 linux/amd64
 ```
 
 ----
@@ -91,7 +91,7 @@ NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows 
 Versions we use:
 
 - NVM: 0.34.0
-- Node.js: 8.11, 10.15, 10.16, 10.19, 12.19
+- Node.js: 8.11, 10.15, 10.16, 10.19, 12.22
 - npm: 6.8, 6.9, 6.11, 6.12, 6.14
 
 How we do it:
@@ -121,13 +121,13 @@ source ~/.profile
 ```
 # Retrieve & install latest v12 Node.js versions
 nvm ls-remote | grep "Latest LTS"
-nvm install 12.19.0
+nvm install 12.22.12
 ```
 
 ##### STEP 5 - Update NPM version bundled with Node.js
 
 ```
-npm install -g npm@6.14.8
+npm install -g npm@6.14.16
 ```
 
 ##### STEP 6 - Verify install
@@ -137,8 +137,8 @@ node -v
 npm -v
 
 # Example output:
-#   v12.19.0
-#   6.14.8
+#   v12.22.12
+#   6.14.16
 ```
 
 
@@ -204,7 +204,7 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 golangci-lint --version
 
 # Example output:
-# golangci-lint has version 1.46.0 built from 7c1d8b75 on 2022-05-09T11:16:24Z
+# golangci-lint has version 1.50.1 built from 8926a95f on 2022-10-22T10:50:47Z
 ```
 
 ----
