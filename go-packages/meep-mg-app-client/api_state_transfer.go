@@ -42,10 +42,8 @@ type StateTransferApiService service
 /*
 StateTransferApiService Send event notification to registered Mobility Group Application
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param event Mobility Group event notification
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param event Mobility Group event notification
 */
 func (a *StateTransferApiService) HandleEvent(ctx context.Context, event MobilityGroupEvent) (*http.Response, error) {
 	var (

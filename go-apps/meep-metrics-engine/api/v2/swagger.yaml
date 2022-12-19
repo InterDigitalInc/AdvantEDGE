@@ -557,7 +557,7 @@ definitions:
         type: "array"
         description: "Tag names to match in query. Supported values:<br> <li>logger_name:\
           \ Logger instances that issued the http notification or processed the request\
-          \ <li>direction: Notification or Request type of http metric"
+          \ <li>msg_type: Http metric type (request, response, notification)"
         items:
           $ref: "#/definitions/Tag"
       fields:
@@ -567,7 +567,11 @@ definitions:
           \ endpoint<br> <li>url: Http metrics queried endpoint with query parameters<br>\
           \ <li>method: Http metrics method<br> <li>resp_code: Http metrics response\
           \ status code<br> <li>resp_body: Http metrics response body<br> <li>body:\
-          \ Http metrics body<br> <li>proc_time: Request processing time in ms"
+          \ Http metrics body<br> <li>proc_time: Request processing time in ms<br>\
+          \ <li>logger_name: Logger instances that issued the http notification or\
+          \ processed the request<br> <li>msg_type: Http metric type (request, response,\
+          \ notification)<br> <li>direction: DEPRECATED -- Http metric direction (RX,\
+          \ TX)"
         items:
           type: "string"
           description: "Queried value"
@@ -581,6 +585,7 @@ definitions:
           - "body"
           - "proc_time"
           - "logger_name"
+          - "msg_type"
           - "direction"
       scope:
         $ref: "#/definitions/Scope"
@@ -599,12 +604,13 @@ definitions:
       - "body"
       - "proc_time"
       - "logger_name"
+      - "msg_type"
       - "direction"
       tags:
       - name: "logger_name"
         value: "meep-loc-serv"
-      - name: "direction"
-        value: "RX"
+      - name: "msg_type"
+        value: "response"
   HttpMetricList:
     type: "object"
     properties:
@@ -635,7 +641,7 @@ definitions:
       - "body"
       - "proc_time"
       - "logger_name"
-      - "direction"
+      - "msg_type"
       values:
       - time: "2019-11-24T12:45:00-5:00"
         id: 5
@@ -647,7 +653,7 @@ definitions:
         body: {}
         proc_time: 345
         logger_name: "loc-serv"
-        direction: "RX"
+        msg_type: "response"
       - time: "2019-11-24T12:45:00-5:00"
         id: 6
         endpoint: "/location/v1/subscription/userTracking"
@@ -658,7 +664,7 @@ definitions:
         body: {}
         proc_time: 456
         logger_name: "loc-serv"
-        direction: "RX"
+        msg_type: "response"
       name: "http metrics"
   HttpMetric:
     type: "object"
@@ -703,10 +709,14 @@ definitions:
         type: "string"
         example: "loc-serv"
         description: "Service processing the http metric"
+      msg_type:
+        type: "string"
+        example: "response"
+        description: "Http metric type (request, response, notification)"
       direction:
         type: "string"
-        example: "Request"
-        description: "Http type"
+        example: "RX"
+        description: "DEPRECATED -- Http type"
     description: "Value of a single http metric"
     example:
       time: "2019-11-24T12:45:00-5:00"
@@ -719,7 +729,7 @@ definitions:
       body: {}
       proc_time: 345
       logger_name: "loc-serv"
-      direction: "Request"
+      msg_type: "response"
   NetworkQueryParams:
     type: "object"
     properties:

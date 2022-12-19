@@ -115,6 +115,12 @@
         // expect(instance.loggerName).to.be(expectedValueLiteral);
       });
 
+      it('should have the property msgType (base name: "msg_type")', function() {
+        // TODO: update the code to test the property msgType
+        expect(instance).to.have.property('msgType');
+        // expect(instance.msgType).to.be(expectedValueLiteral);
+      });
+
       it('should have the property direction (base name: "direction")', function() {
         // TODO: update the code to test the property direction
         expect(instance).to.have.property('direction');

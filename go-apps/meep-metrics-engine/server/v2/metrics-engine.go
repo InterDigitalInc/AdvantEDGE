@@ -418,7 +418,43 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 	// Parse tags
 	tags := make(map[string]string)
 	for _, tag := range params.Tags {
-		tags[tag.Name] = tag.Value
+		// For backwards compatiblity replace direction with msg_type
+		if tag.Name == met.HttpLoggerDirection {
+			if _, found := tags[met.HttpLoggerMsgType]; !found {
+				// RX --> response, TX --> notification
+				msgType := met.HttpMsgTypeResponse
+				if tag.Value == met.HttpMsgDirectionTx {
+					msgType = met.HttpMsgTypeNotification
+				}
+				tags[met.HttpLoggerMsgType] = msgType
+			}
+		} else {
+			tags[tag.Name] = tag.Value
+		}
+	}
+
+	// Parse fields
+	fields := []string{}
+	msgTypeSet := false
+	msgTypeRequired := false
+	directionRequired := false
+	for _, field := range params.Fields {
+		// For backwards compatiblity replace direction with msg_type
+		if field == met.HttpLoggerMsgType || field == met.HttpLoggerDirection {
+			// Store fields to incldue in response
+			if field == met.HttpLoggerMsgType {
+				msgTypeRequired = true
+			} else if field == met.HttpLoggerDirection {
+				directionRequired = true
+			}
+			// Request message type from DB
+			if !msgTypeSet {
+				fields = append(fields, met.HttpLoggerMsgType)
+				msgTypeSet = true
+			}
+		} else {
+			fields = append(fields, field)
+		}
 	}
 
 	// Get scope
@@ -429,7 +465,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		limit = int(params.Scope.Limit)
 	}
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -455,11 +491,24 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 				metric.LoggerName = val
 			}
 		}
-		// if values[met.HttpLoggerDirection] != nil {
-		// 	if val, ok := values[met.HttpLoggerDirection].(string); ok {
-		// 		metric.Direction = val
-		// 	}
-		// }
+		if values[met.HttpLoggerMsgType] != nil {
+			if val, ok := values[met.HttpLoggerMsgType].(string); ok {
+				// Set message type if required
+				if msgTypeRequired {
+					metric.MsgType = val
+				}
+
+				// For backwards compatibility, set direction if required
+				// request/response --> RX, notification --> TX
+				if directionRequired {
+					direction := met.HttpMsgDirectionRx
+					if val == met.HttpMsgTypeNotification {
+						direction = met.HttpMsgDirectionTx
+					}
+					metric.Direction = direction
+				}
+			}
+		}
 
 		if values[met.HttpLogId] != nil {
 			metric.Id = met.JsonNumToInt32(values[met.HttpLogId].(json.Number))

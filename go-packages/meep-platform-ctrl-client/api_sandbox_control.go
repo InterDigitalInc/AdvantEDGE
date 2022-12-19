@@ -43,8 +43,8 @@ type SandboxControlApiService service
 /*
 SandboxControlApiService Create a new sandbox
 Create a new sandbox with a server-generated name
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param config Sandbox configuration information
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param config Sandbox configuration information
 
 @return Sandbox
 */
@@ -133,11 +133,9 @@ func (a *SandboxControlApiService) CreateSandbox(ctx context.Context, config San
 /*
 SandboxControlApiService Create a new sandbox
 Create a new sandbox using provided name
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Sandbox name
- * @param config Sandbox configuration information
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Sandbox name
+  - @param config Sandbox configuration information
 */
 func (a *SandboxControlApiService) CreateSandboxWithName(ctx context.Context, name string, config SandboxConfig) (*http.Response, error) {
 	var (
@@ -205,10 +203,8 @@ func (a *SandboxControlApiService) CreateSandboxWithName(ctx context.Context, na
 /*
 SandboxControlApiService Delete a specific sandbox
 Delete the sandbox with the provided name
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Sandbox name
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Sandbox name
 */
 func (a *SandboxControlApiService) DeleteSandbox(ctx context.Context, name string) (*http.Response, error) {
 	var (
@@ -274,9 +270,7 @@ func (a *SandboxControlApiService) DeleteSandbox(ctx context.Context, name strin
 /*
 SandboxControlApiService Delete all active sandboxes
 Delete all active sandboxes
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 */
 func (a *SandboxControlApiService) DeleteSandboxList(ctx context.Context) (*http.Response, error) {
 	var (
@@ -341,8 +335,8 @@ func (a *SandboxControlApiService) DeleteSandboxList(ctx context.Context) (*http
 /*
 SandboxControlApiService Get a specific sandbox
 Get sandbox information for provided sandbox name
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Sandbox name
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Sandbox name
 
 @return Sandbox
 */
@@ -430,7 +424,7 @@ func (a *SandboxControlApiService) GetSandbox(ctx context.Context, name string) 
 /*
 SandboxControlApiService Get all active sandboxes
 Returns a list of all active sandboxes
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return SandboxList
 */

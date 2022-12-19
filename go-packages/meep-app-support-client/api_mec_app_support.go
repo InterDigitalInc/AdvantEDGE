@@ -43,11 +43,9 @@ type MecAppSupportApiService service
 /*
 MecAppSupportApiService
 This method may be used by the MEC application instance to notify the MEC platform that it is up and running.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 */
 func (a *MecAppSupportApiService) ApplicationsConfirmReadyPOST(ctx context.Context, body AppReadyConfirmation, appInstanceId string) (*http.Response, error) {
 	var (
@@ -170,11 +168,9 @@ func (a *MecAppSupportApiService) ApplicationsConfirmReadyPOST(ctx context.Conte
 /*
 MecAppSupportApiService
 This method is used to confirm the application level termination  of an application instance.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 */
 func (a *MecAppSupportApiService) ApplicationsConfirmTerminationPOST(ctx context.Context, body AppTerminationConfirmation, appInstanceId string) (*http.Response, error) {
 	var (
@@ -297,11 +293,9 @@ func (a *MecAppSupportApiService) ApplicationsConfirmTerminationPOST(ctx context
 /*
 MecAppSupportApiService
 This method deletes a mecAppSuptApiSubscription. This method is typically used in \&quot;Unsubscribing from service availability event notifications\&quot; procedure.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param subscriptionId Represents a subscription to the notifications from the MEC platform.
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param subscriptionId Represents a subscription to the notifications from the MEC platform.
 */
 func (a *MecAppSupportApiService) ApplicationsSubscriptionDELETE(ctx context.Context, appInstanceId string, subscriptionId string) (*http.Response, error) {
 	var (
@@ -390,9 +384,9 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionDELETE(ctx context.Con
 /*
 MecAppSupportApiService
 The GET method requests information about a subscription for this requestor. Upon success, the response contains entity body with the subscription for the requestor.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param subscriptionId Represents a subscription to the notifications from the MEC platform.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param subscriptionId Represents a subscription to the notifications from the MEC platform.
 
 @return AppTerminationNotificationSubscription
 */
@@ -514,8 +508,8 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionGET(ctx context.Contex
 /*
 MecAppSupportApiService
 The GET method may be used to request information about all subscriptions for this requestor. Upon success, the response contains entity body with all the subscriptions for the requestor.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return MecAppSuptApiSubscriptionLinkList
 */
@@ -636,9 +630,9 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionsGET(ctx context.Conte
 /*
 MecAppSupportApiService
 The POST method may be used to create a new subscription. One example use case is to create a new subscription to the MEC service availability notifications. Upon success, the response contains entity body describing the created subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Entity body in the request contains a subscription to the MEC application termination notifications that is to be created.
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Entity body in the request contains a subscription to the MEC application termination notifications that is to be created.
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return AppTerminationNotificationSubscription
 */
@@ -761,7 +755,7 @@ func (a *MecAppSupportApiService) ApplicationsSubscriptionsPOST(ctx context.Cont
 /*
 MecAppSupportApiService
 This method retrieves the information of the platform&#39;s timing capabilities which corresponds to the timing capabilities query
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return TimingCaps
 */
@@ -881,7 +875,7 @@ func (a *MecAppSupportApiService) TimingCapsGET(ctx context.Context) (TimingCaps
 /*
 MecAppSupportApiService
 This method retrieves the information of the platform&#39;s current time which corresponds to the get platform time procedure
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return CurrentTime
 */

@@ -42,10 +42,8 @@ type V2xiApiService service
 /*
 V2xiApiService MEC011 Application Termination notification for self termination
 Terminates itself.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Termination notification details
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Termination notification details
 */
 func (a *V2xiApiService) Mec011AppTerminationPOST(ctx context.Context, body AppTerminationNotification) (*http.Response, error) {
 	var (
@@ -112,8 +110,8 @@ func (a *V2xiApiService) Mec011AppTerminationPOST(ctx context.Context, body AppT
 /*
 V2xiApiService Request the predicted QoS correspondent to potential routes of a vehicular UE.
 Request the predicted QoS correspondent to potential routes of a vehicular UE.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
 
 @return PredictedQos
 */

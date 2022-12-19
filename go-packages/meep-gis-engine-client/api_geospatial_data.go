@@ -45,10 +45,8 @@ type GeospatialDataApiService service
 /*
 GeospatialDataApiService Delete geospatial data
 Delete geospatial data for the given asset
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param assetName Name of geospatial asset
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param assetName Name of geospatial asset
 */
 func (a *GeospatialDataApiService) DeleteGeoDataByName(ctx context.Context, assetName string) (*http.Response, error) {
 	var (
@@ -221,9 +219,9 @@ func (a *GeospatialDataApiService) GetAssetData(ctx context.Context, localVarOpt
 /*
 GeospatialDataApiService Get distance between geospatial data points
 Get distance between geospatial data for the given asset and another asset or geospatial coordinates
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param assetName Name of geospatial asset
- * @param targetPoint Parameters of geospatial assets
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param assetName Name of geospatial asset
+  - @param targetPoint Parameters of geospatial assets
 
 @return Distance
 */
@@ -412,8 +410,8 @@ func (a *GeospatialDataApiService) GetGeoDataByName(ctx context.Context, assetNa
 /*
 GeospatialDataApiService Get RSRQ and RSRP values for a list of coordinates
 Get RSRQ and RSRP values for a list of coordinates
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param coordinates List of geo coordinates
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param coordinates List of geo coordinates
 
 @return CoordinatePowerList
 */
@@ -502,9 +500,9 @@ func (a *GeospatialDataApiService) GetGeoDataPowerValues(ctx context.Context, co
 /*
 GeospatialDataApiService Returns if a geospatial data points is within a specified distance from a location
 Get geospatial data for the given asset and if it is within range of another asset or geospatial coordinates
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param assetName Name of geospatial asset
- * @param targetRange Parameters of geospatial assets
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param assetName Name of geospatial asset
+  - @param targetRange Parameters of geospatial assets
 
 @return WithinRange
 */
@@ -594,11 +592,9 @@ func (a *GeospatialDataApiService) GetWithinRangeByName(ctx context.Context, ass
 /*
 GeospatialDataApiService Create/Update geospatial data
 Create/Update geospatial data for the given asset
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param assetName Name of geospatial asset
- * @param geoData Geospatial data
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param assetName Name of geospatial asset
+  - @param geoData Geospatial data
 */
 func (a *GeospatialDataApiService) UpdateGeoDataByName(ctx context.Context, assetName string, geoData GeoDataAsset) (*http.Response, error) {
 	var (

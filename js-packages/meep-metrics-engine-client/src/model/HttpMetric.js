@@ -90,6 +90,8 @@
         obj.procTime = ApiClient.convertToType(data['proc_time'], 'String');
       if (data.hasOwnProperty('logger_name'))
         obj.loggerName = ApiClient.convertToType(data['logger_name'], 'String');
+      if (data.hasOwnProperty('msg_type'))
+        obj.msgType = ApiClient.convertToType(data['msg_type'], 'String');
       if (data.hasOwnProperty('direction'))
         obj.direction = ApiClient.convertToType(data['direction'], 'String');
     }
@@ -157,7 +159,13 @@
   exports.prototype.loggerName = undefined;
 
   /**
-   * Http type
+   * Http metric type (request, response, notification)
+   * @member {String} msgType
+   */
+  exports.prototype.msgType = undefined;
+
+  /**
+   * DEPRECATED -- Http type
    * @member {String} direction
    */
   exports.prototype.direction = undefined;
