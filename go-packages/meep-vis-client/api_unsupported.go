@@ -45,10 +45,8 @@ type UnsupportedApiService service
 /*
 UnsupportedApiService Used to cancel the existing subscription.
 Used to cancel the existing subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Refers to created subscription, where the VIS API allocates a unique resource name for this subscription
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Refers to created subscription, where the VIS API allocates a unique resource name for this subscription
 */
 func (a *UnsupportedApiService) IndividualSubscriptionDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -158,8 +156,8 @@ func (a *UnsupportedApiService) IndividualSubscriptionDELETE(ctx context.Context
 /*
 UnsupportedApiService Retrieve information about this subscription.
 Retrieve information about this subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Refers to created subscription, where the VIS API allocates a unique resource name for this subscription
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Refers to created subscription, where the VIS API allocates a unique resource name for this subscription
 
 @return SubscriptionsBody
 */
@@ -313,9 +311,9 @@ func (a *UnsupportedApiService) IndividualSubscriptionGET(ctx context.Context, s
 /*
 UnsupportedApiService Used to update the existing subscription.
 Used to update the existing subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
- * @param subscriptionId Refers to created subscription, where the VIS API allocates a unique resource name for this subscription
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
+  - @param subscriptionId Refers to created subscription, where the VIS API allocates a unique resource name for this subscription
 
 @return SubscriptionsSubscriptionIdBody
 */
@@ -493,8 +491,8 @@ func (a *UnsupportedApiService) IndividualSubscriptionPUT(ctx context.Context, b
 /*
 UnsupportedApiService Query provisioning information for V2X communication over PC5.
 Query provisioning information for V2X communication over PC5.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param locationInfo Comma separated list of locations to identify a cell of a base station or a particular geographical area
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param locationInfo Comma separated list of locations to identify a cell of a base station or a particular geographical area
 
 @return Pc5ProvisioningInfo
 */
@@ -648,8 +646,8 @@ func (a *UnsupportedApiService) ProvInfoGET(ctx context.Context, locationInfo st
 /*
 UnsupportedApiService retrieve information required for V2X communication over Uu MBMS.
 retrieve information required for V2X communication over Uu MBMS.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param locationInfo omma separated list of locations to identify a cell of a base station or a particular geographical area
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param locationInfo omma separated list of locations to identify a cell of a base station or a particular geographical area
 
 @return UuMbmsProvisioningInfo
 */
@@ -803,8 +801,8 @@ func (a *UnsupportedApiService) ProvInfoUuMbmsGET(ctx context.Context, locationI
 /*
 UnsupportedApiService Used to query provisioning information for V2X communication over Uu unicast.
 Used to query provisioning information for V2X communication over Uu unicast.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param locationInfo Comma separated list of locations to identify a cell of a base station or a particular geographical area
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param locationInfo Comma separated list of locations to identify a cell of a base station or a particular geographical area
 
 @return UuUnicastProvisioningInfo
 */
@@ -1120,9 +1118,10 @@ func (a *UnsupportedApiService) SubGET(ctx context.Context, localVarOptionals *S
 
 /*
 UnsupportedApiService  create a new subscription to VIS notifications.
- create a new subscription to VIS notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
+
+	create a new subscription to VIS notifications.
+	* @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	* @param body
 
 @return SubscriptionsBody
 */
@@ -1299,10 +1298,8 @@ func (a *UnsupportedApiService) SubPOST(ctx context.Context, body SubscriptionsB
 /*
 UnsupportedApiService Used to publish a V2X message.
 Used to publish a V2X message.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
 */
 func (a *UnsupportedApiService) V2xMessagePOST(ctx context.Context, body V2xMsgPublication) (*http.Response, error) {
 	var (

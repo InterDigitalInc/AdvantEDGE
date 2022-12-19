@@ -45,12 +45,10 @@ type ConnectivityApiService service
 /*
 ConnectivityApiService Create a PDU Session
 Establish a PDU Session to a Data Network defined in the scenario
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param ueName UE unique identifier from the scenario
- * @param pduSessionId a UE provided identifier for the PDU Session
- * @param pduSessionInfo PDU session information
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ueName UE unique identifier from the scenario
+  - @param pduSessionId a UE provided identifier for the PDU Session
+  - @param pduSessionInfo PDU session information
 */
 func (a *ConnectivityApiService) CreatePduSession(ctx context.Context, ueName string, pduSessionId string, pduSessionInfo PduSessionInfo) (*http.Response, error) {
 	var (
@@ -221,11 +219,9 @@ func (a *ConnectivityApiService) GetPduSessionList(ctx context.Context, localVar
 /*
 ConnectivityApiService Terminate a PDU Session
 Terminate a PDU session to a Data Network defined in the scenario
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param ueName UE unique identifier from the scenario
- * @param pduSessionId a UE provided identifier for the PDU Session
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ueName UE unique identifier from the scenario
+  - @param pduSessionId a UE provided identifier for the PDU Session
 */
 func (a *ConnectivityApiService) TerminatePduSession(ctx context.Context, ueName string, pduSessionId string) (*http.Response, error) {
 	var (

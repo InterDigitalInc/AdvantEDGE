@@ -44,11 +44,10 @@ type AmsiApiService service
 
 /*
 AmsiApiService  deregister the individual application mobility service
- deregister the individual application mobility service
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appMobilityServiceId It uniquely identifies the created individual application mobility service
 
-
+	deregister the individual application mobility service
+	* @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	* @param appMobilityServiceId It uniquely identifies the created individual application mobility service
 */
 func (a *AmsiApiService) AppMobilityServiceByIdDELETE(ctx context.Context, appMobilityServiceId string) (*http.Response, error) {
 	var (
@@ -158,8 +157,8 @@ func (a *AmsiApiService) AppMobilityServiceByIdDELETE(ctx context.Context, appMo
 /*
 AmsiApiService Retrieve information about this individual application mobility service
 Retrieve information about this individual application mobility service
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appMobilityServiceId It uniquely identifies the created individual application mobility service
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appMobilityServiceId It uniquely identifies the created individual application mobility service
 
 @return RegistrationInfo
 */
@@ -312,10 +311,11 @@ func (a *AmsiApiService) AppMobilityServiceByIdGET(ctx context.Context, appMobil
 
 /*
 AmsiApiService  update the existing individual application mobility service
- update the existing individual application mobility service
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
- * @param appMobilityServiceId It uniquely identifies the created individual application mobility service
+
+	update the existing individual application mobility service
+	* @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	* @param body
+	* @param appMobilityServiceId It uniquely identifies the created individual application mobility service
 
 @return RegistrationInfo
 */
@@ -676,8 +676,8 @@ func (a *AmsiApiService) AppMobilityServiceGET(ctx context.Context, localVarOpti
 /*
 AmsiApiService Create a new application mobility service for the service requester.
 Create a new application mobility service for the service requester.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Application mobility service to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Application mobility service to be created
 
 @return RegistrationInfo
 */
@@ -832,10 +832,8 @@ func (a *AmsiApiService) AppMobilityServicePOST(ctx context.Context, body Regist
 /*
 AmsiApiService MEC011 Application Termination notification for self termination
 Terminates itself.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Termination notification details
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Termination notification details
 */
 func (a *AmsiApiService) Mec011AppTerminationPOST(ctx context.Context, body AppTerminationNotification) (*http.Response, error) {
 	var (
@@ -902,10 +900,8 @@ func (a *AmsiApiService) Mec011AppTerminationPOST(ctx context.Context, body AppT
 /*
 AmsiApiService cancel the existing individual subscription
 cancel the existing individual subscription
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
 */
 func (a *AmsiApiService) SubByIdDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -1015,8 +1011,8 @@ func (a *AmsiApiService) SubByIdDELETE(ctx context.Context, subscriptionId strin
 /*
 AmsiApiService Retrieve information about this subscription.
 Retrieve information about this subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
 
 @return InlineSubscription
 */
@@ -1170,9 +1166,9 @@ func (a *AmsiApiService) SubByIdGET(ctx context.Context, subscriptionId string) 
 /*
 AmsiApiService update the existing individual subscription.
 update the existing individual subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
- * @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
+  - @param subscriptionId Refers to created subscription, where the AMS API allocates a unique resource name for this subscription
 
 @return InlineSubscription
 */
@@ -1350,8 +1346,8 @@ func (a *AmsiApiService) SubByIdPUT(ctx context.Context, body InlineSubscription
 /*
 AmsiApiService Retrieve information about the subscriptions for this requestor.
 Retrieve information about the subscriptions for this requestor.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionType Query parameter to filter on a specific subscription type. Permitted values: mobility_proc or adj_app_info
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionType Query parameter to filter on a specific subscription type. Permitted values: mobility_proc or adj_app_info
 
 @return SubscriptionLinkList
 */
@@ -1505,8 +1501,8 @@ func (a *AmsiApiService) SubGET(ctx context.Context, subscriptionType string) (S
 /*
 AmsiApiService Create a new subscription to Application Mobility Service notifications.
 Create a new subscription to Application Mobility Service notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
 
 @return InlineSubscription
 */

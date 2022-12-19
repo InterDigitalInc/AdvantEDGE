@@ -43,11 +43,9 @@ type NotificationsApiService service
 /*
 NotificationsApiService This operation is used by the AdvantEDGE Metrics Service to issue a callback notification towards an ME application with an Event subscription
 Events subscription notification
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Identity of a notification subscription
- * @param notification Event Notification
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Identity of a notification subscription
+  - @param notification Event Notification
 */
 func (a *NotificationsApiService) PostEventNotification(ctx context.Context, subscriptionId string, notification EventNotification) (*http.Response, error) {
 	var (
@@ -115,11 +113,9 @@ func (a *NotificationsApiService) PostEventNotification(ctx context.Context, sub
 /*
 NotificationsApiService This operation is used by the AdvantEDGE Metrics Service to issue a callback notification towards an ME application with a Network Metrics subscription
 Network metrics subscription notification
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Identity of a notification subscription
- * @param notification Network Notification
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Identity of a notification subscription
+  - @param notification Network Notification
 */
 func (a *NotificationsApiService) PostNetworkNotification(ctx context.Context, subscriptionId string, notification NetworkNotification) (*http.Response, error) {
 	var (

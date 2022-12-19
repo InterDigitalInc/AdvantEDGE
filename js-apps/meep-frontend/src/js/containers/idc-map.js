@@ -864,7 +864,7 @@ class IDCMap extends Component {
       if (this.props.type === TYPE_CFG) {
         this.setUeMarkerStyle(existingMarker);
       } else {
-        var connected = this.isConnected(ue.id) || (ue.d2dInRange && ue.d2dInRange.length > 0);
+        var connected = this.isConnected(ue.assetName) || (ue.d2dInRange && ue.d2dInRange.length > 0);
         if (existingMarker.options.meep.ue.connected !== connected) {
           this.setUeMarkerStyle(existingMarker);
           existingMarker.options.meep.ue.connected = connected;

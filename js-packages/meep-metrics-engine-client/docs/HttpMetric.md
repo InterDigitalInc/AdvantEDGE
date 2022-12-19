@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **body** | **String** | Http metrics body | [optional] 
 **procTime** | **String** | Request processing time in ms | [optional] 
 **loggerName** | **String** | Service processing the http metric | [optional] 
-**direction** | **String** | Http type | [optional] 
+**msgType** | **String** | Http metric type (request, response, notification) | [optional] 
+**direction** | **String** | DEPRECATED -- Http type | [optional] 
 
 

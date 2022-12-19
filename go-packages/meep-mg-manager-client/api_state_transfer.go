@@ -43,12 +43,10 @@ type StateTransferApiService service
 /*
 StateTransferApiService Send state to transfer to peers
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param appId Mobility Group App Id
- * @param appState Mobility Group App State to transfer
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param appId Mobility Group App Id
+  - @param appState Mobility Group App State to transfer
 */
 func (a *StateTransferApiService) TransferAppState(ctx context.Context, mgName string, appId string, appState MobilityGroupAppState) (*http.Response, error) {
 	var (

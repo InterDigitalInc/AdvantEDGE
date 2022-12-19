@@ -409,10 +409,8 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 /*
 RniApiService MEC011 Application Termination notification for self termination
 Terminates itself.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Termination notification details
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Termination notification details
 */
 func (a *RniApiService) Mec011AppTerminationPOST(ctx context.Context, body AppTerminationNotification) (*http.Response, error) {
 	var (
@@ -479,8 +477,8 @@ func (a *RniApiService) Mec011AppTerminationPOST(ctx context.Context, body AppTe
 /*
 RniApiService Retrieve information on the underlying Mobile Network that the MEC application is associated to
 Queries information about the Mobile Network
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInsId Comma separated list of Application instance identifiers
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInsId Comma separated list of Application instance identifiers
 
 @return []PlmnInfo
 */
@@ -1015,10 +1013,8 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 /*
 RniApiService Cancel an existing subscription
 Cancels an existing subscription, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 */
 func (a *RniApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -1128,8 +1124,8 @@ func (a *RniApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId 
 /*
 RniApiService Retrieve information on current specific subscription
 Queries information about an existing subscription, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 
 @return InlineSubscription
 */
@@ -1283,8 +1279,8 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 /*
 RniApiService Create a new subscription
 Creates a new subscription to Radio Network Information notifications
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineSubscription
 */
@@ -1461,9 +1457,9 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body InlineSubscr
 /*
 RniApiService Modify an existing subscription
 Updates an existing subscription, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 
 @return InlineSubscription
 */
