@@ -533,24 +533,30 @@ func TestIncrementalInfluxQuery(t *testing.T) {
 	if err != nil || len(result) != 100 {
 		t.Fatalf("Failed to get metric")
 	}
+
+	fmt.Println("Check long Duration")
+	MAX_LIMIT = 10
+	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields = []string{field1, field2, field3, field4}
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1d", 100)
+	fmt.Println("Length of results: ", len(result))
+	if err != nil || len(result) != 100 {
+		t.Fatalf("Failed to get metric")
+	}
 }
 
 func validateMetric(result map[string]interface{}, v1 bool, v2 string, v3 int32, v4 float64) bool {
 	if result[field1] != v1 {
 		fmt.Println("Invalid " + field1)
-		return false
-	}
-	if result[field2] != v2 {
+	} else if result[field2] != v2 {
 		fmt.Println("Invalid " + field2)
-		return false
-	}
-	if val, ok := result[field3].(json.Number); !ok || JsonNumToInt32(val) != v3 {
+	} else if val, ok := result[field3].(json.Number); !ok || JsonNumToInt32(val) != v3 {
 		fmt.Println("Invalid " + field3)
-		return false
-	}
-	if val, ok := result[field4].(json.Number); !ok || JsonNumToFloat64(val) != v4 {
+	} else if val, ok := result[field4].(json.Number); !ok || JsonNumToFloat64(val) != v4 {
 		fmt.Println("Invalid " + field4)
-		return false
+	} else {
+		// Valid metric
+		return true
 	}
-	return true
+	return false
 }
