@@ -22,6 +22,7 @@ Topic | Abstract
 [AMS API](#ams-api) | [OAS3] Application Mobility Service northbound API endpoints
 [Application State Transfer Service API](#application-state-transfer-service-api) | [OAS2] Mobility Group Manager membership and state transfer endpoints
 [Application State Transfer Notification API](#application-state-transfer-notification-api) | [OAS2] Client side Mobility Group Manager state transfer endpoints
+[VIS API](#vis-api) | [OAS3] VIS northbound API endpoints
 NEXT STEP: [Recommended hardware](#next-step) | |
 
 ----
@@ -243,6 +244,15 @@ API:
 - From wiki: [MG Manager Notification (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-mg-manager-notif/README.md)
 - From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
 
+----
+### VIS API
+This API allows to obtain V2X information
 
+API:
+- From repository: [meep-vis (yaml)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/go-apps/meep-vis/api/swagger.yaml)
+- From wiki: [VIS (markdown)](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/api-vis/README.md)
+- From browser: `https://<your-advantedge-ip>/<your-sandbox>/api`
+
+----
 ## Next Step
 Learn about the [recommended hardware]({{site.baseurl}}{% link docs/setup/env-hw.md %}):

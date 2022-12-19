@@ -201,7 +201,7 @@ npm ci
 
 ### Run unit tests
 ```
-cd AdvantEDGE/tests
+cd AdvantEDGE/test
 ./start-ut-env.sh
 ./run-ut.sh
 ./stop-ut-env.sh
@@ -209,7 +209,7 @@ cd AdvantEDGE/tests
 
 ### Run system tests
 ```
-cd AdvantEDGE/tests/system
+cd AdvantEDGE/test/system
 export MEEP_HOST_TEST_URL="http://<host ip address>"
 go test -timeout 30m
 ```
@@ -247,6 +247,9 @@ _**IMPORTANT NOTE: Code coverage does not work with the latest release; a fix wi
 
 AdvantEDGE core micro-services can be instrumented to measure code coverage; when used in conjunction with Cypress, system & manual tests, an overview of the platform code coverage can be obtained.
 
+To run code coverage in AdvantEDGE:
+- Install [cov-report](https://github.com/go-phorce/cov-report) and deploy dependencies
+
 To enable code coverage measurements in AdvantEDGE:
 - Build for code coverage: `meepctl build all --codecov`
 - Dockerize: `meepctl dockerize all`
@@ -257,7 +260,8 @@ Once testing is complete:
 - **Stop the micro-services gracefully**: `meepctl delete core`
   - _Build, dockerize & deploy will instrument and execute core micro-services so they measure code coverage._
   - _When terminated gracefully, the core micro-services store code coverage results at the following location: `~/.meep/codecov/<micro-service-name>/codecov-<micro-service-name>.out`_
-- For convenience, code coverage reports can be generated using `meepctl test`
+- For convenience, code coverage reports can be generated using `meepctl test`<br>
+_This will generate aggregated code coverage reports per service._
 
 ----
 ## Next Step

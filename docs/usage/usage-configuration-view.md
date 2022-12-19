@@ -264,6 +264,12 @@ Text field to input the path to an alternate _values.yaml_ file to use during ch
 
 _**NOTE:** For AdvantEDGE versions older than v1.5, alternate **values.yaml** files may be placed anywhere on the backend host where the Virtualization Engine is running. A full path is required, with the exception of the '~' character that is replaced by the **$HOME** path._
 
+##### D2D Radius
+Test field to input D2D proximity which represent the maximum distance beyween UEs to establish a D2D connection.
+
+##### Diabled D2D via network
+Ticker box to disable or enable D2D via network at the scenario/deployment level.
+
 ### DELETE
 Remove an existing scenario element:
 - Enabled when an element is selected in the visualization area
