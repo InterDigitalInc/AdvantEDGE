@@ -3,7 +3,7 @@ layout: default
 title: V2X Information Service
 parent: EDGE Services
 grand_parent: Overview
-nav_order: 1
+nav_order: 7
 permalink: docs/overview/edge-services/vis/
 ---
 
