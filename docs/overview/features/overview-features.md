@@ -17,6 +17,7 @@ Topic | Abstract
 [Pod Placement Support](#pod-placement-support) | Pod Placement enables node selection for applications in a multi-node cluster deployment
 [Process Lifecycle](#process-lifecycle) | Process Lifecycle enables dynamic instantiation & termination of terminal, edge or cloud applications
 [Cellular Connectivity Control](#cellular-connectivity-control) | Cellular connectivity control allows to emulate PDU session creation found in cellular mobile networks
+[Device-to-device (D2D) Communication](#device-to-device-d2d-communication) | D2D emulation enables direct communication between UEs
 NEXT STEP| [Edge services](#next-step)
 
 -----
@@ -60,19 +61,6 @@ This feature provides the following capabilities:
   - PoA in-range events: generates event listing all PoA in range
   - Network Characteristic update events: drive network characteristics based on distance from PoA (**v1.6+**)
   - Provides a more complete emulation for Location, RNI & WAI services
-- _Device-to-device (D2D) communication_
-  - D2D is an AdvantEDGE feature that allows emulation of UE direct communication.
-  - The goal of this feature is to add D2D over PC5 capabilities to the AdvantEDGE platform.
-  - D2D via Uu for inter-UE communication through the network is supported.
-  - New emulation capabilities for D2D are added
-    - D2D emulation provides a “one-hop” data path between two UEs
-    - D2D communication are local and opportunistic and happen when UE conditions described below are met
-    - D2D features such as keep-alive, advertisement, etc. are out-of-scope of the solution but may be considered later on a need basis
-  - Condition for establishing a D2D communication path are 
-    - Both UE must specify “D2D” capability in the “Supported Wireless Type” of the scenario
-    - Both UE must be in D2D proximity of each other
-    - D2D proximity is defined by “D2D maximum distance”
-
 
 Want to know more about GIS feature: [Geospatial Subsystem]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %})
 
@@ -178,6 +166,24 @@ This feature provides the following capabilities:
   - Allows to create and delete PDU sessions
 
 Want to know more about cellular connectivity control : [Cellular Connectivity Control]({{site.baseurl}}{% link docs/overview/features/overview-cell-connectivity-control.md %})
+
+----
+## Device-to-device (D2D) Communication
+AdvantEDGE supports geospatial and network emulation for direct communication between UEs, or device-to-device (D2D) communication.
+
+This feature provides the following capabilities:
+- _Configurable D2D emulation_
+  - D2D radius: maximum distance for D2D proximity
+  - D2D via network: D2D via Uu (inter-UE communication via network)
+  - D2D wireless type: D2D via PC5 (direct UE communication)
+- _D2D Geospatial measurements_
+  - Distance calculations between UEs that support D2D
+- _D2D Network characteristics emulation_
+  - Provides a "one-hop" data path between two UEs in D2D range
+  - Abstracts D2D features such as keep-alive, advertisement, etc.
+  - Allows UEs out of PoA range to use D2D link for network access
+
+Want to know more about D2D emulation: [Device-to-device (D2D) Communication]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %})
 
 ## Next Step
 Learn about the various [Edge services]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}) that allows development of Edge Native applications:
