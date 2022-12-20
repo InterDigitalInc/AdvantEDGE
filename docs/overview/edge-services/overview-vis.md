@@ -23,7 +23,7 @@ This feature provides the following capabilities:
   - [ETSI GS MEC 030 V2.2.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/030/02.02.01_60/gs_MEC030v020201p.pdf)
   - [ETSI Forge - V2X Information Service API repository](https://forge.etsi.org/rep/mec/gs030-vis-api)
 - API
-  - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-location)
+  - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-vis)
   - Based on OpenAPI Specification (OAS) 3.0
 
 ## AdvantEDGE Integration
