@@ -61,7 +61,7 @@ We welcome questions, feedback and improvement suggestions via [:octocat:**Discu
 Hope to hear from you...
 
 ## Authors
-A list of AdvantEDGE authors per release can be found [**here**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/AUTHORS)
+A list of AdvantEDGE authors can be found [**here**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/AUTHORS)
 
 ## Licensing
 
