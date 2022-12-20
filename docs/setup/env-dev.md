@@ -17,6 +17,8 @@ NEXT STEP: [Platform Management Workflow](#next-step) |
 
 ----
 ## Ansible
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+With AdvantEDGE release v1.9+, Ansible playbooks are no longer maintained; they are left here for reference only.<br>_
 
 AdvantEDGE development environment installation procedures can be performed manually or automatically.
 
