@@ -2,7 +2,7 @@
 
 ------
 
-**_What's New in v1.8.1!_**
+**_What's New in v1.9.0!_**
 
 :zap: **Improved edge native services: Multiple fixes to [ETSI MEC011 - Edge Platform Application Enablement](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#application-mobility-service)**
 
