@@ -32,7 +32,7 @@ const Footer = () => {
     <Grid style={styles.footer}>
       <GridCell span={2}/>
       <GridCell span={3} align={'middle'} style={styles.copyright}>
-        <Typography use="body1">© 2021 InterDigital, Inc</Typography>
+        <Typography use="body1">© 2022 InterDigital, Inc</Typography>
       </GridCell>
       <GridCell span={5} align={'middle'}>
         <div align={'right'}>
