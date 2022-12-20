@@ -8,7 +8,7 @@ permalink: docs/overview/features/d2d/
 ---
 
 ## Feature Overview
-AdvantEDGE supports geospatial and network emulation for direct communication UEs, or device-to-device (D2D) communication.
+AdvantEDGE supports geospatial and network emulation for direct communication between UEs, or device-to-device (D2D) communication.
 
 This feature provides the following capabilities:
 - _Configurable D2D emulation_
