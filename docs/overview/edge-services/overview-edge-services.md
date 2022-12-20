@@ -15,7 +15,7 @@ Topic | Abstract
 [Edge Platform Application Enablement Service](#edge-platform-application-enablement-service) | AdvantEDGE implementation of ETSI MEC011 specification that can be used by edge applications to discover, advertise, consume and offer MEC services.
 [Application Mobility Service](#application-mobility-service) | AdvantEDGE implementation of ETSI MEC021 specification that can be used by edge applications for relocation of user context and/or application instance across MEC platforms.
 [Application State Transfer Service](#application-state-transfer-service) | AdvantEDGE proprietary implementation of a state transfer service that can be used by edge applications to transfer a state to another application instance.
-[V2X Information Service](#v2x-information-service) | AdvantEDGE proprietary implementation of a state transfer service that can be used by edge applications to transfer a state to another application instance.
+[V2X Information Service](#v2x-information-service) | AdvantEDGE implementation of ETSI MEC030 specification that can be used by edge applications to obtain journey-specific QoS predictions for vehicular terminals.
 NEXT STEP: [Platform APIs](#next-step) |
 
 -----
@@ -112,6 +112,6 @@ Want to know more about V2X Information service: [V2X Information Service]({{sit
 
 ----
 ## Next Step
-Learn about the various [Plarform APIs]({{site.baseurl}}{% link docs/overview/overview-api.md %}) that allows integration of your applications with the AdvantEDGE platform:
+Learn about the various [Platform APIs]({{site.baseurl}}{% link docs/overview/overview-api.md %}) that allows integration of your applications with the AdvantEDGE platform:
 - Platform APIs
 - Edge Service APIs
