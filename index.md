@@ -10,19 +10,21 @@ permalink: /
 
 ------
 
-**_What's New in v1.8.1!_**
+**_What's New in v1.9.0!_**
 
-:zap: **Improved edge native services: Multiple fixes to [ETSI MEC011 - Edge Platform Application Enablement]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service) and [ETSI MEC021 - Application Mobility Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service)**
+:zap: **New edge native service: [ETSI MEC030 - V2X Information Service API]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#v2x-information-service) for vehicular QoS predictions! :car:**
 
-:zap: **New! [Demo3 example application]({{site.baseurl}}{% link docs/usage/usage-demo3.md %}) to showcase MEC011 & MEC021 service API usage**
+:zap: **New! Geospatial & Network emulation for scenarios with [Device-to-device (D2D) Communication]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %}#using-d2d-feature) :iphone:/:iphone:**
 
-:zap: **ETSI MEC028 WebSocket support: [ETSI MEC028 - WLAN Access Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#wireless-access-information-service) now supports WebSocket model for receiving notifications**
+:zap: **New! Runtime [Sequence]({{site.baseurl}}{% link docs/usage/usage-execution-view.md %}#sequence-diagram) and [Data Flow]({{site.baseurl}}{% link docs/usage/usage-execution-view.md %}#data-flow-diagram) diagrams :chart_with_upwards_trend:**
 
-:zap: **Improved sandbox data management: [Sandbox Metrics Garbage Collection]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#sandbox-subsystem) :wastebasket: can be configured to periodically recover unused sandbox disk space**
+:zap: **Service API upgrade to version 2.2.1 for [ETSI MEC011]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#edge-platform-application-enablement-service), [ETSI MEC012]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#radio-network-information-service), [ETSI MEC013]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#location-service) and [ETSI MEC021]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#application-mobility-service) :arrow_up:**
+
+:zap: **[Runtime Setup]({{site.baseurl}}{% link docs/setup/env-runtime.md %}) updates to support k8s versions up to 1.26 :arrow_up:**
 
 :zap: **General maintenance :hammer_and_wrench:**
 
-:zap: **Don't hesitate to reach out to us by initiating [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
+:zap: **Don't hesitate to reach out to us by initiating a [GitHub Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) :octocat:**
 
 ------
 
@@ -64,6 +66,9 @@ If you like this project and would like to participate in its evolution, you can
 We welcome questions, feedback and improvement suggestions via [:octocat:**Discussion**](https://github.com/InterDigitalInc/AdvantEDGE/discussions) and bugs reporting via [:octocat: **Issues**](https://github.com/InterDigitalInc/AdvantEDGE/issues)
 
 Hope to hear from you...
+
+## Authors
+A list of AdvantEDGE authors can be found [**here**](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/AUTHORS)
 
 ## Licensing
 
