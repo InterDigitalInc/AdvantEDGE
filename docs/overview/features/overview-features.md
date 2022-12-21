@@ -17,6 +17,7 @@ Topic | Abstract
 [Pod Placement Support](#pod-placement-support) | Pod Placement enables node selection for applications in a multi-node cluster deployment
 [Process Lifecycle](#process-lifecycle) | Process Lifecycle enables dynamic instantiation & termination of terminal, edge or cloud applications
 [Cellular Connectivity Control](#cellular-connectivity-control) | Cellular connectivity control allows to emulate PDU session creation found in cellular mobile networks
+[Device-to-device (D2D) Communication](#device-to-device-d2d-communication) | D2D emulation enables direct communication between UEs
 NEXT STEP| [Edge services](#next-step)
 
 -----
@@ -83,8 +84,8 @@ This feature provides the following capabilities:
 - _Platform metrics local monitoring_
   - Automated Platform Micro-Services monitoring: Prometheus collects metrics locally about the platform micro-services; this allows AdvantEDGE platform usage metrics in your deployments.
 - _Metrics Long-term Storage (Optional)_
-  - Long-term data retention: Thanos pushes Prometheus metrics to MinIO high-performance object store every 2 hours
-  - Daily backups: cronjob pushes InfluxDB data to MinIO object store
+  - Long-term data retention: Thanos pushes Prometheus metrics to object store every 2 hours
+  - Daily backups: cronjob pushes InfluxDB data to object store
 
 Want to know more about Monitoring feature: [Monitoring Subsystem]({{site.baseurl}}{% link docs/overview/features/overview-monitoring.md %})
 
@@ -166,10 +167,29 @@ This feature provides the following capabilities:
 
 Want to know more about cellular connectivity control : [Cellular Connectivity Control]({{site.baseurl}}{% link docs/overview/features/overview-cell-connectivity-control.md %})
 
+----
+## Device-to-device (D2D) Communication
+AdvantEDGE supports geospatial and network emulation for direct communication between UEs, or device-to-device (D2D) communication.
+
+This feature provides the following capabilities:
+- _Configurable D2D emulation_
+  - D2D radius: maximum distance for D2D proximity
+  - D2D via network: D2D via Uu (inter-UE communication via network)
+  - D2D wireless type: D2D via PC5 (direct UE communication)
+- _D2D Geospatial measurements_
+  - Distance calculations between UEs that support D2D
+- _D2D Network characteristics emulation_
+  - Provides a "one-hop" data path between two UEs in D2D range
+  - Abstracts D2D features such as keep-alive, advertisement, etc.
+  - Allows UEs out of PoA range to use D2D link for network access
+
+Want to know more about D2D emulation: [Device-to-device (D2D) Communication]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %})
+
 ## Next Step
 Learn about the various [Edge services]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}) that allows development of Edge Native applications:
 - Location Service
 - Radio Network Information Service (RNIS)
 - Wireless Access Information Service (WAIS)
+- V2X Information Service (VIS)
 - Application State Transfer Service
 - etc.

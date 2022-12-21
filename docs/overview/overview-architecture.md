@@ -60,7 +60,8 @@ _Location Service_ | Provide an ETSI-MEC compliant Location service API
 _RNI Service_ | Provide an ETSI-MEC compliant Radio Network Information Service API
 _WAI Service_ | Provide an ETSI-MEC compliant WLAN Access Information Service API
 _App Enablement Service_ | Provide an ETSI-MEC compliant Edge Application Enablement Service (App Support API & Service Management API)
-_Application Mobility Service_ | Provide an ETSI-MEC compliant Application Mobility Service API
+_Application Mobility Service_ | Povide an ETSI-MEC compliant Application Mobility Service API
+_V2X Information Service_ | Provide an ETSI-MEC compliant V2X Information Service API
 
 ## Network Model
 AdvantEDGE uses the following model to define a scenario.

@@ -114,21 +114,13 @@ This section provides the following configuration controls for the Visualization
 Drop-down menus to select the visualizations to display in the Visualization dashboard. You may configure a single view or two views to display side-by-side. You can choose from the following views:
 - Network Topology
 - Map View
+- Sequence Diagram
+- Data Flow Diagram
 - Network Metrics Point-to-Point
 - Network Metrics Aggregation
+- Wireless Metrics Point-to-Point
+- Wireless Metrics Aggregation
 - None
-
-### SOURCE NODE
-Drop-down menu to select the source application node that must be provided to the Visualization dashboard.
-
-### DESTINATION NODE
-Drop-down menu to select the destination application node that must be provided to the Visualization dashboard.
-
-### SHOW APPS
-Checkbox to show or hide applications in the Visualization dashboard views. If checked, the Network Topology view includes edge, UE & cloud application network elements.
-
-### CLOSE
-Closes the dashboard configuration bar.
 
 ---
 ## Visualization Dashboard
@@ -139,23 +131,106 @@ This view provides a visual representation of the network element hierarchy for 
 
 We use a 3rd party graphing tool called [vis.js](https://visjs.org/) to create a network view of the scenario elements. You can drag and zoom the network view using the provided controls or using your mouse click & scroll buttons. Hovering over a node or link in the graph will open an informative tooltip with details about the currently configured element state.
 
+#### Dashboard Options:
+#### Show Apps
+Checkbox to show or hide applications in the Visualization dashboard views. If checked, the Network Topology view includes edge, UE & cloud application network elements.
+
+#### Close
+Closes the dashboard configuration bar.
+
 ### Map View
 This view provides a visual representation of the network element geographic positions on a map for the deployed scenario. It is updated whenever a scenario is deployed, refreshed or terminated.
 
 We use a 3rd party mapping client called [Leaflet](https://leafletjs.com/) to render map tiles. Physical location assets such as UEs, PoAs & Compute nodes are then overlaid on the maps using markers, circles and lines. You can drag and zoom the map view using the provided controls or using your mouse click & scroll buttons. Hovering over a marker displays its name, and clicking on a marker opens a tooltip with the asset name, position, range, end-of-path mode & velocity, when applicable.
+
+#### Dashboard Options:
+#### Close
+Closes the dashboard configuration bar.
+
+### Sequence Diagram
+This view provides a visual representation of the messages exchanged between components for the deployed scenario. Applications may use the _meep-http-logger_ package to log http messages with a source and destination identifier. The http metrics must be logged to the active scenario database by first invoking the _ReInit()_ function of the _meep-http-logger_ package and providing the current sandbox name and the active scenario name. Subsequent logging calls then create and store the message logs in the scenario database. The sequence diagram visualization retrieves and displays the logged messages.
+
+To display the messages, we use a 3rd party sequence diagram generation tool called [Mermaid](https://mermaid.js.org/). Messages can also be exported to a text file formatted either for [Mermaid](https://mermaid.live/edit) or [SequenceDiagram.org](https://sequencediagram.org/).
+
+#### Dashboard Options:
+#### Participants
+Text field to input the ordered set of participants to be rendered in the sequence digaram.
+
+#### Count
+Text field to input the maximum number of logs to be shown in the sequence diagram.
+
+#### Clear
+Button to clear the rendered diagram.
+
+#### Fetch All
+Button to fetch all the logs/events for the given scenario and render the diagram on screen.
+
+#### Export Mermaid
+Button to export the sequence diagram logs to a text file in mermaid format.
+
+#### Export SDorg
+Button to export the sequence diagram logs to a text file in sdorg (SequenceDiagram.org) format.
+
+#### Pause
+Checkbox to pause or unpause the automatic rendering of the updated sequence diagram.
+
+#### Close
+Closes the dashboard configuration bar.
+
+### Data Flow Diagram
+This view provides a visual representation of the number of component interactions for the deployed scenario. Applications may use the _meep-http-logger_ package to log http messages with a source and destination identifier. The http metrics must be logged to the active scenario database by first invoking the _ReInit()_ function of the _meep-http-logger_ package and providing the current sandbox name and the active scenario name. Subsequent logging calls then create and store the message logs in the scenario database. The data flow diagram visualization retrieves and displays the number of component interactions.
+
+To display the number of component interactions, we use a 3rd party flow diagram generation tool called [Mermaid](https://mermaid.js.org/). Component interactions can also be exported to a text file formatted for [Mermaid](https://mermaid.live/edit).
+
+#### Dashboard Options:
+#### Export Mermaid
+Button to export the component interaction logs in mermaid format.
+
+#### Pause
+Checkbox to pause or unpause the automatic rendering of the updated data flow diagram.
+
+#### Close
+Closes the dashboard configuration bar.
 
 ### Network Metrics Point-to-Point
 This view loads the Network Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and destination nodes. It displays instantaneous measurements for round-trip ping time and UL & DL throughput, as well as a graph of these measurements over the last minute.
 
 _**NOTE:** You must select both a source and destination node in the Dashboard configuration bar to visualize data in this view._
 
+#### Dashboard Options:
+#### Source Node
+Drop-down menu to select the source application node that must be provided to the Visualization dashboard.
+
+#### Destination Node
+Drop-down menu to select the destination application node that must be provided to the Visualization dashboard.
+
+##### Close
+Closes the dashboard configuration bar.
+
 ### Network Metrics Aggregation
 This view loads the Network Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and all other scenario application nodes. It displays graphs for round-trip ping times, UL & DL throughput measurements over the last minute. It also shows a table of events received by the backend.
 
 _**NOTE:** You must select a source node in the Dashboard configuration bar to visualize data in this view._
 
+#### Dashboard Options:
+#### Source Node
+Drop-down menu to select the source application node that must be provided to the Visualization dashboard.
+
+#### Close
+Closes the dashboard configuration bar.
+
 ### Wireless Metrics Point-to-Point
 This view loads the Wireless Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some signal strength metrics and distance measurements between the configured UE and POA. It displays instantaneous measurements for RSRP & RSRQ when attached to a 4G or 5G POA, and the RSSI when attached to a WiFi POA. The dashboard also provides the current distance between the UE and POA, as well as a graph of all of these measurements over the last minute (overlayed with mobility events to easily track POA transitions).
+
+#### Dashboard Options:
+#### UE
+Drop-down menu to select the UE node that must be provided to the Visualization dashboard.
+
+#### POA
+Drop-down menu to select the POA node that must be provided to the Visualization dashboard.
+
+#### Close
+Closes the dashboard configuration bar.
 
 _**NOTE:** You must select both a UE and a POA in the Dashboard configuration bar to visualize data in this view._
 
@@ -163,6 +238,13 @@ _**NOTE:** You must select both a UE and a POA in the Dashboard configuration ba
 This view loads the Wireless Metrics Aggregation Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some signal strength metrics and distance measurements between the configured UE and all POAs in range. It displays graphs for RSRP & RSRP (4G/5G POAs), RSSI (WiFi POAs), and distance measurements over the last minute (overlayed with mobility events to easily track POA transitions). It also shows a table of events received by the backend.
 
 _**NOTE:** You must select a UE in the Dashboard configuration bar to visualize data in this view._
+
+#### Dashboard Options:
+#### UE
+Drop-down menu to select the UE node that must be provided to the Visualization dashboard.
+
+#### Close
+Closes the dashboard configuration bar.
 
 ### None
 Disables the view, giving its frontend real-estate to the other view.
