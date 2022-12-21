@@ -118,6 +118,8 @@ Drop-down menus to select the visualizations to display in the Visualization das
 - Data Flow Diagram
 - Network Metrics Point-to-Point
 - Network Metrics Aggregation
+- Wireless Metrics Point-to-Point
+- Wireless Metrics Aggregation
 - None
 
 ---
@@ -145,6 +147,51 @@ We use a 3rd party mapping client called [Leaflet](https://leafletjs.com/) to re
 #### Close
 Closes the dashboard configuration bar.
 
+### Sequence Diagram
+This view provides a visual representation of the messages exchanged between components for the deployed scenario. Applications may use the _meep-http-logger_ package to log http messages with a source and destination identifier. The http metrics must be logged to the active scenario database by first invoking the _ReInit()_ function of the _meep-http-logger_ package and providing the current sandbox name and the active scenario name. Subsequent logging calls then create and store the message logs in the scenario database. The sequence diagram visualization retrieves and displays the logged messages.
+
+To display the messages, we use a 3rd party sequence diagram generation tool called [Mermaid](https://mermaid.js.org/). Messages can also be exported to a text file formatted either for [Mermaid](https://mermaid.live/edit) or [SequenceDiagram.org](https://sequencediagram.org/).
+
+#### Dashboard Options:
+#### Participants
+Text field to input the ordered set of participants to be rendered in the sequence digaram.
+
+#### Count
+Text field to input the maximum number of logs to be shown in the sequence diagram.
+
+#### Clear
+Button to clear the rendered diagram.
+
+#### Fetch All
+Button to fetch all the logs/events for the given scenario and render the diagram on screen.
+
+#### Export Mermaid
+Button to export the sequence diagram logs to a text file in mermaid format.
+
+#### Export SDorg
+Button to export the sequence diagram logs to a text file in sdorg (SequenceDiagram.org) format.
+
+#### Pause
+Checkbox to pause or unpause the automatic rendering of the updated sequence diagram.
+
+#### Close
+Closes the dashboard configuration bar.
+
+### Data Flow Diagram
+This view provides a visual representation of the number of component interactions for the deployed scenario. Applications may use the _meep-http-logger_ package to log http messages with a source and destination identifier. The http metrics must be logged to the active scenario database by first invoking the _ReInit()_ function of the _meep-http-logger_ package and providing the current sandbox name and the active scenario name. Subsequent logging calls then create and store the message logs in the scenario database. The data flow diagram visualization retrieves and displays the number of component interactions.
+
+To display the number of component interactions, we use a 3rd party flow diagram generation tool called [Mermaid](https://mermaid.js.org/). Component interactions can also be exported to a text file formatted for [Mermaid](https://mermaid.live/edit).
+
+#### Dashboard Options:
+#### Export Mermaid
+Button to export the component interaction logs in mermaid format.
+
+#### Pause
+Checkbox to pause or unpause the automatic rendering of the updated data flow diagram.
+
+#### Close
+Closes the dashboard configuration bar.
+
 ### Network Metrics Point-to-Point
 This view loads the Network Metrics Point-to-Point Grafana Dashboard in an iframe. This dashboard monitors the deployed scenario and provides some latency and traffic metrics between the configured source and destination nodes. It displays instantaneous measurements for round-trip ping time and UL & DL throughput, as well as a graph of these measurements over the last minute.
 
@@ -158,51 +205,6 @@ Drop-down menu to select the source application node that must be provided to th
 Drop-down menu to select the destination application node that must be provided to the Visualization dashboard.
 
 ##### Close
-Closes the dashboard configuration bar.
-
-### Sequence Diagram
-The sequence diagram visualization dashboard is an AdvantEDGE feature that allows to observe interactions in a scenario in real-time. The feature also allows to export sequence diagrams in a text format to facilitate documenting scenarios. The chosen visualization technology is Mermaid, a JS visualization library.
-
-It is possible to export sequence diagrams in the [Mermaid](https://mermaid.live/edit) format or in the [SequenceDiagram.org](https://sequencediagram.org/) format
-
-#### Dashboard Options:
-#### Participants
-Text field to input the sequence of participants to be rendered in the sequence digaram.
-
-#### Count
-Text field to input the maximum count of logs to be shown in the seuqence diagram.
-
-#### Clear
-Button to clear the rendered diagram.
-
-#### Fetch All
-Button to fetch all the logs/events for the given scenario and render diagram on screen.
-
-#### Export Mermaid
-Button to export the logs for seuqence diagram in mermaid format.
-
-#### Export SDorg
-Button to export the logs for seuqence diagram in sdorg format.
-
-#### Pause
-Checkbox to pause or unpause the automatic rendering of the updated sequence diagram.
-
-#### Close
-Closes the dashboard configuration bar.
-
-### Data Flow Diagram
-The data flow diagram visualization dashboard is an AdvantEDGE feature that allows to observe the number of interactions between components in a scenario in real-time. The feature also allows to export data flow diagrams in a text format to facilitate documenting scenarios. The chosen visualization technology is Mermaid, a JS visualization library.
-
-It is possible to export sequence diagrams in the [Mermaid](https://mermaid.live/edit) format.
-
-#### Dashboard Options:
-#### Export Mermaid
-Button to export the logs for dataflow diagram in mermaid format.
-
-#### Pause
-Checkbox to pause or unpause the automatic rendering of the updated dataflow diagram.
-
-#### Close
 Closes the dashboard configuration bar.
 
 ### Network Metrics Aggregation
