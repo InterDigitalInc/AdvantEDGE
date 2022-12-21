@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,14 @@ import (
 
 // minimizeScenario - Minimizes scenario
 func minimizeScenario(scenario *dataModel.Scenario) {
-	if scenario != nil && scenario.Deployment != nil {
-		deployment := scenario.Deployment
+	if scenario != nil {
+		minimizeDeployment(scenario.Deployment)
+	}
+}
+
+// minimizeDeployment - Minimizes deployment
+func minimizeDeployment(deployment *dataModel.Deployment) {
+	if deployment != nil {
 		for i := range deployment.Domains {
 			domain := &deployment.Domains[i]
 			minimizeDomain(domain)

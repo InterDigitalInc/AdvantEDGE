@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -228,10 +228,8 @@ func (a *WaiApiService) ApInfoGET(ctx context.Context, localVarOptionals *ApInfo
 /*
 WaiApiService MEC011 Application Termination notification for self termination
 Terminates itself.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Termination notification details
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Termination notification details
 */
 func (a *WaiApiService) Mec011AppTerminationPOST(ctx context.Context, body AppTerminationNotification) (*http.Response, error) {
 	var (
@@ -644,10 +642,8 @@ func (a *WaiApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 /*
 WaiApiService Cancel an existing subscription
 Cancels an existing subscription, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Id, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Id, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *WaiApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -757,8 +753,8 @@ func (a *WaiApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId 
 /*
 WaiApiService Retrieve information on current specific subscription
 Queries information about an existing subscription, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Id, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Id, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineSubscription
 */
@@ -912,8 +908,8 @@ func (a *WaiApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 /*
 WaiApiService Create a new subscription
 Creates a new subscription to WLAN Access Information notifications
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineSubscription
 */
@@ -1090,9 +1086,9 @@ func (a *WaiApiService) SubscriptionsPOST(ctx context.Context, body InlineSubscr
 /*
 WaiApiService Modify an existing subscription
 Updates an existing subscription, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Id, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Id, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineSubscription
 */

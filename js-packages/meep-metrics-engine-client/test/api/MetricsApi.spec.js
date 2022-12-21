@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -50,6 +50,63 @@
 
   describe('(package)', function() {
     describe('MetricsApi', function() {
+      describe('postDataflowQuery', function() {
+        it('should call postDataflowQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postDataflowQuery call and complete the assertions
+          /*
+          var params = new AdvantEdgeMetricsServiceRestApi.DataflowQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
+          params.fields = ["mermaid"]"mermaid";
+          params.responseType = "listonly";
+
+          instance.postDataflowQuery(params, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.DataflowMetrics);
+            expect(data.dataflowMetricList).to.be.a(AdvantEdgeMetricsServiceRestApi.DataflowMetricList);
+                  expect(data.dataflowMetricList.name).to.be.a('string');
+              expect(data.dataflowMetricList.name).to.be("dataflow metrics");
+              {
+                let dataCtr = data.dataflowMetricList.columns;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a('string');
+                  expect(data).to.be("");
+                }
+              }
+              {
+                let dataCtr = data.dataflowMetricList.values;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.DataflowMetric);
+                  expect(data.time).to.be.a('string');
+                  expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                  expect(data.mermaid).to.be.a('string');
+                  expect(data.mermaid).to.be("Alice --> Bob");
+                }
+              }
+            expect(data.dataflowMetricString).to.be.a('string');
+            expect(data.dataflowMetricString).to.be("");
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('postEventQuery', function() {
         it('should call postEventQuery successfully', function(done) {
           // TODO: uncomment, update parameter values for postEventQuery call and complete the assertions
@@ -162,8 +219,10 @@
                 expect(data.procTime).to.be("345");
                 expect(data.loggerName).to.be.a('string');
                 expect(data.loggerName).to.be("loc-serv");
+                expect(data.msgType).to.be.a('string');
+                expect(data.msgType).to.be("response");
                 expect(data.direction).to.be.a('string');
-                expect(data.direction).to.be("Request");
+                expect(data.direction).to.be("RX");
               }
             }
 
@@ -227,6 +286,65 @@
                 expect(data.dlos).to.be(0.003);
               }
             }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('postSeqQuery', function() {
+        it('should call postSeqQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postSeqQuery call and complete the assertions
+          /*
+          var params = new AdvantEdgeMetricsServiceRestApi.SeqQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.fields = ["mermaid"]"mermaid";
+          params.responseType = "listonly";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
+
+          instance.postSeqQuery(params, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.SeqMetrics);
+            expect(data.seqMetricList).to.be.a(AdvantEdgeMetricsServiceRestApi.SeqMetricList);
+                  expect(data.seqMetricList.name).to.be.a('string');
+              expect(data.seqMetricList.name).to.be("seq metrics");
+              {
+                let dataCtr = data.seqMetricList.columns;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a('string');
+                  expect(data).to.be("");
+                }
+              }
+              {
+                let dataCtr = data.seqMetricList.values;
+                expect(dataCtr).to.be.an(Array);
+                expect(dataCtr).to.not.be.empty();
+                for (let p in dataCtr) {
+                  let data = dataCtr[p];
+                  expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.SeqMetric);
+                  expect(data.time).to.be.a('string');
+                  expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                  expect(data.mermaid).to.be.a('string');
+                  expect(data.mermaid).to.be("Alice ->> Bob: Hello!");
+                  expect(data.sdorg).to.be.a('string');
+                  expect(data.sdorg).to.be("Alice -> Bob: Hello!");
+                }
+              }
+            expect(data.seqMetricString).to.be.a('string');
+            expect(data.seqMetricString).to.be("");
 
             done();
           });

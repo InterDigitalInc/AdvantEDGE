@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **sinr** | [**Integer**](integer.md) | Reference Signal \&quot;Signal to Interference plus Noise Ratio\&quot;, with value mapping defined in ETSI TS 136 133 [i.16]. | [optional] [default to null]
 **timeStamp** | [**TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
 **trigger** | [**Trigger**](Trigger.md) |  | [default to null]
+**\_links** | [**CellChangeNotification__links**](CellChangeNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

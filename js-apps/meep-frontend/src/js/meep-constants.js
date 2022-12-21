@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,6 +127,9 @@ export const CFG_BTN_NEW_ELEM = 'cfg-btn-new-elem';
 export const CFG_BTN_DEL_ELEM = 'cfg-btn-del-elem';
 export const CFG_BTN_CLONE_ELEM = 'cfg-btn-clone-elem';
 export const CFG_BTN_SAVE_ELEM = 'cfg-btn-save-elem';
+export const CFG_BTN_EXP_MERMAID_SEQ = 'cfg-btn-exp-mermaid-seq';
+export const CFG_BTN_EXP_SDORG_SEQ = 'cfg-btn-exp-sdorg-seq';
+export const CFG_BTN_EXP_MERMAID_DF = 'cfg-btn-exp-mermaid-df';
 
 export const CFG_ELEM_TYPE = 'cfg-elem-type';
 export const CFG_ELEM_NAME = 'cfg-elem-name';
@@ -156,6 +159,8 @@ export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
 export const CFG_ELEM_NR_CELL_ID = 'cfg-elem-nr-cell-id';
 export const CFG_ELEM_GEO_LOCATION = 'cfg-elem-location';
 export const CFG_ELEM_GEO_RADIUS = 'cfg-elem-radius';
+export const CFG_ELEM_D2D_RADIUS = 'cfg-elem-d2d-radius';
+export const CFG_ELEM_D2D_DISABLED = 'cfg-elem-d2d-disabled';
 export const CFG_ELEM_GEO_PATH = 'cfg-elem-path';
 export const CFG_ELEM_GEO_EOP_MODE = 'cfg-elem-eop-mode';
 export const CFG_ELEM_GEO_VELOCITY = 'cfg-elem-velocity';
@@ -320,6 +325,10 @@ export const CONNECTIVITY_MODEL_OPEN = 'OPEN';
 export const CONNECTIVITY_MODEL_PDU = 'PDU';
 export const DEFAULT_CONNECTIVITY_MODEL = CONNECTIVITY_MODEL_OPEN;
 
+// D2d
+export const DEFAULT_D2D_RADIUS = 100;
+export const DEFAULT_D2D_DISABLED = false;
+
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';
 
@@ -363,6 +372,8 @@ export const id = label => {
 export const VIEW_NAME_NONE = 'None';
 export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
+export const SEQ_DIAGRAM_VIEW = 'Sequence Diagram';
+export const DATAFLOW_DIAGRAM_VIEW = 'Data Flow Diagram';
 export const NET_METRICS_PTP_VIEW = 'Network Metrics Point-to-Point';
 export const NET_METRICS_AGG_VIEW = 'Network Metrics Aggregation';
 export const WIRELESS_METRICS_PTP_VIEW = 'Wireless Metrics Point-to-Point';
@@ -385,6 +396,10 @@ export const SCENARIO_UPDATE_ACTION_MODIFY = 'MODIFY';
 
 export const PDU_SESSION_ACTION_ADD = 'ADD';
 export const PDU_SESSION_ACTION_REMOVE = 'REMOVE';
+
+// Dashboard Config
+export const DASH_SEQ_MAX_MSG_COUNT = 500;
+export const DASH_DATAFLOW_MAX_MSG_COUNT = 10000;
 
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [

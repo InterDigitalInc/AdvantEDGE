@@ -1,32 +1,32 @@
 openapi: 3.0.0
 info:
-  contact:
-    name: InterDigital AdvantEDGE Support
-    email: AdvantEDGE@InterDigital.com
-  title: AdvantEDGE Location Service REST API
-  version: 2.1.1
+  title: AdvantEDGE Location API
+  version: 2.2.1
   description: "Location Service is AdvantEDGE's implementation of
-  [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
+  [ETSI MEC ISG MEC013 Location API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf)
   <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence
   <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
   <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations
   <p>**Note**<br>AdvantEDGE supports all of Location API endpoints (see below)."
   license:
-    name: "Apache 2.0"
-    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+    name: Apache 2.0
+    url: 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE'
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
 externalDocs:
-  description: ETSI MEC013 V2.1.1 Location API
-  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf'
+  description: ETSI MEC013 V2.2.1 Location API
+  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf'
 servers:
   - url: 'https://localhost/sandboxname/location/v2'
 tags:
-- name: 'location'
+  - name: 'location'
 paths:
   /queries/distance:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'UE Distance Lookup of a specific UE'
       description: 'UE Distance Lookup between terminals or a terminal and a location'
       operationId: distanceGET
@@ -58,7 +58,7 @@ paths:
   /queries/users:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'UE Location Lookup of a specific UE or group of UEs'
       description: 'UE Location Lookup of a specific UE or group of UEs'
       operationId: usersGET
@@ -85,7 +85,7 @@ paths:
           $ref: '#/components/responses/406'
         '429':
           $ref: '#/components/responses/429'
-      x-swagger-router-controller: "queries"
+      x-swagger-router-controller: 'queries'
   /queries/zones:
     get:
       tags:
@@ -112,7 +112,7 @@ paths:
           $ref: '#/components/responses/406'
         '429':
           $ref: '#/components/responses/429'
-      x-swagger-router-controller: "queries"
+      x-swagger-router-controller: 'queries'
   /queries/zones/{zoneId}:
     get:
       tags:
@@ -145,7 +145,7 @@ paths:
   /queries/zones/{zoneId}/accessPoints:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Radio Node Location Lookup'
       description: 'Radio Node Location Lookup to retrieve a list of radio nodes associated to a zone.'
       operationId: apGET
@@ -171,11 +171,11 @@ paths:
           $ref: '#/components/responses/406'
         '429':
           $ref: '#/components/responses/429'
-      x-swagger-router-controller: "queries"
+      x-swagger-router-controller: 'queries'
   /queries/zones/{zoneId}/accessPoints/{accessPointId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Radio Node Location Lookup'
       description: 'Radio Node Location Lookup to retrieve a radio node associated to a zone.'
       operationId: apByIdGET
@@ -205,7 +205,7 @@ paths:
   /subscriptions/area/circle:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieves all active subscriptions to area change notifications'
       description: 'This operation is used for retrieving all active subscriptions to area change notifications.'
       operationId: areaCircleSubListGET
@@ -219,24 +219,23 @@ paths:
               example:
                 notificationSubscriptionList:
                   circleNotificationSubscription:
-                  - clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address:
-                    - 'acr:10.0.0.1'
-                    checkImmediate: true
-                    enteringLeavingCriteria: 'Entering'
-                    frequency: 10
-                    latitude: -80.88
-                    longitude: 41.277
-                    radius: 500
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+                    - clientCorrelator: '0123'
+                      callbackReference:
+                        callbackData: '1234'
+                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                      address: 'acr:10.0.0.1'
+                      checkImmediate: true
+                      enteringLeavingCriteria: 'Entering'
+                      frequency: 10
+                      latitude: -80.88
+                      longitude: 41.277
+                      radius: 500
+                      trackingAccuracy: 10
+                      resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle'
     post:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Creates a subscription for area change notification'
       description: 'Creates a subscription to the Location Service for an area change notification.'
       operationId: areaCircleSubPOST
@@ -253,8 +252,7 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address:
-                - 'acr:10.0.0.1'
+                address: 'acr:10.0.0.1'
                 checkImmediate: true
                 enteringLeavingCriteria: 'Entering'
                 frequency: 10
@@ -275,8 +273,7 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address:
-                  - 'acr:10.0.0.1'
+                  address: 'acr:10.0.0.1'
                   checkImmediate: true
                   enteringLeavingCriteria: 'Entering'
                   frequency: 10
@@ -336,7 +333,7 @@ paths:
   /subscriptions/area/circle/{subscriptionId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: areaCircleSubGET
@@ -355,8 +352,7 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address:
-                  - 'acr:10.0.0.1'
+                  address: 'acr:10.0.0.1'
                   checkImmediate: true
                   enteringLeavingCriteria: 'Entering'
                   frequency: 10
@@ -380,7 +376,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: areaCircleSubPUT
@@ -397,8 +393,7 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address:
-                - 'acr:10.0.0.1'
+                address: 'acr:10.0.0.1'
                 checkImmediate: true
                 enteringLeavingCriteria: 'Entering'
                 frequency: 10
@@ -422,8 +417,7 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address:
-                  - 'acr:10.0.0.1'
+                  address: 'acr:10.0.0.1'
                   checkImmediate: true
                   enteringLeavingCriteria: 'Entering'
                   frequency: 10
@@ -451,7 +445,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: areaCircleSubDELETE
@@ -472,7 +466,7 @@ paths:
   /subscriptions/distance:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieves all active subscriptions to distance change notifications'
       description: 'This operation is used for retrieving all active subscriptions to a distance change notifications.'
       operationId: distanceSubListGET
@@ -486,25 +480,24 @@ paths:
               example:
                 notificationSubscriptionList:
                   distanceNotificationSubscription:
-                  - clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    monitoredAddress:
-                    - 'acr:10.0.0.1'
-                    - 'acr:10.0.0.2'
-                    checkImmediate: true
-                    criteria: 'AllWithinDistance'
-                    distance: 100
-                    frequency: 10
-                    referenceAddress:
-                    - 'acr:10.0.0.3'
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/sub123'
+                    - clientCorrelator: '0123'
+                      callbackReference:
+                        callbackData: '1234'
+                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                      monitoredAddress:
+                        - 'acr:10.0.0.1'
+                        - 'acr:10.0.0.2'
+                      checkImmediate: true
+                      criteria: 'AllWithinDistance'
+                      distance: 100
+                      frequency: 10
+                      referenceAddress: 'acr:10.0.0.3'
+                      trackingAccuracy: 10
+                      resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/sub123'
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance'
     post:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Creates a subscription for distance change notification'
       description: 'Creates a subscription to the Location Service for a distance change notification.'
       operationId: distanceSubPOST
@@ -522,14 +515,13 @@ paths:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                 monitoredAddress:
-                - 'acr:10.0.0.1'
-                - 'acr:10.0.0.2'
+                  - 'acr:10.0.0.1'
+                  - 'acr:10.0.0.2'
                 checkImmediate: true
                 criteria: 'AllWithinDistance'
                 distance: 100
                 frequency: 10
-                referenceAddress: 
-                - 'acr:10.0.0.3'
+                referenceAddress: 'acr:10.0.0.3'
                 trackingAccuracy: 10
       responses:
         '201':
@@ -545,14 +537,13 @@ paths:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                   monitoredAddress:
-                  - 'acr:10.0.0.1'
-                  - 'acr:10.0.0.2'
+                    - 'acr:10.0.0.1'
+                    - 'acr:10.0.0.2'
                   checkImmediate: true
                   criteria: 'AllWithinDistance'
                   distance: 100
                   frequency: 10
-                  referenceAddress:
-                  - 'acr:10.0.0.3'
+                  referenceAddress: 'acr:10.0.0.3'
                   trackingAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
         '400':
@@ -612,11 +603,11 @@ paths:
               responses:
                 '204':
                   $ref: '#/components/responses/204'
-      x-swagger-router-controller: "subscriptions"
+      x-swagger-router-controller: 'subscriptions'
   /subscriptions/distance/{subscriptionId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: distanceSubGET
@@ -636,14 +627,13 @@ paths:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                   monitoredAddress:
-                  - 'acr:10.0.0.1'
-                  - 'acr:10.0.0.2'
+                    - 'acr:10.0.0.1'
+                    - 'acr:10.0.0.2'
                   checkImmediate: true
                   criteria: 'AllWithinDistance'
                   distance: 100
                   frequency: 10
-                  referenceAddress:
-                  - 'acr:10.0.0.3'
+                  referenceAddress: 'acr:10.0.0.3'
                   trackingAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
         '400':
@@ -661,7 +651,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: distanceSubPUT
@@ -679,14 +669,13 @@ paths:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                 monitoredAddress:
-                - 'acr:10.0.0.1'
-                - 'acr:10.0.0.2'
+                  - 'acr:10.0.0.1'
+                  - 'acr:10.0.0.2'
                 checkImmediate: true
                 criteria: 'AllWithinDistance'
                 distance: 100
                 frequency: 10
-                referenceAddress: 
-                - 'acr:10.0.0.3'
+                referenceAddress: 'acr:10.0.0.3'
                 trackingAccuracy: 10
                 resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
       parameters:
@@ -705,14 +694,13 @@ paths:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                   monitoredAddress:
-                  - 'acr:10.0.0.1'
-                  - 'acr:10.0.0.2'
+                    - 'acr:10.0.0.1'
+                    - 'acr:10.0.0.2'
                   checkImmediate: true
                   criteria: 'AllWithinDistance'
                   distance: 100
                   frequency: 10
-                  referenceAddress:
-                  - 'acr:10.0.0.3'
+                  referenceAddress: 'acr:10.0.0.3'
                   trackingAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
         '400':
@@ -734,7 +722,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: distanceSubDELETE
@@ -755,7 +743,7 @@ paths:
   /subscriptions/periodic:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieves all active subscriptions to periodic notifications'
       description: 'This operation is used for retrieving all active subscriptions to periodic notifications.'
       operationId: periodicSubListGET
@@ -769,19 +757,18 @@ paths:
               example:
                 notificationSubscriptionList:
                   periodicNotificationSubscription:
-                  - clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 
-                    - 'acr:10.0.0.1'
-                    frequency: 10
-                    requestedAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+                    - clientCorrelator: '0123'
+                      callbackReference:
+                        callbackData: '1234'
+                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                      address: 'acr:10.0.0.1'
+                      frequency: 10
+                      requestedAccuracy: 10
+                      resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic'
     post:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Creates a subscription for periodic notification'
       description: 'Creates a subscription to the Location Service for a periodic notification.'
       operationId: periodicSubPOST
@@ -798,8 +785,7 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address: 
-                - 'acr:10.0.0.1'
+                address: 'acr:10.0.0.1'
                 frequency: 10
                 requestedAccuracy: 10
       responses:
@@ -815,8 +801,7 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 
-                  - 'acr:10.0.0.1'
+                  address: 'acr:10.0.0.1'
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -870,7 +855,7 @@ paths:
   /subscriptions/periodic/{subscriptionId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: periodicSubGET
@@ -889,8 +874,7 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address:
-                  - 'acr:10.0.0.1'
+                  address: 'acr:10.0.0.1'
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -909,7 +893,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: periodicSubPUT
@@ -926,8 +910,7 @@ paths:
                 callbackReference:
                   callbackData: '1234'
                   notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                address: 
-                - 'acr:10.0.0.1'
+                address: 'acr:10.0.0.1'
                 frequency: 10
                 requestedAccuracy: 10
                 resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -946,8 +929,7 @@ paths:
                   callbackReference:
                     callbackData: '1234'
                     notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address:
-                  - 'acr:10.0.0.1'
+                  address: 'acr:10.0.0.1'
                   frequency: 10
                   requestedAccuracy: 10
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
@@ -967,10 +949,10 @@ paths:
           $ref: '#/components/responses/422'
         '429':
           $ref: '#/components/responses/429'
-      x-swagger-router-controller: "subscriptions"
+      x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: periodicSubDELETE
@@ -991,13 +973,13 @@ paths:
   /subscriptions/userTracking:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieves all active subscriptions to user tracking notifications'
       description: 'This operation is used for retrieving all active subscriptions to user tracking notifications.'
       operationId: userTrackingSubListGET
       responses:
         '200':
-          description: "Response to retrieve user tracking subscriptions"
+          description: 'Response to retrieve user tracking subscriptions'
           content:
             application/json:
               schema:
@@ -1010,17 +992,17 @@ paths:
                       callbackReference:
                         notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                       address: 'acr:192.0.2.1'
-                      userEventCriteria: ["Transferring"]
+                      userEventCriteria: ['Transferring']
                     - clientCorrelator: '0124'
                       resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription124'
                       callbackReference:
                         notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                       address: 'acr:192.0.2.2'
-                      userEventCriteria: ["Transferring"]
+                      userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking'
     post:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Creates a subscription for user tracking notification'
       description: 'Creates a subscription to the Location Service for user tracking change notification.'
       operationId: userTrackingSubPOST
@@ -1037,7 +1019,7 @@ paths:
                 callbackReference:
                   notifyURL: 'http://my.callback.com/location_notifications/some-id'
                 address: 'acr:10.0.0.1'
-                userEventCriteria: ["Transferring"]
+                userEventCriteria: ['Transferring']
       responses:
         '201':
           description: 'Successful subscription'
@@ -1051,7 +1033,7 @@ paths:
                   callbackReference:
                     notifyURL: 'http://my.callback.com/location_notifications/some-id'
                   address: 'acr:10.0.0.1'
-                  userEventCriteria: ["Transferring"]
+                  userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
         '400':
           $ref: '#/components/responses/400'
@@ -1100,7 +1082,7 @@ paths:
   /subscriptions/userTracking/{subscriptionId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: userTrackingSubGET
@@ -1119,7 +1101,7 @@ paths:
                   callbackReference:
                     notifyURL: 'http://my.callback.com/location_notifications/some-id'
                   address: 'acr:10.0.0.1'
-                  userEventCriteria: ["Transferring"]
+                  userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
         '400':
           $ref: '#/components/responses/400'
@@ -1136,7 +1118,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: userTrackingSubPUT
@@ -1153,7 +1135,7 @@ paths:
                 callbackReference:
                   notifyURL: 'http://my.callback.com/location_notifications/some-id'
                 address: 'acr:10.0.0.1'
-                userEventCriteria: ["Transferring"]
+                userEventCriteria: ['Transferring']
                 resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
@@ -1170,7 +1152,7 @@ paths:
                   callbackReference:
                     notifyURL: 'http://my.callback.com/location_notifications/some-id'
                   address: 'acr:10.0.0.1'
-                  userEventCriteria: ["Transferring"]
+                  userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
         '400':
           $ref: '#/components/responses/400'
@@ -1191,7 +1173,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: userTrackingSubDELETE
@@ -1212,7 +1194,7 @@ paths:
   /subscriptions/zonalTraffic:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieves all active subscriptions to zonal traffic notifications'
       description: 'This operation is used for retrieving all active subscriptions to zonal traffic change notifications.'
       operationId: zonalTrafficSubListGET
@@ -1231,17 +1213,17 @@ paths:
                       callbackReference:
                         notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                       zoneId: 'zone01'
-                      userEventCriteria: ["Transferring"]
+                      userEventCriteria: ['Transferring']
                     - clientCorrelator: '0124'
                       resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/subscription124'
                       callbackReference:
                         notifyURL: 'http://clientApp.example.com/location_notifications/123456'
                       zoneId: 'zone02'
-                      userEventCriteria: ["Transferring"]
+                      userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic'
     post:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Creates a subscription for zonal traffic notification'
       description: 'Creates a subscription to the Location Service for zonal traffic change notification.'
       operationId: zonalTrafficSubPOST
@@ -1258,7 +1240,7 @@ paths:
                 callbackReference:
                   notifyURL: 'http://my.callback.com/location_notifications/some-id'
                 zoneId: 'zone01'
-                userEventCriteria: ["Transferring"]
+                userEventCriteria: ['Transferring']
       responses:
         '201':
           description: 'Successful subscription'
@@ -1272,7 +1254,7 @@ paths:
                   callbackReference:
                     notifyURL: 'http://my.callback.com/location_notifications/some-id'
                   zoneId: 'zone01'
-                  userEventCriteria: ["Transferring"]
+                  userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
         '400':
           $ref: '#/components/responses/400'
@@ -1321,7 +1303,7 @@ paths:
   /subscriptions/zonalTraffic/{subscriptionId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: zonalTrafficSubGET
@@ -1340,7 +1322,7 @@ paths:
                   callbackReference:
                     notifyURL: 'http://my.callback.com/location_notifications/some-id'
                   zoneId: 'zone01'
-                  userEventCriteria: ["Transferring"]
+                  userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
         '400':
           $ref: '#/components/responses/400'
@@ -1354,10 +1336,10 @@ paths:
           $ref: '#/components/responses/406'
         '429':
           $ref: '#/components/responses/429'
-      x-swagger-router-controller: "subscriptions"
+      x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: zonalTrafficSubPUT
@@ -1374,7 +1356,7 @@ paths:
                 callbackReference:
                   notifyURL: 'http://my.callback.com/location_notifications/some-id'
                 zoneId: 'zone01'
-                userEventCriteria: ["Transferring"]
+                userEventCriteria: ['Transferring']
                 resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
@@ -1391,7 +1373,7 @@ paths:
                   callbackReference:
                     notifyURL: 'http://my.callback.com/location_notifications/some-id'
                   zoneId: 'zone01'
-                  userEventCriteria: ["Transferring"]
+                  userEventCriteria: ['Transferring']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
         '400':
           $ref: '#/components/responses/400'
@@ -1412,7 +1394,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: zonalTrafficSubDELETE
@@ -1433,7 +1415,7 @@ paths:
   /subscriptions/zoneStatus:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieves all active subscriptions to zone status notifications'
       description: 'This operation is used for retrieving all active subscriptions to zone status change notifications.'
       operationId: zoneStatusSubListGET
@@ -1447,17 +1429,17 @@ paths:
               example:
                 notificationSubscriptionList:
                   zoneStatusSubscription:
-                  - clientCorrelator: '0123'
-                    resourceURL: 'http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123'
-                    callbackReference:
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    zoneId: 'zone01'
-                    numberOfUsersZoneThreshold: 500
-                    operationStatus: ['Serviceable']
+                    - clientCorrelator: '0123'
+                      resourceURL: 'http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123'
+                      callbackReference:
+                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                      zoneId: 'zone01'
+                      numberOfUsersZoneThreshold: 500
+                      operationStatus: ['Serviceable']
                   resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus'
     post:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Creates a subscription for zone status notification'
       description: 'Creates a subscription to the Location Service for zone status change notification.'
       operationId: zoneStatusSubPOST
@@ -1539,7 +1521,7 @@ paths:
   /subscriptions/zoneStatus/{subscriptionId}:
     get:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: zoneStatusSubGET
@@ -1573,10 +1555,10 @@ paths:
           $ref: '#/components/responses/406'
         '429':
           $ref: '#/components/responses/429'
-      x-swagger-router-controller: "subscriptions"
+      x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: zoneStatusSubPUT
@@ -1633,7 +1615,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - 'location'
+        - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: zoneStatusSubDELETE
@@ -1680,81 +1662,76 @@ paths:
       x-swagger-router-controller: 'notifications'
 components:
   responses:
-    200:
+    '200':
       description: 'OK'
-    204:
+    '204':
       description: 'No Content'
-    400:
+    '400':
       description: 'Bad Request : used to indicate that incorrect parameters were passed to the request.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    401:
+    '401':
       description: 'Unauthorized :  used when the client did not submit credentials.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    403:
+    '403':
       description: 'Forbidden :  operation is not allowed given the current status of the resource.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    404:
+    '404':
       description: 'Not Found :  used when a client provided a URI that cannot be mapped to a valid resource URI.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    406:
+    '406':
       description: 'Not Acceptable : used to indicate that the server cannot provide the any of the content formats supported by the client.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    412:
-      description: 'Precondition failed :  used when a condition has failed during conditional requests, e.g. when
+    '412':
+      description:
+        'Precondition failed :  used when a condition has failed during conditional requests, e.g. when
         using ETags to avoid write conflicts when using PUT'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    414:
-      description: 'URI Too Long : used to indicate that the server is refusing to process the request because the request URI is
+    '414':
+      description:
+        'URI Too Long : used to indicate that the server is refusing to process the request because the request URI is
         longer than the server is willing or able to process.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    415:
+    '415':
       description: 'Unsupported Media Type :  used to indicate that the server or the client does not support the content type of the entity body.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-    422:
-      description: 'Unprocessable Entity : used to indicate that the server understands the content type of the request entity and that the
+    '422':
+      description:
+        'Unprocessable Entity : used to indicate that the server understands the content type of the request entity and that the
         syntax of the request entity is correct but that the server is unable to process the contained instructions. This error condition can occur if an
         JSON request body is syntactically correct but semantically incorrect, for example if the target area for the request is considered too large. This
         error condition can also occur if the capabilities required by the request are not supported.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
-          example:
-            application/problem+json:
-              ProblemDetails:
-                type: 'https://meAppServer.example.com/rni/v2/probs/too-many targets'
-                title: Too many targets
-                status: '422'
-                detail: The target area for the request is considered too large
-                instance: /meAppClient.example.com/77777/msgs/abc
-    429:
+    '429':
       description: 'Too Many Requests : used when a rate limiter has triggered.'
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
   parameters:
@@ -1893,11 +1870,11 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: dateTimeStamp
       required:
-      - accessPointId
-      - connectionType
-      - operationStatus
-      - numberOfUsers
-      - resourceURL
+        - accessPointId
+        - connectionType
+        - operationStatus
+        - numberOfUsers
+        - resourceURL
       type: object
     AccessPointList:
       description: A type containing list of access points.
@@ -1920,8 +1897,8 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
       required:
-      - zoneId
-      - resourceURL
+        - zoneId
+        - resourceURL
       type: object
     CallbackReference:
       properties:
@@ -1938,7 +1915,7 @@ components:
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: anyURI
       required:
-      - notifyURL
+        - notifyURL
       type: object
     CircleNotificationSubscription:
       description: A type containing data for notifications, when the area is defined as a circle.
@@ -2021,36 +1998,36 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: float
       required:
-      - callbackReference
-      - address
-      - latitude
-      - longitude
-      - radius
-      - trackingAccuracy
-      - enteringLeavingCriteria
-      - checkImmediate
-      - frequency
+        - callbackReference
+        - address
+        - latitude
+        - longitude
+        - radius
+        - trackingAccuracy
+        - enteringLeavingCriteria
+        - checkImmediate
+        - frequency
       type: object
     ConnectionType:
       description: The connection type for the access point
       enum:
-      - Femto
-      - LTE-femto
-      - Smallcell
-      - LTE-smallcell
-      - Wifi
-      - Pico
-      - Micro
-      - Macro
-      - Wimax
-      - Unknown
+        - Femto
+        - LTE-femto
+        - Smallcell
+        - LTE-smallcell
+        - Wifi
+        - Pico
+        - Micro
+        - Macro
+        - Wimax
+        - Unknown
       type: string
     DistanceCriteria:
       enum:
-      - AllWithinDistance
-      - AnyWithinDistance
-      - AllBeyondDistance
-      - AnyBeyondDistance
+        - AllWithinDistance
+        - AnyWithinDistance
+        - AllBeyondDistance
+        - AnyBeyondDistance
       type: string
     DistanceNotificationSubscription:
       description: A type containing data for distance subscription, with reference to other devices.
@@ -2128,18 +2105,18 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: float
       required:
-      - callbackReference
-      - monitoredAddress
-      - distance
-      - trackingAccuracy
-      - criteria
-      - checkImmediate
-      - frequency
+        - callbackReference
+        - monitoredAddress
+        - distance
+        - trackingAccuracy
+        - criteria
+        - checkImmediate
+        - frequency
       type: object
     EnteringLeavingCriteria:
       enum:
-      - Entering
-      - Leaving
+        - Entering
+        - Leaving
       type: string
     Link:
       description: Link to other resources
@@ -2152,23 +2129,23 @@ components:
           description: Describes the relationship between the URI and the resource.
           type: string
       required:
-      - rel
-      - href
+        - rel
+        - href
       type: object
     LocationInfo:
       properties:
         accuracy:
-          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 4, 5 or 6
+          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in ETSI TS 123 032 [14]. Present only if "shape" equals 4, 5 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracyAltitude:
-          description: Altitude accuracy / uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 3 or 4
+          description: Altitude accuracy / uncertainty of location provided in meters, as defined in ETSI TS 123 032 [14]. Present only if "shape" equals 3 or 4
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracySemiMinor:
-          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 4, 5 or 6
+          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in ETSI TS 123 032 [14]. Present only if "shape" equals 4, 5 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
@@ -2179,7 +2156,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Float
         confidence:
-          description: Confidence by which the position of a target entity is known to be within the shape description, expressed as a percentage and defined in [14]. Present only if "shape" equals 1, 4 or 6
+          description: Confidence by which the position of a target entity is known to be within the shape description, expressed as a percentage and defined in ETSI TS 123 032 [14]. Present only if "shape" equals 1, 4 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
@@ -2217,12 +2194,12 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         orientationMajorAxis:
-          description: "Angle of orientation of the major axis, expressed in the range 0\xB0 to 180\xB0, as defined in [14]. Present only if \"shape\" equals 4 or 6"
+          description: "Angle of orientation of the major axis, expressed in the range 0\xB0 to 180\xB0, as defined in ETSI TS 123 032 [14]. Present only if \"shape\" equals 4 or 6"
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         shape:
-          description: 'Shape information, as detailed in [14], associated with the reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE <p>7 = POLYGON'
+          description: 'Shape information, as detailed in ETSI TS 123 032 [14], associated with the reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE <p>7 = POLYGON'
           type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Enum_inlined
@@ -2234,55 +2211,55 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         velocity:
-          description: "Structure with attributes relating to the target entity\u2019s velocity, as defined in [14]."
+          description: "Structure with attributes relating to the target entity\u2019s velocity, as defined in ETSI TS 123 032 [14]."
           properties:
             bearing:
-              description: "Bearing, expressed in the range 0\xB0 to 360\xB0, as defined in [14]."
+              description: "Bearing, expressed in the range 0\xB0 to 360\xB0, as defined in ETSI TS 123 032 [14]."
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: UnsignedInt
             horizontalSpeed:
-              description: Horizontal speed, expressed in km/h and defined in [14].
+              description: Horizontal speed, expressed in km/h and defined in ETSI TS 123 032 [14].
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: UnsignedInt
             uncertainty:
-              description: Horizontal uncertainty, as defined in [14]. Present only if "velocityType" equals 3 or 4
+              description: Horizontal uncertainty, as defined in ETSI TS 123 032 [14]. Present only if "velocityType" equals 3 or 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: UnsignedInt
             velocityType:
-              description: 'Velocity information, as detailed in [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT'
+              description: 'Velocity information, as detailed in ETSI TS 123 032 [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT'
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: Enum_inlined
             verticalSpeed:
-              description: Vertical speed, expressed in km/h and defined in [14]. Present only if "velocityType" equals 2 or 4
+              description: Vertical speed, expressed in km/h and defined in ETSI TS 123 032 [14]. Present only if "velocityType" equals 2 or 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: Int
             verticalUncertainty:
-              description: Vertical uncertainty, as defined in [14]. Present only if "velocityType" equals 4
+              description: Vertical uncertainty, as defined in ETSI TS 123 032 [14]. Present only if "velocityType" equals 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: UnsignedInt
           required:
-          - velocityType
-          - bearing
-          - horizontalSpeed
+            - velocityType
+            - bearing
+            - horizontalSpeed
           type: object
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Structure (inlined)
       required:
-      - latitude
-      - longitude
-      - shape
+        - latitude
+        - longitude
+        - shape
       type: object
       x-etsi-ref: 6.5.3
     NotificationFormat:
       enum:
-      - XML
-      - JSON
+        - XML
+        - JSON
       type: string
     NotificationSubscriptionList:
       properties:
@@ -2341,15 +2318,15 @@ components:
           x-etsi-mec-cardinality: 0.. N
           x-etsi-mec-origin-type: ZoneStatusSubscription
       required:
-      - resourceURL
+        - resourceURL
       type: object
       x-etsi-notes: "NOTE 1:\tAs specified in [5], clause 5.2.2.8.\nNOTE 2: \tAs specified in [6], clause 5.2.2.7."
       x-etsi-ref: 6.3.3
     OperationStatus:
       enum:
-      - Serviceable
-      - Unserviceable
-      - Unknown
+        - Serviceable
+        - Unserviceable
+        - Unknown
       type: string
     PeriodicNotificationSubscription:
       description: A type containing data for periodic subscription.
@@ -2401,10 +2378,10 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
       required:
-      - callbackReference
-      - address
-      - requestedAccuracy
-      - frequency
+        - callbackReference
+        - address
+        - requestedAccuracy
+        - frequency
       type: object
     ProblemDetails:
       properties:
@@ -2439,9 +2416,9 @@ components:
       type: object
     RetrievalStatus:
       enum:
-      - Retrieved
-      - NotRetrieved
-      - Error
+        - Retrieved
+        - NotRetrieved
+        - Error
       type: string
     ServiceError:
       description: used to indicate a notification termination or cancellation.
@@ -2464,33 +2441,8 @@ components:
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: string
       required:
-      - messageId
-      - text
-      type: object
-    SubscriptionCancellationNotification:
-      description: A type containing the subscription cancellation notification.
-      properties:
-        address:
-          description: Address of terminal if the error applies to an individual terminal.
-          type: string
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: anyURI
-        callbackData:
-          description: CallbackData if passed by the application in the receiptRequest element during the associated subscription operation
-          type: string
-          x-etsi-mec-cardinality: 0..1
-          x-etsi-mec-origin-type: string
-        link:
-          description: Link to other resources that are in relationship with the resource.
-          items:
-            $ref: '#/components/schemas/Link'
-          type: array
-          x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: Link
-        reason:
-          $ref: '#/components/schemas/ServiceError'
-      required:
-      - terminalLocation
+        - messageId
+        - text
       type: object
     SubscriptionNotification:
       description: A type containing the notification subscription.
@@ -2524,7 +2476,7 @@ components:
           x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: TerminalLocation
       required:
-      - terminalLocation
+        - terminalLocation
       type: object
     TerminalDistance:
       description: A type containing information about the distance from a terminal to a location or between two terminals, in addition the accuracy and a timestamp of the information are provided.
@@ -2542,7 +2494,7 @@ components:
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
       required:
-      - distance
+        - distance
       type: object
     TerminalLocation:
       description: A type containing device address, retrieval status and location information.
@@ -2559,42 +2511,35 @@ components:
         locationRetrievalStatus:
           $ref: '#/components/schemas/RetrievalStatus'
       required:
-      - address
-      - locationRetrievalStatus
+        - address
+        - locationRetrievalStatus
       type: object
-    TerminalLocationList:
-      description: Collection of the terminal locations.
-      items:
-        $ref: '#/components/schemas/TerminalLocation'
-      type: array
-      x-etsi-mec-cardinality: 1..N
-      x-etsi-mec-origin-type: TerminalLocation
     TimeStamp:
       properties:
         nanoSeconds:
           description: 'The nanoseconds part of the time. Time is defined as
             Unix-time since January 1, 1970, 00:00:00 UTC.'
-          format: int32
+          format: uint32
           type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Uint32
         seconds:
           description: 'The seconds part of the time. Time is defined as
             Unix-time since January 1, 1970, 00:00:00 UTC.'
-          format: int32
+          format: uint32
           type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Uint32
       required:
-      - seconds
-      - nanoSeconds
+        - seconds
+        - nanoSeconds
       type: object
       x-etsi-ref: 6.5.2
     UserEventType:
       enum:
-      - Entering
-      - Leaving
-      - Transferring
+        - Entering
+        - Leaving
+        - Transferring
       type: string
     UserInfo:
       properties:
@@ -2625,7 +2570,7 @@ components:
           description: Self-referring URL, see note 1.
           type: string
           x-etsi-mec-cardinality: '1'
-          x-etsi-mec-origin-type: String
+          x-etsi-mec-origin-type: AnyURI
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
         zoneId:
@@ -2634,11 +2579,11 @@ components:
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: String
       required:
-      - address
-      - accessPointId
-      - zoneId
-      - resourceURL
-      - timestamp
+        - address
+        - accessPointId
+        - zoneId
+        - resourceURL
+        - timestamp
       type: object
       x-etsi-notes: "NOTE 1:\tAs specified in [5], clause 5.2.2.7.\nNOTE 2: \tAs specified in [5], clause 5.2.2.5."
       x-etsi-ref: 6.2.2
@@ -2658,7 +2603,7 @@ components:
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: UserInfo
       required:
-      - resourceURL
+        - resourceURL
       type: object
     UserTrackingSubscription:
       description: A type containing user tracking subscription.
@@ -2688,8 +2633,8 @@ components:
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: UserEventType
       required:
-      - callbackReference
-      - address
+        - callbackReference
+        - address
       type: object
     ZonalPresenceNotification:
       description: A type containing zonal presence notification
@@ -2736,11 +2681,11 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
       required:
-      - zoneId
-      - address
-      - userEventType
-      - currentAccessPointId
-      - timestamp
+        - zoneId
+        - address
+        - userEventType
+        - currentAccessPointId
+        - timestamp
       type: object
     ZonalTrafficSubscription:
       description: A type containing zonal traffic subscription
@@ -2782,8 +2727,8 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
       required:
-      - callbackReference
-      - zoneId
+        - callbackReference
+        - zoneId
       type: object
     ZoneInfo:
       description: A type containing zone information.
@@ -2814,11 +2759,11 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
       required:
-      - zoneId
-      - numberOfAccessPoints
-      - numberOfUnserviceableAccessPoints
-      - numberOfUsers
-      - resourceURL
+        - zoneId
+        - numberOfAccessPoints
+        - numberOfUnserviceableAccessPoints
+        - numberOfUsers
+        - resourceURL
       type: object
     ZoneList:
       description: A type containing a list of zones.
@@ -2834,7 +2779,7 @@ components:
             $ref: '#/components/schemas/ZoneInfo'
           type: array
       required:
-      - resourceURL
+        - resourceURL
       type: object
     ZoneStatusNotification:
       description: A type containing zone status notification.
@@ -2876,8 +2821,8 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
       required:
-      - zoneId
-      - timestamp
+        - zoneId
+        - timestamp
       type: object
     ZoneStatusSubscription:
       description: A type containing zone status subscription.
@@ -2917,8 +2862,8 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
       required:
-      - callbackReference
-      - zoneId
+        - callbackReference
+        - zoneId
       type: object
     InlineAccessPointInfo:
       type: object
@@ -3048,6 +2993,12 @@ components:
               $ref: '#/components/schemas/LinkType'
             confirmTermination:
               $ref: '#/components/schemas/LinkType'
+    OperationActionType:
+      description: Operation that is being performed on the MEC application instance.
+      type: string
+      enum:
+        - STOPPING
+        - TERMINATING
     LinkType:
       properties:
         href:
@@ -3059,10 +3010,3 @@ components:
       required:
       - href
       type: object
-    OperationActionType:
-      description: Operation that is being performed on the MEC application instance.
-      type: string
-      enum:
-        - STOPPING
-        - TERMINATING
-

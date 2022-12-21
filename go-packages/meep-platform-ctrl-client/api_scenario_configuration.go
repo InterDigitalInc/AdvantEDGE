@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -43,11 +43,9 @@ type ScenarioConfigurationApiService service
 /*
 ScenarioConfigurationApiService Add a scenario
 Add a scenario to the platform scenario store
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Scenario name
- * @param scenario Scenario
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Scenario name
+  - @param scenario Scenario
 */
 func (a *ScenarioConfigurationApiService) CreateScenario(ctx context.Context, name string, scenario Scenario) (*http.Response, error) {
 	var (
@@ -115,10 +113,8 @@ func (a *ScenarioConfigurationApiService) CreateScenario(ctx context.Context, na
 /*
 ScenarioConfigurationApiService Delete a scenario
 Delete a scenario by name from the platform scenario store
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Scenario name
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Scenario name
 */
 func (a *ScenarioConfigurationApiService) DeleteScenario(ctx context.Context, name string) (*http.Response, error) {
 	var (
@@ -184,9 +180,7 @@ func (a *ScenarioConfigurationApiService) DeleteScenario(ctx context.Context, na
 /*
 ScenarioConfigurationApiService Delete all scenarios
 Delete all scenarios present in the platform scenario store
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 */
 func (a *ScenarioConfigurationApiService) DeleteScenarioList(ctx context.Context) (*http.Response, error) {
 	var (
@@ -251,8 +245,8 @@ func (a *ScenarioConfigurationApiService) DeleteScenarioList(ctx context.Context
 /*
 ScenarioConfigurationApiService Get a specific scenario
 Get a scenario by name from the platform scenario store
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Scenario name
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Scenario name
 
 @return Scenario
 */
@@ -340,7 +334,7 @@ func (a *ScenarioConfigurationApiService) GetScenario(ctx context.Context, name 
 /*
 ScenarioConfigurationApiService Get all scenarios
 Returns all scenarios from the platform scenario store
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return ScenarioList
 */
@@ -427,11 +421,9 @@ func (a *ScenarioConfigurationApiService) GetScenarioList(ctx context.Context) (
 /*
 ScenarioConfigurationApiService Update a scenario
 Update a scenario by name in the platform scenario store
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param name Scenario name
- * @param scenario Scenario to add to MEEP store
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param name Scenario name
+  - @param scenario Scenario to add to MEEP store
 */
 func (a *ScenarioConfigurationApiService) SetScenario(ctx context.Context, name string, scenario Scenario) (*http.Response, error) {
 	var (

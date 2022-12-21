@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,23 +23,31 @@ import { Elevation } from '@rmwc/elevation';
 
 import IDCMap from '../idc-map';
 import IDCVis from '../idc-vis';
+import IDCSeq from '../idc-seq';
+import IDCDataflow from '../idc-dataflow';
 import Iframe from 'react-iframe';
-
-import {
-  uiExecChangeDashboardView1,
-  uiExecChangeDashboardView2,
-  uiExecChangeSandboxCfg
-} from '../../state/ui';
 
 import {
   TYPE_EXEC,
   VIEW_NAME_NONE,
+  VIEW_1,
+  VIEW_2,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
+  SEQ_DIAGRAM_VIEW,
+  DATAFLOW_DIAGRAM_VIEW,
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
-import { updateObject } from '../../util/object-util';
+import {
+  DASH_CFG_DEST_NODE_SELECTED,
+  DASH_CFG_MAX_MSG_COUNT,
+  DASH_CFG_PARTICIPANTS,
+  DASH_CFG_SOURCE_NODE_SELECTED,
+  DASH_CFG_START_TIME,
+  DASH_CFG_VIEW_TYPE,
+  getDashCfgFieldVal
+} from '@/js/util/dashboard-utils';
 
 const styles = {
   button: {
@@ -72,14 +80,14 @@ const getUrl = (dashboardName, dashboardOptions) => {
 const ViewForName = ({
   sandboxName,
   scenarioName,
-  selectedSource,
-  selectedDest,
-  viewName,
+  viewCfg,
   dashboardOptions
 }) => {
 
+  var viewType = getDashCfgFieldVal(viewCfg, DASH_CFG_VIEW_TYPE);
+
   // Handle Map view
-  if (viewName === MAP_VIEW) {
+  if (viewType === MAP_VIEW) {
     return (
       <div style={styles.dashboard}>
         <IDCMap
@@ -91,7 +99,7 @@ const ViewForName = ({
   }
 
   // Handle Network Topology view
-  if (viewName === NET_TOPOLOGY_VIEW) {
+  if (viewType === NET_TOPOLOGY_VIEW) {
     return (
       <div style={styles.dashboard}>
         <IDCVis
@@ -104,10 +112,32 @@ const ViewForName = ({
     );
   }
 
+  // Handle Sequence Diagram view
+  if (viewType === SEQ_DIAGRAM_VIEW) {
+    return (
+      <div style={styles.dashboard}>
+        <IDCSeq
+          participants={getDashCfgFieldVal(viewCfg, DASH_CFG_PARTICIPANTS)}
+          maxMsgCount={getDashCfgFieldVal(viewCfg, DASH_CFG_MAX_MSG_COUNT)}
+          startTime={getDashCfgFieldVal(viewCfg, DASH_CFG_START_TIME)}
+        />
+      </div>
+    );
+  }
+
+  // Handle Sequence Diagram view
+  if (viewType === DATAFLOW_DIAGRAM_VIEW) {
+    return (
+      <div style={styles.dashboard}>
+        <IDCDataflow/>
+      </div>
+    );
+  }
+
   // Get URL from Monitoring page dashboard options
-  var selectedUrl = getUrl(viewName, DEFAULT_DASHBOARD_OPTIONS);
+  var selectedUrl = getUrl(viewType, DEFAULT_DASHBOARD_OPTIONS);
   if (selectedUrl === '') {
-    selectedUrl = getUrl(viewName, dashboardOptions);
+    selectedUrl = getUrl(viewType, dashboardOptions);
   }
 
   // Add variables if requested
@@ -121,8 +151,8 @@ const ViewForName = ({
 
       var url = new URL(selectedUrl);
       url.searchParams.append('var-database', scenario);
-      url.searchParams.append('var-src', selectedSource);
-      url.searchParams.append('var-dest', selectedDest);
+      url.searchParams.append('var-src', getDashCfgFieldVal(viewCfg, DASH_CFG_SOURCE_NODE_SELECTED));
+      url.searchParams.append('var-dest', getDashCfgFieldVal(viewCfg, DASH_CFG_DEST_NODE_SELECTED));
       selectedUrl = url.href + '&kiosk';
     }
 
@@ -154,30 +184,21 @@ class DashboardContainer extends Component {
     };
   }
 
-  componentDidMount() { }
-
   componentWillUnmount() {
     clearInterval(this.dataTimer);
   }
 
-  componentDidUpdate() {
-    // Create sandbox config if it does not exist
+  getViewCfg(view) {
     const sandboxName = this.props.sandbox;
     const sandboxCfg = this.props.sandboxCfg;
-    if (!sandboxName || (sandboxCfg && sandboxCfg[sandboxName])) {
-      return;
-    } else {
-      var newSandboxCfg = updateObject({}, sandboxCfg);
-      newSandboxCfg[sandboxName] = {
-        dashboardView1: NET_TOPOLOGY_VIEW,
-        dashboardView2: VIEW_NAME_NONE
-      };
-      this.props.changeSandboxCfg(newSandboxCfg);
+    if (sandboxCfg && sandboxCfg[sandboxName]) {
+      if (view === VIEW_1) {
+        return sandboxCfg[sandboxName].dashView1;
+      } else if (view === VIEW_2) {
+        return sandboxCfg[sandboxName].dashView2;
+      }
     }
-  }
-
-  changeShowApps(checked) {
-    this.props.onShowAppsChanged(checked);
+    return null;
   }
 
   populateDashboardList(dashboardViewsList, dashboardOptions) {
@@ -189,45 +210,13 @@ class DashboardContainer extends Component {
     }
   }
 
-  getView1() {
-    const sandboxName = this.props.sandbox;
-    const sandboxCfg = this.props.sandboxCfg;
-    if (sandboxCfg && sandboxCfg[sandboxName] && sandboxCfg[sandboxName].dashboardView1) {
-      return sandboxCfg[sandboxName].dashboardView1;
-    } else {
-      return VIEW_NAME_NONE;
-    }
-  }
-
-  getView2() {
-    const sandboxName = this.props.sandbox;
-    const sandboxCfg = this.props.sandboxCfg;
-    if (sandboxCfg && sandboxCfg[sandboxName] && sandboxCfg[sandboxName].dashboardView2) {
-      return sandboxCfg[sandboxName].dashboardView2;
-    } else {
-      return VIEW_NAME_NONE;
-    }
-  }
-
-  changeView1(viewName) {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandbox].dashboardView1 = viewName;
-    this.props.changeSandboxCfg(sandboxCfg);
-  }
-
-  changeView2(viewName) {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandbox].dashboardView2 = viewName;
-    this.props.changeSandboxCfg(sandboxCfg);
-  }
-
   render() {
     this.keyForSvg++;
 
-    const view1Name = this.getView1();
-    const view2Name = this.getView2();
-    const view1Present = view1Name !== VIEW_NAME_NONE;
-    const view2Present = view2Name !== VIEW_NAME_NONE;
+    const view1Cfg = this.getViewCfg(VIEW_1);
+    const view2Cfg = this.getViewCfg(VIEW_2);
+    const view1Present = (getDashCfgFieldVal(view1Cfg, DASH_CFG_VIEW_TYPE) !== VIEW_NAME_NONE);
+    const view2Present = (getDashCfgFieldVal(view2Cfg, DASH_CFG_VIEW_TYPE) !== VIEW_NAME_NONE);
 
     let span1 = 12;
     let span2 = 12;
@@ -243,9 +232,7 @@ class DashboardContainer extends Component {
       <ViewForName
         sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
-        selectedSource={this.props.sourceNodeSelectedView1}
-        selectedDest={this.props.destNodeSelectedView1}
-        viewName={view1Name}
+        viewCfg={view1Cfg}
         dashboardOptions={this.props.dashboardOptions}
       />
     );
@@ -254,21 +241,10 @@ class DashboardContainer extends Component {
       <ViewForName
         sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
-        selectedSource={this.props.sourceNodeSelectedView2}
-        selectedDest={this.props.destNodeSelectedView2}
-        viewName={view2Name}
+        viewCfg={view2Cfg}
         dashboardOptions={this.props.dashboardOptions}
       />
     );
-
-    // Populate Dashboard view list using links from monitoring tab
-    var dashboardViewsList = [
-      VIEW_NAME_NONE,
-      MAP_VIEW,
-      NET_TOPOLOGY_VIEW
-    ];
-    this.populateDashboardList(dashboardViewsList, DEFAULT_DASHBOARD_OPTIONS);
-    this.populateDashboardList(dashboardViewsList, this.props.dashboardOptions);
 
     return (
       <>
@@ -309,26 +285,16 @@ class DashboardContainer extends Component {
 const mapStateToProps = state => {
   return {
     displayedScenario: state.exec.displayedScenario,
-    sourceNodeSelected: state.ui.sourceNodeSelected,
-    destNodeSelected: state.ui.destNodeSelected,
-    sourceNodeSelectedView1: state.ui.sourceNodeSelectedView1,
-    destNodeSelectedView1: state.ui.destNodeSelectedView1,
-    sourceNodeSelectedView2: state.ui.sourceNodeSelectedView2,
-    destNodeSelectedView2: state.ui.destNodeSelectedView2,
     eventCreationMode: state.exec.eventCreationMode,
     scenarioState: state.exec.state.scenario,
-    view1Name: state.ui.dashboardView1,
-    view2Name: state.ui.dashboardView2,
     sandboxCfg: state.ui.sandboxCfg,
     dashboardOptions: state.monitor.dashboardOptions
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = () => {
   return {
-    changeView1: name => dispatch(uiExecChangeDashboardView1(name)),
-    changeView2: name => dispatch(uiExecChangeDashboardView2(name)),
-    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
+    
   };
 };
 

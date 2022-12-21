@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,6 @@ var latestLatencyResultsMap map[string]int32
 var flushRequired = false
 
 var mqLocal *mq.MsgQueue
-var handlerId int
 var rc *redis.Connector
 var metricStore *met.MetricStore
 var baseKey string
@@ -295,7 +294,7 @@ func runMeepSidecar() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqLocal.RegisterHandler(handler)
+	_, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err

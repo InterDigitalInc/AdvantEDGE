@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ var mutex sync.Mutex
 var gisAppClient *gisClient.APIClient
 var gisAppClientUrl string = "http://meep-gis-engine"
 
-const serviceAppVersion = "2.1.1"
+const serviceAppVersion = "2.2.1"
 
 var serviceAppInstanceId string
 
@@ -612,11 +612,11 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 	if opStatus != nil {
 		for i := 0; i < len(opStatus); i++ {
 			switch opStatus[i] {
-			case SERVICEABLE:
+			case SERVICEABLE_OperationStatus:
 				zoneStatus.Serviceable = true
-			case UNSERVICEABLE:
+			case UNSERVICEABLE_OperationStatus:
 				zoneStatus.Unserviceable = true
-			case OPSTATUS_UNKNOWN:
+			case UNKNOWN_OperationStatus:
 				zoneStatus.Unknown = true
 			default:
 			}
@@ -656,11 +656,11 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
-			case ENTERING_EVENT:
+			case ENTERING_UserEventType:
 				zonalSubscriptionEnteringMap[subsId] = zoneId
-			case LEAVING_EVENT:
+			case LEAVING_UserEventType:
 				zonalSubscriptionLeavingMap[subsId] = zoneId
-			case TRANSFERRING_EVENT:
+			case TRANSFERRING_UserEventType:
 				zonalSubscriptionTransferringMap[subsId] = zoneId
 			default:
 			}
@@ -699,11 +699,11 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
-			case ENTERING_EVENT:
+			case ENTERING_UserEventType:
 				userSubscriptionEnteringMap[subsId] = userAddress
-			case LEAVING_EVENT:
+			case LEAVING_UserEventType:
 				userSubscriptionLeavingMap[subsId] = userAddress
-			case TRANSFERRING_EVENT:
+			case TRANSFERRING_UserEventType:
 				userSubscriptionTransferringMap[subsId] = userAddress
 			default:
 			}
@@ -817,23 +817,23 @@ func checkNotificationDistancePeriodicTrigger() {
 					distance := int32(distResp.Distance)
 
 					switch *distanceCheck.Subscription.Criteria {
-					case ALL_WITHIN_DISTANCE:
+					case ALL_WITHIN_DISTANCE_DistanceCriteria:
 						if float32(distance) < distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						} else {
 							skipThisSubscription = true
 						}
-					case ALL_BEYOND_DISTANCE:
+					case ALL_BEYOND_DISTANCE_DistanceCriteria:
 						if float32(distance) > distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						} else {
 							skipThisSubscription = true
 						}
-					case ANY_WITHIN_DISTANCE:
+					case ANY_WITHIN_DISTANCE_DistanceCriteria:
 						if float32(distance) < distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						}
-					case ANY_BEYOND_DISTANCE:
+					case ANY_BEYOND_DISTANCE_DistanceCriteria:
 						if float32(distance) > distanceCheck.Subscription.Distance {
 							returnAddr[monitoredAddr] = &distResp
 						}
@@ -869,7 +869,7 @@ func checkNotificationDistancePeriodicTrigger() {
 						timestamp.Seconds = int32(seconds)
 						locationInfo.Timestamp = &timestamp
 						terminalLocation.CurrentLocation = &locationInfo
-						retrievalStatus := RETRIEVED
+						retrievalStatus := RETRIEVED_RetrievalStatus
 						terminalLocation.LocationRetrievalStatus = &retrievalStatus
 						terminalLocationList = append(terminalLocationList, terminalLocation)
 					}
@@ -935,7 +935,7 @@ func checkNotificationAreaCircle(addressToCheck string) {
 							continue
 						} else {
 							areaCircleCheck.AddrInArea[addr] = true
-							event = ENTERING_CRITERIA
+							event = ENTERING_EnteringLeavingCriteria
 						}
 					} else {
 						if !areaCircleCheck.AddrInArea[addr] {
@@ -943,7 +943,7 @@ func checkNotificationAreaCircle(addressToCheck string) {
 							continue
 						} else {
 							areaCircleCheck.AddrInArea[addr] = false
-							event = LEAVING_CRITERIA
+							event = LEAVING_EnteringLeavingCriteria
 						}
 					}
 					//no tracking this event, stop looking for this UE
@@ -970,7 +970,7 @@ func checkNotificationAreaCircle(addressToCheck string) {
 					timestamp.Seconds = int32(seconds)
 					locationInfo.Timestamp = &timestamp
 					terminalLocation.CurrentLocation = &locationInfo
-					retrievalStatus := RETRIEVED
+					retrievalStatus := RETRIEVED_RetrievalStatus
 					terminalLocation.LocationRetrievalStatus = &retrievalStatus
 					terminalLocationList = append(terminalLocationList, terminalLocation)
 
@@ -1035,7 +1035,7 @@ func checkNotificationPeriodicTrigger() {
 				timestamp.Seconds = int32(seconds)
 				locationInfo.Timestamp = &timestamp
 				terminalLocation.CurrentLocation = &locationInfo
-				retrievalStatus := RETRIEVED
+				retrievalStatus := RETRIEVED_RetrievalStatus
 				terminalLocation.LocationRetrievalStatus = &retrievalStatus
 				terminalLocationList = append(terminalLocationList, terminalLocation)
 			}
@@ -1236,7 +1236,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.ZoneId = oldZoneId
 						zonal.CurrentAccessPointId = oldApId
 						event := new(UserEventType)
-						*event = LEAVING_EVENT
+						*event = LEAVING_UserEventType
 						zonal.UserEventType = event
 						var inlineZonal InlineZonalPresenceNotification
 						inlineZonal.ZonalPresenceNotification = &zonal
@@ -1248,7 +1248,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 					zonal.ZoneId = newZoneId
 					zonal.CurrentAccessPointId = newApId
 					event := new(UserEventType)
-					*event = ENTERING_EVENT
+					*event = ENTERING_UserEventType
 					zonal.UserEventType = event
 					var inlineZonal InlineZonalPresenceNotification
 					inlineZonal.ZonalPresenceNotification = &zonal
@@ -1263,7 +1263,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = newApId
 						zonal.PreviousAccessPointId = oldApId
 						event := new(UserEventType)
-						*event = TRANSFERRING_EVENT
+						*event = TRANSFERRING_UserEventType
 						zonal.UserEventType = event
 						var inlineZonal InlineZonalPresenceNotification
 						inlineZonal.ZonalPresenceNotification = &zonal
@@ -1286,7 +1286,7 @@ func sendZonalPresenceNotification(notifyUrl string, notification InlineZonalPre
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifZonalPresence, notifyUrl, nil, duration)
@@ -1306,7 +1306,7 @@ func sendStatusNotification(notifyUrl string, notification InlineZoneStatusNotif
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifZoneStatus, notifyUrl, nil, duration)
@@ -1326,7 +1326,7 @@ func sendSubscriptionNotification(notifyUrl string, notification InlineSubscript
 
 	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogNotification(notifyUrl, "POST", "", "", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
 		met.ObserveNotification(sandboxName, serviceName, notifSubscription, notifyUrl, nil, duration)
@@ -1360,7 +1360,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = newApId
 						zonal.Address = userId
 						event := new(UserEventType)
-						*event = ENTERING_EVENT
+						*event = ENTERING_UserEventType
 						zonal.UserEventType = event
 						seconds := time.Now().Unix()
 						var timestamp TimeStamp
@@ -1388,7 +1388,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 							zonal.PreviousAccessPointId = oldApId
 							zonal.Address = userId
 							event := new(UserEventType)
-							*event = TRANSFERRING_EVENT
+							*event = TRANSFERRING_UserEventType
 							zonal.UserEventType = event
 							seconds := time.Now().Unix()
 							var timestamp TimeStamp
@@ -1418,7 +1418,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = oldApId
 						zonal.Address = userId
 						event := new(UserEventType)
-						*event = LEAVING_EVENT
+						*event = LEAVING_UserEventType
 						zonal.UserEventType = event
 						seconds := time.Now().Unix()
 						var timestamp TimeStamp
@@ -1478,7 +1478,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateUserList, &userData)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1486,11 +1486,11 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateUserList(key string, jsonInfo string, userData interface{}) error {
@@ -1606,7 +1606,7 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateApList, &userData)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1614,11 +1614,11 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func apByIdGet(w http.ResponseWriter, r *http.Request) {
@@ -1638,18 +1638,18 @@ func apByIdGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonApInfo), &apInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonesGet(w http.ResponseWriter, r *http.Request) {
@@ -1664,18 +1664,18 @@ func zonesGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateZoneList, &zoneList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonesByIdGet(w http.ResponseWriter, r *http.Request) {
@@ -1695,18 +1695,18 @@ func zonesByIdGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonZoneInfo), &zoneInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateZoneList(key string, jsonInfo string, userData interface{}) error {
@@ -1766,7 +1766,7 @@ func distanceSubDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := rc.JSONDelEntry(baseKey+typeDistanceSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1786,18 +1786,18 @@ func distanceSubListGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateDistanceList, &distanceSubList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func distanceSubGet(w http.ResponseWriter, r *http.Request) {
@@ -1817,18 +1817,18 @@ func distanceSubGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonDistanceSub), &distanceSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func distanceSubPost(w http.ResponseWriter, r *http.Request) {
@@ -1841,42 +1841,42 @@ func distanceSubPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	distanceSub := body.DistanceNotificationSubscription
 
 	if distanceSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if distanceSub.CallbackReference == nil || distanceSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if distanceSub.Criteria == nil {
 		log.Error("Mandatory DistanceCriteria parameter not present")
-		http.Error(w, "Mandatory DistanceCriteria parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory DistanceCriteria parameter not present", http.StatusBadRequest)
 		return
 	}
 	if distanceSub.Frequency == 0 {
 		log.Error("Mandatory Frequency parameter not present")
-		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
 		return
 	}
 	if distanceSub.MonitoredAddress == nil {
 		log.Error("Mandatory MonitoredAddress parameter not present")
-		http.Error(w, "Mandatory MonitoredAddress parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory MonitoredAddress parameter not present", http.StatusBadRequest)
 		return
 	}
 	/*
 		if distanceSub.TrackingAccuracy == 0 {
 			log.Error("Mandatory TrackingAccuracy parameter not present")
-			http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
 			return
 		}
 	*/
@@ -1896,11 +1896,11 @@ func distanceSubPost(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func distanceSubPut(w http.ResponseWriter, r *http.Request) {
@@ -1913,48 +1913,48 @@ func distanceSubPut(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	distanceSub := body.DistanceNotificationSubscription
 
 	if distanceSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if distanceSub.CallbackReference == nil || distanceSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if distanceSub.Criteria == nil {
 		log.Error("Mandatory DistanceCriteria parameter not present")
-		http.Error(w, "Mandatory DistanceCriteria parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory DistanceCriteria parameter not present", http.StatusBadRequest)
 		return
 	}
 	if distanceSub.Frequency == 0 {
 		log.Error("Mandatory Frequency parameter not present")
-		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
 		return
 	}
 	if distanceSub.MonitoredAddress == nil {
 		log.Error("Mandatory MonitoredAddress parameter not present")
-		http.Error(w, "Mandatory MonitoredAddress parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory MonitoredAddress parameter not present", http.StatusBadRequest)
 		return
 	}
 	/*
 		if distanceSub.TrackingAccuracy == 0 {
 		        log.Error("Mandatory TrackingAccuracy parameter not present")
-		        http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+		        errHandlerProblemDetails(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
 		        return
 		}
 	*/
 	if distanceSub.ResourceURL == "" {
 		log.Error("Mandatory ResourceURL parameter not present")
-		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1966,7 +1966,7 @@ func distanceSubPut(w http.ResponseWriter, r *http.Request) {
 	//Body content not matching parameters
 	if subsIdStr != subsIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1997,11 +1997,11 @@ func distanceSubPut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateDistanceList(key string, jsonInfo string, userData interface{}) error {
@@ -2030,7 +2030,7 @@ func areaCircleSubDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := rc.JSONDelEntry(baseKey+typeAreaCircleSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2050,18 +2050,18 @@ func areaCircleSubListGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateAreaCircleList, &areaCircleSubList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func areaCircleSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2080,18 +2080,18 @@ func areaCircleSubGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonAreaCircleSub), &areaCircleSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2103,72 +2103,72 @@ func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	areaCircleSub := body.CircleNotificationSubscription
 
 	if areaCircleSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if areaCircleSub.CallbackReference == nil || areaCircleSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Address == nil {
 		log.Error("Mandatory Address parameter not present")
-		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Latitude == 0 {
 		log.Error("Mandatory Latitude parameter not present")
-		http.Error(w, "Mandatory Latitude parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Latitude parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Longitude == 0 {
 		log.Error("Mandatory Longitude parameter not present")
-		http.Error(w, "Mandatory Longitude parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Longitude parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Radius == 0 {
 		log.Error("Mandatory Radius parameter not present")
-		http.Error(w, "Mandatory Radius parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Radius parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.EnteringLeavingCriteria == nil {
 		log.Error("Mandatory EnteringLeavingCriteria parameter not present")
-		http.Error(w, "Mandatory EnteringLeavingCriteria parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory EnteringLeavingCriteria parameter not present", http.StatusBadRequest)
 		return
 	} else {
 		switch *areaCircleSub.EnteringLeavingCriteria {
-		case ENTERING_CRITERIA, LEAVING_CRITERIA:
+		case ENTERING_EnteringLeavingCriteria, LEAVING_EnteringLeavingCriteria:
 		default:
 			log.Error("Invalid Mandatory EnteringLeavingCriteria parameter value")
-			http.Error(w, "Invalid Mandatory EnteringLeavingCriteria parameter value", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Invalid Mandatory EnteringLeavingCriteria parameter value", http.StatusBadRequest)
 			return
 		}
 	}
 	if areaCircleSub.Frequency == 0 {
 		log.Error("Mandatory Frequency parameter not present")
-		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
 		return
 	}
 	/*
 	   if areaCircleSub.CheckImmediate == nil {
 	           log.Error("Mandatory CheckImmediate parameter not present")
-	           http.Error(w, "Mandatory CheckImmediate parameter not present", http.StatusBadRequest)
+	           errHandlerProblemDetails(w, "Mandatory CheckImmediate parameter not present", http.StatusBadRequest)
 	           return
 	   }
 	*/
 	/*
 		if areaCircleSub.TrackingAccuracy == 0 {
 			log.Error("Mandatory TrackingAccuracy parameter not present")
-			http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
 			return
 		}
 	*/
@@ -2199,11 +2199,11 @@ func areaCircleSubPost(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2217,70 +2217,70 @@ func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	areaCircleSub := body.CircleNotificationSubscription
 
 	if areaCircleSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if areaCircleSub.CallbackReference == nil || areaCircleSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Address == nil {
 		log.Error("Mandatory Address parameter not present")
-		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Latitude == 0 {
 		log.Error("Mandatory Latitude parameter not present")
-		http.Error(w, "Mandatory Latitude parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Latitude parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Longitude == 0 {
 		log.Error("Mandatory Longitude parameter not present")
-		http.Error(w, "Mandatory Longitude parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Longitude parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Radius == 0 {
 		log.Error("Mandatory Radius parameter not present")
-		http.Error(w, "Mandatory Radius parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Radius parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.EnteringLeavingCriteria == nil {
 		log.Error("Mandatory EnteringLeavingCriteria parameter not present")
-		http.Error(w, "Mandatory EnteringLeavingCriteria parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory EnteringLeavingCriteria parameter not present", http.StatusBadRequest)
 		return
 	}
 	if areaCircleSub.Frequency == 0 {
 		log.Error("Mandatory Frequency parameter not present")
-		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
 		return
 	}
 	/*
 	   if areaCircleSub.CheckImmediate == nil {
 	           log.Error("Mandatory CheckImmediate parameter not present")
-	           http.Error(w, "Mandatory CheckImmediate parameter not present", http.StatusBadRequest)
+	           errHandlerProblemDetails(w, "Mandatory CheckImmediate parameter not present", http.StatusBadRequest)
 	           return
 	   }
 	*/
 	/*
 	   if areaCircleSub.TrackingAccuracy == 0 {
 	           log.Error("Mandatory TrackingAccuracy parameter not present")
-	           http.Error(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
+	           errHandlerProblemDetails(w, "Mandatory TrackingAccuracy parameter not present", http.StatusBadRequest)
 	           return
 	   }
 	*/
 	if areaCircleSub.ResourceURL == "" {
 		log.Error("Mandatory ResourceURL parameter not present")
-		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2292,7 +2292,7 @@ func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -2325,11 +2325,11 @@ func areaCircleSubPut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateAreaCircleList(key string, jsonInfo string, userData interface{}) error {
@@ -2358,7 +2358,7 @@ func periodicSubDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := rc.JSONDelEntry(baseKey+typePeriodicSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2378,18 +2378,18 @@ func periodicSubListGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populatePeriodicList, &periodicSubList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func periodicSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2408,18 +2408,18 @@ func periodicSubGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonPeriodicSub), &periodicSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func periodicSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2431,37 +2431,37 @@ func periodicSubPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	periodicSub := body.PeriodicNotificationSubscription
 
 	if periodicSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if periodicSub.CallbackReference == nil || periodicSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if periodicSub.Address == nil {
 		log.Error("Mandatory Address parameter not present")
-		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 
 	if periodicSub.Frequency <= 0 {
 		log.Error("Mandatory Frequency parameter missing or Frequency value should be 1 or above")
-		http.Error(w, "Mandatory Frequency parameter missing or Frequency value should be 1 or above", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Frequency parameter missing or Frequency value should be 1 or above", http.StatusBadRequest)
 		return
 	}
 	/*	if periodicSub.RequestedAccuracy == 0 {
 			log.Error("Mandatory RequestedAccuracy parameter not present")
-			http.Error(w, "Mandatory RequestedAccuracy parameter not present", http.StatusBadRequest)
+			errHandlerProblemDetails(w, "Mandatory RequestedAccuracy parameter not present", http.StatusBadRequest)
 			return
 		}
 	*/
@@ -2491,11 +2491,11 @@ func periodicSubPost(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func periodicSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2509,43 +2509,43 @@ func periodicSubPut(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	periodicSub := body.PeriodicNotificationSubscription
 
 	if periodicSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if periodicSub.CallbackReference == nil || periodicSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if periodicSub.Address == nil {
 		log.Error("Mandatory Address parameter not present")
-		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 
 	if periodicSub.Frequency == 0 {
 		log.Error("Mandatory Frequency parameter not present")
-		http.Error(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Frequency parameter not present", http.StatusBadRequest)
 		return
 	}
 	/*      if periodicSub.RequestedAccuracy == 0 {
 	                log.Error("Mandatory RequestedAccuracy parameter not present")
-	                http.Error(w, "Mandatory RequestedAccuracy parameter not present", http.StatusBadRequest)
+	                errHandlerProblemDetails(w, "Mandatory RequestedAccuracy parameter not present", http.StatusBadRequest)
 	                return
 	        }
 	*/
 	if periodicSub.ResourceURL == "" {
 		log.Error("Mandatory ResourceURL parameter not present")
-		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2557,7 +2557,7 @@ func periodicSubPut(w http.ResponseWriter, r *http.Request) {
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -2585,11 +2585,11 @@ func periodicSubPut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populatePeriodicList(key string, jsonInfo string, userData interface{}) error {
@@ -2618,7 +2618,7 @@ func userTrackingSubDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := rc.JSONDelEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2638,18 +2638,18 @@ func userTrackingSubListGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateUserTrackingList, &userTrackingSubList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2669,18 +2669,18 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonUserTrackingSub), &userTrackingSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2693,26 +2693,26 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	userTrackingSub := body.UserTrackingSubscription
 
 	if userTrackingSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if userTrackingSub.CallbackReference == nil || userTrackingSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if userTrackingSub.Address == "" {
 		log.Error("Mandatory Address parameter not present")
-		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2730,11 +2730,11 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2748,31 +2748,31 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	userTrackingSub := body.UserTrackingSubscription
 
 	if userTrackingSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if userTrackingSub.CallbackReference == nil || userTrackingSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if userTrackingSub.Address == "" {
 		log.Error("Mandatory Address parameter not present")
-		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 	if userTrackingSub.ResourceURL == "" {
 		log.Error("Mandatory ResourceURL parameter not present")
-		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2784,7 +2784,7 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	//Body content not matching parameters
 	if subsIdStr != subsIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -2812,11 +2812,11 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateUserTrackingList(key string, jsonInfo string, userData interface{}) error {
@@ -2845,7 +2845,7 @@ func zonalTrafficSubDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := rc.JSONDelEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -2865,18 +2865,18 @@ func zonalTrafficSubListGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateZonalTrafficList, &zonalTrafficSubList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
@@ -2895,18 +2895,18 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonZonalTrafficSub), &zonalTrafficSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
@@ -2919,26 +2919,26 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	zonalTrafficSub := body.ZonalTrafficSubscription
 
 	if zonalTrafficSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zonalTrafficSub.CallbackReference == nil || zonalTrafficSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zonalTrafficSub.ZoneId == "" {
 		log.Error("Mandatory ZoneId parameter not present")
-		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -2968,11 +2968,11 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
@@ -2986,31 +2986,31 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	zonalTrafficSub := body.ZonalTrafficSubscription
 
 	if zonalTrafficSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zonalTrafficSub.CallbackReference == nil || zonalTrafficSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zonalTrafficSub.ZoneId == "" {
 		log.Error("Mandatory ZoneId parameter not present")
-		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zonalTrafficSub.ResourceURL == "" {
 		log.Error("Mandatory ResourceURL parameter not present")
-		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -3022,7 +3022,7 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -3050,11 +3050,11 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateZonalTrafficList(key string, jsonInfo string, userData interface{}) error {
@@ -3083,7 +3083,7 @@ func zoneStatusSubDelete(w http.ResponseWriter, r *http.Request) {
 
 	err := rc.JSONDelEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -3103,18 +3103,18 @@ func zoneStatusSubListGet(w http.ResponseWriter, r *http.Request) {
 	err := rc.ForEachJSONEntry(keyName, populateZoneStatusList, &zoneStatusSubList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zoneStatusSubGet(w http.ResponseWriter, r *http.Request) {
@@ -3134,18 +3134,18 @@ func zoneStatusSubGet(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal([]byte(jsonZoneStatusSub), &zoneStatusSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
@@ -3158,26 +3158,26 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	zoneStatusSub := body.ZoneStatusSubscription
 
 	if zoneStatusSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zoneStatusSub.CallbackReference == nil || zoneStatusSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zoneStatusSub.ZoneId == "" {
 		log.Error("Mandatory ZoneId parameter not present")
-		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -3197,11 +3197,11 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
@@ -3215,31 +3215,31 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	zoneStatusSub := body.ZoneStatusSubscription
 
 	if zoneStatusSub == nil {
 		log.Error("Body not present")
-		http.Error(w, "Body not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zoneStatusSub.CallbackReference == nil || zoneStatusSub.CallbackReference.NotifyURL == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zoneStatusSub.ZoneId == "" {
 		log.Error("Mandatory ZoneId parameter not present")
-		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zoneStatusSub.ResourceURL == "" {
 		log.Error("Mandatory ResourceURL parameter not present")
-		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -3251,7 +3251,7 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
 		log.Error("SubscriptionId in endpoint and in body not matching")
-		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -3280,11 +3280,11 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateZoneStatusList(key string, jsonInfo string, userData interface{}) error {
@@ -3514,11 +3514,11 @@ func zoneStatusReInit() {
 			if opStatus != nil {
 				for i := 0; i < len(opStatus); i++ {
 					switch opStatus[i] {
-					case SERVICEABLE:
+					case SERVICEABLE_OperationStatus:
 						zoneStatus.Serviceable = true
-					case UNSERVICEABLE:
+					case UNSERVICEABLE_OperationStatus:
 						zoneStatus.Unserviceable = true
-					case OPSTATUS_UNKNOWN:
+					case UNKNOWN_OperationStatus:
 						zoneStatus.Unknown = true
 					default:
 					}
@@ -3555,11 +3555,11 @@ func zonalTrafficReInit() {
 
 			for i := 0; i < len(zone.UserEventCriteria); i++ {
 				switch zone.UserEventCriteria[i] {
-				case ENTERING_EVENT:
+				case ENTERING_UserEventType:
 					zonalSubscriptionEnteringMap[subscriptionId] = zone.ZoneId
-				case LEAVING_EVENT:
+				case LEAVING_UserEventType:
 					zonalSubscriptionLeavingMap[subscriptionId] = zone.ZoneId
-				case TRANSFERRING_EVENT:
+				case TRANSFERRING_UserEventType:
 					zonalSubscriptionTransferringMap[subscriptionId] = zone.ZoneId
 				default:
 				}
@@ -3593,11 +3593,11 @@ func userTrackingReInit() {
 
 			for i := 0; i < len(user.UserEventCriteria); i++ {
 				switch user.UserEventCriteria[i] {
-				case ENTERING_EVENT:
+				case ENTERING_UserEventType:
 					userSubscriptionEnteringMap[subscriptionId] = user.Address
-				case LEAVING_EVENT:
+				case LEAVING_UserEventType:
 					userSubscriptionLeavingMap[subscriptionId] = user.Address
-				case TRANSFERRING_EVENT:
+				case TRANSFERRING_UserEventType:
 					userSubscriptionTransferringMap[subscriptionId] = user.Address
 				default:
 				}
@@ -3719,27 +3719,27 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 
 	if len(address) == 0 {
 		log.Error("Query should have at least 1 'address' parameter")
-		http.Error(w, "Query should have at least 1 'address' parameter", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Query should have at least 1 'address' parameter", http.StatusBadRequest)
 		return
 	}
 	if len(address) > 2 {
 		log.Error("Query cannot have more than 2 'address' parameters")
-		http.Error(w, "Query cannot have more than 2 'address' parameters", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Query cannot have more than 2 'address' parameters", http.StatusBadRequest)
 		return
 	}
 	if len(address) == 2 && (latitudeStr != "" || longitudeStr != "") {
 		log.Error("Query cannot have 2 'address' parameters and 'latitude'/'longitude' parameters")
-		http.Error(w, "Query cannot have 2 'address' parameters and 'latitude'/'longitude' parameters", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Query cannot have 2 'address' parameters and 'latitude'/'longitude' parameters", http.StatusBadRequest)
 		return
 	}
 	if (latitudeStr != "" && longitudeStr == "") || (latitudeStr == "" && longitudeStr != "") {
 		log.Error("Query must provide a latitude and a longitude for a point to be valid")
-		http.Error(w, "Query must provide a latitude and a longitude for a point to be valid", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Query must provide a latitude and a longitude for a point to be valid", http.StatusBadRequest)
 		return
 	}
 	if len(address) == 1 && latitudeStr == "" && longitudeStr == "" {
 		log.Error("Query must provide either 2 'address' parameters or 1 'address' parameter and 'latitude'/'longitude' parameters")
-		http.Error(w, "Query must provide either 2 'address' parameters or 1 'address' parameter and 'latitude'/'longitude' parameters", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Query must provide either 2 'address' parameters or 1 'address' parameter and 'latitude'/'longitude' parameters", http.StatusBadRequest)
 		return
 	}
 
@@ -3782,7 +3782,7 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 		longitude, err := strconv.ParseFloat(longitudeStr, 32)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		distParam.Longitude = float32(longitude)
@@ -3792,7 +3792,7 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 		latitude, err := strconv.ParseFloat(latitudeStr, 32)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		distParam.Latitude = float32(latitude)
@@ -3804,14 +3804,14 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 			errCode, errStr := strconv.Atoi(errCodeStr[0])
 			if errStr == nil {
 				log.Error("Error code from gis-engine API : ", err)
-				http.Error(w, err.Error(), errCode)
+				errHandlerProblemDetails(w, err.Error(), errCode)
 			} else {
 				log.Error("Failed to communicate with gis engine: ", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 			}
 		} else {
 			log.Error("Failed to communicate with gis engine: ", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -3831,11 +3831,11 @@ func distanceGet(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
@@ -3846,7 +3846,7 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&notification)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -3874,4 +3874,15 @@ func mec011AppTerminationPost(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func errHandlerProblemDetails(w http.ResponseWriter, error string, code int) {
+	var pd ProblemDetails
+	pd.Detail = error
+	pd.Status = int32(code)
+
+	jsonResponse := convertProblemDetailstoJson(&pd)
+
+	w.WriteHeader(code)
+	fmt.Fprint(w, jsonResponse)
 }

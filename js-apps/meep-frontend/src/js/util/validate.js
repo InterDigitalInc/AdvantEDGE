@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ export const GPU_COUNT_MIN = 1;
 export const GPU_COUNT_MAX = 4;
 export const CONNECTIVITY_MODELS = [CONNECTIVITY_MODEL_OPEN, CONNECTIVITY_MODEL_PDU];
 export const EOP_MODES = [GEO_EOP_MODE_LOOP, GEO_EOP_MODE_REVERSE];
+export const D2D_RADIUS_MIN = 1;
+export const D2D_RADIUS_MAX = 10000;
+
 
 export const validateName = val => {
   if (val) {
@@ -135,6 +138,21 @@ export const validatePositiveInt = val => {
   return val >= 0 ? null : 'Must be a positive integer';
 };
 
+export const validateD2DRadius = val => {
+  const intError = validateInt(val);
+  if (intError) {
+    return intError;
+  }
+  if (val >= 0) {
+    const p = Number(val);
+    if (p !== '' && (p < D2D_RADIUS_MIN || p > D2D_RADIUS_MAX)) {
+      return 'Out of range(' + D2D_RADIUS_MIN + '-' + D2D_RADIUS_MAX + ')';
+    }
+  }else {
+    return 'Must be a positive integer';
+  }
+};
+
 export const validatePath = val => {
   /*eslint-disable */
   if (val.match(/^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$/)) {
@@ -222,8 +240,8 @@ export const validateGpuCount = count => {
 
 export const validateWirelessType = val => {
   if (val) {
-    if (!val.match(/^((,\s*)?(wifi|5g|4g|other))+$/)) {
-      return 'Comma-separated values: wifi|5g|4g|other';
+    if (!val.match(/^((,\s*)?(d2d|wifi|5g|4g|other))+$/)) {
+      return 'Comma-separated values: d2d|wifi|5g|4g|other';
     }
   }
   return null;

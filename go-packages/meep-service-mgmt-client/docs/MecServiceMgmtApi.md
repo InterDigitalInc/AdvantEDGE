@@ -41,9 +41,9 @@ Name | Type | Description  | Notes
  **serInstanceId** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serName** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serCategoryId** | **optional.String**| A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
- **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance. | 
- **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application. | 
- **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality. | 
+ **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | 
+ **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | 
+ **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality. | 
 
 ### Return type
 
@@ -93,7 +93,7 @@ No authorization required
 > AppServicesServiceIdDELETE(ctx, appInstanceId, serviceId)
 
 
-This method deletes a mecService resource. This method is typically used in the service deregistration procedure. 
+This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
 
 ### Required Parameters
 
@@ -313,9 +313,9 @@ Name | Type | Description  | Notes
  **serInstanceId** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_instance_ids as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serName** | [**optional.Interface of []string**](string.md)| A MEC application instance may use multiple ser_names as an input parameter to query the availability of a list of MEC service instances. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
  **serCategoryId** | **optional.String**| A MEC application instance may use ser_category_id as an input parameter to query the availability of a list of MEC service instances in a serCategory. Either \&quot;ser_instance_id\&quot; or \&quot;ser_name\&quot; or \&quot;ser_category_id\&quot; or none of them shall be present. | 
- **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC  applications located in the same locality (as defined by  scopeOfLocality) as this service instance. | 
- **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as  defined by scopeOfLocality) as the consuming MEC application. | 
- **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input  parameter to query the availability of a list of MEC service instances  with a certain scope of locality. | 
+ **consumedLocalOnly** | **optional.Bool**| Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | 
+ **isLocal** | **optional.Bool**| Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | 
+ **scopeOfLocality** | **optional.String**| A MEC application instance may use scope_of_locality as an input parameter to query the availability of a list of MEC service instances with a certain scope of locality. | 
 
 ### Return type
 

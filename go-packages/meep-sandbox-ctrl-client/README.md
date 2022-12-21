@@ -60,6 +60,7 @@ Class | Method | HTTP request | Description
  - [CellularPoaConfig](docs/CellularPoaConfig.md)
  - [ConnectivityConfig](docs/ConnectivityConfig.md)
  - [CpuConfig](docs/CpuConfig.md)
+ - [D2dConfig](docs/D2dConfig.md)
  - [Deployment](docs/Deployment.md)
  - [DnConfig](docs/DnConfig.md)
  - [Domain](docs/Domain.md)

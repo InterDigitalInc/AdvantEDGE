@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ const Footer = () => {
     <Grid style={styles.footer}>
       <GridCell span={2}/>
       <GridCell span={3} align={'middle'} style={styles.copyright}>
-        <Typography use="body1">© 2021 InterDigital, Inc</Typography>
+        <Typography use="body1">© 2022 InterDigital, Inc</Typography>
       </GridCell>
       <GridCell span={5} align={'middle'}>
         <div align={'right'}>

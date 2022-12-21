@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -90,6 +90,8 @@
         obj.procTime = ApiClient.convertToType(data['proc_time'], 'String');
       if (data.hasOwnProperty('logger_name'))
         obj.loggerName = ApiClient.convertToType(data['logger_name'], 'String');
+      if (data.hasOwnProperty('msg_type'))
+        obj.msgType = ApiClient.convertToType(data['msg_type'], 'String');
       if (data.hasOwnProperty('direction'))
         obj.direction = ApiClient.convertToType(data['direction'], 'String');
     }
@@ -157,7 +159,13 @@
   exports.prototype.loggerName = undefined;
 
   /**
-   * Http type
+   * Http metric type (request, response, notification)
+   * @member {String} msgType
+   */
+  exports.prototype.msgType = undefined;
+
+  /**
+   * DEPRECATED -- Http type
    * @member {String} direction
    */
   exports.prototype.direction = undefined;

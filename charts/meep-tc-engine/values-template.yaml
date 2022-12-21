@@ -20,14 +20,17 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
-          
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+
 image:
   repository: meep-docker-registry:30001/meep-tc-engine
   tag: latest
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
-    
+
 service:
   name: meep-tc-engine
   type: ClusterIP
@@ -36,5 +39,5 @@ service:
 codecov:
   enabled: false
   location: "<WORKDIR>/codecov/meep-tc-engine"
-  
+
 meepOrigin: core

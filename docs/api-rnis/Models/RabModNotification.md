@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **erabQosParameters** | [**RabModNotification_erabQosParameters**](RabModNotification_erabQosParameters.md) |  | [optional] [default to null]
 **notificationType** | [**String**](string.md) | Shall be set to \&quot;RabModNotification\&quot;. | [default to null]
 **timeStamp** | [**TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
+**\_links** | [**CellChangeNotification__links**](CellChangeNotification__links.md) |  | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

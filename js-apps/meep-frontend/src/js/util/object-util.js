@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,4 +38,10 @@ export function updateItemInArray(array, itemId, updateItemCallback) {
 export function deepCopy(source) {
   var dest = JSON.parse(JSON.stringify(source));
   return dest;
+}
+
+export function equalArrayOrdered(a1, a2) {
+  return (!a1 && !a2) || (a1 && a2 && a1.length === a2.length) && a1.every(function(element, index) {
+    return element === a2[index]; 
+  });
 }

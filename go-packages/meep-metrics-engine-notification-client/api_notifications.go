@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -43,11 +43,9 @@ type NotificationsApiService service
 /*
 NotificationsApiService This operation is used by the AdvantEDGE Metrics Service to issue a callback notification towards an ME application with an Event subscription
 Events subscription notification
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Identity of a notification subscription
- * @param notification Event Notification
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Identity of a notification subscription
+  - @param notification Event Notification
 */
 func (a *NotificationsApiService) PostEventNotification(ctx context.Context, subscriptionId string, notification EventNotification) (*http.Response, error) {
 	var (
@@ -115,11 +113,9 @@ func (a *NotificationsApiService) PostEventNotification(ctx context.Context, sub
 /*
 NotificationsApiService This operation is used by the AdvantEDGE Metrics Service to issue a callback notification towards an ME application with a Network Metrics subscription
 Network metrics subscription notification
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Identity of a notification subscription
- * @param notification Network Notification
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Identity of a notification subscription
+  - @param notification Network Notification
 */
 func (a *NotificationsApiService) PostNetworkNotification(ctx context.Context, subscriptionId string, notification NetworkNotification) (*http.Response, error) {
 	var (

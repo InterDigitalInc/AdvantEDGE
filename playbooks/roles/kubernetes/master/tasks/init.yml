@@ -1,12 +1,33 @@
 ---
 
+- name: Create Containerd config directory
+  file:
+    path: "/etc/containerd"
+    state: directory
+
+- name: Get containerd configuration
+  command: containerd config default
+  register: containerd_config
+
+- name: Save containerd configuration
+  copy:
+    content: "{{ containerd_config.stdout }}"
+    dest: /etc/containerd/config.toml
+
+- name: Restart Containerd service
+  systemd:
+    name: containerd
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
 - name: Reset Kubernetes component
   shell: "kubeadm reset --force"
   register: reset_cluster
 
 - name: Init Kubernetes cluster
   when: reset_cluster is succeeded
-  shell: kubeadm init --apiserver-advertise-address {{ master_ip }}
+  shell: kubeadm init --apiserver-advertise-address {{ master_ip }} --cri-socket unix:///run/containerd/containerd.sock
   register: init_cluster
 
 - name: Create Kubernetes config directory
@@ -27,6 +48,9 @@
 - name: "Enable scheduling on master node"
   command: kubectl taint --kubeconfig={{ kubeadmin_config }} nodes --all node-role.kubernetes.io/master-
 
+- name: "Enable scheduling on control plane node"
+  command: kubectl taint --kubeconfig={{ kubeadmin_config }} nodes --all node-role.kubernetes.io/control-plane-
+
 - name: Enable and check kubelet service
   systemd:
     name: kubelet
@@ -42,10 +66,9 @@
 - name: Update certificate index
   shell: /usr/sbin/update-ca-certificates
 
-- name: Restart Docker service
+- name: Restart Containerd service
   systemd:
-    name: docker
+    name: containerd
     daemon_reload: yes
     state: restarted
     enabled: yes
-  register: started_docker

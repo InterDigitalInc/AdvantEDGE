@@ -81,20 +81,21 @@ DNS.3 = ${service}.${namespace}.svc
 EOF
 
 openssl genrsa -out ${certdir}/server-key.pem 2048
-openssl req -new -key ${certdir}/server-key.pem -subj "/CN=${service}.${namespace}.svc" -out ${certdir}/server.csr -config ${certdir}/csr.conf
+openssl req -new -key ${certdir}/server-key.pem -subj "/CN=system:node:${service}.${namespace}.svc;/O=system:nodes" -out ${certdir}/server.csr -config ${certdir}/csr.conf
 
 # clean-up any previously created CSR for our service. Ignore errors if not present.
 kubectl delete csr ${csrName} 2>/dev/null || true
 
 # create  server cert/key CSR and  send to k8s API
 cat <<EOF | kubectl create -f -
-apiVersion: certificates.k8s.io/v1beta1
+apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
   name: ${csrName}
 spec:
   groups:
   - system:authenticated
+  signerName: kubernetes.io/kubelet-serving
   request: $(cat ${certdir}/server.csr | base64 | tr -d '\n')
   usages:
   - digital signature

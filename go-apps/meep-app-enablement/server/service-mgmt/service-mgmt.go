@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var APP_ENABLEMENT_DB = 0
 var rc *redis.Connector
 var mqLocal *mq.MsgQueue
-var handlerId int
 var hostUrl *url.URL
 var sandboxName string
 var mepName string
@@ -147,7 +146,7 @@ func Run() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqLocal.RegisterHandler(handler)
+	_, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -186,7 +185,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -196,16 +195,16 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
 
 	// Retrieve request parameters from body
 	// NOTE: Set default values for omitted fields
-	locality := MEC_HOST
+	locality := MEC_HOST_LocalityType
 	sInfoPost := ServiceInfoPost{
 		ScopeOfLocality:   &locality,
 		IsLocal:           true,
@@ -215,7 +214,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&sInfoPost)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -223,38 +222,38 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 	if sInfoPost.SerInstanceId != "" {
 		errStr := "Service instance ID must not be present"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 	if sInfoPost.SerName == "" {
 		errStr := "Mandatory Service Name parameter not present"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 	if sInfoPost.Version == "" {
 		errStr := "Mandatory Service Version parameter not present"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 	if sInfoPost.State == nil {
 		errStr := "Mandatory Service State parameter not present"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 	if sInfoPost.Serializer == nil {
 		errStr := "Mandatory Serializer parameter not present"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 	if sInfoPost.SerCategory != nil {
 		errStr := validateCategoryRef(sInfoPost.SerCategory)
 		if errStr != "" {
 			log.Error(errStr)
-			http.Error(w, errStr, http.StatusBadRequest)
+			errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 			return
 		}
 	}
@@ -262,7 +261,13 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		(sInfoPost.TransportId == "" && sInfoPost.TransportInfo == nil) {
 		errStr := "Either transportId or transportInfo but not both shall be present"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
+		return
+	}
+	if sInfoPost.Links != nil {
+		errStr := "Links parameter should not be present in request"
+		log.Error(errStr)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 	if sInfoPost.TransportInfo != nil {
@@ -274,7 +279,7 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 			sInfoPost.TransportInfo.Endpoint == nil {
 			errStr := "Id, Name, Type, Protocol, Version, Endpoint are all mandatory parameters of TransportInfo"
 			log.Error(errStr)
-			http.Error(w, errStr, http.StatusBadRequest)
+			errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 			return
 		}
 	}
@@ -293,17 +298,23 @@ func appServicesPOST(w http.ResponseWriter, r *http.Request) {
 		// although IsLocal is reevaluated when a query is replied to, value stored in sInfo as is for now
 		IsLocal: sInfoPost.IsLocal,
 	}
-	err, retCode := setService(appId, sInfo, ServiceAvailabilityNotificationChangeType_ADDED)
+	sInfo.Links = &ServiceInfoLinks{
+		Self: &LinkType{
+			Href: hostUrl.String() + basePath + "applications/" + appId + "/services/" + sInfo.SerInstanceId,
+		},
+	}
+
+	err, retCode := setService(appId, sInfo, ADDED_ServiceAvailabilityNotificationChangeType)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), retCode)
+		errHandlerProblemDetails(w, err.Error(), retCode)
 		return
 	}
 
 	// Send response
 	w.Header().Set("Location", hostUrl.String()+basePath+"applications/"+appId+"/services/"+sInfo.SerInstanceId)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, convertServiceInfoToJson(sInfo))
+	fmt.Fprint(w, convertServiceInfoToJson(sInfo))
 }
 
 func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
@@ -319,7 +330,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -329,9 +340,9 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -347,7 +358,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve request parameters from body
 	// NOTE: Set default values for omitted fields
-	locality := MEC_HOST
+	locality := MEC_HOST_LocalityType
 	sInfo := ServiceInfo{
 		ScopeOfLocality:   &locality,
 		IsLocal:           true,
@@ -357,7 +368,7 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&sInfo)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -374,24 +385,24 @@ func appServicesByIdPUT(w http.ResponseWriter, r *http.Request) {
 	if sInfoJson != sInfoPrevJson {
 		errStr := "Only the ServiceInfo state property may be changed"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusBadRequest)
+		errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 		return
 	}
 
 	// Compare service info states & update DB if necessary
 	*sInfo.State = state
 	if *sInfo.State != *sInfoPrev.State {
-		err, retCode := setService(appId, &sInfo, ServiceAvailabilityNotificationChangeType_STATE_CHANGED)
+		err, retCode := setService(appId, &sInfo, STATE_CHANGED_ServiceAvailabilityNotificationChangeType)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(w, err.Error(), retCode)
+			errHandlerProblemDetails(w, err.Error(), retCode)
 			return
 		}
 	}
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertServiceInfoToJson(&sInfo))
+	fmt.Fprint(w, convertServiceInfoToJson(&sInfo))
 }
 
 func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
@@ -407,7 +418,7 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -417,9 +428,9 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -436,12 +447,12 @@ func appServicesByIdDELETE(w http.ResponseWriter, r *http.Request) {
 	// Delete service
 	err = delServiceById(appId, svcId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Notify remote listeners (except if global instance)
-	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+	changeType := REMOVED_ServiceAvailabilityNotificationChangeType
 	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
@@ -464,7 +475,7 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getAppInfoAnyMep(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -474,9 +485,9 @@ func appServicesGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -497,7 +508,7 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getAppInfoAnyMep(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -507,9 +518,9 @@ func appServicesByIdGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -550,7 +561,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	// Get App instance
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -560,9 +571,9 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -573,19 +584,19 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&serAvailNotifSub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Validate mandatory properties
 	if serAvailNotifSub.CallbackReference == "" {
 		log.Error("Mandatory CallbackReference parameter not present")
-		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if serAvailNotifSub.SubscriptionType != SER_AVAILABILITY_NOTIF_SUB_TYPE {
 		log.Error("SubscriptionType shall be SerAvailabilityNotificationSubscription")
-		http.Error(w, "SubscriptionType shall be SerAvailabilityNotificationSubscription", http.StatusBadRequest)
+		errHandlerProblemDetails(w, "SubscriptionType shall be SerAvailabilityNotificationSubscription", http.StatusBadRequest)
 		return
 	}
 
@@ -607,7 +618,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 				errStr := validateCategoryRef(&categoryRef)
 				if errStr != "" {
 					log.Error(errStr)
-					http.Error(w, errStr, http.StatusBadRequest)
+					errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 					return
 				}
 			}
@@ -619,7 +630,7 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 		if nbMutuallyExclusiveParams > 1 {
 			errStr := "FilteringCriteria attributes serInstanceIds, serNames, serCategories are mutually-exclusive"
 			log.Error(errStr)
-			http.Error(w, errStr, http.StatusBadRequest)
+			errHandlerProblemDetails(w, errStr, http.StatusBadRequest)
 			return
 		}
 	}
@@ -640,14 +651,14 @@ func applicationsSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	_, err = subMgr.CreateSubscription(subCfg, jsonSub)
 	if err != nil {
 		log.Error("Failed to create subscription")
-		http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
+		errHandlerProblemDetails(w, "Failed to create subscription", http.StatusInternalServerError)
 		return
 	}
 
 	// Send response
 	w.Header().Set("Location", serAvailNotifSub.Links.Self.Href)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, jsonSub)
+	fmt.Fprint(w, jsonSub)
 }
 
 func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
@@ -662,7 +673,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	// Get App instance info
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -672,9 +683,9 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -683,7 +694,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -691,7 +702,7 @@ func applicationsSubscriptionGET(w http.ResponseWriter, r *http.Request) {
 	if sub.Cfg.AppId != appId || sub.Cfg.Type != SER_AVAILABILITY_NOTIF_SUB_TYPE {
 		err = errors.New("Subscription not found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -712,7 +723,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	// Get App instance info
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -722,9 +733,9 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -733,7 +744,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	sub, err := subMgr.GetSubscription(subId)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -741,7 +752,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	if sub.Cfg.AppId != appId || sub.Cfg.Type != SER_AVAILABILITY_NOTIF_SUB_TYPE {
 		err = errors.New("Subscription not found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -749,7 +760,7 @@ func applicationsSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
 	err = subMgr.DeleteSubscription(sub)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -768,7 +779,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	// Get App instance info
 	appInfo, err := getAppInfo(appId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		errHandlerProblemDetails(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -778,9 +789,9 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		if problemDetails != "" {
 			w.WriteHeader(code)
-			fmt.Fprintf(w, problemDetails)
+			fmt.Fprint(w, problemDetails)
 		} else {
-			http.Error(w, err.Error(), code)
+			errHandlerProblemDetails(w, err.Error(), code)
 		}
 		return
 	}
@@ -813,7 +824,7 @@ func applicationsSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
+	fmt.Fprint(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func transportsGET(w http.ResponseWriter, r *http.Request) {
@@ -823,7 +834,7 @@ func transportsGET(w http.ResponseWriter, r *http.Request) {
 	// Create transport info
 	var endpoint OneOfTransportInfoEndpoint
 	endpoint.Uris = append(endpoint.Uris, hostUrl.String()+basePath)
-	transportType := REST_HTTP
+	transportType := REST_HTTP_TransportType
 	transportInfo := TransportInfo{
 		Id:       "sandboxTransport",
 		Name:     "REST",
@@ -839,11 +850,11 @@ func transportsGET(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(transportInfoResp)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Delete App services subscriptions
@@ -919,7 +930,7 @@ func deleteService(key string, sInfoJson string, data interface{}) error {
 	sInfo := convertJsonToServiceInfo(sInfoJson)
 
 	// Notify remote listeners (except if global instance)
-	changeType := ServiceAvailabilityNotificationChangeType_REMOVED
+	changeType := REMOVED_ServiceAvailabilityNotificationChangeType
 	if mepName != globalMepName {
 		sendSvcUpdateMsg(sInfoJson, appId, mepName, string(changeType))
 	}
@@ -978,7 +989,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 	validParams := []string{"ser_instance_id", "ser_name", "ser_category_id", "consumed_local_only", "is_local", "scope_of_locality"}
 	err := validateQueryParams(q, validParams)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errHandlerProblemDetails(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -1002,7 +1013,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 	// Make sure only 1 or none of the following are present: ser_instance_id, ser_name, ser_category_id
 	err = validateServiceQueryParams(serInstanceId, serName, serCategoryId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errHandlerProblemDetails(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -1031,7 +1042,7 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 	err = rc.ForEachJSONEntry(key, populateServiceInfoList, sInfoList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1039,11 +1050,11 @@ func getServices(w http.ResponseWriter, r *http.Request, appId string) {
 	jsonResponse, err := json.Marshal(sInfoList.Services)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId string) {
@@ -1051,7 +1062,7 @@ func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId 
 	if serviceId == "" {
 		errStr := "Invalid Service ID"
 		log.Error(errStr)
-		http.Error(w, errStr, http.StatusInternalServerError)
+		errHandlerProblemDetails(w, errStr, http.StatusInternalServerError)
 		return
 	}
 
@@ -1068,7 +1079,7 @@ func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId 
 	err := rc.ForEachJSONEntry(key, populateServiceInfoList, &sInfoList)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1082,11 +1093,11 @@ func getService(w http.ResponseWriter, r *http.Request, appId string, serviceId 
 	jsonResponse, err := json.Marshal(sInfoList.Services[0])
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errHandlerProblemDetails(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {
@@ -1111,7 +1122,7 @@ func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{})
 		mep := getMepNameFromKey(key)
 
 		// Check if service is local
-		if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
+		if *sInfo.ScopeOfLocality == MEC_SYSTEM_LocalityType || (mep != "" && mep == mepName) {
 			sInfo.IsLocal = true
 		} else {
 			sInfo.IsLocal = false
@@ -1233,7 +1244,7 @@ func processSvcUpdate(sInfoJson, mep, changeType string) {
 
 func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType ServiceAvailabilityNotificationChangeType) {
 	// Set IsLocal flag
-	if *sInfo.ScopeOfLocality == MEC_SYSTEM || (mep != "" && mep == mepName) {
+	if *sInfo.ScopeOfLocality == MEC_SYSTEM_LocalityType || (mep != "" && mep == mepName) {
 		sInfo.IsLocal = true
 	} else {
 		sInfo.IsLocal = false
@@ -1344,7 +1355,7 @@ func checkSerAvailNotification(sInfo *ServiceInfo, mep string, changeType Servic
 			SerName:       sInfo.SerName,
 			SerInstanceId: sInfo.SerInstanceId,
 			State:         sInfo.State,
-			ChangeType:    string(changeType),
+			ChangeType:    &changeType,
 		}
 		notif.ServiceReferences = append(notif.ServiceReferences, serAvailabilityRef)
 
@@ -1484,4 +1495,15 @@ func newSerAvailabilityNotifSubCfg(sub *SerAvailabilityNotificationSubscription,
 		RequestWebsocketUri: false,
 	}
 	return subCfg
+}
+
+func errHandlerProblemDetails(w http.ResponseWriter, error string, code int) {
+	var pd ProblemDetails
+	pd.Detail = error
+	pd.Status = int32(code)
+
+	jsonResponse := convertProblemDetailstoJson(&pd)
+
+	w.WriteHeader(code)
+	fmt.Fprint(w, jsonResponse)
 }

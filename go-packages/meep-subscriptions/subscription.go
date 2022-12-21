@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -231,7 +231,7 @@ func (sub *Subscription) sendNotification(notif []byte, sandbox string, service 
 	// Log metrics if necessary
 	if metricsEnabled {
 		duration := float64(time.Since(startTime).Microseconds()) / 1000.0
-		_ = httpLog.LogTx(notifUrl, notifMethod, string(notif), notifResp, startTime)
+		_ = httpLog.LogNotification(notifUrl, notifMethod, "", "", string(notif), notifResp, startTime)
 		if notifErr != nil {
 			log.Error(notifErr)
 			met.ObserveNotification(sandbox, service, sub.Cfg.NotifType, notifUrl, nil, duration)

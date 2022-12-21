@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -43,7 +43,7 @@ type UnsupportedApiService service
 /*
 UnsupportedApiService Retrieve information on measurements configuration
 Queries information on measurements configuration
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return MeasurementConfigLinkList
 */
@@ -196,10 +196,8 @@ func (a *UnsupportedApiService) MeasurementLinkListMeasurementsGET(ctx context.C
 /*
 UnsupportedApiService Cancel a measurement configuration
 Cancels an existing measurement configuration, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param measurementConfigId Measurement configuration Id, specifically the \&quot;self\&quot; returned in the measurement configuration request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param measurementConfigId Measurement configuration Id, specifically the \&quot;self\&quot; returned in the measurement configuration request
 */
 func (a *UnsupportedApiService) MeasurementsDELETE(ctx context.Context, measurementConfigId string) (*http.Response, error) {
 	var (
@@ -309,8 +307,8 @@ func (a *UnsupportedApiService) MeasurementsDELETE(ctx context.Context, measurem
 /*
 UnsupportedApiService Retrieve information on an existing measurement configuration
 Queries information about an existing measurement configuration, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param measurementConfigId Measurement configuration Id, specifically the \&quot;self\&quot; returned in the measurement configuration request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param measurementConfigId Measurement configuration Id, specifically the \&quot;self\&quot; returned in the measurement configuration request
 
 @return MeasurementConfig
 */
@@ -464,8 +462,8 @@ func (a *UnsupportedApiService) MeasurementsGET(ctx context.Context, measurement
 /*
 UnsupportedApiService Create a new measurement configuration
 Creates a new measurement configuration
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Measurement configuration information
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Measurement configuration information
 
 @return MeasurementConfig
 */
@@ -642,9 +640,9 @@ func (a *UnsupportedApiService) MeasurementsPOST(ctx context.Context, body Measu
 /*
 UnsupportedApiService Modify an existing measurement configuration
 Updates an existing measurement configuration, identified by its self-referring URI returned on creation (initial POST)
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Measurement configuration to be modified
- * @param measurementConfigId Measurement configuration Id, specifically the \&quot;self\&quot; returned in the measurement configuration request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Measurement configuration to be modified
+  - @param measurementConfigId Measurement configuration Id, specifically the \&quot;self\&quot; returned in the measurement configuration request
 
 @return MeasurementConfig
 */

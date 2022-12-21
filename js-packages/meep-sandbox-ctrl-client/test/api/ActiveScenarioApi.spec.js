@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -186,6 +186,11 @@
               expect(data.deployment.connectivity).to.be.a(AdvantEdgeSandboxControllerRestApi.ConnectivityConfig);
                     expect(data.deployment.connectivity.model).to.be.a('string');
                 expect(data.deployment.connectivity.model).to.be("OPEN");
+              expect(data.deployment.d2d).to.be.a(AdvantEdgeSandboxControllerRestApi.D2dConfig);
+                    expect(data.deployment.d2d.d2dMaxDistance).to.be.a('number');
+                expect(data.deployment.d2d.d2dMaxDistance).to.be();
+                expect(data.deployment.d2d.disableD2dViaNetwork).to.be.a('boolean');
+                expect(data.deployment.d2d.disableD2dViaNetwork).to.be(false);
               expect(data.deployment.interDomainLatency).to.be.a('number');
               expect(data.deployment.interDomainLatency).to.be(0);
               expect(data.deployment.interDomainLatencyVariation).to.be.a('number');
@@ -450,6 +455,26 @@
                             expect(data.geoData.eopMode).to.be("LOOP");
                             expect(data.geoData.velocity).to.be.a('number');
                             expect(data.geoData.velocity).to.be();
+                            {
+                              let dataCtr = data.geoData.d2dInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.geoData.poaInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -498,6 +523,26 @@
                                 expect(data.geoData.eopMode).to.be("LOOP");
                                 expect(data.geoData.velocity).to.be.a('number');
                                 expect(data.geoData.velocity).to.be();
+                                {
+                                  let dataCtr = data.geoData.d2dInRange;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
+                                {
+                                  let dataCtr = data.geoData.poaInRange;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a('string');
+                                    expect(data).to.be("");
+                                  }
+                                }
                               {
                                 let dataCtr = data.networkLocationsInRange;
                                 expect(dataCtr).to.be.an(Array);
@@ -992,6 +1037,26 @@
                           expect(data.geoData.eopMode).to.be("LOOP");
                           expect(data.geoData.velocity).to.be.a('number');
                           expect(data.geoData.velocity).to.be();
+                          {
+                            let dataCtr = data.geoData.d2dInRange;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.geoData.poaInRange;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
                         {
                           let dataCtr = data.physicalLocations;
                           expect(dataCtr).to.be.an(Array);
@@ -1040,6 +1105,26 @@
                               expect(data.geoData.eopMode).to.be("LOOP");
                               expect(data.geoData.velocity).to.be.a('number');
                               expect(data.geoData.velocity).to.be();
+                              {
+                                let dataCtr = data.geoData.d2dInRange;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('string');
+                                  expect(data).to.be("");
+                                }
+                              }
+                              {
+                                let dataCtr = data.geoData.poaInRange;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('string');
+                                  expect(data).to.be("");
+                                }
+                              }
                             {
                               let dataCtr = data.networkLocationsInRange;
                               expect(dataCtr).to.be.an(Array);
@@ -1399,6 +1484,26 @@
                   expect(data.geoData.eopMode).to.be("LOOP");
                   expect(data.geoData.velocity).to.be.a('number');
                   expect(data.geoData.velocity).to.be();
+                  {
+                    let dataCtr = data.geoData.d2dInRange;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a('string');
+                      expect(data).to.be("");
+                    }
+                  }
+                  {
+                    let dataCtr = data.geoData.poaInRange;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a('string');
+                      expect(data).to.be("");
+                    }
+                  }
                 {
                   let dataCtr = data.physicalLocations;
                   expect(dataCtr).to.be.an(Array);
@@ -1447,6 +1552,26 @@
                       expect(data.geoData.eopMode).to.be("LOOP");
                       expect(data.geoData.velocity).to.be.a('number');
                       expect(data.geoData.velocity).to.be();
+                      {
+                        let dataCtr = data.geoData.d2dInRange;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a('string');
+                          expect(data).to.be("");
+                        }
+                      }
+                      {
+                        let dataCtr = data.geoData.poaInRange;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a('string');
+                          expect(data).to.be("");
+                        }
+                      }
                     {
                       let dataCtr = data.networkLocationsInRange;
                       expect(dataCtr).to.be.an(Array);
@@ -1749,6 +1874,26 @@
                   expect(data.geoData.eopMode).to.be("LOOP");
                   expect(data.geoData.velocity).to.be.a('number');
                   expect(data.geoData.velocity).to.be();
+                  {
+                    let dataCtr = data.geoData.d2dInRange;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a('string');
+                      expect(data).to.be("");
+                    }
+                  }
+                  {
+                    let dataCtr = data.geoData.poaInRange;
+                    expect(dataCtr).to.be.an(Array);
+                    expect(dataCtr).to.not.be.empty();
+                    for (let p in dataCtr) {
+                      let data = dataCtr[p];
+                      expect(data).to.be.a('string');
+                      expect(data).to.be("");
+                    }
+                  }
                 {
                   let dataCtr = data.networkLocationsInRange;
                   expect(dataCtr).to.be.an(Array);
@@ -2356,6 +2501,26 @@
                       expect(data.geoData.eopMode).to.be("LOOP");
                       expect(data.geoData.velocity).to.be.a('number');
                       expect(data.geoData.velocity).to.be();
+                      {
+                        let dataCtr = data.geoData.d2dInRange;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a('string');
+                          expect(data).to.be("");
+                        }
+                      }
+                      {
+                        let dataCtr = data.geoData.poaInRange;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a('string');
+                          expect(data).to.be("");
+                        }
+                      }
                     {
                       let dataCtr = data.physicalLocations;
                       expect(dataCtr).to.be.an(Array);
@@ -2404,6 +2569,26 @@
                           expect(data.geoData.eopMode).to.be("LOOP");
                           expect(data.geoData.velocity).to.be.a('number');
                           expect(data.geoData.velocity).to.be();
+                          {
+                            let dataCtr = data.geoData.d2dInRange;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.geoData.poaInRange;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
                         {
                           let dataCtr = data.networkLocationsInRange;
                           expect(dataCtr).to.be.an(Array);

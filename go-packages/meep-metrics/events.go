@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ const EvMetEvent = "event"
 const EvMetDescription = "description"
 const EvMetSrc = "src"
 const EvMetDest = "dest"
+const EvMetTime = "time"
 
 type EventMetric struct {
 	Time        interface{}
@@ -79,7 +80,7 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 	// Format event metrics
 	metrics = make([]EventMetric, len(valuesArray))
 	for index, values := range valuesArray {
-		metrics[index].Time = values[NetMetTime]
+		metrics[index].Time = values[EvMetTime]
 		if val, ok := values[EvMetEvent].(string); ok {
 			metrics[index].Event = val
 		}

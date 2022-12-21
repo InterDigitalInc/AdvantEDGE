@@ -1,10 +1,10 @@
-# Copyright (c) 2021  InterDigital Communications, Inc
+# Copyright (c) 2022  The AdvantEDGE Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,12 @@
 #  - Fileserver names must be unique for all fileservers
 #  - Service endpoint names must be unique within a service
 #  - 'mode' is the access authorization mode
-#    -> allow: grant access 
+#    -> allow: grant access
 #    -> block: deny access
 #    -> verify: obtain session role & verify role-specific access permissions
 #  - 'roles' is a map of role permissions
-#    -> allow: grant access 
-#    -> block: deny access 
+#    -> allow: grant access
+#    -> block: deny access
 #  - Default access mode & role permissions are used when service-specific
 #    values are not provided
 #------------------------------------------------------------------------------
@@ -40,23 +40,23 @@
 default:
   mode: 'block'
 
-# #------------------------------------------------------------------------------
-# #  FILESERVER PERMISSIONS
-# #  File Server access permissions.
-# #
-# #  FORMAT:
-# #  - name: 'fs-name'              # fileserver name
-# #    path: '/path/to/fs'          # fileserver path
-# #    sbox: true|false             # sandbox deployment
-# #    mode: 'allow|block|verify'   # access authorization mode
-# #    roles:                       # role-specific permissions
-# #      admin: 'allow|block'
-# #      user: 'allow|block'
-# #
-# #  !!! IMPORTANT NOTE !!!
-# #  Fileserver route matching is performed in the order defined below.
-# #  You must place more specific routes first.
-# #------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  FILESERVER PERMISSIONS
+#  File Server access permissions.
+#
+#  FORMAT:
+#  - name: 'fs-name'              # fileserver name
+#    path: '/path/to/fs'          # fileserver path
+#    sbox: true|false             # sandbox deployment
+#    mode: 'allow|block|verify'   # access authorization mode
+#    roles:                       # role-specific permissions
+#      admin: 'allow|block'
+#      user: 'allow|block'
+#
+#  !!! IMPORTANT NOTE !!!
+#  Fileserver route matching is performed in the order defined below.
+#  You must place more specific routes first.
+#------------------------------------------------------------------------------
 fileservers:
   #------------------------------
   #  Grafana (3rd Party)
@@ -76,24 +76,24 @@ fileservers:
     roles:
       admin: 'allow'
       user: 'allow'
-#   #------------------------------
-#   #  Alternate Swagger UI
-#   #------------------------------
-#   - name: 'meep-alt-swagger-ui'
-#     path: '/alt/api/'
-#     mode: 'verify'
-#     roles:
-#       admin: 'allow'
-#       user: 'block'
-#   #------------------------------
-#   #  Alternate Frontend
-#   #------------------------------
-#   - name: 'meep-alt-frontend'
-#     path: '/alt/'
-#     mode: 'verify'
-#     roles:
-#       admin: 'allow'
-#       user: 'block'
+  #------------------------------
+  #  Alternate Swagger UI
+  #------------------------------
+  # - name: 'meep-alt-swagger-ui'
+  #   path: '/alt/api/'
+  #   mode: 'verify'
+  #   roles:
+  #     admin: 'allow'
+  #     user: 'block'
+  #------------------------------
+  #  Alternate Frontend
+  #------------------------------
+  # - name: 'meep-alt-frontend'
+  #   path: '/alt/'
+  #   mode: 'verify'
+  #   roles:
+  #     admin: 'allow'
+  #     user: 'block'
   #------------------------------
   #  Sandbox Swagger UI (Sbox)
   #------------------------------
@@ -104,16 +104,16 @@ fileservers:
     roles:
       admin: 'allow'
       user: 'allow'
-#   #------------------------------
-#   #  Sandbox Alternate Swagger UI (Sbox)
-#   #------------------------------
-#   - name: 'meep-alt-sbox-swagger-ui'
-#     path: '/alt/api/'
-#     sbox: true
-#     mode: 'verify'
-#     roles:
-#       admin: 'allow'
-#       user: 'block'
+  #------------------------------
+  #  Sandbox Alternate Swagger UI (Sbox)
+  #------------------------------
+  # - name: 'meep-alt-sbox-swagger-ui'
+  #   path: '/alt/api/'
+  #   sbox: true
+  #   mode: 'verify'
+  #   roles:
+  #     admin: 'allow'
+  #     user: 'block'
   #------------------------------
   #  Frontend (Default)
   #------------------------------
@@ -121,36 +121,36 @@ fileservers:
     path: '/'
     mode: 'allow'
 
-# #------------------------------------------------------------------------------
-# #  SERVICE ENDPOINT PERMISSIONS
-# #  Service REST API endpoint access permissions.
-# #
-# #  FORMAT:
-# #  - name: 'svc-name'                   # service name
-# #    api: 'api-name'                    # API-specific identifier (when service has multiple APIs)
-# #    path: '/svc/base/path'             # service base path
-# #    sbox: true|false                   # sandbox deployment
-# #    default:                           # default service permissions
-# #      mode: 'allow|block|verify'       # access authorization mode
-# #      roles:                           # role-specific permissions
-# #        admin: 'allow|block'
-# #        user: 'allow|block'
-# #    endpoints:                         # Endpoint permissions (overrides default)
-# #      - name 'endpoint-name'           # endpoint name
-# #        path: '/endpoint/path'         # endpoint path
-# #        method: 'GET|POST|PUT|DELETE'  # endpoint method
-# #        mode: 'allow|block|verify'     # access authorization mode
-# #        roles:                         # role-specific permissions
-# #          admin: 'allow|block'
-# #          user: 'allow|block'
-# #    fileservers:                       # Service fileserver permissions (overrides default)
-# #      - name 'fs-name'                 # fileserver name
-# #        path: '/fs-endpoint/path'      # fileserver endpoint path
-# #        mode: 'allow|block|verify'     # access authorization mode
-# #        roles:                         # role-specific permissions
-# #          admin: 'allow|block'
-# #          user: 'allow|block'
-# #------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  SERVICE ENDPOINT PERMISSIONS
+#  Service REST API endpoint access permissions.
+#
+#  FORMAT:
+#  - name: 'svc-name'                   # service name
+#    api: 'api-name'                    # API-specific identifier (when service has multiple APIs)
+#    path: '/svc/base/path'             # service base path
+#    sbox: true|false                   # sandbox deployment
+#    default:                           # default service permissions
+#      mode: 'allow|block|verify'       # access authorization mode
+#      roles:                           # role-specific permissions
+#        admin: 'allow|block'
+#        user: 'allow|block'
+#    endpoints:                         # Endpoint permissions (overrides default)
+#      - name 'endpoint-name'           # endpoint name
+#        path: '/endpoint/path'         # endpoint path
+#        method: 'GET|POST|PUT|DELETE'  # endpoint method
+#        mode: 'allow|block|verify'     # access authorization mode
+#        roles:                         # role-specific permissions
+#          admin: 'allow|block'
+#          user: 'allow|block'
+#    fileservers:                       # Service fileserver permissions (overrides default)
+#      - name 'fs-name'                 # fileserver name
+#        path: '/fs-endpoint/path'      # fileserver endpoint path
+#        mode: 'allow|block|verify'     # access authorization mode
+#        roles:                         # role-specific permissions
+#          admin: 'allow|block'
+#          user: 'allow|block'
+#------------------------------------------------------------------------------
 services:
   #------------------------------
   #  MEC Application Support (Sbox)
@@ -162,8 +162,8 @@ services:
     default:
       mode: 'verify'
       roles:
-       admin: 'allow'
-       user: 'allow'
+        admin: 'allow'
+        user: 'allow'
   #------------------------------
   #  MEC Service Management (Sbox)
   #------------------------------
@@ -265,6 +265,17 @@ services:
         admin: 'allow'
         user: 'allow'
   #------------------------------
+  #  V2XI Service (Sbox)
+  #------------------------------
+  - name: 'meep-vis'
+    path: '/vis/v2'
+    sbox: true
+    default:
+      mode: 'verify'
+      roles:
+        admin: 'allow'
+        user: 'allow'
+  #------------------------------
   #  WAI Service (Sbox)
   #------------------------------
   - name: 'meep-wais'
@@ -290,4 +301,3 @@ services:
       roles:
         admin: 'allow'
         user: 'allow'
-

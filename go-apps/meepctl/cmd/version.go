@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ type versionInfo struct {
 	BuildID   string `json:"build,omitempty"`
 }
 
-const meepctlVersion = "1.8.1"
+const meepctlVersion = "1.9.0"
 const na = "NA"
 
 const versionDesc = `Display version information

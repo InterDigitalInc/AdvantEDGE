@@ -28,6 +28,7 @@ Class | Method | HTTP request | Description
 *GeospatialDataApi* | [**GetAssetData**](docs/GeospatialDataApi.md#getassetdata) | **Get** /geodata | Get geospatial data
 *GeospatialDataApi* | [**GetDistanceGeoDataByName**](docs/GeospatialDataApi.md#getdistancegeodatabyname) | **Post** /geodata/{assetName}/distanceTo | Get distance between geospatial data points
 *GeospatialDataApi* | [**GetGeoDataByName**](docs/GeospatialDataApi.md#getgeodatabyname) | **Get** /geodata/{assetName} | Get geospatial data
+*GeospatialDataApi* | [**GetGeoDataPowerValues**](docs/GeospatialDataApi.md#getgeodatapowervalues) | **Post** /geodata/cellularPower | Get RSRQ and RSRP values for a list of coordinates
 *GeospatialDataApi* | [**GetWithinRangeByName**](docs/GeospatialDataApi.md#getwithinrangebyname) | **Post** /geodata/{assetName}/withinRange | Returns if a geospatial data points is within a specified distance from a location
 *GeospatialDataApi* | [**UpdateGeoDataByName**](docs/GeospatialDataApi.md#updategeodatabyname) | **Post** /geodata/{assetName} | Create/Update geospatial data
 
@@ -36,7 +37,11 @@ Class | Method | HTTP request | Description
 
  - [AutomationState](docs/AutomationState.md)
  - [AutomationStateList](docs/AutomationStateList.md)
+ - [CoordinatePower](docs/CoordinatePower.md)
+ - [CoordinatePowerList](docs/CoordinatePowerList.md)
  - [Distance](docs/Distance.md)
+ - [GeoCoordinate](docs/GeoCoordinate.md)
+ - [GeoCoordinateList](docs/GeoCoordinateList.md)
  - [GeoData](docs/GeoData.md)
  - [GeoDataAssetList](docs/GeoDataAssetList.md)
  - [LineString](docs/LineString.md)

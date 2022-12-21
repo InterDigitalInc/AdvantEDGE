@@ -20,6 +20,9 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
 
 image:
   repository: meep-docker-registry:30001/meep-virt-engine
@@ -28,10 +31,10 @@ image:
   env:
     # Provide comma-separated list of pods to create in sandbox
     MEEP_SANDBOX_PODS: ""
-    MEEP_HOST_URL: "http://www.example.com"
-    MEEP_USER_SWAGGER: "false"
-    MEEP_HTTPS_ONLY: "false"
-    MEEP_AUTH_ENABLED: "\"false\""
+    MEEP_HOST_URL: http://www.example.com
+    MEEP_USER_SWAGGER: false
+    MEEP_HTTPS_ONLY: false
+    MEEP_AUTH_ENABLED: false
   envSecret:
 
 service:

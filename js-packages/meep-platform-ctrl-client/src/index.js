@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/ConnectivityConfig', 'model/CpuConfig', 'model/DNConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig', 'model/Point', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/ConnectivityConfig', 'model/CpuConfig', 'model/D2dConfig', 'model/DNConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig', 'model/Point', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/ConnectivityConfig'), require('./model/CpuConfig'), require('./model/DNConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/MemoryConfig'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Poa4GConfig'), require('./model/Poa5GConfig'), require('./model/PoaWifiConfig'), require('./model/Point'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/ConnectivityConfig'), require('./model/CpuConfig'), require('./model/D2dConfig'), require('./model/DNConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/MemoryConfig'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Poa4GConfig'), require('./model/Poa5GConfig'), require('./model/PoaWifiConfig'), require('./model/Point'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
   }
-}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, ConnectivityConfig, CpuConfig, DNConfig, Deployment, Domain, EgressService, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, MemoryConfig, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Poa4GConfig, Poa5GConfig, PoaWifiConfig, Point, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
+}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, ConnectivityConfig, CpuConfig, D2dConfig, DNConfig, Deployment, Domain, EgressService, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, MemoryConfig, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Poa4GConfig, Poa5GConfig, PoaWifiConfig, Point, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
   'use strict';
 
   /**
@@ -96,6 +96,11 @@
      * @property {module:model/CpuConfig}
      */
     CpuConfig: CpuConfig,
+    /**
+     * The D2dConfig model constructor.
+     * @property {module:model/D2dConfig}
+     */
+    D2dConfig: D2dConfig,
     /**
      * The DNConfig model constructor.
      * @property {module:model/DNConfig}

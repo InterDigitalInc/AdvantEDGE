@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -306,7 +306,7 @@ func applicationsPOST(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	jsonResponse := convertApplicationInfoToJson(&appInfo)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
@@ -349,7 +349,7 @@ func applicationsAppInstanceIdPUT(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	jsonResponse := convertApplicationInfoToJson(&appInfo)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func applicationsAppInstanceIdGET(w http.ResponseWriter, r *http.Request) {
@@ -370,7 +370,7 @@ func applicationsAppInstanceIdGET(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	jsonResponse := convertApplicationInfoToJson(appInfo)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func applicationsAppInstanceIdDELETE(w http.ResponseWriter, r *http.Request) {
@@ -438,7 +438,7 @@ func applicationsGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func servicesGET(w http.ResponseWriter, r *http.Request) {
@@ -495,7 +495,7 @@ func servicesGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateServiceInfoList(key string, jsonInfo string, sInfoList interface{}) error {

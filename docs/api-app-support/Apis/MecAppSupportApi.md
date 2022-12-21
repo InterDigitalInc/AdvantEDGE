@@ -40,7 +40,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/problem+json
+- **Accept**: application/problem+json, text/plain
 
 <a name="applicationsConfirmTerminationPOST"></a>
 # **applicationsConfirmTerminationPOST**
@@ -68,7 +68,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/problem+json
+- **Accept**: application/problem+json, text/plain
 
 <a name="applicationsSubscriptionDELETE"></a>
 # **applicationsSubscriptionDELETE**
@@ -96,7 +96,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/problem+json
+- **Accept**: application/problem+json, text/plain, 
 
 <a name="applicationsSubscriptionGET"></a>
 # **applicationsSubscriptionGET**
@@ -124,11 +124,11 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsSubscriptionsGET"></a>
 # **applicationsSubscriptionsGET**
-> SubscriptionLinkList applicationsSubscriptionsGET(appInstanceId)
+> MecAppSuptApiSubscriptionLinkList applicationsSubscriptionsGET(appInstanceId)
 
 
 
@@ -142,7 +142,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**SubscriptionLinkList**](../Models/SubscriptionLinkList.md)
+[**MecAppSuptApiSubscriptionLinkList**](../Models/MecAppSuptApiSubscriptionLinkList.md)
 
 ### Authorization
 
@@ -151,7 +151,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="applicationsSubscriptionsPOST"></a>
 # **applicationsSubscriptionsPOST**
@@ -179,7 +179,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="timingCapsGET"></a>
 # **timingCapsGET**
@@ -203,7 +203,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 
 <a name="timingCurrentTimeGET"></a>
 # **timingCurrentTimeGET**
@@ -227,5 +227,5 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/problem+json
+- **Accept**: application/json, application/problem+json, text/plain
 

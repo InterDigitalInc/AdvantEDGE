@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ type DeployData struct {
 	coreApps []string
 	depApps  []string
 	crds     []string
+	sboxApps []string
 }
 
 const deployDesc = `Deploy containers on the K8s cluster
@@ -75,6 +76,7 @@ func init() {
 	// Get targets from repo config file
 	_, deployData.crds = utils.GetResourcePrerequisites("repo.resource-prerequisites.crds")
 	deployData.coreApps = utils.GetTargets("repo.core.go-apps", "deploy")
+	deployData.sboxApps = utils.GetTargets("repo.sandbox.go-apps", "deploy")
 	deployData.depApps = utils.GetTargets("repo.dep", "deploy")
 
 	// Configure the list of valid arguments
@@ -159,7 +161,6 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/docker-registry")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/grafana")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
-	cmd.Args = append(cmd.Args, deployData.workdir+"/minio")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine/user-charts")
@@ -195,7 +196,7 @@ func deployCore(cobraCmd *cobra.Command) {
 		coreFlags := utils.HelmFlags(flags, "--set", "image.repository="+deployData.registry+"/"+app)
 		coreFlags = utils.HelmFlags(coreFlags, "--set", "image.tag="+deployData.tag)
 		if deployData.codecov && codecov {
-			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV='true'")
+			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_CODECOV_LOCATION="+deployData.workdir+"/codecov/")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.location="+deployData.workdir+"/codecov/"+app)
@@ -317,13 +318,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
-	case "meep-minio":
-		uid := utils.RepoCfg.GetString("repo.deployment.permissions.uid")
-		flags = utils.HelmFlags(flags, "--set", "securityContext.runAsUser="+uid)
-		gid := utils.RepoCfg.GetString("repo.deployment.permissions.gid")
-		flags = utils.HelmFlags(flags, "--set", "securityContext.runAsGroup="+gid)
-		flags = utils.HelmFlags(flags, "--set", "securityContext.fsGroup="+gid)
-		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/minio/")
 	case "meep-open-map-tiles":
 		deploySetOmtConfig(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
@@ -492,13 +486,13 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			gcInfluxEnabled := utils.RepoCfg.GetBool(gcTarget + ".influx.enabled")
 			gcInfluxExceptions := getItemList(gcTarget + ".influx.exceptions")
 			gcPostgisEnabled := utils.RepoCfg.GetBool(gcTarget + ".postgis.enabled")
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_ENABLED=\""+strconv.FormatBool(gcEnabled)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_ENABLED="+strconv.FormatBool(gcEnabled))
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INTERVAL="+gcInterval)
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_RUN_ON_START=\""+strconv.FormatBool(gcRunOnStart)+"\"")
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_REDIS_ENABLED=\""+strconv.FormatBool(gcRedisEnabled)+"\"")
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INFLUX_ENABLED=\""+strconv.FormatBool(gcInfluxEnabled)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_RUN_ON_START="+strconv.FormatBool(gcRunOnStart))
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_REDIS_ENABLED="+strconv.FormatBool(gcRedisEnabled))
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INFLUX_ENABLED="+strconv.FormatBool(gcInfluxEnabled))
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_INFLUX_EXCEPTIONS="+gcInfluxExceptions)
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_POSTGIS_ENABLED=\""+strconv.FormatBool(gcPostgisEnabled)+"\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_GC_POSTGIS_ENABLED="+strconv.FormatBool(gcPostgisEnabled))
 		}
 	case "meep-virt-engine":
 		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
@@ -508,8 +502,8 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getItemList(virtEngineTarget+".sandbox-pods"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\""+strconv.FormatBool(httpsOnly)+"\"")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY="+strconv.FormatBool(httpsOnly))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER="+strconv.FormatBool(userSwagger))
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")
@@ -551,6 +545,12 @@ func deployCodeCovStorage(cobraCmd *cobra.Command) {
 
 	for _, app := range deployData.coreApps {
 		if utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov") {
+			cmd = exec.Command("mkdir", "-p", deployData.workdir+"/codecov/"+app)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+		}
+	}
+	for _, app := range deployData.sboxApps {
+		if utils.RepoCfg.GetBool("repo.sandbox.go-apps." + app + ".codecov") {
 			cmd = exec.Command("mkdir", "-p", deployData.workdir+"/codecov/"+app)
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}

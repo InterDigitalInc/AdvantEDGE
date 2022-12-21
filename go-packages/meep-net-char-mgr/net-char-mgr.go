@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ package netchar
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -50,7 +52,7 @@ type NetCharMgr interface {
 
 // NetCharAlgo
 type NetCharAlgo interface {
-	ProcessScenario(*mod.Model, map[string]map[string]*dataModel.PduSessionInfo) error
+	ProcessScenario(*mod.Model, map[string]map[string]*dataModel.PduSessionInfo, map[string]map[string]bool) error
 	CalculateNetChar() []FlowNetChar
 	SetConfigAttribute(string, string)
 }
@@ -98,6 +100,8 @@ type NetCharManager struct {
 	rc               *redis.Connector
 	pduSessionStore  *pss.PduSessionStore
 	pduSessions      map[string]map[string]*dataModel.PduSessionInfo
+	gisCache         *gc.GisCache
+	d2dSessions      map[string]map[string]bool
 	mutex            sync.Mutex
 	config           NetCharConfig
 	mqLocal          *mq.MsgQueue
@@ -123,6 +127,8 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	ncm.baseKey = dkm.GetKeyRoot(namespace)
 	ncm.isStarted = false
 	ncm.config.RecalculationPeriod = defaultTickerPeriod
+	ncm.pduSessions = map[string]map[string]*dataModel.PduSessionInfo{}
+	ncm.d2dSessions = map[string]map[string]bool{}
 
 	// Create message queue
 	ncm.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(namespace), name, namespace, redisAddr)
@@ -169,6 +175,14 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	}
 	log.Info("Connected to PDU Session Store")
 
+	// Connect to GIS cache
+	ncm.gisCache, err = gc.NewGisCache(ncm.namespace, redisAddr)
+	if err != nil {
+		log.Error("Failed to GIS Cache: ", err.Error())
+		return nil, err
+	}
+	log.Info("Connected to GIS Cache")
+
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: ncm.msgHandler, UserData: nil}
 	ncm.handlerId, err = ncm.mqLocal.RegisterHandler(handler)
@@ -207,6 +221,9 @@ func (ncm *NetCharManager) Start() error {
 
 		// Process current pdu sessions
 		go ncm.processPduSessionUpdate()
+
+		// Process GIS Engine D2D sessions
+		go ncm.processGeUpdate()
 
 		// Process current scenario
 		go ncm.processActiveScenarioUpdate()
@@ -256,6 +273,9 @@ func (ncm *NetCharManager) msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgPduSessionCreated, mq.MsgPduSessionTerminated:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		ncm.processPduSessionUpdate()
+	case mq.MsgGeUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		ncm.processGeUpdate()
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -283,7 +303,7 @@ func (ncm *NetCharManager) processActiveScenarioUpdate() {
 
 	if ncm.isStarted {
 		// Process updated scenario using algorithm
-		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions)
+		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions, ncm.d2dSessions)
 		if err != nil {
 			log.Error("Failed to process active model with error: ", err)
 			return
@@ -296,7 +316,6 @@ func (ncm *NetCharManager) processActiveScenarioUpdate() {
 
 // processPduSessionUpdate
 func (ncm *NetCharManager) processPduSessionUpdate() {
-
 	ncm.mutex.Lock()
 	defer ncm.mutex.Unlock()
 
@@ -310,7 +329,7 @@ func (ncm *NetCharManager) processPduSessionUpdate() {
 
 	if ncm.isStarted {
 		// Process updated scenario using algorithm
-		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions)
+		err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions, ncm.d2dSessions)
 		if err != nil {
 			log.Error("Failed to process active model with error: ", err)
 			return
@@ -318,6 +337,46 @@ func (ncm *NetCharManager) processPduSessionUpdate() {
 
 		// Recalculate network characteristics
 		ncm.updateNetChars()
+	}
+}
+
+// processGeUpdate
+func (ncm *NetCharManager) processGeUpdate() {
+	ncm.mutex.Lock()
+	defer ncm.mutex.Unlock()
+
+	// Obtain D2D measurements from cache
+	ueD2DMeasurements, err := ncm.gisCache.GetAllD2DMeasurements()
+	if err != nil {
+		log.Error("Failed to retrieve D2D measurements with error: ", err)
+		return
+	}
+
+	// Obtain local list of D2D sessions
+	d2dSessions := map[string]map[string]bool{}
+	for ueName, ueD2dMeas := range ueD2DMeasurements {
+		d2dSessions[ueName] = map[string]bool{}
+		for d2dUeName := range ueD2dMeas.Measurements {
+			d2dSessions[ueName][d2dUeName] = true
+		}
+	}
+
+	// Update list if necessary
+	if !reflect.DeepEqual(d2dSessions, ncm.d2dSessions) {
+		log.Info("Updating D2D sessions")
+		ncm.d2dSessions = d2dSessions
+
+		if ncm.isStarted {
+			// Process updated scenario using algorithm
+			err := ncm.algo.ProcessScenario(ncm.activeModel, ncm.pduSessions, ncm.d2dSessions)
+			if err != nil {
+				log.Error("Failed to process active model with error: ", err)
+				return
+			}
+
+			// Recalculate network characteristics
+			ncm.updateNetChars()
+		}
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,23 @@ import (
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	met "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics"
+	"github.com/gorilla/context"
 )
+
+type HttpLoggerHooks struct {
+	OnRequest      func(*met.HttpMetric)
+	OnResponse     func(*met.HttpMetric)
+	OnNotification func(*met.HttpMetric)
+}
+
+const RequestSrc string = "requestSrc"
 
 var nextUniqueId int32 = 1
 var redisDBAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 var metricStore *met.MetricStore
 var logComponent = ""
-
-const DirectionRX = "RX"
-const DirectionTX = "TX"
+var loggerHooks HttpLoggerHooks
 
 func ReInit(loggerName string, namespace string, currentStoreName string, redisAddr string, influxAddr string) error {
 
@@ -64,99 +71,52 @@ func ReInit(loggerName string, namespace string, currentStoreName string, redisA
 	return nil
 }
 
-func LogTx(url string, method string, body string, resp *http.Response, startTime time.Time) error {
-
-	if metricStore == nil {
-		err := errors.New("Metric store not initialised")
-		log.Error(err)
-		return err
-	}
-
-	uniqueId := nextUniqueId
-	nextUniqueId++
-
-	responseBodyString := ""
-	responseCode := ""
-
-	if resp != nil {
-		if resp.Body != nil {
-			responseData, _ := ioutil.ReadAll(resp.Body)
-			responseBodyString = string(responseData)
-		}
-		responseCode = strconv.Itoa(resp.StatusCode)
-	} else {
-		responseCode = strconv.Itoa(http.StatusInternalServerError)
-	}
-
-	var metric met.HttpMetric
-	metric.LoggerName = logComponent
-	metric.Direction = DirectionTX
-	metric.Id = uniqueId
-	metric.Url = url
-	metric.Endpoint = url //reusing the url info
-	metric.Method = method
-	metric.Body = body
-	metric.RespBody = responseBodyString
-	metric.RespCode = responseCode
-	metric.ProcTime = strconv.Itoa(int(time.Since(startTime) / time.Microsecond))
-
-	err := metricStore.SetHttpMetric(metric)
-	if err != nil {
-		log.Error("Failed to set http metric: ", err)
-	}
-	return err
-}
-
-func LogRx(inner http.Handler, dummy string) http.Handler {
+func LogRx(inner http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		start := time.Now()
 
 		//use a recorder to record/intercept the response
 		rr := httptest.NewRecorder()
-
 		//consume the body and store it locally
 		rawBody, _ := ioutil.ReadAll(r.Body)
-
 		// Restore the io.ReadCloser to it's original state to be consumed in ServeHTTP
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(rawBody))
 
 		inner.ServeHTTP(rr, r)
 
 		if metricStore != nil {
-			endpoint := strings.Split(r.RequestURI, "?")
-
-			uniqueId := nextUniqueId
-			nextUniqueId++
-
-			procTime := strconv.Itoa(int(time.Since(start) / time.Microsecond))
-
-			log.Debug(
-				"fields [id: ", uniqueId,
-				" url: ", r.RequestURI,
-				" endpoint: ", endpoint[0],
-				" method: ", r.Method,
-				" body: ", string(rawBody),
-				" resp_body: ", rr.Body.String(),
-				" resp_code: ", int32(rr.Code),
-				" proc_time: ", procTime,
-				"] tags [name: ", logComponent,
-				" direction: ", DirectionRX,
-			)
-
 			var metric met.HttpMetric
 			metric.LoggerName = logComponent
-			metric.Direction = DirectionRX
-			metric.Id = uniqueId
+			metric.MsgType = met.HttpMsgTypeResponse
+			metric.Id = getNextUniqueId()
 			metric.Url = r.RequestURI
-			metric.Endpoint = endpoint[0]
+			metric.Endpoint = strings.Split(r.RequestURI, "?")[0]
 			metric.Method = r.Method
+			metric.Src = logComponent
+			if dst, ok := context.Get(r, RequestSrc).(string); ok {
+				metric.Dst = dst
+			}
 			metric.Body = string(rawBody)
 			metric.RespBody = rr.Body.String()
 			metric.RespCode = strconv.Itoa(rr.Code)
-			metric.ProcTime = procTime
+			metric.ProcTime = strconv.Itoa(int(time.Since(start) / time.Microsecond))
 
+			log.Debug(
+				"tags [name: ", metric.LoggerName,
+				" msg_type: ", metric.MsgType,
+				"] fields [id: ", metric.Id,
+				" url: ", metric.Url,
+				" endpoint: ", metric.Endpoint,
+				" method: ", metric.Method,
+				" src: ", metric.Src,
+				" dst: ", metric.Dst,
+				" body: ", metric.Body,
+				" resp_body: ", metric.RespBody,
+				" resp_code: ", metric.RespCode,
+				" proc_time: ", metric.ProcTime,
+				"]",
+			)
 			err := metricStore.SetHttpMetric(metric)
 			if err != nil {
 				log.Error("Failed to set http metric: ", err)
@@ -175,4 +135,139 @@ func LogRx(inner http.Handler, dummy string) http.Handler {
 		//writting deletes the content of the body, so log had to be done before that
 		_, _ = rr.Body.WriteTo(w)
 	})
+}
+
+func LogNotification(url string, method string, src string, dst string, body string, resp *http.Response, startTime time.Time) error {
+
+	if metricStore == nil {
+		err := errors.New("Metric store not initialised")
+		log.Error(err)
+		return err
+	}
+
+	responseBodyString := ""
+	responseCode := ""
+	if resp != nil {
+		if resp.Body != nil {
+			responseData, _ := ioutil.ReadAll(resp.Body)
+			responseBodyString = string(responseData)
+		}
+		responseCode = strconv.Itoa(resp.StatusCode)
+	} else {
+		responseCode = strconv.Itoa(http.StatusInternalServerError)
+	}
+
+	var metric met.HttpMetric
+	metric.LoggerName = logComponent
+	metric.MsgType = met.HttpMsgTypeNotification
+	metric.Id = getNextUniqueId()
+	metric.Url = url
+	metric.Endpoint = url //reusing the url info
+	metric.Method = method
+	metric.Src = src
+	metric.Dst = dst
+	metric.Body = body
+	metric.RespBody = responseBodyString
+	metric.RespCode = responseCode
+	metric.ProcTime = strconv.Itoa(int(time.Since(startTime) / time.Microsecond))
+
+	// Invoke notification hook
+	if loggerHooks.OnNotification != nil {
+		loggerHooks.OnNotification(&metric)
+	}
+
+	err := metricStore.SetHttpMetric(metric)
+	if err != nil {
+		log.Error("Failed to set http metric: ", err)
+	}
+	return err
+}
+
+// Log Request
+func LogRequest(r *http.Request, body []byte, src string, dst string) error {
+
+	if metricStore != nil {
+		var metric met.HttpMetric
+		metric.LoggerName = logComponent
+		metric.MsgType = met.HttpMsgTypeRequest
+		metric.Id = getNextUniqueId()
+		metric.Url = r.RequestURI
+		metric.Endpoint = strings.Split(r.RequestURI, "?")[0]
+		metric.Method = r.Method
+		metric.Src = src
+		metric.Dst = dst
+		metric.Body = string(body)
+
+		log.Debug(
+			"tags [name: ", metric.LoggerName,
+			" msgType: ", metric.MsgType,
+			"] fields [id: ", metric.Id,
+			" url: ", metric.Url,
+			" endpoint: ", metric.Endpoint,
+			" method: ", metric.Method,
+			" src: ", metric.Src,
+			" dst: ", metric.Dst,
+			" body: ", metric.Body,
+			"]",
+		)
+		err := metricStore.SetHttpMetric(metric)
+		if err != nil {
+			log.Error("Failed to set http metric: ", err)
+		}
+	} else {
+		log.Error("Metric store not initialised")
+	}
+	return nil
+}
+
+// Log Response
+func LogResponse(r *http.Request, src string, dst string, respBody []byte, respCode int, start *time.Time) error {
+
+	if metricStore != nil {
+		var metric met.HttpMetric
+		metric.LoggerName = logComponent
+		metric.MsgType = met.HttpMsgTypeResponse
+		metric.Id = getNextUniqueId()
+		metric.Url = r.RequestURI
+		metric.Endpoint = strings.Split(r.RequestURI, "?")[0]
+		metric.Method = r.Method
+		metric.Src = src
+		metric.Dst = dst
+		metric.RespBody = string(respBody)
+		metric.RespCode = strconv.Itoa(respCode)
+		metric.ProcTime = strconv.Itoa(int(time.Since(*start) / time.Microsecond))
+
+		// Invoke response hook
+		if loggerHooks.OnResponse != nil {
+			loggerHooks.OnResponse(&metric)
+		}
+
+		log.Debug(
+			"tags [name: ", metric.LoggerName,
+			" msg_type: ", metric.MsgType,
+			"] fields [id: ", metric.Id,
+			" url: ", metric.Url,
+			" endpoint: ", metric.Endpoint,
+			" method: ", metric.Method,
+			" src: ", metric.Src,
+			" dst: ", metric.Dst,
+			" resp_body: ", metric.RespBody,
+			" resp_code: ", metric.RespCode,
+			" proc_time: ", metric.ProcTime,
+			"]",
+		)
+		err := metricStore.SetHttpMetric(metric)
+		if err != nil {
+			log.Error("Failed to set http metric: ", err)
+		}
+	} else {
+		log.Error("Metric store not initialised")
+	}
+	return nil
+}
+
+func getNextUniqueId() int32 {
+	uniqueId := nextUniqueId
+	nextUniqueId++
+	return uniqueId
 }

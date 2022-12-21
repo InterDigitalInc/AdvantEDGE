@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -45,12 +45,10 @@ type ConnectivityApiService service
 /*
 ConnectivityApiService Create a PDU Session
 Establish a PDU Session to a Data Network defined in the scenario
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param ueName UE unique identifier from the scenario
- * @param pduSessionId a UE provided identifier for the PDU Session
- * @param pduSessionInfo PDU session information
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ueName UE unique identifier from the scenario
+  - @param pduSessionId a UE provided identifier for the PDU Session
+  - @param pduSessionInfo PDU session information
 */
 func (a *ConnectivityApiService) CreatePduSession(ctx context.Context, ueName string, pduSessionId string, pduSessionInfo PduSessionInfo) (*http.Response, error) {
 	var (
@@ -221,11 +219,9 @@ func (a *ConnectivityApiService) GetPduSessionList(ctx context.Context, localVar
 /*
 ConnectivityApiService Terminate a PDU Session
 Terminate a PDU session to a Data Network defined in the scenario
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param ueName UE unique identifier from the scenario
- * @param pduSessionId a UE provided identifier for the PDU Session
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ueName UE unique identifier from the scenario
+  - @param pduSessionId a UE provided identifier for the PDU Session
 */
 func (a *ConnectivityApiService) TerminatePduSession(ctx context.Context, ueName string, pduSessionId string) (*http.Response, error) {
 	var (

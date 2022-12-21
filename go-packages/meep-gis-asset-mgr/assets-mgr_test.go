@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package gisassetmgr
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -33,11 +35,11 @@ const (
 	amDBHost    = "localhost"
 	amDBPort    = "30432"
 
-	point1 = "[7.418522,43.734198]"
-	point2 = "[7.421501,43.736978]"
-	point3 = "[7.422441,43.732285]"
-	point4 = "[7.418944,43.732591]"
-	point5 = "[7.417135,43.731531]"
+	point1 = "[7.418522,43.734198]" // around 100m from poa1
+	point2 = "[7.418536,43.733866]" // < 100m
+	point3 = "[7.418578,43.733701]" // < 100m
+	point4 = "[7.418711,43.733306]" // < 100m
+	point5 = "[7.417135,43.731531]" // Around 200m from poa1
 
 	ue1Id               = "ue1-id"
 	ue1Name             = "ue1"
@@ -145,7 +147,8 @@ func TestNewAssetMgr(t *testing.T) {
 	}
 
 	// Cleanup
-	_ = am.DeleteTable(UeMeasurementTable)
+	_ = am.DeleteTable(D2DMeasurementTable)
+	_ = am.DeleteTable(PoaMeasurementTable)
 	_ = am.DeleteTable(UeTable)
 	_ = am.DeleteTable(PoaTable)
 	_ = am.DeleteTable(ComputeTable)
@@ -306,8 +309,9 @@ func TestAssetMgrCreateUe(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
+	fmt.Println("==> ue: ", ue)
 	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, "", 0.000, []string{}, ue1Priority, false) {
+		200.994, 0.024876, 0.000, "", 0.000, []string{}, ue1Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -349,7 +353,7 @@ func TestAssetMgrCreateUe(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, "", 0.000, []string{}, ue3Priority, false) {
+		63.819, 0.391735, 0.000, "", 0.000, []string{}, ue3Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -370,7 +374,7 @@ func TestAssetMgrCreateUe(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, "", 0.000, []string{}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -780,7 +784,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -801,7 +805,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
-		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
+		0.000, 0.000, 0.000, poa1Name, 46.455, []string{poa1Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -822,7 +826,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}, ue3Priority, true) {
+		63.819, 0.391735, 0.000, poa1Name, 23.624, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -843,7 +847,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, "", 0.000, []string{}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -892,7 +896,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, poa2Name, 10.085, []string{poa2Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, poa1Name, 46.455, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -911,7 +915,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, poa2Name, 10.085, []string{poa2Name}, ue1Priority, true) {
+		63.819, 0.391735, 0.000, poa1Name, 46.455, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -931,7 +935,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -958,19 +962,19 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name, poa2Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, poa1Name, 83.25, []string{poa1Name, poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
-		0.000, 0.000, 0.000, poa2Name, 391.155, []string{poa2Name}, ue2Priority, true) {
+		0.000, 0.000, 0.000, poa1Name, 46.455, []string{poa1Name, poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name, poa2Name}, ue3Priority, true) {
+		63.819, 0.391735, 0.000, poa1Name, 23.624, []string{poa1Name, poa2Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, poa2Name, 316.692, []string{poa2Name}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, poa2Name, 316.692, []string{poa2Name}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -994,19 +998,19 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
-		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
+		0.000, 0.000, 0.000, poa1Name, 46.455, []string{poa1Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}, ue3Priority, true) {
+		63.819, 0.391735, 0.000, poa1Name, 23.624, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, "", 0.000, []string{}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1025,19 +1029,19 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, "", 0.000, []string{}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, "", 0.000, []string{}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
-		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
+		0.000, 0.000, 0.000, "", 0.000, []string{}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, "", 0.000, []string{}, ue3Priority, true) {
+		63.819, 0.391735, 0.000, "", 0.000, []string{}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, "", 0.000, []string{}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1064,19 +1068,19 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
-		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
+		0.000, 0.000, 0.000, poa1Name, 46.455, []string{poa1Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}, ue3Priority, true) {
+		63.819, 0.391735, 0.000, poa1Name, 23.624, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, "", 0.000, []string{}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1095,7 +1099,7 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.000, "", 0.000, []string{}, ue1Priority, true) {
+		200.994, 0.024876, 0.000, "", 0.000, []string{}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
@@ -1103,11 +1107,11 @@ func TestAssetMgrPoaSelection(t *testing.T) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.000, "", 0.000, []string{}, ue3Priority, true) {
+		63.819, 0.391735, 0.000, "", 0.000, []string{}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
-		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, true) {
+		334.824, 0.029866, 0.000, "", 0.000, []string{}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1207,7 +1211,7 @@ func TestAssetMgrMovement(t *testing.T) {
 	// Advance UE1 along Looping path and validate UE
 	fmt.Println("Advance UE1 along looping path and validate UE")
 
-	ue1AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.419448935,43.735063015]}"
+	ue1AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.418665513,43.733520679]}"
 	err = am.AdvanceUePosition(ue1Name, 25.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1217,11 +1221,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.09035, poa2Name, 276.166, []string{poa2Name}, ue1Priority, true) {
+		200.994, 0.024876, 0.6219, poa1Name, 15.949, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421302805,43.736793045]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418572975,43.733957418]}"
 	err = am.AdvanceUePosition(ue1Name, 50.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1231,11 +1235,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.27105, poa2Name, 33.516, []string{poa2Name}, ue1Priority, true) {
+		200.994, 0.024876, 1.8657, poa1Name, 56.846, []string{poa1Name}, ue1Priority, true) { //"wifi","5g","4g","other"
 		t.Fatalf("UE validation failed")
 	}
 
-	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421945766,43.734757482]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418530448,43.733997667]}"
 	err = am.AdvanceUePosition(ue1Name, 50.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1245,11 +1249,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.45175, poa3Name, 199.781, []string{poa2Name, poa3Name}, ue1Priority, true) {
+		200.994, 0.024876, 3.1095, poa1Name, 61.031, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418829679,43.734485126]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418528917,43.734033965]}"
 	err = am.AdvanceUePosition(ue1Name, 160.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1259,11 +1263,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 1.02999, poa1Name, 118.255, []string{poa1Name}, ue1Priority, true) {
+		200.994, 0.024876, 7.08966, poa1Name, 65.055, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.419756614,43.735350141]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418631481,43.733681294]}"
 	err = am.AdvanceUePosition(ue1Name, 25.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1273,11 +1277,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 1.12034, poa2Name, 235.784, []string{poa2Name}, ue1Priority, true) {
+		200.994, 0.024876, 7.71156, poa1Name, 28.086, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ueLoc := "{\"type\":\"Point\",\"coordinates\":[7.418766584,43.734426245]}"
+	ueLoc := "{\"type\":\"Point\",\"coordinates\":[7.418548357,43.734073607]}"
 	err = am.AdvanceUePosition(ue1Name, 250.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1287,14 +1291,14 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 2.02384, poa1Name, 110.777, []string{poa1Name}, ue1Priority, true) {
+		200.994, 0.024876, 13.93056, poa1Name, 69.536, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
 	// Advance UE3 along Reverse path and validate UE
 	fmt.Println("Advance UE3 along reverse path and validate UE")
 
-	ue3AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.42187422,43.735114679]}"
+	ue3AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.418672293,43.733420958]}"
 	err = am.AdvanceUePosition(ue3Name, 25.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1304,11 +1308,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 0.77095, poa2Name, 208.545, []string{poa2Name}, ue3Priority, true) {
+		63.819, 0.391735, 9.793375, poa1Name, 14.698, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421630262,43.736332651]}"
+	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.41865681,43.733466941]}"
 	err = am.AdvanceUePosition(ue3Name, 10.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1318,11 +1322,11 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 1.07933, poa2Name, 72.259, []string{poa2Name}, ue3Priority, true) {
+		63.819, 0.391735, 13.710725, poa1Name, 13.267, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.419490696,43.732543162]}"
+	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418664871,43.733443001]}"
 	err = am.AdvanceUePosition(ue3Name, 32.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1332,15 +1336,15 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get UE")
 	}
 	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 2.066146, poa1Name, 128.753, []string{poa1Name}, ue3Priority, true) {
+		63.819, 0.391735, 26.246244, poa1Name, 13.782, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
 	// Advance all UEs along path
 	fmt.Println("Advance all UEs along path")
 
-	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.420620454,43.736156275]}"
-	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.422183498,43.732307532]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418535452,43.733879004]}"
+	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418679715,43.733398915]}"
 	err = am.AdvanceAllUePosition(50.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -1350,15 +1354,15 @@ func TestAssetMgrMovement(t *testing.T) {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
-		1383.59, 0.003614, 0.20454, poa2Name, 122.472, []string{poa2Name}, ue1Priority, true) {
+		200.994, 0.024876, 1.17436, poa1Name, 47.893, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
-		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
+		0.000, 0.000, 0.000, poa1Name, 46.455, []string{poa1Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
-		810.678, 0.030838, 1.608046, poa3Name, 73.962, []string{poa3Name}, ue3Priority, true) {
+		63.819, 0.391735, 1.832995, poa1Name, 15.963, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1368,6 +1372,7 @@ func TestAssetMgrMovement(t *testing.T) {
 func validateUe(ue *Ue, id string, name string, position string, path string,
 	mode string, velocity float32, length float32, increment float32, fraction float32,
 	poa string, distance float32, poaInRange []string, poaTypePrio []string, connected bool) bool {
+	fmt.Println("validateUe: ue: ", ue)
 	if ue == nil {
 		fmt.Println("ue == nil")
 		return false
@@ -1382,48 +1387,70 @@ func validateUe(ue *Ue, id string, name string, position string, path string,
 	}
 	if ue.Position != position {
 		fmt.Println("ue.Position != position")
+		// fmt.Println("ue.Position: ", ue.Position)
+		// fmt.Println("position: ", position)
 		return false
 	}
 	if ue.Path != path {
 		fmt.Println("ue.Path != path")
+		// fmt.Println("ue.Path: ", ue.Path)
+		// fmt.Println("path: ", path)
 		return false
 	}
 	if ue.PathMode != mode {
 		fmt.Println("ue.PathMode != mode")
+		// fmt.Println("ue.PathLength: ", ue.PathLength)
+		// fmt.Println("length: ", length)
 		return false
 	}
 	if ue.PathVelocity != velocity {
 		fmt.Println("ue.PathVelocity != velocity")
+		// fmt.Println("ue.PathLength: ", ue.PathLength)
+		// fmt.Println("length: ", length)
 		return false
 	}
 	if ue.PathLength != length {
 		fmt.Println("ue.PathLength != length")
+		fmt.Println("ue.PathLength: ", ue.PathLength)
+		fmt.Println("length: ", length)
 		return false
 	}
 	if ue.PathIncrement != increment {
 		fmt.Println("ue.PathIncrement != increment")
+		fmt.Println("ue.PathIncrement: ", ue.PathIncrement)
+		fmt.Println("increment: ", increment)
 		return false
 	}
 	if ue.PathFraction != fraction {
 		fmt.Println("ue.PathFraction != fraction")
+		// fmt.Println("ue.PathFraction: ", ue.PathFraction)
+		// fmt.Println("fraction: ", fraction)
 		return false
 	}
 	if ue.Poa != poa {
 		fmt.Println("ue.Poa != poa")
+		// fmt.Println("ue.Poa: ", ue.Poa)
+		// fmt.Println("poa: ", poa)
 		return false
 	}
 	if ue.PoaDistance != distance {
 		fmt.Println("ue.PoaDistance != distance")
+		// fmt.Println("ue.PoaDistance: ", ue.PoaDistance)
+		// fmt.Println("distance: ", distance)
 		return false
 	}
 
 	if len(ue.PoaInRange) != len(poaInRange) {
 		fmt.Println("len(ue.PoaInRange) != len(poaInRange)")
+		// fmt.Println("ue.PoaInRange: ", ue.PoaInRange)
+		// fmt.Println("poaInRange: ", poaInRange)
 		return false
 	} else {
 		sort.Strings(ue.PoaInRange)
 		sort.Strings(poaInRange)
 
+		// fmt.Println("ue.PoaInRange: ", ue.PoaInRange)
+		// fmt.Println("poaInRange: ", poaInRange)
 		for i, poa := range ue.PoaInRange {
 			if poa != poaInRange[i] {
 				fmt.Println("poa != poaInRange[i]")
@@ -1434,8 +1461,12 @@ func validateUe(ue *Ue, id string, name string, position string, path string,
 
 	if len(ue.PoaTypePrio) != len(poaTypePrio) {
 		fmt.Println("len(ue.PoaTypePrio) != len(poaTypePrio)")
+		// fmt.Println("ue.PoaTypePrio: ", ue.PoaTypePrio)
+		// fmt.Println("poaTypePrio: ", poaTypePrio)
 		return false
 	} else {
+		// fmt.Println("ue.PoaTypePrio: ", ue.PoaTypePrio)
+		// fmt.Println("poaTypePrio: ", poaTypePrio)
 		for i, poaType := range ue.PoaTypePrio {
 			if poaType != poaTypePrio[i] {
 				fmt.Println("poaType != poaTypePrio[i]")
@@ -1446,6 +1477,8 @@ func validateUe(ue *Ue, id string, name string, position string, path string,
 
 	if ue.Connected != connected {
 		fmt.Println("ue.Connected != connected")
+		// fmt.Println("ue.Connected: ", ue.Connected)
+		// fmt.Println("connected: ", connected)
 		return false
 	}
 
@@ -1572,4 +1605,140 @@ func TestAssetMgrWithinRange(t *testing.T) {
 	if within != expectedWithinTrue {
 		t.Fatalf("Expected within range")
 	}
+}
+
+func TestAssetMgrGetPowerValuesForCoordinates(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
+	}
+
+	// Cleanup
+	_ = am.DeleteTables()
+
+	// Create tables
+	fmt.Println("Create Tables")
+	err = am.CreateTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
+	// Add on POA (poa1, r=160m) and one UE1 at point1, inside of the poa1 area and UE4 at point 5, outside of the poa1 area
+	fmt.Println("Add one POA and two UEs")
+	// poa1
+	poaData := map[string]interface{}{
+		FieldSubtype:  poa1Type,
+		FieldPosition: poa1Loc,
+		FieldRadius:   poa1Radius,
+	}
+	err = am.CreatePoa(poa1Id, poa1Name, poaData)
+	if err != nil {
+		t.Fatalf("Failed to create asset: " + err.Error())
+	}
+	// ue1
+	ueData := map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
+	if err != nil {
+		t.Fatalf("Failed to create UE: " + err.Error())
+	}
+	// ue4
+	ueData = map[string]interface{}{
+		FieldPosition:  ue4Loc,
+		FieldPath:      ue4Path,
+		FieldMode:      ue4PathMode,
+		FieldVelocity:  ue4Velocity,
+		FieldPriority:  strings.Join(ue4Priority, ","),
+		FieldConnected: true,
+	}
+	err = am.CreateUe(ue4Id, ue4Name, ueData)
+	if err != nil {
+		t.Fatalf("Failed to create UE: " + err.Error())
+	}
+
+	// Check an empty list of coordinates
+	fmt.Println("Check an empty list of coordinates")
+	var coordinates []Coordinate = make([]Coordinate, 0)
+	ret_value, err := am.GetPowerValuesForCoordinates(coordinates)
+	if err != nil {
+		t.Fatalf("Unexpected error returned: " + err.Error())
+	}
+	if len(ret_value) != 0 {
+		t.Fatalf("An empty list is expected")
+	}
+
+	// Check an one item list of coordinates
+	fmt.Println("Check an one item list of coordinates")
+	r := regexp.MustCompile(`\[(?P<lon>.*),(?P<lat>.*)\]`)
+	m := r.FindStringSubmatch(point1)
+	if m == nil {
+		t.Fatalf("Failed to resolv point")
+	}
+	lon, err := strconv.ParseFloat(m[1], 32)
+	if err != nil {
+		t.Fatalf("Failed to convert longitude")
+	}
+	lat, err := strconv.ParseFloat(m[2], 32)
+	if err != nil {
+		t.Fatalf("Failed to convert latitude")
+	}
+	coordinates = make([]Coordinate, 1)
+	coordinates[0] = Coordinate{float32(lat), float32(lon)}
+	ret_value, err = am.GetPowerValuesForCoordinates(coordinates)
+	if err != nil {
+		t.Fatalf("Unexpected error returned: " + err.Error())
+	}
+	fmt.Println("--- ret_value", ret_value)
+	if len(ret_value) != 1 {
+		t.Fatalf("Only one item is expected")
+	}
+	var expectd_value []CoordinatePowerValue = make([]CoordinatePowerValue, 1)
+	expectd_value[0] = CoordinatePowerValue{float32(43.7342), float32(7.418522), 12, 54, "poa1"}
+	if expectd_value[0] != ret_value[0] {
+		t.Fatalf("OUnexpected value was returned")
+	}
+
+	// Check multiple items list of coordinates
+	fmt.Println("Check multiple item length list of coordinates")
+	m = r.FindStringSubmatch(point2)
+	lon, _ = strconv.ParseFloat(m[1], 32)
+	lat, _ = strconv.ParseFloat(m[2], 32)
+	coordinates = make([]Coordinate, 3)
+	coordinates[0] = Coordinate{float32(lat), float32(lon)}
+	m = r.FindStringSubmatch(point3)
+	lon, _ = strconv.ParseFloat(m[1], 32)
+	lat, _ = strconv.ParseFloat(m[2], 32)
+	coordinates[1] = Coordinate{float32(lat), float32(lon)}
+	m = r.FindStringSubmatch(point5)
+	lon, _ = strconv.ParseFloat(m[1], 32)
+	lat, _ = strconv.ParseFloat(m[2], 32)
+	coordinates[2] = Coordinate{float32(lat), float32(lon)}
+	fmt.Println(coordinates)
+	ret_value, err = am.GetPowerValuesForCoordinates(coordinates)
+	fmt.Println("--- ret_value", ret_value)
+	if err != nil {
+		t.Fatalf("Unexpected error returned: " + err.Error())
+	}
+	if len(ret_value) != 3 {
+		t.Fatalf("Only one item is expected")
+	}
+	expectd_value = make([]CoordinatePowerValue, 3)
+	expectd_value[0] = CoordinatePowerValue{float32(43.733868), float32(7.418536), 19, 61, "poa1"}
+	expectd_value[1] = CoordinatePowerValue{float32(43.7337), float32(7.418578), 22, 64, "poa1"}
+	expectd_value[2] = CoordinatePowerValue{float32(43.73153), float32(7.417135), 0, 0, ""}
+	if expectd_value[0] != ret_value[0] || expectd_value[1] != ret_value[1] || expectd_value[2] != ret_value[2] {
+		t.Fatalf("Unexpected value was returned")
+	}
+
 }

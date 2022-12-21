@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use algo file except in compliance with the License.
@@ -19,6 +19,7 @@ package netchar
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -33,6 +34,11 @@ import (
 const MAX_THROUGHPUT = 9999999999
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 const DEFAULT_THROUGHPUT_LINK = 1000.0
+
+const PoaTypeD2D string = "POA-D2D"
+const ElemTypeD2D string = "elemD2D"
+const DirUL string = "uplink"
+const DirDL string = "downlink"
 
 const metricsDb = 0
 const metricsKey string = "metrics:"
@@ -113,14 +119,17 @@ type SegAlgoNetElem struct {
 
 // SegmentAlgorithm -
 type SegmentAlgorithm struct {
-	Name              string
-	Namespace         string
-	BaseKey           string
-	FlowMap           map[string]*SegAlgoFlow
-	SegmentMap        map[string]*SegAlgoSegment
-	ConnectivityModel string
-	Config            SegAlgoConfig
-	rc                *redis.Connector
+	Name                  string
+	Namespace             string
+	BaseKey               string
+	FlowMap               map[string]*SegAlgoFlow
+	SegmentMap            map[string]*SegAlgoSegment
+	ConnectivityModel     string
+	D2DDeviceList         map[string]string
+	D2DMaxDistance        float32
+	D2DViaNetworkDisabled bool
+	Config                SegAlgoConfig
+	rc                    *redis.Connector
 }
 
 // NewSegmentAlgorithm - Create, Initialize and connect
@@ -134,6 +143,9 @@ func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*Segm
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	algo.ConnectivityModel = mod.ConnectivityModelOpen
+	algo.D2DDeviceList = map[string]string{}
+	algo.D2DMaxDistance = 100
+	algo.D2DViaNetworkDisabled = false
 	algo.Config.MaxBwPerInactiveFlow = 20.0
 	algo.Config.MaxBwPerInactiveFlowFloor = 6.0
 	algo.Config.MinActivityThreshold = 0.3
@@ -156,7 +168,8 @@ func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*Segm
 }
 
 // ProcessScenario -
-func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) error {
+func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo,
+	d2dSessions map[string]map[string]bool) error {
 	var netElemList []SegAlgoNetElem
 
 	// Process empty scenario
@@ -167,13 +180,44 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 		algo.FlowMap = make(map[string]*SegAlgoFlow)
 	}
 
-	// Get scenario connectivity model
-	algo.ConnectivityModel = model.GetConnectivityModel()
+	// Get deployment information
+	deploymentFilter := &mod.NodeFilter{
+		ExcludeChildren: true,
+		Minimize:        true,
+	}
+	deployment := model.GetDeployment(deploymentFilter)
+	if deployment != nil {
+		// Get scenario connectivity model
+		if deployment.Connectivity != nil {
+			algo.ConnectivityModel = deployment.Connectivity.Model
+		}
+		// Get scenario D2D configuration
+		if deployment.D2d != nil {
+			algo.D2DMaxDistance = deployment.D2d.D2dMaxDistance
+			algo.D2DViaNetworkDisabled = deployment.D2d.DisableD2dViaNetwork
+		}
+	}
+
+	// Get D2D capable device list
+	algo.D2DDeviceList = map[string]string{}
+	phyLocsFilter := &mod.NodeFilter{
+		ExcludeChildren: true,
+		Minimize:        true,
+	}
+	phyLocs := model.GetPhysicalLocations(phyLocsFilter)
+	for _, pl := range phyLocs.PhysicalLocations {
+		priorityList := strings.Split(strings.TrimSpace(pl.WirelessType), ",")
+		for _, priority := range priorityList {
+			if priority == PoaTypeD2D {
+				algo.D2DDeviceList[pl.Name] = pl.Name
+			}
+		}
+	}
 
 	// Clear segment & flow maps
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	// Process active scenario
-	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
+	procNames := model.GetNodeNames(mod.NodeTypeCloudApp, mod.NodeTypeEdgeApp, mod.NodeTypeUEApp)
 
 	// Create NetElem for each scenario process
 	for _, name := range procNames {
@@ -202,10 +246,10 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 
 		// Type-specific values
 		element.Type = model.GetNodeType(element.PhyLocName)
-		if element.Type == "UE" || element.Type == "FOG" {
+		if element.Type == mod.NodeTypeUE || element.Type == mod.NodeTypeFog {
 			element.PoaName = ctx.Parents[mod.NetLoc]
 		}
-		if element.Type != "DC" {
+		if element.Type != mod.NodeTypeCloud {
 			element.ZoneName = ctx.Parents[mod.Zone]
 		}
 
@@ -235,7 +279,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model, pduSessions map[
 		for _, elemDest := range netElemList {
 			if elemSrc.Name != elemDest.Name {
 				// Create flow
-				algo.populateFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0, model, pduSessions)
+				algo.populateFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, netElemList, 0, model, pduSessions, d2dSessions)
 
 				// Create DB entry to begin collecting metrics for this flow
 				algo.createMetricsEntry(elemSrc.Name, elemDest.Name)
@@ -399,8 +443,8 @@ func (algo *SegmentAlgorithm) deleteMetricsEntries() {
 }
 
 // populateFlow - Create/Update flow
-func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, maxBw float64,
-	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) {
+func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, netElemList []SegAlgoNetElem,
+	maxBw float64, model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo, d2dSessions map[string]map[string]bool) {
 
 	// Use existing flow if present or Create new flow
 	flow := algo.FlowMap[flowName]
@@ -431,7 +475,7 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 	flow.ConfiguredNetChar.PacketLoss = 0
 	// Create a new path for this flow
 	oldPath := flow.Path
-	flow.Path = algo.createPath(flowName, srcElement, destElement, model, pduSessions)
+	flow.Path = algo.createPath(flowName, srcElement, destElement, model, pduSessions, d2dSessions)
 	flow.UpdateRequired = algo.comparePath(oldPath, flow.Path)
 }
 
@@ -455,7 +499,15 @@ func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgo
 
 // createPath -
 func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem,
-	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo) *SegAlgoPath {
+	model *mod.Model, pduSessions map[string]map[string]*dataModel.PduSessionInfo, d2dSessions map[string]map[string]bool) *SegAlgoPath {
+
+	// Path creation algorithm:
+	// - Add D2D segment if the following conditions are met:
+	//   - D2D enabled UEs in range (from gis cache) AND
+	//   	- Apps are on in range UEs OR
+	//      - UE has no POA in range
+	// - Otherwise, go up layers until common parent is found
+	//   - If D2D via network disabled, prevent inter-UE communication over network
 
 	direction := ""
 	var segment *SegAlgoSegment
@@ -465,18 +517,18 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	path.Disconnected = false
 
 	//app segment ul, dl
-	direction = "uplink"
+	direction = DirUL
 	segment = algo.createSegment(srcElement.Name, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
-	direction = "downlink"
+	direction = DirDL
 	segment = algo.createSegment(destElement.Name, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 
 	//node segment ul, dl
-	direction = "uplink"
+	direction = DirUL
 	segment = algo.createSegment(srcElement.PhyLocName, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
-	direction = "downlink"
+	direction = DirDL
 	segment = algo.createSegment(destElement.PhyLocName, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 
@@ -485,28 +537,156 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 		return path
 	}
 
+	// Check if apps are running on in-range D2D devices
+	if session, found := d2dSessions[srcElement.PhyLocName]; found {
+		if _, found = session[destElement.PhyLocName]; found {
+			// D2D segment ul, dl
+			direction = DirUL
+			segment = algo.createSegment(ElemTypeD2D+srcElement.PhyLocName, direction, flowName, model)
+			path.Segments = append(path.Segments, segment)
+			direction = DirDL
+			segment = algo.createSegment(ElemTypeD2D+srcElement.PhyLocName, direction, flowName, model)
+			path.Segments = append(path.Segments, segment)
+
+			return path
+		}
+	}
+
 	// Check if src or dest Physical location is disconnected
-	// NOTE: Does not apply to apps on same physical node
+	var ok bool
 	var srcPhyLoc *dataModel.PhysicalLocation
 	srcPhyLocNode := model.GetNode(srcElement.PhyLocName)
-	if srcPhyLocNode != nil {
-		var ok bool
-		if srcPhyLoc, ok = srcPhyLocNode.(*dataModel.PhysicalLocation); ok {
-			path.Disconnected = path.Disconnected || !srcPhyLoc.Connected
+	if srcPhyLoc, ok = srcPhyLocNode.(*dataModel.PhysicalLocation); ok {
+		// If disconnected, search for an alternate path via D2D session
+		if !srcPhyLoc.Connected {
+			d2dUeSessions, found := d2dSessions[srcElement.PhyLocName]
+			if !found {
+				path.Disconnected = true
+				return path
+			}
+
+			// Get ordered list of in-range D2D peers
+			d2dUeList := make([]string, 0, len(d2dUeSessions))
+			for d2dUe := range d2dUeSessions {
+				d2dUeList = append(d2dUeList, d2dUe)
+			}
+			sort.Strings(d2dUeList)
+
+			// Find first connected peer
+			d2dUeConnected := false
+			for _, d2dUe := range d2dUeList {
+				srcPhyLocNode = model.GetNode(d2dUe)
+				if srcPhyLoc, ok = srcPhyLocNode.(*dataModel.PhysicalLocation); ok {
+					if srcPhyLoc.Connected {
+						d2dUeConnected = true
+						break
+					}
+				}
+			}
+			if !d2dUeConnected {
+				path.Disconnected = true
+				return path
+			}
+
+			// Retrieve srcPhyLoc context from model
+			ctx := model.GetNodeContext(srcPhyLoc.Name)
+			if ctx == nil {
+				log.Error("Error getting context for pl: ", srcPhyLoc.Name)
+				return path
+			}
+
+			// Update source element information
+			newSrcElement := *srcElement
+			newSrcElement.PhyLocName = srcPhyLoc.Name
+			newSrcElement.PoaName = ctx.Parents[mod.NetLoc]
+			newSrcElement.ZoneName = ctx.Parents[mod.Zone]
+			newSrcElement.DomainName = ctx.Parents[mod.Domain]
+			srcElement = &newSrcElement
+
+			// D2D segment ul, dl
+			direction = DirUL
+			segment = algo.createSegment(ElemTypeD2D+srcPhyLoc.Name, direction, flowName, model)
+			path.Segments = append(path.Segments, segment)
+			direction = DirDL
+			segment = algo.createSegment(ElemTypeD2D+srcPhyLoc.Name, direction, flowName, model)
+			path.Segments = append(path.Segments, segment)
 		}
 	}
 	var destPhyLoc *dataModel.PhysicalLocation
 	destPhyLocNode := model.GetNode(destElement.PhyLocName)
-	if destPhyLocNode != nil {
-		var ok bool
-		if destPhyLoc, ok = destPhyLocNode.(*dataModel.PhysicalLocation); ok {
-			path.Disconnected = path.Disconnected || !destPhyLoc.Connected
+	if destPhyLoc, ok = destPhyLocNode.(*dataModel.PhysicalLocation); ok {
+		// If disconnected, search for an alternate path via D2D session
+		if !destPhyLoc.Connected {
+			d2dUeSessions, found := d2dSessions[destElement.PhyLocName]
+			if !found {
+				path.Disconnected = true
+				return path
+			}
+
+			// Get ordered list of in-range D2D peers
+			d2dUeList := make([]string, 0, len(d2dUeSessions))
+			for d2dUe := range d2dUeSessions {
+				d2dUeList = append(d2dUeList, d2dUe)
+			}
+			sort.Strings(d2dUeList)
+
+			// Find first connected peer
+			d2dUeConnected := false
+			for _, d2dUe := range d2dUeList {
+				destPhyLocNode = model.GetNode(d2dUe)
+				if destPhyLoc, ok = destPhyLocNode.(*dataModel.PhysicalLocation); ok {
+					if destPhyLoc.Connected {
+						d2dUeConnected = true
+						break
+					}
+				}
+			}
+			if !d2dUeConnected {
+				path.Disconnected = true
+				return path
+			}
+
+			// Retrieve destPhyLoc context from model
+			ctx := model.GetNodeContext(destPhyLoc.Name)
+			if ctx == nil {
+				log.Error("Error getting context for pl: ", srcPhyLoc.Name)
+				return path
+			}
+
+			// Update destination element information
+			newDestElement := *destElement
+			newDestElement.PhyLocName = destPhyLoc.Name
+			newDestElement.PoaName = ctx.Parents[mod.NetLoc]
+			newDestElement.ZoneName = ctx.Parents[mod.Zone]
+			newDestElement.DomainName = ctx.Parents[mod.Domain]
+			destElement = &newDestElement
+
+			// D2D segment ul, dl
+			direction = DirUL
+			segment = algo.createSegment(ElemTypeD2D+destPhyLoc.Name, direction, flowName, model)
+			path.Segments = append(path.Segments, segment)
+			direction = DirDL
+			segment = algo.createSegment(ElemTypeD2D+destPhyLoc.Name, direction, flowName, model)
+			path.Segments = append(path.Segments, segment)
+		}
+	}
+
+	//if on same D2D peer, return
+	if srcPhyLoc.Name == destPhyLoc.Name {
+		return path
+	}
+
+	// If D2D via network is disabled, disable UE-to-UE paths via network
+	if algo.D2DViaNetworkDisabled {
+		if mod.IsUe(srcPhyLoc.Type_) && mod.IsUe(destPhyLoc.Type_) {
+			path.Disconnected = true
+			return path
 		}
 	}
 
 	// If in PDU Connectivity mode, check if src or dest UE has PDU connectivity to DN
 	// NOTE: For LADN, additionally verify that UE and edge app are in the same zone
-	if !path.Disconnected && algo.ConnectivityModel == mod.ConnectivityModelPdu {
+	if algo.ConnectivityModel == mod.ConnectivityModelPdu {
 		if mod.IsUe(srcPhyLoc.Type_) {
 			pduMap, ok := pduSessions[srcPhyLoc.Name]
 			if !ok || mod.IsUe(destPhyLoc.Type_) || destPhyLoc.DataNetwork == nil {
@@ -525,6 +705,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 				}
 				if !found {
 					path.Disconnected = true
+					return path
 				}
 			}
 		}
@@ -547,20 +728,20 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 				}
 				if !found {
 					path.Disconnected = true
+					return path
 				}
 			}
 		}
 	}
 
 	//network location ul, dl
-	if srcElement.Type == "UE" {
-		direction = "uplink"
+	if srcElement.Type == mod.NodeTypeUE {
+		direction = DirUL
 		segment = algo.createSegment(srcElement.PoaName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 	}
-
-	if destElement.Type == "UE" {
-		direction = "downlink"
+	if destElement.Type == mod.NodeTypeUE {
+		direction = DirDL
 		segment = algo.createSegment(destElement.PoaName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 	}
@@ -571,18 +752,16 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//zone ul, dl
-	if srcElement.Type != "DC" {
-		direction = "uplink"
+	if srcElement.Type != mod.NodeTypeCloud {
+		direction = DirUL
 		segment = algo.createSegment(srcElement.ZoneName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
-
-	if destElement.Type != "DC" {
-		direction = "downlink"
+	if destElement.Type != mod.NodeTypeCloud {
+		direction = DirDL
 		segment = algo.createSegment(destElement.ZoneName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
-
 	}
 
 	//if in same zone, return
@@ -591,15 +770,14 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//domain ul, dl
-	if srcElement.Type != "DC" {
-		direction = "uplink"
+	if srcElement.Type != mod.NodeTypeCloud {
+		direction = DirUL
 		segment = algo.createSegment(srcElement.DomainName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
-
-	if destElement.Type != "DC" {
-		direction = "downlink"
+	if destElement.Type != mod.NodeTypeCloud {
+		direction = DirDL
 		segment = algo.createSegment(destElement.DomainName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
@@ -613,11 +791,10 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	//interdomain
 
 	//computing twice while in the interdomain
-	direction = "uplink"
+	direction = DirUL
 	segment = algo.createSegment(model.GetScenarioName(), direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
-
-	direction = "downlink"
+	direction = DirDL
 	segment = algo.createSegment(model.GetScenarioName(), direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 
@@ -636,7 +813,7 @@ func (algo *SegmentAlgorithm) createSegment(elemName string, direction string, f
 		// Retrieve max throughput from model using model scenario element name
 		nc := getNetChars(elemName, model)
 		ncThroughput := 0.0
-		if direction == "uplink" {
+		if direction == DirUL {
 			ncThroughput = float64(nc.ThroughputUl)
 		} else {
 			ncThroughput = float64(nc.ThroughputDl)
@@ -914,7 +1091,16 @@ func getNetChars(elemName string, model *mod.Model) *dataModel.NetworkCharacteri
 	// Get Node
 	node := model.GetNode(elemName)
 	if node == nil {
-		log.Error("Error finding element: " + elemName)
+		// Check if D2D net chars
+		if strings.HasPrefix(elemName, ElemTypeD2D) {
+			nc = &dataModel.NetworkCharacteristics{
+				Latency:      1,
+				ThroughputUl: DEFAULT_THROUGHPUT_LINK,
+				ThroughputDl: DEFAULT_THROUGHPUT_LINK,
+			}
+		} else {
+			log.Error("Error finding element: " + elemName)
+		}
 		return nc
 	}
 

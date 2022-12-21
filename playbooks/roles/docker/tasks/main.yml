@@ -3,9 +3,9 @@
 - name: Assert OS is Ubuntu 18.04
   assert:
     that:
-      - ansible_distribution == 'Ubuntu'
-      - ansible_distribution_major_version == '18'
-      - ansible_distribution_version == '18.04'
+      - ansible_distribution == "{{ ubuntu_dist }}"
+      - ansible_distribution_major_version == "{{ ubuntu_dist_major }}"
+      - ansible_distribution_version == "{{ ubuntu_dist_version }}"
     quiet: yes
 
 - name: Gather package facts
@@ -21,7 +21,7 @@
 - name: Assert currently installed Docker version is supported
   assert:
     that:
-      - installed_docker_version is match("5:19.03*")
+      - installed_docker_version is match("{{ docker_version }}*")
     quiet: yes
   when:
     - installed_docker_version is defined

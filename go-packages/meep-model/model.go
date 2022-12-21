@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ var redisTable int = 0
 
 const (
 	NodeTypeScenario     string = "SCENARIO"
+	NodeTypeDeployment   string = "DEPLOYMENT"
 	NodeTypeOperator     string = "OPERATOR"
 	NodeTypeOperatorCell string = "OPERATOR-CELLULAR"
 	NodeTypeZone         string = "ZONE"
@@ -377,73 +378,75 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate, u
 
 	ncName := nc.ElementName
 	ncType := strings.ToUpper(nc.ElementType)
+	if ncType == NodeTypeScenario {
+		ncType = NodeTypeDeployment
+	}
 
 	// Find the element
-	if ncType == NodeTypeScenario {
-		if m.scenario.Deployment.NetChar == nil {
-			m.scenario.Deployment.NetChar = new(dataModel.NetworkCharacteristics)
+	n := m.nodeMap.FindByName(ncName)
+	// fmt.Printf("+++ node: %+v\n", n)
+	if n == nil {
+		return errors.New("Did not find " + ncName + " in scenario " + m.name)
+	}
+	if IsDeployment(ncType) {
+		deployment := n.object.(*dataModel.Deployment)
+		if deployment.NetChar == nil {
+			deployment.NetChar = new(dataModel.NetworkCharacteristics)
 		}
-		m.scenario.Deployment.NetChar = nc.NetChar
+		deployment.NetChar = nc.NetChar
+		updated = true
+	} else if IsDomain(ncType) {
+		domain := n.object.(*dataModel.Domain)
+		if domain.NetChar == nil {
+			domain.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		domain.NetChar = nc.NetChar
+		updated = true
+	} else if IsZone(ncType) {
+		zone := n.object.(*dataModel.Zone)
+		if zone.NetChar == nil {
+			zone.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		zone.NetChar = nc.NetChar
+		updated = true
+	} else if IsNetLoc(ncType) {
+		nl := n.object.(*dataModel.NetworkLocation)
+		if nl.NetChar == nil {
+			nl.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		nl.NetChar = nc.NetChar
+		updated = true
+	} else if IsPhyLoc(ncType) {
+		pl := n.object.(*dataModel.PhysicalLocation)
+		if pl.NetChar == nil {
+			pl.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		pl.NetChar = nc.NetChar
+		updated = true
+	} else if IsProc(ncType) {
+		proc := n.object.(*dataModel.Process)
+		if proc.NetChar == nil {
+			proc.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		proc.NetChar = nc.NetChar
 		updated = true
 	} else {
-		n := m.nodeMap.FindByName(ncName)
-		// fmt.Printf("+++ node: %+v\n", n)
-		if n == nil {
-			return errors.New("Did not find " + ncName + " in scenario " + m.name)
-		}
-		if IsDomain(ncType) {
-			domain := n.object.(*dataModel.Domain)
-			if domain.NetChar == nil {
-				domain.NetChar = new(dataModel.NetworkCharacteristics)
-			}
-			domain.NetChar = nc.NetChar
-			updated = true
-		} else if IsZone(ncType) {
-			zone := n.object.(*dataModel.Zone)
-			if zone.NetChar == nil {
-				zone.NetChar = new(dataModel.NetworkCharacteristics)
-			}
-			zone.NetChar = nc.NetChar
-			updated = true
-		} else if IsNetLoc(ncType) {
-			nl := n.object.(*dataModel.NetworkLocation)
-			if nl.NetChar == nil {
-				nl.NetChar = new(dataModel.NetworkCharacteristics)
-			}
-			nl.NetChar = nc.NetChar
-			updated = true
-		} else if IsPhyLoc(ncType) {
-			pl := n.object.(*dataModel.PhysicalLocation)
-			if pl.NetChar == nil {
-				pl.NetChar = new(dataModel.NetworkCharacteristics)
-			}
-			pl.NetChar = nc.NetChar
-			updated = true
-		} else if IsProc(ncType) {
-			proc := n.object.(*dataModel.Process)
-			if proc.NetChar == nil {
-				proc.NetChar = new(dataModel.NetworkCharacteristics)
-			}
-			proc.NetChar = nc.NetChar
-			updated = true
-		} else {
-			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
-				NodeTypeScenario + ", " +
-				NodeTypeOperator + ", " +
-				NodeTypeOperatorCell + ", " +
-				NodeTypeZone + ", " +
-				NodeTypePoa + ", " +
-				NodeTypePoa4G + ", " +
-				NodeTypePoa5G + ", " +
-				NodeTypePoaWifi + ", " +
-				NodeTypeCloud + ", " +
-				NodeTypeEdge + ", " +
-				NodeTypeFog + ", " +
-				NodeTypeUE + ", " +
-				NodeTypeCloudApp + ", " +
-				NodeTypeEdgeApp + ", " +
-				NodeTypeUEApp)
-		}
+		err = errors.New("Unsupported type " + ncType + ". Supported types: " +
+			NodeTypeScenario + ", " +
+			NodeTypeOperator + ", " +
+			NodeTypeOperatorCell + ", " +
+			NodeTypeZone + ", " +
+			NodeTypePoa + ", " +
+			NodeTypePoa4G + ", " +
+			NodeTypePoa5G + ", " +
+			NodeTypePoaWifi + ", " +
+			NodeTypeCloud + ", " +
+			NodeTypeEdge + ", " +
+			NodeTypeFog + ", " +
+			NodeTypeUE + ", " +
+			NodeTypeCloudApp + ", " +
+			NodeTypeEdgeApp + ", " +
+			NodeTypeUEApp)
 	}
 	if updated {
 		err = m.refresh(EventNetChar, userData)
@@ -987,6 +990,48 @@ func (m *Model) GetNodeContext(name string) (ctx *NodeContext) {
 	return ctx
 }
 
+// GetDeployment - Get deployment matching filter criteria
+func (m *Model) GetDeployment(filter *NodeFilter) *dataModel.Deployment {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	// Get deployment nodes
+	nMap := make(map[string]*Node)
+	m.mergeNodeMap(nMap, m.nodeMap.FindAllByType(NodeTypeDeployment))
+
+	// Find nodes that match filter criteria
+	for _, node := range nMap {
+		if m.filterNode(node, Deployment, filter) {
+			var deployment dataModel.Deployment
+
+			// Deep copy node if it needs to be modified
+			obj := node.object.(*dataModel.Deployment)
+			if filter != nil && (filter.ExcludeChildren || filter.Minimize) {
+				byt, _ := json.Marshal(obj)
+				err := json.Unmarshal(byt, &deployment)
+				if err != nil {
+					continue
+				}
+
+				// Remove children
+				if filter.ExcludeChildren {
+					deployment.Domains = nil
+				}
+				// Minimize node
+				if filter.Minimize {
+					minimizeDeployment(&deployment)
+				}
+			} else {
+				deployment = *obj
+			}
+
+			// NOTE: there should always be a single deployment
+			return &deployment
+		}
+	}
+	return nil
+}
+
 // GetDomains - Get domains matching filter criteria
 func (m *Model) GetDomains(filter *NodeFilter) dataModel.Domains {
 	m.lock.RLock()
@@ -1006,7 +1051,7 @@ func (m *Model) GetDomains(filter *NodeFilter) dataModel.Domains {
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.Domain)
-			if filter.ExcludeChildren || filter.Minimize {
+			if filter != nil && (filter.ExcludeChildren || filter.Minimize) {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &domain)
 				if err != nil {
@@ -1050,7 +1095,7 @@ func (m *Model) GetZones(filter *NodeFilter) dataModel.Zones {
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.Zone)
-			if filter.ExcludeChildren || filter.Minimize {
+			if filter != nil && (filter.ExcludeChildren || filter.Minimize) {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &zone)
 				if err != nil {
@@ -1097,7 +1142,7 @@ func (m *Model) GetNetworkLocations(filter *NodeFilter) dataModel.NetworkLocatio
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.NetworkLocation)
-			if filter.ExcludeChildren || filter.Minimize {
+			if filter != nil && (filter.ExcludeChildren || filter.Minimize) {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &networkLocation)
 				if err != nil {
@@ -1144,7 +1189,7 @@ func (m *Model) GetPhysicalLocations(filter *NodeFilter) dataModel.PhysicalLocat
 
 			// Deep copy node if it needs to be modified
 			obj := node.object.(*dataModel.PhysicalLocation)
-			if filter.ExcludeChildren || filter.Minimize {
+			if filter != nil && (filter.ExcludeChildren || filter.Minimize) {
 				byt, _ := json.Marshal(obj)
 				err := json.Unmarshal(byt, &physicalLocation)
 				if err != nil {
@@ -1204,14 +1249,6 @@ func (m *Model) GetNetworkGraph() *dijkstra.Graph {
 	return m.networkGraph.graph
 }
 
-// GetConnectivityModel - Get the connectivity model
-func (m *Model) GetConnectivityModel() string {
-	m.lock.RLock()
-	defer m.lock.RUnlock()
-
-	return m.connectivityModel
-}
-
 //---Internal Funcs---
 
 func (m *Model) parseNodes() (err error) {
@@ -1224,7 +1261,7 @@ func (m *Model) parseNodes() (err error) {
 		if m.scenario.Deployment != nil {
 			deployment := m.scenario.Deployment
 			deploymentCtx := NewNodeContext(m.scenario.Name, "", "", "", "")
-			m.nodeMap.AddNode(NewNode(m.scenario.Id, m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, deploymentCtx))
+			m.nodeMap.AddNode(NewNode(m.scenario.Id, m.scenario.Name, NodeTypeDeployment, deployment, &deployment.Domains, m.scenario, deploymentCtx))
 			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
 			if deployment.Connectivity != nil {
 				m.connectivityModel = deployment.Connectivity.Model
@@ -1452,18 +1489,30 @@ func (m *Model) UpdateScenario() {
 }
 
 func (m *Model) filterNode(node *Node, typ string, filter *NodeFilter) bool {
+	// Validate filter
+	if filter == nil {
+		return true
+	}
+
+	// Filter node
 	var ctx *NodeContext = node.context.(*NodeContext)
 
 	// Domain name
 	if filter.DomainName != "" {
-		if ctx.Parents[Domain] != filter.DomainName {
-			return false
+		if typ == Deployment {
+			if _, found := ctx.Children[Domain][filter.DomainName]; !found {
+				return false
+			}
+		} else {
+			if ctx.Parents[Domain] != filter.DomainName {
+				return false
+			}
 		}
 	}
 
 	// Zone Name
 	if filter.ZoneName != "" {
-		if typ == Domain {
+		if typ == Deployment || typ == Domain {
 			if _, found := ctx.Children[Zone][filter.ZoneName]; !found {
 				return false
 			}
@@ -1476,7 +1525,7 @@ func (m *Model) filterNode(node *Node, typ string, filter *NodeFilter) bool {
 
 	// Network Location Name
 	if filter.NetworkLocationName != "" {
-		if typ == Domain || typ == Zone {
+		if typ == Deployment || typ == Domain || typ == Zone {
 			if _, found := ctx.Children[NetLoc][filter.NetworkLocationName]; !found {
 				return false
 			}
@@ -1489,7 +1538,7 @@ func (m *Model) filterNode(node *Node, typ string, filter *NodeFilter) bool {
 
 	// Physical Location Name
 	if filter.PhysicalLocationName != "" {
-		if typ == Domain || typ == Zone || typ == NetLoc {
+		if typ == Deployment || typ == Domain || typ == Zone || typ == NetLoc {
 			if _, found := ctx.Children[PhyLoc][filter.PhysicalLocationName]; !found {
 				return false
 			}
@@ -1502,7 +1551,7 @@ func (m *Model) filterNode(node *Node, typ string, filter *NodeFilter) bool {
 
 	// Process Name
 	if filter.ProcessName != "" {
-		if typ == Domain || typ == Zone || typ == NetLoc || typ == PhyLoc {
+		if typ == Deployment || typ == Domain || typ == Zone || typ == NetLoc || typ == PhyLoc {
 			if _, found := ctx.Children[Proc][filter.ProcessName]; !found {
 				return false
 			}
@@ -1519,9 +1568,21 @@ func (m *Model) filterNode(node *Node, typ string, filter *NodeFilter) bool {
 			if node.nodeType != filter.DomainType {
 				return false
 			}
-		} else {
+		} else if typ == Proc || typ == PhyLoc || typ == NetLoc || typ == Zone {
 			domain := m.nodeMap.FindByName(ctx.Parents[Domain])
 			if domain.nodeType != filter.DomainType {
+				return false
+			}
+		} else {
+			matchFound := false
+			for domainName := range ctx.Children[Domain] {
+				domain := m.nodeMap.FindByName(domainName)
+				if domain.nodeType == filter.DomainType {
+					matchFound = true
+					break
+				}
+			}
+			if !matchFound {
 				return false
 			}
 		}
@@ -1615,6 +1676,10 @@ func (m *Model) mergeNodeMap(dst, src map[string]*Node) {
 
 func IsScenario(typ string) bool {
 	return typ == NodeTypeScenario
+}
+
+func IsDeployment(typ string) bool {
+	return typ == NodeTypeDeployment
 }
 
 func IsDomain(typ string) bool {

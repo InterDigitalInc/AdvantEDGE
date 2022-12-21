@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Set store")
-	err = ms.SetStore(networkStoreName)
+	err = ms.SetStore(networkStoreName, networkStoreNamespace, true)
 	if err != nil {
 		t.Fatalf("Unable to set Store")
 	}

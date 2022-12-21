@@ -31,11 +31,16 @@
     state: present
     line: 'export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin'
 
+- name: Copy golangci-lint install file
+  copy:
+    src: "install.sh"
+    dest: "/home/{{ ansible_user }}/install-golangci-lint.sh"
+    mode: 0744
+  tags: golangci-lint
+
 - name: Install golangci-lint
   become: false
-  shell: "cd /home/{{ ansible_user }}/; source /home/{{ ansible_user }}/.profile; GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@{{golangci_lint_version}}"
-  args:
-    executable: /bin/bash
+  shell: /bin/bash -c "cd /home/{{ ansible_user }}; source /home/{{ ansible_user }}/.profile; bash install-golangci-lint.sh {{golangci_lint_version}}"
 
 # source .bashrc doesn't work so added golang part in .profile. But .profile
 # only works if logging into the machine remotely or use login shell option is

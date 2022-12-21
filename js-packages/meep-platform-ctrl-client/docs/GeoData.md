@@ -8,6 +8,8 @@ Name | Type | Description | Notes
 **path** | [**LineString**](LineString.md) |  | [optional] 
 **eopMode** | **String** | End-of-Path mode: <li>LOOP: When path endpoint is reached, start over from the beginning <li>REVERSE: When path endpoint is reached, return on the reverse path | [optional] 
 **velocity** | **Number** | Speed of movement along path in m/s | [optional] 
+**d2dInRange** | **[String]** |  | [optional] 
+**poaInRange** | **[String]** |  | [optional] 
 
 
 <a name="EopModeEnum"></a>

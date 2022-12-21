@@ -2,7 +2,85 @@
 
 This file documents all notable changes to [ingress-nginx](https://github.com/kubernetes/ingress-nginx) Helm Chart. The release numbering uses [semantic versioning](http://semver.org).
 
-### Unreleased
+### 4.0.13
+
+- [8008] https://github.com/kubernetes/ingress-nginx/pull/8008 Add relabelings in controller-servicemonitor.yaml
+
+### 4.0.12
+
+- [7978] https://github.com/kubernetes/ingress-nginx/pull/7979 Support custom annotations in admissions Jobs
+
+### 4.0.11
+
+- [7873] https://github.com/kubernetes/ingress-nginx/pull/7873 Makes the [appProtocol](https://kubernetes.io/docs/concepts/services-networking/_print/#application-protocol) field optional.
+
+### 4.0.10
+
+- [7964] https://github.com/kubernetes/ingress-nginx/pull/7964 Update controller version to v1.1.0
+
+### 4.0.9
+
+- [6992] https://github.com/kubernetes/ingress-nginx/pull/6992 Add ability to specify labels for all resources
+
+### 4.0.7
+
+- [7923] https://github.com/kubernetes/ingress-nginx/pull/7923 Release v1.0.5 of ingress-nginx
+- [7806] https://github.com/kubernetes/ingress-nginx/pull/7806 Choice option for internal/external loadbalancer type service
+
+### 4.0.6
+
+- [7804] https://github.com/kubernetes/ingress-nginx/pull/7804 Release v1.0.4 of ingress-nginx
+- [7651] https://github.com/kubernetes/ingress-nginx/pull/7651 Support ipFamilyPolicy and ipFamilies fields in Helm Chart
+- [7798] https://github.com/kubernetes/ingress-nginx/pull/7798 Exoscale: use HTTP Healthcheck mode
+- [7793] https://github.com/kubernetes/ingress-nginx/pull/7793 Update kube-webhook-certgen to v1.1.1
+
+### 4.0.5
+
+- [7740] https://github.com/kubernetes/ingress-nginx/pull/7740 Release v1.0.3 of ingress-nginx
+
+### 4.0.3
+
+- [7707] https://github.com/kubernetes/ingress-nginx/pull/7707 Release v1.0.2 of ingress-nginx
+
+### 4.0.2 
+
+- [7681] https://github.com/kubernetes/ingress-nginx/pull/7681 Release v1.0.1 of ingress-nginx
+
+### 4.0.1 
+
+- [7535] https://github.com/kubernetes/ingress-nginx/pull/7535 Release v1.0.0 ingress-nginx
+
+### 3.34.0
+
+- [7256] https://github.com/kubernetes/ingress-nginx/pull/7256 Add namespace field in the namespace scoped resource templates
+
+### 3.33.0
+
+- [7164] https://github.com/kubernetes/ingress-nginx/pull/7164 Update nginx to v1.20.1
+
+### 3.32.0
+
+- [7117] https://github.com/kubernetes/ingress-nginx/pull/7117 Add annotations for HPA
+
+### 3.31.0
+
+- [7137] https://github.com/kubernetes/ingress-nginx/pull/7137 Add support for custom probes
+
+### 3.30.0
+
+- [#7092](https://github.com/kubernetes/ingress-nginx/pull/7092) Removes the possibility of using localhost in ExternalNames as endpoints
+
+### 3.29.0
+
+- [X] [#6945](https://github.com/kubernetes/ingress-nginx/pull/7020) Add option to specify job label for ServiceMonitor
+
+### 3.28.0
+
+- [ ] [#6900](https://github.com/kubernetes/ingress-nginx/pull/6900) Support existing PSPs
+
+### 3.27.0
+
+- Update ingress-nginx v0.45.0
 
 ### 3.26.0
 

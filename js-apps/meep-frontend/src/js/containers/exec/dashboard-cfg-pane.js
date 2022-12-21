@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
+import autoBind from 'react-autobind';
 import { Select } from '@rmwc/select';
 import { Button } from '@rmwc/button';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
@@ -33,12 +34,6 @@ import {
 
 import {
   uiExecChangeCurrentView,
-  uiExecChangeSourceNodeSelectedView1,
-  uiExecChangeDestNodeSelectedView1,
-  uiExecChangeSourceNodeSelectedView2,
-  uiExecChangeDestNodeSelectedView2,
-  uiExecChangeDashboardView1,
-  uiExecChangeDashboardView2,
   uiExecChangeSandboxCfg
 } from '@/js/state/ui';
 
@@ -49,137 +44,53 @@ import {
   VIEW_NAME_NONE,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
+  SEQ_DIAGRAM_VIEW,
+  DATAFLOW_DIAGRAM_VIEW,
   DEFAULT_DASHBOARD_OPTIONS,
   PAGE_EXECUTE,
   EXEC_BTN_DASHBOARD_BTN_CLOSE
 } from '@/js/meep-constants';
-
-const ViewSelect = props => {
-  return (
-    <Grid style={styles.field}>
-      <GridCell span={12}>
-        <Select
-          style={styles.select}
-          label="View"
-          fullwidth="true"
-          outlined
-          options={props.viewOptions}
-          onChange={props.onChange}
-          data-cy={EXEC_VIEW_SELECT}
-          value={props.value}
-        />
-      </GridCell>
-    </Grid>
-  );
-};
-
-const ViewSelectFields = props => {
-  switch (props.currentView) {
-  case VIEW_1:
-    return (
-      <DashCfgDetailPane
-        currentView={props.currentView}
-        onSuccess={props.onSuccess}
-        onClose={props.onClose}
-        index={1}
-        appIds={props.appIds}
-        ueIds={props.ueIds}
-        poaIds={props.poaIds}
-        sandbox={props.sandbox}
-        viewName={props.view1Name}
-        sourceNodeSelected={props.sourceNodeSelectedView1}
-        destNodeSelected={props.destNodeSelectedView1}
-        changeViewName={props.changeView1}
-        changeSourceNodeSelected={props.changeSourceNodeSelectedView1}
-        changeDestNodeSelected={props.changeDestNodeSelectedView1}
-        dashboardViewsList={props.dashboardViewsList}
-        showApps={props.showApps}
-      />
-    );
-  case VIEW_2:
-    return (
-      <DashCfgDetailPane
-        currentView={props.currentView}
-        onSuccess={props.onSuccess}
-        onClose={props.onClose}
-        index={2}
-        appIds={props.appIds}
-        ueIds={props.ueIds}
-        poaIds={props.poaIds}
-        sandbox={props.sandbox}
-        viewName={props.view2Name}
-        sourceNodeSelected={props.sourceNodeSelectedView2}
-        destNodeSelected={props.destNodeSelectedView2}
-        changeViewName={props.changeView2}
-        changeSourceNodeSelected={props.changeSourceNodeSelectedView2}
-        changeDestNodeSelected={props.changeDestNodeSelectedView2}
-        dashboardViewsList={props.dashboardViewsList}
-        showApps={props.showApps}
-      />
-    );
-  default:
-    return <div></div>;
-  }
-};
 
 const showInExecStr = '<exec>';
 
 class DashCfgPane extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    autoBind(this);
 
     if (!this.props.currentView) {
       this.props.changeView('');
     }
   }
 
-  componentDidUpdate() {
-    // Create sandbox config if it does not exist
+  getViewCfg(view) {
     const sandboxName = this.props.sandbox;
     const sandboxCfg = this.props.sandboxCfg;
-    if (!sandboxName || (sandboxCfg && sandboxCfg[sandboxName])) {
-      return;
-    } else {
-      var newSandboxCfg = updateObject({}, sandboxCfg);
-      newSandboxCfg[sandboxName] = {
-        dashboardView1: NET_TOPOLOGY_VIEW,
-        dashboardView2: VIEW_NAME_NONE
-      };
+    if (sandboxCfg && sandboxCfg[sandboxName]) {
+      if (view === VIEW_1) {
+        return sandboxCfg[sandboxName].dashView1;
+      } else if (view === VIEW_2) {
+        return sandboxCfg[sandboxName].dashView2;
+      }
+    }
+    return null;
+  }
+
+  changeViewCfg(view, viewCfg) {
+    const sandboxName = this.props.sandbox;
+    var newSandboxCfg = updateObject({}, this.props.sandboxCfg);
+    if (newSandboxCfg && newSandboxCfg[sandboxName]) {
+      if (view === VIEW_1) {
+        newSandboxCfg[sandboxName].dashView1 = viewCfg;
+      } else if (view === VIEW_2) {
+        newSandboxCfg[sandboxName].dashView2 = viewCfg;
+      }
       this.props.changeSandboxCfg(newSandboxCfg);
     }
   }
 
-  getView1() {
-    const sandboxName = this.props.sandbox;
-    const sandboxCfg = this.props.sandboxCfg;
-    if (sandboxCfg && sandboxCfg[sandboxName] && sandboxCfg[sandboxName].dashboardView1) {
-      return sandboxCfg[sandboxName].dashboardView1;
-    } else {
-      return VIEW_NAME_NONE;
-    }
-  }
-
-  getView2() {
-    const sandboxName = this.props.sandbox;
-    const sandboxCfg = this.props.sandboxCfg;
-    if (sandboxCfg && sandboxCfg[sandboxName] && sandboxCfg[sandboxName].dashboardView2) {
-      return sandboxCfg[sandboxName].dashboardView2;
-    } else {
-      return VIEW_NAME_NONE;
-    }
-  }
-
-  changeView1(viewName, sdbCfg) {
-    var sandboxCfg = updateObject({}, sdbCfg);
-    sandboxCfg[this.props.sandbox].dashboardView1 = viewName;
-    this.props.changeSandboxCfg(sandboxCfg);
-  }
-
-  changeView2(viewName) {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandbox].dashboardView2 = viewName;
-    this.props.changeSandboxCfg(sandboxCfg);
+  changeView(event) {
+    this.props.changeView(event.target.value);
   }
 
   populateDashboardList(dashboardViewsList, dashboardOptions) {
@@ -190,10 +101,9 @@ class DashCfgPane extends Component {
       }
     }
   }
-  
+
   onDashCfgClose(e) {
     e.preventDefault();
-    this.props.changeView('');
     this.props.onClose(e);
   }
 
@@ -205,9 +115,8 @@ class DashCfgPane extends Component {
     if (this.props.page !== PAGE_EXECUTE || this.props.hide) {
       return null;
     }
-    
-    const view1Name = this.getView1();
-    const view2Name = this.getView2();
+
+    var currentViewCfg = this.getViewCfg(this.props.currentView);
 
     const root = this.getRoot();
     const nodes = root.descendants();
@@ -225,7 +134,9 @@ class DashCfgPane extends Component {
     var dashboardViewsList = [
       VIEW_NAME_NONE,
       MAP_VIEW,
-      NET_TOPOLOGY_VIEW
+      NET_TOPOLOGY_VIEW,
+      SEQ_DIAGRAM_VIEW,
+      DATAFLOW_DIAGRAM_VIEW
     ];
     this.populateDashboardList(dashboardViewsList, DEFAULT_DASHBOARD_OPTIONS);
     this.populateDashboardList(dashboardViewsList, this.props.dashboardOptions);
@@ -235,44 +146,41 @@ class DashCfgPane extends Component {
         <div style={styles.block}>
           <Typography use="headline6">Dashboard View</Typography>
         </div>
-        <ViewSelect
-          viewOptions={this.props.viewOptions}
-          onChange={event => {
-            this.props.changeView(event.target.value);
-          }}
-          value={this.props.currentView}
-        />
-        <ViewSelectFields
-          currentView={this.props.currentView}
-          onSuccess={this.props.onSuccess}
-          onClose={e => this.onDashCfgClose(e)}
-          sandbox={this.props.sandbox}
-          appIds={appIds}
-          ueIds={ueIds}
-          poaIds={poaIds}
-          view1Name={view1Name}
-          view2Name={view2Name}
-          sourceNodeSelectedView1={this.props.sourceNodeSelectedView1}
-          destNodeSelectedView1={this.props.destNodeSelectedView1}
-          sourceNodeSelectedView2={this.props.sourceNodeSelectedView2}
-          destNodeSelectedView2={this.props.destNodeSelectedView2}
-          changeView1={this.changeView1}
-          changeView2={this.changeView2}
-          changeSourceNodeSelectedView1={this.props.changeSourceNodeSelectedView1}
-          changeDestNodeSelectedView1={this.props.changeDestNodeSelectedView1}
-          changeSourceNodeSelectedView2={this.props.changeSourceNodeSelectedView2}
-          changeDestNodeSelectedView2={this.props.changeDestNodeSelectedView2}
-          dashboardViewsList={dashboardViewsList}
-          showApps={this.props.showApps}
-        />
+        <Grid style={styles.field}>
+          <GridCell span={12}>
+            <Select
+              style={styles.select}
+              label="View"
+              fullwidth="true"
+              outlined
+              options={this.props.viewOptions}
+              onChange={this.changeView}
+              data-cy={EXEC_VIEW_SELECT}
+              value={this.props.currentView}
+            />
+          </GridCell>
+        </Grid>
+        {currentViewCfg &&
+          <DashCfgDetailPane
+            currentView={this.props.currentView}
+            viewCfg={currentViewCfg}
+            dashboardViewsList={dashboardViewsList}
+            changeViewCfg={this.changeViewCfg}
+            onClose={this.onDashCfgClose}
+            appIds={appIds}
+            ueIds={ueIds}
+            poaIds={poaIds}
+            metricsApi={this.props.metricsApi}
+          />
+        }
         <div>
-          <Grid style={{ marginTop: 10 }}>
+          <Grid style={{ marginTop: 20 }}>
             <GridInner>
               <GridCell span={12}>
                 <Button
                   outlined
                   style={styles.button}
-                  onClick={e => this.onDashCfgClose(e)}
+                  onClick={this.onDashCfgClose}
                   data-cy={EXEC_BTN_DASHBOARD_BTN_CLOSE}
                 >
                   Close
@@ -303,29 +211,15 @@ const mapStateToProps = state => {
     currentView: state.ui.execCurrentView,
     page: state.ui.page,
     displayedScenario: state.exec.displayedScenario,
-    sourceNodeSelectedView1: state.ui.sourceNodeSelectedView1,
-    destNodeSelectedView1: state.ui.destNodeSelectedView1,
-    sourceNodeSelectedView2: state.ui.sourceNodeSelectedView2,
-    destNodeSelectedView2: state.ui.destNodeSelectedView2,
-    eventCreationMode: state.exec.eventCreationMode,
     scenarioState: state.exec.state.scenario,
-    view1Name: state.ui.dashboardView1,
-    view2Name: state.ui.dashboardView2,
     sandboxCfg: state.ui.sandboxCfg,
-    dashboardOptions: state.monitor.dashboardOptions,
-    showApps: state.ui.execShowApps
+    dashboardOptions: state.monitor.dashboardOptions
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     changeView: view => dispatch(uiExecChangeCurrentView(view)),
-    changeSourceNodeSelectedView1: src => dispatch(uiExecChangeSourceNodeSelectedView1(src)),
-    changeDestNodeSelectedView1: dest => dispatch(uiExecChangeDestNodeSelectedView1(dest)),
-    changeSourceNodeSelectedView2: src => dispatch(uiExecChangeSourceNodeSelectedView2(src)),
-    changeDestNodeSelectedView2: dest => dispatch(uiExecChangeDestNodeSelectedView2(dest)),
-    changeView1: name => dispatch(uiExecChangeDashboardView1(name)),
-    changeView2: name => dispatch(uiExecChangeDashboardView2(name)),
     changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
   };
 };

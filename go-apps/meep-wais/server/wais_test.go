@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -6389,7 +6389,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 		t.Fatalf("Failed to create a store")
 	}
 
-	httpLog, err := metricStore.GetHttpMetric(moduleName, "TX", "", 1)
+	httpLog, err := metricStore.GetHttpMetric(moduleName, "notification", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}

@@ -1,4 +1,4 @@
-# Documentation for AdvantEDGE MEC Service Management API
+# Documentation for AdvantEDGE Service Management API
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
@@ -9,7 +9,7 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *MecServiceMgmtApi* | [**appServicesGET**](Apis/MecServiceMgmtApi.md#appservicesget) | **GET** /applications/{appInstanceId}/services | This method retrieves information about a list of mecService resources. This method is typically used in \"service availability query\" procedure
 *MecServiceMgmtApi* | [**appServicesPOST**](Apis/MecServiceMgmtApi.md#appservicespost) | **POST** /applications/{appInstanceId}/services | This method is used to create a mecService resource. This method is typically used in \"service availability update and new service registration\" procedure
-*MecServiceMgmtApi* | [**appServicesServiceIdDELETE**](Apis/MecServiceMgmtApi.md#appservicesserviceiddelete) | **DELETE** /applications/{appInstanceId}/services/{serviceId} | This method deletes a mecService resource. This method is typically used in the service deregistration procedure. 
+*MecServiceMgmtApi* | [**appServicesServiceIdDELETE**](Apis/MecServiceMgmtApi.md#appservicesserviceiddelete) | **DELETE** /applications/{appInstanceId}/services/{serviceId} | This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
 *MecServiceMgmtApi* | [**appServicesServiceIdGET**](Apis/MecServiceMgmtApi.md#appservicesserviceidget) | **GET** /applications/{appInstanceId}/services/{serviceId} | This method retrieves information about a mecService resource. This method is typically used in \"service availability query\" procedure
 *MecServiceMgmtApi* | [**appServicesServiceIdPUT**](Apis/MecServiceMgmtApi.md#appservicesserviceidput) | **PUT** /applications/{appInstanceId}/services/{serviceId} | This method updates the information about a mecService resource
 *MecServiceMgmtApi* | [**applicationsSubscriptionDELETE**](Apis/MecServiceMgmtApi.md#applicationssubscriptiondelete) | **DELETE** /applications/{appInstanceId}/subscriptions/{subscriptionId} | This method deletes a mecSrvMgmtSubscription. This method is typically used in \"Unsubscribing from service availability event notifications\" procedure.
@@ -40,9 +40,14 @@ Class | Method | HTTP request | Description
  - [SerAvailabilityNotificationSubscriptionFilteringCriteria](./Models/SerAvailabilityNotificationSubscriptionFilteringCriteria.md)
  - [SerializerType](./Models/SerializerType.md)
  - [ServiceAvailabilityNotification](./Models/ServiceAvailabilityNotification.md)
+ - [ServiceAvailabilityNotificationChangeType](./Models/ServiceAvailabilityNotificationChangeType.md)
  - [ServiceAvailabilityNotificationServiceReferences](./Models/ServiceAvailabilityNotificationServiceReferences.md)
  - [ServiceInfo](./Models/ServiceInfo.md)
+ - [ServiceInfoLinks](./Models/ServiceInfoLinks.md)
  - [ServiceInfoPost](./Models/ServiceInfoPost.md)
+ - [ServiceLivenessInfo](./Models/ServiceLivenessInfo.md)
+ - [ServiceLivenessInfoTimeStamp](./Models/ServiceLivenessInfoTimeStamp.md)
+ - [ServiceLivenessUpdate](./Models/ServiceLivenessUpdate.md)
  - [ServiceState](./Models/ServiceState.md)
  - [Subscription](./Models/Subscription.md)
  - [SubscriptionLinkList](./Models/SubscriptionLinkList.md)

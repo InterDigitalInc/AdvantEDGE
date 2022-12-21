@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -99,6 +99,8 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.d2dInRange = [""];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.poaInRange = [""];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
@@ -435,6 +437,26 @@
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode).to.be("LOOP");
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity).to.be.a('number');
                             expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity).to.be();
+                            {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.d2dInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
+                            {
+                              let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.poaInRange;
+                              expect(dataCtr).to.be.an(Array);
+                              expect(dataCtr).to.not.be.empty();
+                              for (let p in dataCtr) {
+                                let data = dataCtr[p];
+                                expect(data).to.be.a('string');
+                                expect(data).to.be("");
+                              }
+                            }
                           {
                             let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange;
                             expect(dataCtr).to.be.an(Array);

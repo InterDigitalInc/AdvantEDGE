@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ const (
 	REGEX_NAME               = `^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$`
 	REGEX_VARIABLE_NAME      = `^(([_a-z0-9A-Z][_-a-z0-9A-Z.]*)?[_a-z0-9A-Z])+$`
 	REGEX_MAC_ADDRESS        = `^(([_a-f0-9A-F][_-a-f0-9A-Z]*)?[_a-f0-9A-F])+$`
-	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(wifi|5g|4g|other))+$`
+	REGEX_WIRELESS_TYPE_LIST = `^((,\s*)?(d2d|wifi|5g|4g|other))+$`
 	REGEX_PATH               = `[\^#%&$\*<>\?\{\|\} ]+`
 	REGEX_DNN                = `^(([a-z0-9A-Z][-a-z0-9A-Z.]*)?[a-z0-9A-Z])+$`
 	REGEX_ECSP               = `^(([a-z0-9A-Z][ a-z0-9A-Z]*)?[a-z0-9A-Z])+$`
@@ -63,6 +63,8 @@ const (
 	VELOCITY_MAX                 = 1000000
 	RADIUS_MIN                   = 1
 	RADIUS_MAX                   = 1000000
+	D2D_RADIUS_MIN               = 1
+	D2D_RADIUS_MAX               = 10000
 	SERVICE_PORT_MIN             = 1
 	SERVICE_PORT_MAX             = 65535
 	SERVICE_NODE_PORT_MIN        = 30000
@@ -87,7 +89,7 @@ var PROTOCOL_ENUM = []string{"UDP", "TCP"}
 var CONNECTIVITY_MODEL_ENUM = []string{"OPEN", "PDU"}
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 8, Patch: 1}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 9, Patch: 0}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
@@ -96,6 +98,7 @@ var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
 var Version151 = semver.Version{Major: 1, Minor: 5, Patch: 1}
 var Version153 = semver.Version{Major: 1, Minor: 5, Patch: 3}
 var Version168 = semver.Version{Major: 1, Minor: 6, Patch: 8}
+var Version182 = semver.Version{Major: 1, Minor: 8, Patch: 2}
 
 // setNetChar - Creates a new netchar object if non-existent and migrate values from deprecated fields
 func createNetChar(lat int32, latVar int32, dist string, tputDl int32, tputUl int32, loss float64) *dataModel.NetworkCharacteristics {
@@ -181,6 +184,12 @@ func ValidateScenario(jsonScenario []byte, name string) (validJsonScenario []byt
 	if scenarioVersion.LT(Version168) {
 		upgradeScenarioTo168(scenario)
 		scenarioVersion = Version168
+		scenarioUpdated = true
+	}
+	// UPGRADE TO 1.8.2
+	if scenarioVersion.LT(Version182) {
+		upgradeScenarioTo182(scenario)
+		scenarioVersion = Version182
 		scenarioUpdated = true
 	}
 
@@ -445,6 +454,21 @@ func upgradeScenarioTo168(scenario *dataModel.Scenario) {
 	}
 }
 
+func upgradeScenarioTo182(scenario *dataModel.Scenario) {
+	// Set updated version
+	scenario.Version = Version182.String()
+
+	// Set default D2D Config
+	if scenario.Deployment != nil {
+		if scenario.Deployment.D2d == nil {
+			scenario.Deployment.D2d = &dataModel.D2dConfig{
+				D2dMaxDistance:       100,
+				DisableD2dViaNetwork: false,
+			}
+		}
+	}
+}
+
 // Validate scenario
 func validateScenario(scenario *dataModel.Scenario) error {
 	idMap := make(map[string]bool)
@@ -564,6 +588,16 @@ func validateDeployment(deployment *dataModel.Deployment) (err error) {
 	if err != nil {
 		return errors.New("Invalid connectivity model: " + err.Error())
 	}
+
+	// D2D
+	if deployment.D2d == nil {
+		return errors.New("d2d == nil")
+	}
+	err = validateFloat32Range(deployment.D2d.D2dMaxDistance, D2D_RADIUS_MIN, D2D_RADIUS_MAX)
+	if err != nil {
+		return errors.New("Invalid D2D radius: " + err.Error())
+	}
+
 	return nil
 }
 

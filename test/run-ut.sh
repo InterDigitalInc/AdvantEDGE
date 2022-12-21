@@ -9,11 +9,13 @@ GOAPPS=(
     meep-rnis/server
     meep-wais/server
     meep-ams/server
+    #meep-vis/server
 )
 
 GOPKGS=(
     meep-couch
     meep-gis-asset-mgr
+    meep-vis-traffic-mgr
     meep-metrics
     meep-model
     meep-mq

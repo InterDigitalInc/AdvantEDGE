@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ const (
 const (
 	gisCacheKey = "gis-cache:"
 	posKey      = "pos:"
-	measKey     = "meas:"
+	d2dMeasKey  = "d2d-meas:"
+	poaMeasKey  = "poa-meas:"
 )
 
 type Position struct {
@@ -58,11 +59,19 @@ type Position struct {
 	Longitude float32
 }
 
-type UeMeasurement struct {
-	Measurements map[string]*Measurement
+type UeD2DMeasurement struct {
+	Measurements map[string]*D2DMeasurement
 }
 
-type Measurement struct {
+type D2DMeasurement struct {
+	Distance float32
+}
+
+type UePoaMeasurement struct {
+	Measurements map[string]*PoaMeasurement
+}
+
+type PoaMeasurement struct {
 	Rssi     float32
 	Rsrp     float32
 	Rsrq     float32
@@ -181,8 +190,90 @@ func (gc *GisCache) DelPosition(typ string, name string) {
 }
 
 // SetMeasurement - Create or update entry in DB
-func (gc *GisCache) SetMeasurement(src string, srcType string, dest string, destType string, meas *Measurement) error {
-	key := gc.baseKey + measKey + src + ":" + dest
+func (gc *GisCache) SetD2DMeasurement(src string, srcType string, dest string, destType string, meas *D2DMeasurement) error {
+	key := gc.baseKey + d2dMeasKey + src + ":" + dest
+
+	// Prepare data
+	fields := make(map[string]interface{})
+	fields[fieldSrc] = src
+	fields[fieldSrcType] = srcType
+	fields[fieldDest] = dest
+	fields[fieldDestType] = destType
+	fields[fieldDistance] = fmt.Sprintf("%f", meas.Distance)
+
+	// Update entry in DB
+	err := gc.rc.SetEntry(key, fields)
+	if err != nil {
+		log.Error("Failed to set entry with error: ", err.Error())
+		return err
+	}
+	return nil
+}
+
+// GetAllD2DMeasurements - Return all UE measurements
+func (gc *GisCache) GetAllD2DMeasurements() (measurementMap map[string]*UeD2DMeasurement, err error) {
+	keyMatchStr := gc.baseKey + d2dMeasKey + "*"
+
+	// Create measurement map
+	measurementMap = make(map[string]*UeD2DMeasurement)
+
+	// Get all measurement entry details
+	err = gc.rc.ForEachEntry(keyMatchStr, getD2DMeasurement, &measurementMap)
+	if err != nil {
+		log.Error("Failed to get all entries with error: ", err.Error())
+		return nil, err
+	}
+	return measurementMap, nil
+}
+
+// getD2DMeasurement - Return D2D measurement with provided name
+func getD2DMeasurement(key string, fields map[string]string, userData interface{}) error {
+	measurementMap := *(userData.(*map[string]*UeD2DMeasurement))
+
+	// Retrieve UE & POA name from key
+	ueName := ""
+	d2dUeName := ""
+	d2dUePos := strings.LastIndex(key, ":")
+	if d2dUePos == -1 {
+		return nil
+	}
+	d2dUeName = key[d2dUePos+1:]
+	uePos := strings.LastIndex(key[:d2dUePos], ":")
+	if uePos == -1 {
+		return nil
+	}
+	ueName = key[uePos+1 : d2dUePos]
+
+	// Prepare measurement
+	meas := new(D2DMeasurement)
+	if distance, err := strconv.ParseFloat(fields[fieldDistance], 32); err == nil {
+		meas.Distance = float32(distance)
+	}
+
+	// Add measurement to map
+	ueD2DMeas, found := measurementMap[ueName]
+	if !found {
+		ueD2DMeas = &UeD2DMeasurement{
+			Measurements: map[string]*D2DMeasurement{},
+		}
+		measurementMap[ueName] = ueD2DMeas
+	}
+	ueD2DMeas.Measurements[d2dUeName] = meas
+	return nil
+}
+
+// DelD2DMeasurement - Remove D2D measurement with provided name
+func (gc *GisCache) DelD2DMeasurement(ue string, d2dUe string) {
+	key := gc.baseKey + d2dMeasKey + ue + ":" + d2dUe
+	err := gc.rc.DelEntry(key)
+	if err != nil {
+		log.Error("Failed to delete measurement for ue: ", ue, " and d2dUe: ", d2dUe, " with err: ", err.Error())
+	}
+}
+
+// SetPoaMeasurement - Create or update entry in DB
+func (gc *GisCache) SetPoaMeasurement(src string, srcType string, dest string, destType string, meas *PoaMeasurement) error {
+	key := gc.baseKey + poaMeasKey + src + ":" + dest
 
 	// Prepare data
 	fields := make(map[string]interface{})
@@ -204,15 +295,15 @@ func (gc *GisCache) SetMeasurement(src string, srcType string, dest string, dest
 	return nil
 }
 
-// GetAllMeasurements - Return all UE measurements
-func (gc *GisCache) GetAllMeasurements() (measurementMap map[string]*UeMeasurement, err error) {
-	keyMatchStr := gc.baseKey + measKey + "*"
+// GetAllPoaMeasurements - Return all POA measurements
+func (gc *GisCache) GetAllPoaMeasurements() (measurementMap map[string]*UePoaMeasurement, err error) {
+	keyMatchStr := gc.baseKey + poaMeasKey + "*"
 
 	// Create measurement map
-	measurementMap = make(map[string]*UeMeasurement)
+	measurementMap = make(map[string]*UePoaMeasurement)
 
-	// Get all measurment entry details
-	err = gc.rc.ForEachEntry(keyMatchStr, getMeasurement, &measurementMap)
+	// Get all measurement entry details
+	err = gc.rc.ForEachEntry(keyMatchStr, getPoaMeasurement, &measurementMap)
 	if err != nil {
 		log.Error("Failed to get all entries with error: ", err.Error())
 		return nil, err
@@ -220,8 +311,9 @@ func (gc *GisCache) GetAllMeasurements() (measurementMap map[string]*UeMeasureme
 	return measurementMap, nil
 }
 
-func getMeasurement(key string, fields map[string]string, userData interface{}) error {
-	measurementMap := *(userData.(*map[string]*UeMeasurement))
+// getPoaMeasurement - Return POA measurement with provided name
+func getPoaMeasurement(key string, fields map[string]string, userData interface{}) error {
+	measurementMap := *(userData.(*map[string]*UePoaMeasurement))
 
 	// Retrieve UE & POA name from key
 	ueName := ""
@@ -238,7 +330,7 @@ func getMeasurement(key string, fields map[string]string, userData interface{}) 
 	ueName = key[uePos+1 : poaPos]
 
 	// Prepare measurement
-	meas := new(Measurement)
+	meas := new(PoaMeasurement)
 	if rssi, err := strconv.ParseFloat(fields[fieldRssi], 32); err == nil {
 		meas.Rssi = float32(rssi)
 	}
@@ -253,19 +345,20 @@ func getMeasurement(key string, fields map[string]string, userData interface{}) 
 	}
 
 	// Add measurement to map
-	ueMeas, found := measurementMap[ueName]
+	uePoaMeas, found := measurementMap[ueName]
 	if !found {
-		ueMeas = new(UeMeasurement)
-		ueMeas.Measurements = make(map[string]*Measurement)
-		measurementMap[ueName] = ueMeas
+		uePoaMeas = &UePoaMeasurement{
+			Measurements: map[string]*PoaMeasurement{},
+		}
+		measurementMap[ueName] = uePoaMeas
 	}
-	ueMeas.Measurements[poaName] = meas
+	uePoaMeas.Measurements[poaName] = meas
 	return nil
 }
 
-// DelMeasurements - Remove measurement with provided name
-func (gc *GisCache) DelMeasurement(ue string, poa string) {
-	key := gc.baseKey + measKey + ue + ":" + poa
+// DelPoaMeasurement - Remove POA measurement with provided name
+func (gc *GisCache) DelPoaMeasurement(ue string, poa string) {
+	key := gc.baseKey + poaMeasKey + ue + ":" + poa
 	err := gc.rc.DelEntry(key)
 	if err != nil {
 		log.Error("Failed to delete measurement for ue: ", ue, " and poa: ", poa, " with err: ", err.Error())

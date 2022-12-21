@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -43,11 +43,9 @@ type MembershipApiService service
 /*
 MembershipApiService Add new Mobility Group
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param mobilityGroup Mobility Group to create/update
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param mobilityGroup Mobility Group to create/update
 */
 func (a *MembershipApiService) CreateMobilityGroup(ctx context.Context, mgName string, mobilityGroup MobilityGroup) (*http.Response, error) {
 	var (
@@ -115,12 +113,10 @@ func (a *MembershipApiService) CreateMobilityGroup(ctx context.Context, mgName s
 /*
 MembershipApiService Add new Mobility Group App
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param appId Mobility Group App Id
- * @param mgApp Mobility Group App to create/update
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param appId Mobility Group App Id
+  - @param mgApp Mobility Group App to create/update
 */
 func (a *MembershipApiService) CreateMobilityGroupApp(ctx context.Context, mgName string, appId string, mgApp MobilityGroupApp) (*http.Response, error) {
 	var (
@@ -189,12 +185,10 @@ func (a *MembershipApiService) CreateMobilityGroupApp(ctx context.Context, mgNam
 /*
 MembershipApiService Add UE to group tracking list
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param appId Mobility Group App Id
- * @param mgUe Mobility Group UE to create/update
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param appId Mobility Group App Id
+  - @param mgUe Mobility Group UE to create/update
 */
 func (a *MembershipApiService) CreateMobilityGroupUe(ctx context.Context, mgName string, appId string, mgUe MobilityGroupUe) (*http.Response, error) {
 	var (
@@ -263,10 +257,8 @@ func (a *MembershipApiService) CreateMobilityGroupUe(ctx context.Context, mgName
 /*
 MembershipApiService Delete Mobility Group
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
 */
 func (a *MembershipApiService) DeleteMobilityGroup(ctx context.Context, mgName string) (*http.Response, error) {
 	var (
@@ -332,11 +324,9 @@ func (a *MembershipApiService) DeleteMobilityGroup(ctx context.Context, mgName s
 /*
 MembershipApiService Delete Mobility Group App
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param appId Mobility Group App Id
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param appId Mobility Group App Id
 */
 func (a *MembershipApiService) DeleteMobilityGroupApp(ctx context.Context, mgName string, appId string) (*http.Response, error) {
 	var (
@@ -403,8 +393,8 @@ func (a *MembershipApiService) DeleteMobilityGroupApp(ctx context.Context, mgNam
 /*
 MembershipApiService Retrieve Mobility Groups with provided name
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
 
 @return MobilityGroup
 */
@@ -492,9 +482,9 @@ func (a *MembershipApiService) GetMobilityGroup(ctx context.Context, mgName stri
 /*
 MembershipApiService Retrieve App information using provided Mobility Group Name &amp; App ID
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param appId Mobility Group App Id
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param appId Mobility Group App Id
 
 @return MobilityGroupApp
 */
@@ -583,8 +573,8 @@ func (a *MembershipApiService) GetMobilityGroupApp(ctx context.Context, mgName s
 /*
 MembershipApiService Retrieve list of Apps in provided Mobility Group
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
 
 @return []MobilityGroupApp
 */
@@ -672,7 +662,7 @@ func (a *MembershipApiService) GetMobilityGroupAppList(ctx context.Context, mgNa
 /*
 MembershipApiService Retrieve list of Mobility Groups
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return []MobilityGroup
 */
@@ -759,11 +749,9 @@ func (a *MembershipApiService) GetMobilityGroupList(ctx context.Context) ([]Mobi
 /*
 MembershipApiService Update Mobility Group
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param mobilityGroup Mobility Group to create/update
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param mobilityGroup Mobility Group to create/update
 */
 func (a *MembershipApiService) SetMobilityGroup(ctx context.Context, mgName string, mobilityGroup MobilityGroup) (*http.Response, error) {
 	var (
@@ -831,12 +819,10 @@ func (a *MembershipApiService) SetMobilityGroup(ctx context.Context, mgName stri
 /*
 MembershipApiService Update Mobility GroupApp
 
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param mgName Mobility Group name
- * @param appId Mobility Group App Id
- * @param mgApp Mobility Group App to create/update
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param mgName Mobility Group name
+  - @param appId Mobility Group App Id
+  - @param mgApp Mobility Group App to create/update
 */
 func (a *MembershipApiService) SetMobilityGroupApp(ctx context.Context, mgName string, appId string, mgApp MobilityGroupApp) (*http.Response, error) {
 	var (

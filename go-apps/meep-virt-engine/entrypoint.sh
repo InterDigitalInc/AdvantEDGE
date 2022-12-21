@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
+# echo "MEEP_HOST_URL: ${MEEP_HOST_URL}"
+echo "MEEP_CODECOV: ${MEEP_CODECOV}"
+echo "MEEP_CODECOV_LOCATION: ${MEEP_CODECOV_LOCATION}"
 
 # Move helm charts from docker data to template folder
 mkdir -p /templates/sandbox
@@ -13,6 +16,7 @@ mv /meep-wais /templates/sandbox/meep-wais
 mv /meep-ams /templates/sandbox/meep-ams
 mv /meep-sandbox-ctrl /templates/sandbox/meep-sandbox-ctrl
 mv /meep-tc-engine /templates/sandbox/meep-tc-engine
+mv /meep-vis /templates/sandbox/meep-vis
 
 mkdir -p /templates/scenario
 mv /meep-virt-chart-templates /templates/scenario/meep-virt-chart-templates
@@ -22,4 +26,11 @@ helm repo add incubator https://charts.helm.sh/incubator
 helm repo update
 
 # Start virt engine
-exec /meep-virt-engine
+currenttime=`date "+%Y%m%d-%H%M%S"`
+filepath="/codecov/codecov-meep-virt-engine-"
+filename=$filepath$currenttime".out"
+if [ "$MEEP_CODECOV" = 'true' ]; then
+  MEEP_CODECOV=${MEEP_CODECOV} MEEP_CODECOV_LOCATION=${MEEP_CODECOV_LOCATION} exec /meep-virt-engine -test.coverprofile=$filename __DEVEL--code-cov
+else
+  exec /meep-virt-engine
+fi

@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -81,13 +81,13 @@
   }
 
   /**
-   * Tag names to match in query. Supported values:<br> <li>logger_name: Logger instances that issued the http notification or processed the request <li>direction: Notification or Request type of http metric
+   * Tag names to match in query. Supported values:<br> <li>logger_name: Logger instances that issued the http notification or processed the request <li>msg_type: Http metric type (request, response, notification)
    * @member {Array.<module:model/Tag>} tags
    */
   exports.prototype.tags = undefined;
 
   /**
-   * Field names to return in query response. Supported values:<br> <li>id: Http metrics identifier<br> <li>endpoint: Http metrics queried endpoint<br> <li>url: Http metrics queried endpoint with query parameters<br> <li>method: Http metrics method<br> <li>resp_code: Http metrics response status code<br> <li>resp_body: Http metrics response body<br> <li>body: Http metrics body<br> <li>proc_time: Request processing time in ms
+   * Field names to return in query response. Supported values:<br> <li>id: Http metrics identifier<br> <li>endpoint: Http metrics queried endpoint<br> <li>url: Http metrics queried endpoint with query parameters<br> <li>method: Http metrics method<br> <li>resp_code: Http metrics response status code<br> <li>resp_body: Http metrics response body<br> <li>body: Http metrics body<br> <li>proc_time: Request processing time in ms<br> <li>logger_name: Logger instances that issued the http notification or processed the request<br> <li>msg_type: Http metric type (request, response, notification)<br> <li>direction: DEPRECATED -- Http metric direction (RX, TX)
    * @member {Array.<module:model/HttpQueryParams.FieldsEnum>} fields
    */
   exports.prototype.fields = undefined;
@@ -157,6 +157,12 @@
      * @const
      */
     loggerName: "logger_name",
+
+    /**
+     * value: "msg_type"
+     * @const
+     */
+    msgType: "msg_type",
 
     /**
      * value: "direction"

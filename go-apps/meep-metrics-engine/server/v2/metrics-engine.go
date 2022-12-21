@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	sandboxCtrlClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	sam "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-swagger-api-mgr"
 
 	"github.com/gorilla/mux"
@@ -60,6 +61,9 @@ const (
 	notifNetworkMetrics = "NetworkMetricsNotification"
 )
 
+const listOnly = "listonly"
+const strOnly = "stronly"
+
 var defaultDuration string = "1s"
 var defaultLimit int32 = 1
 
@@ -69,10 +73,10 @@ var nextEventSubscriptionIdAvailable int
 
 var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
+var pduSessions = map[string]string{}
 
 var SandboxName string
 var mqLocal *mq.MsgQueue
-var handlerId int
 var apiMgr *sam.SwaggerApiMgr
 var activeModel *mod.Model
 var activeScenarioName string
@@ -201,7 +205,7 @@ func Run() (err error) {
 
 	// Register Message Queue handler
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
-	handlerId, err = mqLocal.RegisterHandler(handler)
+	_, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -250,7 +254,7 @@ func activateScenarioMetrics() {
 	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
-	err := metricStore.SetStore(activeScenarioName)
+	err := metricStore.SetStore(activeScenarioName, SandboxName, true)
 	if err != nil {
 		log.Error("Failed to set store with error: " + err.Error())
 		return
@@ -293,7 +297,7 @@ func terminateScenarioMetrics() {
 	_ = httpLog.ReInit(ModuleName, SandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
-	err := metricStore.SetStore("")
+	err := metricStore.SetStore("", "", false)
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -380,7 +384,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
@@ -414,7 +418,43 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 	// Parse tags
 	tags := make(map[string]string)
 	for _, tag := range params.Tags {
-		tags[tag.Name] = tag.Value
+		// For backwards compatiblity replace direction with msg_type
+		if tag.Name == met.HttpLoggerDirection {
+			if _, found := tags[met.HttpLoggerMsgType]; !found {
+				// RX --> response, TX --> notification
+				msgType := met.HttpMsgTypeResponse
+				if tag.Value == met.HttpMsgDirectionTx {
+					msgType = met.HttpMsgTypeNotification
+				}
+				tags[met.HttpLoggerMsgType] = msgType
+			}
+		} else {
+			tags[tag.Name] = tag.Value
+		}
+	}
+
+	// Parse fields
+	fields := []string{}
+	msgTypeSet := false
+	msgTypeRequired := false
+	directionRequired := false
+	for _, field := range params.Fields {
+		// For backwards compatiblity replace direction with msg_type
+		if field == met.HttpLoggerMsgType || field == met.HttpLoggerDirection {
+			// Store fields to incldue in response
+			if field == met.HttpLoggerMsgType {
+				msgTypeRequired = true
+			} else if field == met.HttpLoggerDirection {
+				directionRequired = true
+			}
+			// Request message type from DB
+			if !msgTypeSet {
+				fields = append(fields, met.HttpLoggerMsgType)
+				msgTypeSet = true
+			}
+		} else {
+			fields = append(fields, field)
+		}
 	}
 
 	// Get scope
@@ -425,7 +465,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		limit = int(params.Scope.Limit)
 	}
 	// Get metrics
-	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -451,9 +491,22 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 				metric.LoggerName = val
 			}
 		}
-		if values[met.HttpLoggerDirection] != nil {
-			if val, ok := values[met.HttpLoggerDirection].(string); ok {
-				metric.Direction = val
+		if values[met.HttpLoggerMsgType] != nil {
+			if val, ok := values[met.HttpLoggerMsgType].(string); ok {
+				// Set message type if required
+				if msgTypeRequired {
+					metric.MsgType = val
+				}
+
+				// For backwards compatibility, set direction if required
+				// request/response --> RX, notification --> TX
+				if directionRequired {
+					direction := met.HttpMsgDirectionRx
+					if val == met.HttpMsgTypeNotification {
+						direction = met.HttpMsgDirectionTx
+					}
+					metric.Direction = direction
+				}
 			}
 		}
 
@@ -504,7 +557,359 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func mePostSeqQuery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostHttpQuery")
+
+	// Retrieve sequence diagram query parameters from request body
+	var params SeqQueryParams
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Make sure only type of format is specified
+	if len(params.Fields) > 1 {
+		err := errors.New("Specify only one type of format: meraid or sdorg")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Parse tags
+	tags := make(map[string]string)
+	for _, tag := range params.Tags {
+		tags[tag.Name] = tag.Value
+	}
+
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
+	}
+	count := 2 * limit
+
+	var response SeqMetrics
+	mobilityEventProcessed := false
+	if params.ResponseType == listOnly || params.ResponseType == "" {
+		response.SeqMetricList = &SeqMetricList{
+			Name:    "sequence metrics",
+			Columns: append(params.Fields, met.HttpLogTime),
+		}
+	}
+
+	// Get http metrics
+	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint,
+		met.HttpBody, met.HttpMethod)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, count)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Get event metrics
+	eventMetrics, err := metricStore.GetEventMetric("MOBILITY", duration, limit)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(valuesArray) == 0 && len(eventMetrics) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNoContent)
+		return
+	}
+
+	// Prepare seq metrics list
+	var metricList []SeqMetric
+	for i := len(valuesArray) - 1; i >= 0; i-- {
+		values := valuesArray[i]
+		httpMetricTime := values[met.HttpLogTime].(string)
+		if values[params.Fields[0]] != nil {
+			metricTime, err := time.Parse(time.RFC3339, httpMetricTime)
+			if err != nil {
+				log.Error("Failed to parse time with error: ", err.Error())
+				continue
+			}
+			t := metricTime.Format("15:04:05.000")
+
+			if len(eventMetrics) > 0 {
+				// Insert event metrics in chronological order
+				matchCount := 0
+				for j := len(eventMetrics) - 1; j >= 0; j-- {
+					eventMetric := eventMetrics[j]
+					eventMetricTime, err := time.Parse(time.RFC3339, eventMetric.Time.(string))
+					if err != nil {
+						log.Error("Failed to parse event time with error: ", err.Error())
+						continue
+					}
+					eventSdorg := ""
+					eventMermaid := ""
+					if eventMetricTime.Before(metricTime) {
+						// Close previous mobility event group if necessary
+						if mobilityEventProcessed {
+							eventSdorg += "end\n"
+						}
+						mobilityEventProcessed = true
+
+						// Create group for mobility event
+						eventDescription := eventMetric.Description
+						eventDescription = strings.Replace(eventDescription, "[", "", -1)
+						eventDescription = strings.Replace(eventDescription, "]", "", -1)
+						eventSdorg += "\ngroup Mobility Event: " + eventDescription + "\n"
+						eventMermaid += "note over event:[" + eventMetricTime.Format("15:04:05.000") + "] Mobility Event: " + eventDescription + "\n"
+
+						if params.Fields[0] == met.HttpMermaid {
+							metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Mermaid: eventMermaid})
+						}
+						if params.Fields[0] == met.HttpSdorg {
+							metricList = append(metricList, SeqMetric{Time: eventMetric.Time.(string), Sdorg: eventSdorg})
+						}
+						matchCount++
+					} else {
+						break
+					}
+				}
+
+				// Remove processed metrics from list
+				if matchCount > 0 {
+					eventMetrics = eventMetrics[:len(eventMetrics)-matchCount]
+				}
+			}
+
+			// Handle notifications
+			notifStr := ""
+			if values[met.HttpLoggerMsgType].(string) == met.HttpMsgTypeNotification {
+				// Sandbox Controller requests
+				if values[met.HttpDst].(string) == "sandbox-ctrl" {
+					// Add note for PDU Session requests
+					pduSessionPrefix := "/sandbox-ctrl/connectivity/pdu-session/"
+					if strings.HasPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix) {
+						pduSession := strings.Split(strings.TrimPrefix(values[met.HttpLogEndpoint].(string), pduSessionPrefix), "/")
+						if values[met.HttpMethod] == "POST" {
+							var pduSessionInfo sandboxCtrlClient.PduSessionInfo
+							err := json.Unmarshal([]byte(values[met.HttpBody].(string)), &pduSessionInfo)
+							if err != nil {
+								log.Error(err.Error())
+								continue
+							}
+							pduSessions[pduSession[1]] = pduSessionInfo.Dnn
+							// Sequencediagram.org formatted line
+							notifStr = "note over " + values[met.HttpSrc].(string) + " :[" + t + "] Created PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + pduSessionInfo.Dnn + "\n"
+						} else if values[met.HttpMethod] == "DELETE" {
+							dnn := pduSessions[pduSession[1]]
+							// Sequencediagram.org formatted line
+							notifStr = "note over " + values[met.HttpSrc].(string) + " : [" + t + "] Terminated PDU Session " + pduSession[1] + " for " + pduSession[0] + " to " + dnn + "\n"
+						}
+						if params.Fields[0] == met.HttpMermaid {
+							metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: notifStr})
+						}
+						if params.Fields[0] == met.HttpSdorg {
+							metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: notifStr})
+						}
+					}
+				}
+				continue
+			}
+
+			if params.Fields[0] == met.HttpMermaid {
+				if val, ok := values[met.HttpMermaid].(string); ok {
+					val = strings.Replace(val, ":", ": ["+t+"]", 1)
+					metricList = append(metricList, SeqMetric{Time: httpMetricTime, Mermaid: val})
+				}
+			}
+			if params.Fields[0] == met.HttpSdorg {
+				if val, ok := values[met.HttpSdorg].(string); ok {
+					val = strings.Replace(val, ":", ": ["+t+"]", 1)
+					metricList = append(metricList, SeqMetric{Time: httpMetricTime, Sdorg: val})
+				}
+			}
+		}
+	}
+	// Take max limit logs from aggregated list of logs
+	if len(metricList) > limit && limit != 0 {
+		metricList = metricList[len(metricList)-limit:]
+	}
+
+	for _, metric := range metricList {
+		updateResponseSeqMetrics(&response, metric, params)
+	}
+
+	// Send response
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func updateResponseSeqMetrics(response *SeqMetrics, metric SeqMetric, params SeqQueryParams) {
+	if params.Fields[0] == met.HttpMermaid && metric.Mermaid != "" {
+		if params.ResponseType == listOnly || params.ResponseType == "" {
+			response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+		}
+		if params.ResponseType == strOnly || params.ResponseType == "" {
+			response.SeqMetricString += metric.Mermaid + "\n"
+		}
+	}
+	if params.Fields[0] == met.HttpSdorg && metric.Sdorg != "" {
+		if params.ResponseType == listOnly || params.ResponseType == "" {
+			// metric.Sdorg = log
+			response.SeqMetricList.Values = append(response.SeqMetricList.Values, metric)
+		}
+		if params.ResponseType == strOnly || params.ResponseType == "" {
+			response.SeqMetricString += metric.Sdorg + "\n"
+		}
+	}
+}
+
+func mePostDataflowQuery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostHttpQuery")
+
+	// Retrieve sequence diagram query parameters from request body
+	var params DataflowQueryParams
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Make sure only type of format is specified
+	if len(params.Fields) > 1 {
+		err := errors.New("Supports only one type of format: meraid")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Parse tags
+	tags := make(map[string]string)
+	for _, tag := range params.Tags {
+		tags[tag.Name] = tag.Value
+	}
+
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
+	}
+	// Get http metrics
+	var response DataflowMetrics
+	if params.ResponseType == listOnly || params.ResponseType == "" {
+		response.DataflowMetricList = &DataflowMetricList{
+			Name:    "data flow metrics",
+			Columns: append(params.Fields, met.HttpLogTime),
+		}
+	}
+
+	params.Fields = append(params.Fields, met.HttpLoggerMsgType, met.HttpSrc, met.HttpDst, met.HttpLogEndpoint, met.HttpBody, met.HttpMethod)
+	valuesArray, err := metricStore.GetInfluxMetric(met.HttpLogMetricName, tags, params.Fields, duration, limit)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(valuesArray) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNoContent)
+		return
+	}
+
+	// Prepare & send response
+	interactions := make(map[string]int)
+	var orderedLogs []string
+	for i := len(valuesArray) - 1; i >= 0; i-- {
+		values := valuesArray[i]
+		var metric DataflowMetric
+		metric.Time = values[met.HttpLogTime].(string)
+		if values[met.HttpSrc].(string) != "" && values[met.HttpDst].(string) != "" {
+			src := strings.Replace(values[met.HttpSrc].(string), "-", "_", 1)
+			dst := strings.Replace(values[met.HttpDst].(string), "-", "_", 1)
+			val := src + " --> " + dst
+			if params.ResponseType == listOnly || params.ResponseType == "" {
+				metric.Mermaid = val
+				response.DataflowMetricList.Values = append(response.DataflowMetricList.Values, metric)
+			}
+			if params.ResponseType == strOnly || params.ResponseType == "" {
+				interactions[val] = interactions[val] + 1
+				if !contains(orderedLogs, val) {
+					orderedLogs = append(orderedLogs, val)
+				}
+			}
+		}
+	}
+	if params.ResponseType == strOnly || params.ResponseType == "" {
+		for _, orderedLog := range orderedLogs {
+			response.DataflowMetricString += orderedLog + " : " + fmt.Sprint(interactions[orderedLog]) + "\n"
+		}
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }
 
 func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
@@ -595,7 +1000,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func createEventSubscription(w http.ResponseWriter, r *http.Request) {
@@ -640,7 +1045,7 @@ func createEventSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
@@ -685,7 +1090,7 @@ func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func populateEventList(key string, jsonInfo string, userData interface{}) error {
@@ -1020,7 +1425,7 @@ func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
@@ -1038,7 +1443,7 @@ func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getEventSubscriptionById(w http.ResponseWriter, r *http.Request) {
@@ -1052,7 +1457,7 @@ func getEventSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func getNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
@@ -1066,7 +1471,7 @@ func getNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func deleteEventSubscriptionById(w http.ResponseWriter, r *http.Request) {

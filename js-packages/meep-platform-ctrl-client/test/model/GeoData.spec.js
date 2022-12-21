@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -83,6 +83,18 @@
         // TODO: update the code to test the property velocity
         expect(instance).to.have.property('velocity');
         // expect(instance.velocity).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property d2dInRange (base name: "d2dInRange")', function() {
+        // TODO: update the code to test the property d2dInRange
+        expect(instance).to.have.property('d2dInRange');
+        // expect(instance.d2dInRange).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property poaInRange (base name: "poaInRange")', function() {
+        // TODO: update the code to test the property poaInRange
+        expect(instance).to.have.property('poaInRange');
+        // expect(instance.poaInRange).to.be(expectedValueLiteral);
       });
 
     });

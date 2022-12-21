@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.8.1"
+const configVersion = "1.9.0"
 
 const defaultNotSet = "not set"
 
@@ -325,7 +325,8 @@ func GetResourcePrerequisites(group string) ([]string, []string) {
 }
 
 // GetTargets retreives the keys based on group and operation type
-//  operation == "" returns the whole group
+//
+//	operation == "" returns the whole group
 func GetTargets(group string, operation string) []string {
 	targets := []string{}
 	if RepoCfg != nil {

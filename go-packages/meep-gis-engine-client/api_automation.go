@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -43,7 +43,7 @@ type AutomationApiService service
 /*
 AutomationApiService Get automation state
 Get automation state for all automation types
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return AutomationStateList
 */
@@ -130,8 +130,8 @@ func (a *AutomationApiService) GetAutomationState(ctx context.Context) (Automati
 /*
 AutomationApiService Get automation state
 Get automation state for the given automation type
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param type_ Automation type.&lt;br&gt; Automation loop evaluates enabled automation types once every second.&lt;br&gt; &lt;p&gt;Supported Types: &lt;li&gt;MOVEMENT - Advances UEs along configured paths using previous position &amp; velocity as inputs. &lt;li&gt;MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. &lt;li&gt;POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. &lt;li&gt;NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param type_ Automation type.&lt;br&gt; Automation loop evaluates enabled automation types once every second.&lt;br&gt; &lt;p&gt;Supported Types: &lt;li&gt;MOVEMENT - Advances UEs along configured paths using previous position &amp; velocity as inputs. &lt;li&gt;MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. &lt;li&gt;POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. &lt;li&gt;NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
 
 @return AutomationState
 */
@@ -219,11 +219,9 @@ func (a *AutomationApiService) GetAutomationStateByName(ctx context.Context, typ
 /*
 AutomationApiService Set automation state
 Set automation state for the given automation type \\
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param type_ Automation type.&lt;br&gt; Automation loop evaluates enabled automation types once every second.&lt;br&gt; &lt;p&gt;Supported Types: &lt;li&gt;MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. &lt;li&gt;MOVEMENT - Advances UEs along configured paths using previous position &amp; velocity as inputs. &lt;li&gt;POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. &lt;li&gt;NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
- * @param run Automation state (e.g. true&#x3D;running, false&#x3D;stopped)
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param type_ Automation type.&lt;br&gt; Automation loop evaluates enabled automation types once every second.&lt;br&gt; &lt;p&gt;Supported Types: &lt;li&gt;MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. &lt;li&gt;MOVEMENT - Advances UEs along configured paths using previous position &amp; velocity as inputs. &lt;li&gt;POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. &lt;li&gt;NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
+  - @param run Automation state (e.g. true&#x3D;running, false&#x3D;stopped)
 */
 func (a *AutomationApiService) SetAutomationStateByName(ctx context.Context, type_ string, run bool) (*http.Response, error) {
 	var (

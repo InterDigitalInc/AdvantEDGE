@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,7 +261,7 @@ describe('Scenario Execution', function () {
     click(meep.EXEC_BTN_NEW_SANDBOX);
     type(meep.MEEP_DLG_NEW_SANDBOX_NAME, name);
     click(meep.MEEP_DLG_NEW_SANDBOX, 'Ok');
-    cy.wait(15000);
+    cy.wait(30000);
     verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
@@ -473,5 +473,3 @@ describe('Scenario Execution', function () {
   }
 
 });
-
-

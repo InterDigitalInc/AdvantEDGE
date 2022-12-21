@@ -4,24 +4,33 @@
 # ansible_user: root
 ansible_python_interpreter: /usr/bin/python3
 
+# Ubuntu
+ubuntu_dist: "Ubuntu"
+ubuntu_release: "bionic"
+ubuntu_dist_major: "18"
+ubuntu_dist_version: "18.04"
+
 # Docker
-docker_version: "5:19.03"
+docker_version: "5:20.10"
+
+# Containerd
+containerd_version: "1.5.11-1"
 
 # Kubernetes
-kube_version: "1.19"
+kube_version: "1.24"
 cni_version: "0.8.7"
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_default_ipv4'].address | default(groups['master'][0]) }}"
 network_dir: /etc/kubernetes/network
 kubeadmin_config: /etc/kubernetes/admin.conf
 
 # Helm
-helm_version: "3.3/stable"
+helm_version: "3.7/stable"
 
 # Go
-go_version: "1.15.3"
-golangci_lint_version: "v1.18.0"
+go_version: "1.18.1"
+golangci_lint_version: "v1.46.0"
 
 # Node and NPM
-node_version: "10.16.3"
+node_version: "12.19.0"
 npm_version: "6.14.8"
 eslint_version: "5.16.0"

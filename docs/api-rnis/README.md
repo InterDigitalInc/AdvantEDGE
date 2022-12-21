@@ -1,4 +1,4 @@
-# Documentation for AdvantEDGE Radio Network Information Service REST API
+# Documentation for AdvantEDGE Radio Network Information API
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
@@ -27,11 +27,13 @@ Class | Method | HTTP request | Description
  - [AssociateId](./Models/AssociateId.md)
  - [CaReconfNotification](./Models/CaReconfNotification.md)
  - [CaReconfNotificationCarrierAggregationMeasInfo](./Models/CaReconfNotificationCarrierAggregationMeasInfo.md)
+ - [CaReconfNotificationLinks](./Models/CaReconfNotificationLinks.md)
  - [CaReconfNotificationSecondaryCellAdd](./Models/CaReconfNotificationSecondaryCellAdd.md)
  - [CaReconfSubscription](./Models/CaReconfSubscription.md)
  - [CaReconfSubscriptionFilterCriteriaAssoc](./Models/CaReconfSubscriptionFilterCriteriaAssoc.md)
  - [CaReconfSubscriptionLinks](./Models/CaReconfSubscriptionLinks.md)
  - [CellChangeNotification](./Models/CellChangeNotification.md)
+ - [CellChangeNotificationLinks](./Models/CellChangeNotificationLinks.md)
  - [CellChangeNotificationTempUeId](./Models/CellChangeNotificationTempUeId.md)
  - [CellChangeSubscription](./Models/CellChangeSubscription.md)
  - [CellChangeSubscriptionFilterCriteriaAssocHo](./Models/CellChangeSubscriptionFilterCriteriaAssocHo.md)
@@ -59,7 +61,6 @@ Class | Method | HTTP request | Description
  - [MeasRepUeSubscriptionFilterCriteriaAssocTri](./Models/MeasRepUeSubscriptionFilterCriteriaAssocTri.md)
  - [MeasTaNotification](./Models/MeasTaNotification.md)
  - [MeasTaSubscription](./Models/MeasTaSubscription.md)
- - [NRcgi](./Models/NRcgi.md)
  - [NrMeasRepUeNotification](./Models/NrMeasRepUeNotification.md)
  - [NrMeasRepUeNotificationEutraNeighCellMeasInfo](./Models/NrMeasRepUeNotificationEutraNeighCellMeasInfo.md)
  - [NrMeasRepUeNotificationNCell](./Models/NrMeasRepUeNotificationNCell.md)
@@ -68,6 +69,7 @@ Class | Method | HTTP request | Description
  - [NrMeasRepUeNotificationServCellMeasInfo](./Models/NrMeasRepUeNotificationServCellMeasInfo.md)
  - [NrMeasRepUeSubscription](./Models/NrMeasRepUeSubscription.md)
  - [NrMeasRepUeSubscriptionFilterCriteriaNrMrs](./Models/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md)
+ - [Nrcgi](./Models/Nrcgi.md)
  - [OperationActionType](./Models/OperationActionType.md)
  - [Plmn](./Models/Plmn.md)
  - [PlmnInfo](./Models/PlmnInfo.md)
@@ -112,6 +114,7 @@ Class | Method | HTTP request | Description
  - [TimeStamp](./Models/TimeStamp.md)
  - [Trigger](./Models/Trigger.md)
  - [TriggerNr](./Models/TriggerNr.md)
+ - [WebsockNotifConfig](./Models/WebsockNotifConfig.md)
 
 
 <a name="documentation-for-authorization"></a>

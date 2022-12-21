@@ -1320,6 +1320,8 @@ definitions:
         $ref: "#/definitions/NetworkCharacteristics"
       connectivity:
         $ref: "#/definitions/ConnectivityConfig"
+      d2d:
+        $ref: "#/definitions/D2dConfig"
       interDomainLatency:
         type: "integer"
         description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
@@ -1398,6 +1400,16 @@ definitions:
         - "OPEN"
         - "PDU"
     example: {}
+  D2dConfig:
+    type: "object"
+    properties:
+      d2dMaxDistance:
+        type: "number"
+        description: "Maximum distance for D2D. Default distance is 100m"
+      disableD2dViaNetwork:
+        type: "boolean"
+        description: "Enable-Disable D2D via network. Default value is false"
+    description: "D2D config"
   Domain:
     type: "object"
     properties:
@@ -1649,6 +1661,16 @@ definitions:
       velocity:
         type: "number"
         description: "Speed of movement along path in m/s"
+      d2dInRange:
+        type: "array"
+        items:
+          type: "string"
+          description: "D2D UEs visible to UE"
+      poaInRange:
+        type: "array"
+        items:
+          type: "string"
+          description: "POAs visible to UE"
     description: "Geographic data"
   Point:
     type: "object"

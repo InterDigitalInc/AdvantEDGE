@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,38 +44,74 @@ var testCmd = &cobra.Command{
 			return
 		}
 
-		targets := utils.RepoCfg.GetStringMapString("repo.core")
+		gitDir := viper.GetString("meep.gitdir")
+		cmd := exec.Command("mkdir", "-p", gitDir+"/test/codecov")
+		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
-		for k := range targets {
-			codecovCapable := utils.RepoCfg.GetBool("repo.core." + k + ".codecov")
+		platformTargets := utils.RepoCfg.GetStringMapString("repo.core.go-apps")
+		sandboxTargets := utils.RepoCfg.GetStringMapString("repo.sandbox.go-apps")
+
+		for k := range platformTargets {
+			codecovCapable := utils.RepoCfg.GetBool("repo.core.go-apps." + k + ".codecov")
 			if codecovCapable {
-				gitDir := viper.GetString("meep.gitdir")
-				workDir := viper.GetString("meep.workdir")
-				codecovFile := workDir + "/codecov/" + k + "/codecov-" + k + ".out"
-				if _, err := os.Stat(codecovFile); !os.IsNotExist(err) {
-					fmt.Println("Found " + codecovFile)
-					targetDir := gitDir + "/go-apps/" + k
-
-					//go tool cover -html=c.out -o coverage.html
-					htmlReport := gitDir + "/test/codecov-" + k + ".html"
-					fmt.Println("  + Generating html report ", htmlReport)
-					cmd := exec.Command("go", "tool", "cover", "-html="+codecovFile, "-o", htmlReport)
-					cmd.Dir = targetDir
-					_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-
-					// go tool cover -func=c.out
-					txtReport := gitDir + "/test/codecov-" + k + ".txt"
-					fmt.Println("  + Generating text report ", txtReport)
-					cmd = exec.Command("go", "tool", "cover", "-func="+codecovFile, "-o", txtReport)
-					cmd.Dir = targetDir
-					_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-
-				}
+				getCoverageReports(k, cobraCmd, args)
 			}
-
 		}
+		for k := range sandboxTargets {
+			codecovCapable := utils.RepoCfg.GetBool("repo.sandbox.go-apps." + k + ".codecov")
+			if codecovCapable {
+				getCoverageReports(k, cobraCmd, args)
 
+			}
+		}
 	},
+}
+
+func getCoverageReports(k string, cobraCmd *cobra.Command, args []string) {
+	gitDir := viper.GetString("meep.gitdir")
+	workDir := viper.GetString("meep.workdir") + "/codecov/" + k
+	targetDir := gitDir + "/go-apps/" + k
+	codecovFile := gitDir + "/test/codecov/" + k + "-aggregated.out"
+	f, err := os.Open(workDir)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	files, err := f.Readdir(0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	cmdArgs := []string{"-cc", codecovFile}
+	for _, v := range files {
+		name := workDir + "/" + v.Name()
+		cmdArgs = append(cmdArgs, name)
+	}
+	cmd := exec.Command("cov-report", cmdArgs...)
+	cmd.Dir = targetDir
+	_, err = utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if _, err := os.Stat(codecovFile); !os.IsNotExist(err) {
+		fmt.Println("Found " + codecovFile)
+
+		//go tool cover -html=c.out -o coverage.html
+		htmlReport := gitDir + "/test/codecov/" + k + "-aggregated.html"
+		fmt.Println("  + Generating html report ", htmlReport)
+		cmd := exec.Command("go", "tool", "cover", "-html="+codecovFile, "-o", htmlReport)
+		cmd.Dir = targetDir
+		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+
+		// go tool cover -func=c.out
+		txtReport := gitDir + "/test/codecov/" + k + "-aggregated.txt"
+		fmt.Println("  + Generating text report ", txtReport)
+		cmd = exec.Command("go", "tool", "cover", "-func="+codecovFile, "-o", txtReport)
+		cmd.Dir = targetDir
+		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	} else {
+		fmt.Println(err)
+	}
 }
 
 func init() {

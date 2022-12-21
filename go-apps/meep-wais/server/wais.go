@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -981,7 +981,7 @@ func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
+	fmt.Fprint(w, convertSubscriptionLinkListToJson(subscriptionLinkList))
 }
 
 func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
@@ -1103,7 +1103,7 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, jsonSub)
+	fmt.Fprint(w, jsonSub)
 }
 
 func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
@@ -1221,7 +1221,7 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonSub))
+	fmt.Fprint(w, string(jsonSub))
 }
 
 func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
@@ -1270,7 +1270,7 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertApInfoListToJson(&apInfoList))
+	fmt.Fprint(w, convertApInfoListToJson(&apInfoList))
 }
 
 func staInfoGET(w http.ResponseWriter, r *http.Request) {
@@ -1288,7 +1288,7 @@ func staInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, convertStaInfoListToJson(&staInfoList))
+	fmt.Fprint(w, convertStaInfoListToJson(&staInfoList))
 }
 
 func populateApInfo(key string, jsonInfo string, userData interface{}) error {

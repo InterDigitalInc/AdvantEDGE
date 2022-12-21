@@ -1,8 +1,8 @@
-openapi: 3.0.2
+openapi: 3.0.0
 info:
-  title: AdvantEDGE MEC Service Management API
+  title: AdvantEDGE Service Management API
   description: "MEC Service Management Service is AdvantEDGE's implementation of [ETSI\
-    \ MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)\
+    \ MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)\
     \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
     \ <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)\
     \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
@@ -14,10 +14,10 @@ info:
   license:
     name: Apache 2.0
     url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
-  version: 2.1.1
+  version: 2.2.1
 externalDocs:
-  description: "ETSI GS MEC011 Application Enablement API, V2.1.1"
-  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf
+  description: ETSI MEC011 V2.2.1 Service Management API
+  url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_mec011v020201p.pdf
 servers:
 - url: https://localhost/sandboxname/mec_service_mgmt/v1
 tags:
@@ -70,9 +70,9 @@ paths:
           type: string
       - name: consumed_local_only
         in: query
-        description: Indicate whether the service can only be consumed by the MEC  applications
-          located in the same locality (as defined by  scopeOfLocality) as this service
-          instance.
+        description: Indicate whether the service can only be consumed by the MEC
+          applications located in the same locality (as defined by scopeOfLocality)
+          as this service instance.
         required: false
         style: form
         explode: true
@@ -81,7 +81,7 @@ paths:
       - name: is_local
         in: query
         description: Indicate whether the service is located in the same locality
-          (as  defined by scopeOfLocality) as the consuming MEC application.
+          (as defined by scopeOfLocality) as the consuming MEC application.
         required: false
         style: form
         explode: true
@@ -89,9 +89,9 @@ paths:
           type: boolean
       - name: scope_of_locality
         in: query
-        description: A MEC application instance may use scope_of_locality as an input  parameter
-          to query the availability of a list of MEC service instances  with a certain
-          scope of locality.
+        description: A MEC application instance may use scope_of_locality as an input
+          parameter to query the availability of a list of MEC service instances with
+          a certain scope of locality.
         required: false
         style: form
         explode: true
@@ -122,15 +122,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -175,15 +175,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -244,9 +244,9 @@ paths:
           type: string
       - name: consumed_local_only
         in: query
-        description: Indicate whether the service can only be consumed by the MEC  applications
-          located in the same locality (as defined by  scopeOfLocality) as this service
-          instance.
+        description: Indicate whether the service can only be consumed by the MEC
+          applications located in the same locality (as defined by scopeOfLocality)
+          as this service instance.
         required: false
         style: form
         explode: true
@@ -255,7 +255,7 @@ paths:
       - name: is_local
         in: query
         description: Indicate whether the service is located in the same locality
-          (as  defined by scopeOfLocality) as the consuming MEC application.
+          (as defined by scopeOfLocality) as the consuming MEC application.
         required: false
         style: form
         explode: true
@@ -263,9 +263,9 @@ paths:
           type: boolean
       - name: scope_of_locality
         in: query
-        description: A MEC application instance may use scope_of_locality as an input  parameter
-          to query the availability of a list of MEC service instances  with a certain
-          scope of locality.
+        description: A MEC application instance may use scope_of_locality as an input
+          parameter to query the availability of a list of MEC service instances with
+          a certain scope of locality.
         required: false
         style: form
         explode: true
@@ -296,15 +296,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -365,15 +365,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -419,15 +419,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -473,22 +473,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: "Precondition Failed. It is used when a condition has failed\
-            \ during conditional requests,  e.g. when using ETags to avoid write conflicts."
+            \ during conditional requests, e.g. when using ETags to avoid write conflicts."
           content:
             application/problem+json:
               schema:
@@ -496,8 +496,8 @@ paths:
     delete:
       tags:
       - mec_service_mgmt
-      description: 'This method deletes a mecService resource. This method is typically
-        used in the service deregistration procedure. '
+      description: This method deletes a mecService resource. This method is typically
+        used in the service deregistration procedure.
       operationId: AppServicesServiceId_DELETE
       parameters:
       - name: appInstanceId
@@ -521,15 +521,15 @@ paths:
         "204":
           description: No Content
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -573,15 +573,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -635,15 +635,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -693,15 +693,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -734,15 +734,15 @@ paths:
         "204":
           description: No Content
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -779,15 +779,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "403":
-          description: 'Forbidden. The operation is not allowed given the current
-            status of the resource. '
+          description: Forbidden. The operation is not allowed given the current status
+            of the resource.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: Not Found. It is used when a client provided a URI that cannot
-            be mapped  to a valid resource URI.
+            be mapped to a valid resource URI.
           content:
             application/problem+json:
               schema:
@@ -896,6 +896,9 @@ components:
           self:
             href: /mecSerMgmtApi/example
     ProblemDetails:
+      required:
+      - detail
+      - status
       type: object
       properties:
         type:
@@ -932,6 +935,7 @@ components:
       required:
       - grantTypes
       - tokenEndpoint
+      type: object
       properties:
         grantTypes:
           maxItems: 4
@@ -997,8 +1001,9 @@ components:
           $ref: '#/components/schemas/Self'
         filteringCriteria:
           $ref: '#/components/schemas/SerAvailabilityNotificationSubscription_filteringCriteria'
-      description: This type represents a subscription to the notifications from the  MEC
-        platform regarding the availability of a MEC service or a list of MEC services.
+      description: This type represents a subscription to the notifications from the
+        MEC platform regarding the availability of a MEC service or a list of MEC
+        services.
       example:
         filteringCriteria:
           serNames:
@@ -1042,6 +1047,18 @@ components:
         _links:
           $ref: '#/components/schemas/Subscription'
       description: This type represents the service availability information.
+    ServiceAvailabilityNotificationChangeType:
+      type: string
+      description: "Type of the change. Valid values:\n ADDED: The service was newly\
+        \ added.\n  REMOVED: The service was removed.\n  STATE_CHANGED: Only the state\
+        \ of the service was changed.\n  ATTRIBUTES_CHANGED: At least one attribute\
+        \ of the service other than state was changed. The change may or may not include\
+        \ changing the state."
+      enum:
+      - ADDED
+      - REMOVED
+      - STATE_CHANGED
+      - ATTRIBUTES_CHANGED
     SerializerType:
       type: string
       description: The enumeration  represents types of serializers
@@ -1066,11 +1083,12 @@ components:
       enum:
       - ACTIVE
       - INACTIVE
+      - SUSPENDED
     ServiceStates:
       minItems: 0
       type: array
       description: "States of the services about which to report events. If the event\
-        \ is  a state change, this filter represents the state after the change."
+        \ is a state change, this filter represents the state after the change."
       items:
         $ref: '#/components/schemas/ServiceState'
       x-schema-name: ServiceStates
@@ -1133,7 +1151,7 @@ components:
           type: boolean
           description: Indicate whether the service can only be consumed by the MEC
             applications located in the same locality (as defined by scopeOfLocality)
-            as this  service instance.
+            as this service instance.
         isLocal:
           type: boolean
           description: Indicate whether the service is located in the same locality
@@ -1146,6 +1164,7 @@ components:
         - transportInfo
     ServiceInfo:
       required:
+      - _links
       - serName
       - serializer
       - state
@@ -1164,6 +1183,13 @@ components:
           description: Service version
         state:
           $ref: '#/components/schemas/ServiceState'
+        transportId:
+          type: string
+          description: "Identifier of the platform-provided transport to be used by\
+            \ the service. Valid identifiers may be obtained using the \"Transport\
+            \ information query\" procedure. May be present in POST requests to signal\
+            \ the use of a platform-provided transport for the service, and shall\
+            \ be absent otherwise. See note 2.\n"
         transportInfo:
           $ref: '#/components/schemas/TransportInfo'
         serializer:
@@ -1174,11 +1200,27 @@ components:
           type: boolean
           description: Indicate whether the service can only be consumed by the MEC
             applications located in the same locality (as defined by scopeOfLocality)
-            as this  service instance.
+            as this service instance.
         isLocal:
           type: boolean
           description: Indicate whether the service is located in the same locality
             (as defined by scopeOfLocality) as the consuming MEC application.
+        livenessInterval:
+          type: integer
+          description: "Interval (in seconds) between two consecutive \"heartbeat\"\
+            \ messages (see clause 8.2.10.3.3). If the service-producing application\
+            \ supports sending \"heartbeat\" messages, it shall include this attribute\
+            \ in the registration request. In this case, the application shall either\
+            \ set the value of this attribute to zero or shall use this attribute\
+            \ to propose a non-zero positive value for the liveness interval. If the\
+            \ application has provided this attribute in the request and the MEC platform\
+            \ requires \"heartbeat\" messages, the MEC platform shall return this\
+            \ attribute value in the HTTP responses. The MEC platform may use the\
+            \ value proposed in the request or may choose a different value. If the\
+            \ MEC platform does not require \"heartbeat\" messages for this service\
+            \ instance it shall omit the attribute in responses."
+        _links:
+          $ref: '#/components/schemas/ServiceInfo__links'
       description: This type represents the general information of a MEC service.
       example:
         serInstanceId: rnisInstance1
@@ -1202,6 +1244,28 @@ components:
             - https://my.callback.com/sandboxname/rni/v2/
         serializer: JSON
         scopeOfLocality: MEC_SYSTEM
+    ServiceLivenessInfo:
+      required:
+      - interval
+      - state
+      - timeStamp
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        timeStamp:
+          $ref: '#/components/schemas/ServiceLivenessInfo_timeStamp'
+        interval:
+          type: integer
+          description: The interval (in seconds) between two consecutive "heartbeat"
+            messages (see clause 8.2.10.3.3) that MEC platform has determined.
+    ServiceLivenessUpdate:
+      required:
+      - state
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/ServiceState'
     Subscription:
       required:
       - subscription
@@ -1356,7 +1420,7 @@ components:
             (as defined by scopeOfLocality) as the consuming MEC application.
       description: "Filtering criteria to match services for which events are requested\
         \ to be reported. If absent, matches all services. All child attributes are\
-        \ combined with the logical  \"AND\" operation."
+        \ combined with the logical \"AND\" operation."
       example:
         serNames:
         - serNames
@@ -1394,18 +1458,29 @@ components:
         state:
           $ref: '#/components/schemas/ServiceState'
         changeType:
-          type: string
-          description: "Type of the change. Valid values:\n ADDED: The service was\
-            \ newly added.\n  REMOVED: The service was removed.\n  STATE_CHANGED:\
-            \ Only the state of the service was changed. \n  ATTRIBUTES_CHANGED: At\
-            \ least one attribute of the service other than state was changed. The\
-            \ change may or may not include changing the state."
-          enum:
-          - ADDED
-          - REMOVED
-          - STATE_CHANGED
-          - ATTRIBUTES_CHANGED
+          $ref: '#/components/schemas/ServiceAvailabilityNotificationChangeType'
       description: List of links to services whose availability has changed.
+    ServiceInfo__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+        liveness:
+          $ref: '#/components/schemas/LinkType'
+    ServiceLivenessInfo_timeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        seconds:
+          type: integer
+        nanoSeconds:
+          type: integer
+      description: The time when the last "heartbeat" message was received by MEC
+        platform
   responses:
     ApplicationsSubscriptions200:
       description: "Upon success, a response body containing the list of links to\
@@ -1518,30 +1593,30 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "403":
-      description: 'Forbidden. The operation is not allowed given the current status
-        of the resource. '
+      description: Forbidden. The operation is not allowed given the current status
+        of the resource.
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "404":
       description: Not Found. It is used when a client provided a URI that cannot
-        be mapped  to a valid resource URI.
+        be mapped to a valid resource URI.
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "409":
       description: "Conflict. The operation cannot be executed currently, due to a\
-        \ conflict with  the state of the resource. Typically, this is because the\
-        \ application  instance resource is in NOT_INSTANTIATED state."
+        \ conflict with the state of the resource. Typically, this is because the\
+        \ application instance resource is in NOT_INSTANTIATED state."
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     "412":
       description: "Precondition Failed. It is used when a condition has failed during\
-        \ conditional requests,  e.g. when using ETags to avoid write conflicts."
+        \ conditional requests, e.g. when using ETags to avoid write conflicts."
       content:
         application/problem+json:
           schema:
@@ -1632,9 +1707,9 @@ components:
     Query.LocalityType:
       name: scope_of_locality
       in: query
-      description: A MEC application instance may use scope_of_locality as an input  parameter
-        to query the availability of a list of MEC service instances  with a certain
-        scope of locality.
+      description: A MEC application instance may use scope_of_locality as an input
+        parameter to query the availability of a list of MEC service instances with
+        a certain scope of locality.
       required: false
       style: form
       explode: true
@@ -1643,8 +1718,8 @@ components:
     Query.IsLocal:
       name: is_local
       in: query
-      description: Indicate whether the service is located in the same locality (as  defined
-        by scopeOfLocality) as the consuming MEC application.
+      description: Indicate whether the service is located in the same locality (as
+        defined by scopeOfLocality) as the consuming MEC application.
       required: false
       style: form
       explode: true
@@ -1653,8 +1728,8 @@ components:
     Query.ConsumedLocalOnly:
       name: consumed_local_only
       in: query
-      description: Indicate whether the service can only be consumed by the MEC  applications
-        located in the same locality (as defined by  scopeOfLocality) as this service
+      description: Indicate whether the service can only be consumed by the MEC applications
+        located in the same locality (as defined by scopeOfLocality) as this service
         instance.
       required: false
       style: form
@@ -1817,14 +1892,13 @@ components:
         post:
           tags:
           - callbacks
-          description: "'Represents the service availability information that  is\
-            \ used in the following cases - when the MEC platform announces the newly\
-            \ available\n services to the authorized relevant MEC applications (e.g.\
-            \ \n the applications that indicate the services as \"optional\" \n or\
-            \ \"required\") that are subscribed to the corresponding \n service availability\
-            \ notifications\n-  when the MEC platform notifies the authorized relevant\
-            \  applications that are subscribed to the corresponding  service availability\
-            \ notifications about the service availability changes.'"
+          description: |-
+            'Represents the service availability information that is used in the following cases - when the MEC platform announces the newly available
+             services to the authorized relevant MEC applications (e.g.
+             the applications that indicate the services as "optional"
+             or "required") that are subscribed to the corresponding
+             service availability notifications
+            -  when the MEC platform notifies the authorized relevant applications that are subscribed to the corresponding service availability notifications about the service availability changes.'
           operationId: Sm_ServiceAvailabilityNotification_POST
           requestBody:
             $ref: '#/components/requestBodies/ServiceAvailabilityNotification'

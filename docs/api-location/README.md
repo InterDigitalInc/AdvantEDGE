@@ -1,4 +1,4 @@
-# Documentation for AdvantEDGE Location Service REST API
+# Documentation for AdvantEDGE Location API
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
@@ -89,7 +89,6 @@ Class | Method | HTTP request | Description
  - [ProblemDetails](./Models/ProblemDetails.md)
  - [RetrievalStatus](./Models/RetrievalStatus.md)
  - [ServiceError](./Models/ServiceError.md)
- - [SubscriptionCancellationNotification](./Models/SubscriptionCancellationNotification.md)
  - [SubscriptionNotification](./Models/SubscriptionNotification.md)
  - [TerminalDistance](./Models/TerminalDistance.md)
  - [TerminalLocation](./Models/TerminalLocation.md)

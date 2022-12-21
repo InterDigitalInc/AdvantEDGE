@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020  InterDigital Communications, Inc
+ * Copyright (c) 2022  The AdvantEDGE Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -562,7 +562,7 @@ func processActiveScenarioUpdate() {
 
 func refreshMeasurements() {
 	// Update UE measurements
-	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	uePoaMeasMap, _ := sbi.gisCache.GetAllPoaMeasurements()
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 
@@ -574,7 +574,7 @@ func refreshMeasurements() {
 
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
-			poaNames, rsrps, rsrqs := getMeas(name, "", ueMeasMap)
+			poaNames, rsrps, rsrqs := getMeas(name, "", uePoaMeasMap)
 			sbi.updateMeasInfoCB(name, poa.Name, poaNames, rsrps, rsrqs)
 		} else {
 			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
@@ -582,12 +582,12 @@ func refreshMeasurements() {
 	}
 }
 
-func getMeas(ue string, poaName string, ueMeasMap map[string]*gc.UeMeasurement) ([]string, []int32, []int32) {
+func getMeas(ue string, poaName string, uePoaMeasMap map[string]*gc.UePoaMeasurement) ([]string, []int32, []int32) {
 	var poaNames []string
 	var rsrps []int32
 	var rsrqs []int32
 
-	if ueMeas, ueFound := ueMeasMap[ue]; ueFound {
+	if ueMeas, ueFound := uePoaMeasMap[ue]; ueFound {
 		if poaName == "" {
 			for poaName, meas := range ueMeas.Measurements {
 				poaNames = append(poaNames, poaName)

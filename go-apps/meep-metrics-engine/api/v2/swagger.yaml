@@ -22,6 +22,56 @@ consumes:
 produces:
 - "application/json"
 paths:
+  /metrics/query/seq:
+    post:
+      tags:
+      - "Metrics"
+      description: "Requests sequence diagram logs for the requested params"
+      operationId: "postSeqQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/SeqQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/SeqMetrics"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+  /metrics/query/dataflow:
+    post:
+      tags:
+      - "Metrics"
+      description: "Requests dataflow diagram logs for the requested params"
+      operationId: "postDataflowQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/DataflowQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/DataflowMetrics"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
   /metrics/query/http:
     post:
       tags:
@@ -264,61 +314,45 @@ paths:
         500:
           description: "Internal server error"
 definitions:
-  HttpQueryParams:
+  SeqQueryParams:
     type: "object"
     properties:
       tags:
         type: "array"
-        description: "Tag names to match in query. Supported values:<br> <li>logger_name:\
-          \ Logger instances that issued the http notification or processed the request\
-          \ <li>direction: Notification or Request type of http metric"
+        description: "Tag names to match in query. Supported values:<br> "
         items:
           $ref: "#/definitions/Tag"
       fields:
         type: "array"
-        description: "Field names to return in query response. Supported values:<br>\
-          \ <li>id: Http metrics identifier<br> <li>endpoint: Http metrics queried\
-          \ endpoint<br> <li>url: Http metrics queried endpoint with query parameters<br>\
-          \ <li>method: Http metrics method<br> <li>resp_code: Http metrics response\
-          \ status code<br> <li>resp_body: Http metrics response body<br> <li>body:\
-          \ Http metrics body<br> <li>proc_time: Request processing time in ms"
+        description: "Requested information. Supported values:<br> NOTE: only one\
+          \ of mermaid or sdorg must be included  <li>mermaid: Mermaid format<br>\
+          \ <li>sdorg: Sequencediagram.org format<br> "
         items:
           type: "string"
           description: "Queried value"
           enum:
-          - "id"
-          - "endpoint"
-          - "url"
-          - "method"
-          - "resp_code"
-          - "resp_body"
-          - "body"
-          - "proc_time"
-          - "logger_name"
-          - "direction"
+          - "mermaid"
+          - "sdorg"
+      responseType:
+        type: "string"
+        description: "Queried response Type. Supported Values:<br> NOTE1: only one\
+          \ of listonly or responly may be included  NOTE2: if listonly or responly\
+          \ are not included, the response contains both the list and string  <li>listonly:\
+          \ Include only a list of sequence metrics in response<br> <li>stronly: Include\
+          \ only a concatenated string of sequence metrics in response<br> "
+        enum:
+        - "listonly"
+        - "stronly"
       scope:
         $ref: "#/definitions/Scope"
-    description: "Http metrics query parameters"
+    description: "Seq metrics query parameters"
     example:
       scope:
-        duration: "10s"
+        duration: "1h"
         limit: 60
       fields:
-      - "id"
-      - "endpoint"
-      - "url"
-      - "method"
-      - "resp_code"
-      - "resp_body"
-      - "body"
-      - "proc_time"
-      - "logger_name"
-      - "direction"
-      tags:
-      - name: "logger_name"
-        value: "meep-loc-serv"
-      - name: "direction"
-        value: "RX"
+      - "mermaid"
+      responseType: "listonly"
   Tag:
     type: "object"
     properties:
@@ -350,6 +384,233 @@ definitions:
     example:
       duration: "10s"
       limit: 60
+  SeqMetrics:
+    type: "object"
+    properties:
+      seqMetricList:
+        $ref: "#/definitions/SeqMetricList"
+      seqMetricString:
+        type: "string"
+        description: "String of sequence metrics"
+    example:
+      seqMetricList:
+        columns:
+        - "time"
+        - "mermaid"
+        values:
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Alice ->> Bob: Hello!"
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Bob ->> Alice: Hey"
+        name: "seq metrics"
+      seqMetricString: "seqMetricString"
+  SeqMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "seq metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/SeqMetric"
+    description: "Seq metrics query response"
+    example:
+      columns:
+      - "time"
+      - "mermaid"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Alice ->> Bob: Hello!"
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Bob ->> Alice: Hey"
+      name: "seq metrics"
+  SeqMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of Seq logs"
+      mermaid:
+        type: "string"
+        example: "Alice ->> Bob: Hello!"
+        description: "Mermaid formatted seq logs"
+      sdorg:
+        type: "string"
+        example: "Alice -> Bob: Hello!"
+        description: "Sequencediagram.org formatted seq logs"
+    description: "Sequence diagram logs"
+    example:
+      time: "2019-11-24T12:45:00-5:00"
+      mermaid: "Alice ->> Bob: Hello!"
+  DataflowQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> "
+        items:
+          $ref: "#/definitions/Tag"
+      scope:
+        $ref: "#/definitions/Scope"
+      fields:
+        type: "array"
+        description: "Requested information. Supported values:<br><li>mermaid: Mermaid\
+          \ format<br>"
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "mermaid"
+      responseType:
+        type: "string"
+        description: "Queried response Type. Supported Values:<br> NOTE1: only one\
+          \ of listonly or responly may be included  NOTE2: if listonly or responly\
+          \ are not included, the response contains both the list and string  <li>listonly:\
+          \ Include only a list of dataflow metrics in response<br> <li>stronly: Include\
+          \ only a concatenated string of dataflow metrics in response<br> "
+        enum:
+        - "listonly"
+        - "stronly"
+    description: "Seq metrics query parameters"
+    example:
+      scope:
+        duration: "1h"
+        limit: 60
+      fields:
+      - "mermaid"
+      responseType: "stronly"
+  DataflowMetrics:
+    type: "object"
+    properties:
+      dataflowMetricList:
+        $ref: "#/definitions/DataflowMetricList"
+      dataflowMetricString:
+        type: "string"
+        description: "String of dataflow metrics with unique interactions"
+    example:
+      dataflowMetricString: "dataflowMetricString"
+      dataflowMetricList:
+        columns:
+        - "columns"
+        - "columns"
+        values:
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Alice --> Bob"
+        - time: "2019-11-24T12:45:00-5:00"
+          mermaid: "Alice --> Bob"
+        name: "dataflow metrics"
+  DataflowMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "dataflow metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/DataflowMetric"
+    example:
+      columns:
+      - "columns"
+      - "columns"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Alice --> Bob"
+      - time: "2019-11-24T12:45:00-5:00"
+        mermaid: "Alice --> Bob"
+      name: "dataflow metrics"
+  DataflowMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of interaction"
+      mermaid:
+        type: "string"
+        example: "Alice --> Bob"
+        description: "Mermaid formatted dataflow logs"
+    description: "dataflow diagram logs"
+    example:
+      time: "2019-11-24T12:45:00-5:00"
+      mermaid: "Alice --> Bob"
+  HttpQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> <li>logger_name:\
+          \ Logger instances that issued the http notification or processed the request\
+          \ <li>msg_type: Http metric type (request, response, notification)"
+        items:
+          $ref: "#/definitions/Tag"
+      fields:
+        type: "array"
+        description: "Field names to return in query response. Supported values:<br>\
+          \ <li>id: Http metrics identifier<br> <li>endpoint: Http metrics queried\
+          \ endpoint<br> <li>url: Http metrics queried endpoint with query parameters<br>\
+          \ <li>method: Http metrics method<br> <li>resp_code: Http metrics response\
+          \ status code<br> <li>resp_body: Http metrics response body<br> <li>body:\
+          \ Http metrics body<br> <li>proc_time: Request processing time in ms<br>\
+          \ <li>logger_name: Logger instances that issued the http notification or\
+          \ processed the request<br> <li>msg_type: Http metric type (request, response,\
+          \ notification)<br> <li>direction: DEPRECATED -- Http metric direction (RX,\
+          \ TX)"
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "id"
+          - "endpoint"
+          - "url"
+          - "method"
+          - "resp_code"
+          - "resp_body"
+          - "body"
+          - "proc_time"
+          - "logger_name"
+          - "msg_type"
+          - "direction"
+      scope:
+        $ref: "#/definitions/Scope"
+    description: "Http metrics query parameters"
+    example:
+      scope:
+        duration: "10s"
+        limit: 60
+      fields:
+      - "id"
+      - "endpoint"
+      - "url"
+      - "method"
+      - "resp_code"
+      - "resp_body"
+      - "body"
+      - "proc_time"
+      - "logger_name"
+      - "msg_type"
+      - "direction"
+      tags:
+      - name: "logger_name"
+        value: "meep-loc-serv"
+      - name: "msg_type"
+        value: "response"
   HttpMetricList:
     type: "object"
     properties:
@@ -380,7 +641,7 @@ definitions:
       - "body"
       - "proc_time"
       - "logger_name"
-      - "direction"
+      - "msg_type"
       values:
       - time: "2019-11-24T12:45:00-5:00"
         id: 5
@@ -392,7 +653,7 @@ definitions:
         body: {}
         proc_time: 345
         logger_name: "loc-serv"
-        direction: "RX"
+        msg_type: "response"
       - time: "2019-11-24T12:45:00-5:00"
         id: 6
         endpoint: "/location/v1/subscription/userTracking"
@@ -403,7 +664,7 @@ definitions:
         body: {}
         proc_time: 456
         logger_name: "loc-serv"
-        direction: "RX"
+        msg_type: "response"
       name: "http metrics"
   HttpMetric:
     type: "object"
@@ -448,10 +709,14 @@ definitions:
         type: "string"
         example: "loc-serv"
         description: "Service processing the http metric"
+      msg_type:
+        type: "string"
+        example: "response"
+        description: "Http metric type (request, response, notification)"
       direction:
         type: "string"
-        example: "Request"
-        description: "Http type"
+        example: "RX"
+        description: "DEPRECATED -- Http type"
     description: "Value of a single http metric"
     example:
       time: "2019-11-24T12:45:00-5:00"
@@ -464,7 +729,7 @@ definitions:
       body: {}
       proc_time: 345
       logger_name: "loc-serv"
-      direction: "Request"
+      msg_type: "response"
   NetworkQueryParams:
     type: "object"
     properties:

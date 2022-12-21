@@ -1,15 +1,13 @@
-openapi: 3.0.2
-servers:
-  - url: 'https://localhost/sandboxname/mec_service_mgmt/v1'
+openapi: 3.0.0
 info:
-  title: AdvantEDGE MEC Service Management API
-  version: 2.1.1
+  title: AdvantEDGE Service Management API
+  version: 2.2.1
   description: "MEC Service Management Service is AdvantEDGE's implementation of
-  [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf)
-  <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-  <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)
-  <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network
-  <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below)."
+    [ETSI MEC ISG MEC011 Application Enablement API](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)
+    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
+    <p>**Micro-service**<br>[meep-app-enablement](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-app-enablement/server/service-mgmt)
+    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about services in the network
+    <p>**Note**<br>AdvantEDGE supports all of Service Management API endpoints (see below)."
   license:
     name: Apache 2.0
     url: 'https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE'
@@ -17,8 +15,10 @@ info:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
 externalDocs:
-  description: 'ETSI GS MEC011 Application Enablement API, V2.1.1'
-  url: 'https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_MEC011v020101p.pdf'
+  description: ETSI MEC011 V2.2.1 Service Management API
+  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_mec011v020201p.pdf'
+servers:
+  - url: 'https://localhost/sandboxname/mec_service_mgmt/v1'
 tags:
   - name: mec_service_mgmt
 paths:
@@ -36,7 +36,7 @@ paths:
         - $ref: '#/components/parameters/Query.SerCategoryId'
         - $ref: '#/components/parameters/Query.ConsumedLocalOnly'
         - $ref: '#/components/parameters/Query.IsLocal'
-        - $ref: '#/components/parameters/Query.LocalityType' 
+        - $ref: '#/components/parameters/Query.LocalityType'
       responses:
         '200':
           $ref: '#/components/responses/Services200'
@@ -83,7 +83,7 @@ paths:
         - $ref: '#/components/parameters/Query.SerCategoryId'
         - $ref: '#/components/parameters/Query.ConsumedLocalOnly'
         - $ref: '#/components/parameters/Query.IsLocal'
-        - $ref: '#/components/parameters/Query.LocalityType' 
+        - $ref: '#/components/parameters/Query.LocalityType'
       responses:
         '200':
           $ref: '#/components/responses/Services200'
@@ -154,7 +154,7 @@ paths:
         $ref: '#/components/requestBodies/ServicesServiceId'
     delete:
       description: >-
-        This method deletes a mecService resource. This method is typically used in the service deregistration procedure. 
+        This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
       operationId: AppServicesServiceId_DELETE
       tags:
         - mec_service_mgmt
@@ -291,7 +291,7 @@ components:
       description: Categories of services about which to report events.
       type: array
       minItems: 0
-      items: 
+      items:
         $ref: '#/components/schemas/CategoryRef'
     EndPointInfoAddresses:
       description: >-
@@ -325,7 +325,7 @@ components:
       type: object
       required:
         - alternative
-      properties: 
+      properties:
         alternative:
           type: object
     EndPointInfoUris:
@@ -347,7 +347,7 @@ components:
       description: This type represents a type of link and may be referenced from data structures
       type: object
       properties:
-        href: 
+        href:
           description: URI referring to a resource
           type: string
           format: uri
@@ -412,6 +412,9 @@ components:
           type: string
           format: uri
           description: A URI reference that identifies the specific occurrence of the problem
+      required:
+      - status
+      - detail
     GrantType:
       description: OAuth 2.0 grant type
       type: string
@@ -423,6 +426,7 @@ components:
       example: 'OAUTH2_CLIENT_CREDENTIALS'
     OAuth2Info:
       description: Parameters related to use of OAuth 2.0
+      type: object
       required:
         - grantTypes
         - tokenEndpoint
@@ -456,7 +460,7 @@ components:
       readOnly: true
     SerAvailabilityNotificationSubscription:
       description: >-
-        This type represents a subscription to the notifications from the 
+        This type represents a subscription to the notifications from the
         MEC platform regarding the availability of a MEC service or a
         list of MEC services.
       type: object
@@ -480,7 +484,7 @@ components:
         filteringCriteria:
           description: >-
             Filtering criteria to match services for which events are requested to be reported.
-            If absent, matches all services. All child attributes are combined with the logical 
+            If absent, matches all services. All child attributes are combined with the logical
             "AND" operation.
           type: object
           not:
@@ -494,7 +498,7 @@ components:
               $ref: '#/components/schemas/CategoryRefs'
             states:
               $ref: '#/components/schemas/ServiceStates'
-            isLocal: 
+            isLocal:
               description: >-
                 Indicate whether the service is located in the same locality (as defined
                 by scopeOfLocality) as the consuming MEC application.
@@ -513,7 +517,7 @@ components:
           type: string
         serviceReferences:
           type: array
-          items: 
+          items:
             description: List of links to services whose availability has changed.
             type: object
             required:
@@ -522,29 +526,31 @@ components:
               - state
               - changeType
             properties:
-              link: 
+              link:
                 $ref: '#/components/schemas/LinkType'
-              serName: 
+              serName:
                 $ref: '#/components/schemas/SerName'
               serInstanceId:
                 $ref: '#/components/schemas/SerInstanceId'
               state:
                 $ref: '#/components/schemas/ServiceState'
               changeType:
-                description: >-
-                 Type of the change. Valid values:
-                  ADDED: The service was newly added.
-                   REMOVED: The service was removed.
-                   STATE_CHANGED: Only the state of the service was changed. 
-                   ATTRIBUTES_CHANGED: At least one attribute of the service other than state was changed. The change may or may not include changing the state.
-                type: string
-                enum:
-                  - ADDED
-                  - REMOVED
-                  - STATE_CHANGED
-                  - ATTRIBUTES_CHANGED
+                $ref: '#/components/schemas/ServiceAvailabilityNotificationChangeType'
         _links:
           $ref: '#/components/schemas/Subscription'
+    ServiceAvailabilityNotificationChangeType:
+      description: >-
+       Type of the change. Valid values:
+        ADDED: The service was newly added.
+         REMOVED: The service was removed.
+         STATE_CHANGED: Only the state of the service was changed.
+         ATTRIBUTES_CHANGED: At least one attribute of the service other than state was changed. The change may or may not include changing the state.
+      type: string
+      enum:
+        - ADDED
+        - REMOVED
+        - STATE_CHANGED
+        - ATTRIBUTES_CHANGED
     SerializerType:
       description: The enumeration  represents types of serializers
       type: string
@@ -568,9 +574,10 @@ components:
       enum:
         - ACTIVE
         - INACTIVE
+        - SUSPENDED
     ServiceStates:
       description: >-
-        States of the services about which to report events. If the event is 
+        States of the services about which to report events. If the event is
         a state change, this filter represents the state after the change.
       type: array
       minItems: 0
@@ -639,7 +646,7 @@ components:
         consumedLocalOnly:
           description: >-
             Indicate whether the service can only be consumed by the MEC applications
-            located in the same locality (as defined by scopeOfLocality) as this 
+            located in the same locality (as defined by scopeOfLocality) as this
             service instance.
           type: boolean
         isLocal:
@@ -656,6 +663,7 @@ components:
         - state
         - transportInfo
         - serializer
+        - _links
       properties:
         serInstanceId:
           $ref: '#/components/schemas/SerInstanceId'
@@ -668,6 +676,15 @@ components:
           type: string
         state:
           $ref: '#/components/schemas/ServiceState'
+        transportId:
+          type: string
+          description: >
+            Identifier of the platform-provided transport to be used by
+            the service. Valid identifiers may be obtained using the
+            "Transport information query" procedure. May be present
+            in POST requests to signal the use of a platform-provided
+            transport for the service, and shall be absent otherwise.
+            See note 2.
         transportInfo:
           $ref: '#/components/schemas/TransportInfo'
         serializer:
@@ -677,14 +694,29 @@ components:
         consumedLocalOnly:
           description: >-
             Indicate whether the service can only be consumed by the MEC applications
-            located in the same locality (as defined by scopeOfLocality) as this 
+            located in the same locality (as defined by scopeOfLocality) as this
             service instance.
           type: boolean
-        isLocal: 
+        isLocal:
           description: >-
             Indicate whether the service is located in the same locality (as defined
             by scopeOfLocality) as the consuming MEC application.
           type: boolean
+        livenessInterval:
+          type: integer
+          description: Interval (in seconds) between two consecutive "heartbeat" messages (see clause 8.2.10.3.3).
+                      If the service-producing application supports sending "heartbeat" messages, it shall include this attribute in the registration request. In this case, the application shall either set the value of this attribute to zero or shall use this attribute to propose a non-zero positive value for the liveness interval.
+                      If the application has provided this attribute in the request and the MEC platform requires "heartbeat" messages, the MEC platform shall return this attribute value in the HTTP responses. The MEC platform may use the value proposed in the request or may choose a different value.
+                      If the MEC platform does not require "heartbeat" messages for this service instance it shall omit the attribute in responses.
+        _links:
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              $ref: '#/components/schemas/LinkType'
+            liveness:
+              $ref: '#/components/schemas/LinkType'
       example:
         serInstanceId: 'rnisInstance1'
         serName: 'myRnis'
@@ -707,6 +739,36 @@ components:
               - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
+    ServiceLivenessInfo:
+      type: object
+      required:
+        - state
+        - timeStamp
+        - interval
+      properties:
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        timeStamp:
+          type: object
+          description: The time when the last "heartbeat" message was received by MEC platform
+          required:
+            - seconds
+            - nanoSeconds
+          properties:
+            seconds:
+              type: integer
+            nanoSeconds:
+              type: integer
+        interval:
+          type: integer
+          description: The interval (in seconds) between two consecutive "heartbeat" messages (see clause 8.2.10.3.3) that MEC platform has determined.
+    ServiceLivenessUpdate:
+      type: object
+      required:
+        - state
+      properties:
+        state:
+          $ref: '#/components/schemas/ServiceState'
     Subscription:
       description: A link to the related subscription
       type: object
@@ -833,8 +895,8 @@ components:
     Query.LocalityType:
       name: scope_of_locality
       description: >-
-        A MEC application instance may use scope_of_locality as an input 
-        parameter to query the availability of a list of MEC service instances 
+        A MEC application instance may use scope_of_locality as an input
+        parameter to query the availability of a list of MEC service instances
         with a certain scope of locality.
       in: query
       required: false
@@ -843,7 +905,7 @@ components:
     Query.IsLocal:
       name: is_local
       description: >-
-        Indicate whether the service is located in the same locality (as 
+        Indicate whether the service is located in the same locality (as
         defined by scopeOfLocality) as the consuming MEC application.
       in: query
       required: false
@@ -852,8 +914,8 @@ components:
     Query.ConsumedLocalOnly:
       name: consumed_local_only
       description: >-
-        Indicate whether the service can only be consumed by the MEC 
-        applications located in the same locality (as defined by 
+        Indicate whether the service can only be consumed by the MEC
+        applications located in the same locality (as defined by
         scopeOfLocality) as this service instance.
       in: query
       required: false
@@ -976,7 +1038,7 @@ components:
     403:
       description: >-
         Forbidden.
-        The operation is not allowed given the current status of the resource. 
+        The operation is not allowed given the current status of the resource.
       content:
         application/problem+json:
           schema:
@@ -984,17 +1046,17 @@ components:
     404:
       description: >-
         Not Found.
-        It is used when a client provided a URI that cannot be mapped 
+        It is used when a client provided a URI that cannot be mapped
         to a valid resource URI.
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
     409:
-      description: >- 
+      description: >-
         Conflict.
-        The operation cannot be executed currently, due to a conflict with 
-        the state of the resource. Typically, this is because the application 
+        The operation cannot be executed currently, due to a conflict with
+        the state of the resource. Typically, this is because the application
         instance resource is in NOT_INSTANTIATED state.
       content:
         application/problem+json:
@@ -1003,7 +1065,7 @@ components:
     412:
       description: >-
         Precondition Failed.
-        It is used when a condition has failed during conditional requests, 
+        It is used when a condition has failed during conditional requests,
         e.g. when using ETags to avoid write conflicts.
       content:
         application/problem+json:
@@ -1103,15 +1165,15 @@ components:
       '{$request.body#/callbackReference}':
         post:
           description: >-
-            'Represents the service availability information that 
+            'Represents the service availability information that
             is used in the following cases
             - when the MEC platform announces the newly available
-             services to the authorized relevant MEC applications (e.g. 
-             the applications that indicate the services as "optional" 
-             or "required") that are subscribed to the corresponding 
+             services to the authorized relevant MEC applications (e.g.
+             the applications that indicate the services as "optional"
+             or "required") that are subscribed to the corresponding
              service availability notifications
-            -  when the MEC platform notifies the authorized relevant 
-            applications that are subscribed to the corresponding 
+            -  when the MEC platform notifies the authorized relevant
+            applications that are subscribed to the corresponding
             service availability notifications about the service availability changes.'
           operationId: Sm_ServiceAvailabilityNotification_POST
           tags:
@@ -1185,5 +1247,3 @@ components:
               - 'https://my.callback.com/sandboxname/rni/v2/'
         serializer: 'JSON'
         scopeOfLocality: 'MEC_SYSTEM'
-
-
