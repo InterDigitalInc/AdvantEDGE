@@ -158,10 +158,14 @@ When checked, terminal connectivity to the data network is blocked when the term
 ##### D2D Radius
 Text field to input maximum distance (in meters) between UEs to be considered in D2D range or proximity.
 
+Device-to-device (D2D) Communication feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %}).
+
 ##### Disable D2D via network
 Checkbox to indicate if communication between terminals via the network should be disabled.
 
 When checked, connectivity between UEs that are not in D2D proximity is blocked.
+
+Device-to-device (D2D) Communication feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %}).
 
 ##### Service Provider / Edge Compute Service Provider
 Text field to input service provider name. Accepts alphanumeric or ' ' with a limit of 50 characters.
