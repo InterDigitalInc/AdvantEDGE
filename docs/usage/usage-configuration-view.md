@@ -155,6 +155,18 @@ Checkbox to indicate if the data network is a _Local Area Data Network_.
 
 When checked, terminal connectivity to the data network is blocked when the terminal is outside the data network service area.
 
+##### D2D Radius
+Text field to input maximum distance (in meters) between UEs to be considered in D2D range or proximity.
+
+Device-to-device (D2D) Communication feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %}).
+
+##### Disable D2D via network
+Checkbox to indicate if communication between terminals via the network should be disabled.
+
+When checked, connectivity between UEs that are not in D2D proximity is blocked.
+
+Device-to-device (D2D) Communication feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %}).
+
 ##### Service Provider / Edge Compute Service Provider
 Text field to input service provider name. Accepts alphanumeric or ' ' with a limit of 50 characters.
 
@@ -168,6 +180,8 @@ Text field to enter 28-character bit string cell identifier for a cellular PoA i
 
 ##### Location & Path Coordinates, Radius, End-of-path mode, Velocity & Supported Wireless Types
 Text & Number input fields for provisioning geospatial data for physical & network location assets. GIS feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %}).
+
+To enable D2D in a UE, _d2d_ must be added to the list of supported wireless types. Device-to-device (D2D) Communication feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %}).
 
 ##### Zone Color
 Text field to enter a 6-character hexadecimal zone color. Value may be set manually or using the provided color picker. This color is used in the map view for PoA icons and ranges that are in the configured zone.
@@ -263,12 +277,6 @@ _**NOTE:** The platform currently supports provisioning for a single user chart 
 Text field to input the path to an alternate _values.yaml_ file to use during chart installation. Alternate _values.yaml_ files must be placed on the k8s master node at the following location: `~/.meep/virt-engine/user-charts/`. The Virtualization Engine uses the **relative path** provided in the _user chart alternate values_ field to retrieve the requested alternate _values.yaml_ files from this folder.
 
 _**NOTE:** For AdvantEDGE versions older than v1.5, alternate **values.yaml** files may be placed anywhere on the backend host where the Virtualization Engine is running. A full path is required, with the exception of the '~' character that is replaced by the **$HOME** path._
-
-##### D2D Radius
-Test field to input D2D proximity which represent the maximum distance beyween UEs to establish a D2D connection.
-
-##### Diabled D2D via network
-Ticker box to disable or enable D2D via network at the scenario/deployment level.
 
 ### DELETE
 Remove an existing scenario element:

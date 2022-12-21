@@ -15,6 +15,7 @@ Topic | Abstract
 [Edge Platform Application Enablement Service](#edge-platform-application-enablement-service) | AdvantEDGE implementation of ETSI MEC011 specification that can be used by edge applications to discover, advertise, consume and offer MEC services.
 [Application Mobility Service](#application-mobility-service) | AdvantEDGE implementation of ETSI MEC021 specification that can be used by edge applications for relocation of user context and/or application instance across MEC platforms.
 [Application State Transfer Service](#application-state-transfer-service) | AdvantEDGE proprietary implementation of a state transfer service that can be used by edge applications to transfer a state to another application instance.
+[V2X Information Service](#v2x-information-service) | AdvantEDGE implementation of ETSI MEC030 specification that can be used by edge applications to obtain journey-specific QoS predictions for vehicular terminals.
 NEXT STEP: [Platform APIs](#next-step) |
 
 -----
@@ -98,8 +99,19 @@ This service provides the following capabilities:
 
 Want to know more about Application State Transfer: [Application State Transfer]({{site.baseurl}}{% link docs/overview/edge-services/overview-state-transfer.md %})
 
+-----
+## V2X Information Service
+AdvantEDGE provides a built-in V2X Information Service implementation that integrates with scenarios.
+
+This service provides the following capabilities:
+- _Predicting journey-specific QoS for vehicular UEs_
+- _Obtaining V2X provisioning information_
+- _Publishing and subscribing for V2X messages_
+
+Want to know more about V2X Information service: [V2X Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-vis.md %})
+
 ----
 ## Next Step
-Learn about the various [Plarform APIs]({{site.baseurl}}{% link docs/overview/overview-api.md %}) that allows integration of your applications with the AdvantEDGE platform:
+Learn about the various [Platform APIs]({{site.baseurl}}{% link docs/overview/overview-api.md %}) that allows integration of your applications with the AdvantEDGE platform:
 - Platform APIs
 - Edge Service APIs

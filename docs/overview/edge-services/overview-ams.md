@@ -29,8 +29,8 @@ AMS defines three types of MEC application user-context transfer:
   - _AMS:_ Implements ETSI MEC021 northbound APIs with a custom integration with AdvantEDGE APIs
 
 ## API Version
-- Application Mobility Service is compliant with the ETSI MEC021 Specification, v2.1.1:
-  - [ETSI GS MEC 021 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.01.01_60/gs_MEC021v020101p.pdf)
+- Application Mobility Service is compliant with the ETSI MEC021 Specification, v2.2.1:
+  - [ETSI GS MEC 021 V2.2.1](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/021/02.02.01_60/gs_MEC021v020201p.pdf)
   - [ETSI Forge - Application Mobility Service API](https://forge.etsi.org/rep/mec/gs021-amsi-api)
 - API
   - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-ams)

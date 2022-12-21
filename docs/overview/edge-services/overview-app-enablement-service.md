@@ -23,8 +23,8 @@ These APIs allow MEC Applications to interact with the MEC System, such as:
   - _App Enablement Service:_ Implements ETSI MEC011 northbound APIs with a custom integration with AdvantEDGE APIs
 
 ## API Version
-- Edge Platform Application Enablement Service is compliant with the ETSI MEC011 Specification, v2.1.1:
-  - [ETSI GS MEC 011 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.01.01_60/gs_mec011v020101p.pdf)
+- Edge Platform Application Enablement Service is compliant with the ETSI MEC011 Specification, v2.2.1:
+  - [ETSI GS MEC 011 V2.2.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/011/02.02.01_60/gs_MEC011v020201p.pdf)
   - [ETSI Forge - MEC Application Support API and MEC Service Management API](https://forge.etsi.org/rep/mec/gs011-app-enablement-api)
 - API
   - [Application Support API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-app-support)

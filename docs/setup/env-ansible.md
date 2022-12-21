@@ -7,6 +7,9 @@ parent: Setup
 
 AdvantEDGE comes with a set of Ansible playbooks to streamline platform environment setup.
 
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+With AdvantEDGE release v1.9+, Ansible playbooks are no longer maintained; they are left here for reference only.<br>_
+
 _**Playbooks are currently a beta-feature**<br>
 They are available for configuring the runtime & development environments<br><br>
 We've used them to setup multiple systems/VMs and are confident they will work, so you are welcome to try them<br>

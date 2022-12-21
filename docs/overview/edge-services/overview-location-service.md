@@ -19,8 +19,8 @@ This feature provides the following capabilities:
   - _Location Service:_ Implements ETSI MEC013 northbound API with a custom integration with AdvantEDGE APIs
 
 ## Northbound API
-- Location Service is compliant with the ETSI MEC013 Specification, v2.1.1:
-  - [ETSI GS MEC 013 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
+- Location Service is compliant with the ETSI MEC013 Specification, v2.2.1:
+  - [ETSI GS MEC 013 V2.2.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.02.01_60/gs_mec013v020201p.pdf)
   - [ETSI Forge - Location API repository](https://forge.etsi.org/gitlab/mec/gs013-location-api)
 - MEC013 OMA references:
   - [RESTful Network API for Zonal Presence](http://www.openmobilealliance.org/release/REST_NetAPI_ZonalPresence/V1_0-20160308-C/OMA-TS-REST_NetAPI_ZonalPresence-V1_0-20160308-C.pdf)

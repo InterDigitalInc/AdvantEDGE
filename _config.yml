@@ -21,7 +21,7 @@ description: AdvantEDGE documentation
 # url: "http://127.0.0.1:4000" # the base hostname & protocol for your site, e.g. http://example.com
 
 baseurl: "/AdvantEDGE"
-url: "https://dhruvigoyal25.github.io"
+url: "https://dilallkx.github.io"
 
 permalink: pretty
 exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "script/", "package.json",
@@ -78,7 +78,7 @@ nav_sort: case_sensitive # Capital letters sorted before lowercase
 back_to_top: true
 back_to_top_text: "Back to top"
 
-footer_content: "Copyright &copy; 2021, InterDigital Communications, Inc."
+footer_content: "Copyright &copy; 2022, InterDigital Communications, Inc."
 
 # Footer last edited timestamp
 # show or hide edit time - page must have `last_modified_date` defined in the frontmatter

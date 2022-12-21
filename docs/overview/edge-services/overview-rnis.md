@@ -20,8 +20,8 @@ This service provides the following capabilities:
   - _RNIS:_ Implements ETSI MEC012 northbound API with a custom integration with AdvantEDGE APIs
 
 ## API Version
-- Radio Network Information Service is compliant with the ETSI MEC012 Specification, v2.1.1:
-  - [ETSI GS MEC 012 V2.1.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf)
+- Radio Network Information Service is compliant with the ETSI MEC012 Specification, v2.2.1:
+  - [ETSI GS MEC 012 V2.2.1](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.02.01_60/gs_MEC012v020201p.pdf)
   - [ETSI Forge - Radio Network Information API repository](https://forge.etsi.org/rep/mec/gs012-rnis-api)
 - API
   - [API Definition](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/docs/api-rnis)
@@ -37,7 +37,7 @@ This service provides the following capabilities:
   - Threads:
     - Main thread      - (NBI/Core) Handles requests to the RNIS API (server) from users (i.e. scenario pods)
     - NBI event thread - (NBI/Core) Handles event channel from SBI (for RNIS subscriptions)
-    - SBI event thread - (SBI) Handle events from AdvantEDGE (scenario updates, mobility events, etc.) & updates Loc. Service database)
+    - SBI event thread - (SBI) Handle events from AdvantEDGE (scenario updates, mobility events, etc.) & updates RNIS database)
 
   - Supports hot-restart
     - User / app subscriptions with and without a duration parameter survive RNIS pod restarts

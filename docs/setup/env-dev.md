@@ -17,6 +17,8 @@ NEXT STEP: [Platform Management Workflow](#next-step) |
 
 ----
 ## Ansible
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+With AdvantEDGE release v1.9+, Ansible playbooks are no longer maintained; they are left here for reference only.<br>_
 
 AdvantEDGE development environment installation procedures can be performed manually or automatically.
 
@@ -78,7 +80,7 @@ go version
 
 # Example output:
 #   /usr/local/go/bin/go
-#   go version go1.18.1 linux/amd64
+#   go version go1.19.4 linux/amd64
 ```
 
 ----
@@ -91,7 +93,7 @@ NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows 
 Versions we use:
 
 - NVM: 0.34.0
-- Node.js: 8.11, 10.15, 10.16, 10.19, 12.19
+- Node.js: 8.11, 10.15, 10.16, 10.19, 12.22
 - npm: 6.8, 6.9, 6.11, 6.12, 6.14
 
 How we do it:
@@ -121,7 +123,7 @@ source ~/.profile
 ```
 # Retrieve & install latest v12 Node.js versions
 nvm ls-remote | grep "Latest LTS"
-nvm install 12.19.0
+nvm install 12.22.12
 ```
 
 ##### STEP 5 - Update NPM version bundled with Node.js
@@ -137,7 +139,7 @@ node -v
 npm -v
 
 # Example output:
-#   v12.19.0
+#   v12.22.12
 #   6.14.8
 ```
 
@@ -195,7 +197,7 @@ How we do it:
 
 ```
 # binary will be $(go env GOPATH)/bin/golangci-lint
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin 
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.46.0
 ```
 
 ##### STEP 2 - Verify install
