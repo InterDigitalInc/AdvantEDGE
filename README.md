@@ -6,7 +6,7 @@
 
 :zap: **New edge native service: [ETSI MEC030 - V2X Information Service API](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#v2x-information-service) for vehicular QoS predictions! :car:**
 
-:zap: **New! Geospatial & Network emulation for scenarios with [Device-to-device (D2D) Communication](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/gis/#using-d2d-feature) :iphone:/:iphone:**
+:zap: **New! Geospatial & Network emulation for scenarios with [Device-to-device (D2D) Communication](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/features/#device-to-device-d2d-communication) :iphone:/:iphone:**
 
 :zap: **New! Runtime [Sequence](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/gui/exec-view/#sequence-diagram) and [Data Flow](https://interdigitalinc.github.io/AdvantEDGE/docs/usage/gui/exec-view/#data-flow-diagram) diagrams :chart_with_upwards_trend:**
 
