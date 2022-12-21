@@ -104,9 +104,9 @@ Want to know more about Application State Transfer: [Application State Transfer]
 AdvantEDGE provides a built-in V2X Information Service implementation that integrates with scenarios.
 
 This service provides the following capabilities:
-- _TBD_
-- _TBD_
-- _TBD_
+- _Predicting journey-specific QoS for vehicular UEs_
+- _Obtaining V2X provisioning information_
+- _Publishing and subscribing for V2X messages_
 
 Want to know more about V2X Information service: [V2X Information Service]({{site.baseurl}}{% link docs/overview/edge-services/overview-vis.md %})
 
