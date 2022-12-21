@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **transportInfo** | [**TransportInfo**](TransportInfo.md) |  | [optional] [default to null]
 **serializer** | [**SerializerType**](SerializerType.md) |  | [default to null]
 **scopeOfLocality** | [**LocalityType**](LocalityType.md) |  | [optional] [default to null]
-**consumedLocalOnly** | [**Boolean**](boolean.md) | Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this  service instance. | [optional] [default to null]
+**consumedLocalOnly** | [**Boolean**](boolean.md) | Indicate whether the service can only be consumed by the MEC applications located in the same locality (as defined by scopeOfLocality) as this service instance. | [optional] [default to null]
 **isLocal** | [**Boolean**](boolean.md) | Indicate whether the service is located in the same locality (as defined by scopeOfLocality) as the consuming MEC application. | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

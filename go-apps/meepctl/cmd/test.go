@@ -44,6 +44,10 @@ var testCmd = &cobra.Command{
 			return
 		}
 
+		gitDir := viper.GetString("meep.gitdir")
+		cmd := exec.Command("mkdir", "-p", gitDir+"/test/codecov")
+		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+
 		platformTargets := utils.RepoCfg.GetStringMapString("repo.core.go-apps")
 		sandboxTargets := utils.RepoCfg.GetStringMapString("repo.sandbox.go-apps")
 

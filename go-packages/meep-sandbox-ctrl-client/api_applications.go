@@ -45,10 +45,8 @@ type ApplicationsApiService service
 /*
 ApplicationsApiService
 This method deletes a mec application resource.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 */
 func (a *ApplicationsApiService) ApplicationsAppInstanceIdDELETE(ctx context.Context, appInstanceId string) (*http.Response, error) {
 	var (
@@ -114,8 +112,8 @@ func (a *ApplicationsApiService) ApplicationsAppInstanceIdDELETE(ctx context.Con
 /*
 ApplicationsApiService
 This method retrieves information about a mec application resource.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
 
 @return ApplicationInfo
 */
@@ -203,9 +201,9 @@ func (a *ApplicationsApiService) ApplicationsAppInstanceIdGET(ctx context.Contex
 /*
 ApplicationsApiService
 This method updates the information about a mec application resource.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
- * @param applicationInfo Application information
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC application manager POST method.
+  - @param applicationInfo Application information
 
 @return ApplicationInfo
 */
@@ -402,8 +400,8 @@ func (a *ApplicationsApiService) ApplicationsGET(ctx context.Context, localVarOp
 /*
 ApplicationsApiService
 This method is used to create a mec application resource.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param applicationInfo Application information
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param applicationInfo Application information
 
 @return ApplicationInfo
 */

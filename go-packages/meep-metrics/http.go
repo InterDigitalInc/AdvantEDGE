@@ -29,6 +29,7 @@ import (
 const HttpLogMetricName = "http"
 const HttpLoggerName = "logger_name"
 const HttpLoggerMsgType = "msg_type"
+const HttpLoggerDirection = "direction"
 const HttpLogTime = "time"
 const HttpLogId = "id"
 const HttpUrl = "url"
@@ -46,6 +47,9 @@ const HttpSdorg = "sdorg"
 const HttpMsgTypeRequest = "request"
 const HttpMsgTypeResponse = "response"
 const HttpMsgTypeNotification = "notification"
+
+const HttpMsgDirectionRx = "RX"
+const HttpMsgDirectionTx = "TX"
 
 type HttpMetric struct {
 	LoggerName string

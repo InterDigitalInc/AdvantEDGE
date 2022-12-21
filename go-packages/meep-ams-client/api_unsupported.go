@@ -227,11 +227,10 @@ func (a *UnsupportedApiService) AdjAppInstGET(ctx context.Context, localVarOptio
 
 /*
 UnsupportedApiService  deregister the individual application mobility service
- deregister the individual application mobility service
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appMobilityServiceId It uniquely identifies the created individual application mobility service
 
-
+	deregister the individual application mobility service
+	* @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	* @param appMobilityServiceId It uniquely identifies the created individual application mobility service
 */
 func (a *UnsupportedApiService) AppMobilityServiceDerPOST(ctx context.Context, appMobilityServiceId string) (*http.Response, error) {
 	var (
@@ -352,10 +351,8 @@ func (a *UnsupportedApiService) AppMobilityServiceDerPOST(ctx context.Context, a
 /*
 UnsupportedApiService delivers a notification from the AMS resource to the subscriber
 delivers a notification from the AMS resource to the subscriber
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body
 */
 func (a *UnsupportedApiService) NotificationPOST(ctx context.Context, body InlineNotification) (*http.Response, error) {
 	var (

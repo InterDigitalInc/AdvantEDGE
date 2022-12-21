@@ -16,9 +16,14 @@ Models/SerAvailabilityNotificationSubscription.md
 Models/SerAvailabilityNotificationSubscriptionFilteringCriteria.md
 Models/SerializerType.md
 Models/ServiceAvailabilityNotification.md
+Models/ServiceAvailabilityNotificationChangeType.md
 Models/ServiceAvailabilityNotificationServiceReferences.md
 Models/ServiceInfo.md
+Models/ServiceInfoLinks.md
 Models/ServiceInfoPost.md
+Models/ServiceLivenessInfo.md
+Models/ServiceLivenessInfoTimeStamp.md
+Models/ServiceLivenessUpdate.md
 Models/ServiceState.md
 Models/Subscription.md
 Models/SubscriptionLinkList.md

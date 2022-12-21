@@ -57,6 +57,9 @@ type HttpMetric struct {
 	// Service processing the http metric
 	LoggerName string `json:"logger_name,omitempty"`
 
-	// Http type
+	// Http metric type (request, response, notification)
+	MsgType string `json:"msg_type,omitempty"`
+
+	// DEPRECATED -- Http type
 	Direction string `json:"direction,omitempty"`
 }

@@ -41,7 +41,7 @@ type versionInfo struct {
 	BuildID   string `json:"build,omitempty"`
 }
 
-const meepctlVersion = "1.8.3"
+const meepctlVersion = "1.9.0"
 const na = "NA"
 
 const versionDesc = `Display version information

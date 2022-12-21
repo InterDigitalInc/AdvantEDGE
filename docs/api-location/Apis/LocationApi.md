@@ -69,7 +69,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="apGET"></a>
 # **apGET**
@@ -97,7 +97,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="areaCircleSubDELETE"></a>
 # **areaCircleSubDELETE**
@@ -124,7 +124,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/problem+json
 
 <a name="areaCircleSubGET"></a>
 # **areaCircleSubGET**
@@ -151,7 +151,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="areaCircleSubListGET"></a>
 # **areaCircleSubListGET**
@@ -202,7 +202,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="areaCircleSubPUT"></a>
 # **areaCircleSubPUT**
@@ -230,7 +230,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="distanceGET"></a>
 # **distanceGET**
@@ -260,7 +260,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="distanceSubDELETE"></a>
 # **distanceSubDELETE**
@@ -287,7 +287,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/problem+json
 
 <a name="distanceSubGET"></a>
 # **distanceSubGET**
@@ -314,7 +314,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="distanceSubListGET"></a>
 # **distanceSubListGET**
@@ -365,7 +365,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="distanceSubPUT"></a>
 # **distanceSubPUT**
@@ -393,7 +393,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="mec011AppTerminationPOST"></a>
 # **mec011AppTerminationPOST**
@@ -447,7 +447,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/problem+json
 
 <a name="periodicSubGET"></a>
 # **periodicSubGET**
@@ -474,7 +474,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="periodicSubListGET"></a>
 # **periodicSubListGET**
@@ -525,7 +525,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="periodicSubPUT"></a>
 # **periodicSubPUT**
@@ -553,7 +553,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="userTrackingSubDELETE"></a>
 # **userTrackingSubDELETE**
@@ -580,7 +580,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/problem+json
 
 <a name="userTrackingSubGET"></a>
 # **userTrackingSubGET**
@@ -607,7 +607,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="userTrackingSubListGET"></a>
 # **userTrackingSubListGET**
@@ -658,7 +658,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="userTrackingSubPUT"></a>
 # **userTrackingSubPUT**
@@ -686,7 +686,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="usersGET"></a>
 # **usersGET**
@@ -715,7 +715,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zonalTrafficSubDELETE"></a>
 # **zonalTrafficSubDELETE**
@@ -742,7 +742,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/problem+json
 
 <a name="zonalTrafficSubGET"></a>
 # **zonalTrafficSubGET**
@@ -769,7 +769,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zonalTrafficSubListGET"></a>
 # **zonalTrafficSubListGET**
@@ -820,7 +820,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zonalTrafficSubPUT"></a>
 # **zonalTrafficSubPUT**
@@ -848,7 +848,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zoneStatusSubDELETE"></a>
 # **zoneStatusSubDELETE**
@@ -875,7 +875,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/problem+json
 
 <a name="zoneStatusSubGET"></a>
 # **zoneStatusSubGET**
@@ -902,7 +902,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zoneStatusSubListGET"></a>
 # **zoneStatusSubListGET**
@@ -953,7 +953,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zoneStatusSubPUT"></a>
 # **zoneStatusSubPUT**
@@ -981,7 +981,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zonesGET"></a>
 # **zonesGET**
@@ -1005,7 +1005,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 
 <a name="zonesGetById"></a>
 # **zonesGetById**
@@ -1032,5 +1032,5 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/problem+json
 

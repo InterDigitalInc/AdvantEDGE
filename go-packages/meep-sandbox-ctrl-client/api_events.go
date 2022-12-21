@@ -43,11 +43,9 @@ type EventsApiService service
 /*
 EventsApiService Send events to the deployed scenario
 Generate events towards the deployed scenario. Events: &lt;li&gt;MOBILITY: move a node in the emulated network &lt;li&gt;NETWORK-CHARACTERISTICS-UPDATE: change network characteristics dynamically &lt;li&gt;POAS-IN-RANGE: provide PoAs in range of a UE (used with ApplicationState Transfer) &lt;li&gt;SCENARIO-UPDATE: Add/Remove/Modify node in active scenario &lt;li&gt;PDU-SESSION: Add/Remove active PDU session
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param type_ Event type
- * @param event Event to send to active scenario
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param type_ Event type
+  - @param event Event to send to active scenario
 */
 func (a *EventsApiService) SendEvent(ctx context.Context, type_ string, event Event) (*http.Response, error) {
 	var (

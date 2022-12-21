@@ -1069,9 +1069,7 @@ func (a *ActiveScenarioApiService) GetActiveScenarioZone(ctx context.Context, lo
 /*
 ActiveScenarioApiService Terminate the deployed scenario
 Terminate the scenario currently deployed on the platform
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 */
 func (a *ActiveScenarioApiService) TerminateScenario(ctx context.Context) (*http.Response, error) {
 	var (

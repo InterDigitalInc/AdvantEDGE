@@ -3,7 +3,7 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/amsi/v1*
+All URIs are relative to *https://localhost/sandboxname/amsi/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -20,6 +20,7 @@ Class | Method | HTTP request | Description
 *AmsiApi* | [**subPOST**](Apis/AmsiApi.md#subpost) | **POST** /subscriptions | Create a new subscription to Application Mobility Service notifications.
 *UnsupportedApi* | [**adjAppInstGET**](Apis/UnsupportedApi.md#adjappinstget) | **GET** /queries/adjacent_app_instances | Retrieve information about this subscription.
 *UnsupportedApi* | [**appMobilityServiceDerPOST**](Apis/UnsupportedApi.md#appmobilityservicederpost) | **POST** /app_mobility_services/{appMobilityServiceId}/deregister_task |  deregister the individual application mobility service
+*UnsupportedApi* | [**notificationPOST**](Apis/UnsupportedApi.md#notificationpost) | **POST** /uri_provided_by_subscriber | delivers a notification from the AMS resource to the subscriber
 
 
 <a name="documentation-for-models"></a>
@@ -35,14 +36,17 @@ Class | Method | HTTP request | Description
  - [AppTerminationNotification](./Models/AppTerminationNotification.md)
  - [AppTerminationNotificationLinks](./Models/AppTerminationNotificationLinks.md)
  - [AssociateId](./Models/AssociateId.md)
+ - [AssociateIdType](./Models/AssociateIdType.md)
  - [CommunicationInterface](./Models/CommunicationInterface.md)
  - [CommunicationInterfaceIpAddresses](./Models/CommunicationInterfaceIpAddresses.md)
  - [ContextTransferState](./Models/ContextTransferState.md)
  - [ExpiryNotification](./Models/ExpiryNotification.md)
+ - [InlineNotification](./Models/InlineNotification.md)
+ - [InlineSubscription](./Models/InlineSubscription.md)
+ - [Link](./Models/Link.md)
  - [LinkType](./Models/LinkType.md)
  - [MECHostInformation](./Models/MECHostInformation.md)
  - [MobilityProcedureNotification](./Models/MobilityProcedureNotification.md)
- - [MobilityProcedureNotificationLinks](./Models/MobilityProcedureNotificationLinks.md)
  - [MobilityProcedureNotificationTargetAppInfo](./Models/MobilityProcedureNotificationTargetAppInfo.md)
  - [MobilityProcedureSubscription](./Models/MobilityProcedureSubscription.md)
  - [MobilityProcedureSubscriptionFilterCriteria](./Models/MobilityProcedureSubscriptionFilterCriteria.md)
@@ -60,7 +64,6 @@ Class | Method | HTTP request | Description
  - [TestNotification](./Models/TestNotification.md)
  - [TestNotificationLinks](./Models/TestNotificationLinks.md)
  - [TimeStamp](./Models/TimeStamp.md)
- - [Type](./Models/Type.md)
  - [WebsockNotifConfig](./Models/WebsockNotifConfig.md)
 
 

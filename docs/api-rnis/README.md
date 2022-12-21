@@ -1,4 +1,4 @@
-# Documentation for AdvantEDGE Radio Network Information Service REST API
+# Documentation for AdvantEDGE Radio Network Information API
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
@@ -111,7 +111,6 @@ Class | Method | HTTP request | Description
  - [SubscriptionLinkList](./Models/SubscriptionLinkList.md)
  - [SubscriptionLinkListLinks](./Models/SubscriptionLinkListLinks.md)
  - [SubscriptionLinkListLinksSubscription](./Models/SubscriptionLinkListLinksSubscription.md)
- - [TestNotification](./Models/TestNotification.md)
  - [TimeStamp](./Models/TimeStamp.md)
  - [Trigger](./Models/Trigger.md)
  - [TriggerNr](./Models/TriggerNr.md)

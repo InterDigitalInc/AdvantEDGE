@@ -45,9 +45,9 @@ type LocationApiService service
 /*
 LocationApiService Radio Node Location Lookup
 Radio Node Location Lookup to retrieve a radio node associated to a zone.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param zoneId Indentifier of zone
- * @param accessPointId Identifier of access Point
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param zoneId Indentifier of zone
+  - @param accessPointId Identifier of access Point
 
 @return InlineAccessPointInfo
 */
@@ -367,10 +367,8 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 /*
 LocationApiService Cancel a subscription
 Method to delete a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -480,8 +478,8 @@ func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscripti
 /*
 LocationApiService Retrieve subscription information
 Get subscription information.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineCircleNotificationSubscription
 */
@@ -635,7 +633,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 /*
 LocationApiService Retrieves all active subscriptions to area change notifications
 This operation is used for retrieving all active subscriptions to area change notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineNotificationSubscriptionList
 */
@@ -722,8 +720,8 @@ func (a *LocationApiService) AreaCircleSubListGET(ctx context.Context) (InlineNo
 /*
 LocationApiService Creates a subscription for area change notification
 Creates a subscription to the Location Service for an area change notification.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineCircleNotificationSubscription
 */
@@ -878,9 +876,9 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 /*
 LocationApiService Updates a subscription information
 Updates a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineCircleNotificationSubscription
 */
@@ -1233,10 +1231,8 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 /*
 LocationApiService Cancel a subscription
 Method to delete a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -1346,8 +1342,8 @@ func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscription
 /*
 LocationApiService Retrieve subscription information
 Get subscription information.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineDistanceNotificationSubscription
 */
@@ -1501,7 +1497,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 /*
 LocationApiService Retrieves all active subscriptions to distance change notifications
 This operation is used for retrieving all active subscriptions to a distance change notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineNotificationSubscriptionList
 */
@@ -1588,8 +1584,8 @@ func (a *LocationApiService) DistanceSubListGET(ctx context.Context) (InlineNoti
 /*
 LocationApiService Creates a subscription for distance change notification
 Creates a subscription to the Location Service for a distance change notification.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineDistanceNotificationSubscription
 */
@@ -1744,9 +1740,9 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 /*
 LocationApiService Updates a subscription information
 Updates a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineDistanceNotificationSubscription
 */
@@ -1924,10 +1920,8 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 /*
 LocationApiService MEC011 Application Termination notification for self termination
 Terminates itself.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Termination notification details
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Termination notification details
 */
 func (a *LocationApiService) Mec011AppTerminationPOST(ctx context.Context, body AppTerminationNotification) (*http.Response, error) {
 	var (
@@ -1994,10 +1988,8 @@ func (a *LocationApiService) Mec011AppTerminationPOST(ctx context.Context, body 
 /*
 LocationApiService Cancel a subscription
 Method to delete a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -2107,8 +2099,8 @@ func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscription
 /*
 LocationApiService Retrieve subscription information
 Get subscription information.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlinePeriodicNotificationSubscription
 */
@@ -2262,7 +2254,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 /*
 LocationApiService Retrieves all active subscriptions to periodic notifications
 This operation is used for retrieving all active subscriptions to periodic notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineNotificationSubscriptionList
 */
@@ -2349,8 +2341,8 @@ func (a *LocationApiService) PeriodicSubListGET(ctx context.Context) (InlineNoti
 /*
 LocationApiService Creates a subscription for periodic notification
 Creates a subscription to the Location Service for a periodic notification.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlinePeriodicNotificationSubscription
 */
@@ -2505,9 +2497,9 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 /*
 LocationApiService Updates a subscription information
 Updates a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlinePeriodicNotificationSubscription
 */
@@ -2685,10 +2677,8 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 /*
 LocationApiService Cancel a subscription
 Method to delete a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -2798,8 +2788,8 @@ func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscrip
 /*
 LocationApiService Retrieve subscription information
 Get subscription information.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineUserTrackingSubscription
 */
@@ -2953,7 +2943,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 /*
 LocationApiService Retrieves all active subscriptions to user tracking notifications
 This operation is used for retrieving all active subscriptions to user tracking notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineNotificationSubscriptionList
 */
@@ -3040,8 +3030,8 @@ func (a *LocationApiService) UserTrackingSubListGET(ctx context.Context) (Inline
 /*
 LocationApiService Creates a subscription for user tracking notification
 Creates a subscription to the Location Service for user tracking change notification.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineUserTrackingSubscription
 */
@@ -3196,9 +3186,9 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 /*
 LocationApiService Updates a subscription information
 Updates a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineUserTrackingSubscription
 */
@@ -3549,10 +3539,8 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 /*
 LocationApiService Cancel a subscription
 Method to delete a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -3662,8 +3650,8 @@ func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscrip
 /*
 LocationApiService Retrieve subscription information
 Get subscription information.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineZonalTrafficSubscription
 */
@@ -3817,7 +3805,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 /*
 LocationApiService Retrieves all active subscriptions to zonal traffic notifications
 This operation is used for retrieving all active subscriptions to zonal traffic change notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineNotificationSubscriptionList
 */
@@ -3904,8 +3892,8 @@ func (a *LocationApiService) ZonalTrafficSubListGET(ctx context.Context) (Inline
 /*
 LocationApiService Creates a subscription for zonal traffic notification
 Creates a subscription to the Location Service for zonal traffic change notification.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineZonalTrafficSubscription
 */
@@ -4060,9 +4048,9 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 /*
 LocationApiService Updates a subscription information
 Updates a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineZonalTrafficSubscription
 */
@@ -4240,10 +4228,8 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 /*
 LocationApiService Cancel a subscription
 Method to delete a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 */
 func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscriptionId string) (*http.Response, error) {
 	var (
@@ -4353,8 +4339,8 @@ func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscripti
 /*
 LocationApiService Retrieve subscription information
 Get subscription information.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineZoneStatusSubscription
 */
@@ -4508,7 +4494,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 /*
 LocationApiService Retrieves all active subscriptions to zone status notifications
 This operation is used for retrieving all active subscriptions to zone status change notifications.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineNotificationSubscriptionList
 */
@@ -4595,8 +4581,8 @@ func (a *LocationApiService) ZoneStatusSubListGET(ctx context.Context) (InlineNo
 /*
 LocationApiService Creates a subscription for zone status notification
 Creates a subscription to the Location Service for zone status change notification.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be created
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be created
 
 @return InlineZoneStatusSubscription
 */
@@ -4751,9 +4737,9 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 /*
 LocationApiService Updates a subscription information
 Updates a subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Subscription to be modified
- * @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Subscription to be modified
+  - @param subscriptionId Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request
 
 @return InlineZoneStatusSubscription
 */
@@ -4931,7 +4917,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 /*
 LocationApiService Zones information Lookup
 Used to get a list of identifiers for zones authorized for use by the application.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return InlineZoneList
 */
@@ -5084,8 +5070,8 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 /*
 LocationApiService Zones information Lookup
 Used to get the information for an authorized zone for use by the application.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param zoneId Indentifier of zone
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param zoneId Indentifier of zone
 
 @return InlineZoneInfo
 */

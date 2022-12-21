@@ -213,9 +213,9 @@ func (a *MecServiceMgmtApiService) AppServicesGET(ctx context.Context, appInstan
 /*
 MecServiceMgmtApiService
 This method is used to create a mecService resource. This method is typically used in \&quot;service availability update and new service registration\&quot; procedure
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body New ServiceInfo with updated &quot;state&quot; is included as entity body of the request
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body New ServiceInfo with updated &quot;state&quot; is included as entity body of the request
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return ServiceInfo
 */
@@ -338,11 +338,9 @@ func (a *MecServiceMgmtApiService) AppServicesPOST(ctx context.Context, body Ser
 /*
 MecServiceMgmtApiService
 This method deletes a mecService resource. This method is typically used in the service deregistration procedure.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param serviceId Represents a MEC service instance.
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param serviceId Represents a MEC service instance.
 */
 func (a *MecServiceMgmtApiService) AppServicesServiceIdDELETE(ctx context.Context, appInstanceId string, serviceId string) (*http.Response, error) {
 	var (
@@ -431,9 +429,9 @@ func (a *MecServiceMgmtApiService) AppServicesServiceIdDELETE(ctx context.Contex
 /*
 MecServiceMgmtApiService
 This method retrieves information about a mecService resource. This method is typically used in \&quot;service availability query\&quot; procedure
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param serviceId Represents a MEC service instance.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param serviceId Represents a MEC service instance.
 
 @return ServiceInfo
 */
@@ -555,10 +553,10 @@ func (a *MecServiceMgmtApiService) AppServicesServiceIdGET(ctx context.Context, 
 /*
 MecServiceMgmtApiService
 This method updates the information about a mecService resource
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body New ServiceInfo with updated &quot;state&quot; is included as entity body of the request
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param serviceId Represents a MEC service instance.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body New ServiceInfo with updated &quot;state&quot; is included as entity body of the request
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param serviceId Represents a MEC service instance.
 
 @return ServiceInfo
 */
@@ -693,11 +691,9 @@ func (a *MecServiceMgmtApiService) AppServicesServiceIdPUT(ctx context.Context, 
 /*
 MecServiceMgmtApiService
 This method deletes a mecSrvMgmtSubscription. This method is typically used in \&quot;Unsubscribing from service availability event notifications\&quot; procedure.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param subscriptionId Represents a subscription to the notifications from the MEC platform.
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param subscriptionId Represents a subscription to the notifications from the MEC platform.
 */
 func (a *MecServiceMgmtApiService) ApplicationsSubscriptionDELETE(ctx context.Context, appInstanceId string, subscriptionId string) (*http.Response, error) {
 	var (
@@ -786,9 +782,9 @@ func (a *MecServiceMgmtApiService) ApplicationsSubscriptionDELETE(ctx context.Co
 /*
 MecServiceMgmtApiService
 The GET method requests information about a subscription for this requestor. Upon success, the response contains entity body with the subscription for the requestor.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param subscriptionId Represents a subscription to the notifications from the MEC platform.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param subscriptionId Represents a subscription to the notifications from the MEC platform.
 
 @return SerAvailabilityNotificationSubscription
 */
@@ -910,8 +906,8 @@ func (a *MecServiceMgmtApiService) ApplicationsSubscriptionGET(ctx context.Conte
 /*
 MecServiceMgmtApiService
 The GET method may be used to request information about all subscriptions for this requestor. Upon success, the response contains entity body with all the subscriptions for the requestor.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return SubscriptionLinkList
 */
@@ -1032,9 +1028,9 @@ func (a *MecServiceMgmtApiService) ApplicationsSubscriptionsGET(ctx context.Cont
 /*
 MecServiceMgmtApiService
 The POST method may be used to create a new subscription. One example use case is to create a new subscription to the MEC service availability notifications. Upon success, the response contains entity body describing the created subscription.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body Entity body in the request contains a subscription to the MEC application termination notifications that is to be created.
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body Entity body in the request contains a subscription to the MEC application termination notifications that is to be created.
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return SerAvailabilityNotificationSubscription
 */
@@ -1323,8 +1319,8 @@ func (a *MecServiceMgmtApiService) ServicesGET(ctx context.Context, localVarOpti
 /*
 MecServiceMgmtApiService
 This method retrieves information about a mecService resource. This method is typically used in \&quot;service availability query\&quot; procedure
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param serviceId Represents a MEC service instance.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param serviceId Represents a MEC service instance.
 
 @return ServiceInfo
 */
@@ -1445,7 +1441,7 @@ func (a *MecServiceMgmtApiService) ServicesServiceIdGET(ctx context.Context, ser
 /*
 MecServiceMgmtApiService
 This method retrieves information about a list of available transports. This method is typically used by a service-producing application to discover transports provided by the MEC platform in the \&quot;transport information query\&quot; procedure
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return []TransportInfo
 */

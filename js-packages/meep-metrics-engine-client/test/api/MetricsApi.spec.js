@@ -219,8 +219,10 @@
                 expect(data.procTime).to.be("345");
                 expect(data.loggerName).to.be.a('string');
                 expect(data.loggerName).to.be("loc-serv");
+                expect(data.msgType).to.be.a('string');
+                expect(data.msgType).to.be("response");
                 expect(data.direction).to.be.a('string');
-                expect(data.direction).to.be("Request");
+                expect(data.direction).to.be("RX");
               }
             }
 

@@ -7,9 +7,11 @@ All URIs are relative to *http://localhost/sandboxname/metrics/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*MetricsApi* | [**postDataflowQuery**](Apis/MetricsApi.md#postdataflowquery) | **POST** /metrics/query/dataflow | Requests dataflow diagram logs for the requested params
 *MetricsApi* | [**postEventQuery**](Apis/MetricsApi.md#posteventquery) | **POST** /metrics/query/event | Returns Event metrics according to specificed parameters
 *MetricsApi* | [**postHttpQuery**](Apis/MetricsApi.md#posthttpquery) | **POST** /metrics/query/http | Returns Http metrics according to specificed parameters
 *MetricsApi* | [**postNetworkQuery**](Apis/MetricsApi.md#postnetworkquery) | **POST** /metrics/query/network | Returns Network metrics according to specificed parameters
+*MetricsApi* | [**postSeqQuery**](Apis/MetricsApi.md#postseqquery) | **POST** /metrics/query/seq | Requests sequence diagram logs for the requested params
 *SubscriptionsApi* | [**createEventSubscription**](Apis/SubscriptionsApi.md#createeventsubscription) | **POST** /metrics/subscriptions/event | Create an Event subscription
 *SubscriptionsApi* | [**createNetworkSubscription**](Apis/SubscriptionsApi.md#createnetworksubscription) | **POST** /metrics/subscriptions/network | Create a Network subscription
 *SubscriptionsApi* | [**deleteEventSubscriptionById**](Apis/SubscriptionsApi.md#deleteeventsubscriptionbyid) | **DELETE** /metrics/subscriptions/event/{subscriptionId} | Returns an Event subscription
@@ -23,6 +25,10 @@ Class | Method | HTTP request | Description
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
+ - [DataflowMetric](./Models/DataflowMetric.md)
+ - [DataflowMetricList](./Models/DataflowMetricList.md)
+ - [DataflowMetrics](./Models/DataflowMetrics.md)
+ - [DataflowQueryParams](./Models/DataflowQueryParams.md)
  - [EventMetric](./Models/EventMetric.md)
  - [EventMetricList](./Models/EventMetricList.md)
  - [EventQueryParams](./Models/EventQueryParams.md)
@@ -41,6 +47,10 @@ Class | Method | HTTP request | Description
  - [NetworkSubscriptionList](./Models/NetworkSubscriptionList.md)
  - [NetworkSubscriptionParams](./Models/NetworkSubscriptionParams.md)
  - [Scope](./Models/Scope.md)
+ - [SeqMetric](./Models/SeqMetric.md)
+ - [SeqMetricList](./Models/SeqMetricList.md)
+ - [SeqMetrics](./Models/SeqMetrics.md)
+ - [SeqQueryParams](./Models/SeqQueryParams.md)
  - [Tag](./Models/Tag.md)
 
 

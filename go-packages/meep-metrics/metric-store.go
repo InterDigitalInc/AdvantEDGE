@@ -316,10 +316,13 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 
 	metricCount := 0
 	startTime := ""
+	// Set start time if duration is set
 	if duration != "" {
-		influxDuration, _ := time.ParseDuration(duration)
-		startTime = strconv.FormatInt(time.Now().Add(-1*influxDuration).UnixNano(), 10)
+		startTime = strconv.FormatInt(time.Now().UnixNano(), 10) + " - " + duration
 	}
+
+	// Fetch metrics from DB
+	// Run multiple times if more than MAX_LIMIT metrics retrieved
 	for {
 		stopTime := ""
 		if len(values) > 0 {
@@ -335,7 +338,7 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 		}
 
 		metricCount += count
-		tagStrTime := ms.getTagStr(tagStr, startTime, stopTime, duration)
+		tagStrTime := ms.setTimeFilter(tagStr, startTime, stopTime)
 		// Count
 		countStr := ""
 		if count != 0 {
@@ -375,7 +378,7 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 	return values, nil
 }
 
-func (ms *MetricStore) getTagStr(inputTagStr string, timeStart string, timeStop string, duration string) string {
+func (ms *MetricStore) setTimeFilter(inputTagStr string, timeStart string, timeStop string) string {
 	tagStr := inputTagStr
 	if timeStart != "" && timeStop != "" {
 		if tagStr == "" {
@@ -384,40 +387,16 @@ func (ms *MetricStore) getTagStr(inputTagStr string, timeStart string, timeStop 
 			tagStr += " AND time > " + timeStart + " AND time < " + timeStop
 		}
 	} else if timeStart != "" {
-		if duration != "" {
-			if tagStr == "" {
-				tagStr = " WHERE time > " + timeStart + " AND time < " + timeStart + " + " + duration
-			} else {
-				tagStr += " AND time > " + timeStart + " AND time < " + timeStart + " + " + duration
-			}
+		if tagStr == "" {
+			tagStr = " WHERE time > " + timeStart
 		} else {
-			if tagStr == "" {
-				tagStr = " WHERE time > " + timeStart
-			} else {
-				tagStr += " AND time > " + timeStart
-			}
+			tagStr += " AND time > " + timeStart
 		}
 	} else if timeStop != "" {
-		if duration != "" {
-			if tagStr == "" {
-				tagStr = " WHERE time < " + timeStop + " AND time > " + timeStop + " - " + duration
-			} else {
-				tagStr += " AND time < " + timeStop + " AND time > " + timeStop + " - " + duration
-			}
+		if tagStr == "" {
+			tagStr = " WHERE time < " + timeStop
 		} else {
-			if tagStr == "" {
-				tagStr = " WHERE time < " + timeStop
-			} else {
-				tagStr += " AND time < " + timeStop
-			}
-		}
-	} else {
-		if duration != "" {
-			if tagStr == "" {
-				tagStr = " WHERE time > now() - " + duration
-			} else {
-				tagStr += " AND time > now() - " + duration
-			}
+			tagStr += " AND time < " + timeStop
 		}
 	}
 	return tagStr

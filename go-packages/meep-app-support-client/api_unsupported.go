@@ -43,9 +43,9 @@ type UnsupportedApiService service
 /*
 UnsupportedApiService
 This method retrieves information about a DNS rule associated with a MEC application instance.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param dnsRuleId Represents a DNS rule.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param dnsRuleId Represents a DNS rule.
 
 @return DnsRule
 */
@@ -167,10 +167,10 @@ func (a *UnsupportedApiService) ApplicationsDnsRuleGET(ctx context.Context, appI
 /*
 UnsupportedApiService
 This method activates, de-activates or updates a traffic rule.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body The updated state is included in the entity body of the request.
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param dnsRuleId Represents a DNS rule.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body The updated state is included in the entity body of the request.
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param dnsRuleId Represents a DNS rule.
 
 @return DnsRule
 */
@@ -305,8 +305,8 @@ func (a *UnsupportedApiService) ApplicationsDnsRulePUT(ctx context.Context, body
 /*
 UnsupportedApiService
 This method retrieves information about all the DNS rules associated with a MEC application instance.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return []DnsRule
 */
@@ -427,9 +427,9 @@ func (a *UnsupportedApiService) ApplicationsDnsRulesGET(ctx context.Context, app
 /*
 UnsupportedApiService
 This method retrieves information about all the traffic rules associated with a MEC application instance.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param trafficRuleId Represents a traffic rule.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param trafficRuleId Represents a traffic rule.
 
 @return TrafficRule
 */
@@ -551,10 +551,10 @@ func (a *UnsupportedApiService) ApplicationsTrafficRuleGET(ctx context.Context, 
 /*
 UnsupportedApiService
 This method retrieves information about all the traffic rules associated with a MEC application instance.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param body One or more updated attributes that are allowed to be changed
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
- * @param trafficRuleId Represents a traffic rule.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param body One or more updated attributes that are allowed to be changed
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param trafficRuleId Represents a traffic rule.
 
 @return TrafficRule
 */
@@ -689,8 +689,8 @@ func (a *UnsupportedApiService) ApplicationsTrafficRulePUT(ctx context.Context, 
 /*
 UnsupportedApiService
 This method retrieves information about all the traffic rules associated with a MEC application instance.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param appInstanceId Represents a MEC application instance. Note that the appInstanceId is allocated by the MEC platform manager.
 
 @return []TrafficRule
 */

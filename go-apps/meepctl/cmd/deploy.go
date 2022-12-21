@@ -40,6 +40,7 @@ type DeployData struct {
 	coreApps []string
 	depApps  []string
 	crds     []string
+	sboxApps []string
 }
 
 const deployDesc = `Deploy containers on the K8s cluster
@@ -75,6 +76,7 @@ func init() {
 	// Get targets from repo config file
 	_, deployData.crds = utils.GetResourcePrerequisites("repo.resource-prerequisites.crds")
 	deployData.coreApps = utils.GetTargets("repo.core.go-apps", "deploy")
+	deployData.sboxApps = utils.GetTargets("repo.sandbox.go-apps", "deploy")
 	deployData.depApps = utils.GetTargets("repo.dep", "deploy")
 
 	// Configure the list of valid arguments
@@ -543,6 +545,12 @@ func deployCodeCovStorage(cobraCmd *cobra.Command) {
 
 	for _, app := range deployData.coreApps {
 		if utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov") {
+			cmd = exec.Command("mkdir", "-p", deployData.workdir+"/codecov/"+app)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+		}
+	}
+	for _, app := range deployData.sboxApps {
+		if utils.RepoCfg.GetBool("repo.sandbox.go-apps." + app + ".codecov") {
 			cmd = exec.Command("mkdir", "-p", deployData.workdir+"/codecov/"+app)
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
