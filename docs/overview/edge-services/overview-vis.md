@@ -11,9 +11,9 @@ permalink: docs/overview/edge-services/vis/
 AdvantEDGE provides a built-in V2X Information Service implementation that integrates with scenarios.
 
 This feature provides the following capabilities:
-- _TBD_
-- _TBD_
-- _TBD_
+- _Predicting journey-specific QoS for vehicular UEs_
+- _Obtaining V2X provisioning information_
+- _Publishing and subscribing for V2X messages_
 
 ## Micro-Services
   - _V2X Information Service:_ Implements ETSI MEC030 northbound API with a custom integration with AdvantEDGE APIs
@@ -40,6 +40,3 @@ This feature provides the following capabilities:
 
 - Supports hot-restart
   - User / app subscriptions with and without a duration parameter survive location service pod restarts
-
-Figure below presents an exemplary sequence diagram
-
