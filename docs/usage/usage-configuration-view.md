@@ -181,6 +181,8 @@ Text field to enter 28-character bit string cell identifier for a cellular PoA i
 ##### Location & Path Coordinates, Radius, End-of-path mode, Velocity & Supported Wireless Types
 Text & Number input fields for provisioning geospatial data for physical & network location assets. GIS feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %}).
 
+To enable D2D in a UE, _d2d_ must be added to the list of supported wireless types. Device-to-device (D2D) Communication feature & usage is described in more detail [here]({{site.baseurl}}{% link docs/overview/features/overview-d2d.md %}).
+
 ##### Zone Color
 Text field to enter a 6-character hexadecimal zone color. Value may be set manually or using the provided color picker. This color is used in the map view for PoA icons and ranges that are in the configured zone.
 
