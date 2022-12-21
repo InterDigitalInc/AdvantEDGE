@@ -14,7 +14,7 @@ permalink: /
 
 :zap: **New edge native service: [ETSI MEC030 - V2X Information Service API]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#v2x-information-service) for vehicular QoS predictions! :car:**
 
-:zap: **New! Geospatial & Network emulation for scenarios with [Device-to-device (D2D) Communication]({{site.baseurl}}{% link docs/overview/features/overview-gis.md %}#using-d2d-feature) :iphone:/:iphone:**
+:zap: **New! Geospatial & Network emulation for scenarios with [Device-to-device (D2D) Communication]({{site.baseurl}}{% link docs/overview/features/overview-features.md %}#device-to-device-d2d-communication) :iphone:/:iphone:**
 
 :zap: **New! Runtime [Sequence]({{site.baseurl}}{% link docs/usage/usage-execution-view.md %}#sequence-diagram) and [Data Flow]({{site.baseurl}}{% link docs/usage/usage-execution-view.md %}#data-flow-diagram) diagrams :chart_with_upwards_trend:**
 
