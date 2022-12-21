@@ -129,7 +129,7 @@ nvm install 12.22.12
 ##### STEP 5 - Update NPM version bundled with Node.js
 
 ```
-npm install -g npm@6.14.16
+npm install -g npm@6.14.8
 ```
 
 ##### STEP 6 - Verify install
@@ -140,7 +140,7 @@ npm -v
 
 # Example output:
 #   v12.22.12
-#   6.14.16
+#   6.14.8
 ```
 
 
