@@ -43,7 +43,7 @@ We use the procedure for the community edition from [here](https://docs.docker.c
 Versions we use:
 
 - 19.03 and 20.10 <br> _(versions 17.03, 18.03, 18.09 used to work - not tested anymore)_
-- Containerd: 1.5.11 _(v1.6+ not supported)_
+- Containerd: 1.6.14
 
 How we do it:
 
@@ -223,7 +223,7 @@ sudo sysctl net.bridge.bridge-nf-call-iptables=1
 
 # Based on https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 # WEAVE_MTU set to 1500
-kubectl apply -f https://raw.githubusercontent.com/dilallkx/AdvantEDGE/gh-pages-v1.9.0-kd/setup/weave-daemonset-k8s.yaml
+kubectl apply -f https://raw.githubusercontent.com/InterDigitalInc/AdvantEDGE/gh-pages/setup/weave-daemonset-k8s.yaml
 ```
 
 ##### STEP 5 - Optionally add worker nodes to K8s cluster [(details)](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/)
