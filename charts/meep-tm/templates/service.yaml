@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ template "meep-tm.name" . }}
+    chart: {{ template "meep-tm.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ template "meep-tm.name" . }}
+    release: {{ .Release.Name }}
+  ports:
+    - name: tm
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.deployment.port }}
+      {{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
+    {{- if .Values.prometheus.monitor.enabled}}
+    - name: metrics
+      port: {{ .Values.prometheus.monitor.port }}
+      targetPort: {{ .Values.prometheus.monitor.port }}
+      protocol: TCP
+    {{- end}}

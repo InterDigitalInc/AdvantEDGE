@@ -1,0 +1,876 @@
+openapi: 3.0.0
+info:
+  title: AdvantEDGE Multi-access Traffic Steering API
+  description: "Multi-access Traffic Steering Sercice is AdvantEDGE's implementation\
+    \ of [ETSI MEC ISG MEC015 Traffic Management APIs](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/015/02.02.01_60/gs_MEC015v020201p.pdf)\
+    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-tm](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-tm/server/mts)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about MTS Info and Session(s) in the network <p>**Note**<br>AdvantEDGE\
+    \ supports all Multi-access Traffic Steering API endpoints."
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
+  license:
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
+  version: 2.2.1
+externalDocs:
+  description: ETSI GS MEC015 V2.2.1 Traffic Management APIs
+  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/015/02.02.01_60/gs_MEC015v020201p.pdf
+servers:
+- url: https://localhost/sandboxname/mts/v1
+tags:
+- name: mts
+paths:
+  /mts_capability_info:
+    get:
+      tags:
+      - mts
+      summary: Retrieve the MTS capability informations
+      description: Used to query information about the MTS information. Typically
+        used in the 'Get MTS service Info from the MTS Service' procedure as described
+        in clause 6.2.6.
+      operationId: mtsCapabilityInfoGET
+      parameters: []
+      responses:
+        "200":
+          description: "Upon success, a response body containing the MTS capability\
+            \ information is returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtsCapabilityInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /mts_sessions:
+    get:
+      tags:
+      - mts
+      summary: Retrieve information about a list of MTS sessions
+      description: Retrieves information about a list of MTS sessions. Typically used
+        in the 'Get configured MTS Session Info from the MTS Service' procedure as
+        described in clause 6.2.10.
+      operationId: mtsSessionsListGET
+      parameters:
+      - name: app_instance_id
+        in: query
+        description: A MEC application instance may use multiple app_instance_ids
+          as an input parameter to query the MTS session of a list of MEC application
+          instances. See note.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: app_name
+        in: query
+        description: A MEC application instance may use multiple app_names as an input
+          parameter to query the MTS session of a list of MEC application instances.
+          See note.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: session_id
+        in: query
+        description: A MEC application instance may use session_id as an input parameter
+          to query the information of a list of MTS sessions. See note.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: "Upon success, a response body containing an array of the MTS\
+            \ sessions is returned."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MtsSessionInfo'
+                x-content-type: application/json
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    post:
+      tags:
+      - mts
+      summary: Create a MTS session
+      description: Used to create a MTS session. This method is typically used in
+        'Register application to the MTS Service' procedure as described in clause
+        6.2.7.
+      operationId: mtsSessionPOST
+      parameters: []
+      requestBody:
+        description: Entity body in the request contains MtsSessionInfo to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MtsSessionInfo'
+        required: true
+      responses:
+        "201":
+          description: "Upon success, the HTTP response shall include a 'Location'\
+            \ HTTP header that contains the resource URI of the created resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtsSessionInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /mts_sessions/{sessionId}:
+    get:
+      tags:
+      - mts
+      summary: Retrieve information about specific MTS session
+      description: Retrieves information about an individual MTS session. Typically
+        used in the 'Get configured MTS Session Info from the MTS Service' procedure
+        as described in clause 6.2.10.
+      operationId: mtsSessionGET
+      parameters:
+      - name: sessionId
+        in: path
+        description: Represents a MTS session instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Used to indicate nonspecific success. The response body contains
+            a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtsSessionInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    put:
+      tags:
+      - mts
+      summary: Update the information about specific MTS session
+      description: "Updates the information about an individual MTS session. As specified\
+        \ in ETSI GS MEC 009 [6], the PUT HTTP method has 'replace' semantics. "
+      operationId: mtsSessionPUT
+      parameters:
+      - name: sessionId
+        in: path
+        description: Represents a MTS session instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: MtsSessionInfo with updated information is included as entity
+          body of the request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MtsSessionInfo'
+        required: true
+      responses:
+        "200":
+          description: Used to indicate nonspecific success. The response body contains
+            a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtsSessionInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "412":
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+      - mts
+      summary: Remove specific MTS session
+      description: DELETE method is typically used in 'Unregister from the MTS Service'
+        procedure as described in clause 6.2.8.
+      operationId: mtsSessionDELETE
+      parameters:
+      - name: sessionId
+        in: path
+        description: Represents a MTS session instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "Upon success, a response 204 No Content without any response\
+            \ body is returned."
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /notifications/mec011/appTermination:
+    post:
+      tags:
+      - mts
+      summary: MEC011 Application Termination notification for self termination
+      description: Terminates itself.
+      operationId: mec011AppTerminationPOST
+      requestBody:
+        description: Termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotification'
+            example:
+              notificationType: AppTerminationNotification
+              operationAction: TERMINATING
+              maxGracefulTimeout: 10
+              links:
+                subscription:
+                  href: http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123
+                confirmTermination:
+                  href: http://mec011Server.example.com/mec_app_support/v1/confirm_termination
+        required: true
+      responses:
+        "204":
+          description: No Content
+      x-swagger-router-controller: notifications
+components:
+  schemas:
+    MtsCapabilityInfo:
+      required:
+      - mtsAccessInfo
+      - mtsMode
+      type: object
+      properties:
+        mtsAccessInfo:
+          minItems: 1
+          required:
+          - accessId
+          - accessType
+          - metered
+          type: array
+          description: The information on access network connection as defined below
+          items:
+            $ref: '#/components/schemas/MtsCapabilityInfo_mtsAccessInfo'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        mtsMode:
+          minItems: 1
+          type: array
+          description: "Numeric value corresponding to a specific MTS operation supported\
+            \ by the TMS 0 = low cost, i.e. using the unmetered access network connection\
+            \ whenever it is available 1 = low latency, i.e. using the access network\
+            \ connection with lower latency 2 = high throughput, i.e. using the access\
+            \ network connection with higher throughput, or/and multiple access network\
+            \ connection simultaneously if supported 3 = redundancy, i.e. sending\
+            \ duplicated (redundancy) packets over multiple access network connections\
+            \ for highreliability and low-latency applications 4 = QoS, i.e. performing\
+            \ MTS based on the specific QoS requirements from the app"
+          items:
+            type: integer
+            format: uint32
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Uint32
+        timeStamp:
+          $ref: '#/components/schemas/MtsCapabilityInfo_timeStamp'
+      example:
+        timeStamp:
+          seconds: 2
+          nanoSeconds: 5
+        mtsMode:
+        - 5
+        - 5
+        mtsAccessInfo:
+        - accessId: 0
+          accessType: 6
+          metered: 1
+        - accessId: 0
+          accessType: 6
+          metered: 1
+      x-etsi-notes: "NOTE:\tA metered connection is a network connection that has\
+        \ a maximum data usage in a specific period, e.g. per hour/day/week/month.\
+        \ The user may get billed extra charges if they go over the allotted amount."
+      x-etsi-ref: 7.2.4
+    MtsSessionInfo:
+      required:
+      - appInsId
+      - flowFilter
+      - mtsMode
+      - qosD
+      - requestType
+      - trafficDirection
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: MTS session instance identifier
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appInsId:
+          type: string
+          description: Application instance identifier
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appName:
+          type: string
+          description: Name of the application
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        flowFilter:
+          minItems: 1
+          type: array
+          description: "Traffic flow filtering criteria, applicable only if when requestType\
+            \ is set as FLOW_SPECIFIC_MTS_SESSION. Any filtering criteria shall define\
+            \ a single session only. In case multiple sessions match flowFilter the\
+            \ request shall be rejected. If the flowFilter field is included, at least\
+            \ one of its subfields shall be included. Any flowFilter subfield that\
+            \ is not included shall be ignored in traffic flow filtering"
+          items:
+            $ref: '#/components/schemas/MtsSessionInfo_flowFilter'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        mtsMode:
+          type: integer
+          description: "Numeric value (0 - 255) corresponding to a specific MTS mode\
+            \ of the MTS session: 0 = low cost, i.e. using the unmetered access network\
+            \ connection whenever it is available 1 = low latency, i.e. using the\
+            \ access network connection with lower latency 2 = high throughput, i.e.\
+            \ using the access network connection with higher throughput, or multiple\
+            \ access network connection simultaneously 3 = redundancy, i.e. sending\
+            \ duplicated (redundancy) packets over multiple access network connections\
+            \ for high-reliability and low-latency applications 4 = QoS, i.e. performing\
+            \ MTS based on the QoS requirement (qosD)"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        qosD:
+          $ref: '#/components/schemas/MtsSessionInfo_qosD'
+        requestType:
+          type: integer
+          description: "Numeric value (0 - 255) corresponding to specific type of\
+            \ consumer as following: 0 = APPLICATION_SPECIFIC_MTS_SESSION 1 = FLOW_SPECIFIC_MTS_SESSION"
+          enum:
+          - 0
+          - 1
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum_inlined
+        timeStamp:
+          $ref: '#/components/schemas/MtsSessionInfo_timeStamp'
+        trafficDirection:
+          type: string
+          description: "The direction of the requested MTS session: 00 = Downlink\
+            \ (towards the UE) 01 = Uplink (towards the application/session) 10 =\
+            \ Symmetrical (see note) "
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        timeStamp:
+          seconds: 1
+          nanoSeconds: 1
+        flowFilter:
+        - flowlabel: 1
+          protocol: 5
+          sourcePort: 5
+          dscp: 0
+          dstPort: 6
+          sourceIp: sourceIp
+          dstIp: dstIp
+        - flowlabel: 1
+          protocol: 5
+          sourcePort: 5
+          dscp: 0
+          dstPort: 6
+          sourceIp: sourceIp
+          dstIp: dstIp
+        requestType: 7
+        appName: appName
+        qosD:
+          maxJitter: 7
+          maxLatency: 9
+          maxLoss: 3
+          priority: 4
+          minTpt: 2
+        sessionId: sessionId
+        appInsId: appInsId
+        trafficDirection: trafficDirection
+        mtsMode: 2
+      x-etsi-notes: "NOTE:\tFor the downlink direction of a symmetrical flow, \"sourceIp\"\
+        \ and \"sourcePort\" in the \"flowFilter\" structure are used for source address\
+        \ and port, respectively; \"dstIp\" and \"dstPort\" are used for destination\
+        \ address and port, respectively. For the uplink direction of a symmetrical\
+        \ flow, \"sourceIp\" and \"sourcePort\" are used for destination address and\
+        \ port, respectively; \"dstIp\" and \"dstPort\" are used for source address\
+        \ and port, respectively."
+      x-etsi-ref: 7.2.5
+    ProblemDetails:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of
+            the problem
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        status:
+          type: integer
+          description: The HTTP status code for this occurrence of the problem
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        title:
+          type: string
+          description: "A short, human-readable summary of the problem type"
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        type:
+          type: string
+          description: A URI reference according to IETF RFC 3986 that identifies
+            the problem type
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+    AppTerminationNotification:
+      required:
+      - _links
+      - maxGracefulTimeout
+      - notificationType
+      - operationAction
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to AppTerminationNotification.
+        operationAction:
+          $ref: '#/components/schemas/OperationActionType'
+        maxGracefulTimeout:
+          type: integer
+          description: Maximum timeout value in seconds for graceful termination or
+            graceful stop of an application instance.
+          format: uint32
+        _links:
+          $ref: '#/components/schemas/AppTerminationNotification__links'
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+    OperationActionType:
+      type: string
+      description: Operation that is being performed on the MEC application instance.
+      enum:
+      - STOPPING
+      - TERMINATING
+    LinkType:
+      required:
+      - href
+      type: object
+      properties:
+        href:
+          type: string
+          description: URI referring to a resource
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uri
+      x-etsi-ref: 6.5.2
+    MtsCapabilityInfo_mtsAccessInfo:
+      type: object
+      properties:
+        accessId:
+          type: integer
+          description: Unique identifier for the access network connection
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        accessType:
+          type: integer
+          description: "Numeric value (0-255) corresponding to specific type of access\
+            \ network as following: 0 = Unknown 1 = Any IEEE802.11-based WLAN technology\
+            \ 2 = Any 3GPP-based Cellular technology 3 = Any Fixed Access 11 = IEEE802.11\
+            \ a/b/g WLAN 12 = IEEE 802.11 a/b/g/n WLAN 13 = IEEE 802.11 a/b/g/n/ac\
+            \ WLAN 14 = IEEE 802.11 a/b/g/n/ac/ax WLAN (Wi-Fi 6) 15 = IEEE 802.11\
+            \ b/g/n WLAN 31 = 3GPP GERAN/UTRA (2G/3G) 32 = 3GPP E-UTRA (4G/LTE) 33\
+            \ = 3GPP NR (5G)"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        metered:
+          type: integer
+          description: "Numeric value (0-255) corresponding to the following: 0: the\
+            \ connection is not metered (see note) 1: the connection is metered 2:\
+            \ unknown "
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      example:
+        accessId: 0
+        accessType: 6
+        metered: 1
+    MtsCapabilityInfo_timeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: "Time in nanoseconds in Unix-time since January 1, 1970, 00:00:00\
+            \ UTC"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: "Time in seconds in Unix-time since January 1, 1970, 00:00:00\
+            \ UTC"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      description: Time stamp to indicate when the corresponding information elements
+        are sent
+      example:
+        seconds: 2
+        nanoSeconds: 5
+    MtsSessionInfo_flowFilter:
+      type: object
+      properties:
+        dscp:
+          type: integer
+          description: DSCP in the IPv4 header or Traffic Class in the IPv6 header
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dstIp:
+          type: string
+          description: "Destination address identity of session. The string for a\
+            \ IPv4 address shall be formatted in the \"dotted decimal\" notation as\
+            \ defined in IETF RFC 1166 [10]. The string for a IPv6 address shall be\
+            \ formatted according to clause 4 of IETF RFC 5952 [11], with in CIDR\
+            \ notation [12] used to provide the routing prefix."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        dstPort:
+          type: integer
+          description: Destination port identity of session
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        flowlabel:
+          type: integer
+          description: "Flow Label in the IPv6 header, applicable only if the flow\
+            \ is IPv6"
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        protocol:
+          type: integer
+          description: Protocol number
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        sourceIp:
+          type: string
+          description: "Source address identity of session. The string for a IPv4\
+            \ address shall be formatted in the \"dotted decimal\" notation as defined\
+            \ in IETF RFC 1166 [10]. The string for a IPv6 address shall be formatted\
+            \ according to clause 4 of IETF RFC 5952 [11], with in CIDR notation [12]\
+            \ used to provide the routing prefix."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        sourcePort:
+          type: integer
+          description: Source port identity of session
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+      example:
+        flowlabel: 1
+        protocol: 5
+        sourcePort: 5
+        dscp: 0
+        dstPort: 6
+        sourceIp: sourceIp
+        dstIp: dstIp
+    MtsSessionInfo_qosD:
+      type: object
+      properties:
+        maxJitter:
+          type: integer
+          description: "tolerable jitter in [10 nanoseconds]"
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        maxLatency:
+          type: integer
+          description: "tolerable (one-way) delay in [10 nanoseconds]"
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        maxLoss:
+          type: integer
+          description: "tolerable packet loss rate in [1/10^x]"
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        minTpt:
+          type: integer
+          description: "minimal throughput in [kbps]"
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        priority:
+          type: integer
+          description: "numeric value (0 - 255) corresponding to the traffic priority\
+            \ 0: low; 1: medium; 2: high; 3: critical"
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+      description: "QoS requirement description of the MTS session, applicable only\
+        \ if mtsMode = 4 (QoS). If the qosD field is included, at least one of its\
+        \ subfields shall be included. Any qosD subfield that is not included shall\
+        \ be ignored in Multi-access Traffic Steering (MTS)"
+      example:
+        maxJitter: 7
+        maxLatency: 9
+        maxLoss: 3
+        priority: 4
+        minTpt: 2
+    MtsSessionInfo_timeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: "The nanoseconds part of the Time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: "The seconds part of the Time. Time is defined as Unixtime\
+            \ since January 1, 1970, 00:00:00 UTC"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      description: 'Time stamp to indicate when the corresponding information elements
+        are sent '
+      example:
+        seconds: 1
+        nanoSeconds: 1
+    AppTerminationNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+        confirmTermination:
+          $ref: '#/components/schemas/LinkType'
+      description: Object containing hyperlinks related to the resource.
+  responses:
+    "204":
+      description: "Upon success, a response 204 No Content without any response body\
+        \ is returned."
+    "400":
+      description: "Bad Request : used to indicate that incorrect parameters were\
+        \ passed to the request."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "403":
+      description: "Forbidden :  operation is not allowed given the current status\
+        \ of the resource."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "404":
+      description: "Not Found :  used when a client provided a URI that cannot be\
+        \ mapped to a valid resource URI."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "412":
+      description: "Precondition failed :  used when a condition has failed during\
+        \ conditional requests, e.g. when using ETags to avoid write conflicts when\
+        \ using PUT"
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  parameters:
+    Path.sessionId:
+      name: sessionId
+      in: path
+      description: Represents a MTS session instance
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Query.app_instance_id:
+      name: app_instance_id
+      in: query
+      description: A MEC application instance may use multiple app_instance_ids as
+        an input parameter to query the MTS session of a list of MEC application instances.
+        See note.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    Query.app_name:
+      name: app_name
+      in: query
+      description: A MEC application instance may use multiple app_names as an input
+        parameter to query the MTS session of a list of MEC application instances.
+        See note.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    Query.session_id:
+      name: session_id
+      in: query
+      description: A MEC application instance may use session_id as an input parameter
+        to query the information of a list of MTS sessions. See note.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string

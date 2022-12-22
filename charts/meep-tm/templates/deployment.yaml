@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-tm.fullname" . }}
+  labels:
+    app: {{ template "meep-tm.name" . }}
+    chart: {{ template "meep-tm.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-tm.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "meep-tm.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      {{- if .Values.codecov.enabled}}
+      volumes:
+        - name: codecov-storage
+          persistentVolumeClaim:
+            claimName: meep-tm-codecov-pvc
+      {{- end}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.codecov.enabled}}
+          command: [ "/meep-tm" ]
+          args: [ "-test.coverprofile=/codecov/codecov-meep-tm.out", "__DEVEL--code-cov" ]
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+              protocol: {{ .Values.deployment.protocol }}
+          env:
+            {{- range $key, $value := .Values.image.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- if .Values.codecov.enabled}}
+          volumeMounts:
+          - name: codecov-storage
+            mountPath: /codecov
+          {{- end}}
+      terminationGracePeriodSeconds: 5
+      initContainers:
+        {{- range $value := .Values.deployment.dependencies.system }}
+        - name: init-system-{{ $value }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ $value }}.kube-system ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}
+        {{- range $value := .Values.deployment.dependencies.namespace }}
+        - name: init-{{ $value }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ $value }} ; do echo waiting for {{ $value }}; sleep 0.25; done;']
+        {{- end}}

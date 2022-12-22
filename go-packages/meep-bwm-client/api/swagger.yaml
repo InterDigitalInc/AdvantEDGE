@@ -1,0 +1,803 @@
+openapi: 3.0.0
+info:
+  title: AdvantEDGE Bandwidth Management API
+  description: "Bandwidth Management Sercice is AdvantEDGE's implementation of [ETSI\
+    \ MEC ISG MEC015 Traffic Management APIs](https://www.etsi.org/deliver/etsi_gs/MEC/001_099/015/02.02.01_60/gs_MEC015v020201p.pdf)\
+    \ <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-tm](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-tm/server/bwm)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about BWM Info and Session(s) in the network <p>**Note**<br>AdvantEDGE\
+    \ supports all Bandwidth Management API endpoints."
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
+  license:
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
+  version: 2.2.1
+externalDocs:
+  description: ETSI GS MEC015 V2.2.1 Traffic Management APIs
+  url: https://www.etsi.org/deliver/etsi_gs/MEC/001_099/015/02.02.01_60/gs_MEC015v020201p.pdf
+servers:
+- url: https://localhost/sandboxname/bwm/v1
+tags:
+- name: bwm
+paths:
+  /bw_allocations:
+    get:
+      tags:
+      - bwm
+      summary: Retrieve information about a list of bandwidthAllocation resources
+      description: Retrieves information about a list of bandwidthAllocation resources.
+        Typically used in 'Get configured bandwidth allocation from Bandwidth Management
+        Service' procedure as described in clause 6.2.5.
+      operationId: bandwidthAllocationListGET
+      parameters:
+      - name: app_instance_id
+        in: query
+        description: A MEC application instance may use multiple app_instance_ids
+          as an input parameter to query the bandwidth allocation of a list of MEC
+          application instances. app_instance_id corresponds to appInsId defined in
+          table 7.2.2-1. See note.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: app_name
+        in: query
+        description: A MEC application instance may use multiple app_names as an input
+          parameter to query the bandwidth allocation of a list of MEC application
+          instances. app_name corresponds to appName defined in table 7.2.2-1. See
+          note.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: session_id
+        in: query
+        description: A MEC application instance may use session_id as an input parameter
+          to query the bandwidth allocation of a list of sessions. session_id corresponds
+          to allocationId defined in table 7.2.2-1. See note.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: "Upon success, a response body containing an array of the bandwidthAllocations\
+            \ is returned."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BwInfo'
+                x-content-type: application/json
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    post:
+      tags:
+      - bwm
+      summary: Create a bandwidthAllocation resource
+      description: Used to create a bandwidthAllocation resource. Typically used in
+        'Register to Bandwidth Management Service' procedure as described in clause
+        6.2.1.
+      operationId: bandwidthAllocationPOST
+      parameters: []
+      requestBody:
+        description: Entity body in the request contains BwInfo to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BwInfo'
+        required: true
+      responses:
+        "201":
+          description: "Upon success, the HTTP response shall include a 'Location'\
+            \ HTTP header that contains the resource URI of the created resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BwInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /bw_allocations/{allocationId}:
+    get:
+      tags:
+      - bwm
+      summary: Retrieve information about a specific bandwidthAllocation
+      description: Retrieves information about a bandwidthAllocation resource. Typically
+        used in 'Get configured bandwidth allocation from Bandwidth Management Service'
+        procedure as described in clause 6.2.5.
+      operationId: bandwidthAllocationGET
+      parameters:
+      - name: allocationId
+        in: path
+        description: Represents a bandwidth allocation instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Used to indicate nonspecific success. The response body contains
+            a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BwInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    put:
+      tags:
+      - bwm
+      summary: Update the information about a specific bandwidthAllocation
+      description: "Updates the information about a bandwidthAllocation resource.\
+        \ As specified in ETSI GS MEC 009 [6], the PUT HTTP method has 'replace' semantics."
+      operationId: bandwidthAllocationPUT
+      parameters:
+      - name: allocationId
+        in: path
+        description: Represents a bandwidth allocation instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: BwInfo with updated information is included as entity body of
+          the request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BwInfo'
+        required: true
+      responses:
+        "200":
+          description: Used to indicate nonspecific success. The response body contains
+            a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BwInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "412":
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+      - bwm
+      summary: Remove a specific bandwidthAllocation
+      description: Used in 'Unregister from Bandwidth Management Service' procedure
+        as described in clause 6.2.3.
+      operationId: bandwidthAllocationDELETE
+      parameters:
+      - name: allocationId
+        in: path
+        description: Represents a bandwidth allocation instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: "Upon success, a response 204 No Content without any response\
+            \ body is returned."
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    patch:
+      tags:
+      - bwm
+      summary: Modify the information about a specific existing bandwidthAllocation
+        by sending updates on the data structure
+      description: "Updates the information about a bandwidthAllocation resource.\
+        \ As specified in ETSI GS MEC 009 [6], the PATCH HTTP method updates a resource\
+        \ on top of the existing resource state by just including the changes ('deltas')\
+        \ in the request body."
+      operationId: bandwidthAllocationPATCH
+      parameters:
+      - name: allocationId
+        in: path
+        description: Represents a bandwidth allocation instance
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Description of the changes to instruct the server how to modify
+          the resource representation.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BwInfoDeltas'
+        required: true
+      responses:
+        "200":
+          description: Used to indicate nonspecific success. The response body contains
+            a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BwInfo'
+        "400":
+          description: "Bad Request : used to indicate that incorrect parameters were\
+            \ passed to the request."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "403":
+          description: "Forbidden :  operation is not allowed given the current status\
+            \ of the resource."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: "Not Found :  used when a client provided a URI that cannot\
+            \ be mapped to a valid resource URI."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "412":
+          description: "Precondition failed :  used when a condition has failed during\
+            \ conditional requests, e.g. when using ETags to avoid write conflicts\
+            \ when using PUT"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /notifications/mec011/appTermination:
+    post:
+      tags:
+      - location
+      summary: MEC011 Application Termination notification for self termination
+      description: Terminates itself.
+      operationId: mec011AppTerminationPOST
+      requestBody:
+        description: Termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationNotification'
+            example:
+              notificationType: AppTerminationNotification
+              operationAction: TERMINATING
+              maxGracefulTimeout: 10
+              links:
+                subscription:
+                  href: http://mec011Server.example.com/mec_app_support/v1/applications/appId1234/subscriptions/sub123
+                confirmTermination:
+                  href: http://mec011Server.example.com/mec_app_support/v1/confirm_termination
+        required: true
+      responses:
+        "204":
+          description: No Content
+      x-swagger-router-controller: notifications
+components:
+  schemas:
+    BwInfo:
+      required:
+      - allocationDirection
+      - appInsId
+      - fixedAllocation
+      - requestType
+      type: object
+      properties:
+        allocationId:
+          type: string
+          description: Bandwidth allocation instance identifier
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        allocationDirection:
+          type: string
+          description: "The direction of the requested BW allocation: 00 = Downlink\
+            \ (towards the UE) 01 = Uplink (towards the application/session) 10 =\
+            \ Symmetrical"
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appInsId:
+          type: string
+          description: Application instance identifier
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appName:
+          type: string
+          description: Name of the application
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        fixedAllocation:
+          type: string
+          description: "Size of requested fixed BW allocation in [bps]"
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        fixedBWPriority:
+          type: string
+          description: Indicates the allocation priority when dealing with several
+            applications or sessions in parallel. Values are not defined in the present
+            document
+          enum:
+          - SEE_DESCRIPTION
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Enum
+        requestType:
+          type: integer
+          description: "Numeric value (0 - 255) corresponding to specific type of\
+            \ consumer as following: 0 = APPLICATION_SPECIFIC_BW_ALLOCATION 1 = SESSION_SPECIFIC_BW_ALLOCATION"
+          enum:
+          - 0
+          - 1
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum_inlined
+        sessionFilter:
+          minItems: 0
+          type: array
+          description: "Session filtering criteria, applicable when requestType is\
+            \ set as SESSION_SPECIFIC_BW_ALLOCATION. Any filtering criteria shall\
+            \ define a single session only. In case multiple sessions match sessionFilter\
+            \ the request shall be rejected"
+          items:
+            $ref: '#/components/schemas/BwInfo_sessionFilter'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        timeStamp:
+          $ref: '#/components/schemas/BwInfo_timeStamp'
+      example:
+        timeStamp:
+          seconds: 1
+          nanoSeconds: 6
+        allocationDirection: allocationDirection
+        fixedBWPriority: SEE_DESCRIPTION
+        requestType: 0
+        sessionFilter:
+        - protocol: protocol
+          sourcePort: sourcePort
+          dstPort: dstPort
+          sourceIp: sourceIp
+          dstAddress: dstAddress
+        - protocol: protocol
+          sourcePort: sourcePort
+          dstPort: dstPort
+          sourceIp: sourceIp
+          dstAddress: dstAddress
+        appName: appName
+        allocationId: allocationId
+        appInsId: appInsId
+        fixedAllocation: fixedAllocation
+      x-etsi-ref: 7.2.2
+    BwInfoDeltas:
+      required:
+      - appInsId
+      - requestType
+      type: object
+      properties:
+        allocationId:
+          type: string
+          description: Bandwidth allocation instance identifier
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        allocationDirection:
+          type: string
+          description: "The direction of the requested BW allocation: 00 = Downlink\
+            \ (towards the UE) 01 = Uplink (towards the application/session) 10 =\
+            \ Symmetrical"
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appInsId:
+          type: string
+          description: Application instance identifier
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        fixedAllocation:
+          type: string
+          description: "Size of requested fixed BW allocation in [bps]"
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        fixedBWPriority:
+          type: string
+          description: Indicates the allocation priority when dealing with several
+            applications or sessions in parallel. Values are not defined in the present
+            document
+          enum:
+          - SEE DESCRIPTION
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Enum_inlined
+        requestType:
+          type: integer
+          description: "Numeric value (0 - 255) corresponding to specific type of\
+            \ consumer as following: 0 = APPLICATION_SPECIFIC_BW_ALLOCATION 1 = SESSION_SPECIFIC_BW_ALLOCATION"
+          enum:
+          - 0
+          - 1
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum_inlined
+        sessionFilter:
+          minItems: 0
+          type: array
+          description: "Session filtering criteria, applicable when requestType is\
+            \ set as SESSION_SPECIFIC_BW_ALLOCATION. Any filtering criteria shall\
+            \ define a single session only. In case multiple sessions match sessionFilter\
+            \ the request shall be rejected"
+          items:
+            $ref: '#/components/schemas/BwInfoDeltas_sessionFilter'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+      x-etsi-ref: 7.2.3
+    ProblemDetails:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of
+            the problem
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        status:
+          type: integer
+          description: The HTTP status code for this occurrence of the problem
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        title:
+          type: string
+          description: "A short, human-readable summary of the problem type"
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        type:
+          type: string
+          description: A URI reference according to IETF RFC 3986 that identifies
+            the problem type
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+    AppTerminationNotification:
+      required:
+      - _links
+      - maxGracefulTimeout
+      - notificationType
+      - operationAction
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to AppTerminationNotification.
+        operationAction:
+          $ref: '#/components/schemas/OperationActionType'
+        maxGracefulTimeout:
+          type: integer
+          description: Maximum timeout value in seconds for graceful termination or
+            graceful stop of an application instance.
+          format: uint32
+        _links:
+          $ref: '#/components/schemas/AppTerminationNotification__links'
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+    OperationActionType:
+      type: string
+      description: Operation that is being performed on the MEC application instance.
+      enum:
+      - STOPPING
+      - TERMINATING
+    LinkType:
+      required:
+      - href
+      type: object
+      properties:
+        href:
+          type: string
+          description: URI referring to a resource
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uri
+      x-etsi-ref: 6.5.2
+    BwInfo_sessionFilter:
+      type: object
+      properties:
+        dstAddress:
+          type: string
+          description: "Destination address identity of session. The string for a\
+            \ IPv4 address shall be formatted in the \"dotted decimal\" notation as\
+            \ defined in IETF RFC 1166 [10]. The string for a IPv6 address shall be\
+            \ formatted according to clause 4 of IETF RFC 5952 [11], with in CIDR\
+            \ notation [12] used to provide the routing prefix."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        dstPort:
+          type: string
+          description: Destination port identity of session
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        protocol:
+          type: string
+          description: Protocol number
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        sourceIp:
+          type: string
+          description: "Source address identity of session. The string for a IPv4\
+            \ address shall be formatted in the \"dotted decimal\" notation as defined\
+            \ in IETF RFC 1166 [10]. The string for a IPv6 address shall be formatted\
+            \ according to clause 4 of IETF RFC 5952 [11], with in CIDR notation [12]\
+            \ used to provide the routing prefix."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        sourcePort:
+          type: string
+          description: Source port identity of session
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+      example:
+        protocol: protocol
+        sourcePort: sourcePort
+        dstPort: dstPort
+        sourceIp: sourceIp
+        dstAddress: dstAddress
+    BwInfo_timeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: "The nanoseconds part of the Time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: "The seconds part of the Time. Time is defined as Unixtime\
+            \ since January 1, 1970, 00:00:00 UTC"
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      description: Time stamp to indicate when the corresponding information elements
+        are sent
+      example:
+        seconds: 1
+        nanoSeconds: 6
+    BwInfoDeltas_sessionFilter:
+      type: object
+      properties:
+        dstAddress:
+          type: string
+          description: "Destination address identity of session. The string for a\
+            \ IPv4 address shall be formatted in the \"dotted decimal\" notation as\
+            \ defined in IETF RFC 1166 [10]. The string for a IPv6 address shall be\
+            \ formatted according to clause 4 of IETF RFC 5952 [11], with in CIDR\
+            \ notation [12] used to provide the routing prefix."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        dstPort:
+          type: string
+          description: Destination port identity of session
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        protocol:
+          type: string
+          description: Protocol number
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        sourceIp:
+          type: string
+          description: "Source address identity of session. The string for a IPv4\
+            \ address shall be formatted in the \"dotted decimal\" notation as defined\
+            \ in IETF RFC 1166 [10]. The string for a IPv6 address shall be formatted\
+            \ according to clause 4 of IETF RFC 5952 [11], with in CIDR notation [12]\
+            \ used to provide the routing prefix."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        sourcePort:
+          type: string
+          description: 'Source port identity of session '
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+    AppTerminationNotification__links:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+        confirmTermination:
+          $ref: '#/components/schemas/LinkType'
+      description: Object containing hyperlinks related to the resource.
+  responses:
+    "204":
+      description: "Upon success, a response 204 No Content without any response body\
+        \ is returned."
+    "400":
+      description: "Bad Request : used to indicate that incorrect parameters were\
+        \ passed to the request."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "403":
+      description: "Forbidden :  operation is not allowed given the current status\
+        \ of the resource."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "404":
+      description: "Not Found :  used when a client provided a URI that cannot be\
+        \ mapped to a valid resource URI."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    "412":
+      description: "Precondition failed :  used when a condition has failed during\
+        \ conditional requests, e.g. when using ETags to avoid write conflicts when\
+        \ using PUT"
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  parameters:
+    Path.allocationId:
+      name: allocationId
+      in: path
+      description: Represents a bandwidth allocation instance
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Query.app_instance_id:
+      name: app_instance_id
+      in: query
+      description: A MEC application instance may use multiple app_instance_ids as
+        an input parameter to query the bandwidth allocation of a list of MEC application
+        instances. app_instance_id corresponds to appInsId defined in table 7.2.2-1.
+        See note.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    Query.app_name:
+      name: app_name
+      in: query
+      description: A MEC application instance may use multiple app_names as an input
+        parameter to query the bandwidth allocation of a list of MEC application instances.
+        app_name corresponds to appName defined in table 7.2.2-1. See note.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    Query.session_id:
+      name: session_id
+      in: query
+      description: A MEC application instance may use session_id as an input parameter
+        to query the bandwidth allocation of a list of sessions. session_id corresponds
+        to allocationId defined in table 7.2.2-1. See note.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
