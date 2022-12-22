@@ -118,11 +118,9 @@ bash install_nvm.sh
 source ~/.profile
 ```
 
-##### STEP 4 - Install Node.js (latest LTS version)
+##### STEP 4 - Install Node.js
 
 ```
-# Retrieve & install latest v12 Node.js versions
-nvm ls-remote | grep "Latest LTS"
 nvm install 12.19.0
 ```
 
