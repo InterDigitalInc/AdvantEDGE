@@ -177,5 +177,6 @@ meep-sandbox-ctrl   |ingress  | `/<sandbox-name>/api`<br>`/<sandbox-name>/sandbo
 meep-tc-engine      |internal | -
 meep-tc-sidecar     |internal | -
 meep-virt-engine    |internal | -
+meep-vis            |ingress  | `/<sandbox-name>/vis`
 meep-wais           |ingress  | `/<sandbox-name>/wai`
 meep-webhook        |internal | -
