@@ -86,6 +86,11 @@ go version
 ----
 ## Node.js - npm
 
+_:exclamation: **IMPORTANT NOTE** :exclamation:<br>
+Node versions greater than 12.19 currently cause platform and/or system test build errors.<br>
+Npm versions greater than 6.14.13 cause a significant increase in build time.<br>
+We strongly recommend using the versions listed below.<br>_
+
 We use the _How To Install Using NVM_ method from [here](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-16-04)
 
 NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows concurrent use of different Node.js installations and simplifies the version upgrade procedure.
@@ -93,7 +98,7 @@ NVM is the _Node Version Manager (NVM)_ tool used to install Node.js. It allows 
 Versions we use:
 
 - NVM: 0.34.0
-- Node.js: 8.11, 10.15, 10.16, 10.19, 12.22
+- Node.js: 8.11, 10.15, 10.16, 10.19, 12.19
 - npm: 6.8, 6.9, 6.11, 6.12, 6.14
 
 How we do it:
