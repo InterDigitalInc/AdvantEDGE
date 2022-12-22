@@ -123,13 +123,13 @@ source ~/.profile
 ```
 # Retrieve & install latest v12 Node.js versions
 nvm ls-remote | grep "Latest LTS"
-nvm install 12.22.12
+nvm install 12.19.0
 ```
 
 ##### STEP 5 - Update NPM version bundled with Node.js
 
 ```
-npm install -g npm@6.14.13
+npm install -g npm@6.14.8
 ```
 
 ##### STEP 6 - Verify install
@@ -139,8 +139,8 @@ node -v
 npm -v
 
 # Example output:
-#   v12.22.12
-#   6.14.13
+#   v12.19.0
+#   6.14.8
 ```
 
 
