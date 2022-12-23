@@ -7,8 +7,7 @@ info:
     <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
     <p>**Micro-service**<br>[meep-vis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-vis)
     <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports
-    a selected subset of RNI API endpoints (see below) and a subset of subscription
+    information about predicted QoS information for a vehicular UE with potential routes <p>**Note**<br>AdvantEDGE supports a selected subset of VIS API endpoints (see below) and a subset of subscription
     types.
   contact:
     name: InterDigital AdvantEDGE Support
