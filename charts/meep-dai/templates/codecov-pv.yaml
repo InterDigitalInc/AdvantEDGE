@@ -1,0 +1,35 @@
+{{- if .Values.codecov.enabled}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-dai-codecov-pv
+spec:
+  storageClassName: meep-dai-codecov-sc
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.codecov.location }}
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-dai-codecov-sc
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: meep-dai-codecov-pvc
+spec:
+  storageClassName: meep-dai-codecov-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+{{- end}}
