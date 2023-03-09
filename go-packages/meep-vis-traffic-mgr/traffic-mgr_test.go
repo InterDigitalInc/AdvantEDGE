@@ -324,14 +324,14 @@ func TestPredictQosPerTrafficLoad(t *testing.T) {
 	}
 	// FIXME Are there any invalid Rsrp/Rsrq values?
 	/*_, _, err = tm.PredictQosPerTrafficLoad(14, -1, 0, poaName1)
-	if err == nil {
-		t.Fatalf("Should have failed due to invalid inRsrp")
-	}
-	// Invalid inRsrq
-	_, _, err = tm.PredictQosPerTrafficLoad(14, 0, -1, poaName1)
-	if err == nil {
-		t.Fatalf("Should have failed due to invalid inRsrq")
-	}*/
+	 if err == nil {
+		 t.Fatalf("Should have failed due to invalid inRsrp")
+	 }
+	 // Invalid inRsrq
+	 _, _, err = tm.PredictQosPerTrafficLoad(14, 0, -1, poaName1)
+	 if err == nil {
+		 t.Fatalf("Should have failed due to invalid inRsrq")
+	 }*/
 	fmt.Println("Invalid checks done")
 
 	// FIXME Execute the test with proper values for inRsrp1 and inRsrq1

@@ -1,0 +1,1676 @@
+openapi: 3.0.2
+info:
+  title: MEC Demo 4 API
+  description: Demo 4 is an edge application that can be used with AdvantEDGE or ETSI
+    MEC Sandbox to demonstrate EU application and MEC016 usage
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.1
+servers:
+- url: http://10.190.115.162:8094
+paths:
+  /info/application:
+    get:
+      tags:
+      - frontend
+      summary: Returns the application dynamic information
+      description: Returns the application dynamic information
+      operationId: GetPlatformInfo
+      responses:
+        "200":
+          description: "Upon success, a response body containing the app instance\
+            \ info is returned"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInstance'
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+        "404":
+          description: Not found
+  /info/logs:
+    get:
+      tags:
+      - frontend
+      summary: Returns activity logs
+      description: Returns activity logs
+      operationId: GetActivityLogs
+      responses:
+        "200":
+          description: "Uppon success, a response body containing logs of demo activities\
+            \ stored as strings will be returned"
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+        "404":
+          description: Not found
+  /dai/apps:
+    get:
+      tags:
+      - DAI
+      summary: Returns onboarded-demo4 User Application AppContext
+      description: Get available application information
+      operationId: daiAppListGET
+      responses:
+        "200":
+          description: "Uppon success, a response body containing AppList will be\
+            \ returned"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationList'
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /dai/instantiate:
+    post:
+      tags:
+      - DAI
+      summary: Returns onboarded-demo4 User Application AppContext
+      description: Instanciate the onboarded-demo4 User Application
+      operationId: daiDoPingPOST
+      responses:
+        "201":
+          description: "Uppon success, a response body containing AppContext will\
+            \ be returned"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppContext'
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /dai/delete/{appcontextid}:
+    delete:
+      tags:
+      - DAI
+      summary: Returns onboarded-demo4 User Application AppContext
+      description: Delete the onboarded-demo4 User Application
+      operationId: daiDoPingDELETE
+      responses:
+        "204":
+          description: "Uppon success, No Content will be returned"
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /dai/doping/{appcontextid}:
+    get:
+      tags:
+      - DAI
+      summary: Returns onboarded-demo4 User Application activity
+      description: Send a ping to the onboarded-demo4 User Application
+      operationId: daiDoPingGET
+      responses:
+        "200":
+          description: "Uppon success, a response body containing pong will be returned"
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /dai/availability/{appcontextid}:
+    post:
+      tags:
+      - DAI
+      summary: Obtain the location constraints for a new application context.
+      description: Used to obtain the locations available for instantiation of a specific
+        user application in the MEC system.
+      operationId: daiAppLocationAvailabilityPOST
+      responses:
+        "200":
+          description: "Uppon success, a response body containing pong will be returned"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppLocationAvailability'
+        "400":
+          description: Bad request. It is used to indicate that incorrect parameters
+            were passed to the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /dai/callback/ApplicationContextDeleteNotification:
+    post:
+      tags:
+      - notification
+      summary: Callback endpoint for MEC016 Notifications
+      description: Callback endpoint for MEC016 Notifications
+      operationId: ApplicationContextDeleteNotificationCallback
+      requestBody:
+        description: MEC application termination
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationContextDeleteNotification'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /services/callback/service-availability:
+    post:
+      tags:
+      - notification
+      summary: Callback endpoint for MEC011 Notifications
+      description: Callback endpoint for MEC011 Notifications
+      operationId: ServiceAvailNotificationCallback
+      requestBody:
+        description: service availability notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAvailabilityNotification'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+  /application/termination:
+    post:
+      tags:
+      - notification
+      summary: Callback endpoint for MEC011 app-termination notifications
+      description: Callback endpoint for MEC011 app-termination notifications
+      operationId: AppTerminationNotificationCallback
+      requestBody:
+        description: app termination notification details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTerminationSubscription'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+components:
+  schemas:
+    ApplicationInstance:
+      type: object
+      properties:
+        name:
+          type: string
+          example: MEP Name
+        url:
+          type: string
+        config:
+          type: string
+          example: app_instance1.yaml
+        ip:
+          type: string
+          example: <IP:port>
+        id:
+          type: string
+        mecReady:
+          type: boolean
+          description: Confirm if app instance is ready
+        mecTerminated:
+          type: boolean
+          description: Confirm the application level termination of application instance
+        amsResource:
+          type: boolean
+          description: Confirm if app instance has an ams service resource
+        subscriptions:
+          $ref: '#/components/schemas/ApplicationInstance_subscriptions'
+        offeredService:
+          $ref: '#/components/schemas/ApplicationInstance_offeredService'
+        discoveredServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationInstance_discoveredServices'
+      description: This type represent information to display on frontend app instance
+        text field
+      example:
+        mecReady: true
+        subscriptions:
+          'SerAvailabilitySubscription:':
+            subId: subId
+          AmsLinkListSubscription:
+            subId: subId
+            associateId:
+            - type: 0
+              value: value
+            - type: 0
+              value: value
+          AppTerminationSubscription:
+            subId: subId
+        amsResource: true
+        ip: <IP:port>
+        name: MEP Name
+        id: id
+        discoveredServices:
+        - link: link
+          serName: null
+          consumedLocalOnly: true
+          version: version
+          serInstanceId: serInstanceId
+        - link: link
+          serName: null
+          consumedLocalOnly: true
+          version: version
+          serInstanceId: serInstanceId
+        config: app_instance1.yaml
+        offeredService:
+          scopeOfLocality: MEC_SYSTEM
+          serName: serName
+          id: id
+          state: ACTIVE
+          consumedLocalOnly: true
+        url: url
+        mecTerminated: true
+    ApplicationInstance_AppTerminationSubscription:
+      type: object
+      properties:
+        subId:
+          type: string
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+      example:
+        subId: subId
+    ApplicationInstance_SerAvailabilitySubscription:
+      type: object
+      properties:
+        subId:
+          type: string
+      description: This type represents a subscription to the notifications from the
+        MEC platform regarding the availability of a MEC service or a list of MEC
+        services.
+      example:
+        subId: subId
+    ApplicationInstance_AmsLinkListSubscription:
+      type: object
+      properties:
+        subId:
+          type: string
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for specific
+            UE(s) and flow(s).
+          items:
+            $ref: '#/components/schemas/AssociateId'
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about app mobility support
+      example:
+        subId: subId
+        associateId:
+        - type: 0
+          value: value
+        - type: 0
+          value: value
+    ApplicationInstance_subscriptions:
+      type: object
+      properties:
+        AppTerminationSubscription:
+          $ref: '#/components/schemas/ApplicationInstance_AppTerminationSubscription'
+        'SerAvailabilitySubscription:':
+          $ref: '#/components/schemas/ApplicationInstance_SerAvailabilitySubscription'
+        AmsLinkListSubscription:
+          $ref: '#/components/schemas/ApplicationInstance_AmsLinkListSubscription'
+      description: List of ams subscription unique to device and their id
+      example:
+        'SerAvailabilitySubscription:':
+          subId: subId
+        AmsLinkListSubscription:
+          subId: subId
+          associateId:
+          - type: 0
+            value: value
+          - type: 0
+            value: value
+        AppTerminationSubscription:
+          subId: subId
+    ApplicationInstance_offeredService:
+      type: object
+      properties:
+        serName:
+          type: string
+          description: The name of the service. This is how the service producing
+            MEC application identifies the service instance it produces.
+        id:
+          type: string
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        scopeOfLocality:
+          $ref: '#/components/schemas/LocalityType'
+        consumedLocalOnly:
+          type: boolean
+          description: Indicate whether the service can only be consumed by the MEC
+            applications located in the same locality (as defined by scopeOfLocality)
+            as this  service instance.
+      description: service offering
+      example:
+        scopeOfLocality: MEC_SYSTEM
+        serName: serName
+        id: id
+        state: ACTIVE
+        consumedLocalOnly: true
+    ApplicationInstance_discoveredServices:
+      type: object
+      properties:
+        serName:
+          type: string
+          description: The name of the service. This is how the service producing
+            MEC application identifies the service instance it produces.
+        serInstanceId:
+          type: string
+          description: Identifier of the service instance assigned by the MEC platform.
+          readOnly: true
+        consumedLocalOnly:
+          type: boolean
+          description: Indicate whether the service can only be consumed by the MEC
+            applications located in the same locality (as defined by scopeOfLocality)
+            as this  service instance.
+        link:
+          type: string
+        version:
+          type: string
+          description: Service version
+      description: List of service name and their status
+      example:
+        link: link
+        serName: null
+        consumedLocalOnly: true
+        version: version
+        serInstanceId: serInstanceId
+    ApplicationContextState:
+      type: object
+      properties:
+        Counter:
+          type: integer
+          description: Integer representing state of device being tracked
+        AppId:
+          type: string
+          description: Application UUID
+        Mep:
+          type: string
+          description: MEC platform name
+        Device:
+          type: string
+          description: Terminal device application is tracking
+    LocalityType:
+      type: string
+      description: "The scope of locality as expressed by \"consumedLocalOnly\" and\
+        \ \"isLocal\". If absent, defaults to MEC_HOST"
+      enum:
+      - MEC_SYSTEM
+      - MEC_HOST
+      - NFVI_POP
+      - ZONE
+      - ZONE_GROUP
+      - NFVI_NODE
+    ServiceAvailabilityNotification:
+      required:
+      - _links
+      - notificationType
+      - serviceReferences
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to SerAvailabilityNotification
+          example: SerAvailabilityNotification
+        serviceReferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAvailabilityNotification_serviceReferences'
+        _links:
+          $ref: '#/components/schemas/Subscription'
+      description: This type represents the service availability information.
+    AppTerminationSubscription:
+      required:
+      - _links
+      - appInstanceId
+      - callbackReference
+      - subscriptionType
+      type: object
+      properties:
+        subscriptionType:
+          type: string
+          description: Shall be set to AppTerminationSubscription.
+        callbackReference:
+          type: string
+          description: URI selected by the MEC application instance to receive notifications
+            on the subscribed MEC application instance management information. This
+            shall be included in both the request and the response.
+          format: uri
+        _links:
+          $ref: '#/components/schemas/AppTerminationSubscription__links'
+        appInstanceId:
+          type: string
+          description: It is used as the filtering criterion for the subscribed events.
+      description: This type represents the information that the MEC platform notifies
+        the subscribed application instance about  the corresponding application instance
+        termination/stop.
+      example:
+        appInstanceId: appInstanceId
+        subscriptionType: subscriptionType
+        _links:
+          self:
+            href: http://example.com/aeiou
+        callbackReference: http://example.com/aeiou
+    TimeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: "The nanoseconds part of the time. Time is defined as Unix-time\
+            \ since January 1, 1970, 00:00:00 UTC."
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: "The seconds part of the time. Time is defined as Unixtime\
+            \ since January 1, 1970, 00:00:00 UTC."
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+    CommunicationInterface:
+      properties:
+        ipAddresses:
+          type: string
+    AssociateId:
+      title: AssociateId
+      required:
+      - type
+      - value
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Type'
+        value:
+          type: string
+          description: Value for the identifier.
+      example:
+        type: UE_IPv4_ADDRESS
+        value: value
+    Type:
+      title: Type
+      type: string
+      description: Numeric value (0-255) corresponding to specified type of identifier
+      enum:
+      - UE_IPv4_ADDRESS
+      - UE_IPV6_ADDRESS
+      - NATED_IP_ADDRESS
+      - GTP_TEID
+    AppTerminationSubscription__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkType'
+      description: Self-referring URI.
+      example:
+        self:
+          href: http://example.com/aeiou
+    LinkType:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URI referring to a resource
+          format: uri
+          example: /mecSerMgmtApi/example
+      description: This type represents a type of link and may be referenced from
+        data structures
+    SerName:
+      type: string
+      description: The name of the service. This is how the service producing MEC
+        application identifies the service instance it produces.
+    SerInstanceId:
+      type: string
+      description: Identifier of the service instance assigned by the MEC platform.
+      readOnly: true
+    ServiceState:
+      type: string
+      description: This enumeration defines the possible states of a service.
+      enum:
+      - ACTIVE
+      - INACTIVE
+    Subscription:
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/LinkType'
+      description: A link to the related subscription
+    ServiceAvailabilityNotification_serviceReferences:
+      required:
+      - changeType
+      - serInstanceId
+      - serName
+      - state
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/LinkType'
+        serName:
+          type: string
+          description: The name of the service. This is how the service producing
+            MEC application identifies the service instance it produces.
+        state:
+          $ref: '#/components/schemas/ServiceState'
+        changeType:
+          type: string
+          description: "Type of the change. Valid values:\n ADDED: The service was\
+            \ newly added.\n  REMOVED: The service was removed.\n  STATE_CHANGED:\
+            \ Only the state of the service was changed. \n  ATTRIBUTES_CHANGED: At\
+            \ least one attribute of the service other than state was changed. The\
+            \ change may or may not include changing the state."
+          enum:
+          - ADDED
+          - REMOVED
+          - STATE_CHANGED
+          - ATTRIBUTES_CHANGED
+      description: List of links to services whose availability has changed.
+    AddressChangeNotification:
+      required:
+      - appInstanceId
+      - contextId
+      - notificationType
+      - referenceURI
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifier of the user application instance.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        contextId:
+          type: string
+          description: Uniquely identifies the application context in the MEC system.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        notificationType:
+          type: string
+          description: Shall be set to "AddressChangeNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        referenceURI:
+          type: string
+          description: Address of the user application. Used as the reference URI
+            for the application. Assigned by the MEC system.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+      x-etsi-ref: 6.4.2
+    AppContext:
+      required:
+      - appInfo
+      - associateDevAppId
+      type: object
+      properties:
+        appAutoInstantiation:
+          type: boolean
+          description: Provides indication to the MEC system that instantiation of
+            the requested application is desired should a requested appLocation become
+            available that was not at the time of the request.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Boolean
+        appInfo:
+          $ref: '#/components/schemas/AppContext_appInfo'
+        appLocationUpdates:
+          type: boolean
+          description: Used by the device application to request to receive notifications
+            at the callbackReference URI relating to location availability for user
+            application instantiation.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Boolean
+        associateDevAppId:
+          maxLength: 32
+          type: string
+          description: Uniquely identifies the device application. The length of the
+            value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        callbackReference:
+          type: string
+          description: URI assigned by the device application to receive application
+            lifecycle related notifications. Inclusion in the request implies the
+            client supports the pub/sub mechanism and is capable of receiving notifications.
+            This endpoint shall be maintained for the lifetime of the application
+            context.
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        contextId:
+          maxLength: 32
+          type: string
+          description: Uniquely identifies the application context in the MEC system.
+            Assigned by the MEC system and shall be present other than in a create
+            request. The length of the value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+      example:
+        callbackReference: http://example.com/aeiou
+        appInfo:
+          appSoftVersion: appSoftVersion
+          appDVersion: appDVersion
+          appPackageSource: http://example.com/aeiou
+          appName: appName
+          appDescription: appDescription
+          userAppInstanceInfo:
+          - appInstanceId: appInstanceId
+            appLocation:
+              area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+            referenceURI: http://example.com/aeiou
+          - appInstanceId: appInstanceId
+            appLocation:
+              area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+            referenceURI: http://example.com/aeiou
+          appDId: appDId
+          appProvider: appProvider
+        associateDevAppId: associateDevAppId
+        contextId: contextId
+        appLocationUpdates: true
+        appAutoInstantiation: true
+      x-etsi-notes: "NOTE 1:\tIf a value of the attribute is included in the request,\
+        \ the same value shall be included in the response.\nNOTE 2:\tThe design of\
+        \ the current operation with callback reference assumes no web proxy between\
+        \ the entity that originates the notification and the entity that receives\
+        \ it.\nNOTE 3:\tThe language support for the application description may be\
+        \ limited.\nNOTE 4:\tAttribute appLocationUpdates and appAutoInstantiation\
+        \ shall not both be set to TRUE."
+      x-etsi-ref: 6.2.3
+    ApplicationContextDeleteNotification:
+      required:
+      - contextId
+      - notificationType
+      type: object
+      properties:
+        contextId:
+          type: string
+          description: Uniquely identifies the application context that has been deleted
+            from the MEC system.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        notificationType:
+          type: string
+          description: Shall be set to "ApplicationContextDeleteNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 6.4.3
+    ApplicationContextUpdateNotification:
+      required:
+      - contextId
+      - notificationType
+      - userAppInstanceInfo
+      type: object
+      properties:
+        contextId:
+          type: string
+          description: Uniquely identifies the application context in the MEC system.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        notificationType:
+          type: string
+          description: Shall be set to "ApplicationContextUpdateNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        userAppInstanceInfo:
+          minItems: 1
+          required:
+          - appInstanceId
+          - referenceURI
+          type: array
+          description: List of user application instance information.
+          items:
+            $ref: '#/components/schemas/ApplicationContextUpdateNotification_userAppInstanceInfo'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: array (Structure inlined)
+      x-etsi-ref: 6.4.4
+    ApplicationList:
+      type: object
+      properties:
+        appList:
+          minItems: 0
+          required:
+          - appInfo
+          type: array
+          description: List of user applications available to the device application.
+            As defined below.
+          items:
+            $ref: '#/components/schemas/ApplicationList_appList'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Array (Structure (inlined))
+      example:
+        appList:
+        - appInfo:
+            appCharcs:
+              serviceCont: 5
+              memory: 1
+              bandwidth: 0
+              latency: 6
+              storage: 5
+            appSoftVersion: appSoftVersion
+            appDVersion: appDVersion
+            appLocation:
+            - area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+            - area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+            appName: appName
+            appDescription: appDescription
+            appDId: appDId
+            appProvider: appProvider
+          vendorSpecificExt:
+            vendorId: vendorId
+        - appInfo:
+            appCharcs:
+              serviceCont: 5
+              memory: 1
+              bandwidth: 0
+              latency: 6
+              storage: 5
+            appSoftVersion: appSoftVersion
+            appDVersion: appDVersion
+            appLocation:
+            - area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+            - area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+            appName: appName
+            appDescription: appDescription
+            appDId: appDId
+            appProvider: appProvider
+          vendorSpecificExt:
+            vendorId: vendorId
+      x-etsi-notes: "NOTE 1:\tThe vendor specific extension allows submitting information\
+        \ on the application lists that have been made available to the device application\
+        \ of the corresponding vendor.\nNOTE 2:\tThe language support may be limited.\
+        \ The length of the value shall not exceed 128 characters."
+      x-etsi-ref: 6.2.2
+    ApplicationLocationAvailability:
+      required:
+      - appInfo
+      - associateDevAppId
+      type: object
+      properties:
+        appInfo:
+          $ref: '#/components/schemas/ApplicationLocationAvailability_appInfo'
+        associateDevAppId:
+          maxLength: 32
+          type: string
+          description: Uniquely identifies the device application. The length of the
+            value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        appInfo:
+          appSoftVersion: appSoftVersion
+          appDVersion: appDVersion
+          appPackageSource: http://example.com/aeiou
+          appName: appName
+          appDescription: appDescription
+          appProvider: appProvider
+          availableLocations:
+          - appLocation:
+              area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+          - appLocation:
+              area:
+                coordinates:
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+                - - - 2.302136
+                    - 2.302136
+                  - - 2.302136
+                    - 2.302136
+              countryCode: countryCode
+              civicAddressElement:
+              - caType: 7
+                caValue: caValue
+              - caType: 7
+                caValue: caValue
+        associateDevAppId: associateDevAppId
+      x-etsi-ref: 6.2.4
+    ApplicationLocationAvailabilityNotification:
+      required:
+      - availableLocations
+      - notificationType
+      type: object
+      properties:
+        availableLocations:
+          minItems: 1
+          required:
+          - appLocation
+          type: array
+          description: Locations available to the MEC application.
+          items:
+            $ref: '#/components/schemas/ApplicationLocationAvailability_appInfo_availableLocations'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: array (Structure (inline))
+        contextId:
+          type: string
+          description: Uniquely identifies the application context in the MEC system.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        notificationType:
+          type: string
+          description: Shall be set to "ApplicationLocationAvailabilityNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 6.4.5
+    InlineNotification:
+      discriminator:
+        propertyName: NotificationType
+      oneOf:
+      - $ref: '#/components/schemas/AddressChangeNotification'
+      - $ref: '#/components/schemas/ApplicationContextDeleteNotification'
+      - $ref: '#/components/schemas/ApplicationContextUpdateNotification'
+      - $ref: '#/components/schemas/ApplicationLocationAvailabilityNotification'
+    LocationConstraints:
+      type: object
+      properties:
+        area:
+          $ref: '#/components/schemas/Polygon'
+        civicAddressElement:
+          minItems: 0
+          required:
+          - caType
+          - caValue
+          type: array
+          description: Zero or more elements comprising the civic address. Shall be
+            absent if the "area" attribute is present.
+          items:
+            $ref: '#/components/schemas/LocationConstraints_civicAddressElement'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: array (Structure inlined)
+        countryCode:
+          maxLength: 2
+          type: string
+          description: "The two-letter ISO 3166 [7] country code in capital letters.\
+            \ Shall be present in case the \"area\" attribute is absent. May be absent\
+            \ if the \"area\" attribute is present (see note)."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+      example:
+        area:
+          coordinates:
+          - - - 2.302136
+              - 2.302136
+            - - 2.302136
+              - 2.302136
+          - - - 2.302136
+              - 2.302136
+            - - 2.302136
+              - 2.302136
+        countryCode: countryCode
+        civicAddressElement:
+        - caType: 7
+          caValue: caValue
+        - caType: 7
+          caValue: caValue
+      x-etsi-notes: "NOTE:\tIf both \"countryCode\" and \"area\" are present, no conflicts\
+        \ should exist between the values of these two attributes. In case of conflicts,\
+        \ the API producer (e.g. MEO, MEAO) shall disregard parts of the geographic\
+        \ area signalled by \"area\" that are outside the boundaries of the country\
+        \ signalled by \"countryCode\". If \"countryCode\" is absent, it is solely\
+        \ the \"area\" attribute that defines the location constraint."
+      x-etsi-ref: 6.5.2
+    Polygon:
+      type: object
+      properties:
+        coordinates:
+          minItems: 1
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: number
+                format: float
+          x-etsi-mec-cardinality: 1
+          x-etsi-mec-origin-type: array
+      example:
+        coordinates:
+        - - - 2.302136
+            - 2.302136
+          - - 2.302136
+            - 2.302136
+        - - - 2.302136
+            - 2.302136
+          - - 2.302136
+            - 2.302136
+    ProblemDetails:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of
+            the problem
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        status:
+          type: integer
+          description: The HTTP status code for this occurrence of the problem
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        title:
+          type: string
+          description: "A short, human-readable summary of the problem type"
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        type:
+          type: string
+          description: A URI reference according to IETF RFC 3986 that identifies
+            the problem type
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+    AppContext_appInfo_userAppInstanceInfo:
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifier of the user application instance. It shall only
+            be included in the response.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appLocation:
+          $ref: '#/components/schemas/LocationConstraints'
+        referenceURI:
+          type: string
+          description: Address of the user application instance. It shall only be
+            included in the response.
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+      example:
+        appInstanceId: appInstanceId
+        appLocation:
+          area:
+            coordinates:
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+          countryCode: countryCode
+          civicAddressElement:
+          - caType: 7
+            caValue: caValue
+          - caType: 7
+            caValue: caValue
+        referenceURI: http://example.com/aeiou
+    AppContext_appInfo:
+      required:
+      - appDVersion
+      - appName
+      - appProvider
+      - userAppInstanceInfo
+      type: object
+      properties:
+        appDId:
+          type: string
+          description: "Identifier of this MEC application descriptor. This attribute\
+            \ shall be globally unique. It is equivalent to the appDId defined in\
+            \ clause 6.2.1.2 of ETSI GS MEC 0102 [1]. It shall be present if the application\
+            \ is one in the ApplicationList."
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appDVersion:
+          type: string
+          description: "Identifies the version of the application descriptor. It is\
+            \ equivalent to the appDVersion defined in clause 6.2.1.2 of ETSI GS MEC\
+            \ 0102 [1]."
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appDescription:
+          maxLength: 128
+          type: string
+          description: Human readable description of the MEC application. The length
+            of the value shall not exceed 128 characters.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appName:
+          maxLength: 32
+          type: string
+          description: Name of the MEC application. The length of the value shall
+            not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appProvider:
+          maxLength: 32
+          type: string
+          description: |-
+            Provider of the MEC application.
+            The length of the value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appSoftVersion:
+          maxLength: 32
+          type: string
+          description: Software version of the MEC application. The length of the
+            value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appPackageSource:
+          type: string
+          description: "URI of the application package.\nIncluded in the request if\
+            \ the application is not one in the ApplicationList. appPackageSource\
+            \ enables on-boarding of the application package into the MEC system.\
+            \ The application package shall comply with the definitions in clause\
+            \ 6.2.1.2 of ETSI GS MEC 0102 [1]."
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        userAppInstanceInfo:
+          minItems: 1
+          type: array
+          description: List of user application instance information.
+          items:
+            $ref: '#/components/schemas/AppContext_appInfo_userAppInstanceInfo'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: array (Structure inlined)
+      example:
+        appSoftVersion: appSoftVersion
+        appDVersion: appDVersion
+        appPackageSource: http://example.com/aeiou
+        appName: appName
+        appDescription: appDescription
+        userAppInstanceInfo:
+        - appInstanceId: appInstanceId
+          appLocation:
+            area:
+              coordinates:
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+            countryCode: countryCode
+            civicAddressElement:
+            - caType: 7
+              caValue: caValue
+            - caType: 7
+              caValue: caValue
+          referenceURI: http://example.com/aeiou
+        - appInstanceId: appInstanceId
+          appLocation:
+            area:
+              coordinates:
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+            countryCode: countryCode
+            civicAddressElement:
+            - caType: 7
+              caValue: caValue
+            - caType: 7
+              caValue: caValue
+          referenceURI: http://example.com/aeiou
+        appDId: appDId
+        appProvider: appProvider
+    ApplicationContextUpdateNotification_userAppInstanceInfo:
+      type: object
+      properties:
+        appInstanceId:
+          type: string
+          description: Identifier of the user application instance.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appLocation:
+          $ref: '#/components/schemas/LocationConstraints'
+        referenceURI:
+          type: string
+          description: Address of the user application instance.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+    ApplicationList_appInfo_appCharcs:
+      type: object
+      properties:
+        bandwidth:
+          type: integer
+          description: 'The required connection bandwidth in kbit/s for the use of
+            the MEC application instance. '
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: uint32
+        latency:
+          type: integer
+          description: The target round trip time in milliseconds supported by the
+            MEC system for the MEC application instance.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: uint32
+        memory:
+          type: integer
+          description: The maximum size in Mbytes of the memory resource expected
+            to be used by the MEC application instance in the MEC system.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: uint32
+        serviceCont:
+          type: integer
+          description: "Required service continuity mode for this application. Permitted\
+            \ values: 0 = SERVICE_CONTINUITY_NOT_REQUIRED. 1 = SERVICE_CONTINUITY_REQUIRED."
+          enum:
+          - 0
+          - 1
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Enum
+        storage:
+          type: integer
+          description: The maximum size in Mbytes of the storage resource expected
+            to be used by the MEC application instance in the MEC system.
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: uint32
+      description: Characteristics of the application. As defined below. The application
+        characteristics relate to the system resources consumed by the application.
+        A device application can use this information e.g. for estimating the cost
+        of use of the application or for the expected user experience.
+      example:
+        serviceCont: 5
+        memory: 1
+        bandwidth: 0
+        latency: 6
+        storage: 5
+    ApplicationList_appInfo:
+      required:
+      - appDId
+      - appDVersion
+      - appDescription
+      - appName
+      - appProvider
+      - appSoftVersion
+      type: object
+      properties:
+        appCharcs:
+          $ref: '#/components/schemas/ApplicationList_appInfo_appCharcs'
+        appDId:
+          type: string
+          description: "Identifier of this MEC application descriptor. It is equivalent\
+            \ to the appDId defined in clause 6.2.1.2 of ETSI GS MEC 0102 [1]. This\
+            \ attribute shall be globally unique."
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appDVersion:
+          type: string
+          description: "Identifies the version of the application descriptor. It is\
+            \ equivalent to the appDVersion defined in clause 6.2.1.2 of ETSI GS MEC\
+            \ 0102 [1]."
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appDescription:
+          maxLength: 128
+          type: string
+          description: Human readable description of the MEC application (see note
+            2).
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appLocation:
+          minItems: 0
+          type: array
+          description: Identifies the locations of the MEC application.
+          items:
+            $ref: '#/components/schemas/LocationConstraints'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: LocationConstraints
+        appName:
+          maxLength: 32
+          type: string
+          description: Name of the MEC application. The length of the value shall
+            not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appProvider:
+          maxLength: 32
+          type: string
+          description: Provider of the MEC application. The length of the value shall
+            not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appSoftVersion:
+          maxLength: 32
+          type: string
+          description: Software version of the MEC application. The length of the
+            value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        appCharcs:
+          serviceCont: 5
+          memory: 1
+          bandwidth: 0
+          latency: 6
+          storage: 5
+        appSoftVersion: appSoftVersion
+        appDVersion: appDVersion
+        appLocation:
+        - area:
+            coordinates:
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+          countryCode: countryCode
+          civicAddressElement:
+          - caType: 7
+            caValue: caValue
+          - caType: 7
+            caValue: caValue
+        - area:
+            coordinates:
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+          countryCode: countryCode
+          civicAddressElement:
+          - caType: 7
+            caValue: caValue
+          - caType: 7
+            caValue: caValue
+        appName: appName
+        appDescription: appDescription
+        appDId: appDId
+        appProvider: appProvider
+    ApplicationList_vendorSpecificExt:
+      required:
+      - vendorId
+      type: object
+      properties:
+        vendorId:
+          maxLength: 32
+          type: string
+          description: Vendor identifier. The length of the value shall not exceed
+            32 characters. The rest of the structure of vendor specific extension
+            is not defined.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      description: Extension for vendor specific information (see note 1).
+      example:
+        vendorId: vendorId
+    ApplicationList_appList:
+      type: object
+      properties:
+        appInfo:
+          $ref: '#/components/schemas/ApplicationList_appInfo'
+        vendorSpecificExt:
+          $ref: '#/components/schemas/ApplicationList_vendorSpecificExt'
+      example:
+        appInfo:
+          appCharcs:
+            serviceCont: 5
+            memory: 1
+            bandwidth: 0
+            latency: 6
+            storage: 5
+          appSoftVersion: appSoftVersion
+          appDVersion: appDVersion
+          appLocation:
+          - area:
+              coordinates:
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+            countryCode: countryCode
+            civicAddressElement:
+            - caType: 7
+              caValue: caValue
+            - caType: 7
+              caValue: caValue
+          - area:
+              coordinates:
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+            countryCode: countryCode
+            civicAddressElement:
+            - caType: 7
+              caValue: caValue
+            - caType: 7
+              caValue: caValue
+          appName: appName
+          appDescription: appDescription
+          appDId: appDId
+          appProvider: appProvider
+        vendorSpecificExt:
+          vendorId: vendorId
+    ApplicationLocationAvailability_appInfo_availableLocations:
+      type: object
+      properties:
+        appLocation:
+          $ref: '#/components/schemas/LocationConstraints'
+      example:
+        appLocation:
+          area:
+            coordinates:
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+            - - - 2.302136
+                - 2.302136
+              - - 2.302136
+                - 2.302136
+          countryCode: countryCode
+          civicAddressElement:
+          - caType: 7
+            caValue: caValue
+          - caType: 7
+            caValue: caValue
+    ApplicationLocationAvailability_appInfo:
+      required:
+      - appDVersion
+      - appName
+      - appProvider
+      type: object
+      properties:
+        appDVersion:
+          type: string
+          description: "Identifies the version of the application descriptor. It is\
+            \ equivalent to the appDVersion defined in clause 6.2.1.2 of ETSI GS MEC\
+            \ 0102 [1]."
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appDescription:
+          maxLength: 128
+          type: string
+          description: Human readable description of the MEC application. The length
+            of the value shall not exceed 128 characters.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        appName:
+          maxLength: 32
+          type: string
+          description: Name of the MEC application. The length of the value shall
+            not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appPackageSource:
+          type: string
+          description: "URI of the application package. Shall be included in the request.\
+            \ The application package shall comply with the definitions in clause\
+            \ 6.2.1.2 of ETSI GS MEC 0102 [1]."
+          format: uri
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        appProvider:
+          maxLength: 32
+          type: string
+          description: Provider of the MEC application. The length of the value shall
+            not exceed 32 characters.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        appSoftVersion:
+          maxLength: 32
+          type: string
+          description: Software version of the MEC application. The length of the
+            value shall not exceed 32 characters.
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        availableLocations:
+          minItems: 0
+          type: array
+          description: 'MEC application location constraints. '
+          items:
+            $ref: '#/components/schemas/ApplicationLocationAvailability_appInfo_availableLocations'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: array (Structure (inline))
+      example:
+        appSoftVersion: appSoftVersion
+        appDVersion: appDVersion
+        appPackageSource: http://example.com/aeiou
+        appName: appName
+        appDescription: appDescription
+        appProvider: appProvider
+        availableLocations:
+        - appLocation:
+            area:
+              coordinates:
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+            countryCode: countryCode
+            civicAddressElement:
+            - caType: 7
+              caValue: caValue
+            - caType: 7
+              caValue: caValue
+        - appLocation:
+            area:
+              coordinates:
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+              - - - 2.302136
+                  - 2.302136
+                - - 2.302136
+                  - 2.302136
+            countryCode: countryCode
+            civicAddressElement:
+            - caType: 7
+              caValue: caValue
+            - caType: 7
+              caValue: caValue
+    LocationConstraints_civicAddressElement:
+      type: object
+      properties:
+        caType:
+          type: integer
+          description: "Describe the content type of caValue. The value of caType\
+            \ shall comply with section 3.4 of IETF RFC 4776 [6]. "
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        caValue:
+          type: string
+          description: "Content of civic address element corresponding to the caType.\
+            \ The format caValue shall comply with section 3.4 of IETF RFC 4776 [6]."
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      example:
+        caType: 7
+        caValue: caValue

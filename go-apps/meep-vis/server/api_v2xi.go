@@ -34,3 +34,31 @@ func Mec011AppTerminationPOST(w http.ResponseWriter, r *http.Request) {
 func PredictedQosPOST(w http.ResponseWriter, r *http.Request) {
 	predictedQosPost(w, r)
 }
+
+func SubPOST(w http.ResponseWriter, r *http.Request) {
+	subscriptionsPost(w, r)
+}
+
+func IndividualSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
+	individualSubscriptionDelete(w, r)
+}
+
+func IndividualSubscriptionGET(w http.ResponseWriter, r *http.Request) {
+	individualSubscriptionGET(w, r)
+}
+
+func IndividualSubscriptionPUT(w http.ResponseWriter, r *http.Request) {
+	individualSubscriptionPut(w, r)
+}
+
+func ProvInfoUuUnicastGET(w http.ResponseWriter, r *http.Request) {
+	provInfoUuUnicastGET(w, r)
+}
+
+func SubGET(w http.ResponseWriter, r *http.Request) {
+	subscriptionsGET(w, r)
+}
+
+func V2xMessagePOST(w http.ResponseWriter, r *http.Request) {
+	V2xMsgPublicationPOST(w, r)
+}

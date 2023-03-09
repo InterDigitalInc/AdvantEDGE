@@ -1,0 +1,62 @@
+{
+    "appList":
+        [
+            {
+                "appInfoList":
+                    [
+                        {
+                            "appDId": "onboarded-demo4",
+                            "appName": "onboarded-demo4",
+                            "appProvider": "ETSI",
+                            "appSoftVersion": "v0.1.0",
+                            "appDVersion": "v0.1.0",
+                            "appDescription": "Basic HTTP Ping Pong",
+                            "appLocation":
+                                [
+                                    {
+                                        "area":
+                                            {
+                                                "coordinates":
+                                                    [
+                                                        [
+                                                            [7.420433,43.729942],[7.420659,43.73036],[7.420621,43.731045],[7.420922,43.73129]
+                                                        ],
+                                                        [
+                                                            [7.43166,43.736156],[7.431723,43.736115],[7.431162,43.735607],[7.430685,43.73518]
+                                                        ]
+                                                    ]
+                                            },
+                                        "civicAddressElement": 
+                                            [
+                                                {
+                                                    "caType": 1,
+                                                    "caValue": "A1"
+                                                },
+                                                {
+                                                    "caType": 2,
+                                                    "caValue": "A2"
+                                                }
+                                            ],
+                                        "countryCode": "492"
+                                    }
+                                ],
+                            "appCharcs":
+                                [
+                                    {
+                                        "memory": 1024,
+                                        "storage": 1024,
+                                        "latency": 1024,
+                                        "bandwidth": 1024,
+                                        "serviceCont": 0
+                                    }
+                                ],
+                            "cmd": "/onboardedapp/onboarded-demo/onboarded-demo4",
+                            "args":null
+                        }
+                    ],
+                    "vendorSpecificExt": {
+                        "vendorId": "ETSI"
+                    }
+            }
+        ]
+}

@@ -1,0 +1,56 @@
+openapi: 3.0.2
+info:
+  title: MEC On-boarded Demo 4 API
+  description: Demo 4 is an device application that can be instanciated over the UE
+    Application interface
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.1
+servers:
+- url: http://10.190.115.162:8093
+paths:
+  /ping:
+    get:
+      tags:
+      - frontend
+      summary: Await for ping request and reply winth pong text body
+      description: ping then pong!
+      operationId: ping
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+                x-content-type: text/plain
+        "400":
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Not pong
+                x-content-type: text/plain
+  /:
+    delete:
+      tags:
+      - frontend
+      summary: Terminate gracefully the application
+      description: Request to terminate gracefully the application
+      operationId: terminate
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Failed
+                x-content-type: text/plain
+components:
+  schemas: {}

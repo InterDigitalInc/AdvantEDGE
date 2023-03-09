@@ -20,6 +20,8 @@ import (
 	"database/sql"
 	"errors"
 	"math"
+	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -38,12 +40,16 @@ type TrafficMgr struct {
 	pwd            string
 	host           string
 	port           string
+	broker         string
+	poa_list       []string
+	v2x_notify     func(v2xMessage []byte, v2xType int32, longitude *float32, latitude *float32)
 	dbName         string
 	db             *sql.DB
 	connected      bool
 	GridFileExists bool
 	mutex          sync.Mutex
 	poaLoadMap     map[string]*PoaLoads
+	message_broker message_broker_interface
 	// updateCb  func(string, string)
 }
 
@@ -64,6 +70,47 @@ type GridMapTable struct {
 	category string
 	grid     string
 }
+
+type UuUnicastProvisioningInfoProInfoUuUnicast struct {
+	LocationInfo         *LocationInfo
+	NeighbourCellInfo    []UuUniNeighbourCellInfo
+	V2xApplicationServer *V2xApplicationServer
+}
+type UuUnicastProvisioningInfoProInfoUuUnicast_list []UuUnicastProvisioningInfoProInfoUuUnicast
+type LocationInfo struct {
+	Ecgi    *Ecgi
+	GeoArea *LocationInfoGeoArea
+}
+type UuUniNeighbourCellInfo struct {
+	Ecgi *Ecgi
+	//FddInfo *FddInfo
+	Pci  int32
+	Plmn *Plmn
+	//TddInfo *TddInfo
+}
+type V2xApplicationServer struct {
+	IpAddress string
+	UdpPort   string
+}
+type Ecgi struct {
+	CellId *CellId
+	Plmn   *Plmn
+}
+type CellId struct {
+	CellId string
+}
+type Plmn struct {
+	Mcc string
+	Mnc string
+}
+type LocationInfoGeoArea struct {
+	Latitude  float32
+	Longitude float32
+}
+
+var brokerRunning bool = false
+var cellName2CellId map[string]string = nil
+var cellId2CellName map[string]string = nil
 
 // DB Config
 const (
@@ -185,7 +232,7 @@ func init() {
 }
 
 // NewTrafficMgr - Creates and initializes a new VIS Traffic Manager
-func NewTrafficMgr(name, namespace, user, pwd, host, port string) (tm *TrafficMgr, err error) {
+func NewTrafficMgr(name string, namespace string, user string, pwd string, host string, port string, broker string, poa_list []string, v2x_notify func(v2xMessage []byte, v2xType int32, longitude *float32, latitude *float32)) (tm *TrafficMgr, err error) {
 	if name == "" {
 		err = errors.New("Missing connector name")
 		return nil, err
@@ -203,6 +250,9 @@ func NewTrafficMgr(name, namespace, user, pwd, host, port string) (tm *TrafficMg
 	tm.pwd = pwd
 	tm.host = host
 	tm.port = port
+	tm.broker = broker
+	tm.poa_list = poa_list
+	tm.v2x_notify = v2x_notify
 	tm.poaLoadMap = map[string]*PoaLoads{}
 
 	// Connect to Postgis DB
@@ -314,6 +364,8 @@ func (tm *TrafficMgr) DeleteTrafficMgr() (err error) {
 
 	// Destroy sandbox database
 	_ = tm.DestroyDb(tm.dbName)
+
+	tm.StopV2xMessageBrokerServer()
 
 	return nil
 }
@@ -698,6 +750,38 @@ func (tm *TrafficMgr) GetPoaCategory(longitude float32, latitude float32) (categ
 	return category, err
 }
 
+func (tm *TrafficMgr) InitializeV2xMessageDistribution(poaNameList []string, ecgi_s []string) (err error) {
+	// Validate input
+	if poaNameList == nil {
+		err = errors.New("Missing POA Name List")
+		return err
+	}
+	if ecgi_s == nil {
+		err = errors.New("Missing ECGIs")
+		return err
+	}
+
+	if len(ecgi_s) != 0 {
+		cellName2CellId = make(map[string]string, len(ecgi_s))
+		cellId2CellName = make(map[string]string, len(ecgi_s))
+		for i := 0; i < len(ecgi_s); i++ {
+			if ecgi_s[i] != "" {
+				idx := sort.Search(len(tm.poa_list), func(j int) bool { return poaNameList[i] <= tm.poa_list[j] })
+				if idx < len(tm.poa_list) {
+					cellName2CellId[poaNameList[i]] = ecgi_s[i]
+					cellId2CellName[ecgi_s[i]] = poaNameList[i]
+				}
+			}
+		} // End of 'for' statement
+		log.Info("InitializeV2xMessageDistribution: cellName2CellId: ", cellName2CellId)
+		log.Info("InitializeV2xMessageDistribution: cellId2CellName: ", cellId2CellName)
+	} else {
+		log.Warn("InitializeV2xMessageDistribution: V2X message distribution ECGI list is empty")
+	}
+
+	return nil
+}
+
 // PopulatePoaLoad - Populate the Traffic Load table
 func (tm *TrafficMgr) PopulatePoaLoad(poaNameList []string, gpsCoordinates [][]float32) (err error) {
 	// Validate input
@@ -728,6 +812,7 @@ func (tm *TrafficMgr) PopulatePoaLoad(poaNameList []string, gpsCoordinates [][]f
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -783,5 +868,128 @@ func findReducedSignalStrength(inRsrp int32, inRsrq int32, users int32, averageL
 	} else {
 		// no change in RSRP and RSRQ values
 		return inRsrp, inRsrq, nil
+	}
+}
+
+func (tm *TrafficMgr) GetInfoUuUnicast(params []string, num_item int) (proInfoUuUnicast UuUnicastProvisioningInfoProInfoUuUnicast_list, err error) {
+	if params[0] == "ecgi" {
+		//log.Info("GetInfoUuUnicast: Got ecgi")
+		proInfoUuUnicast = make([]UuUnicastProvisioningInfoProInfoUuUnicast, num_item)
+		for i := 1; i <= num_item; i++ {
+			//log.Info("GetInfoUuUnicast: Processing index #", i)
+
+			ecgi_num, err := strconv.Atoi(params[i])
+			if err != nil {
+				log.Error(err.Error())
+				return nil, err
+			}
+			//log.Info("GetInfoUuUnicast: ecgi_num= ", ecgi_num)
+
+			// Extract Poa CellId according to v2x_msg GS MEC 030 Clause 6.5.5 Type: Ecgi
+			TwentyEigthBits := 0xFFFFFFF //  TS 36.413: E-UTRAN Cell Identity (ECI) and E-UTRAN Cell Global Identification (ECGI)
+			eci := ecgi_num & TwentyEigthBits
+			//log.Info("GetInfoUuUnicast: eci= ", int(eci))
+			// Extract Poa Plmn according to v2x_msg GS MEC 030 Clause 6.5.4 Type: Plmn
+			plmn_num := int(ecgi_num >> 28)
+			//log.Info("GetInfoUuUnicast: plmn= ", plmn_num)
+			//mcc_num := int((plmn_num / 1000) & 0xFFFFFF)
+			//mnc_num := int((plmn_num - mcc_num * 1000) & 0xFFFFFF)
+			mcc_num := int(plmn_num / 1000)
+			mnc_num := int(plmn_num - mcc_num*1000)
+			//log.Info("GetInfoUuUnicast: mcc_num= ", mcc_num)
+			//log.Info("GetInfoUuUnicast: mnc_num= ", mnc_num)
+
+			ecgi := Ecgi{
+				CellId: &CellId{CellId: strconv.Itoa(int(eci))},
+				Plmn:   &Plmn{Mcc: strconv.Itoa(int(mcc_num)), Mnc: strconv.Itoa(int(mnc_num))},
+			}
+			plmn := Plmn{Mcc: strconv.Itoa(int(mcc_num)), Mnc: strconv.Itoa(int(mnc_num))}
+			uuUniNeighbourCellInfo := make([]UuUniNeighbourCellInfo, 1)
+			uuUniNeighbourCellInfo[0] = UuUniNeighbourCellInfo{&ecgi, 0, &plmn}
+			var v2xApplicationServer *V2xApplicationServer = nil
+			if _, found := cellId2CellName[params[i]]; found {
+				u, err := url.ParseRequestURI(tm.broker)
+				if err != nil {
+					log.Error(err.Error())
+					return nil, err
+				}
+				log.Info("url:%v\nscheme:%v host:%v Path:%v Port:%s", u, u.Scheme, u.Hostname(), u.Path, u.Port())
+				v2xApplicationServer = &V2xApplicationServer{
+					IpAddress: u.Hostname(),
+					UdpPort:   u.Port(),
+				}
+			}
+			proInfoUuUnicast[i-1] = UuUnicastProvisioningInfoProInfoUuUnicast{nil, uuUniNeighbourCellInfo, v2xApplicationServer}
+		} // End of 'for' statement
+	} else if params[0] == "latitude" {
+		err = errors.New("GetInfoUuUnicast: Location not supported yet")
+		log.Error(err.Error())
+		return nil, err
+	} else {
+		err = errors.New("GetInfoUuUnicast: Invalid parameter: " + params[0])
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	log.Info("GetInfoUuUnicast: proInfoUuUnicast= ", proInfoUuUnicast)
+	return proInfoUuUnicast, nil
+}
+
+func (tm *TrafficMgr) PublishMessageOnMessageBroker(msgContent string, msgEncodeFormat string, stdOrganization string, msgType *int32) (err error) {
+	if !brokerRunning {
+		err = errors.New("Message broker mechanism not initialized")
+		log.Error(err.Error())
+		return err
+	}
+	return tm.message_broker.Send(tm, msgContent, msgEncodeFormat, stdOrganization, msgType)
+}
+
+func (tm *TrafficMgr) StartV2xMessageBrokerServer() (err error) {
+	if cellName2CellId == nil || len(cellId2CellName) == 0 {
+		brokerRunning = false
+		return
+	}
+
+	u, err := url.ParseRequestURI(tm.broker)
+	if err != nil {
+		err = errors.New("Failed to parse url " + tm.broker)
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("url:%v\nscheme:%v host:%v Path:%v Port:%s", u, u.Scheme, u.Hostname(), u.Path, u.Port())
+	if u.Scheme == "mqtt" {
+		// TODO tm.message_broker = &message_broker_mqtt{false}
+		tm.message_broker = &message_broker_simu{false, map[int32][]byte{}, nil}
+	} else if u.Scheme == "amqp" {
+		// TODO tm.message_broker = &message_broker_amqp{false}
+		tm.message_broker = &message_broker_simu{false, map[int32][]byte{}, nil}
+	} else {
+		err = errors.New("Invalid url " + tm.broker)
+		log.Error(err.Error())
+		return err
+	}
+
+	err = tm.message_broker.Init(tm)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	err = tm.message_broker.Run(tm)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	brokerRunning = true
+
+	return nil
+}
+
+func (tm *TrafficMgr) StopV2xMessageBrokerServer() {
+	log.Info("StopV2xMessageBrokerServer: brokerRunning: ", brokerRunning)
+
+	if brokerRunning {
+		brokerRunning = false
+		_ = tm.message_broker.Stop(tm)
 	}
 }
