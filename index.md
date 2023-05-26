@@ -10,7 +10,7 @@ permalink: /
 
 ------
 
-**_What's New in v1.9.1!_**
+**_What's New in v1.9!_**
 
 :zap: **New edge native service: [ETSI MEC030 - V2X Information Service API]({{site.baseurl}}{% link docs/overview/edge-services/overview-edge-services.md %}#v2x-information-service) for vehicular QoS predictions! :car:**
 
