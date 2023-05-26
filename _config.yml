@@ -21,7 +21,7 @@ description: AdvantEDGE documentation
 # url: "http://127.0.0.1:4000" # the base hostname & protocol for your site, e.g. http://example.com
 
 baseurl: "/AdvantEDGE"
-url: "https://dilallkx.github.io"
+url: "https://interdigitalinc.github.io"
 
 permalink: pretty
 exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "script/", "package.json",
