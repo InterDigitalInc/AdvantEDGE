@@ -32,8 +32,8 @@ There are many installation guides out there; we use [this one](https://tutorial
 
 Versions we use:
 
-- 18.04 LTS, 20.04 LTS and 22.04 LTS<br> _(version 16.04 LTS used to work - not tested anymore)_
-- Kernel: 4.4, 4.15, 4.18, 5.3, 5.4 and 5.15
+- 20.04 LTS and 22.04 LTS<br> _(version 16.04 & 18.04 LTS used to work - not tested anymore)_
+- Kernel: 5.4 and 5.15
 
 ----
 ## Docker
