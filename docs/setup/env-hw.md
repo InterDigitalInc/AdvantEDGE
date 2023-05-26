@@ -15,7 +15,7 @@ AdvantEDGE may be installed on a single K8s node or a cluster of K8s nodes. Thes
 
 Recommended System Requirements:
 
-- Ubuntu 18.04 LTS  or 20.04 LTS
+- Ubuntu 20.04 LTS or 22.04 LTS
 - Intel I7-8750H ~4GHz
   - 6 Cores - 12 threads
 - 16GB RAM (32GB better)

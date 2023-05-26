@@ -32,8 +32,8 @@ There are many installation guides out there; we use [this one](https://tutorial
 
 Versions we use:
 
-- 18.04 LTS, 20.04 LTS and 22.04 LTS<br> _(version 16.04 LTS used to work - not tested anymore)_
-- Kernel: 4.4, 4.15, 4.18, 5.3, 5.4 and 5.15
+- 20.04 LTS and 22.04 LTS<br> _(version 16.04 & 18.04 LTS used to work - not tested anymore)_
+- Kernel: 5.4 and 5.15
 
 ----
 ## Docker
@@ -106,7 +106,7 @@ We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independe
 
 Versions we use:
 
-- 1.19 to 1.26<br> _(versions 1.16 to 1.18 used to work - not tested anymore)_
+- 1.24 to 1.27<br> _(versions 1.16 to 1.23 used to work - not tested anymore)_
 
 _**NOTE:** K8s deployment has a dependency on the node's IP address.<br>
 From our experience, it is **strongly recommended** to ensure that your platform always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
@@ -189,7 +189,7 @@ EOF'
 
 # Install latest supported k8s version
 sudo apt-get update
-sudo apt-get install -y kubelet=1.26.0-00 kubeadm=1.26.0-00 kubectl=1.26.0-00 kubernetes-cni=1.1.1-00
+sudo apt-get install -y kubelet=1.27.2-00 kubeadm=1.27.2-00 kubectl=1.27.2-00 kubernetes-cni=1.2.0-00
 
 # Lock current version
 sudo apt-mark hold kubelet kubeadm kubectl
