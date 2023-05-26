@@ -2,7 +2,7 @@
 
 ------
 
-**_What's New in v1.9.0!_**
+**_What's New in v1.9!_**
 
 :zap: **New edge native service: [ETSI MEC030 - V2X Information Service API](https://interdigitalinc.github.io/AdvantEDGE/docs/overview/edge-services/#v2x-information-service) for vehicular QoS predictions! :car:**
 

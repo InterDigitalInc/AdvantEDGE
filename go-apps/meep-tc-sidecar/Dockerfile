@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:9.6-slim
+FROM debian:11.7-slim
 COPY ./meep-tc-sidecar /meep-tc-sidecar
 COPY ./api /api
 COPY ./user-api /user-api
