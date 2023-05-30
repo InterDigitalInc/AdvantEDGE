@@ -8,7 +8,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
-	github.com/coreos/go-iptables v0.4.0
+	github.com/coreos/go-iptables v0.6.0
 	github.com/spf13/pflag v1.0.3 // indirect
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	gopkg.in/inf.v0 v0.9.1 // indirect
