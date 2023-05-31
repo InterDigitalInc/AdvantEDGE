@@ -1,0 +1,123 @@
+# Default values for meep-dai.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+deployment:
+  replicas: 1
+  port: 80
+  protocol: TCP
+  dependencies:
+    system:
+      {{- if not .IsMepService }}
+      - kube-dns
+      {{- end }}
+    namespace:
+
+image:
+  repository: meep-docker-registry:30001/meep-dai
+  tag: latest
+  pullPolicy: Always
+  env:
+    MEEP_INSTANCE_ID: {{.InstanceId}}
+    MEEP_SANDBOX_NAME: {{.SandboxName}}
+    MEEP_SVC_PATH: /dev_app/v1
+    MEEP_HOST_URL: {{.HostUrl}}
+    {{- if .IsMepService }}
+    MEEP_MEP_NAME: {{.MepName}}
+    {{- end }}
+    {{- if eq .AppEnablement "local" }}
+    MEEP_APP_ENABLEMENT: {{.MepName}}-meep-app-enablement
+    {{- else if eq .AppEnablement "global" }}
+    MEEP_APP_ENABLEMENT: meep-app-enablement
+    {{- end }}
+    {{- range .Env}}
+    {{.}}
+    {{- end}}
+
+service:
+  {{- if .IsMepService }}
+  name: {{.MepName}}-meep-dai
+  {{- else }}
+  name: meep-dai
+  {{- end }}
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  hosts:
+    - name: ''
+      paths:
+        {{- if .IsMepService }}
+        - path: /{{.SandboxName}}/{{.MepName}}/dev_app
+          port: 80
+        - path: /{{.SandboxName}}/{{.MepName}}/onboarded-demo0
+          port: 31120
+        - path: /{{.SandboxName}}/{{.MepName}}/onboarded-demo1
+          port: 31121
+        - path: /{{.SandboxName}}/{{.MepName}}/onboarded-demo2
+          port: 31122
+        - path: /{{.SandboxName}}/{{.MepName}}/onboarded-demo3
+          port: 31123
+        - path: /{{.SandboxName}}/{{.MepName}}/onboarded-demo4
+          port: 31124
+        {{- else }}
+        - path: /{{.SandboxName}}/dev_app
+          port: 80
+        - path: /{{.SandboxName}}/onboarded-demo0
+          port: 31120
+        - path: /{{.SandboxName}}/onboarded-demo1
+          port: 31121
+        - path: /{{.SandboxName}}/onboarded-demo2
+          port: 31122
+        - path: /{{.SandboxName}}/onboarded-demo3
+          port: 31123
+        - path: /{{.SandboxName}}/onboarded-demo4
+          port: 31124
+        {{- end }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
+    {{- if .IsMepService }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/dev_app(/|$)(.*)$ /dev_app/$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/onboarded-demo0(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/onboarded-demo1(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/onboarded-demo2(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/onboarded-demo3(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/{{.MepName}}/onboarded-demo4(/|$)(.*)$ /$2 break;
+    {{- else }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/{{.SandboxName}}/dev_app(/|$)(.*)$ /dev_app/$2 break;
+      rewrite ^/{{.SandboxName}}/onboarded-demo0(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/onboarded-demo1(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/onboarded-demo2(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/onboarded-demo3(/|$)(.*)$ /$2 break;
+      rewrite ^/{{.SandboxName}}/onboarded-demo4(/|$)(.*)$ /$2 break;
+    {{- end }}
+    {{- if .AuthEnabled }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-dai&sbox={{.SandboxName}}&mep={{.MepName}}
+    {{- end }}
+  labels: {}
+  tls:
+
+prometheus:
+  monitor:
+    enabled: true
+    port: 9000
+    interval: 10s
+    additionalLabels: {}
+    relabelings: []
+    scrapeTimeout: 5s
+    
+codecov:
+  enabled: false
+  location: "<WORKDIR>/codecov/meep-dai"
+
+onboardedapp:
+  enabled: true
+  location: "<WORKDIR>/onboardedapp"
+
+meepOrigin: core

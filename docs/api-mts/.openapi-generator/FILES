@@ -1,0 +1,15 @@
+.openapi-generator-ignore
+Apis/MtsApi.md
+Models/AppTerminationNotification.md
+Models/AppTerminationNotificationLinks.md
+Models/LinkType.md
+Models/MtsCapabilityInfo.md
+Models/MtsCapabilityInfoMtsAccessInfo.md
+Models/MtsCapabilityInfoTimeStamp.md
+Models/MtsSessionInfo.md
+Models/MtsSessionInfoFlowFilter.md
+Models/MtsSessionInfoQosD.md
+Models/MtsSessionInfoTimeStamp.md
+Models/OperationActionType.md
+Models/ProblemDetails.md
+README.md

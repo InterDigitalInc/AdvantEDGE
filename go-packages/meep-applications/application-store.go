@@ -69,7 +69,7 @@ type ApplicationStore struct {
 	mutex    sync.Mutex
 }
 
-var SysAppNames []string = []string{"meep-app-enablement", "meep-ams", "meep-loc-serv", "meep-rnis", "meep-wais", "meep-vis"}
+var SysAppNames []string = []string{"meep-app-enablement", "meep-ams", "meep-loc-serv", "meep-rnis", "meep-wais", "meep-vis", "meep-dai", "meep-tm"}
 
 // NewApplicationStore - Creates and initialize an Application Store instance
 func NewApplicationStore(cfg *ApplicationStoreCfg) (as *ApplicationStore, err error) {

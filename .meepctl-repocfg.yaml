@@ -298,7 +298,9 @@ repo:
           - meep-loc-serv
           - meep-metrics-engine
           - meep-mg-manager
-          - meep-rnis
+          - meep-rnis          
+          - meep-dai
+          - meep-tm
           - meep-wais
           - meep-ams
           - meep-sandbox-ctrl
@@ -377,6 +379,8 @@ repo:
           meep-metrics-engine: charts/meep-metrics-engine
           meep-mg-manager: charts/meep-mg-manager
           meep-rnis: charts/meep-rnis
+          meep-dai: charts/meep-dai
+          meep-tm: charts/meep-tm          
           meep-wais: charts/meep-wais
           meep-ams: charts/meep-ams
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
@@ -391,6 +395,8 @@ repo:
           - meep-metrics-engine
           - meep-mg-manager
           - meep-rnis
+          - meep-dai
+          - meep-tm          
           - meep-wais
           - meep-ams
           - meep-sandbox-ctrl
@@ -741,6 +747,40 @@ repo:
         codecov: false
         # supports linting
         lint: true
+      meep-tm:
+        # location of source code
+        src: go-apps/meep-tm
+        # location of binary
+        bin: bin/meep-tm
+        # location of deployment chart
+        chart: charts/meep-tm
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-tm.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports linting
+        lint: true
+        # location of API specifications
+        api:
+          - name: 'AdvantEDGE MEC Bandwidth Management REST API'
+            file: go-apps/meep-tm/api/bwm/swagger.yaml
+          - name: 'AdvantEDGE MEC Multi-access Traffic Steering REST API'
+            file: go-apps/meep-tm/api/mts/swagger.yaml
+        # location of user supplied API specifications
+        user-api:
+        # resources available to docker container image
+        docker-data:
+          # location of entry script
+          'entrypoint.sh': go-apps/meep-tm/entrypoint.sh        
       meep-wais:
         # location of source code
         src: go-apps/meep-wais
@@ -805,6 +845,40 @@ repo:
         docker-data:
           # location of entry script
           'entrypoint.sh': go-apps/meep-vis/entrypoint.sh
+      meep-dai:
+        # location of source code
+        src: go-apps/meep-dai
+        # location of binary
+        bin: bin/meep-dai
+        # location of deployment chart
+        chart: charts/meep-dai
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-dai.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports onboarded device application instantiation
+        onboardedapp: true
+        # supports linting
+        lint: true
+        # location of API specifications
+        api:
+          - name: 'AdvantEDGE Device Application Interface Service REST API'
+            file: go-apps/meep-dai/api/swagger.yaml
+        # location of user supplied API specifications
+        user-api:
+        # resources available to docker container image
+        docker-data:
+          # location of entry script
+          'entrypoint.sh': go-apps/meep-dai/entrypoint.sh          
 
   #------------------------------
   #  Dependencies
@@ -975,6 +1049,11 @@ repo:
         src: go-packages/meep-applications
         # supports linting
         lint: true
+      meep-bwm-client:
+        # location of source code
+        src: go-packages/meep-bwm-client
+        # supports linting
+        lint: false        
       meep-couch:
         # location of source code
         src: go-packages/meep-couch
@@ -1055,6 +1134,11 @@ repo:
         src: go-packages/meep-model
         # supports linting
         lint: true
+      meep-mts-client:
+        # location of source code
+        src: go-packages/meep-mts-client
+        # supports linting
+        lint: false        
       meep-mq:
         # location of source code
         src: go-packages/meep-mq
@@ -1145,6 +1229,11 @@ repo:
         src: go-packages/meep-websocket
         # supports linting
         lint: true
+      meep-dai-client:
+        # location of source code
+        src: go-packages/meep-dai-client
+        # supports linting
+        lint: false        
 
     # Javascript Packages
     js-packages:

@@ -1,0 +1,14 @@
+.openapi-generator-ignore
+Apis/BwmApi.md
+Apis/LocationApi.md
+Models/AppTerminationNotification.md
+Models/AppTerminationNotificationLinks.md
+Models/BwInfo.md
+Models/BwInfoDeltas.md
+Models/BwInfoDeltasSessionFilter.md
+Models/BwInfoSessionFilter.md
+Models/BwInfoTimeStamp.md
+Models/LinkType.md
+Models/OperationActionType.md
+Models/ProblemDetails.md
+README.md

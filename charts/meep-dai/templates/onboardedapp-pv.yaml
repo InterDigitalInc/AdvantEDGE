@@ -1,0 +1,33 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-dai-onboardedapp-pv
+spec:
+  storageClassName: meep-dai-onboardedapp-sc
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.onboardedapp.location }}
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-dai-onboardedapp-sc
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: meep-dai-onboardedapp-pvc
+spec:
+  storageClassName: meep-dai-onboardedapp-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

@@ -1,0 +1,33 @@
+{{- if .Values.prometheus.monitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "meep-dai.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "meep-dai.name" . }}
+    chart: {{ template "meep-dai.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+  {{- if .Values.prometheus.monitor.additionalLabels }}
+{{ toYaml .Values.prometheus.monitor.additionalLabels | indent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "meep-dai.name" . }}
+      release: {{ .Release.Name }}
+  endpoints:
+    - port: metrics
+      {{- if .Values.prometheus.monitor.interval }}
+      interval: {{ .Values.prometheus.monitor.interval }}
+      {{- end }}
+      {{- if .Values.prometheus.monitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.prometheus.monitor.scrapeTimeout }}
+      {{- end }}
+{{- if .Values.prometheus.monitor.relabelings }}
+      relabelings:
+{{ toYaml .Values.prometheus.monitor.relabelings | indent 6 }}
+{{- end }}
+{{- end }}
