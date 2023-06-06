@@ -27,38 +27,10 @@ import (
 	"net/http"
 )
 
-func IndividualSubscriptionDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func IndividualSubscriptionGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func IndividualSubscriptionPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
 func ProvInfoGET(w http.ResponseWriter, r *http.Request) {
 	notImplemented(w, r)
 }
 
 func ProvInfoUuMbmsGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func ProvInfoUuUnicastGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func SubGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func SubPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func V2xMessagePOST(w http.ResponseWriter, r *http.Request) {
 	notImplemented(w, r)
 }

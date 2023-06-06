@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -219,7 +220,20 @@ const testScenario string = `
                                 "poa4GConfig":{
                                     "cellId":"2345678"
                                 },
-                                "physicalLocations":[
+								"geoData": {
+									"location": {
+										"type": "Point",
+											"coordinates": [
+												7.423547,
+												43.731724
+									]
+									},
+									"radius": 400,
+									"path": null,
+									"eopMode": null,
+									"velocity": null
+								},
+								"physicalLocations":[
                                     {
                                         "id":"32a2ced4-a262-49a8-8503-8489a94386a2",
                                         "name":"ue1",
@@ -314,8 +328,21 @@ const testScenario string = `
                                 },
                                 "poa4GConfig":{
                                     "cellId":"3456789"
-                                }
-                            }
+                                },
+								"geoData": {
+									"location": {
+									"type": "Point",
+									"coordinates": [
+										7.423547,
+										43.731724
+									]
+									},
+									"radius": 400,
+									"path": null,
+									"eopMode": null,
+									"velocity": null
+								}
+							}
                         ]
                     },
                     {
@@ -485,13 +512,17 @@ const testScenario string = `
             }
         ]
     }
-}`
+}
+`
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
 const postgisTestHost = "localhost"
 const postgisTestPort = "30432"
 const testScenarioName = "testScenario"
+const v2xBrokerTest = "mqtt://test.mosquito.org:1338" // Or amqp://guest:guest@localhost:5672
+
+var poaListTest = []string{"zone1-poa-cell1", "zone1-poa-cell2"}
 
 var m *mod.Model
 var mqLocal *mq.MsgQueue
@@ -500,47 +531,27 @@ func TestNotImplemented(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/1", nil, nil, nil, http.StatusNotImplemented, IndividualSubscriptionDELETE)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
+	// _, err := sendRequest(http.MethodDelete, "/subscriptions/1", nil, nil, nil, http.StatusNotImplemented, IndividualSubscriptionDELETE)
+	// if err != nil {
+	// 	t.Fatalf("Failed to get expected response")
+	// }
 
-	_, err = sendRequest(http.MethodGet, "/subscriptions/1", nil, nil, nil, http.StatusNotImplemented, IndividualSubscriptionGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
+	// _, err = sendRequest(http.MethodGet, "/subscriptions/1", nil, nil, nil, http.StatusNotImplemented, IndividualSubscriptionGET)
+	// if err != nil {
+	// 	t.Fatalf("Failed to get expected response")
+	// }
 
-	_, err = sendRequest(http.MethodPut, "/subscriptions/1", nil, nil, nil, http.StatusNotImplemented, IndividualSubscriptionPUT)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
+	// _, err = sendRequest(http.MethodPut, "/subscriptions/1", nil, nil, nil, http.StatusNotImplemented, IndividualSubscriptionPUT)
+	// if err != nil {
+	// 	t.Fatalf("Failed to get expected response")
+	// }
 
-	_, err = sendRequest(http.MethodGet, "/queries/pc5_provisioning_info", nil, nil, nil, http.StatusNotImplemented, ProvInfoGET)
+	_, err := sendRequest(http.MethodGet, "/queries/pc5_provisioning_info", nil, nil, nil, http.StatusNotImplemented, ProvInfoGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
 	_, err = sendRequest(http.MethodGet, "/queries/uu_mbms_provisioning_info", nil, nil, nil, http.StatusNotImplemented, ProvInfoUuMbmsGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info", nil, nil, nil, http.StatusNotImplemented, ProvInfoUuUnicastGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodGet, "/subscriptions", nil, nil, nil, http.StatusNotImplemented, SubGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodPost, "/subscriptions", nil, nil, nil, http.StatusNotImplemented, SubPOST)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodPost, "/publish_v2x_message", nil, nil, nil, http.StatusNotImplemented, V2xMessagePOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -649,6 +660,622 @@ func TestPredictedQosPost(t *testing.T) {
 	terminateScenario()
 }
 
+func TestProvInfoUuUnicastGET(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	time.Sleep(1000 * time.Millisecond)
+	updateScenario("mobility1")
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	// Initialize the data structure for the GET request
+	// MEC-030 Clause 6.2.2
+	// MEC-030 Clause 7.3.3
+
+	/******************************
+	 * expected request section
+	 ******************************/
+
+	ecgi := Ecgi{
+		CellId: &CellId{CellId: "cellid"},
+		Plmn:   &Plmn{Mcc: "mcc", Mnc: "mnc"},
+	}
+	plmn := Plmn{Mcc: "mcc", Mnc: "mnc"}
+	uuUniNeighbourCellInfo := make([]UuUniNeighbourCellInfo, 1)
+	uuUniNeighbourCellInfo[0] = UuUniNeighbourCellInfo{&ecgi, nil, 0, &plmn, nil}
+	proInfoUuUnicast := make([]UuUnicastProvisioningInfoProInfoUuUnicast, 1)
+	proInfoUuUnicast[0] = UuUnicastProvisioningInfoProInfoUuUnicast{nil, uuUniNeighbourCellInfo, nil}
+	uuUnicastProvisioningInfo := UuUnicastProvisioningInfo{
+		ProInfoUuUnicast: proInfoUuUnicast,
+		TimeStamp: &TimeStamp{
+			Seconds: int32(time.Now().Unix()),
+		},
+	}
+
+	expected_json_response, err := json.Marshal(uuUnicastProvisioningInfo)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("expected_json_response: ", string(expected_json_response))
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	rr, err := sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info?location_info=ecgi,33139970001614,33139971112725", nil, nil, nil, http.StatusOK, ProvInfoUuUnicastGET)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("Respone: rr: ", rr)
+	var resp UuUnicastProvisioningInfo
+	err = json.Unmarshal([]byte(rr), &resp)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	log.Info("Respone: resp: ", resp)
+	if !validateUuUnicastProvisioningInfo(resp, uuUnicastProvisioningInfo) {
+		t.Errorf("handler returned unexpected body: got %v want %v", rr, expected_json_response)
+	}
+
+	_, err = sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info?location_info=ecgi", nil, nil, nil, http.StatusBadRequest, ProvInfoUuUnicastGET)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("sendRequest done")
+
+	rr, err = sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info?location_info=latitude,000.000,001.000,longitude,000.000,001.000", nil, nil, nil, http.StatusOK, ProvInfoUuUnicastGET)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("Respone: rr: ", rr)
+	err = json.Unmarshal([]byte(rr), &resp)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	log.Info("Respone: resp: ", resp)
+	// TODO Validate with expected response
+
+	_, err = sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info?location_info=latitude,000.000,001.000,longitude,000.000", nil, nil, nil, http.StatusBadRequest, ProvInfoUuUnicastGET)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("sendRequest done")
+
+	_, err = sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info?location_info=latitude,000.000,001.000", nil, nil, nil, http.StatusBadRequest, ProvInfoUuUnicastGET)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("sendRequest done")
+
+	_, err = sendRequest(http.MethodGet, "/queries/uu_unicast_provisioning_info?location_info=longitude,000.000,001.000,latitude,000.000,001.000", nil, nil, nil, http.StatusBadRequest, ProvInfoUuUnicastGET)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("sendRequest done")
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+	terminateScenario()
+}
+
+func validateUuUnicastProvisioningInfo(received UuUnicastProvisioningInfo, expected UuUnicastProvisioningInfo) bool {
+	log.Info("validateUuUnicastProvisioningInfo: received: ", received)
+	log.Info("validateUuUnicastProvisioningInfo: expected: ", expected)
+
+	log.Info("validateUuUnicastProvisioningInfo: received: ", len(received.ProInfoUuUnicast))
+	log.Info("validateUuUnicastProvisioningInfo: expected: ", len(expected.ProInfoUuUnicast))
+	if len(received.ProInfoUuUnicast) != len(expected.ProInfoUuUnicast) {
+		fmt.Println("len(received.ProInfoUuUnicast) mismatch")
+		return false
+	}
+	// TODO
+
+	return true
+}
+
+func testSubscriptionPost(t *testing.T) (string, string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	// Initialize the data structure for the POST request
+	// MEC-030 Clause 6.3.5
+	// MEC-030 Clause 7.8.3.4
+	expected_subscriptionType := "V2xMsgSubscription"
+	expected_callbackReference := "MyCallback"
+	expected_href := LinkType{Href: "http://meAppServer.example.com/vis/v2/subscriptions/1"}
+	expected_self := Links{Self: &expected_href}
+	expected_msgType := []MsgType{DENM, CAM}
+	expected_filterCriteria := V2xMsgSubscriptionFilterCriteria{StdOrganization: "ETSI", MsgType: expected_msgType}
+	expected_expiryDeadline := TimeStamp{Seconds: 1977836800, NanoSeconds: 0}
+	expected_v2xMsgSubscription := V2xMsgSubscription{
+		SubscriptionType:        expected_subscriptionType,
+		CallbackReference:       expected_callbackReference,
+		Links:                   &expected_self,
+		FilterCriteria:          &expected_filterCriteria,
+		ExpiryDeadline:          &expected_expiryDeadline,
+		RequestTestNotification: false,
+		WebsockNotifConfig:      nil,
+	}
+	expectedResponseStr, err := json.Marshal(expected_v2xMsgSubscription)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("expected_v2xMsgSubscription_str: ", string(expectedResponseStr))
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	subscriptionType := "V2xMsgSubscription"
+	callbackReference := "MyCallback"
+	msgType := []MsgType{DENM, CAM}
+	filterCriteria := V2xMsgSubscriptionFilterCriteria{StdOrganization: "ETSI", MsgType: msgType}
+	expiryDeadline := TimeStamp{Seconds: 1977836800, NanoSeconds: 0}
+	requestedV2xMsgSubscription := V2xMsgSubscription{
+		SubscriptionType:        subscriptionType,
+		CallbackReference:       callbackReference,
+		FilterCriteria:          &filterCriteria,
+		ExpiryDeadline:          &expiryDeadline,
+		RequestTestNotification: false,
+		WebsockNotifConfig:      nil,
+	}
+	body, err := json.Marshal(requestedV2xMsgSubscription)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("body: ", string(body))
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodPost, "/vis/v2/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubPOST)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("Request sent")
+
+	var respBody V2xMsgSubscription
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * Comparing responses
+	 ******************************/
+
+	if expected_v2xMsgSubscription.SubscriptionType != respBody.SubscriptionType {
+		t.Fatalf("Failed to get expected response")
+	}
+	if &expected_v2xMsgSubscription.FilterCriteria != &respBody.FilterCriteria {
+		t.Fatalf("Failed to get expected response")
+	}
+	if expected_v2xMsgSubscription.CallbackReference != respBody.CallbackReference {
+		t.Fatalf("Failed to get expected response")
+	}
+	if *expected_v2xMsgSubscription.ExpiryDeadline != *respBody.ExpiryDeadline {
+		t.Fatalf("Failed to get expected response")
+	}
+	if *expected_v2xMsgSubscription.Links != *respBody.Links {
+		t.Fatalf("Failed to get expected response")
+	}
+	if respBody.WebsockNotifConfig != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if respBody.RequestTestNotification != false {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	subscriptionId := strings.Split(respBody.Links.Self.Href, "/")
+	cleanSubscriptionId := subscriptionId[len(subscriptionId)-1]
+
+	return cleanSubscriptionId, string(expectedResponseStr)
+}
+
+func TestSuccessV2XMsgSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	time.Sleep(1000 * time.Millisecond)
+	updateScenario("mobility1")
+
+	// POST
+	subscriptionId, expectedGetResponse := testSubscriptionPost(t)
+
+	//GET Subscriptions
+	subscriptionTypeQuery := "v2x_msg"
+	testSubscriptionsGet(t, subscriptionTypeQuery, expectedGetResponse)
+
+	// GET Individual Subscription
+	testIndividualSubscriptionGet(t, subscriptionId, expectedGetResponse)
+
+	// PUT
+	testIndividualSubscriptionPut(t, subscriptionId, true)
+
+	// DELETE
+	testIndividualSubscriptionDelete(t, subscriptionId, true)
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+	terminateScenario()
+
+}
+
+func TestFailV2XMsgSubscription(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	time.Sleep(1000 * time.Millisecond)
+	updateScenario("mobility1")
+
+	// GET
+	testIndividualSubscriptionGet(t, "invalidSubscriptionId", "")
+
+	// PUT
+	_ = testIndividualSubscriptionPut(t, "invalidSubscriptionId", false)
+
+	// DELETE
+	testIndividualSubscriptionDelete(t, "invalidSubscriptionId", false)
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+
+	terminateScenario()
+}
+
+//Generic GET function for any subscription type
+
+func testSubscriptionsGet(t *testing.T, subscriptionTypeQuery string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	queryParam := make(map[string]string)
+	queryParam["subscription_type"] = subscriptionTypeQuery
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	var err error
+
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/vis/v2/subscriptions", nil, nil, queryParam, http.StatusNotFound, SubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		rr, err := sendRequest(http.MethodGet, "/vis/v2/subscriptions", nil, nil, queryParam, http.StatusOK, SubGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		if rr != expectedResponse {
+			t.Fatalf("Failed to get expected response")
+		}
+		log.Info("Received expected response for GET Subscription method")
+	}
+}
+
+func testIndividualSubscriptionGet(t *testing.T, subscriptionId string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	var err error
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/vis/v2/subscriptions", nil, vars, nil, http.StatusNotFound, IndividualSubscriptionGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		var expectedResp V2xMsgSubscription
+		err := json.Unmarshal([]byte(expectedResponse), &expectedResp)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		rr, err := sendRequest(http.MethodGet, "/vis/v2/subscriptions", nil, vars, nil, http.StatusOK, IndividualSubscriptionGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		var respBody V2xMsgSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		if expectedResp.SubscriptionType != respBody.SubscriptionType {
+			t.Fatalf("Failed to get expected response")
+		}
+		if &expectedResp.FilterCriteria != &respBody.FilterCriteria {
+			t.Fatalf("Failed to get expected response")
+		}
+		if expectedResp.CallbackReference != respBody.CallbackReference {
+			t.Fatalf("Failed to get expected response")
+		}
+		if *expectedResp.ExpiryDeadline != *respBody.ExpiryDeadline {
+			t.Fatalf("Failed to get expected response")
+		}
+		if *expectedResp.Links != *respBody.Links {
+			t.Fatalf("Failed to get expected response")
+		}
+		if respBody.WebsockNotifConfig != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if respBody.RequestTestNotification != false {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testIndividualSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		_, err := sendRequest(http.MethodDelete, "/vis/v2/subscriptions", nil, vars, nil, http.StatusNoContent, IndividualSubscriptionDELETE)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		_, err := sendRequest(http.MethodDelete, "/vis/v2/subscriptions", nil, vars, nil, http.StatusNotFound, IndividualSubscriptionDELETE)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testIndividualSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+	/******************************
+	 * expected response section
+	 ******************************/
+
+	expected_subscriptionType := "V2xMsgSubscription"
+	expected_callbackReference := "MyCallback"
+	expected_href := LinkType{Href: "http://meAppServer.example.com/vis/v2/subscriptions/1"}
+	expected_self := Links{Self: &expected_href}
+	expected_msgType := []MsgType{DENM, CAM}
+	expected_filterCriteria := V2xMsgSubscriptionFilterCriteria{StdOrganization: "ETSI", MsgType: expected_msgType}
+	expected_expiryDeadline := TimeStamp{Seconds: 1977836800, NanoSeconds: 0}
+
+	expected_v2xMsgSubscription := V2xMsgSubscription{
+		SubscriptionType:        expected_subscriptionType,
+		CallbackReference:       expected_callbackReference,
+		Links:                   &expected_self,
+		FilterCriteria:          &expected_filterCriteria,
+		ExpiryDeadline:          &expected_expiryDeadline,
+		RequestTestNotification: false,
+		WebsockNotifConfig:      nil,
+	}
+	expectedResponseStr, err := json.Marshal(expected_v2xMsgSubscription)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("expectedResponseStr: ", string(expectedResponseStr))
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	subscriptionType := "V2xMsgSubscription"
+	callbackReference := "MyCallback"
+	href := LinkType{Href: "http://meAppServer.example.com/vis/v2/subscriptions/1"}
+	self := Links{Self: &href}
+	msgType := []MsgType{DENM, CAM}
+	filterCriteria := V2xMsgSubscriptionFilterCriteria{StdOrganization: "ETSI", MsgType: msgType}
+	expiryDeadline := TimeStamp{Seconds: 1977836800, NanoSeconds: 0}
+	requestedv2xMsgSubscription := V2xMsgSubscription{
+		SubscriptionType:        subscriptionType,
+		CallbackReference:       callbackReference,
+		Links:                   &self,
+		FilterCriteria:          &filterCriteria,
+		ExpiryDeadline:          &expiryDeadline,
+		RequestTestNotification: false,
+		WebsockNotifConfig:      nil,
+	}
+	body, err := json.Marshal(requestedv2xMsgSubscription)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("body: ", string(body))
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	if expectSuccess {
+		rr, err := sendRequest(http.MethodPut, "/vis/v2/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusOK, IndividualSubscriptionPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody V2xMsgSubscription
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		if expected_v2xMsgSubscription.SubscriptionType != respBody.SubscriptionType {
+			t.Fatalf("Failed to get expected response")
+		}
+		if &expected_v2xMsgSubscription.FilterCriteria != &respBody.FilterCriteria {
+			t.Fatalf("Failed to get expected response")
+		}
+		if expected_v2xMsgSubscription.CallbackReference != respBody.CallbackReference {
+			t.Fatalf("Failed to get expected response")
+		}
+		if *expected_v2xMsgSubscription.ExpiryDeadline != *respBody.ExpiryDeadline {
+			t.Fatalf("Failed to get expected response")
+		}
+		if *expected_v2xMsgSubscription.Links != *respBody.Links {
+			t.Fatalf("Failed to get expected response")
+		}
+		if respBody.WebsockNotifConfig != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if respBody.RequestTestNotification != false {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/vis/v2/subscriptions", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, IndividualSubscriptionPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func TestV2xMsgPublicationPost(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	time.Sleep(1000 * time.Millisecond)
+	updateScenario("mobility1")
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	// Initialize the data structure for the POST request
+	// MEC-030 Clause 6.2.6
+	// MEC-030 Clause 7.7.3.4
+
+	/******************************
+	 * expected request section
+	 ******************************/
+
+	stdOrganization := "ETSI"
+	msgEncodeFormat := "hexadump"
+	msgType := DENM
+	msgContent := "031200f101038100400380818c20400100005802001ee600003c0004e548140072066b24d01eb78149084d5571800000"
+
+	testv2xMsgPublication := V2xMsgPublication{
+		MsgContent:      msgContent,
+		MsgEncodeFormat: msgEncodeFormat,
+		MsgType:         &msgType,
+		StdOrganization: stdOrganization,
+	}
+	body, err := json.Marshal(testv2xMsgPublication)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	fmt.Println("body: ", string(body))
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	_, err = sendRequest(http.MethodPost, "/vis/v2/publish_v2x_message", bytes.NewBuffer(body), nil, nil, http.StatusNoContent, V2xMessagePOST)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	log.Info("sendRequest done")
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+	terminateScenario()
+}
+
 func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
@@ -658,6 +1285,10 @@ func initializeVars() {
 	postgisHost = postgisTestHost
 	postgisPort = postgisTestPort
 	os.Setenv("MEEP_SANDBOX_NAME", testScenarioName)
+	v2x_broker = v2xBrokerTest
+	os.Setenv("MEEP_BROKER", v2x_broker)
+	v2x_poa_list = poaListTest
+	os.Setenv("MEEP_POA_LIST", strings.Join(v2x_poa_list, ";"))
 }
 
 func initialiseScenario(testScenario string) {
@@ -672,7 +1303,6 @@ func initialiseScenario(testScenario string) {
 		UpdateCb:  nil,
 		DbAddr:    redisAddr,
 	}
-
 	var err error
 	m, err = mod.NewModel(cfg)
 	if err != nil {

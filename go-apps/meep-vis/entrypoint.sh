@@ -5,6 +5,8 @@ echo "MEEP_HOST_URL: ${MEEP_HOST_URL}"
 echo "MEEP_SANDBOX_NAME: ${MEEP_SANDBOX_NAME}"
 echo "MEEP_MEP_NAME: ${MEEP_MEP_NAME}"
 echo "MEEP_CODECOV: ${MEEP_CODECOV}"
+echo "MEEP_BROKER: ${MEEP_BROKER}" # E.g. mqtt://test.mosquito.org:1338 or amqp://guest:guest@localhost:5672
+echo "MEEP_POA_LIST: ${MEEP_POA_LIST}" # E.g. poa-5g1;poa-5g2
 
 if [[ ! -z "${MEEP_MEP_NAME}" ]]; then
     svcPath="${MEEP_SANDBOX_NAME}/${MEEP_MEP_NAME}"

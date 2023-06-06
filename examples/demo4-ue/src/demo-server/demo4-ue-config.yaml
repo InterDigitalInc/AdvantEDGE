@@ -1,0 +1,22 @@
+# This file defines the configuration of Demo4 edge application. All fields are required to run demo-4 on MEC Sandbox 
+
+# Set where mec application is running either on MEC Sandbox or AdvantEDGE. Expected fields: sandbox | advantedge
+mode: 'sandbox'
+# Set url of mec platform. Example field format: http://{MEC_IP_ADDRESS}/{SANDBOX_NAME}/{MEP_NAME}/ 
+sandbox: 'https://sandbox-mec.etsi.org/sbx7j3qk6y/mep1'
+# Set the sandbox name. Example field format: {SANDBOX_NAME}
+sandboxname: 'sbx7j3qk6y'
+# Set the Terminal Equipment the demo-4 should be attached to
+nodename: '10.100.0.01'
+# Set if sandbox url uses https. Expected fields: true | false 
+https: true 
+# Set the mec platform name demo4-ue will run on. Example field: mep1
+mecplatform: 'mep1'
+# Set user-application ID that is generated on MEC Sandbox frontend. Example field format: 7930ba6d-4581-444c-b966-3312517f3a51
+appid: '45720620-7442-46cc-93c6-0c67aceb06a6'
+# Set host address of demo4-ue. 
+localurl: 'http://sandbox-mec.etsi.org'
+# Set host port number of demo4-ue. Example field: '8094'
+port: '31111'
+# Set the application name
+appname: 'demo4-ue'

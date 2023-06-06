@@ -1,0 +1,261 @@
+version: 1.9.0
+name: demo4ueapplication
+deployment:
+    netChar:
+        latency: 50
+        latencyVariation: 10
+        latencyDistribution: Normal
+        throughputDl: 1000
+        throughputUl: 1000
+    connectivity:
+        model: OPEN
+    d2d:
+        d2dMaxDistance: 100
+    domains:
+        -
+            id: PUBLIC
+            name: PUBLIC
+            type: PUBLIC
+            netChar:
+                latency: 6
+                latencyVariation: 2
+                throughputDl: 1000
+                throughputUl: 1000
+            zones:
+                -
+                    id: PUBLIC-COMMON
+                    name: PUBLIC-COMMON
+                    type: COMMON
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                    networkLocations:
+                        -
+                            id: PUBLIC-COMMON-DEFAULT
+                            name: PUBLIC-COMMON-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+        -
+            id: 8f7ad774-b3f9-4fea-9972-0a2a8185a1db
+            name: operator-cell1
+            type: OPERATOR-CELLULAR
+            netChar:
+                latency: 6
+                latencyVariation: 2
+                throughputDl: 1000
+                throughputUl: 1000
+            cellularDomainConfig:
+                mnc: '002'
+                mcc: '001'
+                defaultCellId: CAFEDEC
+            zones:
+                -
+                    id: operator-cell1-COMMON
+                    name: operator-cell1-COMMON
+                    type: COMMON
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                    networkLocations:
+                        -
+                            id: operator-cell1-COMMON-DEFAULT
+                            name: operator-cell1-COMMON-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                -
+                    id: b2076ddf-dd15-46b4-9814-204084ec5805
+                    name: zone1
+                    type: ZONE
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                    meta:
+                        display.map.color: '#E21C1C'
+                    networkLocations:
+                        -
+                            id: zone1-DEFAULT
+                            name: zone1-DEFAULT
+                            type: DEFAULT
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                            physicalLocations:
+                                -
+                                    id: b60c5f19-3666-4707-9297-6aa83e62ccc0
+                                    name: edge1
+                                    type: EDGE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.421096
+                                                - 43.73408
+                                    connected: true
+                                    dataNetwork:
+                                        dnn: edn
+                                    processes:
+                                        -
+                                            id: ce454f4c-16f8-4542-83d8-c8afd45bcfea
+                                            name: demo4-ue1
+                                            type: EDGE-APP
+                                            image: 'meep-docker-registry:30001/demo4-ue'
+                                            environment: MEEP_NODE_NAME=10.10.20.01
+                                            serviceConfig:
+                                                name: demo4-ue1
+                                                meSvcName: demo4-ue
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: 31111
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                    netChar:
+                                        latencyDistribution: Normal
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                        -
+                            id: 0c5152b9-954d-48fe-a547-7e53532ae869
+                            name: poa-5g1
+                            type: POA-5G
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                            poa5GConfig:
+                                cellId: '1010101'
+                            geoData:
+                                location:
+                                    type: Point
+                                    coordinates:
+                                        - 7.416715
+                                        - 43.733616
+                                radius: 400
+                            physicalLocations:
+                                -
+                                    id: eb96cba6-c0c2-4113-ae56-cc7097161eef
+                                    name: 10.10.20.01
+                                    type: UE
+                                    geoData:
+                                        location:
+                                            type: Point
+                                            coordinates:
+                                                - 7.420433
+                                                - 43.729942
+                                        path:
+                                            type: LineString
+                                            coordinates:
+                                                -
+                                                    - 7.420433
+                                                    - 43.729942
+                                                -
+                                                    - 7.420659
+                                                    - 43.73036
+                                                -
+                                                    - 7.420621
+                                                    - 43.731045
+                                                -
+                                                    - 7.420922
+                                                    - 43.73129
+                                                -
+                                                    - 7.421345
+                                                    - 43.731373
+                                                -
+                                                    - 7.42135
+                                                    - 43.73168
+                                                -
+                                                    - 7.421148
+                                                    - 43.73173
+                                                -
+                                                    - 7.420616
+                                                    - 43.731964
+                                                -
+                                                    - 7.419779
+                                                    - 43.732197
+                                                -
+                                                    - 7.419111
+                                                    - 43.732353
+                                                -
+                                                    - 7.418931
+                                                    - 43.732315
+                                                -
+                                                    - 7.418345
+                                                    - 43.731964
+                                                -
+                                                    - 7.418319
+                                                    - 43.73186
+                                                -
+                                                    - 7.418024
+                                                    - 43.73179
+                                                -
+                                                    - 7.41796
+                                                    - 43.731728
+                                                -
+                                                    - 7.417729
+                                                    - 43.731743
+                                                -
+                                                    - 7.417463
+                                                    - 43.731632
+                                                -
+                                                    - 7.417507
+                                                    - 43.73148
+                                                -
+                                                    - 7.417428
+                                                    - 43.731407
+                                                -
+                                                    - 7.417343
+                                                    - 43.731396
+                                                -
+                                                    - 7.417334
+                                                    - 43.731133
+                                                -
+                                                    - 7.417317
+                                                    - 43.73053
+                                                -
+                                                    - 7.417164
+                                                    - 43.7304
+                                                -
+                                                    - 7.417164
+                                                    - 43.72998
+                                                -
+                                                    - 7.417319
+                                                    - 43.729916
+                                                -
+                                                    - 7.419065
+                                                    - 43.730103
+                                        eopMode: REVERSE
+                                        velocity: 1
+                                    connected: true
+                                    wireless: true
+                                    wirelessType: 'wifi,5g,4g,other'
+                                    dataNetwork:
+                                        dnn: ""
+                                        ladn: false
+                                        ecsp: ""
+                                    netChar:
+                                        latencyDistribution: Normal
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: 0
+                                        latencyVariation: 0
+                                        packetLoss: 0
+                                    macId: DEADBEEF0001
+                                    label: 10.10.20.01

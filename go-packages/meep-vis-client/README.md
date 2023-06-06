@@ -21,18 +21,17 @@ All URIs are relative to *https://localhost/sandboxname/vis/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*UnsupportedApi* | [**IndividualSubscriptionDELETE**](docs/UnsupportedApi.md#individualsubscriptiondelete) | **Delete** /subscriptions/{subscriptionId} | Used to cancel the existing subscription.
-*UnsupportedApi* | [**IndividualSubscriptionGET**](docs/UnsupportedApi.md#individualsubscriptionget) | **Get** /subscriptions/{subscriptionId} | Retrieve information about this subscription.
-*UnsupportedApi* | [**IndividualSubscriptionPUT**](docs/UnsupportedApi.md#individualsubscriptionput) | **Put** /subscriptions/{subscriptionId} | Used to update the existing subscription.
 *UnsupportedApi* | [**ProvInfoGET**](docs/UnsupportedApi.md#provinfoget) | **Get** /queries/pc5_provisioning_info | Query provisioning information for V2X communication over PC5.
 *UnsupportedApi* | [**ProvInfoUuMbmsGET**](docs/UnsupportedApi.md#provinfouumbmsget) | **Get** /queries/uu_mbms_provisioning_info | retrieve information required for V2X communication over Uu MBMS.
-*UnsupportedApi* | [**ProvInfoUuUnicastGET**](docs/UnsupportedApi.md#provinfouuunicastget) | **Get** /queries/uu_unicast_provisioning_info | Used to query provisioning information for V2X communication over Uu unicast.
-*UnsupportedApi* | [**SubGET**](docs/UnsupportedApi.md#subget) | **Get** /subscriptions | Request information about the subscriptions for this requestor.
-*UnsupportedApi* | [**SubPOST**](docs/UnsupportedApi.md#subpost) | **Post** /subscriptions |  create a new subscription to VIS notifications.
-*UnsupportedApi* | [**V2xMessagePOST**](docs/UnsupportedApi.md#v2xmessagepost) | **Post** /publish_v2x_message | Used to publish a V2X message.
+*V2xiApi* | [**IndividualSubscriptionDELETE**](docs/V2xiApi.md#individualsubscriptiondelete) | **Delete** /subscriptions/{subscriptionId} | Used to cancel the existing subscription.
+*V2xiApi* | [**IndividualSubscriptionGET**](docs/V2xiApi.md#individualsubscriptionget) | **Get** /subscriptions/{subscriptionId} | Retrieve information about this subscription.
+*V2xiApi* | [**IndividualSubscriptionPUT**](docs/V2xiApi.md#individualsubscriptionput) | **Put** /subscriptions/{subscriptionId} | Used to update the existing subscription.
 *V2xiApi* | [**Mec011AppTerminationPOST**](docs/V2xiApi.md#mec011appterminationpost) | **Post** /notifications/mec011/appTermination | MEC011 Application Termination notification for self termination
 *V2xiApi* | [**PredictedQosPOST**](docs/V2xiApi.md#predictedqospost) | **Post** /provide_predicted_qos | Request the predicted QoS correspondent to potential routes of a vehicular UE.
-
+*V2xiApi* | [**ProvInfoUuUnicastGET**](docs/V2xiApi.md#provinfouuunicastget) | **Get** /queries/uu_unicast_provisioning_info | Used to query provisioning information for V2X communication over Uu unicast.
+*V2xiApi* | [**SubGET**](docs/V2xiApi.md#subget) | **Get** /subscriptions | Request information about the subscriptions for this requestor.
+*V2xiApi* | [**SubPOST**](docs/V2xiApi.md#subpost) | **Post** /subscriptions |  create a new subscription to VIS notifications.
+*V2xiApi* | [**V2xMessagePOST**](docs/V2xiApi.md#v2xmessagepost) | **Post** /publish_v2x_message | Used to publish a V2X message.
 
 ## Documentation For Models
 
@@ -96,7 +95,6 @@ Class | Method | HTTP request | Description
  - [V2xServerUsdTmgi](docs/V2xServerUsdTmgi.md)
  - [WebsockNotifConfig](docs/WebsockNotifConfig.md)
 
-
 ## Documentation For Authorization
  Endpoints do not require authorization.
 
@@ -104,4 +102,6 @@ Class | Method | HTTP request | Description
 ## Author
 
 AdvantEDGE@InterDigital.com
+xFlow Research (Pvt.) Inc.
+FSCOM
 

@@ -1,0 +1,61 @@
+{
+    "appList":
+        [
+            {
+                "appInfoList":
+                    [
+                        {
+                            "appDId": "appDId1",
+                            "appName": "appName1",
+                            "appProvider": "appProvider1",
+                            "appSoftVersion": "appSoftVersion1",
+                            "appDVersion": "appDVersion1",
+                            "appDescription": "appDescription1",
+                            "appLocation":
+                                [
+                                    {
+                                        "area":
+                                            {
+                                                "coordinates":
+                                                    [
+                                                        [
+                                                            [7.43166,43.736156],[7.431723,43.736115],[7.431162,43.735607],[7.430685,43.73518]
+                                                        ]
+                                                    ]
+                                            },
+                                        "countryCode": "countryCode1"
+                                    },
+                                    {
+                                        "civicAddressElement": 
+                                            [
+                                                {
+                                                    "caType": 2,
+                                                    "caValue": "Value2"
+                                                },
+                                                {
+                                                    "caType": 20,
+                                                    "caValue": "Value20"
+                                                }
+                                            ]
+                                    }
+                                ],
+                            "appCharcs":
+                                [
+                                    {
+                                        "memory": 2048,
+                                        "storage": 2048,
+                                        "latency": 2048,
+                                        "bandwidth": 2048,
+                                        "serviceCont": 1
+                                    }
+                                ],
+                            "cmd": "uptime",
+                            "args":null
+                        }
+                    ],
+                    "vendorSpecificExt": {
+                        "vendorId": "vendorId1"
+                    }
+            }
+        ]
+}

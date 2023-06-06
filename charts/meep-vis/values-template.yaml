@@ -22,6 +22,8 @@ image:
     MEEP_SANDBOX_NAME: {{.SandboxName}}
     MEEP_SVC_PATH: /vis/v2
     MEEP_HOST_URL: {{.HostUrl}}
+    MEEP_BROKER: mqtt://test.mosquito.org:1338
+    MEEP_POA_LIST: poa-5g1
     {{- if .IsMepService }}
     MEEP_MEP_NAME: {{.MepName}}
     {{- end }}

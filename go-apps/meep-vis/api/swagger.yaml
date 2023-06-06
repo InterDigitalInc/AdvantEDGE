@@ -6,10 +6,9 @@ info:
     ISG MEC030 V2XI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/030/02.02.01_60/gs_MEC030v020201p.pdf)
     <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
     <p>**Micro-service**<br>[meep-vis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-vis)
-    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about radio conditions in the network <p>**Note**<br>AdvantEDGE supports
-    a selected subset of RNI API endpoints (see below) and a subset of subscription
-    types.
+    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about radio conditions 
+    in the network <p>**Note**<br>AdvantEDGE supports a selected subset of RNI API endpoints (see below) and 
+    a subset of subscription types."
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -30,7 +29,7 @@ paths:
   /queries/uu_unicast_provisioning_info:
     get:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: 'Used to query provisioning information for V2X communication over Uu unicast.'
       description: 'Used to query provisioning information for V2X communication over Uu unicast.'
       operationId: prov_info_uu_unicastGET
@@ -163,7 +162,7 @@ paths:
   /publish_v2x_message:
     post:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: 'Used to publish a V2X message.'
       description: 'Used to publish a V2X message.'
       operationId: v2x_messagePOST
@@ -173,6 +172,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/V2xMsgPublication'
+            example:
+              msgContent: 'Hello World'
+              msgEncodeFormat: 'base64'
+              msgType: 1
+              stdOrganization: 'ETSI'
       responses:
         '204':
           $ref: '#/components/responses/204'
@@ -192,7 +196,7 @@ paths:
   /subscriptions:
     get:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: 'Request information about the subscriptions for this requestor.'
       description: 'Request information about the subscriptions for this requestor.'
       operationId: subGET
@@ -210,6 +214,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SubscriptionLinkList'
+              example:
+                _links:
+                  self:
+                    href: 'http://meAppServer.example.com/vis/v2/subscriptions'
+                subscription:
+                  - _links:
+                      self:
+                        href: 'http://meAppServer.example.com/vis/v2/subscriptions/123'
+                    callbackReference: 'http://my.callback.com/vis-v2x-msg/some-id'
+                    subscriptionType: V2xMsgSubscription
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -224,7 +238,7 @@ paths:
           $ref: '#/components/responses/429'
     post:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: ' create a new subscription to VIS notifications.'
       description: ' create a new subscription to VIS notifications.'
       operationId: subPOST
@@ -238,6 +252,17 @@ paths:
                 - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
                 - $ref: '#/components/schemas/ProvChgPc5Subscription'
                 - $ref: '#/components/schemas/V2xMsgSubscription'
+            example:
+              subscriptionType: V2xMsgSubscription
+              callbackReference: 'http://my.callback.com/vis-v2x-msg/some-id'
+              filterCriteria:
+                stdOrganization: 'ETSI'
+                msgType:
+                  - 1
+                  - 2
+              expiryDeadline:
+                seconds: 1977836800
+                nanoseconds: 0
       responses:
         '201':
           description: 'In the returned NotificationSubscription structure, the created subscription is described using the appropriate data type.'
@@ -249,6 +274,20 @@ paths:
                   - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
                   - $ref: '#/components/schemas/ProvChgPc5Subscription'
                   - $ref: '#/components/schemas/V2xMsgSubscription'
+              example:
+                subscriptionType: V2xMsgSubscription
+                callbackReference: 'http://my.callback.com/vis-v2x-msg/some-id'
+                _links:
+                  self:
+                    href: 'http://meAppServer.example.com/vis/v2/subscriptions/123'
+                filterCriteria:
+                  stdOrganization: 'ETSI'
+                  msgType:
+                    - 1
+                    - 2
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoseconds: 0
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -299,7 +338,7 @@ paths:
 
     get:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: 'Retrieve information about this subscription.'
       description: 'Retrieve information about this subscription.'
       operationId: individualSubscriptionGET
@@ -315,6 +354,20 @@ paths:
                   - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
                   - $ref: '#/components/schemas/ProvChgPc5Subscription'
                   - $ref: '#/components/schemas/V2xMsgSubscription'
+              example:
+                subscriptionType: V2xMsgSubscription
+                callbackReference: 'http://my.callback.com/vis-v2x-msg/some-id'
+                _links:
+                  self:
+                    href: 'http://meAppServer.example.com/vis/v2/subscriptions/123'
+                filterCriteria:
+                  stdOrganization: 'ETSI'
+                  msgType:
+                    - 1
+                    - 2
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoseconds: 0
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -330,7 +383,7 @@ paths:
 
     put:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: 'Used to update the existing subscription.'
       description: 'Used to update the existing subscription.'
       operationId: individualSubscriptionPUT
@@ -344,6 +397,20 @@ paths:
                 - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
                 - $ref: '#/components/schemas/ProvChgPc5Subscription'
                 - $ref: '#/components/schemas/V2xMsgSubscription'
+            example:
+              subscriptionType: V2xMsgSubscription
+              callbackReference: 'http://my.callback.com/vis-v2x-msg/some-id'
+              _links:
+                self:
+                  href: 'http://meAppServer.example.com/vis/v2/subscriptions/123'
+              filterCriteria:
+                stdOrganization: 'ETSI'
+                msgType:
+                  - 1
+                  - 2
+              expiryDeadline:
+                seconds: 1977836800
+                nanoseconds: 0
       responses:
         '200':
           description: 'A response body containing data type describing the updated subscription is returned'
@@ -355,6 +422,21 @@ paths:
                   - $ref: '#/components/schemas/ProvChgUuMbmsSubscription'
                   - $ref: '#/components/schemas/ProvChgPc5Subscription'
                   - $ref: '#/components/schemas/V2xMsgSubscription'
+              example:
+                example:
+                  subscriptionType: V2xMsgSubscription
+                  callbackReference: 'http://my.callback.com/vis-v2x-msg/some-id'
+                  _links:
+                    self:
+                      href: 'http://meAppServer.example.com/vis/v2/subscriptions/123'
+                  filterCriteria:
+                    stdOrganization: 'ETSI'
+                    msgType:
+                      - 1
+                      - 2
+                  expiryDeadline:
+                    seconds: 1977836800
+                    nanoseconds: 0
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -379,7 +461,7 @@ paths:
           $ref: '#/components/responses/429'
     delete:
       tags:
-        - 'unsupported'
+        - 'v2xi'
       summary: 'Used to cancel the existing subscription.'
       description: 'Used to cancel the existing subscription.'
       operationId: individualSubscriptionDELETE
@@ -1536,7 +1618,7 @@ components:
         msgType:
           description: Subscribed V2X message type. Its value is defined by the standardization organization indicated by the attribute stdOrganization. See note 3.
           items:
-            type: string
+            type: integer
           minItems: 0
           type: array
           x-etsi-mec-cardinality: 0..N

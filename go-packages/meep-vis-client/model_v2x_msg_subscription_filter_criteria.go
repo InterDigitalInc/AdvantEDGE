@@ -27,7 +27,7 @@ package client
 // List of filtering criteria for the subscription. Any filtering criteria from below, which is included in the request, shall also be included in the response.
 type V2xMsgSubscriptionFilterCriteria struct {
 	// Subscribed V2X message type. Its value is defined by the standardization organization indicated by the attribute stdOrganization. See note 3.
-	MsgType []string `json:"msgType,omitempty"`
+	MsgType []MsgType `json:"msgType,omitempty"`
 	// Standardization organization which defines the subscribed V2X message type:  ETSI: European Telecommunications Standards Institute.  See note 2.
 	StdOrganization string `json:"stdOrganization"`
 }

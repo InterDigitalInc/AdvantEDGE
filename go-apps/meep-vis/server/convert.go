@@ -39,3 +39,21 @@ func convertProblemDetailstoJson(probdetails *ProblemDetails) string {
 	}
 	return string(jsonInfo)
 }
+
+func convertV2xMsgSubscriptionToJson(v2xMsgSubscription *V2xMsgSubscription) string {
+	jsonInfo, err := json.Marshal(*v2xMsgSubscription)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonInfo)
+}
+
+// func convertV2xMsgPublicationToJson(v2xMsgPublication *V2xMsgPublication) string {
+// 	jsonInfo, err := json.Marshal(*v2xMsgPublication)
+// 	if err != nil {
+// 		log.Error(err.Error())
+// 		return ""
+// 	}
+// 	return string(jsonInfo)
+// }
