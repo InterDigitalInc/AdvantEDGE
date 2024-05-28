@@ -189,7 +189,7 @@ curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.27/deb/Release.key | sudo gpg --
 
 # Install latest supported k8s version
 sudo apt-get update
-sudo apt-get install -y kubelet=1.27.2-00 kubeadm=1.27.2-00 kubectl=1.27.2-00 kubernetes-cni=1.2.0-00
+sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
 # Lock current version
 sudo apt-mark hold kubelet kubeadm kubectl
